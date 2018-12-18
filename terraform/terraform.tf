@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    role_arn     = "arn:aws:iam::975596993436:role/developer"
+    role_arn = "arn:aws:iam::975596993436:role/developer"
 
     bucket         = "wellcomecollection-storage-infra"
     key            = "terraform/storage.tfstate"
@@ -11,7 +11,7 @@ terraform {
 
 provider "aws" {
   assume_role {
-    role_arn     = "arn:aws:iam::975596993436:role/developer"
+    role_arn = "arn:aws:iam::975596993436:role/developer"
   }
 
   region  = "${var.aws_region}"
