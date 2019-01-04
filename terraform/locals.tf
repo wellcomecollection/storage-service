@@ -10,7 +10,7 @@ locals {
     "${data.aws_subnet.private_new.*.cidr_block}",
   ]
 
-  domain_name  = "api-stage.wellcomecollection.org"
+  domain_name = "api-stage.wellcomecollection.org"
 
   vpc_id          = "${data.terraform_remote_state.infra_shared.storage_vpc_id}"
   private_subnets = "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets}"
