@@ -10,6 +10,8 @@ variable "release_ids" {
   type = "map"
 }
 
+variable "allowed_principles" {}
+
 # Bagger
 
 variable "bagger_mets_bucket_name" {}

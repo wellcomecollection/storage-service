@@ -1,9 +1,3 @@
-resource "aws_api_gateway_base_path_mapping" "mapping" {
-  api_id      = "${module.stack.api_gateway_id}"
-  domain_name = "${local.domain_name}"
-  base_path   = "storage"
-}
-
 module "critical" {
   source = "critical"
 
@@ -35,6 +29,7 @@ module "stack" {
   infra_bucket = "${module.critical.infra_bucket_name}"
 
   controlled_access_cidr_ingress = ["${var.admin_cidr_ingress}"]
+  allowed_principals = ["${var.allowed_principles}"]
 
   current_account_id     = "${data.aws_caller_identity.current.account_id}"
   lambda_error_alarm_arn = "${local.lambda_error_alarm_arn}"

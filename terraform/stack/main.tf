@@ -1,3 +1,18 @@
+# VPC Endpoint
+
+resource "aws_vpc_endpoint_service" "service" {
+  acceptance_required        = false
+  network_load_balancer_arns = ["${module.nlb.arn}"]
+  allowed_principals = ["${var.allowed_principals}"]
+}
+
+module "nlb" {
+  source = "git::https://github.com/wellcometrust/terraform.git//load_balancer/network?ref=v14.2.0"
+
+  namespace       = "${var.namespace}"
+  private_subnets = ["${var.private_subnets}"]
+}
+
 # archivist
 
 module "archivist-nvm" {
@@ -109,64 +124,6 @@ module "ingests" {
   env_vars_length = 3
 
   container_image = "${var.ingests_image}"
-}
-
-# Storage API
-
-module "api" {
-  source = "api"
-
-  vpc_id       = "${var.vpc_id}"
-  cluster_id   = "${aws_ecs_cluster.cluster.id}"
-  cluster_name = "${aws_ecs_cluster.cluster.name}"
-  subnets      = "${var.private_subnets}"
-
-  domain_name = "${var.domain_name}"
-
-  namespace     = "${var.namespace}-api"
-  namespace_id  = "${aws_service_discovery_private_dns_namespace.namespace.id}"
-  namespace_tld = "${aws_service_discovery_private_dns_namespace.namespace.name}"
-
-  # Auth
-
-  auth_scopes = [
-    "${var.cognito_storage_api_identifier}/ingests",
-    "${var.cognito_storage_api_identifier}/bags",
-  ]
-  cognito_user_pool_arn = "${var.cognito_user_pool_arn}"
-
-  # Bags endpoint
-
-  bags_container_image = "${var.bags_api_image}"
-  bags_container_port  = "9001"
-  bags_env_vars = {
-    context_url     = "https://api.wellcomecollection.org/storage/v1/context.json"
-    vhs_bucket_name = "${var.vhs_archive_manifest_bucket_name}"
-    vhs_table_name  = "${var.vhs_archive_manifest_table_name}"
-    app_base_url    = "https://api.wellcomecollection.org/storage/v1/bags"
-  }
-  bags_env_vars_length       = 4
-  bags_nginx_container_image = "${var.nginx_image}"
-  bags_nginx_container_port  = "9000"
-
-  # Ingests endpoint
-
-  ingests_container_image = "${var.ingests_api_image}"
-  ingests_container_port  = "9001"
-  ingests_env_vars = {
-    context_url                 = "https://api.wellcomecollection.org/storage/v1/context.json"
-    app_base_url                = "https://api.wellcomecollection.org/storage/v1/ingests"
-    topic_arn                   = "${module.ingest_requests_topic.arn}"
-    archive_progress_table_name = "${var.ingests_table_name}"
-
-    archive_bag_progress_index_name = "${var.namespace}-bag-progress-index"
-  }
-  ingests_env_vars_length        = 5
-  ingests_nginx_container_image  = "${var.nginx_image}"
-  ingests_nginx_container_port   = "9000"
-  static_content_bucket_name     = "${var.static_content_bucket_name}"
-  interservice_security_group_id = "${var.interservice_security_group_id}"
-  alarm_topic_arn                = "${var.alarm_topic_arn}"
 }
 
 # Migration services

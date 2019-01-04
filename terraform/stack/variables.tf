@@ -11,6 +11,10 @@ variable "current_account_id" {}
 variable "ssh_key_name" {}
 variable "instance_type" {}
 
+variable "allowed_principals" {
+  type = "list"
+}
+
 # IAM
 
 variable "vhs_archive_manifest_full_access_policy_json" {}
