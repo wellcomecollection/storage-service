@@ -150,7 +150,7 @@ module "bag_replicator_queue" {
 
   aws_region = "${var.aws_region}"
   account_id = "${var.current_account_id}"
-  role_names = ["${module.bagger-nvm.task_role_name}"]
+  role_names = ["${module.bag_replicator.task_role_name}"]
 
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
