@@ -82,6 +82,10 @@ output "repo_url_notifier" {
   value = "${module.ecr_notifier.repository_url}"
 }
 
+output "repo_url_bag_replicator" {
+  value = "${module.ecr_bag_replicator.repository_url}"
+}
+
 output "repo_url_bagger" {
   value = "${module.ecr_bagger.repository_url}"
 }
