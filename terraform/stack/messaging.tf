@@ -139,3 +139,18 @@ module "bagging_complete_topic" {
   namespace  = "${var.namespace}_bagging_complete"
   role_names = ["${module.bagger-nvm.task_role_name}"]
 }
+
+# Messaging - bag_replicator
+module "bag_replicator_queue" {
+  source = "../modules/queue"
+
+  namespace = "${replace(var.namespace,"-","")}_bag_replicator"
+
+  topic_names = ["${module.bags_topic.name}"]
+
+  aws_region = "${var.aws_region}"
+  account_id = "${var.current_account_id}"
+  role_names = ["${module.bag_replicator.task_role_name}"]
+
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+}
