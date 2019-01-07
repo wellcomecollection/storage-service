@@ -1,9 +1,3 @@
-resource "aws_api_gateway_base_path_mapping" "mapping" {
-  api_id      = "${module.stack.api_gateway_id}"
-  domain_name = "${local.domain_name}"
-  base_path   = "storage"
-}
-
 module "critical" {
   source = "critical"
 
