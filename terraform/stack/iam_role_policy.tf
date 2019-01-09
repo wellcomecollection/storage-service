@@ -13,22 +13,22 @@ resource "aws_iam_role_policy" "bags_vhs_write" {
 # archivist-nvm
 
 resource "aws_iam_role_policy" "archivist-nvm_task_store_s3" {
-  role   = "${module.archivist-nvm.task_role_name}"
+  role   = "${module.archivist.task_role_name}"
   policy = "${data.aws_iam_policy_document.storage_archive_readwrite.json}"
 }
 
 resource "aws_iam_role_policy" "archivist-nvm_task_get_s3" {
-  role   = "${module.archivist-nvm.task_role_name}"
+  role   = "${module.archivist.task_role_name}"
   policy = "${data.aws_iam_policy_document.ingests_read.json}"
 }
 
 resource "aws_iam_role_policy" "archivist-nvm_task_get_s3_bagger" {
-  role   = "${module.archivist-nvm.task_role_name}"
+  role   = "${module.archivist.task_role_name}"
   policy = "${data.aws_iam_policy_document.ingests_read.json}"
 }
 
 resource "aws_iam_role_policy" "archivist-nvm_task_get_s3_workflow" {
-  role   = "${module.archivist-nvm.task_role_name}"
+  role   = "${module.archivist.task_role_name}"
   policy = "${data.aws_iam_policy_document.ingests_read.json}"
 }
 
@@ -56,26 +56,26 @@ resource "aws_iam_role_policy" "ingests_archive_progress_table" {
 # bagger-nvm
 
 resource "aws_iam_role_policy" "bagger-nvm_task_queue_discovery" {
-  role   = "${module.bagger-nvm.task_role_name}"
+  role   = "${module.bagger.task_role_name}"
   policy = "${data.aws_iam_policy_document.bagger_queue_discovery.json}"
 }
 
 resource "aws_iam_role_policy" "bagger-nvm_task_get_s3" {
-  role   = "${module.bagger-nvm.task_role_name}"
+  role   = "${module.bagger.task_role_name}"
   policy = "${data.aws_iam_policy_document.bagger_read.json}"
 }
 
 resource "aws_iam_role_policy" "bagger-nvm_task_put_s3" {
-  role   = "${module.bagger-nvm.task_role_name}"
+  role   = "${module.bagger.task_role_name}"
   policy = "${data.aws_iam_policy_document.bagger_readwrite.json}"
 }
 
 resource "aws_iam_role_policy" "bagger-nvm_task_get_s3_dlcs" {
-  role   = "${module.bagger-nvm.task_role_name}"
+  role   = "${module.bagger.task_role_name}"
   policy = "${data.aws_iam_policy_document.bagger_dlcs_read.json}"
 }
 
 resource "aws_iam_role_policy" "bagger-nvm_task_get_s3_preservica" {
-  role   = "${module.bagger-nvm.task_role_name}"
+  role   = "${module.bagger.task_role_name}"
   policy = "${data.aws_iam_policy_document.bagger_preservica_read.json}"
 }

@@ -101,6 +101,6 @@ module "ingests" {
 # Link
 
 resource "aws_api_gateway_vpc_link" "link" {
-  name        = "${var.namespace}_vpc_link"
+  name        = "${var.namespace}-api_vpc_link"
   target_arns = ["${module.nlb.arn}"]
 }

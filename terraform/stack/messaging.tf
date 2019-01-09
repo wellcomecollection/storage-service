@@ -8,7 +8,7 @@ module "ingests_topic" {
   role_names = [
     "${module.ingests.task_role_name}",
     "${module.bags.task_role_name}",
-    "${module.archivist-nvm.task_role_name}",
+    "${module.archivist.task_role_name}",
     "${module.notifier.task_role_name}",
   ]
 }
@@ -52,7 +52,7 @@ module "archivist_queue" {
   account_id = "${var.current_account_id}"
 
   role_names = [
-    "${module.archivist-nvm.task_role_name}",
+    "${module.archivist.task_role_name}",
   ]
 
   visibility_timeout_seconds = "3600"
@@ -69,7 +69,7 @@ module "bags_topic" {
   namespace = "${var.namespace}_bags"
 
   role_names = [
-    "${module.archivist-nvm.task_role_name}",
+    "${module.archivist.task_role_name}",
   ]
 }
 
@@ -128,7 +128,7 @@ module "bagger_queue" {
 
   aws_region = "${var.aws_region}"
   account_id = "${var.current_account_id}"
-  role_names = ["${module.bagger-nvm.task_role_name}"]
+  role_names = ["${module.bagger.task_role_name}"]
 
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
@@ -137,7 +137,7 @@ module "bagging_complete_topic" {
   source = "../modules/topic"
 
   namespace  = "${var.namespace}_bagging_complete"
-  role_names = ["${module.bagger-nvm.task_role_name}"]
+  role_names = ["${module.bagger.task_role_name}"]
 }
 
 # Messaging - bag_replicator

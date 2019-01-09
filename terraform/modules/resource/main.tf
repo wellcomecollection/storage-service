@@ -49,7 +49,7 @@ module "auth_subresource_integration" {
   resource_id   = "${module.auth_subresource.resource_id}"
   connection_id = "${var.connection_id}"
 
-  hostname    = "www.example.com"
+  hostname    = "${var.hostname}"
   http_method = "${module.auth_subresource.http_method}"
 
   forward_port = "${var.forward_port}"

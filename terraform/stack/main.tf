@@ -1,6 +1,6 @@
 # archivist
 
-module "archivist-nvm" {
+module "archivist" {
   source = "../modules/service/worker+nvm"
 
   service_egress_security_group_id = "${var.service_egress_security_group_id}"
@@ -9,7 +9,7 @@ module "archivist-nvm" {
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets                          = "${var.private_subnets}"
   vpc_id                           = "${var.vpc_id}"
-  service_name                     = "${var.namespace}-archivist-nvm"
+  service_name                     = "${var.namespace}-archivist"
   aws_region                       = "${var.aws_region}"
 
   env_vars = {
@@ -38,7 +38,7 @@ module "bags" {
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets                          = "${var.private_subnets}"
   vpc_id                           = "${var.vpc_id}"
-  service_name                     = "${var.namespace}-bags_async"
+  service_name                     = "${var.namespace}-bags"
   aws_region                       = "${var.aws_region}"
 
   env_vars = {
@@ -128,7 +128,7 @@ module "ingests" {
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
   vpc_id       = "${var.vpc_id}"
-  service_name = "${var.namespace}-ingests_async"
+  service_name = "${var.namespace}-ingests"
   aws_region   = "${var.aws_region}"
 
   env_vars = {
@@ -155,7 +155,7 @@ module "api" {
   domain_name      = "${var.domain_name}"
   cert_domain_name = "${var.cert_domain_name}"
 
-  namespace     = "${var.namespace}-api"
+  namespace     = "${var.namespace}"
   namespace_id  = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   namespace_tld = "${aws_service_discovery_private_dns_namespace.namespace.name}"
 
@@ -203,7 +203,7 @@ module "api" {
 
 # Migration services
 
-module "bagger-nvm" {
+module "bagger" {
   source = "../modules/service/worker+nvm"
 
   service_egress_security_group_id = "${var.service_egress_security_group_id}"
@@ -212,7 +212,7 @@ module "bagger-nvm" {
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets                          = "${var.private_subnets}"
   vpc_id                           = "${var.vpc_id}"
-  service_name                     = "${var.namespace}-bagger-nvm"
+  service_name                     = "${var.namespace}-bagger"
   aws_region                       = "${var.aws_region}"
 
   env_vars = {

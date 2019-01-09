@@ -1,7 +1,7 @@
 module "ingests" {
   source = "../../../modules/service/api"
 
-  namespace = "${var.namespace}-ingests"
+  namespace = "${var.namespace}-ingests-api"
 
   container_image = "${var.ingests_container_image}"
   container_port  = "${var.ingests_container_port}"
