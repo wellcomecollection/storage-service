@@ -49,3 +49,5 @@ variable "static_content_bucket_name" {}
 variable "interservice_security_group_id" {}
 
 variable "domain_name" {}
+
+variable "cert_domain_name" {}
