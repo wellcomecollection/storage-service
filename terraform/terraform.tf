@@ -15,7 +15,7 @@ provider "aws" {
   }
 
   region  = "${var.aws_region}"
-  version = "1.42.0"
+  version = "1.54.0"
 }
 
 data "terraform_remote_state" "infra_shared" {
