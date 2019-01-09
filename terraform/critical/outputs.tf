@@ -89,3 +89,7 @@ output "repo_url_bag_replicator" {
 output "repo_url_bagger" {
   value = "${module.ecr_bagger.repository_url}"
 }
+
+output "repo_url_nginx_api_gw" {
+  value = "${module.nginx_api_gw.repository_url}"
+}

@@ -10,7 +10,8 @@ locals {
     "${data.aws_subnet.private_new.*.cidr_block}",
   ]
 
-  domain_name = "api-stage.wellcomecollection.org"
+  domain_name = "storage.api-stage.wellcomecollection.org"
+  cert_domain_name = "storage.api.wellcomecollection.org"
 
   vpc_id          = "${data.terraform_remote_state.infra_shared.storage_vpc_id}"
   private_subnets = "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets}"
@@ -31,6 +32,7 @@ locals {
   notifier_image       = "${module.critical.repo_url_notifier}:${var.release_ids["notifier"]}"
   bag_replicator_image = "${module.critical.repo_url_bag_replicator}:${var.release_ids["bag_replicator"]}"
   bagger_image         = "${module.critical.repo_url_bagger}:${var.release_ids["bagger"]}"
+  nginx_api_gw_image   = "${module.critical.repo_url_nginx_api_gw}:${var.release_ids["nginx_api_gw"]}"
 
   nginx_image = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/nginx_api-gw:bad0dbfa548874938d16496e313b05adb71268b7"
 

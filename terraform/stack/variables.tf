@@ -1,6 +1,7 @@
 variable "namespace" {}
 
 variable "domain_name" {}
+variable "cert_domain_name" {}
 
 variable "lambda_error_alarm_arn" {}
 variable "dlq_alarm_arn" {}
@@ -56,8 +57,8 @@ variable "notifier_image" {}
 variable "ingests_image" {}
 variable "ingests_api_image" {}
 variable "bagger_image" {}
-variable "nginx_image" {}
 variable "bag_replicator_image" {}
+variable "nginx_image" {}
 
 # Configuration
 

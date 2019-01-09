@@ -37,3 +37,8 @@ module "ecr_bagger" {
   source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
   name   = "bagger"
 }
+
+module "nginx_api_gw" {
+  source = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v1.0.0"
+  name   = "nginx_api-gw"
+}
