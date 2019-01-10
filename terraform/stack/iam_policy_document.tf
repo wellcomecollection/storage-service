@@ -121,6 +121,7 @@ data "aws_iam_policy_document" "storage_dlcs_read" {
 data "aws_iam_policy_document" "storage_archive_read" {
   statement {
     actions = [
+      "s3:ListBucket",
       "s3:GetObject*",
     ]
 
@@ -128,7 +129,7 @@ data "aws_iam_policy_document" "storage_archive_read" {
       # Allow archivist to read bagger drop bucket
       "arn:aws:s3:::${var.ingest_drop_bucket_name}/*",
 
-      # Allow archivist to read our archive ingest bucket
+      # Allow archivist to read our archive bucket
       "arn:aws:s3:::${var.archive_bucket_name}",
 
       "arn:aws:s3:::${var.archive_bucket_name}/*",
@@ -145,6 +146,19 @@ data "aws_iam_policy_document" "storage_archive_readwrite" {
 
     resources = [
       "arn:aws:s3:::${var.archive_bucket_name}/*",
+    ]
+  }
+}
+
+data "aws_iam_policy_document" "storage_access_readwrite" {
+  statement {
+    actions = [
+      "s3:PutObject*",
+      "s3:GetObject*",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.access_bucket_name}/*",
     ]
   }
 }

@@ -75,9 +75,9 @@ module "bag_replicator" {
   aws_region   = "${var.aws_region}"
 
   env_vars = {
-    queue_url = "${module.bag_replicator_queue.url}"
+    queue_url               = "${module.bag_replicator_queue.url}"
     destination_bucket_name = "${var.access_bucket_name}"
-    progress_topic_arn = "${module.ingests_topic.arn}"
+    progress_topic_arn      = "${module.ingests_topic.arn}"
   }
 
   env_vars_length = 3
@@ -172,10 +172,10 @@ module "api" {
   bags_container_image = "${var.bags_api_image}"
   bags_container_port  = "9001"
   bags_env_vars = {
-    context_url     = "https://api.wellcomecollection.org/storage/v1/context.json"
+    context_url     = "${var.api_url}/context.json"
+    app_base_url    = "${var.api_url}/storage/v1/bags"
     vhs_bucket_name = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name  = "${var.vhs_archive_manifest_table_name}"
-    app_base_url    = "https://api.wellcomecollection.org/storage/v1/bags"
   }
   bags_env_vars_length       = 4
   bags_nginx_container_image = "${var.nginx_image}"
@@ -186,8 +186,8 @@ module "api" {
   ingests_container_image = "${var.ingests_api_image}"
   ingests_container_port  = "9001"
   ingests_env_vars = {
-    context_url                 = "https://api.wellcomecollection.org/storage/v1/context.json"
-    app_base_url                = "https://api.wellcomecollection.org/storage/v1/ingests"
+    context_url                 = "${var.api_url}/context.json"
+    app_base_url                = "${var.api_url}/storage/v1/ingests"
     topic_arn                   = "${module.ingest_requests_topic.arn}"
     archive_progress_table_name = "${var.ingests_table_name}"
 
