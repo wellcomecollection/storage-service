@@ -1,3 +1,9 @@
+resource "aws_api_gateway_base_path_mapping" "mapping" {
+  api_id           = "${module.stack.api_gateway_id}"
+  domain_name      = "${local.domain_name}"
+  base_path        = "storage"
+}
+
 module "critical" {
   source = "critical"
 
@@ -15,6 +21,7 @@ module "stack" {
   namespace = "${local.namespace}-030119"
 
   domain_name = "${local.domain_name}"
+  cert_domain_name = "${local.cert_domain_name}"
 
   vpc_id   = "${local.vpc_id}"
   vpc_cidr = "${local.vpc_cidr}"
@@ -46,7 +53,7 @@ module "stack" {
   bags_api_image       = "${local.bags_api_image}"
   archivist_image      = "${local.archivist_image}"
   notifier_image       = "${local.notifier_image}"
-  nginx_image          = "${local.nginx_image}"
+  nginx_image          = "${local.nginx_api_gw_image}"
   bagger_image         = "${local.bagger_image}"
   bag_replicator_image = "${local.bag_replicator_image}"
 

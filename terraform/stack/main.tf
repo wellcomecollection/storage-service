@@ -152,7 +152,8 @@ module "api" {
   cluster_name = "${aws_ecs_cluster.cluster.name}"
   subnets      = "${var.private_subnets}"
 
-  domain_name = "${var.domain_name}"
+  domain_name      = "${var.domain_name}"
+  cert_domain_name = "${var.cert_domain_name}"
 
   namespace     = "${var.namespace}-api"
   namespace_id  = "${aws_service_discovery_private_dns_namespace.namespace.id}"
