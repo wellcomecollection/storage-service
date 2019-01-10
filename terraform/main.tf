@@ -1,7 +1,7 @@
 resource "aws_api_gateway_base_path_mapping" "mapping" {
-  api_id           = "${module.stack.api_gateway_id}"
-  domain_name      = "${local.domain_name}"
-  base_path        = "storage"
+  api_id      = "${module.stack.api_gateway_id}"
+  domain_name = "${local.domain_name}"
+  base_path   = "storage"
 }
 
 module "critical" {
@@ -20,7 +20,8 @@ module "stack" {
 
   namespace = "${local.namespace}-030119"
 
-  domain_name = "${local.domain_name}"
+  api_url          = "${local.api_url}"
+  domain_name      = "${local.domain_name}"
   cert_domain_name = "${local.cert_domain_name}"
 
   vpc_id   = "${local.vpc_id}"

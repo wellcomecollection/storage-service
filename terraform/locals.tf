@@ -10,7 +10,8 @@ locals {
     "${data.aws_subnet.private_new.*.cidr_block}",
   ]
 
-  domain_name = "storage.api-stage.wellcomecollection.org"
+  api_url          = "https://api-stage.wellcomecollection.org"
+  domain_name      = "storage.api-stage.wellcomecollection.org"
   cert_domain_name = "storage.api.wellcomecollection.org"
 
   vpc_id          = "${data.terraform_remote_state.infra_shared.storage_vpc_id}"

@@ -1,5 +1,6 @@
 variable "namespace" {}
 
+variable "api_url" {}
 variable "domain_name" {}
 variable "cert_domain_name" {}
 

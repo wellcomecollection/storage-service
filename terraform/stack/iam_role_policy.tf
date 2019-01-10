@@ -10,7 +10,7 @@ resource "aws_iam_role_policy" "bags_vhs_write" {
   policy = "${var.vhs_archive_manifest_full_access_policy_json}"
 }
 
-# archivist-nvm
+# archivist
 
 resource "aws_iam_role_policy" "archivist-nvm_task_store_s3" {
   role   = "${module.archivist-nvm.task_role_name}"
@@ -53,7 +53,19 @@ resource "aws_iam_role_policy" "ingests_archive_progress_table" {
   policy = "${data.aws_iam_policy_document.archive_progress_table_read_write_policy.json}"
 }
 
-# bagger-nvm
+# bag_replicator
+
+resource "aws_iam_role_policy" "bag_replicator_task_read_s3" {
+  role   = "${module.bag_replicator.task_role_name}"
+  policy = "${data.aws_iam_policy_document.storage_archive_read.json}"
+}
+
+resource "aws_iam_role_policy" "bag_replicator_task_store_s3" {
+  role   = "${module.bag_replicator.task_role_name}"
+  policy = "${data.aws_iam_policy_document.storage_access_readwrite.json}"
+}
+
+# bagger
 
 resource "aws_iam_role_policy" "bagger-nvm_task_queue_discovery" {
   role   = "${module.bagger-nvm.task_role_name}"
