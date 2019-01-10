@@ -1,7 +1,7 @@
 module "bags" {
   source = "../../../modules/service/api"
 
-  namespace = "${var.namespace}-bags"
+  namespace = "${var.namespace}-bags-api"
 
   container_image = "${var.bags_container_image}"
   container_port  = "${var.bags_container_port}"
