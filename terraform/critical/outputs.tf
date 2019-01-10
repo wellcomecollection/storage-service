@@ -93,3 +93,7 @@ output "repo_url_bagger" {
 output "repo_url_nginx_api_gw" {
   value = "${module.nginx_api_gw.repository_url}"
 }
+
+output "ssm_parameters" {
+  value = "${local.ssm_params}"
+}
