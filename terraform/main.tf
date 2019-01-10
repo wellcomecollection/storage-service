@@ -68,7 +68,7 @@ module "stack" {
   bagger_dds_api_key                 = "${var.bagger_dds_api_key}"
   bagger_working_directory           = "${var.bagger_working_directory}"
   bagger_dlcs_entry                  = "${var.bagger_dlcs_entry}"
-  bagger_dlcs_api_key                = "${var.bagger_dlcs_api_key}"
+  bagger_dlcs_api_key                = "${module.critical.ssm_parameters["bagger_dlcs_api_key"]}"
   bagger_dlcs_api_secret             = "${var.bagger_dlcs_api_secret}"
   bagger_mets_bucket_name            = "${var.bagger_mets_bucket_name}"
   bagger_dlcs_customer_id            = "${var.bagger_dlcs_customer_id}"
