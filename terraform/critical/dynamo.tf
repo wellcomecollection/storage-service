@@ -1,3 +1,7 @@
+locals {
+  gsi_name = "${var.namespace}-bag-id-index"
+}
+
 resource "aws_dynamodb_table" "ingests" {
   name           = "${var.namespace}-ingests"
   read_capacity  = 1
@@ -20,7 +24,7 @@ resource "aws_dynamodb_table" "ingests" {
   }
 
   global_secondary_index {
-    name               = "${var.namespace}-bag-id-index"
+    name               = "${local.gsi_name}"
     hash_key           = "bagIdIndex"
     range_key          = "createdDate"
     write_capacity     = 1

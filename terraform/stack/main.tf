@@ -176,8 +176,9 @@ module "api" {
     app_base_url    = "${var.api_url}/storage/v1/bags"
     vhs_bucket_name = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name  = "${var.vhs_archive_manifest_table_name}"
+    _JAVA_OPTIONS   = "-Xmx3g"
   }
-  bags_env_vars_length       = 4
+  bags_env_vars_length       = 5
   bags_nginx_container_image = "${var.nginx_image}"
   bags_nginx_container_port  = "9000"
 
@@ -186,14 +187,14 @@ module "api" {
   ingests_container_image = "${var.ingests_api_image}"
   ingests_container_port  = "9001"
   ingests_env_vars = {
-    context_url                 = "${var.api_url}/context.json"
-    app_base_url                = "${var.api_url}/storage/v1/ingests"
-    topic_arn                   = "${module.ingest_requests_topic.arn}"
-    archive_progress_table_name = "${var.ingests_table_name}"
-
-    archive_bag_progress_index_name = "${var.namespace}-bag-progress-index"
+    context_url                     = "${var.api_url}/context.json"
+    app_base_url                    = "${var.api_url}/storage/v1/ingests"
+    topic_arn                       = "${module.ingest_requests_topic.arn}"
+    archive_progress_table_name     = "${var.ingests_table_name}"
+    archive_bag_progress_index_name = "${var.ingests_table_progress_index_name}"
+    _JAVA_OPTIONS                   = "-Xmx3g"
   }
-  ingests_env_vars_length        = 5
+  ingests_env_vars_length        = 6
   ingests_nginx_container_image  = "${var.nginx_image}"
   ingests_nginx_container_port   = "9000"
   static_content_bucket_name     = "${var.static_content_bucket_name}"

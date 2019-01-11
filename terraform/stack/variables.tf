@@ -104,5 +104,6 @@ variable "bag_paths" {
 
 variable "ingests_table_name" {}
 variable "ingests_table_arn" {}
+variable "ingests_table_progress_index_name" {}
 
 variable "workflow_bucket_name" {}

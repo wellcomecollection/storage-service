@@ -88,6 +88,9 @@ module "stack" {
 
   ingests_table_name = "${module.critical.ingests_table_name}"
   ingests_table_arn  = "${module.critical.ingests_table_arn}"
+
+  ingests_table_progress_index_name = "${module.critical.ingests_table_progress_index_name}"
+
   ingest_bucket_name = "${module.critical.ingest_drop_bucket_name}"
 
   archive_oauth_details_enc = "${var.archive_oauth_details_enc}"
@@ -95,6 +98,7 @@ module "stack" {
 
   use_encryption_key_policy = "${module.critical.use_encryption_key_policy}"
 
-  workflow_bucket_name    = "${local.workflow_bucket_name}"
+  workflow_bucket_name = "${local.workflow_bucket_name}"
+
   ingest_drop_bucket_name = "${module.critical.ingest_drop_bucket_name}"
 }

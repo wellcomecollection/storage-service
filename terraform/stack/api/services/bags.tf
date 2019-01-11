@@ -31,4 +31,13 @@ module "bags" {
 
   lb_arn        = "${var.nlb_arn}"
   listener_port = "${var.bags_listener_port}"
+
+  cpu    = 4096
+  memory = 8192
+
+  sidecar_cpu    = 512
+  sidecar_memory = 1024
+
+  app_cpu    = 3584
+  app_memory = 7168
 }

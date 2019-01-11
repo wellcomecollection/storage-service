@@ -26,6 +26,10 @@ output "ingests_table_arn" {
   value = "${aws_dynamodb_table.ingests.arn}"
 }
 
+output "ingests_table_progress_index_name" {
+  value = "${local.gsi_name}"
+}
+
 output "use_encryption_key_policy" {
   value = "${module.kms_key.use_encryption_key_policy}"
 }
