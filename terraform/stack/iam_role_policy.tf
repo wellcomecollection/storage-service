@@ -53,6 +53,13 @@ resource "aws_iam_role_policy" "ingests_archive_progress_table" {
   policy = "${data.aws_iam_policy_document.archive_progress_table_read_write_policy.json}"
 }
 
+# ingests_api aka progress-http
+
+resource "aws_iam_role_policy" "ingests_api_metrics" {
+  role   = "${module.api.ingests_role_name}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+}
+
 # bag_replicator
 
 resource "aws_iam_role_policy" "bag_replicator_task_read_s3" {
