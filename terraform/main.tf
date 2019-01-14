@@ -13,6 +13,11 @@ module "critical" {
   vpc_id = "${local.vpc_id}"
 
   private_cidr_block_ids = ["${local.private_subnet_ids}"]
+
+  service-wt-winnipeg = "${data.terraform_remote_state.infra_shared.service-wt-winnipeg}"
+  service-pl-winslow  = "${data.terraform_remote_state.infra_shared.service-pl-winslow}"
+
+  subnets_ids = ["${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}"]
 }
 
 module "stack" {

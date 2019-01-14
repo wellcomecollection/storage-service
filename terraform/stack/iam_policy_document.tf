@@ -181,11 +181,11 @@ data "aws_iam_policy_document" "ingests_read" {
 data "aws_iam_policy_document" "cloudwatch_put" {
   statement {
     actions = [
-      "cloudwatch:PutMetricData"
+      "cloudwatch:PutMetricData",
     ]
 
     resources = [
-      "*"
+      "*",
     ]
   }
 }
