@@ -8,6 +8,8 @@ resource "aws_dynamodb_table" "ingests" {
   write_capacity = 1
   hash_key       = "id"
 
+  billing_mode = "PAY_PER_REQUEST"
+
   attribute {
     name = "id"
     type = "S"
@@ -24,12 +26,11 @@ resource "aws_dynamodb_table" "ingests" {
   }
 
   global_secondary_index {
-    name               = "${local.gsi_name}"
-    hash_key           = "bagIdIndex"
-    range_key          = "createdDate"
-    write_capacity     = 1
-    read_capacity      = 1
-    projection_type    = "INCLUDE"
+    name            = "${local.gsi_name}"
+    hash_key        = "bagIdIndex"
+    range_key       = "createdDate"
+    projection_type = "INCLUDE"
+
     non_key_attributes = ["bagIdIndex", "id", "createdDate"]
   }
 
@@ -41,20 +42,4 @@ resource "aws_dynamodb_table" "ingests" {
       "write_capacity",
     ]
   }
-}
-
-module "ingests_autoscaling" {
-  source = "git::https://github.com/wellcometrust/terraform.git//autoscaling/dynamodb?ref=v10.2.0"
-
-  table_name = "${aws_dynamodb_table.ingests.name}"
-
-  enable_read_scaling     = true
-  read_target_utilization = 30
-  read_min_capacity       = 1
-  read_max_capacity       = 10
-
-  enable_write_scaling     = true
-  write_target_utilization = 30
-  write_min_capacity       = 1
-  write_max_capacity       = 10
 }

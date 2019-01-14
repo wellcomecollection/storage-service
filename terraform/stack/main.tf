@@ -176,7 +176,7 @@ module "api" {
     app_base_url    = "${var.api_url}/storage/v1/bags"
     vhs_bucket_name = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name  = "${var.vhs_archive_manifest_table_name}"
-    _JAVA_OPTIONS   = "-Xmx3g -Dcom.amazonaws.sdk.enableDefaultMetrics"
+    _JAVA_OPTIONS   = "-Xms3g -Xmx3g -Dcom.amazonaws.sdk.enableDefaultMetrics,cloudwatchRegion=eu-west-1,metricNameSpace=${var.namespace}-bags-api"
   }
   bags_env_vars_length       = 5
   bags_nginx_container_image = "${var.nginx_image}"
@@ -192,7 +192,7 @@ module "api" {
     topic_arn                       = "${module.ingest_requests_topic.arn}"
     archive_progress_table_name     = "${var.ingests_table_name}"
     archive_bag_progress_index_name = "${var.ingests_table_progress_index_name}"
-    _JAVA_OPTIONS                   = "-Xmx3g -Dcom.amazonaws.sdk.enableDefaultMetrics"
+    _JAVA_OPTIONS                   = "-Xms3g -Xmx3g -Dcom.amazonaws.sdk.enableDefaultMetrics,cloudwatchRegion=eu-west-1,metricNameSpace=${var.namespace}-ingests-api"
   }
   ingests_env_vars_length        = 6
   ingests_nginx_container_image  = "${var.nginx_image}"
