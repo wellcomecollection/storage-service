@@ -9,3 +9,8 @@ variable "service-wt-winnipeg" {}
 variable "subnets_ids" {
   type = "list"
 }
+
+variable "billing_mode" {
+  default     = "PAY_PER_REQUEST"
+  description = "Should be either PAY_PER_REQUEST or PROVISIONED"
+}

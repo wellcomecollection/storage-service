@@ -61,3 +61,7 @@ variable "aws_region" {
 variable "launch_type" {
   default = "FARGATE"
 }
+
+variable "task_desired_count" {
+  default = "3"
+}

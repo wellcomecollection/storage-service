@@ -4,6 +4,8 @@ module "service" {
   vpc_id  = "${var.vpc_id}"
   subnets = ["${var.subnets}"]
 
+  task_desired_count = "${var.task_desired_count}"
+
   ecs_cluster_id = "${var.cluster_id}"
 
   service_name = "${var.namespace}"
