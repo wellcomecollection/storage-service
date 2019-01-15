@@ -15,7 +15,7 @@ module "archivist" {
   env_vars = {
     queue_url           = "${module.archivist_queue.url}"
     archive_bucket      = "${var.archive_bucket_name}"
-    registrar_topic_arn = "${module.bags_topic.arn}"
+    registrar_topic_arn = "${module.bag_replicator_topic.arn}"
     progress_topic_arn  = "${module.ingests_topic.arn}"
   }
 
@@ -78,9 +78,10 @@ module "bag_replicator" {
     queue_url               = "${module.bag_replicator_queue.url}"
     destination_bucket_name = "${var.access_bucket_name}"
     progress_topic_arn      = "${module.ingests_topic.arn}"
+    outgoing_topic_arn      = "${module.bags_topic.arn}"
   }
 
-  env_vars_length = 3
+  env_vars_length = 4
 
   container_image = "${var.bag_replicator_image}"
 }
