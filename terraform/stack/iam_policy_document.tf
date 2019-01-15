@@ -189,3 +189,37 @@ data "aws_iam_policy_document" "cloudwatch_put" {
     ]
   }
 }
+
+# bagger
+
+data "aws_iam_policy_document" "bagger_s3_readwrite" {
+  statement {
+    actions = [
+      "s3:*",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.s3_bagger_drop}/*",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:*",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.s3_bagger_drop_mets_only}/*",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:*",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.s3_bagger_errors}/*",
+    ]
+  }
+}

@@ -98,3 +98,8 @@ resource "aws_iam_role_policy" "bagger-nvm_task_get_s3_preservica" {
   role   = "${module.bagger.task_role_name}"
   policy = "${data.aws_iam_policy_document.bagger_preservica_read.json}"
 }
+
+resource "aws_iam_role_policy" "bagger_s3" {
+  role   = "${module.bagger.task_role_name}"
+  policy = "${data.aws_iam_policy_document.bagger_s3_readwrite.json}"
+}

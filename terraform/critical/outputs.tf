@@ -97,3 +97,15 @@ output "repo_url_bagger" {
 output "repo_url_nginx_api_gw" {
   value = "${module.nginx_api_gw.repository_url}"
 }
+
+output "s3_bagger_drop" {
+  value = "${aws_s3_bucket.bagger_drop.arn}"
+}
+
+output "s3_bagger_drop_mets_only" {
+  value = "${aws_s3_bucket.bagger_drop_mets_only.arn}"
+}
+
+output "s3_bagger_errors" {
+  value = "${aws_s3_bucket.bagger_errors.arn}"
+}

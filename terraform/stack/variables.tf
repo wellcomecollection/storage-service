@@ -107,3 +107,9 @@ variable "ingests_table_arn" {}
 variable "ingests_table_progress_index_name" {}
 
 variable "workflow_bucket_name" {}
+
+# bagger buckets
+
+variable "s3_bagger_drop" {}
+variable "s3_bagger_drop_mets_only" {}
+variable "s3_bagger_errors" {}
