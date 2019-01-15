@@ -69,7 +69,7 @@ module "bags_topic" {
   namespace = "${var.namespace}_bags"
 
   role_names = [
-    "${module.archivist.task_role_name}",
+    "${module.bag_replicator.task_role_name}",
   ]
 }
 
@@ -141,12 +141,22 @@ module "bagging_complete_topic" {
 }
 
 # Messaging - bag_replicator
+
+module "bag_replicator_topic" {
+  source = "../modules/topic"
+
+  namespace  = "${var.namespace}_bag_replicator"
+  role_names = [
+    "${module.archivist.task_role_name}",
+  ],
+}
+
 module "bag_replicator_queue" {
   source = "../modules/queue"
 
   namespace = "${replace(var.namespace,"-","")}_bag_replicator"
 
-  topic_names = ["${module.bags_topic.name}"]
+  topic_names = ["${module.bag_replicator_topic.name}"]
 
   aws_region = "${var.aws_region}"
   account_id = "${var.current_account_id}"
