@@ -19,8 +19,8 @@ module "cluster_hosts" {
   cluster_name = "${aws_ecs_cluster.cluster.name}"
 
   asg_min     = "1"
-  asg_desired = "4"
-  asg_max     = "4"
+  asg_desired = "2"
+  asg_max     = "2"
 
   controlled_access_cidr_ingress = ["${var.vpc_cidr}"]
 }
