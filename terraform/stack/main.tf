@@ -248,8 +248,8 @@ module "bagger" {
   cpu    = "1900"
   memory = "14000"
 
-  min_capacity = "5"
-  max_capacity = "5"
+  min_capacity = "11"
+  max_capacity = "11"
 
   container_image = "${var.bagger_image}"
 }
