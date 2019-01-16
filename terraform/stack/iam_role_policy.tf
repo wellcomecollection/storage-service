@@ -39,9 +39,14 @@ resource "aws_iam_role_policy" "bags_vhs" {
   policy = "${var.vhs_archive_manifest_read_policy_json}"
 }
 
+resource "aws_iam_role_policy" "bags_api_metrics" {
+  role   = "${module.api.bags_role_name}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+}
+
 # api.ingests aka progress-http
 
-resource "aws_iam_role_policy" "api-ingests_archive_progress_table" {
+resource "aws_iam_role_policy" "ingests_api_archive_progress_table" {
   role   = "${module.api.ingests_role_name}"
   policy = "${data.aws_iam_policy_document.archive_progress_table_read_write_policy.json}"
 }
