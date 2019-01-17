@@ -59,7 +59,7 @@ module "stack" {
   bags_api_image       = "${local.bags_api_image}"
   archivist_image      = "${local.archivist_image}"
   notifier_image       = "${local.notifier_image}"
-  nginx_image          = "${local.nginx_api_gw_image}"
+  nginx_image          = "${local.nginx_image}"
   bagger_image         = "${local.bagger_image}"
   bag_replicator_image = "${local.bag_replicator_image}"
 
