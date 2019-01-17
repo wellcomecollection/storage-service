@@ -10,6 +10,8 @@ resource "aws_service_discovery_private_dns_namespace" "namespace" {
 module "cluster_hosts" {
   source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/ec2/prebuilt/nvm?ref=v17.1.0"
 
+  image_id = "ami-0de29b072b458b107"
+
   vpc_id   = "${var.vpc_id}"
   key_name = "${var.ssh_key_name}"
   asg_name = "${var.namespace}"
@@ -19,8 +21,8 @@ module "cluster_hosts" {
   cluster_name = "${aws_ecs_cluster.cluster.name}"
 
   asg_min     = "1"
-  asg_desired = "4"
-  asg_max     = "4"
+  asg_desired = "2"
+  asg_max     = "2"
 
   controlled_access_cidr_ingress = ["${var.vpc_cidr}"]
 }
