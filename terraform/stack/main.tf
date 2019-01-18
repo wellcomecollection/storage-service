@@ -17,9 +17,10 @@ module "archivist" {
     archive_bucket      = "${var.archive_bucket_name}"
     registrar_topic_arn = "${module.bag_replicator_topic.arn}"
     progress_topic_arn  = "${module.ingests_topic.arn}"
+    JAVA_OPTS           = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-archivist"
   }
 
-  env_vars_length = 4
+  env_vars_length = 5
 
   cpu    = "1900"
   memory = "14000"
@@ -47,9 +48,10 @@ module "bags" {
     progress_topic_arn = "${module.ingests_topic.arn}"
     vhs_bucket_name    = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name     = "${var.vhs_archive_manifest_table_name}"
+    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bags"
   }
 
-  env_vars_length = 5
+  env_vars_length = 6
 
   container_image = "${var.bags_image}"
 }
@@ -79,9 +81,10 @@ module "bag_replicator" {
     destination_bucket_name = "${var.access_bucket_name}"
     progress_topic_arn      = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bags_topic.arn}"
+    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-replicator"
   }
 
-  env_vars_length = 4
+  env_vars_length = 5
 
   container_image = "${var.bag_replicator_image}"
 }
@@ -110,9 +113,10 @@ module "notifier" {
     context_url        = "https://api.wellcomecollection.org/storage/v1/context.json"
     notifier_queue_url = "${module.notifier_queue.url}"
     progress_topic_arn = "${module.ingests_topic.arn}"
+    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-notifier"
   }
 
-  env_vars_length = 3
+  env_vars_length = 4
 
   container_image = "${var.notifier_image}"
 }
@@ -136,9 +140,10 @@ module "ingests" {
     queue_url                   = "${module.ingests_queue.url}"
     topic_arn                   = "${module.notifier_topic.arn}"
     archive_progress_table_name = "${var.ingests_table_name}"
+    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests"
   }
 
-  env_vars_length = 3
+  env_vars_length = 4
 
   container_image = "${var.ingests_image}"
 }
@@ -177,7 +182,7 @@ module "api" {
     app_base_url    = "${var.api_url}/storage/v1/bags"
     vhs_bucket_name = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name  = "${var.vhs_archive_manifest_table_name}"
-    JAVA_OPTS       = "-Xms3g -Xmx3g -Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bags-api"
+    JAVA_OPTS       = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bags-api"
   }
   bags_env_vars_length       = 5
   bags_nginx_container_image = "${var.nginx_image}"
@@ -193,7 +198,7 @@ module "api" {
     topic_arn                       = "${module.ingest_requests_topic.arn}"
     archive_progress_table_name     = "${var.ingests_table_name}"
     archive_bag_progress_index_name = "${var.ingests_table_progress_index_name}"
-    JAVA_OPTS                       = "-Xms3g -Xmx3g -Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests-api"
+    JAVA_OPTS                       = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests-api"
   }
   ingests_env_vars_length        = 6
   ingests_nginx_container_image  = "${var.nginx_image}"
