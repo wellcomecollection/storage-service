@@ -17,7 +17,10 @@ module "critical" {
   service-wt-winnipeg = "${data.terraform_remote_state.infra_shared.service-wt-winnipeg}"
   service-pl-winslow  = "${data.terraform_remote_state.infra_shared.service-pl-winslow}"
 
-  subnets_ids = ["${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}"]
+  subnets_ids = [
+    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}",
+    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[2]}"
+  ]
 }
 
 module "stack" {
