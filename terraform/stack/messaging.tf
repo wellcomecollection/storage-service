@@ -9,6 +9,7 @@ module "ingests_topic" {
     "${module.ingests.task_role_name}",
     "${module.bags.task_role_name}",
     "${module.archivist.task_role_name}",
+    "${module.bag_replicator.task_role_name}",
     "${module.notifier.task_role_name}",
   ]
 }
