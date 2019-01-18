@@ -145,10 +145,11 @@ module "bagging_complete_topic" {
 module "bag_replicator_topic" {
   source = "../modules/topic"
 
-  namespace  = "${var.namespace}_bag_replicator"
+  namespace = "${var.namespace}_bag_replicator"
+
   role_names = [
     "${module.archivist.task_role_name}",
-  ],
+  ]
 }
 
 module "bag_replicator_queue" {

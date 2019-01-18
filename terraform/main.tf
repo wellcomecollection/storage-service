@@ -19,7 +19,7 @@ module "critical" {
 
   subnets_ids = [
     "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}",
-    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[2]}"
+    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[2]}",
   ]
 }
 
