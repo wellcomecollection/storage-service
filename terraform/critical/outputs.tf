@@ -62,10 +62,6 @@ output "interservice_sg_id" {
   value = "${aws_security_group.interservice.id}"
 }
 
-output "repo_url_nginx_api_gw" {
-  value = "${module.nginx_api_gw.repository_url}"
-}
-
 output "s3_bagger_drop" {
   value = "${aws_s3_bucket.bagger_drop.arn}"
 }
