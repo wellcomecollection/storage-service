@@ -113,7 +113,7 @@ module "notifier" {
     context_url        = "https://api.wellcomecollection.org/storage/v1/context.json"
     notifier_queue_url = "${module.notifier_queue.url}"
     progress_topic_arn = "${module.ingests_topic.arn}"
-    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-notifier"
+    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-notifier"
   }
 
   env_vars_length = 4
@@ -140,7 +140,7 @@ module "ingests" {
     queue_url                   = "${module.ingests_queue.url}"
     topic_arn                   = "${module.notifier_topic.arn}"
     archive_progress_table_name = "${var.ingests_table_name}"
-    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests"
+    JAVA_OPTS                   = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests"
   }
 
   env_vars_length = 4
