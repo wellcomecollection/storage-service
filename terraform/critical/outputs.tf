@@ -62,38 +62,6 @@ output "interservice_sg_id" {
   value = "${aws_security_group.interservice.id}"
 }
 
-output "repo_url_archivist" {
-  value = "${module.ecr_archivist.repository_url}"
-}
-
-output "repo_url_bags" {
-  value = "${module.ecr_bags.repository_url}"
-}
-
-output "repo_url_bags_api" {
-  value = "${module.ecr_bags_api.repository_url}"
-}
-
-output "repo_url_ingests" {
-  value = "${module.ecr_ingests.repository_url}"
-}
-
-output "repo_url_ingests_api" {
-  value = "${module.ecr_ingests_api.repository_url}"
-}
-
-output "repo_url_notifier" {
-  value = "${module.ecr_notifier.repository_url}"
-}
-
-output "repo_url_bag_replicator" {
-  value = "${module.ecr_bag_replicator.repository_url}"
-}
-
-output "repo_url_bagger" {
-  value = "${module.ecr_bagger.repository_url}"
-}
-
 output "repo_url_nginx_api_gw" {
   value = "${module.nginx_api_gw.repository_url}"
 }

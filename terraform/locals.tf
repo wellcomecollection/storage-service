@@ -1,8 +1,3 @@
-data "aws_subnet" "private_new" {
-  count = "3"
-  id    = "${element(local.private_subnets, count.index)}"
-}
-
 locals {
   namespace = "storage"
 
@@ -25,15 +20,14 @@ locals {
   lambda_error_alarm_arn         = "${data.terraform_remote_state.infra_shared.lambda_error_alarm_arn}"
   dlq_alarm_arn                  = "${data.terraform_remote_state.infra_shared.dlq_alarm_arn}"
 
-  archivist_image      = "${module.critical.repo_url_archivist}:${var.release_ids["archivist"]}"
-  bags_image           = "${module.critical.repo_url_bags}:${var.release_ids["bags"]}"
-  bags_api_image       = "${module.critical.repo_url_bags_api}:${var.release_ids["bags_api"]}"
-  ingests_image        = "${module.critical.repo_url_ingests}:${var.release_ids["ingests"]}"
-  ingests_api_image    = "${module.critical.repo_url_ingests_api}:${var.release_ids["ingests_api"]}"
-  notifier_image       = "${module.critical.repo_url_notifier}:${var.release_ids["notifier"]}"
-  bag_replicator_image = "${module.critical.repo_url_bag_replicator}:${var.release_ids["bag_replicator"]}"
-  bagger_image         = "${module.critical.repo_url_bagger}:${var.release_ids["bagger"]}"
-  nginx_api_gw_image   = "${module.critical.repo_url_nginx_api_gw}:${var.release_ids["nginx_api_gw"]}"
+  archivist_image = "${data.aws_ssm_parameter.archivist_image.value}"
+  bags_image = "${data.aws_ssm_parameter.bags_image.value}"
+  bags_api_image = "${data.aws_ssm_parameter.bags_api_image.value}"
+  ingests_image = "${data.aws_ssm_parameter.ingests_image.value}"
+  ingests_api_image = "${data.aws_ssm_parameter.ingests_api_image.value}"
+  notifier_image = "${data.aws_ssm_parameter.notifier_image.value}"
+  bagger_image = "${data.aws_ssm_parameter.bagger_image.value}"
+  bag_replicator_image = "${data.aws_ssm_parameter.bag_replicator_image.value}"
 
   nginx_image = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/nginx_api-gw:bad0dbfa548874938d16496e313b05adb71268b7"
 

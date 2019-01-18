@@ -18,6 +18,17 @@ provider "aws" {
   version = "1.55.0"
 }
 
+provider "aws" {
+  alias = "platform"
+
+  assume_role {
+    role_arn = "arn:aws:iam::760097843905:role/developer"
+  }
+
+  region  = "${var.aws_region}"
+  version = "1.55.0"
+}
+
 data "terraform_remote_state" "infra_shared" {
   backend = "s3"
 

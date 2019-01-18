@@ -6,10 +6,6 @@ variable "key_name" {}
 
 variable "admin_cidr_ingress" {}
 
-variable "release_ids" {
-  type = "map"
-}
-
 # Bagger
 
 variable "bagger_mets_bucket_name" {}
