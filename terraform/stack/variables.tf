@@ -72,9 +72,6 @@ variable "static_content_bucket_name" {}
 variable "bagger_mets_bucket_name" {}
 variable "bagger_read_mets_from_fileshare" {}
 variable "bagger_working_directory" {}
-variable "bagger_drop_bucket_name" {}
-variable "bagger_drop_bucket_name_mets_only" {}
-variable "bagger_drop_bucket_name_errors" {}
 variable "bagger_current_preservation_bucket" {}
 variable "bagger_dlcs_source_bucket" {}
 variable "bagger_dlcs_entry" {}
@@ -110,6 +107,10 @@ variable "workflow_bucket_name" {}
 
 # bagger buckets
 
-variable "s3_bagger_drop" {}
-variable "s3_bagger_drop_mets_only" {}
-variable "s3_bagger_errors" {}
+variable "s3_bagger_drop_arn" {}
+variable "s3_bagger_drop_mets_only_arn" {}
+variable "s3_bagger_errors_arn" {}
+
+variable "s3_bagger_drop_name" {}
+variable "s3_bagger_drop_mets_only_name" {}
+variable "s3_bagger_errors_name" {}

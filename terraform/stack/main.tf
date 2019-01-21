@@ -226,9 +226,11 @@ module "bagger" {
     METS_BUCKET_NAME            = "${var.bagger_mets_bucket_name}"
     READ_METS_FROM_FILESHARE    = "${var.bagger_read_mets_from_fileshare}"
     WORKING_DIRECTORY           = "${var.bagger_working_directory}"
-    DROP_BUCKET_NAME            = "${var.bagger_drop_bucket_name}"
-    DROP_BUCKET_NAME_METS_ONLY  = "${var.bagger_drop_bucket_name_mets_only}"
-    DROP_BUCKET_NAME_ERRORS     = "${var.bagger_drop_bucket_name_errors}"
+
+    DROP_BUCKET_NAME            = "${var.s3_bagger_drop_name}"
+    DROP_BUCKET_NAME_METS_ONLY  = "${var.s3_bagger_drop_mets_only_name}"
+    DROP_BUCKET_NAME_ERRORS     = "${var.s3_bagger_errors_name}"
+
     CURRENT_PRESERVATION_BUCKET = "${var.bagger_current_preservation_bucket}"
     DLCS_SOURCE_BUCKET          = "${var.bagger_dlcs_source_bucket}"
     BAGGING_QUEUE               = "${module.bagger_queue.name}"

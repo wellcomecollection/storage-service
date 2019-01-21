@@ -14,12 +14,6 @@ variable "bagger_read_mets_from_fileshare" {}
 
 variable "bagger_working_directory" {}
 
-variable "bagger_drop_bucket_name" {}
-
-variable "bagger_drop_bucket_name_mets_only" {}
-
-variable "bagger_drop_bucket_name_errors" {}
-
 variable "bagger_current_preservation_bucket" {}
 
 variable "bagger_dlcs_source_bucket" {}
