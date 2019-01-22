@@ -18,18 +18,9 @@ variable "instance_type" {}
 variable "vhs_archive_manifest_full_access_policy_json" {}
 variable "vhs_archive_manifest_read_policy_json" {}
 
-# Security groups
-
-variable "service_egress_security_group_id" {}
-variable "interservice_security_group_id" {}
-
 # Network
 
 variable "controlled_access_cidr_ingress" {
-  type = "list"
-}
-
-variable "public_subnets" {
   type = "list"
 }
 

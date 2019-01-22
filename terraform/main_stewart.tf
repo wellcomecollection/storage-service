@@ -1,32 +1,13 @@
-resource "aws_api_gateway_base_path_mapping" "mapping" {
-  api_id      = "${module.stack.api_gateway_id}"
+resource "aws_api_gateway_base_path_mapping" "mapping-stewart" {
+  api_id      = "${module.stack-stewart.api_gateway_id}"
   domain_name = "${local.domain_name}"
   base_path   = "storage"
 }
 
-module "critical" {
-  source = "critical"
-
-  namespace  = "${local.namespace}"
-  account_id = "${local.account_id}"
-
-  vpc_id = "${local.vpc_id}"
-
-  private_cidr_block_ids = ["${local.private_subnet_ids}"]
-
-  service-wt-winnipeg = "${data.terraform_remote_state.infra_shared.service-wt-winnipeg}"
-  service-pl-winslow  = "${data.terraform_remote_state.infra_shared.service-pl-winslow}"
-
-  subnets_ids = [
-    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}",
-    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[2]}",
-  ]
-}
-
-module "stack" {
+module "stack-stewart" {
   source = "stack"
 
-  namespace = "${local.namespace}-030119"
+  namespace = "${local.namespace}-stewart"
 
   api_url          = "${local.api_url}"
   domain_name      = "${local.domain_name}"
@@ -36,22 +17,16 @@ module "stack" {
   vpc_cidr = "${local.vpc_cidr}"
 
   private_subnets = "${local.private_subnets}"
-  public_subnets  = "${local.public_subnets}"
 
-  ssh_key_name = "${var.key_name}"
-
+  ssh_key_name  = "${var.key_name}"
   instance_type = "i3.2xlarge"
-
-  infra_bucket = "${module.critical.infra_bucket_name}"
+  infra_bucket  = "${aws_s3_bucket.infra.id}"
 
   controlled_access_cidr_ingress = ["${var.admin_cidr_ingress}"]
 
   current_account_id     = "${data.aws_caller_identity.current.account_id}"
   lambda_error_alarm_arn = "${local.lambda_error_alarm_arn}"
   dlq_alarm_arn          = "${local.dlq_alarm_arn}"
-
-  service_egress_security_group_id = "${module.critical.service_egress_sg_id}"
-  interservice_security_group_id   = "${module.critical.interservice_sg_id}"
 
   cognito_user_pool_arn          = "${local.cognito_user_pool_arn}"
   cognito_storage_api_identifier = "${local.cognito_storage_api_identifier}"

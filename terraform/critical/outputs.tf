@@ -50,18 +50,6 @@ output "access_bucket_name" {
   value = "${aws_s3_bucket.access.bucket}"
 }
 
-output "infra_bucket_name" {
-  value = "${aws_s3_bucket.infra.bucket}"
-}
-
-output "service_egress_sg_id" {
-  value = "${aws_security_group.service_egress.id}"
-}
-
-output "interservice_sg_id" {
-  value = "${aws_security_group.interservice.id}"
-}
-
 output "s3_bagger_drop_arn" {
   value = "${aws_s3_bucket.bagger_drop.arn}"
 }
@@ -84,4 +72,8 @@ output "s3_bagger_drop_mets_only_name" {
 
 output "s3_bagger_errors_name" {
   value = "${aws_s3_bucket.bagger_errors.id}"
+}
+
+output "kms_key_id" {
+  value = "${module.kms_key.encryption_key_id}"
 }

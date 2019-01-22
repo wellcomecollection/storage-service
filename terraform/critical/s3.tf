@@ -27,19 +27,6 @@ resource "aws_s3_bucket" "access" {
   acl    = "private"
 }
 
-resource "aws_s3_bucket" "infra" {
-  bucket = "wellcomecollection-${var.namespace}-infra"
-  acl    = "private"
-
-  lifecycle {
-    prevent_destroy = true
-  }
-
-  versioning {
-    enabled = true
-  }
-}
-
 resource "aws_s3_bucket" "bagger_drop" {
   bucket = "wellcomecollection-${var.namespace}-bagger-drop"
   acl    = "private"

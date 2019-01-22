@@ -2,23 +2,23 @@ resource "aws_route53_zone" "internal" {
   name = "storage.internal."
 
   vpc {
-    vpc_id = "${var.vpc_id}"
+    vpc_id = "${local.vpc_id}"
   }
 }
 
 # pl-winslow
 
 resource "aws_vpc_endpoint" "pl-winslow" {
-  vpc_id            = "${var.vpc_id}"
-  service_name      = "${var.service-pl-winslow}"
+  vpc_id            = "${local.vpc_id}"
+  service_name      = "${local.service-pl-winslow}"
   vpc_endpoint_type = "Interface"
 
   security_group_ids = [
-    "${aws_security_group.interservice.id}",
+    "${module.stack-colbert.interservice_sg_id}",
   ]
 
   subnet_ids = [
-    "${var.subnets_ids}",
+    "${local.subnets_ids}",
   ]
 
   private_dns_enabled = false
@@ -38,16 +38,16 @@ resource "aws_route53_record" "pl-winslow" {
 # wt-winnipeg
 
 resource "aws_vpc_endpoint" "wt-winnipeg" {
-  vpc_id            = "${var.vpc_id}"
-  service_name      = "${var.service-wt-winnipeg}"
+  vpc_id            = "${local.vpc_id}"
+  service_name      = "${local.service-wt-winnipeg}"
   vpc_endpoint_type = "Interface"
 
   security_group_ids = [
-    "${aws_security_group.interservice.id}",
+    "${module.stack-stewart.interservice_sg_id}",
   ]
 
   subnet_ids = [
-    "${var.subnets_ids}",
+    "${local.subnets_ids}",
   ]
 
   private_dns_enabled = false

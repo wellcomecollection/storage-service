@@ -3,7 +3,7 @@
 module "archivist" {
   source = "../modules/service/worker+nvm"
 
-  service_egress_security_group_id = "${var.service_egress_security_group_id}"
+  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
   cluster_name                     = "${aws_ecs_cluster.cluster.name}"
   cluster_id                       = "${aws_ecs_cluster.cluster.id}"
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
@@ -33,7 +33,7 @@ module "archivist" {
 module "bags" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${var.service_egress_security_group_id}"
+  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
   cluster_name                     = "${aws_ecs_cluster.cluster.name}"
   cluster_id                       = "${aws_ecs_cluster.cluster.id}"
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
@@ -61,11 +61,11 @@ module "bags" {
 module "bag_replicator" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${var.service_egress_security_group_id}"
+  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
 
   security_group_ids = [
-    "${var.interservice_security_group_id}",
-    "${var.service_egress_security_group_id}",
+    "${aws_security_group.interservice.id}",
+    "${aws_security_group.service_egress.id}",
   ]
 
   cluster_name = "${aws_ecs_cluster.cluster.name}"
@@ -94,11 +94,11 @@ module "bag_replicator" {
 module "notifier" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${var.service_egress_security_group_id}"
+  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
 
   security_group_ids = [
-    "${var.interservice_security_group_id}",
-    "${var.service_egress_security_group_id}",
+    "${aws_security_group.interservice.id}",
+    "${aws_security_group.service_egress.id}",
   ]
 
   cluster_name = "${aws_ecs_cluster.cluster.name}"
@@ -126,7 +126,7 @@ module "notifier" {
 module "ingests" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${var.service_egress_security_group_id}"
+  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
   cluster_name                     = "${aws_ecs_cluster.cluster.name}"
   cluster_id                       = "${aws_ecs_cluster.cluster.id}"
 
@@ -204,7 +204,7 @@ module "api" {
   ingests_nginx_container_image  = "${var.nginx_image}"
   ingests_nginx_container_port   = "9000"
   static_content_bucket_name     = "${var.static_content_bucket_name}"
-  interservice_security_group_id = "${var.interservice_security_group_id}"
+  interservice_security_group_id = "${aws_security_group.interservice.id}"
   alarm_topic_arn                = "${var.alarm_topic_arn}"
 }
 
@@ -213,7 +213,7 @@ module "api" {
 module "bagger" {
   source = "../modules/service/worker+nvm"
 
-  service_egress_security_group_id = "${var.service_egress_security_group_id}"
+  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
   cluster_name                     = "${aws_ecs_cluster.cluster.name}"
   cluster_id                       = "${aws_ecs_cluster.cluster.id}"
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"

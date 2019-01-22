@@ -5,8 +5,12 @@ locals {
     "${data.aws_subnet.private_new.*.cidr_block}",
   ]
 
-  api_url          = "https://api.wellcomecollection.org"
-  domain_name      = "storage.api.wellcomecollection.org"
+  api_url     = "https://api.wellcomecollection.org"
+  domain_name = "storage.api.wellcomecollection.org"
+
+  staging_api_url     = "https://api-stage.wellcomecollection.org"
+  staging_domain_name = "storage.api-stage.wellcomecollection.org"
+
   cert_domain_name = "storage.api.wellcomecollection.org"
 
   vpc_id          = "${data.terraform_remote_state.infra_shared.storage_vpc_id}"
@@ -33,5 +37,49 @@ locals {
 
   gateway_server_error_alarm_arn = "${data.terraform_remote_state.infra_shared.gateway_server_error_alarm_arn}"
 
+  service-wt-winnipeg = "${data.terraform_remote_state.infra_shared.service-wt-winnipeg}"
+  service-pl-winslow  = "${data.terraform_remote_state.infra_shared.service-pl-winslow}"
+
+  subnets_ids = [
+    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}",
+    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[2]}",
+  ]
+
   workflow_bucket_name = "wellcomecollection-workflow-export-bagit"
+
+  admin_cidr_ingress = "195.143.129.128/25"
+
+  //  key_name = "wellcomedigitalstorage"
+  //  allowed_principles = ["arn:aws:iam::760097843905:root"]
+  //
+  //  # Bagger configuration
+  //
+  //  bagger_mets_bucket_name = "wellcomecollection-assets-workingstorage"
+  //  bagger_read_mets_from_fileshare = "False"
+  //  bagger_working_directory = "/tmp/_bagger"
+  //  bagger_current_preservation_bucket = "wdl-preservica"
+  //  bagger_dlcs_source_bucket = "dlcs-storage"
+  //
+  //  # DLCS config
+  //  bagger_dlcs_entry = "https://api.dlcs.io/"
+  //  bagger_dlcs_customer_id = "2"
+  //  bagger_dlcs_space = "1"
+  //
+  //  # DLCS secrets
+  //  bagger_dlcs_api_key = "${module.bagger_dlcs_api_key.ssm_param_value}"
+  //  bagger_dlcs_api_secret = "${module.bagger_dlcs_api_secret.ssm_param_value}"
+  //
+  //  # DDS config
+  //  bagger_dds_asset_prefix = "https://wellcomelibrary.org/service/asset/"
+  //
+  //  # DDS secrets
+  //  bagger_dds_api_key = "${module.bagger_dds_api_key.ssm_param_value}"
+  //  bagger_dds_api_secret = "${module.bagger_dds_api_secret.ssm_param_value}"
+  //
+  //  # AWS Secrets
+  //  bagger_aws_access_key_id = "${module.bagger_aws_access_key_id.ssm_param_value}"
+  //  bagger_aws_secret_access_key = "${module.bagger_aws_secret_access_key.ssm_param_value}"
+  //
+  //  # Storage OAuth
+  //  archive_oauth_details_enc = "${module.archive_oauth_details_enc.ssm_param_value}"
 }
