@@ -17,7 +17,7 @@ module "ingests_topic" {
 module "ingests_queue" {
   source = "../modules/queue"
 
-  namespace = "${replace(var.namespace,"-","")}_ingests"
+  namespace = "${var.namespace}_ingests"
 
   topic_names = ["${module.ingests_topic.name}"]
 
@@ -43,7 +43,7 @@ module "ingest_requests_topic" {
 module "archivist_queue" {
   source = "../modules/queue"
 
-  namespace = "${replace(var.namespace,"-","")}_archivist"
+  namespace = "${var.namespace}_archivist"
 
   topic_names = [
     "${module.ingest_requests_topic.name}",
@@ -77,7 +77,7 @@ module "bags_topic" {
 module "bags_queue" {
   source = "../modules/queue"
 
-  namespace = "${replace(var.namespace,"-","")}_bags"
+  namespace = "${var.namespace}_bags"
 
   topic_names = ["${module.bags_topic.name}"]
 
@@ -100,7 +100,7 @@ module "notifier_topic" {
 module "notifier_queue" {
   source = "../modules/queue"
 
-  namespace = "${replace(var.namespace,"-","")}_notifier"
+  namespace = "${var.namespace}_notifier"
 
   topic_names = ["${module.notifier_topic.name}"]
 
@@ -123,7 +123,7 @@ module "bagger_topic" {
 module "bagger_queue" {
   source = "../modules/queue"
 
-  namespace = "${replace(var.namespace,"-","")}_bagger"
+  namespace = "${var.namespace}_bagger"
 
   topic_names = ["${module.bagger_topic.name}"]
 
@@ -156,7 +156,7 @@ module "bag_replicator_topic" {
 module "bag_replicator_queue" {
   source = "../modules/queue"
 
-  namespace = "${replace(var.namespace,"-","")}_bag_replicator"
+  namespace = "${var.namespace}_bag_replicator"
 
   topic_names = ["${module.bag_replicator_topic.name}"]
 
