@@ -236,6 +236,9 @@ module "bagger" {
     BAGGING_QUEUE               = "${module.bagger_queue.name}"
     BAGGING_COMPLETE_TOPIC_ARN  = "${module.bagging_complete_topic.arn}"
 
+    // This value is hard coded as it is not provisioned via terraform
+    DYNAMO_TABLE = "${var.bagger_progress_table}"
+
     AWS_DEFAULT_REGION = "${var.aws_region}"
 
     # DLCS config
@@ -251,7 +254,7 @@ module "bagger" {
     DDS_ASSET_PREFIX = "${var.bagger_dds_asset_prefix}"
   }
 
-  env_vars_length = 19
+  env_vars_length = 20
 
   cpu    = "1900"
   memory = "14000"
