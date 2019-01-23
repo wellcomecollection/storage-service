@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "bagger_progress_table_readwrite" {
     ]
 
     resources = [
-      "${var.bagger_progress_table}",
+      "${var.bagger_progress_table_arn}",
     ]
   }
 
@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "bagger_progress_table_readwrite" {
     ]
 
     resources = [
-      "${var.bagger_progress_table}/index/*",
+      "${var.bagger_progress_table_arn}/index/*",
     ]
   }
 }

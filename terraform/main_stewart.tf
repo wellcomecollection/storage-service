@@ -61,6 +61,7 @@ module "stack-stewart" {
   bagger_dds_api_secret              = "${var.bagger_dds_api_secret}"
   bagger_dds_asset_prefix            = "${var.bagger_dds_asset_prefix}"
   bagger_progress_table              = "${local.bagger_progress_table}"
+  bagger_progress_table_arn          = "${local.bagger_progress_table_arn}"
 
   s3_bagger_drop_arn           = "${module.critical.s3_bagger_drop_arn}"
   s3_bagger_errors_arn         = "${module.critical.s3_bagger_errors_arn}"

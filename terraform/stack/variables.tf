@@ -74,6 +74,7 @@ variable "bagger_dds_api_secret" {}
 variable "bagger_dds_api_key" {}
 variable "bagger_dds_asset_prefix" {}
 variable "bagger_progress_table" {}
+variable "bagger_progress_table_arn" {}
 variable "ingest_drop_bucket_name" {}
 
 variable "cognito_storage_api_identifier" {}
