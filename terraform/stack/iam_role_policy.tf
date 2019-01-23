@@ -106,6 +106,11 @@ resource "aws_iam_role_policy" "notifier_metrics" {
 
 # bagger
 
+resource "aws_iam_role_policy" "bagger_progress_table_readwrite" {
+  role   = "${module.bagger.task_role_name}"
+  policy = "${data.aws_iam_policy_document.bagger_progress_table_readwrite.json}"
+}
+
 resource "aws_iam_role_policy" "bagger_task_queue_discovery" {
   role   = "${module.bagger.task_role_name}"
   policy = "${data.aws_iam_policy_document.bagger_queue_discovery.json}"

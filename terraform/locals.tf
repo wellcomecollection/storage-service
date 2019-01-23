@@ -49,6 +49,12 @@ locals {
 
   admin_cidr_ingress = "195.143.129.128/25"
 
+  bagger_progress_table     = "storage-migration-status"
+  bagger_progress_table_arn = "arn:aws:dynamodb:eu-west-1:975596993436:table/storage-migration-status"
+
+  bagger_progress_table_stage     = "storage-staging-migration-status"
+  bagger_progress_table_stage_arn = "arn:aws:dynamodb:eu-west-1:975596993436:table/storage-staging-migration-status"
+
   //  key_name = "wellcomedigitalstorage"
   //  allowed_principles = ["arn:aws:iam::760097843905:root"]
   //
