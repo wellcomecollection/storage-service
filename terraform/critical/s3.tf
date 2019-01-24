@@ -47,10 +47,11 @@ data "aws_iam_policy_document" "archive_readaccess" {
     actions = [
       "s3:List*",
       "s3:Get*",
+      "s3:Describe*",
     ]
 
     resources = [
-      "${aws_s3_bucket.archive.id}",
+      "${aws_s3_bucket.archive.arn}",
     ]
   }
 }
