@@ -116,7 +116,7 @@ module "notifier_queue" {
 module "bagger_topic" {
   source = "../modules/topic"
 
-  namespace  = "${var.namespace}_notifier"
+  namespace  = "${var.namespace}_bagger"
   role_names = []
 }
 
