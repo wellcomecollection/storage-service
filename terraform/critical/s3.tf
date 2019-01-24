@@ -47,7 +47,6 @@ data "aws_iam_policy_document" "archive_readaccess" {
     actions = [
       "s3:List*",
       "s3:Get*",
-      "s3:Describe*",
     ]
 
     resources = [
