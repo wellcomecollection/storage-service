@@ -16,3 +16,8 @@ variable "billing_mode" {
 }
 
 variable "environment_name" {}
+
+variable "archive_readaccess_principles" {
+  type    = "list"
+  default = []
+}
