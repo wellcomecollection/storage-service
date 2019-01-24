@@ -27,6 +27,35 @@ resource "aws_s3_bucket" "access" {
   acl    = "private"
 }
 
+resource "aws_s3_bucket_policy" "archive_read_access" {
+  bucket = "${aws_s3_bucket.archive.id}"
+  policy = "${data.aws_iam_policy_document.archive_readaccess.json}"
+}
+
+data "aws_iam_policy_document" "archive_readaccess" {
+  statement {
+    actions = [
+      "s3:List*",
+      "s3:Get*",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.archive.arn}",
+      "${aws_s3_bucket.archive.arn}/*",
+    ]
+
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        "${var.archive_readaccess_principles}",
+      ]
+    }
+  }
+}
+
+# bagger
+
 resource "aws_s3_bucket" "bagger_drop" {
   bucket = "wellcomecollection-${var.namespace}-bagger-drop"
   acl    = "private"

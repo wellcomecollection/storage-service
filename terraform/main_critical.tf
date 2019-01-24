@@ -30,6 +30,11 @@ module "critical" {
     "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}",
     "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[2]}",
   ]
+
+  archive_readaccess_principles = [
+    "${local.goobi_task_role_arn}",
+    "${aws_iam_user.dds_digirati.arn}",
+  ]
 }
 
 module "critical-staging" {
@@ -50,6 +55,11 @@ module "critical-staging" {
   subnets_ids = [
     "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}",
     "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[2]}",
+  ]
+
+  archive_readaccess_principles = [
+    "${local.goobi_task_role_arn}",
+    "${aws_iam_user.dds_digirati.arn}",
   ]
 }
 
