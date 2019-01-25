@@ -3,7 +3,7 @@
 module "ingests_topic" {
   source = "../modules/topic"
 
-  namespace = "${var.namespace}_ingests"
+  name = "${var.namespace}_ingests"
 
   role_names = [
     "${module.ingests.task_role_name}",
@@ -17,7 +17,7 @@ module "ingests_topic" {
 module "ingests_queue" {
   source = "../modules/queue"
 
-  namespace = "${var.namespace}_ingests"
+  name = "${var.namespace}_ingests"
 
   topic_names = ["${module.ingests_topic.name}"]
 
@@ -36,14 +36,14 @@ module "ingests_queue" {
 module "ingest_requests_topic" {
   source = "../modules/topic"
 
-  namespace  = "${var.namespace}_ingest_requests"
+  name  = "${var.namespace}_ingest_requests"
   role_names = ["${module.api.ingests_role_name}"]
 }
 
 module "archivist_queue" {
   source = "../modules/queue"
 
-  namespace = "${var.namespace}_archivist"
+  name = "${var.namespace}_archivist"
 
   topic_names = [
     "${module.ingest_requests_topic.name}",
@@ -67,7 +67,7 @@ module "archivist_queue" {
 module "bags_topic" {
   source = "../modules/topic"
 
-  namespace = "${var.namespace}_bags"
+  name = "${var.namespace}_bags"
 
   role_names = [
     "${module.bag_replicator.task_role_name}",
@@ -77,7 +77,7 @@ module "bags_topic" {
 module "bags_queue" {
   source = "../modules/queue"
 
-  namespace = "${var.namespace}_bags"
+  name = "${var.namespace}_bags"
 
   topic_names = ["${module.bags_topic.name}"]
 
@@ -93,14 +93,14 @@ module "bags_queue" {
 module "notifier_topic" {
   source = "../modules/topic"
 
-  namespace  = "${var.namespace}_notifier"
+  name  = "${var.namespace}_notifier"
   role_names = ["${module.ingests.task_role_name}"]
 }
 
 module "notifier_queue" {
   source = "../modules/queue"
 
-  namespace = "${var.namespace}_notifier"
+  name = "${var.namespace}_notifier"
 
   topic_names = ["${module.notifier_topic.name}"]
 
@@ -116,14 +116,14 @@ module "notifier_queue" {
 module "bagger_topic" {
   source = "../modules/topic"
 
-  namespace  = "${var.namespace}_notifier"
+  name  = "${var.namespace}_bagger"
   role_names = []
 }
 
 module "bagger_queue" {
   source = "../modules/queue"
 
-  namespace = "${var.namespace}_bagger"
+  name = "${var.namespace}_bagger"
 
   topic_names = ["${module.bagger_topic.name}"]
 
@@ -137,7 +137,7 @@ module "bagger_queue" {
 module "bagging_complete_topic" {
   source = "../modules/topic"
 
-  namespace  = "${var.namespace}_bagging_complete"
+  name  = "${var.namespace}_bagging_complete"
   role_names = ["${module.bagger.task_role_name}"]
 }
 
@@ -146,7 +146,7 @@ module "bagging_complete_topic" {
 module "bag_replicator_topic" {
   source = "../modules/topic"
 
-  namespace = "${var.namespace}_bag_replicator"
+  name = "${var.namespace}_bag_replicator"
 
   role_names = [
     "${module.archivist.task_role_name}",
@@ -156,7 +156,7 @@ module "bag_replicator_topic" {
 module "bag_replicator_queue" {
   source = "../modules/queue"
 
-  namespace = "${var.namespace}_bag_replicator"
+  name = "${var.namespace}_bag_replicator"
 
   topic_names = ["${module.bag_replicator_topic.name}"]
 
