@@ -55,6 +55,7 @@ variable "nginx_image" {}
 # Configuration
 
 variable "archive_bucket_name" {}
+variable "archivist_queue_parallelism" {}
 variable "access_bucket_name" {}
 variable "vhs_archive_manifest_bucket_name" {}
 variable "vhs_archive_manifest_table_name" {}

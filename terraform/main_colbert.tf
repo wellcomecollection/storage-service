@@ -42,6 +42,7 @@ module "stack-colbert" {
   bag_replicator_image = "${local.bag_replicator_image}"
 
   archive_bucket_name              = "${module.critical-staging.archive_bucket_name}"
+  archivist_queue_parallelism      = "${var.archivist_queue_parallelism}"
   access_bucket_name               = "${module.critical-staging.access_bucket_name}"
   static_content_bucket_name       = "${module.critical-staging.static_content_bucket_name}"
   vhs_archive_manifest_table_name  = "${module.critical-staging.manifests_table_name}"
