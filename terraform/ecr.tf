@@ -100,7 +100,7 @@ resource "aws_ecr_repository_policy" "callback_stub_server" {
 data "aws_iam_policy_document" "platform_put_images" {
   statement {
     actions = [
-      "ecr:*"
+      "ecr:*",
     ]
 
     principals {
