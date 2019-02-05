@@ -36,7 +36,7 @@ module "ingests_queue" {
 module "ingest_requests_topic" {
   source = "../modules/topic"
 
-  name  = "${var.namespace}_ingest_requests"
+  name       = "${var.namespace}_ingest_requests"
   role_names = ["${module.api.ingests_role_name}"]
 }
 
@@ -93,7 +93,7 @@ module "bags_queue" {
 module "notifier_topic" {
   source = "../modules/topic"
 
-  name  = "${var.namespace}_notifier"
+  name       = "${var.namespace}_notifier"
   role_names = ["${module.ingests.task_role_name}"]
 }
 
@@ -116,7 +116,7 @@ module "notifier_queue" {
 module "bagger_topic" {
   source = "../modules/topic"
 
-  name  = "${var.namespace}_bagger"
+  name       = "${var.namespace}_bagger"
   role_names = []
 }
 
@@ -137,7 +137,7 @@ module "bagger_queue" {
 module "bagging_complete_topic" {
   source = "../modules/topic"
 
-  name  = "${var.namespace}_bagging_complete"
+  name       = "${var.namespace}_bagging_complete"
   role_names = ["${module.bagger.task_role_name}"]
 }
 

@@ -13,12 +13,12 @@ module "archivist" {
   aws_region                       = "${var.aws_region}"
 
   env_vars = {
-    queue_url                = "${module.archivist_queue.url}"
-    queue_parallelism        = "${var.archivist_queue_parallelism}"
-    archive_bucket           = "${var.archive_bucket_name}"
-    next_service_topic_arn   = "${module.bag_replicator_topic.arn}"
-    progress_topic_arn       = "${module.ingests_topic.arn}"
-    JAVA_OPTS                = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-archivist"
+    queue_url              = "${module.archivist_queue.url}"
+    queue_parallelism      = "${var.archivist_queue_parallelism}"
+    archive_bucket         = "${var.archive_bucket_name}"
+    next_service_topic_arn = "${module.bag_replicator_topic.arn}"
+    progress_topic_arn     = "${module.ingests_topic.arn}"
+    JAVA_OPTS              = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-archivist"
   }
 
   env_vars_length = 6
