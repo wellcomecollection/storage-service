@@ -13,6 +13,8 @@ variable "current_account_id" {}
 variable "ssh_key_name" {}
 variable "instance_type" {}
 
+variable "release_label" {}
+
 # IAM
 
 variable "vhs_archive_manifest_full_access_policy_json" {}
@@ -42,14 +44,6 @@ variable "use_encryption_key_policy" {}
 
 # Container images
 
-variable "archivist_image" {}
-variable "bags_image" {}
-variable "bags_api_image" {}
-variable "notifier_image" {}
-variable "ingests_image" {}
-variable "ingests_api_image" {}
-variable "bagger_image" {}
-variable "bag_replicator_image" {}
 variable "nginx_image" {}
 
 # Configuration

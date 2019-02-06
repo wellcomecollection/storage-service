@@ -26,7 +26,7 @@ module "archivist" {
   cpu    = "1900"
   memory = "14000"
 
-  container_image = "${var.archivist_image}"
+  container_image = "${local.archivist_image}"
 }
 
 # bags aka registrar-async
@@ -54,7 +54,7 @@ module "bags" {
 
   env_vars_length = 6
 
-  container_image = "${var.bags_image}"
+  container_image = "${local.bags_image}"
 }
 
 # bag_replicator
@@ -87,7 +87,7 @@ module "bag_replicator" {
 
   env_vars_length = 5
 
-  container_image = "${var.bag_replicator_image}"
+  container_image = "${local.bag_replicator_image}"
 }
 
 # notifier
@@ -119,7 +119,7 @@ module "notifier" {
 
   env_vars_length = 4
 
-  container_image = "${var.notifier_image}"
+  container_image = "${local.notifier_image}"
 }
 
 # ingests aka progress-async
@@ -146,7 +146,7 @@ module "ingests" {
 
   env_vars_length = 4
 
-  container_image = "${var.ingests_image}"
+  container_image = "${local.ingests_image}"
 }
 
 # Storage API
@@ -176,7 +176,7 @@ module "api" {
 
   # Bags endpoint
 
-  bags_container_image = "${var.bags_api_image}"
+  bags_container_image = "${local.bags_api_image}"
   bags_container_port  = "9001"
   bags_env_vars = {
     context_url     = "${var.api_url}/context.json"
@@ -191,7 +191,7 @@ module "api" {
 
   # Ingests endpoint
 
-  ingests_container_image = "${var.ingests_api_image}"
+  ingests_container_image = "${local.ingests_api_image}"
   ingests_container_port  = "9001"
   ingests_env_vars = {
     context_url                     = "${var.api_url}/context.json"
@@ -265,7 +265,7 @@ module "bagger" {
 
   desired_task_count = "4"
 
-  container_image = "${var.bagger_image}"
+  container_image = "${local.bagger_image}"
 }
 
 module "trigger_bag_ingest" {

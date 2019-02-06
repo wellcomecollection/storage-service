@@ -31,15 +31,8 @@ module "stack-colbert" {
   cognito_user_pool_arn          = "${local.cognito_user_pool_arn}"
   cognito_storage_api_identifier = "${local.cognito_storage_api_identifier}"
 
-  bags_image           = "${local.bags_image}"
-  ingests_image        = "${local.ingests_image}"
-  ingests_api_image    = "${local.ingests_api_image}"
-  bags_api_image       = "${local.bags_api_image}"
-  archivist_image      = "${local.archivist_image}"
-  notifier_image       = "${local.notifier_image}"
-  nginx_image          = "${local.nginx_image}"
-  bagger_image         = "${local.bagger_image}"
-  bag_replicator_image = "${local.bag_replicator_image}"
+  release_label = "stage"
+  nginx_image   = "${local.nginx_image}"
 
   archive_bucket_name              = "${module.critical-staging.archive_bucket_name}"
   archivist_queue_parallelism      = "${var.archivist_queue_parallelism}"

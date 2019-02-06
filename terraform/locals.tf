@@ -24,15 +24,6 @@ locals {
   lambda_error_alarm_arn         = "${data.terraform_remote_state.infra_shared.lambda_error_alarm_arn}"
   dlq_alarm_arn                  = "${data.terraform_remote_state.infra_shared.dlq_alarm_arn}"
 
-  archivist_image      = "${data.aws_ssm_parameter.archivist_image.value}"
-  bags_image           = "${data.aws_ssm_parameter.bags_image.value}"
-  bags_api_image       = "${data.aws_ssm_parameter.bags_api_image.value}"
-  ingests_image        = "${data.aws_ssm_parameter.ingests_image.value}"
-  ingests_api_image    = "${data.aws_ssm_parameter.ingests_api_image.value}"
-  notifier_image       = "${data.aws_ssm_parameter.notifier_image.value}"
-  bagger_image         = "${data.aws_ssm_parameter.bagger_image.value}"
-  bag_replicator_image = "${data.aws_ssm_parameter.bag_replicator_image.value}"
-
   nginx_image = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/nginx_api-gw:bad0dbfa548874938d16496e313b05adb71268b7"
 
   gateway_server_error_alarm_arn = "${data.terraform_remote_state.infra_shared.gateway_server_error_alarm_arn}"
@@ -56,38 +47,4 @@ locals {
   bagger_progress_table_stage_arn = "arn:aws:dynamodb:eu-west-1:975596993436:table/storage-staging-migration-status"
 
   goobi_task_role_arn = "arn:aws:iam::299497370133:role/goobi_task_role"
-
-  //  key_name = "wellcomedigitalstorage"
-  //  allowed_principles = ["arn:aws:iam::760097843905:root"]
-  //
-  //  # Bagger configuration
-  //
-  //  bagger_mets_bucket_name = "wellcomecollection-assets-workingstorage"
-  //  bagger_read_mets_from_fileshare = "False"
-  //  bagger_working_directory = "/tmp/_bagger"
-  //  bagger_current_preservation_bucket = "wdl-preservica"
-  //  bagger_dlcs_source_bucket = "dlcs-storage"
-  //
-  //  # DLCS config
-  //  bagger_dlcs_entry = "https://api.dlcs.io/"
-  //  bagger_dlcs_customer_id = "2"
-  //  bagger_dlcs_space = "1"
-  //
-  //  # DLCS secrets
-  //  bagger_dlcs_api_key = "${module.bagger_dlcs_api_key.ssm_param_value}"
-  //  bagger_dlcs_api_secret = "${module.bagger_dlcs_api_secret.ssm_param_value}"
-  //
-  //  # DDS config
-  //  bagger_dds_asset_prefix = "https://wellcomelibrary.org/service/asset/"
-  //
-  //  # DDS secrets
-  //  bagger_dds_api_key = "${module.bagger_dds_api_key.ssm_param_value}"
-  //  bagger_dds_api_secret = "${module.bagger_dds_api_secret.ssm_param_value}"
-  //
-  //  # AWS Secrets
-  //  bagger_aws_access_key_id = "${module.bagger_aws_access_key_id.ssm_param_value}"
-  //  bagger_aws_secret_access_key = "${module.bagger_aws_secret_access_key.ssm_param_value}"
-  //
-  //  # Storage OAuth
-  //  archive_oauth_details_enc = "${module.archive_oauth_details_enc.ssm_param_value}"
 }
