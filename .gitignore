@@ -10,3 +10,5 @@
 
 .idea
 *.iml
+
+docker_run.py

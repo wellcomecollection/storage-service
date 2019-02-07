@@ -1,0 +1,15 @@
+{
+  "environments": [
+    {
+      "id": "stage",
+      "name": "Staging"
+    },
+    {
+      "id": "prod",
+      "name": "Production"
+    }
+  ],
+  "id": "storage",
+  "name": "Storage service",
+  "profile": "platform-dev"
+}
