@@ -161,8 +161,8 @@ class ArchiveZipFileFlowTest
                   Sink.seq)
 
               whenReady(verification) { result =>
-                result shouldBe List(
-                  Left(BagNotFoundError("'bag-info.txt' not found.", ingestContext)))
+                result shouldBe List(Left(
+                  BagNotFoundError("'bag-info.txt' not found.", ingestContext)))
 
                 assertTopicReceivesProgressStatusUpdate(
                   ingestContext.id,
