@@ -78,8 +78,8 @@ class BagsApiFeatureTest
                         DisplayBagInfo(
                           externalIdentifierString,
                           payloadOxum,
-                          sourceOrganization,
                           baggingDate,
+                          sourceOrganization,
                           _,
                           _,
                           _,
@@ -110,7 +110,7 @@ class BagsApiFeatureTest
                       storageSpaceName shouldBe space.underlying
                       externalIdentifierString shouldBe bagInfo.externalIdentifier.underlying
                       payloadOxum shouldBe s"${bagInfo.payloadOxum.payloadBytes}.${bagInfo.payloadOxum.numberOfPayloadFiles}"
-                      sourceOrganization shouldBe bagInfo.sourceOrganisation.underlying
+                      sourceOrganization shouldBe bagInfo.sourceOrganisation.map(_.underlying)
                       baggingDate shouldBe bagInfo.baggingDate.format(
                         DateTimeFormatter.ISO_LOCAL_DATE)
 
