@@ -12,20 +12,22 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.dynamo._
 
-import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.concurrent.{blocking, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class ProgressTracker(
   dynamoDbClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig
-)(implicit ec: ExecutionContext) extends Logging {
+)(implicit ec: ExecutionContext)
+    extends Logging {
 
   val versionedDao = new VersionedDao(
     dynamoDbClient = dynamoDbClient,
     dynamoConfig = dynamoConfig
   )
 
-  def get(id: UUID): Future[Option[Progress]] = versionedDao.getRecord[Progress](id.toString)
+  def get(id: UUID): Future[Option[Progress]] =
+    versionedDao.getRecord[Progress](id.toString)
 
   def initialise(progress: Progress): Future[Progress] = {
     val progressTable = Table[Progress](dynamoConfig.table)
@@ -61,10 +63,12 @@ class ProgressTracker(
       case _: ProgressEventUpdate =>
         eventsUpdate
       case statusUpdate: ProgressStatusUpdate =>
-        val bagUpdate = statusUpdate.affectedBag.map(bag =>
-          set('bag -> bag) and set('bagIdIndex -> bag.toString)).toList
+        val bagUpdate = statusUpdate.affectedBag
+          .map(bag => set('bag -> bag) and set('bagIdIndex -> bag.toString))
+          .toList
 
-        (List(eventsUpdate, set('status -> statusUpdate.status)) ++ bagUpdate).reduce(_ and _)
+        (List(eventsUpdate, set('status -> statusUpdate.status)) ++ bagUpdate)
+          .reduce(_ and _)
       case callbackStatusUpdate: ProgressCallbackStatusUpdate =>
         eventsUpdate and set(
           'callback \ 'status -> callbackStatusUpdate.callbackStatus)
@@ -107,7 +111,7 @@ class ProgressTracker(
     * Returns at most 30 associated ingests with most recent first -- to simplify the code by avoiding
     * pagination, but still fulfilling DLCS's requirements.
     */
-  def findByBagId(bagId: BagId)= {
+  def findByBagId(bagId: BagId) = {
     val query = Table[BagIngest](dynamoConfig.table)
       .index(dynamoConfig.index)
       .limit(30)

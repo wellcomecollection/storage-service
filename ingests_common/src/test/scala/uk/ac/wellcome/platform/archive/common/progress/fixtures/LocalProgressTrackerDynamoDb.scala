@@ -20,10 +20,9 @@ trait LocalProgressTrackerDynamoDb extends LocalDynamoDb {
     dynamoDbClient.createTable(
       new CreateTableRequest()
         .withTableName(table.name)
-        .withKeySchema(
-          new KeySchemaElement()
-            .withAttributeName("id")
-            .withKeyType(KeyType.HASH))
+        .withKeySchema(new KeySchemaElement()
+          .withAttributeName("id")
+          .withKeyType(KeyType.HASH))
         .withAttributeDefinitions(
           new AttributeDefinition()
             .withAttributeName("id")
@@ -39,23 +38,26 @@ trait LocalProgressTrackerDynamoDb extends LocalDynamoDb {
           new GlobalSecondaryIndex()
             .withIndexName(table.index)
             .withProjection(
-              new Projection().withProjectionType(ProjectionType.INCLUDE)
-                .withNonKeyAttributes(List("bagIdIndex", "id", "createdDate").asJava)
-            ).withKeySchema(
+              new Projection()
+                .withProjectionType(ProjectionType.INCLUDE)
+                .withNonKeyAttributes(
+                  List("bagIdIndex", "id", "createdDate").asJava)
+            )
+            .withKeySchema(
               new KeySchemaElement()
                 .withAttributeName("bagIdIndex")
                 .withKeyType(KeyType.HASH),
-            new KeySchemaElement()
-              .withAttributeName("createdDate")
-              .withKeyType(KeyType.RANGE)
-            ).withProvisionedThroughput(
-            new ProvisionedThroughput()
+              new KeySchemaElement()
+                .withAttributeName("createdDate")
+                .withKeyType(KeyType.RANGE)
+            )
+            .withProvisionedThroughput(new ProvisionedThroughput()
               .withReadCapacityUnits(1L)
               .withWriteCapacityUnits(1L))
-        ).withProvisionedThroughput(
-          new ProvisionedThroughput()
-            .withReadCapacityUnits(1L)
-            .withWriteCapacityUnits(1L))
+        )
+        .withProvisionedThroughput(new ProvisionedThroughput()
+          .withReadCapacityUnits(1L)
+          .withWriteCapacityUnits(1L))
     )
     eventually {
       waitUntilActive(dynamoDbClient, table.name)

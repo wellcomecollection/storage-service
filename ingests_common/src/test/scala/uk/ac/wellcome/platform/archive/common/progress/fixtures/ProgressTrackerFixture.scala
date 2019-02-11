@@ -22,7 +22,8 @@ trait ProgressTrackerFixture
 
   def createTable(table: LocalDynamoDb.Table): Table = Table("table", "index")
 
-  def withProgressTracker[R](table: Table, dynamoDbClient: AmazonDynamoDB = dynamoDbClient)(
+  def withProgressTracker[R](table: Table,
+                             dynamoDbClient: AmazonDynamoDB = dynamoDbClient)(
     testWith: TestWith[ProgressTracker, R]): R = {
     val progressTracker = new ProgressTracker(
       dynamoDbClient = dynamoDbClient,
@@ -32,7 +33,8 @@ trait ProgressTrackerFixture
   }
 
   def assertProgressCreated(progress: Progress, table: Table): Progress = {
-    val storedProgress = getExistingTableItem[Progress](progress.id.toString, table)
+    val storedProgress =
+      getExistingTableItem[Progress](progress.id.toString, table)
     storedProgress.sourceLocation shouldBe progress.sourceLocation
 
     assertRecent(storedProgress.createdDate, recentSeconds = 45)
