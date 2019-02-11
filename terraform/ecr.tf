@@ -6,7 +6,7 @@ module "ecr_repository_archivist" {
 
 resource "aws_ecr_repository_policy" "archivist" {
   repository = "${module.ecr_repository_archivist.name}"
-  policy     = "${data.aws_iam_policy_document.platform_put_images.json}"
+  policy     = "${data.aws_iam_policy_document.storage_get_images.json}"
 }
 
 module "ecr_repository_bags" {
@@ -17,7 +17,7 @@ module "ecr_repository_bags" {
 
 resource "aws_ecr_repository_policy" "bags" {
   repository = "${module.ecr_repository_bags.name}"
-  policy     = "${data.aws_iam_policy_document.platform_put_images.json}"
+  policy     = "${data.aws_iam_policy_document.storage_get_images.json}"
 }
 
 module "ecr_repository_bags_api" {
@@ -28,7 +28,7 @@ module "ecr_repository_bags_api" {
 
 resource "aws_ecr_repository_policy" "bags_api" {
   repository = "${module.ecr_repository_bags_api.name}"
-  policy     = "${data.aws_iam_policy_document.platform_put_images.json}"
+  policy     = "${data.aws_iam_policy_document.storage_get_images.json}"
 }
 
 module "ecr_repository_ingests" {
@@ -39,7 +39,7 @@ module "ecr_repository_ingests" {
 
 resource "aws_ecr_repository_policy" "ingests" {
   repository = "${module.ecr_repository_ingests.name}"
-  policy     = "${data.aws_iam_policy_document.platform_put_images.json}"
+  policy     = "${data.aws_iam_policy_document.storage_get_images.json}"
 }
 
 module "ecr_repository_ingests_api" {
@@ -50,7 +50,7 @@ module "ecr_repository_ingests_api" {
 
 resource "aws_ecr_repository_policy" "ingests_api" {
   repository = "${module.ecr_repository_ingests_api.name}"
-  policy     = "${data.aws_iam_policy_document.platform_put_images.json}"
+  policy     = "${data.aws_iam_policy_document.storage_get_images.json}"
 }
 
 module "ecr_repository_notifier" {
@@ -61,7 +61,7 @@ module "ecr_repository_notifier" {
 
 resource "aws_ecr_repository_policy" "notifier" {
   repository = "${module.ecr_repository_notifier.name}"
-  policy     = "${data.aws_iam_policy_document.platform_put_images.json}"
+  policy     = "${data.aws_iam_policy_document.storage_get_images.json}"
 }
 
 module "ecr_repository_bag_replicator" {
@@ -72,7 +72,7 @@ module "ecr_repository_bag_replicator" {
 
 resource "aws_ecr_repository_policy" "bag_replicator" {
   repository = "${module.ecr_repository_bag_replicator.name}"
-  policy     = "${data.aws_iam_policy_document.platform_put_images.json}"
+  policy     = "${data.aws_iam_policy_document.storage_get_images.json}"
 }
 
 module "ecr_repository_bagger" {
@@ -83,7 +83,7 @@ module "ecr_repository_bagger" {
 
 resource "aws_ecr_repository_policy" "bagger" {
   repository = "${module.ecr_repository_bagger.name}"
-  policy     = "${data.aws_iam_policy_document.platform_put_images.json}"
+  policy     = "${data.aws_iam_policy_document.storage_get_images.json}"
 }
 
 module "ecr_repository_callback_stub_server" {
@@ -94,17 +94,19 @@ module "ecr_repository_callback_stub_server" {
 
 resource "aws_ecr_repository_policy" "callback_stub_server" {
   repository = "${module.ecr_repository_callback_stub_server.name}"
-  policy     = "${data.aws_iam_policy_document.platform_put_images.json}"
+  policy     = "${data.aws_iam_policy_document.storage_get_images.json}"
 }
 
-data "aws_iam_policy_document" "platform_put_images" {
+data "aws_iam_policy_document" "storage_get_images" {
   statement {
     actions = [
-      "ecr:*",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "ecr:BatchCheckLayerAvailability",
     ]
 
     principals {
-      identifiers = ["arn:aws:iam::760097843905:root"]
+      identifiers = ["arn:aws:iam::975596993436:root"]
       type        = "AWS"
     }
   }
