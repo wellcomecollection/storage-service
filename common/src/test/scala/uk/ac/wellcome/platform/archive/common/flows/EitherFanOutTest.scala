@@ -4,7 +4,7 @@ import akka.stream.FlowShape
 import akka.stream.scaladsl.{Flow, GraphDSL, Sink, Source}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.test.fixtures.Akka
+import uk.ac.wellcome.akka.fixtures.Akka
 
 class EitherFanOutTest
     extends FunSpec

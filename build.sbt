@@ -28,7 +28,8 @@ def setupProject(
 }
 
 lazy val common = setupProject(project, "common",
-  externalDependencies = StorageDependencies.sharedDependencies)
+  externalDependencies = StorageDependencies.commonDependencies
+)
 
 lazy val display = setupProject(project, "display",
   localDependencies = Seq(common)

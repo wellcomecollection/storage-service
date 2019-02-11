@@ -7,6 +7,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks.{forAll, _}
 import org.scalatest.{FunSpec, Inside, Matchers}
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.{
   ProgressGenerators,
@@ -17,7 +18,6 @@ import uk.ac.wellcome.platform.archive.common.progress.models.{
   ProgressCallbackStatusUpdate
 }
 import uk.ac.wellcome.platform.archive.notifier.fixtures.NotifierGenerators
-import uk.ac.wellcome.test.fixtures.Akka
 
 class PrepareNotificationFlowTest
     extends FunSpec

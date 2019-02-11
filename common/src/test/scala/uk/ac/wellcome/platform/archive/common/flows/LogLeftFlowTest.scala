@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.archive.common.flows
 import akka.stream.scaladsl.{Sink, Source}
 import org.scalatest.{FunSpec, Matchers}
 import org.scalatest.concurrent.ScalaFutures
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.progress.models.FailedEvent
-import uk.ac.wellcome.test.fixtures.Akka
 
 class LogLeftFlowTest
     extends FunSpec
