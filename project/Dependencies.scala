@@ -93,7 +93,9 @@ object ExternalDependencies {
 
 object StorageDependencies {
   val sharedDependencies =
-    ExternalDependencies.akkaDependencies ++
     WellcomeDependencies.messagingTypesafeLibrary ++
-    ExternalDependencies.cloudwatchMetricsDependencies
+    ExternalDependencies.cloudwatchMetricsDependencies ++
+    ExternalDependencies.akkaDependencies ++
+    ExternalDependencies.mockitoDependencies ++
+    ExternalDependencies.scalatestDependencies
 }
