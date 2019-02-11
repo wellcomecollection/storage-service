@@ -4,7 +4,7 @@ export REGISTRY_ID  = 975596993436
 include makefiles/functions.Makefile
 include makefiles/formatting.Makefile
 
-STACK_ROOT 	= storage
+STACK_ROOT 	= .
 
 SBT_APPS 	 =
 SBT_SSM_APPS = notifier \
