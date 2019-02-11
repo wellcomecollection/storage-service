@@ -1,0 +1,86 @@
+jobs:
+  include:
+    - stage: preflight
+      env: TASK=travis-format
+
+    - stage: libraries
+      env: TASK=storage_display-test
+    - env: TASK=storage_common-test
+    - env: TASK=ingests_common-test
+    - env: TASK=bags_common-test
+
+    - stage: services
+      env: TASK=archivist-test
+    - env: TASK=ingests-test
+    - env: TASK=ingests_api-test
+    - env: TASK=bags-test
+    - env: TASK=bags_api-test
+    - env: TASK=notifier-test
+    - env: TASK=bagger-publish
+
+script:
+  # Wait 45 minutes for the entire build to finish.  Primarily this stops the
+  # build timing out if we're taking a really long time to compile something.
+  # See https://docs.travis-ci.com/user/common-build-problems/#build-times-out-because-no-output-was-received
+  - travis_wait 45 ./run_travis.sh
+
+cache:
+  directories:
+    - $HOME/.sbt
+    - $HOME/.ivy2/cache
+    - project/target
+    - target
+
+    - archivist/target
+    - common/target
+    - display/target
+    - notifier/target
+    - ingests/target
+    - ingests_common/target
+    - ingests_api/target
+    - bags/target
+    - bags_common/target
+    - bags_api/target
+    - bag_replicator/target
+
+stages:
+  - preflight
+  - libraries
+  - services
+
+before_install:
+  - openssl aes-256-cbc -K $encrypted_83630750896a_key -iv $encrypted_83630750896a_iv -in secrets.zip.enc -out secrets.zip -d
+  - unzip secrets.zip
+  - chmod 600 id_rsa
+  - mkdir -p ~/.aws
+  - cp config ~/.aws/config
+  - cp credentials ~/.aws/credentials
+
+language: sh
+
+services:
+  - docker
+
+dist: trusty
+
+branches:
+  only:
+    - master
+
+# Based on instructions from
+# https://www.scala-sbt.org/1.0/docs/Travis-CI-with-sbt.html#Caching
+before_cache:
+  - sudo find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - sudo find $HOME/.sbt        -name "*.lock"               -print -delete
+
+env:
+  global:
+    # This forces Python to print everything to stdout/stderr immediately.
+    # Otherwise, we've seen issues where all the output from our Travis scripts
+    # gets buffered, and only gets printed at the end of the test...
+    #
+    # ... out of order from the rest of the rest of the output!
+    #
+    # See also: https://docs.python.org/3/using/cmdline.html#cmdoption-u
+    #
+    - PYTHONUNBUFFERED=x

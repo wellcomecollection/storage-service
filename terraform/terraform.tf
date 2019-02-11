@@ -1,35 +1,30 @@
-terraform {
-  backend "s3" {
-    role_arn = "arn:aws:iam::975596993436:role/developer"
+# Terraform
 
-    bucket         = "wellcomecollection-storage-infra"
-    key            = "terraform/storage.tfstate"
+terraform {
+  required_version = ">= 0.9"
+
+  backend "s3" {
+    role_arn = "arn:aws:iam::760097843905:role/developer"
+
+    bucket         = "wellcomecollection-platform-infra"
+    key            = "terraform/archive.tfstate"
     dynamodb_table = "terraform-locktable"
     region         = "eu-west-1"
   }
 }
 
 provider "aws" {
-  assume_role {
-    role_arn = "arn:aws:iam::975596993436:role/developer"
-  }
-
-  region  = "${var.aws_region}"
-  version = "1.55.0"
-}
-
-provider "aws" {
-  alias = "platform"
+  region  = "eu-west-1"
+  version = "1.42.0"
 
   assume_role {
     role_arn = "arn:aws:iam::760097843905:role/developer"
   }
-
-  region  = "${var.aws_region}"
-  version = "1.55.0"
 }
 
-data "terraform_remote_state" "infra_shared" {
+# Data
+
+data "terraform_remote_state" "shared_infra" {
   backend = "s3"
 
   config {
@@ -52,5 +47,3 @@ data "terraform_remote_state" "infra_critical" {
     region = "eu-west-1"
   }
 }
-
-data "aws_caller_identity" "current" {}

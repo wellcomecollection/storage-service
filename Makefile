@@ -1,21 +1,30 @@
-docker_run.py:
-	wget https://raw.githubusercontent.com/wellcometrust/docker_run/v1.0/docker_run.py
-	chmod u+x docker_run.py
+export ECR_BASE_URI = 975596993436.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome
+export REGISTRY_ID  = 975596993436
 
-prepare-release: docker_run.py
-	./docker_run.py --root --aws -- -it wellcome/release_tooling:54 prepare
+include makefiles/functions.Makefile
+include makefiles/formatting.Makefile
 
-deploy-release: docker_run.py
-	./docker_run.py --root --aws -- -it wellcome/release_tooling:54 deploy
+STACK_ROOT 	= storage
 
-show-release: docker_run.py
-	./docker_run.py --root --aws -- -it wellcome/release_tooling:54 show-release
+SBT_APPS 	 =
+SBT_SSM_APPS = notifier \
+               archivist \
+               ingests \
+               ingests_api \
+               bags \
+               bags_api \
+               bag_replicator
 
-recent-deployments: docker_run.py
-	./docker_run.py --root --aws -- -it wellcome/release_tooling:54 recent-deployments
+SBT_DOCKER_LIBRARIES    = storage_common ingests_common
+SBT_NO_DOCKER_LIBRARIES = bags_common storage_display
 
-terraform-init:
-	./docker_run.py --root --aws -- -it --workdir=$(PWD)/terraform hashicorp/terraform:0.11.11 init
+PYTHON_SSM_APPS = bagger
+PYTHON_APPS     =
+LAMBDAS 	    = lambdas/trigger_bag_ingest
 
-terraform-apply:
-	./docker_run.py --root --aws -- -it --workdir=$(PWD)/terraform hashicorp/terraform:0.11.11 apply
+TF_NAME = storage
+TF_PATH = $(STACK_ROOT)/terraform
+
+TF_IS_PUBLIC_FACING = true
+
+$(val $(call stack_setup))
