@@ -6,10 +6,6 @@ object Common {
     scalaVersion := "2.12.6",
     organization := "uk.ac.wellcome",
 
-    // We have to do this slightly awkward configuration of resolvers because
-    // we have a small number of releases on Maven Central with conflicting
-    // version numbers -- we *don't* want to pick those up, we want our
-    // S3-published packages first.
     resolvers ++= Seq("S3 releases" at "s3://releases.mvn-repo.wellcomecollection.org/"),
 
     scalacOptions ++= Seq(

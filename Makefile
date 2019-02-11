@@ -15,8 +15,8 @@ SBT_SSM_APPS = notifier \
                bags_api \
                bag_replicator
 
-SBT_DOCKER_LIBRARIES    = storage_common ingests_common
-SBT_NO_DOCKER_LIBRARIES = bags_common storage_display
+SBT_DOCKER_LIBRARIES    = common ingests_common
+SBT_NO_DOCKER_LIBRARIES = bags_common display
 
 PYTHON_SSM_APPS = bagger
 PYTHON_APPS     =
