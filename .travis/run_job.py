@@ -27,14 +27,10 @@ def make(*args):
     check_call(["make"] + list(args))
 
 
-def should_run_sbt_project(project_name, changed_paths):
-    repo = Repository(".sbt_metadata")
+def should_run_sbt_project(repo, project_name, changed_paths):
     project = repo.get_project(project_name)
 
     interesting_paths = [p for p in changed_paths if not p.startswith(".sbt_metadata")]
-
-    print("*** Affected paths:")
-    print("\n".join(interesting_paths) + "\n")
 
     if ".travis.yml" in interesting_paths:
         print("*** Relevant: .travis.yml")
@@ -54,7 +50,11 @@ def should_run_sbt_project(project_name, changed_paths):
             continue
 
         if path.endswith("Makefile"):
-            return os.path.dirname(project.folder) == os.path.dirname(path)
+            if os.path.dirname(project.folder) == os.path.dirname(path):
+                print("*** %s is defined by %s" % (project.name, path))
+                return True
+            else:
+                continue
 
         try:
             project_for_path = repo.lookup_path(path)
@@ -64,8 +64,10 @@ def should_run_sbt_project(project_name, changed_paths):
             return True
         else:
             if project.depends_on(project_for_path):
-                print("*** %s depends on %s" % (project, project_for_path))
+                print("*** %s depends on %s" % (project.name, project_for_path.name))
                 return True
+
+        print("*** Not significant: %s" % path)
 
     return False
 
@@ -81,13 +83,15 @@ if __name__ == "__main__":
     except KeyError:
         sbt_project_name = os.environ["SBT_PROJECT"]
 
+        repo = Repository(".sbt_metadata")
+
         if travis_event_type == "pull_request":
             changed_paths = get_changed_paths("HEAD", "master")
         else:
             git("fetch", "origin")
             changed_paths = get_changed_paths(os.environ["TRAVIS_COMMIT_RANGE"])
 
-        if should_run_sbt_project(sbt_project_name, changed_paths=changed_paths):
+        if should_run_sbt_project(repo, sbt_project_name, changed_paths=changed_paths):
             task = "%s-test" % sbt_project_name
         else:
             print(
