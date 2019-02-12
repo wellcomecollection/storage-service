@@ -14,10 +14,3 @@ variable "billing_mode" {
   default     = "PAY_PER_REQUEST"
   description = "Should be either PAY_PER_REQUEST or PROVISIONED"
 }
-
-variable "environment_name" {}
-
-variable "archive_readaccess_principles" {
-  type    = "list"
-  default = []
-}

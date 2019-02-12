@@ -1,4 +1,4 @@
-variable "name" {}
+variable "namespace" {}
 variable "aws_region" {}
 
 variable "topic_names" {

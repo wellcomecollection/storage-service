@@ -26,3 +26,16 @@ module "cluster_hosts" {
 
   controlled_access_cidr_ingress = ["${var.vpc_cidr}"]
 }
+
+module "bastion" {
+  source = "git::https://github.com/wellcometrust/terraform.git//ec2/prebuilt/bastion?ref=v17.1.0"
+
+  vpc_id = "${var.vpc_id}"
+
+  name = "${var.namespace}-bastion"
+
+  controlled_access_cidr_ingress = "${var.controlled_access_cidr_ingress}"
+
+  key_name    = "${var.ssh_key_name}"
+  subnet_list = "${var.public_subnets}"
+}

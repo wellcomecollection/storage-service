@@ -3,7 +3,7 @@
 module "archivist" {
   source = "../modules/service/worker+nvm"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
+  service_egress_security_group_id = "${var.service_egress_security_group_id}"
   cluster_name                     = "${aws_ecs_cluster.cluster.name}"
   cluster_id                       = "${aws_ecs_cluster.cluster.id}"
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
@@ -13,20 +13,18 @@ module "archivist" {
   aws_region                       = "${var.aws_region}"
 
   env_vars = {
-    queue_url              = "${module.archivist_queue.url}"
-    queue_parallelism      = "${var.archivist_queue_parallelism}"
-    archive_bucket         = "${var.archive_bucket_name}"
-    next_service_topic_arn = "${module.bag_replicator_topic.arn}"
-    progress_topic_arn     = "${module.ingests_topic.arn}"
-    JAVA_OPTS              = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-archivist"
+    queue_url           = "${module.archivist_queue.url}"
+    archive_bucket      = "${var.archive_bucket_name}"
+    registrar_topic_arn = "${module.bag_replicator_topic.arn}"
+    progress_topic_arn  = "${module.ingests_topic.arn}"
   }
 
-  env_vars_length = 6
+  env_vars_length = 4
 
   cpu    = "1900"
   memory = "14000"
 
-  container_image = "${local.archivist_image}"
+  container_image = "${var.archivist_image}"
 }
 
 # bags aka registrar-async
@@ -34,7 +32,7 @@ module "archivist" {
 module "bags" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
+  service_egress_security_group_id = "${var.service_egress_security_group_id}"
   cluster_name                     = "${aws_ecs_cluster.cluster.name}"
   cluster_id                       = "${aws_ecs_cluster.cluster.id}"
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
@@ -49,12 +47,11 @@ module "bags" {
     progress_topic_arn = "${module.ingests_topic.arn}"
     vhs_bucket_name    = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name     = "${var.vhs_archive_manifest_table_name}"
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bags"
   }
 
-  env_vars_length = 6
+  env_vars_length = 5
 
-  container_image = "${local.bags_image}"
+  container_image = "${var.bags_image}"
 }
 
 # bag_replicator
@@ -62,11 +59,11 @@ module "bags" {
 module "bag_replicator" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
+  service_egress_security_group_id = "${var.service_egress_security_group_id}"
 
   security_group_ids = [
-    "${aws_security_group.interservice.id}",
-    "${aws_security_group.service_egress.id}",
+    "${var.interservice_security_group_id}",
+    "${var.service_egress_security_group_id}",
   ]
 
   cluster_name = "${aws_ecs_cluster.cluster.name}"
@@ -82,12 +79,11 @@ module "bag_replicator" {
     destination_bucket_name = "${var.access_bucket_name}"
     progress_topic_arn      = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bags_topic.arn}"
-    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-replicator"
   }
 
-  env_vars_length = 5
+  env_vars_length = 4
 
-  container_image = "${local.bag_replicator_image}"
+  container_image = "${var.bag_replicator_image}"
 }
 
 # notifier
@@ -95,11 +91,11 @@ module "bag_replicator" {
 module "notifier" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
+  service_egress_security_group_id = "${var.service_egress_security_group_id}"
 
   security_group_ids = [
-    "${aws_security_group.interservice.id}",
-    "${aws_security_group.service_egress.id}",
+    "${var.interservice_security_group_id}",
+    "${var.service_egress_security_group_id}",
   ]
 
   cluster_name = "${aws_ecs_cluster.cluster.name}"
@@ -114,12 +110,11 @@ module "notifier" {
     context_url        = "https://api.wellcomecollection.org/storage/v1/context.json"
     notifier_queue_url = "${module.notifier_queue.url}"
     progress_topic_arn = "${module.ingests_topic.arn}"
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-notifier"
   }
 
-  env_vars_length = 4
+  env_vars_length = 3
 
-  container_image = "${local.notifier_image}"
+  container_image = "${var.notifier_image}"
 }
 
 # ingests aka progress-async
@@ -127,7 +122,7 @@ module "notifier" {
 module "ingests" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
+  service_egress_security_group_id = "${var.service_egress_security_group_id}"
   cluster_name                     = "${aws_ecs_cluster.cluster.name}"
   cluster_id                       = "${aws_ecs_cluster.cluster.id}"
 
@@ -141,12 +136,11 @@ module "ingests" {
     queue_url                   = "${module.ingests_queue.url}"
     topic_arn                   = "${module.notifier_topic.arn}"
     archive_progress_table_name = "${var.ingests_table_name}"
-    JAVA_OPTS                   = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests"
   }
 
-  env_vars_length = 4
+  env_vars_length = 3
 
-  container_image = "${local.ingests_image}"
+  container_image = "${var.ingests_image}"
 }
 
 # Storage API
@@ -176,14 +170,14 @@ module "api" {
 
   # Bags endpoint
 
-  bags_container_image = "${local.bags_api_image}"
+  bags_container_image = "${var.bags_api_image}"
   bags_container_port  = "9001"
   bags_env_vars = {
     context_url     = "${var.api_url}/context.json"
     app_base_url    = "${var.api_url}/storage/v1/bags"
     vhs_bucket_name = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name  = "${var.vhs_archive_manifest_table_name}"
-    JAVA_OPTS       = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bags-api"
+    JAVA_OPTS       = "-Xms3g -Xmx3g -Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bags-api"
   }
   bags_env_vars_length       = 5
   bags_nginx_container_image = "${var.nginx_image}"
@@ -191,7 +185,7 @@ module "api" {
 
   # Ingests endpoint
 
-  ingests_container_image = "${local.ingests_api_image}"
+  ingests_container_image = "${var.ingests_api_image}"
   ingests_container_port  = "9001"
   ingests_env_vars = {
     context_url                     = "${var.api_url}/context.json"
@@ -199,13 +193,13 @@ module "api" {
     topic_arn                       = "${module.ingest_requests_topic.arn}"
     archive_progress_table_name     = "${var.ingests_table_name}"
     archive_bag_progress_index_name = "${var.ingests_table_progress_index_name}"
-    JAVA_OPTS                       = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests-api"
+    JAVA_OPTS                       = "-Xms3g -Xmx3g -Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests-api"
   }
   ingests_env_vars_length        = 6
   ingests_nginx_container_image  = "${var.nginx_image}"
   ingests_nginx_container_port   = "9000"
   static_content_bucket_name     = "${var.static_content_bucket_name}"
-  interservice_security_group_id = "${aws_security_group.interservice.id}"
+  interservice_security_group_id = "${var.interservice_security_group_id}"
   alarm_topic_arn                = "${var.alarm_topic_arn}"
 }
 
@@ -214,7 +208,7 @@ module "api" {
 module "bagger" {
   source = "../modules/service/worker+nvm"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
+  service_egress_security_group_id = "${var.service_egress_security_group_id}"
   cluster_name                     = "${aws_ecs_cluster.cluster.name}"
   cluster_id                       = "${aws_ecs_cluster.cluster.id}"
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
@@ -224,21 +218,16 @@ module "bagger" {
   aws_region                       = "${var.aws_region}"
 
   env_vars = {
-    METS_BUCKET_NAME         = "${var.bagger_mets_bucket_name}"
-    READ_METS_FROM_FILESHARE = "${var.bagger_read_mets_from_fileshare}"
-    WORKING_DIRECTORY        = "${var.bagger_working_directory}"
-
-    DROP_BUCKET_NAME           = "${var.s3_bagger_drop_name}"
-    DROP_BUCKET_NAME_METS_ONLY = "${var.s3_bagger_drop_mets_only_name}"
-    DROP_BUCKET_NAME_ERRORS    = "${var.s3_bagger_errors_name}"
-
+    METS_BUCKET_NAME            = "${var.bagger_mets_bucket_name}"
+    READ_METS_FROM_FILESHARE    = "${var.bagger_read_mets_from_fileshare}"
+    WORKING_DIRECTORY           = "${var.bagger_working_directory}"
+    DROP_BUCKET_NAME            = "${var.bagger_drop_bucket_name}"
+    DROP_BUCKET_NAME_METS_ONLY  = "${var.bagger_drop_bucket_name_mets_only}"
+    DROP_BUCKET_NAME_ERRORS     = "${var.bagger_drop_bucket_name_errors}"
     CURRENT_PRESERVATION_BUCKET = "${var.bagger_current_preservation_bucket}"
     DLCS_SOURCE_BUCKET          = "${var.bagger_dlcs_source_bucket}"
     BAGGING_QUEUE               = "${module.bagger_queue.name}"
     BAGGING_COMPLETE_TOPIC_ARN  = "${module.bagging_complete_topic.arn}"
-
-    // This value is hard coded as it is not provisioned via terraform
-    DYNAMO_TABLE = "${var.bagger_progress_table}"
 
     AWS_DEFAULT_REGION = "${var.aws_region}"
 
@@ -255,7 +244,7 @@ module "bagger" {
     DDS_ASSET_PREFIX = "${var.bagger_dds_asset_prefix}"
   }
 
-  env_vars_length = 20
+  env_vars_length = 19
 
   cpu    = "1900"
   memory = "14000"
@@ -265,7 +254,7 @@ module "bagger" {
 
   desired_task_count = "4"
 
-  container_image = "${local.bagger_image}"
+  container_image = "${var.bagger_image}"
 }
 
 module "trigger_bag_ingest" {

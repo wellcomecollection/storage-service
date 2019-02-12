@@ -50,30 +50,62 @@ output "access_bucket_name" {
   value = "${aws_s3_bucket.access.bucket}"
 }
 
-output "s3_bagger_drop_arn" {
+output "infra_bucket_name" {
+  value = "${aws_s3_bucket.infra.bucket}"
+}
+
+output "service_egress_sg_id" {
+  value = "${aws_security_group.service_egress.id}"
+}
+
+output "interservice_sg_id" {
+  value = "${aws_security_group.interservice.id}"
+}
+
+output "repo_url_archivist" {
+  value = "${module.ecr_archivist.repository_url}"
+}
+
+output "repo_url_bags" {
+  value = "${module.ecr_bags.repository_url}"
+}
+
+output "repo_url_bags_api" {
+  value = "${module.ecr_bags_api.repository_url}"
+}
+
+output "repo_url_ingests" {
+  value = "${module.ecr_ingests.repository_url}"
+}
+
+output "repo_url_ingests_api" {
+  value = "${module.ecr_ingests_api.repository_url}"
+}
+
+output "repo_url_notifier" {
+  value = "${module.ecr_notifier.repository_url}"
+}
+
+output "repo_url_bag_replicator" {
+  value = "${module.ecr_bag_replicator.repository_url}"
+}
+
+output "repo_url_bagger" {
+  value = "${module.ecr_bagger.repository_url}"
+}
+
+output "repo_url_nginx_api_gw" {
+  value = "${module.nginx_api_gw.repository_url}"
+}
+
+output "s3_bagger_drop" {
   value = "${aws_s3_bucket.bagger_drop.arn}"
 }
 
-output "s3_bagger_drop_mets_only_arn" {
+output "s3_bagger_drop_mets_only" {
   value = "${aws_s3_bucket.bagger_drop_mets_only.arn}"
 }
 
-output "s3_bagger_errors_arn" {
+output "s3_bagger_errors" {
   value = "${aws_s3_bucket.bagger_errors.arn}"
-}
-
-output "s3_bagger_drop_name" {
-  value = "${aws_s3_bucket.bagger_drop.id}"
-}
-
-output "s3_bagger_drop_mets_only_name" {
-  value = "${aws_s3_bucket.bagger_drop_mets_only.id}"
-}
-
-output "s3_bagger_errors_name" {
-  value = "${aws_s3_bucket.bagger_errors.id}"
-}
-
-output "kms_key_id" {
-  value = "${module.kms_key.encryption_key_id}"
 }
