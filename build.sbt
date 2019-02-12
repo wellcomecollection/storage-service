@@ -1,14 +1,31 @@
 import java.io.File
 
-def setupProject(
-                  project: Project,
-                  folder: String,
-                  localDependencies: Seq[Project] = Seq(),
-                  externalDependencies: Seq[ModuleID] = Seq()
-                ): Project = {
+import scala.util.parsing.json.{JSONArray, JSONObject}
 
-  // And here we actually create the project, with a few convenience wrappers
-  // to make defining projects below cleaner.
+def setupProject(
+  project: Project,
+  folder: String,
+  localDependencies: Seq[Project] = Seq(),
+  externalDependencies: Seq[ModuleID] = Seq()
+): Project = {
+
+  // Here we write a bit of metadata about the project, and the other
+  // local projects it depends on.  This can be used to determine whether
+  // to run tests based on the up-to-date project graph.
+  // See https://www.scala-sbt.org/release/docs/Howto-Generating-Files.html
+  val file = new File(s".sbt_metadata/${project.id}.json")
+  val dependencyIds: List[String] = localDependencies
+    .map { p: Project => p.id }
+    .toList
+
+  val metadata = Map(
+    "id" -> project.id,
+    "folder" -> folder,
+    "dependencyIds" -> JSONArray(dependencyIds)
+  )
+
+  IO.write(file, JSONObject(metadata).toString())
+
   val dependsOn = localDependencies
     .map { project: Project =>
       ClasspathDependency(

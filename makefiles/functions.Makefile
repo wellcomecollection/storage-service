@@ -2,10 +2,6 @@ ROOT = $(shell git rev-parse --show-toplevel)
 INFRA_BUCKET = wellcomecollection-platform-infra
 
 
-export TFVARS_BUCKET = wellcomecollection-platform-infra
-export TFVARS_KEY = terraform.tfvars
-export TFPLAN_BUCKET = wellcomecollection-platform-monitoring
-
 include $(ROOT)/makefiles/terraform.Makefile
 
 
@@ -81,12 +77,13 @@ endef
 define publish_service_ssm
 	$(ROOT)/docker_run.py \
 	    --aws --dind -- \
-	    wellcome/publish_service:51 \
-	        --project_name=$(2) \
-	        --registry_id=$(4) \
+	    wellcome/publish_service:55 \
+	    	--service_id="$(1)" \
+	        --project_id=$(2) \
+	        --account_id=$(3) \
+	        --region_id=eu-west-1 \
+	        --namespace=uk.ac.wellcome \
 	        --label=latest \
-	        --image_name="$(1)" \
-	        --repo_uri="$(3)" \
 
 endef
 
@@ -151,24 +148,6 @@ define docker_compose_down
 		--net host \
 		wellcome/sbt_wrapper \
 		"project $(1)" "dockerComposeDown"
-endef
-
-
-# Define a series of Make tasks (build, test, publish) for a Scala services.
-#
-# Args:
-#	$1 - Name of the project in sbt.
-#	$2 - Root of the project's source code.
-#
-define __sbt_target_template
-$(eval $(call __sbt_base_docker_template,$(1),$(2)))
-
-$(1)-build:
-	$(call sbt_build,$(1))
-	$(call build_image,$(1),$(2)/Dockerfile)
-
-$(1)-publish: $(1)-build
-	$(call publish_service,$(1))
 endef
 
 
@@ -243,49 +222,6 @@ $(1)-publish:
 endef
 
 
-# Define a series of Make tasks (plan, apply) for a Terraform stack.
-#
-# Args:
-#	$1 - Name of the stack.
-#	$2 - Root to the Terraform directory.
-#	$3 - Is this a public-facing stack?  (true/false)
-#
-define __terraform_target_template
-$(1)-terraform-plan:
-	$(call terraform_plan,$(2),$(3))
-
-$(1)-terraform-apply:
-	$(call terraform_apply,$(2))
-
-# These are a pair of dodgy hacks to allow us to run something like:
-#
-#	$ make stack-terraform-import aws_s3_bucket.bucket my-bucket-name
-#
-#	$ make stack-terraform-state-rm aws_s3_bucket.bucket
-#
-# In practice it slightly breaks the conventions of Make (you're not meant to
-# read command-line arguments), but since this is only for one-offs I think
-# it's okay.
-#
-# This is slightly easier than using terraform on the command line, as paths
-# are different in/outside Docker, so you have to reload all your modules,
-# which is slow and boring.
-#
-$(1)-terraform-import:
-	$(ROOT)/docker_run.py --aws -- \
-		--volume $(ROOT):$(ROOT) \
-		--workdir $(ROOT)/$(2) \
-		hashicorp/terraform:0.11.11 import $(filter-out $(1)-terraform-import,$(MAKECMDGOALS))
-
-$(1)-terraform-state-rm:
-	$(ROOT)/docker_run.py --aws -- \
-		--volume $(ROOT):$(ROOT) \
-		--workdir $(ROOT)/$(2) \
-		hashicorp/terraform:0.11.11 state rm $(filter-out $(1)-terraform-state-rm,$(MAKECMDGOALS))
-
-endef
-
-
 # Define a series of Make tasks (test, publish) for a Python Lambda.
 #
 # Args:
@@ -319,14 +255,6 @@ endef
 #   $4 - ECS Base URI
 #   $5 - Registry ID
 #
-define __python_target
-$(1)-build:
-	$(call build_image,$(1),$(2))
-
-$(1)-test:
-	$(call test_python,$(STACK_ROOT)/$(1))
-endef
-
 define __python_ssm_target
 $(1)-build:
 	$(call build_image,$(1),$(2))
@@ -345,7 +273,6 @@ endef
 #
 #	$STACK_ROOT             Path to this stack, relative to the repo root
 #
-#	$SBT_APPS               A space delimited list of sbt apps in this stack
 #	$SBT_DOCKER_LIBRARIES   A space delimited list of sbt libraries  in this stack that use docker compose for tests
 #	$SBT_NO_DOCKER_LIBRARIES   A space delimited list of sbt libraries  in this stack that use docker compose for tests
 #	$PYTHON_APPS              A space delimited list of ECS services
@@ -353,7 +280,6 @@ endef
 #
 #	$TF_NAME                Name of the associated Terraform stack
 #	$TF_PATH                Path to the associated Terraform stack
-#	$TF_IS_PUBLIC_FACING    Is this a public-facing stack?  (true/false)
 #
 define stack_setup
 
@@ -368,12 +294,10 @@ define stack_setup
 # It can't actually be written that way because Make is very sensitive to
 # whitespace, but that's the general idea.
 
-$(foreach proj,$(SBT_APPS),$(eval $(call __sbt_target_template,$(proj),$(STACK_ROOT)/$(proj))))
-$(foreach proj,$(SBT_SSM_APPS),$(eval $(call __sbt_ssm_target_template,$(proj),$(STACK_ROOT)/$(proj),$(STACK_ROOT),$(ECR_BASE_URI),$(REGISTRY_ID))))
+$(foreach proj,$(SBT_APPS),$(eval $(call __sbt_ssm_target_template,$(proj),$(STACK_ROOT)/$(proj),$(PROJECT_ID),$(ACCOUNT_ID))))
 $(foreach library,$(SBT_DOCKER_LIBRARIES),$(eval $(call __sbt_library_docker_template,$(library),$(STACK_ROOT)/$(library))))
 $(foreach library,$(SBT_NO_DOCKER_LIBRARIES),$(eval $(call __sbt_library_template,$(library))))
-$(foreach task,$(PYTHON_APPS),$(eval $(call __python_target,$(task),$(STACK_ROOT)/$(task)/Dockerfile)))
-$(foreach task,$(PYTHON_SSM_APPS),$(eval $(call __python_ssm_target,$(task),$(STACK_ROOT)/$(task)/Dockerfile,$(STACK_ROOT),$(ECR_BASE_URI),$(REGISTRY_ID))))
+$(foreach task,$(PYTHON_APPS),$(eval $(call __python_ssm_target,$(task),$(STACK_ROOT)/$(task)/Dockerfile,$(PROJECT_ID),$(ACCOUNT_ID))))
 $(foreach lamb,$(LAMBDAS),$(eval $(call __lambda_target_template,$(lamb),$(STACK_ROOT)/$(lamb))))
-$(foreach name,$(TF_NAME),$(eval $(call __terraform_target_template,$(TF_NAME),$(TF_PATH),$(TF_IS_PUBLIC_FACING))))
+$(foreach name,$(TF_NAME),$(eval $(call __terraform_target_template,$(TF_NAME),$(TF_PATH))))
 endef
