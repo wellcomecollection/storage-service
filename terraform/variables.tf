@@ -6,10 +6,6 @@ variable "key_name" {}
 
 variable "admin_cidr_ingress" {}
 
-variable "release_ids" {
-  type = "map"
-}
-
 # Bagger
 
 variable "bagger_mets_bucket_name" {}
@@ -17,12 +13,6 @@ variable "bagger_mets_bucket_name" {}
 variable "bagger_read_mets_from_fileshare" {}
 
 variable "bagger_working_directory" {}
-
-variable "bagger_drop_bucket_name" {}
-
-variable "bagger_drop_bucket_name_mets_only" {}
-
-variable "bagger_drop_bucket_name_errors" {}
 
 variable "bagger_current_preservation_bucket" {}
 
@@ -49,5 +39,9 @@ variable "bagger_dds_api_secret" {}
 variable "bagger_dds_asset_prefix" {}
 
 # trigger_bag_ingest
+
+variable "archivist_queue_parallelism" {
+  default = "1"
+}
 
 variable "archive_oauth_details_enc" {}

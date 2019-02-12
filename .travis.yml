@@ -26,6 +26,7 @@ script:
 
 cache:
   directories:
+    - $HOME/docker
     - $HOME/.sbt
     - $HOME/.ivy2/cache
     - project/target
@@ -49,6 +50,8 @@ stages:
   - services
 
 before_install:
+  # Load cached docker images
+  - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
   - openssl aes-256-cbc -K $encrypted_83630750896a_key -iv $encrypted_83630750896a_iv -in secrets.zip.enc -out secrets.zip -d
   - unzip secrets.zip
   - chmod 600 id_rsa
@@ -70,6 +73,10 @@ branches:
 # Based on instructions from
 # https://www.scala-sbt.org/1.0/docs/Travis-CI-with-sbt.html#Caching
 before_cache:
+  # Save tagged docker images
+  - >
+    mkdir -p $HOME/docker && docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}} {{.ID}}'
+    | xargs -n 2 -t sh -c 'test -e $HOME/docker/$1.tar.gz || docker save $0 | gzip -2 > $HOME/docker/$1.tar.gz'
   - sudo find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
   - sudo find $HOME/.sbt        -name "*.lock"               -print -delete
 

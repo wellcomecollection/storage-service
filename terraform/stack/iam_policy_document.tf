@@ -25,6 +25,31 @@ data "aws_iam_policy_document" "archive_progress_table_read_write_policy" {
 
 # Bagger
 
+data "aws_iam_policy_document" "bagger_progress_table_readwrite" {
+  statement {
+    actions = [
+      "dynamodb:UpdateItem",
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:DeleteItem",
+    ]
+
+    resources = [
+      "${var.bagger_progress_table_arn}",
+    ]
+  }
+
+  statement {
+    actions = [
+      "dynamodb:Query",
+    ]
+
+    resources = [
+      "${var.bagger_progress_table_arn}/index/*",
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "bagger_queue_discovery" {
   statement {
     actions = [
@@ -54,15 +79,16 @@ data "aws_iam_policy_document" "bagger_read" {
 data "aws_iam_policy_document" "bagger_readwrite" {
   statement {
     actions = [
+      "s3:DeleteObject*",
       "s3:PutObject*",
       "s3:GetObject*",
     ]
 
     resources = [
       "arn:aws:s3:::${var.ingest_drop_bucket_name}/*",
-      "arn:aws:s3:::${var.bagger_drop_bucket_name}/*",
-      "arn:aws:s3:::${var.bagger_drop_bucket_name_mets_only}/*",
-      "arn:aws:s3:::${var.bagger_drop_bucket_name_errors}/*",
+      "${var.s3_bagger_drop_arn}/*",
+      "${var.s3_bagger_drop_mets_only_arn}/*",
+      "${var.s3_bagger_errors_arn}/*",
     ]
   }
 }
@@ -172,7 +198,7 @@ data "aws_iam_policy_document" "ingests_read" {
 
     resources = [
       "arn:aws:s3:::${var.workflow_bucket_name}/*",
-      "arn:aws:s3:::${var.bagger_drop_bucket_name}/*",
+      "${var.s3_bagger_drop_arn}/*",
       "arn:aws:s3:::${var.ingest_drop_bucket_name}/*",
     ]
   }
@@ -199,7 +225,7 @@ data "aws_iam_policy_document" "bagger_s3_readwrite" {
     ]
 
     resources = [
-      "arn:aws:s3:::${var.s3_bagger_drop}/*",
+      "${var.s3_bagger_drop_arn}/*",
     ]
   }
 
@@ -209,7 +235,7 @@ data "aws_iam_policy_document" "bagger_s3_readwrite" {
     ]
 
     resources = [
-      "arn:aws:s3:::${var.s3_bagger_drop_mets_only}/*",
+      "${var.s3_bagger_drop_mets_only_arn}/*",
     ]
   }
 
@@ -219,7 +245,7 @@ data "aws_iam_policy_document" "bagger_s3_readwrite" {
     ]
 
     resources = [
-      "arn:aws:s3:::${var.s3_bagger_errors}/*",
+      "${var.s3_bagger_errors_arn}/*",
     ]
   }
 }

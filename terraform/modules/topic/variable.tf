@@ -1,4 +1,4 @@
-variable "namespace" {}
+variable "name" {}
 
 variable "role_names" {
   type = "list"
