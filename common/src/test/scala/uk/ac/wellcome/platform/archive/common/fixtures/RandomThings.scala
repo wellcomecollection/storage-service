@@ -11,13 +11,13 @@ import scala.util.Random
 trait RandomThings {
   def randomBagInfo =
     BagInfo(
-      randomExternalIdentifier,
-      randomSourceOrganisation,
-      randomPayloadOxum,
-      randomLocalDate,
-      Some(randomExternalDescription),
-      Some(randomInternalSenderIdentifier),
-      Some(randomInternalSenderDescription)
+      externalIdentifier = randomExternalIdentifier,
+      payloadOxum = randomPayloadOxum,
+      baggingDate = randomLocalDate,
+      sourceOrganisation = Some(randomSourceOrganisation),
+      externalDescription = Some(randomExternalDescription),
+      internalSenderIdentifier = Some(randomInternalSenderIdentifier),
+      internalSenderDescription = Some(randomInternalSenderDescription)
     )
 
   def randomAlphanumeric(length: Int = 8) = {
