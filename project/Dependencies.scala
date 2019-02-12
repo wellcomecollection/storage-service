@@ -56,12 +56,17 @@ object ExternalDependencies {
     val akkaHttp            = "10.1.5"
     val akkaHttpCirce       = "1.21.1"
     val akkaStreamAlpakka   = "0.20"
+    val apacheCommons       = "2.6"
     val aws                 = "1.11.95"
     val circe               = "0.9.0"
     val mockito             = "1.9.5"
     val scalatest           = "3.0.1"
     val wiremock            = "2.18.0"
   }
+
+  val apacheCommonsDependencies = Seq(
+    "commons-io" % "commons-io" % versions.apacheCommons % "test"
+  )
 
   val circeOpticsDependencies = Seq[ModuleID](
     "io.circe" %% "circe-optics" % versions.circe
@@ -92,10 +97,12 @@ object ExternalDependencies {
 }
 
 object StorageDependencies {
-  val sharedDependencies =
-    WellcomeDependencies.messagingTypesafeLibrary ++
-    ExternalDependencies.cloudwatchMetricsDependencies ++
+  val commonDependencies =
+    ExternalDependencies.apacheCommonsDependencies ++
     ExternalDependencies.akkaDependencies ++
+    ExternalDependencies.cloudwatchMetricsDependencies ++
     ExternalDependencies.mockitoDependencies ++
-    ExternalDependencies.scalatestDependencies
+    ExternalDependencies.scalatestDependencies ++
+    WellcomeDependencies.jsonLibrary ++
+    WellcomeDependencies.messagingTypesafeLibrary
 }

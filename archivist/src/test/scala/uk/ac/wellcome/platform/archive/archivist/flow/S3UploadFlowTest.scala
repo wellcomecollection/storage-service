@@ -13,10 +13,10 @@ import org.apache.commons.io.IOUtils
 import org.scalatest.{Entry, FunSpec}
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.archivist.models.storage.ObjectMetadata
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
-import uk.ac.wellcome.test.fixtures.Akka
 
 import scala.util.{Failure, Random, Try}
 

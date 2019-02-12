@@ -4,8 +4,8 @@ jobs:
       env: TASK=travis-format
 
     - stage: libraries
-      env: TASK=display-test
-    - env: TASK=common-test
+      env: TASK=common-test
+    - env: TASK=display-test
     - env: TASK=ingests_common-test
     - env: TASK=bags_common-test
 

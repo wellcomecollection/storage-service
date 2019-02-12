@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.common.flows
 import akka.stream.scaladsl.{Sink, Source}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.test.fixtures.Akka
+import uk.ac.wellcome.akka.fixtures.Akka
 
 class DiscardLeftFlowTest
     extends FunSpec

@@ -4,6 +4,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.{
   ProgressGenerators,
@@ -15,7 +16,6 @@ import uk.ac.wellcome.platform.archive.common.progress.models.{
 }
 import uk.ac.wellcome.platform.archive.progress_async.fixtures.ProgressAsyncFixture
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
-import uk.ac.wellcome.test.fixtures.Akka
 
 class ProgressUpdateFlowTest
     extends FunSpec

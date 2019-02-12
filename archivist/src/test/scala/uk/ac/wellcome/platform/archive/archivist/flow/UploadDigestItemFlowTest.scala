@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Entry, FunSpec, Inside, Matchers}
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.archivist.fixtures.ZipBagItFixture
 import uk.ac.wellcome.platform.archive.archivist.generators.ArchiveJobGenerators
 import uk.ac.wellcome.platform.archive.archivist.models.errors.{
@@ -18,7 +19,6 @@ import uk.ac.wellcome.platform.archive.archivist.models.errors.{
 import uk.ac.wellcome.platform.archive.common.fixtures.FileEntry
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
-import uk.ac.wellcome.test.fixtures.Akka
 
 class UploadDigestItemFlowTest
     extends FunSpec

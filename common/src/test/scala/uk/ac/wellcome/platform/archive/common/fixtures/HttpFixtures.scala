@@ -12,13 +12,13 @@ import io.circe.Decoder
 import org.mockito.Mockito.{atLeastOnce, verify}
 import org.scalatest.{Assertion, Matchers}
 import org.scalatest.concurrent.ScalaFutures
+import uk.ac.wellcome.akka.fixtures.Akka
+import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil.fromJson
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.http.models.ErrorResponse
-import uk.ac.wellcome.test.fixtures.Akka
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
