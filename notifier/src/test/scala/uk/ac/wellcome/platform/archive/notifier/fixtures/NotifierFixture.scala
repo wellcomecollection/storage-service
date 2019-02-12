@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.notifier.fixtures
 
-import java.net.{URI, URL}
+import java.net.URL
 
 import com.amazonaws.services.sns.model.PublishResult
 import uk.ac.wellcome.akka.fixtures.Akka
@@ -11,7 +11,6 @@ import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.notifier.Notifier
 import uk.ac.wellcome.platform.archive.common.fixtures.{ArchiveMessaging, BagIt}
-import uk.ac.wellcome.platform.archive.common.progress.models.Namespace
 
 trait NotifierFixture
     extends Akka
@@ -21,9 +20,6 @@ trait NotifierFixture
 
   protected val callbackHost = "localhost"
   protected val callbackPort = 8080
-
-  val space = Namespace("space-id")
-  val uploadUri = new URI(s"http://www.example.com/asset")
 
   def withApp[R](queue: Queue, topic: Topic)(
     testWith: TestWith[Notifier, R]): R =
