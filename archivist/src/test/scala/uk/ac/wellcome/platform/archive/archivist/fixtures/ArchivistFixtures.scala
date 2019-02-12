@@ -8,7 +8,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
+import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.archivist.Archivist
 import uk.ac.wellcome.platform.archive.archivist.generators.BagUploaderConfigGenerators
@@ -30,7 +30,7 @@ trait ArchivistFixtures
     with BagUploaderConfigGenerators
     with IngestBagRequestGenerators {
 
-  def sendBag[R](file: File, ingestBucket: Bucket, queuePair: QueuePair)(
+  def sendBag[R](file: File, ingestBucket: Bucket, queue: Queue)(
     testWith: TestWith[IngestBagRequest, R]): R = {
 
     val ingestBagRequest = createIngestBagRequestWith(
@@ -45,17 +45,14 @@ trait ArchivistFixtures
 
     s3Client.putObject(bucket, key, file)
 
-    sendNotificationToSQS(
-      queuePair.queue,
-      ingestBagRequest
-    )
+    sendNotificationToSQS(queue, ingestBagRequest)
 
     testWith(ingestBagRequest)
   }
 
   def createAndSendBag[R](
     ingestBucket: Bucket,
-    queuePair: QueuePair,
+    queue: Queue,
     bagInfo: BagInfo = randomBagInfo,
     dataFileCount: Int = 12,
     createDigest: String => String = createValidDigest,
@@ -75,7 +72,7 @@ trait ArchivistFixtures
       createBagItFile = createBagItFile,
       createBagInfoFile = createBagInfoFile
     ) { zipFile =>
-      sendBag(zipFile, ingestBucket, queuePair) { ingestBagRequest =>
+      sendBag(zipFile, ingestBucket, queue) { ingestBagRequest =>
         testWith(ingestBagRequest)
       }
     }

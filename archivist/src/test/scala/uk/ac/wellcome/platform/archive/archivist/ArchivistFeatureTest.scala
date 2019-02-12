@@ -32,7 +32,7 @@ class ArchivistFeatureTest
     withArchivist() {
       case (ingestBucket, storageBucket, queuePair, nextTopic, progressTopic) =>
         val bagInfo = randomBagInfo
-        createAndSendBag(ingestBucket, queuePair, bagInfo = bagInfo) {
+        createAndSendBag(ingestBucket, queuePair.queue, bagInfo = bagInfo) {
           request =>
             eventually {
               val archivedObjects = listKeysInBucket(storageBucket)
@@ -88,7 +88,7 @@ class ArchivistFeatureTest
       case (ingestBucket, _, queuePair, nextTopic, progressTopic) =>
         createAndSendBag(
           ingestBucket,
-          queuePair,
+          queuePair.queue,
           createDigest = _ => "bad_digest") { request =>
           eventually {
             assertQueuePairSizes(queuePair, 0, 0)
@@ -108,19 +108,21 @@ class ArchivistFeatureTest
   it("fails when ingesting a bag with no tag manifest") {
     withArchivist() {
       case (ingestBucket, _, queuePair, nextTopic, progressTopic) =>
-        createAndSendBag(ingestBucket, queuePair, createTagManifest = _ => None) {
-          request =>
-            eventually {
-              assertQueuePairSizes(queuePair, 0, 0)
-              assertSnsReceivesNothing(nextTopic)
+        createAndSendBag(
+          ingestBucket,
+          queuePair.queue,
+          createTagManifest = _ => None) { request =>
+          eventually {
+            assertQueuePairSizes(queuePair, 0, 0)
+            assertSnsReceivesNothing(nextTopic)
 
-              assertTopicReceivesProgressStatusUpdate(
-                request.id,
-                progressTopic,
-                Progress.Failed)({ events =>
-                all(events.map(_.description)) should include regex "Failed reading file tagmanifest-sha256.txt from zip file"
-              })
-            }
+            assertTopicReceivesProgressStatusUpdate(
+              request.id,
+              progressTopic,
+              Progress.Failed)({ events =>
+              all(events.map(_.description)) should include regex "Failed reading file tagmanifest-sha256.txt from zip file"
+            })
+          }
         }
     }
   }
@@ -135,22 +137,22 @@ class ArchivistFeatureTest
       case (ingestBucket, storageBucket, queuePair, nextTopic, progressTopic) =>
         createAndSendBag(
           ingestBucket,
-          queuePair,
+          queuePair.queue,
           bagInfo = bagInfo1,
           dataFileCount = 1) { validRequest1 =>
           createAndSendBag(
             ingestBucket,
-            queuePair,
+            queuePair.queue,
             dataFileCount = 1,
             createDigest = _ => "bad_digest") { invalidRequest1 =>
             createAndSendBag(
               ingestBucket,
-              queuePair,
+              queuePair.queue,
               bagInfo = bagInfo2,
               dataFileCount = 1) { validRequest2 =>
               createAndSendBag(
                 ingestBucket,
-                queuePair,
+                queuePair.queue,
                 dataFileCount = 1,
                 createDigest = _ => "bad_digest") { invalidRequest2 =>
                 eventually {
@@ -213,7 +215,7 @@ class ArchivistFeatureTest
       case (ingestBucket, storageBucket, queuePair, nextTopic, progressTopic) =>
         createAndSendBag(
           ingestBucket,
-          queuePair,
+          queuePair.queue,
           bagInfo = bagInfo1,
           dataFileCount = 1) { validRequest1 =>
           val invalidRequestId1 = randomUUID
@@ -229,7 +231,7 @@ class ArchivistFeatureTest
 
           createAndSendBag(
             ingestBucket,
-            queuePair,
+            queuePair.queue,
             bagInfo = bagInfo2,
             dataFileCount = 1) { validRequest2 =>
             val invalidRequestId2 = randomUUID
@@ -302,23 +304,23 @@ class ArchivistFeatureTest
       case (ingestBucket, storageBucket, queuePair, nextTopic, progressTopic) =>
         createAndSendBag(
           ingestBucket,
-          queuePair,
+          queuePair.queue,
           bagInfo = bagInfo1,
           dataFileCount = 1) { validRequest1 =>
           createAndSendBag(
             ingestBucket,
-            queuePair,
+            queuePair.queue,
             dataFileCount = 1,
             createDataManifest = dataManifestWithNonExistingFile) {
             invalidRequest1 =>
               createAndSendBag(
                 ingestBucket,
-                queuePair,
+                queuePair.queue,
                 bagInfo = bagInfo2,
                 dataFileCount = 1) { validRequest2 =>
                 createAndSendBag(
                   ingestBucket,
-                  queuePair,
+                  queuePair.queue,
                   dataFileCount = 1,
                   createDataManifest = dataManifestWithNonExistingFile) {
                   invalidRequest2 =>
@@ -378,22 +380,22 @@ class ArchivistFeatureTest
       case (ingestBucket, storageBucket, queuePair, nextTopic, progressTopic) =>
         createAndSendBag(
           ingestBucket,
-          queuePair,
+          queuePair.queue,
           bagInfo = bagInfo1,
           dataFileCount = 1) { validRequest1 =>
           createAndSendBag(
             ingestBucket,
-            queuePair,
+            queuePair.queue,
             dataFileCount = 1,
             createBagInfoFile = _ => None) { invalidRequest1 =>
             createAndSendBag(
               ingestBucket,
-              queuePair,
+              queuePair.queue,
               bagInfo = bagInfo2,
               dataFileCount = 1) { validRequest2 =>
               createAndSendBag(
                 ingestBucket,
-                queuePair,
+                queuePair.queue,
                 dataFileCount = 1,
                 createBagInfoFile = _ => None) { invalidRequest2 =>
                 eventually {

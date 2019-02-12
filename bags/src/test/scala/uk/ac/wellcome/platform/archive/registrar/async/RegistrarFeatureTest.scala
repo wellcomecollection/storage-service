@@ -45,14 +45,14 @@ class RegistrarFeatureTest
 
   it("registers an access BagIt bag from S3 and notifies the progress tracker") {
     withRegistrar {
-      case (storageBucket, queuePair, progressTopic, vhs) =>
+      case (storageBucket, queue, progressTopic, vhs) =>
         val requestId = randomUUID
         val storageSpace = randomStorageSpace
         val createdAfterDate = Instant.now()
         val bagInfo = randomBagInfo
 
         withBagNotification(
-          queuePair,
+          queue,
           storageBucket,
           requestId,
           storageSpace,
@@ -104,7 +104,7 @@ class RegistrarFeatureTest
 
   it("notifies the progress tracker if registering a bag fails") {
     withRegistrar {
-      case (storageBucket, queuePair, progressTopic, vhs) =>
+      case (storageBucket, queue, progressTopic, vhs) =>
         val requestId = randomUUID
         val bagId = randomBagId
 
@@ -120,7 +120,7 @@ class RegistrarFeatureTest
         )
 
         sendNotificationToSQS(
-          queuePair.queue,
+          queue,
           ReplicationResult(
             archiveRequestId = requestId,
             srcBagLocation = srcBagLocation,
@@ -149,13 +149,9 @@ class RegistrarFeatureTest
 
   it("discards messages if it fails writing to the VHS") {
     withRegistrarAndBrokenVHS {
-      case (
-          storageBucket,
-          queuePair @ QueuePair(queue, dlq),
-          progressTopic,
-          _) =>
-        withBagNotification(queuePair, storageBucket) { _ =>
-          withBagNotification(queuePair, storageBucket) { _ =>
+      case (storageBucket, QueuePair(queue, dlq), progressTopic, _) =>
+        withBagNotification(queue, storageBucket) { _ =>
+          withBagNotification(queue, storageBucket) { _ =>
             eventually {
               listMessagesReceivedFromSNS(progressTopic) shouldBe empty
 

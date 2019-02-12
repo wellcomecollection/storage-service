@@ -8,7 +8,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
+import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   ArchiveMessaging,
@@ -35,7 +35,7 @@ trait RegistrarFixtures
     with StorageManifestVHSFixture {
 
   def withBagNotification[R](
-    queuePair: QueuePair,
+    queue: Queue,
     storageBucket: Bucket,
     archiveRequestId: UUID = randomUUID,
     storageSpace: StorageSpace = randomStorageSpace,
@@ -53,14 +53,11 @@ trait RegistrarFixtures
         dstBagLocation = dstBagLocation
       )
 
-      sendNotificationToSQS(
-        queuePair.queue,
-        replicationResult
-      )
+      sendNotificationToSQS(queue, replicationResult)
       testWith((srcBagLocation, dstBagLocation))
     }
 
-  override def createTable(table: Table) = {
+  override def createTable(table: Table): Table = {
     dynamoDbClient.createTable(
       new CreateTableRequest()
         .withTableName(table.name)
@@ -83,10 +80,10 @@ trait RegistrarFixtures
 
   def withApp[R](hybridStoreBucket: Bucket,
                  hybridStoreTable: Table,
-                 queuePair: QueuePair,
+                 queue: Queue,
                  progressTopic: Topic)(testWith: TestWith[Registrar, R]): R =
     withActorSystem { implicit actorSystem =>
-      withArchiveMessageStream[NotificationMessage, Unit, R](queuePair.queue) {
+      withArchiveMessageStream[NotificationMessage, Unit, R](queue) {
         messageStream =>
           withStorageManifestVHS(hybridStoreTable, hybridStoreBucket) {
             dataStore =>
@@ -106,9 +103,8 @@ trait RegistrarFixtures
     }
 
   def withRegistrar[R](
-    testWith: TestWith[(Bucket, QueuePair, Topic, StorageManifestVHS), R])
-    : R = {
-    withLocalSqsQueueAndDlqAndTimeout(15) { queuePair =>
+    testWith: TestWith[(Bucket, Queue, Topic, StorageManifestVHS), R]): R = {
+    withLocalSqsQueue { queue =>
       withLocalSnsTopic { progressTopic =>
         withLocalS3Bucket { storageBucket =>
           withLocalS3Bucket { hybridStoreBucket =>
@@ -116,12 +112,12 @@ trait RegistrarFixtures
               withApp(
                 hybridStoreBucket,
                 hybridDynamoTable,
-                queuePair,
+                queue,
                 progressTopic) { _ =>
                 withStorageManifestVHS(hybridDynamoTable, hybridStoreBucket) {
                   vhs =>
                     testWith(
-                      (storageBucket, queuePair, progressTopic, vhs)
+                      (storageBucket, queue, progressTopic, vhs)
                     )
                 }
               }
@@ -135,20 +131,21 @@ trait RegistrarFixtures
   def withRegistrarAndBrokenVHS[R](
     testWith: TestWith[(Bucket, QueuePair, Topic, Bucket), R]): R = {
     withLocalSqsQueueAndDlqAndTimeout(5)(queuePair => {
-      withLocalSnsTopic { progressTopic =>
-        withLocalS3Bucket { storageBucket =>
-          withLocalS3Bucket { hybridStoreBucket =>
-            withApp(
-              hybridStoreBucket,
-              Table("does-not-exist", ""),
-              queuePair,
-              progressTopic) { _ =>
-              testWith(
-                (storageBucket, queuePair, progressTopic, hybridStoreBucket)
-              )
+      withLocalSnsTopic {
+        progressTopic =>
+          withLocalS3Bucket { storageBucket =>
+            withLocalS3Bucket { hybridStoreBucket =>
+              withApp(
+                hybridStoreBucket,
+                Table("does-not-exist", ""),
+                queuePair.queue,
+                progressTopic) { _ =>
+                testWith(
+                  (storageBucket, queuePair, progressTopic, hybridStoreBucket)
+                )
+              }
             }
           }
-        }
 
       }
     })

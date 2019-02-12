@@ -24,7 +24,7 @@ class TroubleshootArchivistLocalBagFileTest
               "b30529943.zip"
             ).mkString("/")),
           ingestBucket,
-          queuePair
+          queuePair.queue
         ) { _ =>
           while (true) {
             Thread.sleep(10000)
