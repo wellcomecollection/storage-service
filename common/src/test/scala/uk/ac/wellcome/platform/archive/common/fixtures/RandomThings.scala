@@ -45,9 +45,5 @@ trait RandomThings {
     LocalDate.ofEpochDay(startRange + Random.nextInt(maxValue))
   }
 
-  def randomStorageSpace = StorageSpace(
-    randomAlphanumeric()
-  )
-
   def randomBagPath = BagPath(randomAlphanumeric(15))
 }

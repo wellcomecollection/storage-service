@@ -37,7 +37,7 @@ class RegistrarFeatureTest
     withRegistrar {
       case (storageBucket, queuePair, progressTopic, vhs) =>
         val requestId = randomUUID
-        val storageSpace = randomStorageSpace
+        val storageSpace = createStorageSpace
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
