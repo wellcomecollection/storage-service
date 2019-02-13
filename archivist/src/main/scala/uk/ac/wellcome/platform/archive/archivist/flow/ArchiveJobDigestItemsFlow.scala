@@ -11,10 +11,7 @@ import uk.ac.wellcome.platform.archive.archivist.models.{
   ArchiveDigestItemJob,
   ArchiveJob
 }
-import uk.ac.wellcome.platform.archive.common.flows.{
-  FoldEitherFlow,
-  OnErrorFlow
-}
+import uk.ac.wellcome.platform.archive.common.flows.FoldEitherFlow
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 import uk.ac.wellcome.platform.archive.common.models.{
   IngestBagRequest,

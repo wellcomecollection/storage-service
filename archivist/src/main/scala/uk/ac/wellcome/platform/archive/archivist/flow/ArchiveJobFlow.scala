@@ -6,10 +6,7 @@ import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.archivist.models.ArchiveJob
 import uk.ac.wellcome.platform.archive.archivist.models.TypeAliases.ArchiveCompletion
-import uk.ac.wellcome.platform.archive.common.flows.{
-  FoldEitherFlow,
-  OnErrorFlow
-}
+import uk.ac.wellcome.platform.archive.common.flows.FoldEitherFlow
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 import uk.ac.wellcome.platform.archive.common.models.{
   IngestBagRequest,
