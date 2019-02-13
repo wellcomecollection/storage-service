@@ -9,7 +9,6 @@ module "archivist" {
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets                          = "${var.private_subnets}"
   service_name                     = "${var.namespace}-archivist"
-  aws_region                       = "${var.aws_region}"
 
   max_capacity       = "2"
   desired_task_count = "2"
@@ -43,7 +42,6 @@ module "bags" {
   subnets                          = "${var.private_subnets}"
   vpc_id                           = "${var.vpc_id}"
   service_name                     = "${var.namespace}-bags"
-  aws_region                       = "${var.aws_region}"
 
   env_vars = {
     queue_url          = "${module.bags_queue.url}"
@@ -77,7 +75,6 @@ module "bag_replicator" {
   subnets      = "${var.private_subnets}"
   vpc_id       = "${var.vpc_id}"
   service_name = "${var.namespace}-bag-replicator"
-  aws_region   = "${var.aws_region}"
 
   env_vars = {
     queue_url               = "${module.bag_replicator_queue.url}"
@@ -110,7 +107,6 @@ module "notifier" {
   subnets      = "${var.private_subnets}"
   vpc_id       = "${var.vpc_id}"
   service_name = "${var.namespace}-notifier"
-  aws_region   = "${var.aws_region}"
 
   env_vars = {
     context_url        = "https://api.wellcomecollection.org/storage/v1/context.json"
@@ -137,7 +133,6 @@ module "ingests" {
   subnets      = "${var.private_subnets}"
   vpc_id       = "${var.vpc_id}"
   service_name = "${var.namespace}-ingests"
-  aws_region   = "${var.aws_region}"
 
   env_vars = {
     queue_url                   = "${module.ingests_queue.url}"
@@ -156,17 +151,15 @@ module "ingests" {
 module "api" {
   source = "api"
 
-  vpc_id       = "${var.vpc_id}"
-  cluster_id   = "${aws_ecs_cluster.cluster.id}"
-  cluster_name = "${aws_ecs_cluster.cluster.name}"
-  subnets      = "${var.private_subnets}"
+  vpc_id     = "${var.vpc_id}"
+  cluster_id = "${aws_ecs_cluster.cluster.id}"
+  subnets    = "${var.private_subnets}"
 
   domain_name      = "${var.domain_name}"
   cert_domain_name = "${var.cert_domain_name}"
 
-  namespace     = "${var.namespace}"
-  namespace_id  = "${aws_service_discovery_private_dns_namespace.namespace.id}"
-  namespace_tld = "${aws_service_discovery_private_dns_namespace.namespace.name}"
+  namespace    = "${var.namespace}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
 
   # Auth
 
@@ -222,7 +215,6 @@ module "bagger" {
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets                          = "${var.private_subnets}"
   service_name                     = "${var.namespace}-bagger"
-  aws_region                       = "${var.aws_region}"
 
   env_vars = {
     METS_BUCKET_NAME         = "${var.bagger_mets_bucket_name}"
@@ -285,7 +277,6 @@ module "trigger_bag_ingest" {
   oauth_details_enc      = "${var.archive_oauth_details_enc}"
   bag_paths              = "${var.bag_paths}"
   ingest_bucket_name     = "${var.ingest_bucket_name}"
-  account_id             = "${var.account_id}"
 
   use_encryption_key_policy = "${var.use_encryption_key_policy}"
 }

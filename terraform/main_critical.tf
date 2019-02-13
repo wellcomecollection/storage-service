@@ -17,19 +17,8 @@ module "critical" {
   namespace  = "${local.namespace}"
   account_id = "${local.account_id}"
 
-  environment_name = "production"
-
-  vpc_id = "${local.vpc_id}"
-
-  private_cidr_block_ids = ["${local.private_subnet_ids}"]
-
   service-wt-winnipeg = "${data.terraform_remote_state.infra_shared.service-wt-winnipeg}"
   service-pl-winslow  = "${data.terraform_remote_state.infra_shared.service-pl-winslow}"
-
-  subnets_ids = [
-    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}",
-    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[2]}",
-  ]
 
   archive_readaccess_principles = [
     "${local.goobi_task_role_arn}",
@@ -43,19 +32,8 @@ module "critical-staging" {
   namespace  = "${local.namespace}-staging"
   account_id = "${local.account_id}"
 
-  environment_name = "staging"
-
-  vpc_id = "${local.vpc_id}"
-
-  private_cidr_block_ids = ["${local.private_subnet_ids}"]
-
   service-wt-winnipeg = "${data.terraform_remote_state.infra_shared.service-wt-winnipeg}"
   service-pl-winslow  = "${data.terraform_remote_state.infra_shared.service-pl-winslow}"
-
-  subnets_ids = [
-    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}",
-    "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[2]}",
-  ]
 
   archive_readaccess_principles = [
     "${local.goobi_task_role_arn}",

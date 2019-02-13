@@ -18,11 +18,8 @@ module "stack-colbert" {
 
   private_subnets = "${local.private_subnets}"
 
-  ssh_key_name  = "${local.key_name}"
-  instance_type = "i3.2xlarge"
-  infra_bucket  = "${aws_s3_bucket.infra.id}"
-
-  controlled_access_cidr_ingress = ["${local.admin_cidr_ingress}"]
+  ssh_key_name = "${local.key_name}"
+  infra_bucket = "${aws_s3_bucket.infra.id}"
 
   current_account_id     = "${data.aws_caller_identity.current.account_id}"
   lambda_error_alarm_arn = "${local.lambda_error_alarm_arn}"
@@ -74,7 +71,6 @@ module "stack-colbert" {
   ingest_bucket_name = "${module.critical-staging.ingest_drop_bucket_name}"
 
   archive_oauth_details_enc = "${local.archive_oauth_details_enc}"
-  account_id                = "${local.account_id}"
 
   use_encryption_key_policy = "${module.critical-staging.use_encryption_key_policy}"
 
