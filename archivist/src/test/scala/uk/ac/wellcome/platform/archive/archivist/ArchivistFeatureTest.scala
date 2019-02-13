@@ -9,7 +9,6 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.archivist.fixtures.ArchivistFixtures
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagLocation,
   BagPath
@@ -21,7 +20,6 @@ class ArchivistFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with RandomThings
     with ArchivistFixtures
     with IntegrationPatience
     with ProgressUpdateAssertions {
@@ -29,7 +27,7 @@ class ArchivistFeatureTest
   it("downloads, uploads and verifies a BagIt bag") {
     withArchivist() {
       case (ingestBucket, storageBucket, queuePair, nextTopic, progressTopic) =>
-        val bagInfo = randomBagInfo
+        val bagInfo = createBagInfo
         createAndSendBag(ingestBucket, queuePair, bagInfo = bagInfo) {
           request =>
             eventually {
@@ -124,8 +122,8 @@ class ArchivistFeatureTest
   }
 
   it("continues after bag with bad digest") {
-    val bagInfo1 = randomBagInfo
-    val bagInfo2 = randomBagInfo
+    val bagInfo1 = createBagInfo
+    val bagInfo2 = createBagInfo
 
     // Parallelism here is 1 as fake-sns can't deal with
     // concurrent requests
@@ -204,8 +202,8 @@ class ArchivistFeatureTest
   }
 
   it("continues after non existing zip file") {
-    val bagInfo1 = randomBagInfo
-    val bagInfo2 = randomBagInfo
+    val bagInfo1 = createBagInfo
+    val bagInfo2 = createBagInfo
 
     withArchivist() {
       case (ingestBucket, storageBucket, queuePair, nextTopic, progressTopic) =>
@@ -291,8 +289,8 @@ class ArchivistFeatureTest
   }
 
   it("continues after non existing file referenced in manifest") {
-    val bagInfo1 = randomBagInfo
-    val bagInfo2 = randomBagInfo
+    val bagInfo1 = createBagInfo
+    val bagInfo2 = createBagInfo
 
     // Parallelism here is 1 as fake-sns can't deal with
     // concurrent requests
@@ -369,8 +367,8 @@ class ArchivistFeatureTest
   }
 
   it("continues after zip file with no bag-info.txt") {
-    val bagInfo1 = randomBagInfo
-    val bagInfo2 = randomBagInfo
+    val bagInfo1 = createBagInfo
+    val bagInfo2 = createBagInfo
 
     withArchivist() {
       case (ingestBucket, storageBucket, queuePair, nextTopic, progressTopic) =>

@@ -8,7 +8,6 @@ import io.circe.optics.JsonPath._
 import io.circe.parser._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.display.{
@@ -32,7 +31,6 @@ class BagsApiFeatureTest
     with ScalaFutures
     with BagInfoGenerators
     with BagsApiFixture
-    with RandomThings
     with IntegrationPatience
     with Inside
     with StorageManifestGenerators {
@@ -44,22 +42,21 @@ class BagsApiFeatureTest
       withConfiguredApp {
         case (vhs, metricsSender, baseUrl) =>
           withMaterializer { implicit materializer =>
-            val space = randomStorageSpace
-            val bagInfo = randomBagInfo
-
             val checksumAlgorithm = "sha256"
             val path = "path"
             val bucket = "bucket"
             val archiveBucket = "archive-bucket"
             val archivePath = "archive-path"
             val storageManifest = createStorageManifestWith(
-              space = space,
-              bagInfo = bagInfo,
               checksumAlgorithm = checksumAlgorithm,
               accessLocation = ObjectLocation(namespace = bucket, key = path),
               archiveLocations =
                 List(ObjectLocation(archiveBucket, archivePath))
             )
+
+            val space = storageManifest.space
+            val bagInfo = storageManifest.info
+
             val future = storeSingleManifest(vhs, storageManifest)
             whenReady(future) { _ =>
               whenGetRequestReady(

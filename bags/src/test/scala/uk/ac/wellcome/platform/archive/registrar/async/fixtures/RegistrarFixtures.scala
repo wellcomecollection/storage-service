@@ -14,6 +14,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   ArchiveMessaging,
   BagLocationFixtures
 }
+import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagInfo,
@@ -30,6 +31,7 @@ trait RegistrarFixtures
     with Akka
     with Messaging
     with ArchiveMessaging
+    with BagInfoGenerators
     with BagLocationFixtures
     with LocalDynamoDb
     with StorageManifestVHSFixture {
@@ -39,7 +41,7 @@ trait RegistrarFixtures
     storageBucket: Bucket,
     archiveRequestId: UUID = randomUUID,
     storageSpace: StorageSpace = randomStorageSpace,
-    bagInfo: BagInfo = randomBagInfo
+    bagInfo: BagInfo = createBagInfo
   )(testWith: TestWith[(BagLocation, BagLocation), R]): R =
     withBag(
       storageBucket,

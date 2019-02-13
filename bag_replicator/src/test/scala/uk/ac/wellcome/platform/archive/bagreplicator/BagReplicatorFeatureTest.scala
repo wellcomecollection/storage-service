@@ -26,14 +26,10 @@ class BagReplicatorFeatureTest
           progressTopic,
           outgoingTopic) =>
         val requestId = randomUUID
-        val storageSpace = randomStorageSpace
-        val bagInfo = randomBagInfo
         withBagNotification(
           queuePair,
           sourceBucket,
-          requestId,
-          storageSpace,
-          bagInfo = bagInfo) { srcBagLocation =>
+          requestId) { srcBagLocation =>
           eventually {
             val dstBagLocation = srcBagLocation.copy(
               storageNamespace = destinationBucket.name,

@@ -59,7 +59,7 @@ class ArchiveZipFileFlowTest
     withLocalS3Bucket { storageBucket =>
       withMaterializer { implicit materializer =>
         withLocalSnsTopic { reportingTopic =>
-          val bagInfo = randomBagInfo
+          val bagInfo = createBagInfo
           withBagItZip(bagInfo) { zipFile =>
             withArchiveZipFileFlow(storageBucket, reportingTopic) { uploader =>
               val ingestContext = createIngestBagRequest
@@ -186,7 +186,7 @@ class ArchiveZipFileFlowTest
     withLocalS3Bucket { storageBucket =>
       withMaterializer { implicit materializer =>
         withLocalSnsTopic { reportingTopic =>
-          val bagInfo = randomBagInfo
+          val bagInfo = createBagInfo
           withBagItZip(
             bagInfo,
             createDataManifest =

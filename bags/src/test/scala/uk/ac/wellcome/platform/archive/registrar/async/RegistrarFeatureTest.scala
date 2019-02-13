@@ -30,7 +30,6 @@ class RegistrarFeatureTest
     with IntegrationPatience
     with RegistrarFixtures
     with Inside
-    with RandomThings
     with ProgressUpdateAssertions
     with PatienceConfiguration {
 
@@ -47,7 +46,7 @@ class RegistrarFeatureTest
         val requestId = randomUUID
         val storageSpace = randomStorageSpace
         val createdAfterDate = Instant.now()
-        val bagInfo = randomBagInfo
+        val bagInfo = createBagInfo
 
         withBagNotification(
           queuePair,

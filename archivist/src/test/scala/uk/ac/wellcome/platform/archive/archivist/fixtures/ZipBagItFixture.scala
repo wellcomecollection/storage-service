@@ -6,9 +6,10 @@ import java.util.zip.{ZipEntry, ZipOutputStream}
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.fixtures._
 import uk.ac.wellcome.platform.archive.common.fixtures.{BagIt, FileEntry}
+import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagInfo
 
-trait ZipBagItFixture extends BagIt with Logging {
+trait ZipBagItFixture extends BagInfoGenerators with BagIt with Logging {
 
   def withZipFile[R](files: Seq[FileEntry]): Fixture[File, R] =
     fixture[File, R](
@@ -33,7 +34,7 @@ trait ZipBagItFixture extends BagIt with Logging {
     )
 
   def withBagItZip[R](
-    bagInfo: BagInfo = randomBagInfo,
+    bagInfo: BagInfo = createBagInfo,
     dataFileCount: Int = 1,
     createDigest: String => String = createValidDigest,
     createDataManifest: List[(String, String)] => Option[FileEntry] =

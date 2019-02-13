@@ -4,8 +4,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.{FunSpec, Inside}
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
-  FileEntry,
-  RandomThings
+  FileEntry
 }
 import uk.ac.wellcome.platform.archive.common.models.bagit
 import uk.ac.wellcome.platform.archive.common.models.error.{
@@ -19,13 +18,12 @@ class StorageManifestFactoryTest
     extends FunSpec
     with BagLocationFixtures
     with BagManifestUpdateGenerators
-    with RandomThings
     with Inside {
   implicit val _ = s3Client
 
   it("returns a right of storage manifest if reading a bag location succeeds") {
     withLocalS3Bucket { bucket =>
-      val bagInfo = randomBagInfo
+      val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo, storagePrefix = "archive") {
         archiveBagLocation =>
           withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") {
