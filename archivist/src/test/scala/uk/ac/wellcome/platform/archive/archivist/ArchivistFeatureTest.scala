@@ -6,7 +6,6 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.archivist.fixtures.ArchivistFixtures
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.storage.ObjectLocation
@@ -23,7 +22,6 @@ class ArchivistFeatureTest
     with Matchers
     with ScalaFutures
     with RandomThings
-    with MetricsSenderFixture
     with ArchivistFixtures
     with IntegrationPatience
     with ProgressUpdateAssertions {

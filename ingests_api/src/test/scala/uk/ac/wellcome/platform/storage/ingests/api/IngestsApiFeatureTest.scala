@@ -12,7 +12,6 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.models._
@@ -27,7 +26,6 @@ class IngestsApiFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with MetricsSenderFixture
     with ProgressTrackerFixture
     with IngestsApiFixture
     with RandomThings

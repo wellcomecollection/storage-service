@@ -8,7 +8,6 @@ import io.circe.optics.JsonPath._
 import io.circe.parser._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
-import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
@@ -31,7 +30,6 @@ class BagsApiFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with MetricsSenderFixture
     with BagInfoGenerators
     with BagsApiFixture
     with RandomThings
