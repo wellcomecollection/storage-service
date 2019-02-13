@@ -23,7 +23,7 @@ trait RandomThings {
   }
 
   def randomUUID = UUID.randomUUID()
-  
+
   def randomSourceOrganisation =
     SourceOrganisation(randomAlphanumeric())
 
