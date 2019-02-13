@@ -27,7 +27,7 @@ trait ProgressGenerators extends BagIdGenerators {
                          status: Status = Progress.Accepted,
                          maybeBag: Option[BagId] = None,
                          createdDate: Instant = Instant.now,
-                         events: List[ProgressEvent] = List.empty): Progress = {
+                         events: List[ProgressEvent] = List.empty): Progress =
     Progress(
       id = id,
       sourceLocation = sourceLocation,
@@ -37,20 +37,18 @@ trait ProgressGenerators extends BagIdGenerators {
       bag = maybeBag,
       createdDate = createdDate,
       events = events)
-  }
 
-  def createProgressEvent: ProgressEvent = {
+  def createProgressEvent: ProgressEvent =
     ProgressEvent(randomAlphanumeric(15))
-  }
 
-  def createProgressEventUpdateWith(id: UUID = randomUUID,
-                                    events: List[ProgressEvent] = List(
-                                      createProgressEvent))
-    : ProgressEventUpdate =
-    ProgressEventUpdate(id, events)
+  def createProgressEventUpdateWith(id: UUID): ProgressEventUpdate =
+    ProgressEventUpdate(
+      id = id,
+      events = List(createProgressEvent)
+    )
 
   def createProgressEventUpdate: ProgressEventUpdate =
-    createProgressEventUpdateWith()
+    createProgressEventUpdateWith(id = UUID.randomUUID())
 
   def createProgressStatusUpdateWith(
     id: UUID,
