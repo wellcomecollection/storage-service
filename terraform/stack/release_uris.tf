@@ -14,10 +14,6 @@ module "images" {
     "bagger",
     "bag_replicator",
   ]
-
-  providers = {
-    aws = "aws.platform"
-  }
 }
 
 locals {
@@ -29,15 +25,4 @@ locals {
   notifier_image       = "${module.images.services["notifier"]}"
   bagger_image         = "${module.images.services["bagger"]}"
   bag_replicator_image = "${module.images.services["bag_replicator"]}"
-}
-
-provider "aws" {
-  alias = "platform"
-
-  assume_role {
-    role_arn = "arn:aws:iam::760097843905:role/developer"
-  }
-
-  region  = "${var.aws_region}"
-  version = "1.55.0"
 }
