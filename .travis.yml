@@ -15,6 +15,7 @@ jobs:
     - env: SBT_PROJECT=ingests_api
     - env: SBT_PROJECT=bags
     - env: SBT_PROJECT=bags_api
+    - env: SBT_PROJECT=bag_replicator
     - env: SBT_PROJECT=notifier
     - env: TASK=bagger-publish
 

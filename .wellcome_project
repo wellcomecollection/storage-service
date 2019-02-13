@@ -11,5 +11,5 @@
   ],
   "id": "storage",
   "name": "Storage service",
-  "profile": "platform-dev"
+  "profile": "storage-dev"
 }
