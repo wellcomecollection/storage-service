@@ -22,10 +22,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   RandomThings
 }
 import uk.ac.wellcome.platform.archive.common.models._
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagInfo,
-  BagLocation
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
