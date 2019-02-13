@@ -11,7 +11,6 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
-import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, BagLocation}
@@ -28,7 +27,6 @@ class RegistrarFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with MetricsSenderFixture
     with IntegrationPatience
     with RegistrarFixtures
     with Inside

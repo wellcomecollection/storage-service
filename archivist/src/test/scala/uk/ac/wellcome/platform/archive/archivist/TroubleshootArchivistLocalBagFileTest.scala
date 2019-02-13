@@ -3,15 +3,13 @@ package uk.ac.wellcome.platform.archive.archivist
 import java.io.File
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.archivist.fixtures.ArchivistFixtures
 
 // Useful test to troubleshoot running the archivist using a local bagfile
 class TroubleshootArchivistLocalBagFileTest
     extends FunSpec
     with Matchers
-    with ArchivistFixtures
-    with MetricsSenderFixture {
+    with ArchivistFixtures {
 
   ignore("downloads, uploads and verifies a known BagIt bag") {
     withArchivist() {

@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.bagreplicator
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
@@ -14,7 +13,6 @@ class BagReplicatorFeatureTest
     with Matchers
     with ScalaFutures
     with RandomThings
-    with MetricsSenderFixture
     with BagReplicatorFixtures
     with ProgressUpdateAssertions {
 
