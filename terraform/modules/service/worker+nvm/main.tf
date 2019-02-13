@@ -1,10 +1,9 @@
 module "service" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecs/prebuilt/scaling+nvm?ref=v17.1.0"
+  source = "git::https://github.com/wellcometrust/terraform.git//ecs/prebuilt/scaling+nvm?ref=2181671"
 
   service_name    = "${var.service_name}"
   container_image = "${var.container_image}"
 
-  vpc_id  = "${var.vpc_id}"
   subnets = "${var.subnets}"
 
   namespace_id = "${var.namespace_id}"
@@ -24,6 +23,9 @@ module "service" {
 
   env_vars        = "${var.env_vars}"
   env_vars_length = "${var.env_vars_length}"
+
+  secret_env_vars        = "${var.secret_env_vars}"
+  secret_env_vars_length = "${var.secret_env_vars_length}"
 
   desired_task_count = "${var.desired_task_count}"
 

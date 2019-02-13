@@ -8,7 +8,6 @@ module "archivist" {
   cluster_id                       = "${aws_ecs_cluster.cluster.id}"
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets                          = "${var.private_subnets}"
-  vpc_id                           = "${var.vpc_id}"
   service_name                     = "${var.namespace}-archivist"
   aws_region                       = "${var.aws_region}"
 
@@ -222,7 +221,6 @@ module "bagger" {
   cluster_id                       = "${aws_ecs_cluster.cluster.id}"
   namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets                          = "${var.private_subnets}"
-  vpc_id                           = "${var.vpc_id}"
   service_name                     = "${var.namespace}-bagger"
   aws_region                       = "${var.aws_region}"
 
@@ -247,18 +245,24 @@ module "bagger" {
 
     # DLCS config
     DLCS_ENTRY       = "${var.bagger_dlcs_entry}"
-    DLCS_API_KEY     = "${var.bagger_dlcs_api_key}"
-    DLCS_API_SECRET  = "${var.bagger_dlcs_api_secret}"
     DLCS_CUSTOMER_ID = "${var.bagger_dlcs_customer_id}"
     DLCS_SPACE       = "${var.bagger_dlcs_space}"
 
     # DDS credentials
-    DDS_API_KEY      = "${var.bagger_dds_api_key}"
-    DDS_API_SECRET   = "${var.bagger_dds_api_secret}"
     DDS_ASSET_PREFIX = "${var.bagger_dds_asset_prefix}"
   }
 
-  env_vars_length = 20
+  env_vars_length = 16
+
+  secret_env_vars = {
+    DLCS_API_KEY    = "storage/bagger_dlcs_api_key"
+    DLCS_API_SECRET = "storage/bagger_dlcs_api_secret"
+
+    DDS_API_KEY    = "storage/bagger_dds_api_key"
+    DDS_API_SECRET = "storage/bagger_dds_api_secret"
+  }
+
+  secret_env_vars_length = 4
 
   cpu    = "1900"
   memory = "14000"

@@ -61,12 +61,8 @@ variable "bagger_working_directory" {}
 variable "bagger_current_preservation_bucket" {}
 variable "bagger_dlcs_source_bucket" {}
 variable "bagger_dlcs_entry" {}
-variable "bagger_dlcs_api_key" {}
-variable "bagger_dlcs_api_secret" {}
 variable "bagger_dlcs_customer_id" {}
 variable "bagger_dlcs_space" {}
-variable "bagger_dds_api_secret" {}
-variable "bagger_dds_api_key" {}
 variable "bagger_dds_asset_prefix" {}
 variable "bagger_progress_table" {}
 variable "bagger_progress_table_arn" {}
