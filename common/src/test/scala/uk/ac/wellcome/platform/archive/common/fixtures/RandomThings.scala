@@ -22,13 +22,6 @@ trait RandomThings {
     str.updated(spaceIndex, ' ')
   }
 
-  def randomPort = {
-    val startPort = 10000
-    val portRange = 10000
-
-    startPort + Random.nextInt(portRange)
-  }
-
   def randomUUID = UUID.randomUUID()
 
   def randomExternalIdentifier =
