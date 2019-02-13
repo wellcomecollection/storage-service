@@ -25,16 +25,16 @@ object BagDigestFileCreator {
   def create[T](
     line: String,
     job: T,
-    manifestName: String
-  ): Either[ArchiveError[T], BagDigestFile] = {
+    bagRootPathInZip: Option[String] = None,
+    manifestName: String): Either[ArchiveError[T], BagDigestFile] = {
     val checksumLineRegex = """(.+?)\s+(.+)""".r
 
     line match {
-      case checksumLineRegex(checksum, key) =>
+      case checksumLineRegex(checksum, itemPath) =>
         Right(
           BagDigestFile(
             checksum = checksum.trim,
-            path = BagItemPath(key.trim)
+            path = BagItemPath(bagRootPathInZip, itemPath.trim)
           )
         )
       case _ => Left(InvalidBagManifestError(job, manifestName, line))

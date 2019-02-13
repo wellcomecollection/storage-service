@@ -11,6 +11,7 @@ import uk.ac.wellcome.platform.archive.common.bag.{
 }
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagDigestFile,
+  BagIt,
   BagLocation
 }
 import uk.ac.wellcome.platform.archive.common.models.error.{
@@ -32,7 +33,9 @@ object StorageManifestFactory {
     val algorithm = "sha256"
 
     for {
-      bagInfoInputStream <- downloadFile(bagManifestUpdate, "bag-info.txt")
+      bagInfoInputStream <- downloadFile(
+        bagManifestUpdate,
+        BagIt.BagInfoFilename)
       bagInfo <- BagInfoParser.parseBagInfo(
         bagManifestUpdate,
         bagInfoInputStream)
@@ -80,7 +83,10 @@ object StorageManifestFactory {
 
     triedLines.flatMap { lines: List[String] =>
       lines.traverse { line =>
-        BagDigestFileCreator.create(line, bagManifestUpdate, name)
+        BagDigestFileCreator.create(
+          line = line,
+          job = bagManifestUpdate,
+          manifestName = name)
       }
     }
   }

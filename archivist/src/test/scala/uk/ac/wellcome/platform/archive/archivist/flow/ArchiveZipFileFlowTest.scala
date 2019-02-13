@@ -23,8 +23,8 @@ import uk.ac.wellcome.platform.archive.archivist.models.TypeAliases.{
 }
 import uk.ac.wellcome.platform.archive.archivist.models.errors.{
   ArchiveJobError,
-  ChecksumNotMatchedOnUploadError,
-  FileNotFoundError
+  BagNotFoundError,
+  ChecksumNotMatchedOnUploadError
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.FileEntry
 import uk.ac.wellcome.platform.archive.common.generators.IngestBagRequestGenerators
@@ -161,8 +161,8 @@ class ArchiveZipFileFlowTest
                   Sink.seq)
 
               whenReady(verification) { result =>
-                result shouldBe List(
-                  Left(FileNotFoundError("bag-info.txt", ingestContext)))
+                result shouldBe List(Left(
+                  BagNotFoundError("'bag-info.txt' not found.", ingestContext)))
 
                 assertTopicReceivesProgressStatusUpdate(
                   ingestContext.id,
@@ -213,7 +213,7 @@ class ArchiveZipFileFlowTest
                         archiveJob shouldBe a[ArchiveJob]
                         archiveJob
                           .asInstanceOf[ArchiveJob]
-                          .bagLocation shouldBe BagLocation(
+                          .bagUploadLocation shouldBe BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = "archive",
                           storageSpace = ingestContext.storageSpace,
