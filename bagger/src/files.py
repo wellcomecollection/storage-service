@@ -1,3 +1,5 @@
+# -*- encoding: utf-8
+
 import logging
 import aws
 import shutil
@@ -15,10 +17,29 @@ ALTO_KEYS = set()
 OBJECT_KEYS = set()
 
 
+def download_s3_object(b_number, source_bucket, source, destination):
+    try:
+        source_bucket.download_file(source, destination)
+    except ClientError:
+        # check for possible case mismatch on checksum
+        # we may need to come back and do more, but take it step by step
+        # e.g., do we need to do b/B as well?
+        # start by only fixing the one issue noticed so far
+        logging.debug("Checking for case mismatch in ALTO file name")
+        if "x" in b_number:
+            uppercase_checksum_bnum = b_number.replace("x", "X")
+            parts = source.split("/")
+            new_filename = parts[-1].replace(b_number, uppercase_checksum_bnum)
+            parts[-1] = new_filename
+            new_source = "/".join(parts)
+            logging.debug("Retrying from %s to %s", new_source, destination)
+            source_bucket.download_file(new_source, destination)
+
+
 def process_alto(root, bag_details, alto, skip_file_download):
     # TODO use the alto map to verify
     b_number = bag_details["b_number"]
-    logging.debug("Collecting ALTO for " + b_number)
+    logging.debug("Collecting ALTO for %s", b_number)
     alto_file_group = root.find("./mets:fileSec/mets:fileGrp[@USE='ALTO']", namespaces)
 
     if alto_file_group is None:
@@ -50,31 +71,17 @@ def process_alto(root, bag_details, alto, skip_file_download):
                 bag_details["mets_partial_path"],
                 current_location,
             )
-            logging.debug("Copying alto from {0} to {1}".format(source, destination))
+            logging.debug("Copying alto from %s to %s", source, destination)
             shutil.copyfile(source, destination)
         else:
             source = bag_details["mets_partial_path"] + current_location
-            logging.debug(
-                "Downloading S3 ALTO from {0} to {1}".format(source, destination)
+            logging.debug("Downloading S3 ALTO from %s to %s", source, destination)
+            download_s3_object(
+                b_number=b_number,
+                source_bucket=source_bucket,
+                source=source,
+                destination=destination
             )
-            try:
-                source_bucket.download_file(source, destination)
-            except ClientError:
-                # check for possible case mismatch on checksum
-                # we may need to come back and do more, but take it step by step
-                # e.g., do we need to do b/B as well?
-                # start by only fixing the one issue noticed so far
-                logging.debug("Checking for case mismatch in ALTO file name")
-                if "x" in b_number:
-                    uppercase_checksum_bnum = b_number.replace("x", "X")
-                    parts = source.split("/")
-                    new_filename = parts[-1].replace(b_number, uppercase_checksum_bnum)
-                    parts[-1] = new_filename
-                    new_source = "/".join(parts)
-                    logging.debug(
-                        "Retrying from {0} to {1}".format(new_source, destination)
-                    )
-                    source_bucket.download_file(new_source, destination)
 
 
 def get_flattened_destination(file_element, keys, folder, bag_details):
