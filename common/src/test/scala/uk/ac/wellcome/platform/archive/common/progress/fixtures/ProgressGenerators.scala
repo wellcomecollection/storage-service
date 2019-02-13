@@ -4,17 +4,16 @@ import java.net.URI
 import java.time.Instant
 import java.util.UUID
 
-import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
-import uk.ac.wellcome.platform.archive.common.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Status
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  StorageLocation,
-  _
-}
+import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.ObjectLocation
 
-trait ProgressGenerators extends ExternalIdentifierGenerators {
+trait ProgressGenerators extends ExternalIdentifierGenerators with StorageSpaceGenerators {
 
   val storageLocation = StorageLocation(
     StandardStorageProvider,
@@ -74,8 +73,6 @@ trait ProgressGenerators extends ExternalIdentifierGenerators {
   }
 
   def createBagId = BagId(createStorageSpace, createExternalIdentifier)
-
-  def createStorageSpace = StorageSpace(randomAlphanumeric())
 
   def createSpace = Namespace(randomAlphanumeric())
 

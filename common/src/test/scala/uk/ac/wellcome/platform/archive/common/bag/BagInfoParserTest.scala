@@ -2,7 +2,8 @@ package uk.ac.wellcome.platform.archive.common.bag
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagIt, RandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.BagIt
+import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.platform.archive.common.models.bagit
 import uk.ac.wellcome.platform.archive.common.models.error.InvalidBagInfo
 
@@ -10,12 +11,12 @@ class BagInfoParserTest
     extends FunSpec
     with BagIt
     with Matchers
-    with RandomThings {
+    with ExternalIdentifierGenerators {
   case class Thing(id: String)
   val t = Thing("a")
 
   it("extracts a BagInfo object from a bagInfo file with only required fields") {
-    val externalIdentifier = randomExternalIdentifier
+    val externalIdentifier = createExternalIdentifier
     val payloadOxum = randomPayloadOxum
     val baggingDate = randomLocalDate
     val bagInfoString =
@@ -27,7 +28,7 @@ class BagInfoParserTest
 
   it(
     "extracts a BagInfo object from a bagInfo file with all required and optional fields") {
-    val externalIdentifier = randomExternalIdentifier
+    val externalIdentifier = createExternalIdentifier
     val payloadOxum = randomPayloadOxum
     val baggingDate = randomLocalDate
     val sourceOrganisation = Some(randomSourceOrganisation)
@@ -69,7 +70,7 @@ class BagInfoParserTest
   it(
     "returns a left of invalid bag info error if there is no payload-oxum in bag-info.txt") {
     val bagInfoString =
-      s"""|External-Identifier: $randomExternalIdentifier
+      s"""|External-Identifier: $createExternalIdentifier
           |Source-Organization: $randomSourceOrganisation
           |Bagging-Date: $randomLocalDate""".stripMargin
 
@@ -80,7 +81,7 @@ class BagInfoParserTest
   it(
     "returns a left of invalid bag info error if the payload-oxum is invalid in bag-info.txt") {
     val bagInfoString =
-      s"""|External-Identifier: $randomExternalIdentifier
+      s"""|External-Identifier: $createExternalIdentifier
           |Source-Organization: $randomSourceOrganisation
           |Payload-Oxum: sgadfjag
           |Bagging-Date: $randomLocalDate""".stripMargin
@@ -92,7 +93,7 @@ class BagInfoParserTest
   it(
     "returns a left of invalid bag info error if there is no bagging date in bag-info.txt") {
     val bagInfoString =
-      s"""|External-Identifier: $randomExternalIdentifier
+      s"""|External-Identifier: $createExternalIdentifier
           |Source-Organization: $randomSourceOrganisation
           |Payload-Oxum: ${randomPayloadOxum.payloadBytes}.${randomPayloadOxum.numberOfPayloadFiles}""".stripMargin
 
@@ -103,7 +104,7 @@ class BagInfoParserTest
   it(
     "returns a left of invalid bag info error if the bagging date is invalid in bag-info.txt") {
     val bagInfoString =
-      s"""|External-Identifier: $randomExternalIdentifier
+      s"""|External-Identifier: $createExternalIdentifier
           |Source-Organization: $randomSourceOrganisation
           |Payload-Oxum: ${randomPayloadOxum.payloadBytes}.${randomPayloadOxum.numberOfPayloadFiles}
           |Bagging-Date: sdfkjghl""".stripMargin
