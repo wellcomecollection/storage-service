@@ -44,19 +44,18 @@ trait BagReplicatorFixtures
     storageBucket: Bucket,
     archiveRequestId: UUID = randomUUID
   )(testWith: TestWith[BagLocation, R]): R =
-    withBag(storageBucket) {
-      bagLocation =>
-        val replicationRequest = ReplicationRequest(
-          archiveRequestId = archiveRequestId,
-          srcBagLocation = bagLocation
-        )
+    withBag(storageBucket) { bagLocation =>
+      val replicationRequest = ReplicationRequest(
+        archiveRequestId = archiveRequestId,
+        srcBagLocation = bagLocation
+      )
 
-        sendNotificationToSQS(
-          queuePair.queue,
-          replicationRequest
-        )
+      sendNotificationToSQS(
+        queuePair.queue,
+        replicationRequest
+      )
 
-        testWith(bagLocation)
+      testWith(bagLocation)
     }
 
   def withBagReplicator[R](

@@ -26,33 +26,31 @@ class BagReplicatorFeatureTest
           progressTopic,
           outgoingTopic) =>
         val requestId = randomUUID
-        withBagNotification(
-          queuePair,
-          sourceBucket,
-          requestId) { srcBagLocation =>
-          eventually {
-            val dstBagLocation = srcBagLocation.copy(
-              storageNamespace = destinationBucket.name,
-              storagePrefix = dstRootPath
-            )
+        withBagNotification(queuePair, sourceBucket, requestId) {
+          srcBagLocation =>
+            eventually {
+              val dstBagLocation = srcBagLocation.copy(
+                storageNamespace = destinationBucket.name,
+                storagePrefix = dstRootPath
+              )
 
-            verifyBagCopied(srcBagLocation, dstBagLocation)
-            assertSnsReceivesOnly(
-              ReplicationResult(
-                archiveRequestId = requestId,
-                srcBagLocation = srcBagLocation,
-                dstBagLocation = dstBagLocation
-              ),
-              outgoingTopic
-            )
+              verifyBagCopied(srcBagLocation, dstBagLocation)
+              assertSnsReceivesOnly(
+                ReplicationResult(
+                  archiveRequestId = requestId,
+                  srcBagLocation = srcBagLocation,
+                  dstBagLocation = dstBagLocation
+                ),
+                outgoingTopic
+              )
 
-            assertTopicReceivesProgressEventUpdate(requestId, progressTopic) {
-              events =>
-                events should have size 1
-                events.head.description shouldBe s"Bag replicated successfully"
+              assertTopicReceivesProgressEventUpdate(requestId, progressTopic) {
+                events =>
+                  events should have size 1
+                  events.head.description shouldBe s"Bag replicated successfully"
+              }
+
             }
-
-          }
         }
     }
   }
