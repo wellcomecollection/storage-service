@@ -1,3 +1,5 @@
+# -*- encoding: utf-8
+
 import logging
 import aws
 import shutil
@@ -15,10 +17,49 @@ ALTO_KEYS = set()
 OBJECT_KEYS = set()
 
 
+def download_s3_object(b_number, source_bucket, source, destination):
+    try:
+        source_bucket.download_file(source, destination)
+    except ClientError:
+        logging.debug("Checking for case mismatch in ALTO file name")
+
+        # Sometimes the S3 objects have a case mismatch between the actual object
+        # and the ALTO reference.  In that case, we should try some alternative
+        # keys (by fiddling with the case) to see if one of the alternatives works.
+        #
+        # We use 'set()' to avoid trying the same key multiple times.
+        #
+        alternative_bnums = set(
+            [
+                b_number.replace("x", "X"),
+                b_number.replace("b", "B"),
+                b_number.replace("x", "X").replace("b", "B"),
+            ]
+        ) - set([b_number])
+
+        original_filename = os.path.basename(source)
+
+        for alt_bnum in alternative_bnums:
+            alt_filename = original_filename.replace(b_number, alt_bnum)
+            alt_source = os.path.join(os.path.dirname(source), alt_filename)
+            logging.debug("Retrying from %s to %s", alt_source, destination)
+
+            try:
+                source_bucket.download_file(alt_source, destination)
+            except ClientError as err:
+                logging.debug("Unsuccessful downloading %s, %r", alt_source, err)
+            else:
+                return
+
+        # If we've tried all the possibilities and none of them worked,
+        # we haven't found the METS file.  Give up!
+        raise RuntimeError("Unable to find METS file for %s!" % b_number)
+
+
 def process_alto(root, bag_details, alto, skip_file_download):
     # TODO use the alto map to verify
     b_number = bag_details["b_number"]
-    logging.debug("Collecting ALTO for " + b_number)
+    logging.debug("Collecting ALTO for %s", b_number)
     alto_file_group = root.find("./mets:fileSec/mets:fileGrp[@USE='ALTO']", namespaces)
 
     if alto_file_group is None:
@@ -37,9 +78,7 @@ def process_alto(root, bag_details, alto, skip_file_download):
 
         if skip_file_download:
             logging.debug(
-                "Skipping fetch of alto from {0} to {1}".format(
-                    current_location, destination
-                )
+                "Skipping fetch of alto from %s to %s", current_location, destination
             )
             continue
 
@@ -50,31 +89,17 @@ def process_alto(root, bag_details, alto, skip_file_download):
                 bag_details["mets_partial_path"],
                 current_location,
             )
-            logging.debug("Copying alto from {0} to {1}".format(source, destination))
+            logging.debug("Copying alto from %s to %s", source, destination)
             shutil.copyfile(source, destination)
         else:
             source = bag_details["mets_partial_path"] + current_location
-            logging.debug(
-                "Downloading S3 ALTO from {0} to {1}".format(source, destination)
+            logging.debug("Downloading S3 ALTO from %s to %s", source, destination)
+            download_s3_object(
+                b_number=b_number,
+                source_bucket=source_bucket,
+                source=source,
+                destination=destination,
             )
-            try:
-                source_bucket.download_file(source, destination)
-            except ClientError:
-                # check for possible case mismatch on checksum
-                # we may need to come back and do more, but take it step by step
-                # e.g., do we need to do b/B as well?
-                # start by only fixing the one issue noticed so far
-                logging.debug("Checking for case mismatch in ALTO file name")
-                if "x" in b_number:
-                    uppercase_checksum_bnum = b_number.replace("x", "X")
-                    parts = source.split("/")
-                    new_filename = parts[-1].replace(b_number, uppercase_checksum_bnum)
-                    parts[-1] = new_filename
-                    new_source = "/".join(parts)
-                    logging.debug(
-                        "Retrying from {0} to {1}".format(new_source, destination)
-                    )
-                    source_bucket.download_file(new_source, destination)
 
 
 def get_flattened_destination(file_element, keys, folder, bag_details):
