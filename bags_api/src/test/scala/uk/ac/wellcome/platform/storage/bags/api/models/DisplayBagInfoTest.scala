@@ -3,12 +3,12 @@ package uk.ac.wellcome.platform.storage.bags.api.models
 import java.time.format.DateTimeFormatter
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 
-class DisplayBagInfoTest extends FunSpec with RandomThings with Matchers {
+class DisplayBagInfoTest extends FunSpec with Matchers with BagInfoGenerators {
 
   it("transforms a BagInfo with all fields into a DisplayBagInfo") {
-    val bagInfo = randomBagInfo
+    val bagInfo = createBagInfo
     DisplayBagInfo(bagInfo) shouldBe DisplayBagInfo(
       bagInfo.externalIdentifier.underlying,
       s"${bagInfo.payloadOxum.payloadBytes}.${bagInfo.payloadOxum.numberOfPayloadFiles}",

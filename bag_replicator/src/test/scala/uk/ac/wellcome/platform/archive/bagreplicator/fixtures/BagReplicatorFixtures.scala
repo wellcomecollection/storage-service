@@ -22,10 +22,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   RandomThings
 }
 import uk.ac.wellcome.platform.archive.common.models._
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagInfo,
-  BagLocation
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -42,23 +39,20 @@ trait BagReplicatorFixtures
   def withBagNotification[R](
     queuePair: QueuePair,
     storageBucket: Bucket,
-    archiveRequestId: UUID = randomUUID,
-    storageSpace: StorageSpace = randomStorageSpace,
-    bagInfo: BagInfo = randomBagInfo
+    archiveRequestId: UUID = randomUUID
   )(testWith: TestWith[BagLocation, R]): R =
-    withBag(storageBucket, bagInfo = bagInfo, storageSpace = storageSpace) {
-      bagLocation =>
-        val replicationRequest = ReplicationRequest(
-          archiveRequestId = archiveRequestId,
-          srcBagLocation = bagLocation
-        )
+    withBag(storageBucket) { bagLocation =>
+      val replicationRequest = ReplicationRequest(
+        archiveRequestId = archiveRequestId,
+        srcBagLocation = bagLocation
+      )
 
-        sendNotificationToSQS(
-          queuePair.queue,
-          replicationRequest
-        )
+      sendNotificationToSQS(
+        queuePair.queue,
+        replicationRequest
+      )
 
-        testWith(bagLocation)
+      testWith(bagLocation)
     }
 
   def withBagReplicator[R](

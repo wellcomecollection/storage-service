@@ -9,12 +9,13 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 
-trait BagLocationFixtures extends S3 with BagIt {
+trait BagLocationFixtures extends S3 with BagInfoGenerators with BagIt {
   def withBag[R](
     bucket: Bucket,
     dataFileCount: Int = 1,
-    bagInfo: BagInfo = randomBagInfo,
+    bagInfo: BagInfo = createBagInfo,
     storagePrefix: String = "archive",
     storageSpace: StorageSpace = randomStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =

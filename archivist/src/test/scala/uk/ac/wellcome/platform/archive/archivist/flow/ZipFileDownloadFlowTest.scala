@@ -47,7 +47,7 @@ class ZipFileDownloadFlowTest
       withLocalSnsTopic { progressTopic =>
         withZipFileDownloadFlow(progressTopic) {
           downloadZipFlow: ZipFileDownloadFlow =>
-            val bagInfo = randomBagInfo
+            val bagInfo = createBagInfo
             withBagItZip(bagInfo) { file =>
               val uploadKey = bagInfo.externalIdentifier.toString
 

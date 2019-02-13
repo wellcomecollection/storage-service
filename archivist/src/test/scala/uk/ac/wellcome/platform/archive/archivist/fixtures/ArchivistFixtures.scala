@@ -16,7 +16,10 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   ArchiveMessaging,
   FileEntry
 }
-import uk.ac.wellcome.platform.archive.common.generators.IngestBagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  IngestBagRequestGenerators
+}
 import uk.ac.wellcome.platform.archive.common.models.IngestBagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagInfo
 import uk.ac.wellcome.storage.ObjectLocation
@@ -27,6 +30,7 @@ trait ArchivistFixtures
     with Akka
     with ZipBagItFixture
     with ArchiveMessaging
+    with BagInfoGenerators
     with BagUploaderConfigGenerators
     with IngestBagRequestGenerators {
 
@@ -56,7 +60,7 @@ trait ArchivistFixtures
   def createAndSendBag[R](
     ingestBucket: Bucket,
     queuePair: QueuePair,
-    bagInfo: BagInfo = randomBagInfo,
+    bagInfo: BagInfo = createBagInfo,
     dataFileCount: Int = 12,
     createDigest: String => String = createValidDigest,
     createTagManifest: List[(String, String)] => Option[FileEntry] =
