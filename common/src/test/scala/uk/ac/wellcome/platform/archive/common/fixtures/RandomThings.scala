@@ -23,10 +23,7 @@ trait RandomThings {
   }
 
   def randomUUID = UUID.randomUUID()
-
-  def randomExternalIdentifier =
-    ExternalIdentifier(randomAlphanumeric())
-
+  
   def randomSourceOrganisation =
     SourceOrganisation(randomAlphanumeric())
 
@@ -50,11 +47,6 @@ trait RandomThings {
 
   def randomStorageSpace = StorageSpace(
     randomAlphanumeric()
-  )
-
-  def randomBagId = BagId(
-    randomStorageSpace,
-    randomExternalIdentifier
   )
 
   def randomBagPath = BagPath(randomAlphanumeric(15))

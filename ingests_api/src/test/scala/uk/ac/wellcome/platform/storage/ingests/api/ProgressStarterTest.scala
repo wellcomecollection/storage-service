@@ -5,18 +5,13 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.platform.archive.common.models.{
-  IngestBagRequest,
-  StorageSpace
-}
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.{
-  ProgressGenerators,
-  ProgressTrackerFixture
-}
+import uk.ac.wellcome.platform.archive.common.models.{IngestBagRequest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

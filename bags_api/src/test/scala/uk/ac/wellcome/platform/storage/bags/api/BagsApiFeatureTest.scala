@@ -8,27 +8,19 @@ import io.circe.optics.JsonPath._
 import io.circe.parser._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
-import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
+import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
-import uk.ac.wellcome.platform.archive.display.{
-  DisplayLocation,
-  DisplayStorageSpace,
-  StandardDisplayProvider
-}
+import uk.ac.wellcome.platform.archive.display.{DisplayLocation, DisplayStorageSpace, StandardDisplayProvider}
 import uk.ac.wellcome.platform.archive.registrar.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
-import uk.ac.wellcome.platform.storage.bags.api.models.{
-  DisplayBag,
-  DisplayBagInfo,
-  DisplayBagManifest,
-  DisplayFileDigest
-}
+import uk.ac.wellcome.platform.storage.bags.api.models.{DisplayBag, DisplayBagInfo, DisplayBagManifest, DisplayFileDigest}
 import uk.ac.wellcome.storage.ObjectLocation
 
 class BagsApiFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
+    with BagIdGenerators
     with BagInfoGenerators
     with BagsApiFixture
     with IntegrationPatience
@@ -165,9 +157,9 @@ class BagsApiFeatureTest
     it("returns a 404 NotFound if no progress monitor matches id") {
       withConfiguredApp {
         case (_, metricsSender, baseUrl) =>
-          val bagId = randomBagId
+          val bagId = createBagId
           whenGetRequestReady(
-            s"$baseUrl/registrar/${bagId.space.underlying}/${bagId.externalIdentifier.underlying}") {
+            s"$baseUrl/registrar/${bagId.space}/${bagId.externalIdentifier}") {
             response =>
               response.status shouldBe StatusCodes.NotFound
 
@@ -181,9 +173,9 @@ class BagsApiFeatureTest
     it("returns a 500 error if looking up the bag fails") {
       withBrokenApp {
         case (_, metricsSender, baseUrl) =>
-          val bagId = randomBagId
+          val bagId = createBagId
           whenGetRequestReady(
-            s"$baseUrl/registrar/${bagId.space.underlying}/${bagId.externalIdentifier.underlying}") {
+            s"$baseUrl/registrar/${bagId.space}/${bagId.externalIdentifier}") {
             response =>
               response.status shouldBe StatusCodes.InternalServerError
 

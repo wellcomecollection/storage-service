@@ -1,19 +1,15 @@
-package uk.ac.wellcome.platform.archive.common.progress.fixtures
+package uk.ac.wellcome.platform.archive.common.generators
 
 import java.net.URI
 import java.time.Instant
 import java.util.UUID
 
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  StorageSpaceGenerators
-}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Status
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.ObjectLocation
 
-trait ProgressGenerators extends ExternalIdentifierGenerators with StorageSpaceGenerators {
+trait ProgressGenerators extends BagIdGenerators {
 
   val storageLocation = StorageLocation(
     StandardStorageProvider,
@@ -59,7 +55,7 @@ trait ProgressGenerators extends ExternalIdentifierGenerators with StorageSpaceG
   def createProgressStatusUpdateWith(
     id: UUID,
     status: Status = Progress.Accepted,
-    maybeBag: Option[BagId] = Some(randomBagId),
+    maybeBag: Option[BagId] = Some(createBagId),
     events: Seq[ProgressEvent] = List(createProgressEvent)): ProgressUpdate = {
     ProgressStatusUpdate(id, status, maybeBag, events)
   }
@@ -71,8 +67,6 @@ trait ProgressGenerators extends ExternalIdentifierGenerators with StorageSpaceG
                                     createProgressEvent)): ProgressUpdate = {
     ProgressStatusUpdate(id, status, Some(bagId), events)
   }
-
-  def createBagId = BagId(createStorageSpace, createExternalIdentifier)
 
   def createSpace = Namespace(randomAlphanumeric())
 
