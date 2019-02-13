@@ -72,6 +72,6 @@ module "bastion" {
 
   controlled_access_cidr_ingress = ["${local.admin_cidr_ingress}"]
 
-  key_name    = "${var.key_name}"
+  key_name    = "${local.key_name}"
   subnet_list = "${local.public_subnets}"
 }

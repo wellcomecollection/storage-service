@@ -18,7 +18,7 @@ module "stack-stewart" {
 
   private_subnets = "${local.private_subnets}"
 
-  ssh_key_name  = "${var.key_name}"
+  ssh_key_name  = "${local.key_name}"
   instance_type = "i3.2xlarge"
   infra_bucket  = "${aws_s3_bucket.infra.id}"
 
@@ -73,7 +73,7 @@ module "stack-stewart" {
 
   ingest_bucket_name = "${module.critical.ingest_drop_bucket_name}"
 
-  archive_oauth_details_enc = "${var.archive_oauth_details_enc}"
+  archive_oauth_details_enc = "${local.archive_oauth_details_enc}"
   account_id                = "${local.account_id}"
 
   use_encryption_key_policy = "${module.critical.use_encryption_key_policy}"
