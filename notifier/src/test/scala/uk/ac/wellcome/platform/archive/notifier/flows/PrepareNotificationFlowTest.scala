@@ -11,7 +11,10 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.progress.models.{Callback, ProgressCallbackStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Callback,
+  ProgressCallbackStatusUpdate
+}
 import uk.ac.wellcome.platform.archive.notifier.fixtures.NotifierGenerators
 
 class PrepareNotificationFlowTest

@@ -2,7 +2,11 @@ package uk.ac.wellcome.platform.archive.registrar.async
 
 import java.time.Instant
 
-import org.scalatest.concurrent.{IntegrationPatience, PatienceConfiguration, ScalaFutures}
+import org.scalatest.concurrent.{
+  IntegrationPatience,
+  PatienceConfiguration,
+  ScalaFutures
+}
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
@@ -11,7 +15,11 @@ import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, BagLocation}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, Progress, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  InfrequentAccessStorageProvider,
+  Progress,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.registrar.async.fixtures.RegistrarFixtures
 import uk.ac.wellcome.storage.dynamo._
 

@@ -4,7 +4,12 @@ import java.net.URI
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.github.tomakehurst.wiremock.client.WireMock.{equalToJson, postRequestedFor, urlPathEqualTo, _}
+import com.github.tomakehurst.wiremock.client.WireMock.{
+  equalToJson,
+  postRequestedFor,
+  urlPathEqualTo,
+  _
+}
 import org.apache.http.HttpStatus
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
@@ -13,9 +18,16 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.progress.models.{Callback, ProgressCallbackStatusUpdate, ProgressUpdate}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Callback,
+  ProgressCallbackStatusUpdate,
+  ProgressUpdate
+}
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixture}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{
+  LocalWireMockFixture,
+  NotifierFixture
+}
 
 class NotifierFeatureTest
     extends FunSpec

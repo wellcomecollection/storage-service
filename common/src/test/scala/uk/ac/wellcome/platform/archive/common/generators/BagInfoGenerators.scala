@@ -14,13 +14,10 @@ trait BagInfoGenerators extends ExternalIdentifierGenerators with RandomThings {
       externalIdentifier = externalIdentifier,
       payloadOxum = randomPayloadOxum,
       baggingDate = randomLocalDate,
-      sourceOrganisation = Some(
-        randomSourceOrganisation),
+      sourceOrganisation = Some(randomSourceOrganisation),
       externalDescription = externalDescription,
-      internalSenderIdentifier = Some(
-        randomInternalSenderIdentifier),
-      internalSenderDescription = Some(
-        randomInternalSenderDescription)
+      internalSenderIdentifier = Some(randomInternalSenderIdentifier),
+      internalSenderDescription = Some(randomInternalSenderDescription)
     )
 
   def createBagInfo: BagInfo = createBagInfoWith()

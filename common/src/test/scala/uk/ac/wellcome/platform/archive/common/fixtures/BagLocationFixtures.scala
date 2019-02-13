@@ -1,13 +1,24 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
 import uk.ac.wellcome.platform.archive.common.models._
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagInfo, BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagInfo,
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
+}
 
-trait BagLocationFixtures extends S3 with BagInfoGenerators with BagIt with StorageSpaceGenerators {
+trait BagLocationFixtures
+    extends S3
+    with BagInfoGenerators
+    with BagIt
+    with StorageSpaceGenerators {
   // TODO
   // def createBagLocationWith()
 

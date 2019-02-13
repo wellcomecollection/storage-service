@@ -10,7 +10,10 @@ import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.progress.models.{Callback, Progress}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Callback,
+  Progress
+}
 
 class CallbackNotificationFlowTest
     extends FunSpec

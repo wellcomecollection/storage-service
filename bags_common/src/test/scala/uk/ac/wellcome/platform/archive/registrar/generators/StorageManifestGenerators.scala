@@ -2,13 +2,25 @@ package uk.ac.wellcome.platform.archive.registrar.generators
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagInfo, BagItemPath}
-import uk.ac.wellcome.platform.archive.common.progress.models.{StandardStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
+}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagInfo,
+  BagItemPath
+}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  StandardStorageProvider,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.registrar.common.models._
 import uk.ac.wellcome.storage.ObjectLocation
 
-trait StorageManifestGenerators extends BagInfoGenerators with StorageSpaceGenerators {
+trait StorageManifestGenerators
+    extends BagInfoGenerators
+    with StorageSpaceGenerators {
   def createStorageManifestWith(
     bagInfo: BagInfo = createBagInfo,
     checksumAlgorithm: String = "sha256",
