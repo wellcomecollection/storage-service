@@ -29,11 +29,13 @@ def download_s3_object(b_number, source_bucket, source, destination):
         #
         # We use 'set()' to avoid trying the same key multiple times.
         #
-        alternative_bnums = set([
-            b_number.replace("x", "X"),
-            b_number.replace("b", "B"),
-            b_number.replace("x", "X").replace("b", "B"),
-        ]) - set([b_number])
+        alternative_bnums = set(
+            [
+                b_number.replace("x", "X"),
+                b_number.replace("b", "B"),
+                b_number.replace("x", "X").replace("b", "B"),
+            ]
+        ) - set([b_number])
 
         original_filename = os.path.basename(source)
 
@@ -76,7 +78,7 @@ def process_alto(root, bag_details, alto, skip_file_download):
 
         if skip_file_download:
             logging.debug(
-                "Skipping fetch of alto from %s to %s",current_location, destination
+                "Skipping fetch of alto from %s to %s", current_location, destination
             )
             continue
 
@@ -96,7 +98,7 @@ def process_alto(root, bag_details, alto, skip_file_download):
                 b_number=b_number,
                 source_bucket=source_bucket,
                 source=source,
-                destination=destination
+                destination=destination,
             )
 
 

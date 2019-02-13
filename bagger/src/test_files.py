@@ -26,32 +26,46 @@ def bucket(s3_resource):
     yield bucket
 
 
-@pytest.mark.parametrize("b_number, upload_key, source", [
-    ("b12345678", "8/7/6/5/b12345678/b12345678.xml", "8/7/6/5/b12345678/b12345678.xml"),
-
-    # B is capitalised in the S3 key
-    ("b12345678", "8/7/6/5/b12345678/B12345678.xml", "8/7/6/5/b12345678/b12345678.xml"),
-    ("b1234567x", "x/7/6/5/b12345678/B1234567x.xml", "x/7/6/5/b12345678/b1234567x.xml"),
-
-    # X is capitalised in the S3 key
-    ("b1234567x", "x/7/6/5/b12345678/b1234567X.xml", "x/7/6/5/b12345678/b1234567x.xml"),
-
-    # X and B are capitalised in the S3 key
-    ("b1234567x", "x/7/6/5/b12345678/B1234567X.xml", "x/7/6/5/b12345678/b1234567x.xml"),
-])
+@pytest.mark.parametrize(
+    "b_number, upload_key, source",
+    [
+        (
+            "b12345678",
+            "8/7/6/5/b12345678/b12345678.xml",
+            "8/7/6/5/b12345678/b12345678.xml",
+        ),
+        # B is capitalised in the S3 key
+        (
+            "b12345678",
+            "8/7/6/5/b12345678/B12345678.xml",
+            "8/7/6/5/b12345678/b12345678.xml",
+        ),
+        (
+            "b1234567x",
+            "x/7/6/5/b12345678/B1234567x.xml",
+            "x/7/6/5/b12345678/b1234567x.xml",
+        ),
+        # X is capitalised in the S3 key
+        (
+            "b1234567x",
+            "x/7/6/5/b12345678/b1234567X.xml",
+            "x/7/6/5/b12345678/b1234567x.xml",
+        ),
+        # X and B are capitalised in the S3 key
+        (
+            "b1234567x",
+            "x/7/6/5/b12345678/B1234567X.xml",
+            "x/7/6/5/b12345678/b1234567x.xml",
+        ),
+    ],
+)
 def test_downloads_object_correctly(bucket, tmp_path, b_number, upload_key, source):
     dst_path = str(tmp_path / "hello.txt")
 
-    bucket.put_object(
-        Body=b"hello world",
-        Key=upload_key
-    )
+    bucket.put_object(Body=b"hello world", Key=upload_key)
 
     download_s3_object(
-        b_number=b_number,
-        source_bucket=bucket,
-        source=source,
-        destination=dst_path
+        b_number=b_number, source_bucket=bucket, source=source, destination=dst_path
     )
 
     assert open(dst_path, "rb").read() == b"hello world"
