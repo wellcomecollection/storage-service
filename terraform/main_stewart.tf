@@ -35,7 +35,7 @@ module "stack-stewart" {
   nginx_image   = "${local.nginx_image}"
 
   archive_bucket_name              = "${module.critical.archive_bucket_name}"
-  archivist_queue_parallelism      = "${var.archivist_queue_parallelism}"
+  archivist_queue_parallelism      = "4"
   access_bucket_name               = "${module.critical.access_bucket_name}"
   static_content_bucket_name       = "${module.critical.static_content_bucket_name}"
   vhs_archive_manifest_table_name  = "${module.critical.manifests_table_name}"
