@@ -1,10 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.IngestBagRequest
 import uk.ac.wellcome.storage.ObjectLocation
 
-trait IngestBagRequestGenerators extends RandomThings {
+trait IngestBagRequestGenerators extends StorageSpaceGenerators {
   def createIngestBagRequest: IngestBagRequest = createIngestBagRequestWith()
 
   def createIngestBagRequestWith(
@@ -14,6 +13,6 @@ trait IngestBagRequestGenerators extends RandomThings {
       id = randomUUID,
       zippedBagLocation = ingestBagLocation,
       archiveCompleteCallbackUrl = None,
-      storageSpace = randomStorageSpace
+      storageSpace = createStorageSpace
     )
 }

@@ -5,7 +5,7 @@ import java.time.Instant
 import java.util.UUID
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.ObjectLocation
@@ -13,7 +13,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 class DisplayIngestTest
     extends FunSpec
     with Matchers
-    with RandomThings
+    with BagIdGenerators
     with TimeTestFixture {
 
   private val id = UUID.randomUUID()
@@ -27,7 +27,7 @@ class DisplayIngestTest
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
   it("creates a DisplayIngest from Progress") {
-    val bagId = randomBagId
+    val bagId = createBagId
     val progress: Progress = Progress(
       id,
       StorageLocation(

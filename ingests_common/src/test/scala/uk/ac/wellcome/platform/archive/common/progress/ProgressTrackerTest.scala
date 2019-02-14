@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.progress
 
 import java.time.Instant
+import java.util.UUID
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.{
@@ -13,10 +14,9 @@ import org.mockito.Mockito.when
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.{
-  ProgressGenerators,
-  ProgressTrackerFixture
-}
+import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
+import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.platform.archive.common.progress.monitor.IdConstraintError
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
@@ -158,7 +158,7 @@ class ProgressTrackerTest
             storedProgress.events.foreach(event =>
               assertRecent(event.createdDate))
 
-            storedProgress.bag shouldBe Some(bagId)
+            storedProgress.bag shouldBe progressUpdate.affectedBag
           }
         }
       }
@@ -190,7 +190,7 @@ class ProgressTrackerTest
       withProgressTrackerTable { table =>
         withProgressTracker(table) { progressTracker =>
           whenReady(progressTracker.initialise(createProgress)) { progress =>
-            val someBagId = Some(randomBagId)
+            val someBagId = Some(createBagId)
             val progressUpdate = ProgressStatusUpdate(
               progress.id,
               Progress.Completed,
@@ -375,4 +375,12 @@ class ProgressTrackerTest
       }
     }
   }
+
+  private def createProgressBagUpdateWith(id: UUID,
+                                          bagId: BagId): ProgressUpdate =
+    createProgressStatusUpdateWith(
+      id = id,
+      status = Progress.Processing,
+      maybeBag = Some(bagId)
+    )
 }

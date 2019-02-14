@@ -2,10 +2,8 @@ package uk.ac.wellcome.platform.archive.common.progress.models
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.{
-  ProgressGenerators,
-  TimeTestFixture
-}
+import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
+import uk.ac.wellcome.platform.archive.common.progress.fixtures.TimeTestFixture
 
 class ProgressTest
     extends FunSpec

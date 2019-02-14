@@ -73,7 +73,7 @@ class StorageManifestFactoryTest
         val bagLocation = bagit.BagLocation(
           storageNamespace = bucket.name,
           storagePrefix = "archive",
-          storageSpace = randomStorageSpace,
+          storageSpace = createStorageSpace,
           bagPath = randomBagPath
         )
         val bagManifestUpdate = createBagManifestUpdateWith(

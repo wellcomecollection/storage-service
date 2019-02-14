@@ -4,7 +4,6 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Completed
 import uk.ac.wellcome.platform.archive.progress_async.fixtures.{
   ProgressAsyncFixture => ProgressFixture
@@ -14,7 +13,6 @@ class ProgressAsyncFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with ProgressTrackerFixture
     with ProgressFixture
     with IntegrationPatience {
 
@@ -24,7 +22,7 @@ class ProgressAsyncFeatureTest
       case (queue, topic, table, app) => {
         withProgressTracker(table) { monitor =>
           withProgress(monitor) { progress =>
-            val someBagId = Some(randomBagId)
+            val someBagId = Some(createBagId)
             val progressStatusUpdate =
               createProgressStatusUpdateWith(
                 id = progress.id,

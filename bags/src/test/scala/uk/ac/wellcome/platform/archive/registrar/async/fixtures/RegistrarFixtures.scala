@@ -40,7 +40,7 @@ trait RegistrarFixtures
     queuePair: QueuePair,
     storageBucket: Bucket,
     archiveRequestId: UUID = randomUUID,
-    storageSpace: StorageSpace = randomStorageSpace,
+    storageSpace: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo
   )(testWith: TestWith[(BagLocation, BagLocation), R]): R =
     withBag(

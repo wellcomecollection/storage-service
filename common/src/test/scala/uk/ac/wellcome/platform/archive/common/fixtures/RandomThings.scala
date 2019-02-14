@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 import java.time.LocalDate
 import java.util.UUID
 
-import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit._
 
 import scala.util.Random
@@ -22,17 +21,7 @@ trait RandomThings {
     str.updated(spaceIndex, ' ')
   }
 
-  def randomPort = {
-    val startPort = 10000
-    val portRange = 10000
-
-    startPort + Random.nextInt(portRange)
-  }
-
   def randomUUID = UUID.randomUUID()
-
-  def randomExternalIdentifier =
-    ExternalIdentifier(randomAlphanumeric())
 
   def randomSourceOrganisation =
     SourceOrganisation(randomAlphanumeric())
@@ -54,15 +43,6 @@ trait RandomThings {
     val maxValue = 1999999998
     LocalDate.ofEpochDay(startRange + Random.nextInt(maxValue))
   }
-
-  def randomStorageSpace = StorageSpace(
-    randomAlphanumeric()
-  )
-
-  def randomBagId = BagId(
-    randomStorageSpace,
-    randomExternalIdentifier
-  )
 
   def randomBagPath = BagPath(randomAlphanumeric(15))
 }
