@@ -38,10 +38,4 @@ variable "bagger_dds_api_secret" {}
 
 variable "bagger_dds_asset_prefix" {}
 
-# trigger_bag_ingest
-
-variable "archivist_queue_parallelism" {
-  default = "1"
-}
-
 variable "archive_oauth_details_enc" {}

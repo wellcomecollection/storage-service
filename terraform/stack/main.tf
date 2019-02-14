@@ -12,6 +12,9 @@ module "archivist" {
   service_name                     = "${var.namespace}-archivist"
   aws_region                       = "${var.aws_region}"
 
+  max_capacity                     = "2"
+  desired_task_count               = "2"
+
   env_vars = {
     queue_url              = "${module.archivist_queue.url}"
     queue_parallelism      = "${var.archivist_queue_parallelism}"
