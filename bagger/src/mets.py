@@ -82,8 +82,7 @@ the AMD to start at _0001
     du_xmldata = root.findall(x_path, namespaces)
     if len(du_xmldata) != 1:
         raise KeyError(
-            "Expecting one DeliverableUnit XML block; saw %d" %
-            len(du_xmldata)
+            "Expecting one DeliverableUnit XML block; saw %d" % len(du_xmldata)
         )
 
     amd_sec = root.find("./mets:amdSec[@ID='AMD']", namespaces)
