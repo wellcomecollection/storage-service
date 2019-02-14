@@ -154,7 +154,7 @@ class ProgressTrackerTest
             storedProgress.events.foreach(event =>
               assertRecent(event.createdDate))
 
-            storedProgress.bag shouldBe progressUpdate.
+            storedProgress.bag shouldBe progressUpdate.affectedBag
           }
         }
       }
