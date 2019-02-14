@@ -38,8 +38,6 @@ locals {
 
   workflow_bucket_name = "wellcomecollection-workflow-export-bagit"
 
-  admin_cidr_ingress = "195.143.129.128/25"
-
   bagger_progress_table     = "storage-migration-status"
   bagger_progress_table_arn = "arn:aws:dynamodb:eu-west-1:975596993436:table/storage-migration-status"
 

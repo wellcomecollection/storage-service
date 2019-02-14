@@ -4,14 +4,17 @@ variable "env_vars" {
 
 variable "env_vars_length" {}
 
-variable "vpc_id" {}
+variable "secret_env_vars" {
+  type    = "map"
+  default = {}
+}
+
+variable "secret_env_vars_length" {
+  default = 0
+}
 
 variable "subnets" {
   type = "list"
-}
-
-variable "aws_region" {
-  default = "eu-west-1"
 }
 
 variable "container_image" {}
