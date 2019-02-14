@@ -20,13 +20,13 @@ class BagReplicatorFeatureTest
     withApp {
       case (
           sourceBucket,
-          queuePair,
+          queue,
           destinationBucket,
           dstRootPath,
           progressTopic,
           outgoingTopic) =>
         val requestId = randomUUID
-        withBagNotification(queuePair, sourceBucket, requestId) {
+        withBagNotification(queue, sourceBucket, requestId) {
           srcBagLocation =>
             eventually {
               val dstBagLocation = srcBagLocation.copy(
@@ -49,7 +49,6 @@ class BagReplicatorFeatureTest
                   events should have size 1
                   events.head.description shouldBe s"Bag replicated successfully"
               }
-
             }
         }
     }

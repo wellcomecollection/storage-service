@@ -48,7 +48,7 @@ class NotifierFeatureTest
     it("makes a POST request when it receives a Progress with a callback") {
       withLocalWireMockClient(callbackHost, callbackPort) { wireMock =>
         withNotifier {
-          case (queuePair, _, notifier) =>
+          case (queue, _, notifier) =>
             val requestId = randomUUID
 
             val callbackUri =
@@ -60,7 +60,7 @@ class NotifierFeatureTest
             )
 
             sendNotificationToSQS(
-              queuePair.queue,
+              queue,
               CallbackNotification(requestId, callbackUri, progress)
             )
 
@@ -113,7 +113,7 @@ class NotifierFeatureTest
       forAll(successfulStatuscodes) { statusResponse: Int =>
         withLocalWireMockClient(callbackHost, callbackPort) { wireMock =>
           withNotifier {
-            case (queuePair, topic, notifier) =>
+            case (queue, topic, notifier) =>
               val requestId = randomUUID
 
               val callbackPath = s"/callback/$requestId"
@@ -132,7 +132,7 @@ class NotifierFeatureTest
               )
 
               sendNotificationToSQS[CallbackNotification](
-                queuePair.queue,
+                queue,
                 CallbackNotification(requestId, callbackUri, progress)
               )
 
@@ -184,7 +184,7 @@ class NotifierFeatureTest
     it(
       "sends a ProgressUpdate when it receives Progress with a callback it cannot fulfill") {
       withNotifier {
-        case (queuePair, topic, notifier) =>
+        case (queue, topic, notifier) =>
           val requestId = randomUUID
 
           val callbackUri = new URI(
@@ -197,7 +197,7 @@ class NotifierFeatureTest
           )
 
           sendNotificationToSQS[CallbackNotification](
-            queuePair.queue,
+            queue,
             CallbackNotification(requestId, callbackUri, progress)
           )
 
