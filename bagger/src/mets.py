@@ -81,7 +81,10 @@ the AMD to start at _0001
     x_path = ".//mets:xmlData[tessella:DeliverableUnit]"
     du_xmldata = root.findall(x_path, namespaces)
     if len(du_xmldata) != 1:
-        raise KeyError("Expecting one DeliverableUnit XML block")
+        raise KeyError(
+            "Expecting one DeliverableUnit XML block; saw %d" %
+            len(du_xmldata)
+        )
 
     amd_sec = root.find("./mets:amdSec[@ID='AMD']", namespaces)
     # assume the first tech_md is the deliverable unit - if it isn't,
