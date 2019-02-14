@@ -8,7 +8,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
+import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   ArchiveMessaging,
@@ -37,7 +37,7 @@ trait RegistrarFixtures
     with StorageManifestVHSFixture {
 
   def withBagNotification[R](
-    queuePair: QueuePair,
+    queue: Queue,
     storageBucket: Bucket,
     archiveRequestId: UUID = randomUUID,
     storageSpace: StorageSpace = createStorageSpace,
@@ -55,10 +55,7 @@ trait RegistrarFixtures
         dstBagLocation = dstBagLocation
       )
 
-      sendNotificationToSQS(
-        queuePair.queue,
-        replicationResult
-      )
+      sendNotificationToSQS(queue, replicationResult)
       testWith((srcBagLocation, dstBagLocation))
     }
 

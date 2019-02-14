@@ -8,7 +8,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
+import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.archivist.Archivist
 import uk.ac.wellcome.platform.archive.archivist.generators.BagUploaderConfigGenerators
@@ -34,7 +34,7 @@ trait ArchivistFixtures
     with BagUploaderConfigGenerators
     with IngestBagRequestGenerators {
 
-  def sendBag[R](file: File, ingestBucket: Bucket, queuePair: QueuePair)(
+  def sendBag[R](file: File, ingestBucket: Bucket, queue: Queue)(
     testWith: TestWith[IngestBagRequest, R]): R = {
 
     val ingestBagRequest = createIngestBagRequestWith(
@@ -49,17 +49,13 @@ trait ArchivistFixtures
 
     s3Client.putObject(bucket, key, file)
 
-    sendNotificationToSQS(
-      queuePair.queue,
-      ingestBagRequest
-    )
-
+    sendNotificationToSQS(queue, ingestBagRequest)
     testWith(ingestBagRequest)
   }
 
   def createAndSendBag[R](
     ingestBucket: Bucket,
-    queuePair: QueuePair,
+    queue: Queue,
     bagInfo: BagInfo = createBagInfo,
     dataFileCount: Int = 12,
     createDigest: String => String = createValidDigest,
@@ -79,18 +75,18 @@ trait ArchivistFixtures
       createBagItFile = createBagItFile,
       createBagInfoFile = createBagInfoFile
     ) { zipFile =>
-      sendBag(zipFile, ingestBucket, queuePair) { ingestBagRequest =>
+      sendBag(zipFile, ingestBucket, queue) { ingestBagRequest =>
         testWith(ingestBagRequest)
       }
     }
 
   def withApp[R](storageBucket: Bucket,
-                 queuePair: QueuePair,
+                 queue: Queue,
                  nextTopic: Topic,
                  progressTopic: Topic,
                  parallelism: Int = 10)(testWith: TestWith[Archivist, R]): R =
     withActorSystem { implicit actorSystem =>
-      withArchiveMessageStream[NotificationMessage, Unit, R](queuePair.queue) {
+      withArchiveMessageStream[NotificationMessage, Unit, R](queue) {
         messageStream =>
           implicit val s3 = s3Client
           implicit val sns = snsClient
@@ -120,7 +116,7 @@ trait ArchivistFixtures
             withLocalS3Bucket { storageBucket =>
               withApp(
                 storageBucket,
-                queuePair,
+                queuePair.queue,
                 nextTopic,
                 progressTopic,
                 parallelism) { _ =>

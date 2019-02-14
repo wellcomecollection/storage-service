@@ -7,7 +7,7 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
+import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.notifier.Notifier
 import uk.ac.wellcome.platform.archive.common.fixtures.{ArchiveMessaging, BagIt}
@@ -43,14 +43,12 @@ trait NotifierFixture
       }
     }
 
-  def withNotifier[R](
-    testWith: TestWith[(QueuePair, Topic, Notifier), R]): R = {
-    withLocalSqsQueueAndDlqAndTimeout(15)(queuePair => {
+  def withNotifier[R](testWith: TestWith[(Queue, Topic, Notifier), R]): R =
+    withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 15) { queuePair =>
       withLocalSnsTopic { topic =>
         withApp(queue = queuePair.queue, topic = topic) { app =>
-          testWith((queuePair, topic, app))
+          testWith((queuePair.queue, topic, app))
         }
       }
-    })
-  }
+    }
 }

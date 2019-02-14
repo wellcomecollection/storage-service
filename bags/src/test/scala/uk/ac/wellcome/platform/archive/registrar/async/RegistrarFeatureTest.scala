@@ -50,7 +50,7 @@ class RegistrarFeatureTest
         val bagInfo = createBagInfo
 
         withBagNotification(
-          queuePair,
+          queuePair.queue,
           storageBucket,
           requestId,
           storageSpace,
@@ -147,13 +147,9 @@ class RegistrarFeatureTest
 
   it("discards messages if it fails writing to the VHS") {
     withRegistrarAndBrokenVHS {
-      case (
-          storageBucket,
-          queuePair @ QueuePair(queue, dlq),
-          progressTopic,
-          _) =>
-        withBagNotification(queuePair, storageBucket) { _ =>
-          withBagNotification(queuePair, storageBucket) { _ =>
+      case (storageBucket, QueuePair(queue, dlq), progressTopic, _) =>
+        withBagNotification(queue, storageBucket) { _ =>
+          withBagNotification(queue, storageBucket) { _ =>
             eventually {
               listMessagesReceivedFromSNS(progressTopic) shouldBe empty
 

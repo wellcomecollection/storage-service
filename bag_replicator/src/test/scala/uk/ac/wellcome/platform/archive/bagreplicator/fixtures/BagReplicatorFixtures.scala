@@ -9,7 +9,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
+import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.bagreplicator.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.config.{
@@ -37,7 +37,7 @@ trait BagReplicatorFixtures
     with ArchiveMessaging {
 
   def withBagNotification[R](
-    queuePair: QueuePair,
+    queue: Queue,
     storageBucket: Bucket,
     archiveRequestId: UUID = randomUUID
   )(testWith: TestWith[BagLocation, R]): R =
@@ -47,22 +47,18 @@ trait BagReplicatorFixtures
         srcBagLocation = bagLocation
       )
 
-      sendNotificationToSQS(
-        queuePair.queue,
-        replicationRequest
-      )
-
+      sendNotificationToSQS(queue, replicationRequest)
       testWith(bagLocation)
     }
 
   def withBagReplicator[R](
-    queuePair: QueuePair,
+    queue: Queue,
     progressTopic: Topic,
     outgoingTopic: Topic,
     dstBucket: Bucket,
     dstRootPath: String)(testWith: TestWith[BagReplicator, R]): R =
     withActorSystem { implicit actorSystem =>
-      withArchiveMessageStream[NotificationMessage, Unit, R](queuePair.queue) {
+      withArchiveMessageStream[NotificationMessage, Unit, R](queue) {
         messageStream =>
           val bagReplicator = new BagReplicator(
             s3Client = s3Client,
@@ -82,16 +78,15 @@ trait BagReplicatorFixtures
     }
 
   def withApp[R](
-    testWith: TestWith[(Bucket, QueuePair, Bucket, String, Topic, Topic), R])
-    : R = {
-    withLocalSqsQueueAndDlqAndTimeout(15) { queuePair =>
+    testWith: TestWith[(Bucket, Queue, Bucket, String, Topic, Topic), R]): R =
+    withLocalSqsQueue { queue =>
       withLocalSnsTopic { progressTopic =>
         withLocalSnsTopic { outgoingTopic =>
           withLocalS3Bucket { sourceBucket =>
             withLocalS3Bucket { destinationBucket =>
               val dstRootPath = "storage-root"
               withBagReplicator(
-                queuePair,
+                queue,
                 progressTopic,
                 outgoingTopic,
                 destinationBucket,
@@ -99,7 +94,7 @@ trait BagReplicatorFixtures
                 testWith(
                   (
                     sourceBucket,
-                    queuePair,
+                    queue,
                     destinationBucket,
                     dstRootPath,
                     progressTopic,
@@ -110,7 +105,6 @@ trait BagReplicatorFixtures
         }
       }
     }
-  }
 
   def verifyBagCopied(src: BagLocation, dst: BagLocation): Assertion = {
     val sourceItems = getObjectSummaries(src)
