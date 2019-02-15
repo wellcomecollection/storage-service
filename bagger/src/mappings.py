@@ -1,5 +1,6 @@
 # to be added to...
 # bagger will throw an exception if the format in METS is not a key in this dictionary.
+# Based on https://www.digipres.org/formats/sources/pronom/formats/
 PRONOM = {
     "JP2 (JPEG 2000 part 1)": "x-fmt/392",
     "JPEG2000": "x-fmt/392",
@@ -17,6 +18,7 @@ PRONOM = {
     "Acrobat PDF/X - Portable Document Format - Exchange 1a:2001": "fmt/157",
     "Acrobat PDF/X - Portable Document Format - Exchange PDF/X-4": "fmt/488",
     "Extensible Markup Language 1.0": "fmt/101",
+    "Waveform Audio (PCMWAVEFORMAT)": "fmt/141",
 }
 
 FOR_CONSIDERATION = {
