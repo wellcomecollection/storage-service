@@ -49,9 +49,6 @@ class UploadItemFlowTest
             result shouldBe 'right
             result.right.get._1 shouldBe archiveItemJob
 
-            println(f"** $archiveItemJob")
-            println(f"** ${archiveItemJob.archiveJob.bagUploadLocation.completePath}/$fileName")
-
             getContentFromS3(
               bucket,
               s"${archiveItemJob.archiveJob.bagUploadLocation.completePath}/$fileName") shouldBe fileContent
