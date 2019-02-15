@@ -69,7 +69,7 @@ object ArchiveItemJobCreator {
                 zipEntryPointer = zipEntryPointer,
                 uploadLocation = UploadLocationBuilder.create(
                   bagUploadLocation = job.bagUploadLocation,
-                  bagPathInZip = zipEntryPointer.zipPath,
+                  bagPathInZip = bagItem.path.underlying,
                   maybeBagRootPathInZip = job.maybeBagRootPathInZip
                 ),
                 digest = bagItem.checksum
