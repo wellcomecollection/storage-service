@@ -49,7 +49,7 @@ object ArchiveTagManifestFlow extends Logging {
       ),
       uploadLocation = UploadLocationBuilder.create(
         bagUploadLocation = archiveJob.bagUploadLocation,
-        bagPathInZip = archiveJob.tagManifestLocation.underlying,
+        itemPathInZip = archiveJob.tagManifestLocation.underlying,
         maybeBagRootPathInZip = archiveJob.maybeBagRootPathInZip
       )
     )

@@ -78,7 +78,7 @@ object ArchiveItemJobCreator {
       ),
       uploadLocation = UploadLocationBuilder.create(
         bagUploadLocation = job.bagUploadLocation,
-        bagPathInZip = bagDigestFile.path.underlying,
+        itemPathInZip = bagDigestFile.path.underlying,
         maybeBagRootPathInZip = job.maybeBagRootPathInZip
       ),
       digest = bagDigestFile.checksum

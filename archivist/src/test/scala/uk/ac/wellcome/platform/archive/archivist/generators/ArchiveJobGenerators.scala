@@ -58,28 +58,6 @@ trait ArchiveJobGenerators
     )
   }
 
-  def createArchiveJobWithA(bagIdentifier: ExternalIdentifier,
-                            file: File,
-                            maybeBagRootPathInZip: Option[String] = None,
-                            bagUploadLocation: BagLocation,
-                            tagManifestLocation: BagItemPath = BagItemPath("tagmanifest-sha256.txt"),
-                            bagManifestLocations: List[BagItemPath] = List(
-                             BagItemPath("manifest-sha256.txt"),
-                             BagItemPath("tagmanifest-sha256.txt")
-                           ),
-                            config: BagItConfig = BagItConfig()
-                          ): ArchiveJob = {
-    ArchiveJob(
-      externalIdentifier = bagIdentifier,
-      zipFile = new ZipFile(file),
-      maybeBagRootPathInZip = maybeBagRootPathInZip,
-      bagUploadLocation = bagUploadLocation,
-      tagManifestLocation = tagManifestLocation,
-      bagManifestLocations = bagManifestLocations,
-      config = config
-    )
-  }
-
   // todo
   def createArchiveJobWith(
     file: File,

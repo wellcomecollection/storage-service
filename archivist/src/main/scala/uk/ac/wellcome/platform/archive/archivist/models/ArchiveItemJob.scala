@@ -24,11 +24,11 @@ case class DigestItemJob(
 
 object UploadLocationBuilder {
   def create(bagUploadLocation: BagLocation,
-             bagPathInZip: String,
+             itemPathInZip: String,
              maybeBagRootPathInZip: Option[String] = None): ObjectLocation = {
     val bagItemUploadLocation = BagItemLocation(
       bagLocation = bagUploadLocation,
-      bagItemPath = BagItemPath(uploadItemPath(maybeBagRootPathInZip, bagPathInZip))
+      bagItemPath = BagItemPath(uploadItemPath(maybeBagRootPathInZip, itemPathInZip))
     )
     bagItemUploadLocation.objectLocation
   }
