@@ -8,7 +8,10 @@ import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.archivist.models.DigestItemJob
 import uk.ac.wellcome.platform.archive.archivist.models.errors.FileNotFoundError
 import uk.ac.wellcome.platform.archive.archivist.zipfile.ZipFileReader
-import uk.ac.wellcome.platform.archive.common.flows.{FoldEitherFlow, OnErrorFlow}
+import uk.ac.wellcome.platform.archive.common.flows.{
+  FoldEitherFlow,
+  OnErrorFlow
+}
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 /** This flow extracts an item from a ZIP file, uploads it to S3 and validates
@@ -30,10 +33,12 @@ object UploadDigestItemFlow {
           NotUsed] = {
 
     Flow[DigestItemJob]
-      .map(job => (
-        job,
-        ZipFileReader.maybeInputStream(job.zipEntryPointer)
-      ))
+      .map(
+        job =>
+          (
+            job,
+            ZipFileReader.maybeInputStream(job.zipEntryPointer)
+        ))
       .map {
         case (job, option) =>
           option
@@ -44,8 +49,8 @@ object UploadDigestItemFlow {
         FoldEitherFlow[
           ArchiveError[DigestItemJob],
           (DigestItemJob, InputStream),
-          Either[ArchiveError[DigestItemJob], DigestItemJob]](
-          OnErrorFlow())(UploadDigestInputStreamFlow(parallelism)))
+          Either[ArchiveError[DigestItemJob], DigestItemJob]](OnErrorFlow())(
+          UploadDigestInputStreamFlow(parallelism)))
   }
 
 }

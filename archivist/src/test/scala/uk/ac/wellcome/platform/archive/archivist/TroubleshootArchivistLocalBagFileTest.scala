@@ -16,8 +16,8 @@ class TroubleshootArchivistLocalBagFileTest
     withArchivist() {
       case (ingestBucket, storageBucket, QueuePair(queue, _), _, _) =>
         val file = new File(
-            List(
-              System.getProperty("user.home"),
+          List(
+            System.getProperty("user.home"),
             "Desktop",
             "b30529943.zip"
           ).mkString("/")

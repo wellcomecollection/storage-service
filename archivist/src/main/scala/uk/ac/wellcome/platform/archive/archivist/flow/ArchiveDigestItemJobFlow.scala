@@ -5,7 +5,10 @@ import akka.stream.scaladsl.Flow
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.archivist.models.DigestItemJob
-import uk.ac.wellcome.platform.archive.common.flows.{FoldEitherFlow, OnErrorFlow}
+import uk.ac.wellcome.platform.archive.common.flows.{
+  FoldEitherFlow,
+  OnErrorFlow
+}
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 object ArchiveDigestItemJobFlow extends Logging {

@@ -7,18 +7,22 @@ import uk.ac.wellcome.platform.archive.archivist.models.errors.FileNotFoundError
 import uk.ac.wellcome.platform.archive.archivist.models._
 import uk.ac.wellcome.platform.archive.archivist.zipfile.ZipFileReader
 import uk.ac.wellcome.platform.archive.common.bag.BagDigestFileCreator
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagItemPath
+}
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 object ArchiveItemJobCreator {
+
   /** Returns a list of all the items inside a bag that the manifest(s)
     * refer to.
     *
     * If any of the manifests are incorrectly formatted, it returns an error.
     *
     */
-  def createArchiveDigestItemJobs(job: ArchiveJob)
-    : Either[ArchiveError[ArchiveJob], List[DigestItemJob]] =
+  def createArchiveDigestItemJobs(
+    job: ArchiveJob): Either[ArchiveError[ArchiveJob], List[DigestItemJob]] =
     job.bagManifestLocations
       .map { manifestLocation: BagItemPath =>
         ZipEntryPointer(
@@ -57,19 +61,19 @@ object ArchiveItemJobCreator {
       manifestFileLines
         .filter { _.nonEmpty }
         .traverse { manifestLine =>
-          BagDigestFileCreator.create(
+          BagDigestFileCreator
+            .create(
               manifestLine.trim(),
               job,
               job.maybeBagRootPathInZip,
               manifestZipEntryPointer.zipPath)
-            .map( bagDigestFile =>
-              createDigestItemJob(job, bagDigestFile)
-            )
+            .map(bagDigestFile => createDigestItemJob(job, bagDigestFile))
         }
     }
   }
 
-  private def createDigestItemJob(job: ArchiveJob, bagDigestFile: BagDigestFile) = {
+  private def createDigestItemJob(job: ArchiveJob,
+                                  bagDigestFile: BagDigestFile) = {
     DigestItemJob(
       archiveJob = job,
       zipEntryPointer = ZipEntryPointer(

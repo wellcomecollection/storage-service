@@ -5,7 +5,10 @@ import akka.stream.scaladsl.Flow
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.archivist.models._
-import uk.ac.wellcome.platform.archive.archivist.models.errors.{ArchiveItemJobError, ArchiveJobError}
+import uk.ac.wellcome.platform.archive.archivist.models.errors.{
+  ArchiveItemJobError,
+  ArchiveJobError
+}
 import uk.ac.wellcome.platform.archive.common.flows.FoldEitherFlow
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
@@ -40,7 +43,8 @@ object ArchiveTagManifestFlow extends Logging {
         )
       )
 
-  private def createTagManifestItemJob(archiveJob: ArchiveJob): TagManifestItemJob =
+  private def createTagManifestItemJob(
+    archiveJob: ArchiveJob): TagManifestItemJob =
     TagManifestItemJob(
       archiveJob = archiveJob,
       zipEntryPointer = ZipEntryPointer(

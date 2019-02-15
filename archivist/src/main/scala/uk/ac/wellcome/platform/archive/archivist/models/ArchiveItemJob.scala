@@ -1,6 +1,10 @@
 package uk.ac.wellcome.platform.archive.archivist.models
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagItemLocation, BagItemPath, BagLocation}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagItemLocation,
+  BagItemPath,
+  BagLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 trait ArchiveItemJob {
@@ -28,15 +32,17 @@ object UploadLocationBuilder {
              maybeBagRootPathInZip: Option[String] = None): ObjectLocation = {
     val bagItemUploadLocation = BagItemLocation(
       bagLocation = bagUploadLocation,
-      bagItemPath = BagItemPath(uploadItemPath(maybeBagRootPathInZip, itemPathInZip))
+      bagItemPath =
+        BagItemPath(uploadItemPath(maybeBagRootPathInZip, itemPathInZip))
     )
     bagItemUploadLocation.objectLocation
   }
 
-  private def uploadItemPath(maybeBagRootPathInZip: Option[String], zipPath: String): String =
+  private def uploadItemPath(maybeBagRootPathInZip: Option[String],
+                             zipPath: String): String =
     maybeBagRootPathInZip match {
-      case Some (bagRootPathInZip) => stripPrefix(bagRootPathInZip, zipPath)
-      case None => zipPath
+      case Some(bagRootPathInZip) => stripPrefix(bagRootPathInZip, zipPath)
+      case None                   => zipPath
     }
 
   private def stripPrefix(prefix: String, path: String): String = {

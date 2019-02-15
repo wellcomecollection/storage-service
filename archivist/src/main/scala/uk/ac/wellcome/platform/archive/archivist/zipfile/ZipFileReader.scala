@@ -13,7 +13,8 @@ object ZipFileReader extends Logging {
     * it returns None rather than throwing an exception.
     *
     */
-  def maybeInputStream(zipEntryPointer: ZipEntryPointer): Option[InputStream] = {
+  def maybeInputStream(
+    zipEntryPointer: ZipEntryPointer): Option[InputStream] = {
     val zipFile = zipEntryPointer.zipFile
     debug(s"Getting ZipEntryPointer ${zipEntryPointer.zipPath}")
 
