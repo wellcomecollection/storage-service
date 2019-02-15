@@ -53,32 +53,35 @@ object ArchiveItemJobCreator {
           .mkString
           .split("\n")
           .toList
+
       manifestFileLines
         .filter { _.nonEmpty }
         .traverse { manifestLine =>
-          BagDigestFileCreator
-            .create(
+          BagDigestFileCreator.create(
               manifestLine.trim(),
               job,
               job.maybeBagRootPathInZip,
               manifestZipEntryPointer.zipPath)
-            .map { bagDigestFile =>
-              DigestItemJob(
-                archiveJob = job,
-                zipEntryPointer = ZipEntryPointer(
-                  zipFile = job.zipFile,
-                  zipPath = bagDigestFile.path.underlying
-                ),
-                uploadLocation = UploadLocationBuilder.create(
-                  bagUploadLocation = job.bagUploadLocation,
-                  bagPathInZip = bagDigestFile.path.underlying,
-                  maybeBagRootPathInZip = job.maybeBagRootPathInZip
-                ),
-                digest = bagDigestFile.checksum
-              )
-            }
+            .map( bagDigestFile =>
+              createDigestItemJob(job, bagDigestFile)
+            )
         }
     }
   }
 
+  private def createDigestItemJob(job: ArchiveJob, bagDigestFile: BagDigestFile) = {
+    DigestItemJob(
+      archiveJob = job,
+      zipEntryPointer = ZipEntryPointer(
+        zipFile = job.zipFile,
+        zipPath = bagDigestFile.path.underlying
+      ),
+      uploadLocation = UploadLocationBuilder.create(
+        bagUploadLocation = job.bagUploadLocation,
+        bagPathInZip = bagDigestFile.path.underlying,
+        maybeBagRootPathInZip = job.maybeBagRootPathInZip
+      ),
+      digest = bagDigestFile.checksum
+    )
+  }
 }
