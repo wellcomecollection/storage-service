@@ -1,30 +1,33 @@
 package uk.ac.wellcome.platform.archive.notifier
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import com.amazonaws.services.sns.model.PublishResult
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.messaging.typesafe.SNSBuilder
+import uk.ac.wellcome.messaging.typesafe.{SNSBuilder, SQSBuilder}
 import uk.ac.wellcome.platform.archive.common.config.builders._
+import uk.ac.wellcome.platform.archive.notifier.services.{
+  CallbackUrlService,
+  NotifierWorkerService
+}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+
+import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
-    implicit val materializer: ActorMaterializer =
-      AkkaBuilder.buildActorMaterializer()
+    implicit val executionContext: ExecutionContext =
+      AkkaBuilder.buildExecutionContext()
 
-    val messageStream =
-      MessagingBuilder.buildMessageStream[NotificationMessage, PublishResult](
-        config)
+    val callbackUrlService = new CallbackUrlService(
+      contextURL = HTTPServerBuilder.buildContextURL(config)
+    )
 
-    new Notifier(
-      messageStream = messageStream,
-      snsClient = SNSBuilder.buildSNSClient(config),
-      snsConfig = SNSBuilder.buildSNSConfig(config),
-      contextUrl = HTTPServerBuilder.buildContextURL(config)
+    new NotifierWorkerService(
+      callbackUrlService = callbackUrlService,
+      sqsStream = SQSBuilder.buildSQSStream[NotificationMessage](config),
+      snsWriter = SNSBuilder.buildSNSWriter(config)
     )
   }
 }

@@ -1,29 +1,25 @@
 package uk.ac.wellcome.platform.archive.notifier.services
 
-import java.net.{URI, URL}
+import java.net.URI
 import java.util.UUID
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{
-  LocalWireMockFixture,
-  NotifierFixture
-}
-import scala.concurrent.ExecutionContext.Implicits.global
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{CallbackUrlServiceFixture, LocalWireMockFixture, WorkerServiceFixture}
 
 class CallbackUrlServiceTest
   extends FunSpec
     with Matchers
     with ScalaFutures
+    with IntegrationPatience
     with Akka
+    with CallbackUrlServiceFixture
     with LocalWireMockFixture
-    with NotifierFixture
+    with WorkerServiceFixture
     with ProgressGenerators {
 
   it("returns a Success if the request succeeds") {
@@ -66,12 +62,4 @@ class CallbackUrlServiceTest
   }
 
   // TODO: Add a test that it sends the correct POST payload.
-
-  private def withCallbackUrlService[R](
-    testWith: TestWith[CallbackUrlService, R])(implicit actorSystem: ActorSystem): R = {
-    val callbackUrlService = new CallbackUrlService(
-      contextURL = new URL("http://localhost/context.json")
-    )
-    testWith(callbackUrlService)
-  }
 }
