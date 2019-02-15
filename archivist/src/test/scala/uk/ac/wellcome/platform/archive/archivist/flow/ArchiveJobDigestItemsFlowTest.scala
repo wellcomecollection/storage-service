@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.archivist.models.errors._
 import uk.ac.wellcome.platform.archive.common.fixtures.FileEntry
 import uk.ac.wellcome.platform.archive.common.generators.IngestBagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models._
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagItemPath
 import uk.ac.wellcome.platform.archive.common.models.error.InvalidBagManifestError
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -158,8 +157,7 @@ class ArchiveJobDigestItemsFlowTest
                 val checksumNotMatchedOnUploadError =
                   error.asInstanceOf[ChecksumNotMatchedOnUploadError]
                 checksumNotMatchedOnUploadError.t.archiveJob shouldBe archiveJob
-                checksumNotMatchedOnUploadError.t.zipEntryPointer.zipPath shouldBe BagItemPath(
-                  filepath)
+                checksumNotMatchedOnUploadError.t.zipEntryPointer.zipPath shouldBe filepath
                 job shouldBe archiveJob
             }
           }

@@ -7,11 +7,10 @@ import uk.ac.wellcome.platform.archive.archivist.models.errors.FileNotFoundError
 import uk.ac.wellcome.platform.archive.archivist.models._
 import uk.ac.wellcome.platform.archive.archivist.zipfile.ZipFileReader
 import uk.ac.wellcome.platform.archive.common.bag.BagDigestFileCreator
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagItemPath
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 object ArchiveItemJobCreator {
-
   /** Returns a list of all the items inside a bag that the manifest(s)
     * refer to.
     *
@@ -40,39 +39,42 @@ object ArchiveItemJobCreator {
     *
     */
   private def createDigestItemJobs(job: ArchiveJob,
-                                   zipEntryPointer: ZipEntryPointer)
+                                   manifestZipEntryPointer: ZipEntryPointer)
     : Either[ArchiveError[ArchiveJob], List[DigestItemJob]] = {
     val value: Either[ArchiveError[ArchiveJob], InputStream] =
       ZipFileReader
-        .maybeInputStream(zipEntryPointer)
-        .toRight(FileNotFoundError(zipEntryPointer.zipPath, job))
+        .maybeInputStream(manifestZipEntryPointer)
+        .toRight(FileNotFoundError(manifestZipEntryPointer.zipPath, job))
 
-    value.flatMap { inputStream =>
+    value.flatMap { manifestInputStream =>
       val manifestFileLines: List[String] =
         scala.io.Source
-          .fromInputStream(inputStream)
+          .fromInputStream(manifestInputStream)
           .mkString
           .split("\n")
           .toList
       manifestFileLines
         .filter { _.nonEmpty }
-        .traverse { line =>
+        .traverse { manifestLine =>
           BagDigestFileCreator
             .create(
-              line.trim(),
+              manifestLine.trim(),
               job,
               job.maybeBagRootPathInZip,
-              zipEntryPointer.zipPath)
-            .map { bagItem =>
+              manifestZipEntryPointer.zipPath)
+            .map { bagDigestFile =>
               DigestItemJob(
                 archiveJob = job,
-                zipEntryPointer = zipEntryPointer,
+                zipEntryPointer = ZipEntryPointer(
+                  zipFile = job.zipFile,
+                  zipPath = bagDigestFile.path.underlying
+                ),
                 uploadLocation = UploadLocationBuilder.create(
                   bagUploadLocation = job.bagUploadLocation,
-                  bagPathInZip = bagItem.path.underlying,
+                  bagPathInZip = bagDigestFile.path.underlying,
                   maybeBagRootPathInZip = job.maybeBagRootPathInZip
                 ),
-                digest = bagItem.checksum
+                digest = bagDigestFile.checksum
               )
             }
         }

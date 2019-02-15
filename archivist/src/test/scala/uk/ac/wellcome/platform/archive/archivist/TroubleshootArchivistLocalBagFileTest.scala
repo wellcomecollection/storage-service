@@ -25,7 +25,7 @@ class TroubleshootArchivistLocalBagFileTest
         sendBag(file, ingestBucket, queue) { _ =>
           while (true) {
             Thread.sleep(10000)
-            println(s"Uploaded: ${listKeysInBucket(storageBucket).size}")
+            listKeysInBucket(storageBucket).foreach(println)
           }
         }
     }
