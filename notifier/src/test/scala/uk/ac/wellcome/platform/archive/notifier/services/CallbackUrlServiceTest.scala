@@ -19,7 +19,6 @@ class CallbackUrlServiceTest
     with Akka
     with CallbackUrlServiceFixture
     with LocalWireMockFixture
-    with WorkerServiceFixture
     with ProgressGenerators {
 
   it("returns a Success if the request succeeds") {

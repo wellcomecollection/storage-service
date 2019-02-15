@@ -46,7 +46,7 @@ class NotifierFeatureTest
 
   describe("Making callbacks") {
     it("makes a POST request when it receives a Progress with a callback") {
-      withLocalWireMockClient(callbackHost, callbackPort) { wireMock =>
+      withLocalWireMockClient { wireMock =>
         withNotifier {
           case (queue, _) =>
             val requestId = randomUUID
@@ -109,7 +109,7 @@ class NotifierFeatureTest
   describe("Updating status") {
     it("sends a ProgressUpdate when it receives a successful callback") {
       forAll(successfulStatuscodes) { statusResponse: Int =>
-        withLocalWireMockClient(callbackHost, callbackPort) { wireMock =>
+        withLocalWireMockClient { wireMock =>
           withNotifier {
             case (queue, topic) =>
               val requestId = randomUUID
