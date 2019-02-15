@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.archivist.zipfile
 import java.io.InputStream
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.archivist.models.ZipLocation
+import uk.ac.wellcome.platform.archive.archivist.models.ZipEntryPointer
 
 object ZipFileReader extends Logging {
 
@@ -13,12 +13,12 @@ object ZipFileReader extends Logging {
     * it returns None rather than throwing an exception.
     *
     */
-  def maybeInputStream(zipLocation: ZipLocation): Option[InputStream] = {
-    val zipFile = zipLocation.zipFile
-    debug(s"Getting ZipEntry ${zipLocation.bagItemPath}")
+  def maybeInputStream(zipEntryPointer: ZipEntryPointer): Option[InputStream] = {
+    val zipFile = zipEntryPointer.zipFile
+    debug(s"Getting ZipEntryPointer ${zipEntryPointer.zipPath}")
 
     val maybeInputStream = for {
-      zipEntry <- Option(zipFile.getEntry(zipLocation.bagItemPath.toString))
+      zipEntry <- Option(zipFile.getEntry(zipEntryPointer.zipPath))
       zipStream <- Option(zipFile.getInputStream(zipEntry))
     } yield zipStream
 

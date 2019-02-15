@@ -1,32 +1,28 @@
 package uk.ac.wellcome.platform.archive.archivist.models.errors
-import uk.ac.wellcome.platform.archive.archivist.models.{
-  ArchiveDigestItemJob,
-  ArchiveItemJob,
-  ArchiveJob
-}
+import uk.ac.wellcome.platform.archive.archivist.models.{ArchiveItemJob, ArchiveJob, DigestItemJob}
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 import uk.ac.wellcome.storage.ObjectLocation
 
 case class ChecksumNotMatchedOnUploadError(expectedChecksum: String,
                                            actualChecksum: String,
-                                           t: ArchiveDigestItemJob)
-    extends ArchiveError[ArchiveDigestItemJob] {
+                                           t: DigestItemJob)
+    extends ArchiveError[DigestItemJob] {
   override def toString =
-    s"Calculated checksum $actualChecksum was different from $expectedChecksum for item ${t.bagDigestItem.path} on upload"
+    s"Calculated checksum $actualChecksum was different from $expectedChecksum for item ${t.zipEntryPointer.zipPath} on upload"
 }
 
 case class ChecksumNotMatchedOnDownloadError(expectedChecksum: String,
                                              actualChecksum: String,
-                                             t: ArchiveDigestItemJob)
-    extends ArchiveError[ArchiveDigestItemJob] {
+                                             t: DigestItemJob)
+    extends ArchiveError[DigestItemJob] {
   override def toString =
-    s"Calculated checksum $actualChecksum was different from $expectedChecksum for item ${t.bagDigestItem.path} on download"
+    s"Calculated checksum $actualChecksum was different from $expectedChecksum for item ${t.zipEntryPointer.zipPath} on download"
 }
 
-case class UploadDigestItemError(exception: Throwable, t: ArchiveDigestItemJob)
-    extends ArchiveError[ArchiveDigestItemJob] {
+case class UploadDigestItemError(exception: Throwable, t: DigestItemJob)
+    extends ArchiveError[DigestItemJob] {
   override def toString =
-    s"There was an exception while uploading ${t.bagDigestItem.path} to ${t.uploadLocation}: ${exception.getMessage}"
+    s"There was an exception while uploading ${t.zipEntryPointer.zipPath} to ${t.uploadLocation}: ${exception.getMessage}"
 }
 
 case class UploadError[T](objectLocation: ObjectLocation,
@@ -46,7 +42,7 @@ case class BagNotFoundError[T](message: String, t: T) extends ArchiveError[T] {
 }
 
 case class ArchiveJobError(t: ArchiveJob,
-                           errors: List[ArchiveError[ArchiveDigestItemJob]])
+                           errors: List[ArchiveError[DigestItemJob]])
     extends ArchiveError[ArchiveJob]
 
 case class ArchiveItemJobError(t: ArchiveJob,

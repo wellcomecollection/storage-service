@@ -6,15 +6,9 @@ import akka.stream.ActorAttributes
 import akka.stream.scaladsl.{Flow, StreamConverters}
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.archivist.models.{
-  ArchiveDigestItemJob,
-  ItemDigest
-}
-import uk.ac.wellcome.platform.archive.archivist.models.errors.{
-  ChecksumNotMatchedOnUploadError,
-  UploadDigestItemError
-}
+import uk.ac.wellcome.platform.archive.archivist.models.errors.{ChecksumNotMatchedOnUploadError, UploadDigestItemError}
 import uk.ac.wellcome.platform.archive.archivist.models.storage.ObjectMetadata
+import uk.ac.wellcome.platform.archive.archivist.models.{DigestItemJob, ItemDigest}
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 import scala.util.{Failure, Success}
@@ -30,15 +24,15 @@ import scala.util.{Failure, Success}
   */
 object UploadDigestInputStreamFlow extends Logging {
   def apply(parallelism: Int)(implicit s3Client: AmazonS3)
-    : Flow[(ArchiveDigestItemJob, InputStream),
-           Either[ArchiveError[ArchiveDigestItemJob], ArchiveDigestItemJob],
+    : Flow[(DigestItemJob, InputStream),
+           Either[ArchiveError[DigestItemJob], DigestItemJob],
            NotUsed] =
-    Flow[(ArchiveDigestItemJob, InputStream)]
+    Flow[(DigestItemJob, InputStream)]
       .log("uploading input stream and verifying checksum")
       .flatMapMerge(
         parallelism, {
           case (job, inputStream) =>
-            val digest = ItemDigest(job.bagDigestItem.checksum)
+            val digest = ItemDigest(job.digest)
             StreamConverters
               .fromInputStream(() => inputStream)
               .log("upload bytestring")

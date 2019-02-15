@@ -44,10 +44,11 @@ object ArchiveJobCreator extends Logging {
               config.bagItConfig.tagManifestFileName)
             val bagManifestLocations = config.bagItConfig.digestNames
               .map(BagItemPath(bagRootPathInZip, _))
+
             ArchiveJob(
               externalIdentifier = externalIdentifier,
               zipFile = zipFile,
-              bagRootPathInZip = bagRootPathInZip,
+              maybeBagRootPathInZip = bagRootPathInZip,
               bagUploadLocation = BagLocation(
                 storageNamespace = config.uploadConfig.uploadNamespace,
                 storagePrefix = config.uploadConfig.uploadPrefix,
@@ -85,7 +86,7 @@ object ArchiveJobCreator extends Logging {
                                ingestBagRequest: IngestBagRequest)
     : Either[ArchiveError[IngestBagRequest], ExternalIdentifier] = {
     ZipFileReader
-      .maybeInputStream(ZipLocation(zipFile, BagItemPath(bagInfoPath)))
+      .maybeInputStream(ZipEntryPointer(zipFile, bagInfoPath))
       .toRight[ArchiveError[IngestBagRequest]](
         FileNotFoundError(bagInfoPath, ingestBagRequest))
       .flatMap { inputStream =>

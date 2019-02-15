@@ -48,7 +48,7 @@ class UploadDigestItemFlowTest
             file = file,
             bucket = bucket,
             digest = digest,
-            s3Key = fileName
+            itemPath = fileName
           )
 
           val source = Source.single(archiveItemJob)
@@ -85,7 +85,7 @@ class UploadDigestItemFlowTest
             file = file,
             bucket = bucket,
             digest = digest,
-            s3Key = fileName
+            itemPath = fileName
           )
 
           val source = Source.single(archiveItemJob)
@@ -118,7 +118,7 @@ class UploadDigestItemFlowTest
             file = file,
             bucket = bucket,
             bagIdentifier = bagIdentifier,
-            s3Key = fileName
+            itemPath = fileName
           )
 
           val source = Source.single(archiveItemJob)
@@ -151,7 +151,7 @@ class UploadDigestItemFlowTest
         val failingArchiveItemJob = createArchiveDigestItemJobWith(
           file = file,
           bucket = Bucket("does-not-exist"),
-          s3Key = fileName
+          itemPath = fileName
         )
 
         val source = Source.single(failingArchiveItemJob)

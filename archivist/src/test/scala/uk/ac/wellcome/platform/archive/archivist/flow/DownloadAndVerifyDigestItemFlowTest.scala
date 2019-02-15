@@ -39,7 +39,7 @@ class DownloadAndVerifyDigestItemFlowTest
             file = file,
             bucket = bucket,
             digest = sha256(fileContent),
-            s3Key = fileName
+            itemPath = fileName
           )
 
           s3Client.putObject(
@@ -70,7 +70,7 @@ class DownloadAndVerifyDigestItemFlowTest
             file = file,
             bucket = bucket,
             digest = digest,
-            s3Key = fileName
+            itemPath = fileName
           )
 
           s3Client.putObject(

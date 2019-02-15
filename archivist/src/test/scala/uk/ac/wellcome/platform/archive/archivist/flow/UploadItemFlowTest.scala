@@ -40,15 +40,17 @@ class UploadItemFlowTest
           val archiveItemJob = createArchiveItemJobWith(
             file = file,
             bucket = bucket,
-            s3Key = fileName
+            itemPath = fileName
           )
-
           val source = Source.single(archiveItemJob)
           val futureResult = source via flow runWith Sink.head
 
           whenReady(futureResult) { result =>
             result shouldBe 'right
             result.right.get._1 shouldBe archiveItemJob
+
+            println(f"** $archiveItemJob")
+            println(f"** ${archiveItemJob.archiveJob.bagUploadLocation.completePath}/$fileName")
 
             getContentFromS3(
               bucket,
@@ -72,7 +74,7 @@ class UploadItemFlowTest
             file = file,
             bucket = bucket,
             bagIdentifier = bagIdentifier,
-            s3Key = fileName
+            itemPath = fileName
           )
 
           val source = Source.single(archiveItemJob)
@@ -102,7 +104,7 @@ class UploadItemFlowTest
         val failingArchiveItemJob = createArchiveItemJobWith(
           file = file,
           bucket = Bucket("does-not-exist"),
-          s3Key = fileName
+          itemPath = fileName
         )
 
         val source = Source.single(failingArchiveItemJob)
