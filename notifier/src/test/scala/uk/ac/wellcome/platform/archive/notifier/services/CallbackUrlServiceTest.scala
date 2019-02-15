@@ -9,10 +9,14 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{CallbackUrlServiceFixture, LocalWireMockFixture, WorkerServiceFixture}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{
+  CallbackUrlServiceFixture,
+  LocalWireMockFixture,
+  WorkerServiceFixture
+}
 
 class CallbackUrlServiceTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with IntegrationPatience
@@ -28,7 +32,8 @@ class CallbackUrlServiceTest
         val future = service.getHttpResponse(
           callbackNotification = CallbackNotification(
             id = requestId,
-            callbackUri = new URI(s"http://$callbackHost:$callbackPort/callback/$requestId"),
+            callbackUri = new URI(
+              s"http://$callbackHost:$callbackPort/callback/$requestId"),
             payload = createProgress
           )
         )

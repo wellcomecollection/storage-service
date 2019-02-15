@@ -10,11 +10,10 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NotifierWorkerService(
-  callbackUrlService: CallbackUrlService,
-  sqsStream: SQSStream[NotificationMessage],
-  snsWriter: SNSWriter)(
-  implicit ec: ExecutionContext) extends Runnable {
+class NotifierWorkerService(callbackUrlService: CallbackUrlService,
+                            sqsStream: SQSStream[NotificationMessage],
+                            snsWriter: SNSWriter)(implicit ec: ExecutionContext)
+    extends Runnable {
 
   def run(): Future[Done] =
     sqsStream.foreach(this.getClass.getSimpleName, processMessage)
@@ -25,7 +24,9 @@ class NotifierWorkerService(
         fromJson[CallbackNotification](notificationMessage.body)
       )
       httpResponse <- callbackUrlService.getHttpResponse(callbackNotification)
-      progressUpdate = PrepareNotificationService.prepare(callbackNotification.id, httpResponse)
+      progressUpdate = PrepareNotificationService.prepare(
+        callbackNotification.id,
+        httpResponse)
       _ <- snsWriter.writeMessage[ProgressUpdate](
         progressUpdate,
         subject = s"Sent by ${this.getClass.getName}"

@@ -7,8 +7,7 @@ trait LocalWireMockFixture {
   val callbackHost = "localhost"
   val callbackPort = 8080
 
-  def withLocalWireMockClient[R](
-    testWith: TestWith[WireMock, R]): R = {
+  def withLocalWireMockClient[R](testWith: TestWith[WireMock, R]): R = {
     val wireMock = new WireMock(callbackHost, callbackPort)
     wireMock.resetRequests()
     testWith(wireMock)

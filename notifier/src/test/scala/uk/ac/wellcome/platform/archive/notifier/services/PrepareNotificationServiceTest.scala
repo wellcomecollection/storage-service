@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.progress.models.Callback
 import scala.util.{Failure, Success, Try}
 
 class PrepareNotificationServiceTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with Akka
     with TimeTestFixture {
@@ -66,7 +66,8 @@ class PrepareNotificationServiceTest
     assertPreparedNotificationIsCorrect(
       httpResponse = Failure(exception),
       expectedCallbackStatus = Callback.Failed,
-      expectedDescription = s"Callback failed for: $id (${exception.getMessage})"
+      expectedDescription =
+        s"Callback failed for: $id (${exception.getMessage})"
     )
   }
 

@@ -13,13 +13,15 @@ import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class CallbackUrlService(contextURL: URL)(
-  implicit actorSystem: ActorSystem,
-  ec: ExecutionContext) extends Logging {
-  def getHttpResponse(callbackNotification: CallbackNotification): Future[Try[HttpResponse]] = {
+class CallbackUrlService(contextURL: URL)(implicit actorSystem: ActorSystem,
+                                          ec: ExecutionContext)
+    extends Logging {
+  def getHttpResponse(
+    callbackNotification: CallbackNotification): Future[Try[HttpResponse]] = {
     val entity = HttpEntity(
       contentType = ContentTypes.`application/json`,
-      string = toJson(ResponseDisplayIngest(callbackNotification.payload, contextURL)).get
+      string = toJson(
+        ResponseDisplayIngest(callbackNotification.payload, contextURL)).get
     )
 
     val callbackUri = callbackNotification.callbackUri
@@ -31,7 +33,8 @@ class CallbackUrlService(contextURL: URL)(
     )
 
     Http().singleRequest(request)
-  }
-    .map { resp => Success(resp) }
+  }.map { resp =>
+      Success(resp)
+    }
     .recover { case err => Failure(err) }
 }

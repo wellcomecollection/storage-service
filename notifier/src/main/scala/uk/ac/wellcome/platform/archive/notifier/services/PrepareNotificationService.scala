@@ -4,7 +4,10 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.HttpResponse
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.progress.models.Callback.{Failed, Succeeded}
+import uk.ac.wellcome.platform.archive.common.progress.models.Callback.{
+  Failed,
+  Succeeded
+}
 import uk.ac.wellcome.platform.archive.common.progress.models.{
   ProgressCallbackStatusUpdate,
   ProgressEvent
@@ -13,7 +16,8 @@ import uk.ac.wellcome.platform.archive.common.progress.models.{
 import scala.util.{Failure, Success, Try}
 
 object PrepareNotificationService extends Logging {
-  def prepare(id: UUID, httpResponse: Try[HttpResponse]): ProgressCallbackStatusUpdate =
+  def prepare(id: UUID,
+              httpResponse: Try[HttpResponse]): ProgressCallbackStatusUpdate =
     httpResponse match {
       case Success(HttpResponse(status, _, _, _)) =>
         if (status.isSuccess()) {
@@ -40,8 +44,8 @@ object PrepareNotificationService extends Logging {
         ProgressCallbackStatusUpdate(
           id = id,
           callbackStatus = Failed,
-          events = List(
-            ProgressEvent(s"Callback failed for: $id (${e.getMessage})"))
+          events =
+            List(ProgressEvent(s"Callback failed for: $id (${e.getMessage})"))
         )
     }
 }

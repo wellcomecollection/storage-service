@@ -9,8 +9,7 @@ import uk.ac.wellcome.platform.archive.notifier.services.CallbackUrlService
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait CallbackUrlServiceFixture {
-  def withCallbackUrlService[R](
-    testWith: TestWith[CallbackUrlService, R])(
+  def withCallbackUrlService[R](testWith: TestWith[CallbackUrlService, R])(
     implicit actorSystem: ActorSystem): R = {
     val callbackUrlService = new CallbackUrlService(
       contextURL = new URL("http://localhost/context.json")
