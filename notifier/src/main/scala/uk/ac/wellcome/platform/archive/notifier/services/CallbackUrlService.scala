@@ -10,10 +10,13 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
-class CallbackUrlService(contextURL: URL)(implicit actorSystem: ActorSystem) extends Logging {
-  def getHttpResponse(callbackNotification: CallbackNotification): Future[HttpResponse] = {
+class CallbackUrlService(contextURL: URL)(
+  implicit actorSystem: ActorSystem,
+  ec: ExecutionContext) extends Logging {
+  def getHttpResponse(callbackNotification: CallbackNotification): Future[Try[HttpResponse]] = {
     val entity = HttpEntity(
       contentType = ContentTypes.`application/json`,
       string = toJson(ResponseDisplayIngest(callbackNotification.payload, contextURL)).get
@@ -29,4 +32,6 @@ class CallbackUrlService(contextURL: URL)(implicit actorSystem: ActorSystem) ext
 
     Http().singleRequest(request)
   }
+    .map { resp => Success(resp) }
+    .recover { case err => Failure(err) }
 }
