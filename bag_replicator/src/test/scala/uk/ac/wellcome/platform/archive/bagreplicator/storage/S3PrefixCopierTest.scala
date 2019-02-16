@@ -106,4 +106,41 @@ class S3PrefixCopierTest extends FunSpec with Matchers with ScalaFutures with S3
       }
     }
   }
+
+  it("copies more objects than are returned in a single ListObject call") {
+    withLocalS3Bucket { srcBucket =>
+      withLocalS3Bucket { dstBucket =>
+        val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
+
+        // You can get up to 1000 objects in a single S3 ListObject call.
+        val srcLocations = (1 to 1100).map { i =>
+          val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
+          createObject(src)
+          src
+        }
+
+        val dstPrefix = createObjectLocationWith(dstBucket, key = "dst/")
+
+        val dstLocations = srcLocations.map { loc: ObjectLocation =>
+          loc.copy(
+            namespace = dstPrefix.namespace,
+            key = loc.key.replace("src/", "dst/")
+          )
+        }
+
+        val future = s3PrefixCopier.copyObjects(srcPrefix, dstPrefix)
+
+        whenReady(future) { _ =>
+          val actualKeys = listKeysInBucket(dstBucket)
+          val expectedKeys = dstLocations.map { _.key }
+          actualKeys.size shouldBe expectedKeys.size
+          actualKeys should contain theSameElementsAs expectedKeys
+
+          srcLocations.zip(dstLocations).map { case (src, dst) =>
+            assertEqualObjects(src, dst)
+          }
+        }
+      }
+    }
+  }
 }
