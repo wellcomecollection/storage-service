@@ -1,4 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage
+
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.{ObjectListing, S3ObjectSummary}
 import grizzled.slf4j.Logging
@@ -32,35 +33,26 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext) extends 
         sourceObjects = sourceObjects,
         srcLocationPrefix = srcLocationPrefix,
         dstLocationPrefix = dstLocationPrefix
-      )
+     )
     } yield ()
 
-  private def listObjects(objectLocation: ObjectLocation): Future[ObjectListing] =
+  private def listObjects(objectLocation: ObjectLocation): Future[ObjectListing] = {
+    val prefix = if (objectLocation.key.endsWith("/"))
+      objectLocation.key
+    else
+      objectLocation.key + "/"
+
     Future {
-      val prefix = objectLocation.key
-        .replaceAll("(.*[^/]+)/*", "$1/")
-
-      s3Client.listObjects(
-        objectLocation.namespace,
-        prefix
-      )
+      s3Client.listObjects(objectLocation.namespace, prefix)
     }
-
-  private def getItemInPath(
-    summary: S3ObjectSummary,
-    prefix: String
-  ): String =
-    summary.getKey
-      .stripPrefix(prefix)
+  }
 
   private def getObjectLocations(
     listing: ObjectListing,
     objectLocation: ObjectLocation
   ): Future[List[ObjectLocation]] = Future {
-    val prefix = s"${objectLocation.key}/"
-
     listing.getObjectSummaries.asScala
-      .map { getItemInPath(_, prefix) }
+      .map { summary: S3ObjectSummary => summary.getKey }
       .map { key: String =>
         ObjectLocation(
           namespace = objectLocation.namespace,
