@@ -1,11 +1,9 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
-import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult}
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Assertion, FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3
+import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.S3CopierFixtures
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,8 +12,7 @@ class S3CopierTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with RandomThings
-    with S3 {
+    with S3CopierFixtures {
 
   val s3Copier = new S3Copier(s3Client)
 
@@ -81,26 +78,4 @@ class S3CopierTest
       }
     }
   }
-
-  private def createObjectLocationWith(
-    bucket: Bucket = Bucket(randomAlphanumeric()),
-    key: String = randomAlphanumeric()
-  ): ObjectLocation =
-    ObjectLocation(
-      namespace = bucket.name,
-      key = key
-    )
-
-  private def createObjectLocation: ObjectLocation = createObjectLocationWith()
-
-  private def createObject(location: ObjectLocation): PutObjectResult =
-    s3Client.putObject(
-      location.namespace,
-      location.key,
-      randomAlphanumeric()
-    )
-
-  private def assertEqualObjects(x: ObjectLocation,
-                                 y: ObjectLocation): Assertion =
-    getContentFromS3(x) shouldBe getContentFromS3(y)
 }
