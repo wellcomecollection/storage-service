@@ -52,7 +52,7 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext) extends 
   private def getObjectLocations(
     listing: ObjectListing,
     objectLocation: ObjectLocation
-  ): Future[List[ObjectLocation]] = Future {
+  ): List[ObjectLocation] =
     listing.getObjectSummaries.asScala
       .map { summary: S3ObjectSummary => summary.getKey }
       .map { key: String =>
@@ -62,7 +62,6 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext) extends 
         )
       }
       .toList
-  }
 
   private def listObjectsUnderPrefix(
     locationPrefix: ObjectLocation
@@ -74,7 +73,7 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext) extends 
 
     for {
       listing <- listObjects(locationPrefix)
-      summaries <- getObjectLocations(listing, locationPrefix)
+      summaries = getObjectLocations(listing, locationPrefix)
     } yield summaries
   }
 
