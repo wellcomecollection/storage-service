@@ -26,7 +26,7 @@ import uk.ac.wellcome.platform.archive.common.progress.models.{
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.archive.notifier.fixtures.{
   LocalWireMockFixture,
-  NotifierFixture
+  WorkerServiceFixture
 }
 
 class NotifierFeatureTest
@@ -35,7 +35,7 @@ class NotifierFeatureTest
     with ScalaFutures
     with IntegrationPatience
     with LocalWireMockFixture
-    with NotifierFixture
+    with WorkerServiceFixture
     with Inside
     with RandomThings
     with ProgressGenerators
@@ -46,9 +46,9 @@ class NotifierFeatureTest
 
   describe("Making callbacks") {
     it("makes a POST request when it receives a Progress with a callback") {
-      withLocalWireMockClient(callbackHost, callbackPort) { wireMock =>
+      withLocalWireMockClient { wireMock =>
         withNotifier {
-          case (queue, _, notifier) =>
+          case (queue, _) =>
             val requestId = randomUUID
 
             val callbackUri =
@@ -63,8 +63,6 @@ class NotifierFeatureTest
               queue,
               CallbackNotification(requestId, callbackUri, progress)
             )
-
-            notifier.run()
 
             eventually {
               wireMock.verifyThat(
@@ -111,9 +109,9 @@ class NotifierFeatureTest
   describe("Updating status") {
     it("sends a ProgressUpdate when it receives a successful callback") {
       forAll(successfulStatuscodes) { statusResponse: Int =>
-        withLocalWireMockClient(callbackHost, callbackPort) { wireMock =>
+        withLocalWireMockClient { wireMock =>
           withNotifier {
-            case (queue, topic, notifier) =>
+            case (queue, topic) =>
               val requestId = randomUUID
 
               val callbackPath = s"/callback/$requestId"
@@ -135,8 +133,6 @@ class NotifierFeatureTest
                 queue,
                 CallbackNotification(requestId, callbackUri, progress)
               )
-
-              notifier.run()
 
               eventually {
                 wireMock.verifyThat(
@@ -184,7 +180,7 @@ class NotifierFeatureTest
     it(
       "sends a ProgressUpdate when it receives Progress with a callback it cannot fulfill") {
       withNotifier {
-        case (queue, topic, notifier) =>
+        case (queue, topic) =>
           val requestId = randomUUID
 
           val callbackUri = new URI(
@@ -200,8 +196,6 @@ class NotifierFeatureTest
             queue,
             CallbackNotification(requestId, callbackUri, progress)
           )
-
-          notifier.run()
 
           eventually {
             inside(notificationMessage[ProgressUpdate](topic)) {
