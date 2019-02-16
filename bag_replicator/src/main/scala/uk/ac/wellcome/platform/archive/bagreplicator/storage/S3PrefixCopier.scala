@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.{ObjectListing, S3ObjectSummary}
+import com.amazonaws.services.s3.transfer.model.CopyResult
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -29,11 +30,12 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext) extends 
   ): Future[Unit] =
     for {
       sourceObjects <- listObjectsUnderPrefix(srcLocationPrefix)
-      _ <- duplicateObjects(
+      copyObjectPairs = getCopyObjectPairs(
         sourceObjects = sourceObjects,
         srcLocationPrefix = srcLocationPrefix,
         dstLocationPrefix = dstLocationPrefix
-     )
+      )
+      _ <- duplicateObjects(copyObjectPairs)
     } yield ()
 
   private def listObjects(objectLocation: ObjectLocation): Future[ObjectListing] = {
@@ -76,29 +78,29 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext) extends 
     } yield summaries
   }
 
-  private def duplicateObjects(
+  private def getCopyObjectPairs(
     sourceObjects: List[ObjectLocation],
     srcLocationPrefix: ObjectLocation,
     dstLocationPrefix: ObjectLocation
-  ): Future[List[ObjectLocation]] = {
-    debug(s"duplicating S3 objects: $sourceObjects")
+  ): List[(ObjectLocation, ObjectLocation)] =
+    sourceObjects.map { srcLocation =>
+      val relativeKey = srcLocation.key
+        .stripPrefix(srcLocationPrefix.key)
 
+      val dstLocation = ObjectLocation(
+        namespace = dstLocationPrefix.namespace,
+        key = dstLocationPrefix.key + relativeKey
+      )
+
+      (srcLocation, dstLocation)
+    }
+
+  private def duplicateObjects(
+    copyObjectPairs: List[(ObjectLocation, ObjectLocation)]
+  ): Future[List[CopyResult]] =
     Future.sequence(
-      sourceObjects.map { srcLocation =>
-        val relativeKey = srcLocation.key.replaceFirst(srcLocationPrefix.key, "")
-
-        val dstLocation = ObjectLocation(
-          namespace = dstLocationPrefix.namespace,
-          key = dstLocationPrefix.key + relativeKey
-        )
-
-        val future = s3Copier.copy(
-          src = srcLocation,
-          dst = dstLocation
-        )
-
-        future.map { _ => dstLocation }
+      copyObjectPairs.map { case (src: ObjectLocation, dst: ObjectLocation) =>
+        s3Copier.copy(src = src, dst = dst)
       }
     )
-  }
 }
