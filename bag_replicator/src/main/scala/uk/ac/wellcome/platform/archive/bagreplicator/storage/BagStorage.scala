@@ -18,8 +18,6 @@ class BagStorage(s3Client: AmazonS3)(implicit ec: ExecutionContext)
   ): Future[BagLocation] = {
     debug(s"duplicating bag from $sourceBagLocation to $storageDestination")
 
-    println(s"duplicating bag from $sourceBagLocation to $storageDestination")
-
     val dstBagLocation = sourceBagLocation.copy(
       storageNamespace = storageDestination.namespace,
       storagePrefix = storageDestination.rootPath
