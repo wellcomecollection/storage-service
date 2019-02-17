@@ -28,6 +28,8 @@ class BagStorage(s3Client: AmazonS3)(implicit ec: ExecutionContext)
       dstLocationPrefix = dstBagLocation.objectLocation
     )
 
-    future.map { _ => dstBagLocation }
+    future.map { _ =>
+      dstBagLocation
+    }
   }
 }

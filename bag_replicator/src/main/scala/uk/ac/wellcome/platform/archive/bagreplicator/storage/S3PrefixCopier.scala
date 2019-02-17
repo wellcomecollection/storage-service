@@ -9,7 +9,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
-class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext) extends Logging {
+class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext)
+    extends Logging {
   val s3Copier = new S3Copier(s3Client)
 
   /** Copy all the objects from under ObjectLocation into another ObjectLocation,
@@ -38,11 +39,13 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext) extends 
       _ <- duplicateObjects(copyObjectPairs)
     } yield ()
 
-  private def listObjects(objectLocation: ObjectLocation): Future[ObjectListing] = {
-    val prefix = if (objectLocation.key.endsWith("/"))
-      objectLocation.key
-    else
-      objectLocation.key + "/"
+  private def listObjects(
+    objectLocation: ObjectLocation): Future[ObjectListing] = {
+    val prefix =
+      if (objectLocation.key.endsWith("/"))
+        objectLocation.key
+      else
+        objectLocation.key + "/"
 
     Future {
       s3Client.listObjects(objectLocation.namespace, prefix)
@@ -54,7 +57,9 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext) extends 
     objectLocation: ObjectLocation
   ): List[ObjectLocation] =
     listing.getObjectSummaries.asScala
-      .map { summary: S3ObjectSummary => summary.getKey }
+      .map { summary: S3ObjectSummary =>
+        summary.getKey
+      }
       .map { key: String =>
         ObjectLocation(
           namespace = objectLocation.namespace,
@@ -98,8 +103,9 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext) extends 
     copyObjectPairs: List[(ObjectLocation, ObjectLocation)]
   ): Future[List[CopyResult]] =
     Future.sequence(
-      copyObjectPairs.map { case (src: ObjectLocation, dst: ObjectLocation) =>
-        s3Copier.copy(src = src, dst = dst)
+      copyObjectPairs.map {
+        case (src: ObjectLocation, dst: ObjectLocation) =>
+          s3Copier.copy(src = src, dst = dst)
       }
     )
 }

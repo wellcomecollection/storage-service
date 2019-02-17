@@ -27,7 +27,9 @@ class S3CopierTest
       val future = s3Copier.copy(src = src, dst = dst)
 
       whenReady(future) { _ =>
-        listKeysInBucket(bucket) should contain theSameElementsAs List(src.key, dst.key)
+        listKeysInBucket(bucket) should contain theSameElementsAs List(
+          src.key,
+          dst.key)
         assertEqualObjects(src, dst)
       }
     }

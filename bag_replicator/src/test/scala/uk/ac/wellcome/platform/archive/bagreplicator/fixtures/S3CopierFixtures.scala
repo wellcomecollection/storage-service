@@ -26,7 +26,6 @@ trait S3CopierFixtures extends S3 with RandomThings {
       randomAlphanumeric()
     )
 
-  def assertEqualObjects(x: ObjectLocation,
-                                 y: ObjectLocation): Assertion =
+  def assertEqualObjects(x: ObjectLocation, y: ObjectLocation): Assertion =
     getContentFromS3(x) shouldBe getContentFromS3(y)
 }

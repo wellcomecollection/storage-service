@@ -9,7 +9,11 @@ import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class S3PrefixCopierTest extends FunSpec with Matchers with ScalaFutures with S3CopierFixtures {
+class S3PrefixCopierTest
+    extends FunSpec
+    with Matchers
+    with ScalaFutures
+    with S3CopierFixtures {
   val s3PrefixCopier = new S3PrefixCopier(s3Client)
 
   it("returns a successful Future if there are no files in the prefix") {
@@ -69,10 +73,11 @@ class S3PrefixCopierTest extends FunSpec with Matchers with ScalaFutures with S3
         val future = s3PrefixCopier.copyObjects(srcPrefix, dstPrefix)
 
         whenReady(future) { _ =>
-            listKeysInBucket(dstBucket) shouldBe dstLocations.map { _.key }
+          listKeysInBucket(dstBucket) shouldBe dstLocations.map { _.key }
 
-          srcLocations.zip(dstLocations).map { case (src, dst) =>
-            assertEqualObjects(src, dst)
+          srcLocations.zip(dstLocations).map {
+            case (src, dst) =>
+              assertEqualObjects(src, dst)
           }
         }
       }
@@ -136,8 +141,9 @@ class S3PrefixCopierTest extends FunSpec with Matchers with ScalaFutures with S3
           actualKeys.size shouldBe expectedKeys.size
           actualKeys should contain theSameElementsAs expectedKeys
 
-          srcLocations.zip(dstLocations).map { case (src, dst) =>
-            assertEqualObjects(src, dst)
+          srcLocations.zip(dstLocations).map {
+            case (src, dst) =>
+              assertEqualObjects(src, dst)
           }
         }
       }
