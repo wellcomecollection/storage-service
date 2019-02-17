@@ -86,6 +86,26 @@ class CallbackNotificationServiceTest extends FunSpec with ScalaFutures with Pro
     }
   }
 
+  it("doesn't send a notification if there's no callback information") {
+    withLocalSnsTopic { topic =>
+      withCallbackNotificationService(topic) { service =>
+        val progress = createProgressWith(
+          callback = None
+        )
+
+        val future = service.sendNotification(progress)
+
+        // Sleep for half a second to be sure the message would have been
+        // sent if it was going to.
+        Thread.sleep(500)
+
+        whenReady(future) { _ =>
+          assertSnsReceivesNothing(topic)
+        }
+      }
+    }
+  }
+
   private def withCallbackNotificationService[R](topic: Topic)(testWith: TestWith[CallbackNotificationService, R]): R =
     withSNSWriter(topic) { snsWriter =>
       val service = new CallbackNotificationService(snsWriter)
