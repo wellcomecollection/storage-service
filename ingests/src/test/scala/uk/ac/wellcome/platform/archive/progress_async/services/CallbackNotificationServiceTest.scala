@@ -3,17 +3,13 @@ package uk.ac.wellcome.platform.archive.progress_async.services
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks._
-import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SNS
-import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.progress.models.{Callback, Progress}
+import uk.ac.wellcome.platform.archive.progress_async.fixtures.CallbackNotificationServiceFixture
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
-class CallbackNotificationServiceTest extends FunSpec with ScalaFutures with ProgressGenerators with SNS {
+class CallbackNotificationServiceTest extends FunSpec with ScalaFutures with CallbackNotificationServiceFixture with ProgressGenerators {
 
   val sendsCallbackStatus = Table(
     ("progress-status", "callback-status"),
@@ -105,10 +101,4 @@ class CallbackNotificationServiceTest extends FunSpec with ScalaFutures with Pro
       }
     }
   }
-
-  private def withCallbackNotificationService[R](topic: Topic)(testWith: TestWith[CallbackNotificationService, R]): R =
-    withSNSWriter(topic) { snsWriter =>
-      val service = new CallbackNotificationService(snsWriter)
-      testWith(service)
-    }
 }

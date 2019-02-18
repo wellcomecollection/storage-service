@@ -17,7 +17,7 @@ class ProgressAsyncFeatureTest
     with IntegrationPatience {
 
   // TODO: This test is flaky FIXIT FIXIT FIXIT
-  ignore("updates an existing progress status to Completed") {
+  it("updates an existing progress status to Completed") {
     withConfiguredApp {
       case (queue, topic, table, app) => {
         withProgressTracker(table) { monitor =>
