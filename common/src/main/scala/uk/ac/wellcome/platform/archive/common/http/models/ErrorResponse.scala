@@ -5,7 +5,7 @@ import java.net.URL
 import akka.http.scaladsl.model.StatusCode
 import io.circe.generic.extras.JsonKey
 
-trait ErrorResponse {
+sealed trait ErrorResponse {
   val context: String
   val httpStatus: Int
   val label: String
