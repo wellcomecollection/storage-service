@@ -18,7 +18,10 @@ import uk.ac.wellcome.json.JsonUtil.fromJson
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
-import uk.ac.wellcome.platform.archive.common.http.models.ErrorResponse
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -102,22 +105,39 @@ trait HttpFixtures extends Akka with ScalaFutures { this: Matchers =>
 
   val contextURL: URL
 
-  def assertIsErrorResponse(response: HttpResponse,
-                            description: String,
-                            statusCode: StatusCode = StatusCodes.BadRequest,
-                            label: String = "Bad Request")(
+  def assertIsUserErrorResponse(
+    response: HttpResponse,
+    description: String,
+    statusCode: StatusCode = StatusCodes.BadRequest,
+    label: String = "Bad Request")(
     implicit materializer: ActorMaterializer): Assertion = {
     response.status shouldBe statusCode
     response.entity.contentType shouldBe ContentTypes.`application/json`
 
-    val progressFuture = Unmarshal(response.entity).to[ErrorResponse]
+    val progressFuture = Unmarshal(response.entity).to[UserErrorResponse]
 
     whenReady(progressFuture) { actualError =>
-      actualError shouldBe ErrorResponse(
+      actualError shouldBe UserErrorResponse(
         context = contextURL.toString,
         httpStatus = statusCode.intValue(),
-        description = Some(description),
+        description = description,
         label = label
+      )
+    }
+  }
+
+  def assertIsInternalServerErrorResponse(response: HttpResponse)(
+    implicit materializer: ActorMaterializer): Assertion = {
+    response.status shouldBe StatusCodes.InternalServerError
+    response.entity.contentType shouldBe ContentTypes.`application/json`
+
+    val progressFuture = Unmarshal(response.entity).to[InternalServerErrorResponse]
+
+    whenReady(progressFuture) { actualError =>
+      actualError shouldBe InternalServerErrorResponse(
+        context = contextURL.toString,
+        httpStatus = StatusCodes.InternalServerError.intValue(),
+        label = StatusCodes.InternalServerError.reason
       )
     }
   }

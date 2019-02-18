@@ -189,7 +189,7 @@ class BagsApiFeatureTest
           whenGetRequestReady(
             s"$baseUrl/registrar/${bagId.space}/${bagId.externalIdentifier}") {
             response =>
-              response.status shouldBe StatusCodes.InternalServerError
+              assertIsInternalServerErrorResponse(response)
 
               assertMetricSent(
                 metricsSender,
