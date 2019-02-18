@@ -8,7 +8,8 @@ import uk.ac.wellcome.platform.archive.progress_async.services.CallbackNotificat
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait CallbackNotificationServiceFixture extends SNS {
-  def withCallbackNotificationService[R](topic: Topic)(testWith: TestWith[CallbackNotificationService, R]): R =
+  def withCallbackNotificationService[R](topic: Topic)(
+    testWith: TestWith[CallbackNotificationService, R]): R =
     withSNSWriter(topic) { snsWriter =>
       val service = new CallbackNotificationService(snsWriter)
       testWith(service)

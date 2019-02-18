@@ -7,13 +7,23 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress.{Completed, Processing}
+import uk.ac.wellcome.platform.archive.common.progress.models.Progress.{
+  Completed,
+  Processing
+}
 import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
 import uk.ac.wellcome.platform.archive.common.progress.monitor.IdConstraintError
-import uk.ac.wellcome.platform.archive.progress_async.fixtures.{IngestsFixture, WorkerServiceFixture}
+import uk.ac.wellcome.platform.archive.progress_async.fixtures.{
+  IngestsFixture,
+  WorkerServiceFixture
+}
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
-class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with IngestsFixture with WorkerServiceFixture {
+class IngestsWorkerServiceTest
+    extends FunSpec
+    with ProgressGenerators
+    with IngestsFixture
+    with WorkerServiceFixture {
   it("updates the status of an existing Progress to Completed") {
     withLocalSqsQueue { queue =>
       withProgressTrackerTable { table =>
@@ -27,7 +37,9 @@ class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with Inge
                     status = Completed
                   )
 
-                val notification = createNotificationMessageWith[ProgressUpdate](progressStatusUpdate)
+                val notification =
+                  createNotificationMessageWith[ProgressUpdate](
+                    progressStatusUpdate)
 
                 val future = service.processMessage(notification)
 
@@ -50,9 +62,10 @@ class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with Inge
 
                   assertProgressRecordedRecentEvents(
                     id = progressStatusUpdate.id,
-                    expectedEventDescriptions = progressStatusUpdate.events.map {
-                      _.description
-                    },
+                    expectedEventDescriptions =
+                      progressStatusUpdate.events.map {
+                        _.description
+                      },
                     table = table
                   )
                 }
@@ -85,8 +98,12 @@ class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with Inge
                     maybeBag = progressStatusUpdate1.affectedBag
                   )
 
-                val notification1 = createNotificationMessageWith[ProgressUpdate](progressStatusUpdate1)
-                val notification2 = createNotificationMessageWith[ProgressUpdate](progressStatusUpdate2)
+                val notification1 =
+                  createNotificationMessageWith[ProgressUpdate](
+                    progressStatusUpdate1)
+                val notification2 =
+                  createNotificationMessageWith[ProgressUpdate](
+                    progressStatusUpdate2)
 
                 val expectedProgress = progress.copy(
                   status = Completed,
@@ -119,7 +136,8 @@ class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with Inge
     }
   }
 
-  it("returns a failed Future if the Progress is not already stored in the table") {
+  it(
+    "returns a failed Future if the Progress is not already stored in the table") {
     withLocalSqsQueue { queue =>
       withProgressTrackerTable { table =>
         withLocalSnsTopic { topic =>
@@ -129,7 +147,8 @@ class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with Inge
                 status = Completed
               )
 
-            val notification = createNotificationMessageWith[ProgressUpdate](progressStatusUpdate)
+            val notification = createNotificationMessageWith[ProgressUpdate](
+              progressStatusUpdate)
 
             val future = service.processMessage(notification)
 
@@ -146,13 +165,17 @@ class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with Inge
   it("returns a failed future if updating the table fails") {
     withLocalSqsQueue { queue =>
       withLocalSnsTopic { topic =>
-        withWorkerService(queue, Table("does-not-exist", "does-not-exist"), topic) { service =>
+        withWorkerService(
+          queue,
+          Table("does-not-exist", "does-not-exist"),
+          topic) { service =>
           val progressStatusUpdate =
             createProgressStatusUpdateWith(
               status = Completed
             )
 
-          val notification = createNotificationMessageWith[ProgressUpdate](progressStatusUpdate)
+          val notification =
+            createNotificationMessageWith[ProgressUpdate](progressStatusUpdate)
 
           val future = service.processMessage(notification)
 
@@ -176,7 +199,8 @@ class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with Inge
                   status = Completed
                 )
 
-              val notification = createNotificationMessageWith[ProgressUpdate](progressStatusUpdate)
+              val notification = createNotificationMessageWith[ProgressUpdate](
+                progressStatusUpdate)
 
               val future = service.processMessage(notification)
 

@@ -6,7 +6,9 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Completed
 import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
-import uk.ac.wellcome.platform.archive.progress_async.fixtures.{IngestsFixture => ProgressFixture}
+import uk.ac.wellcome.platform.archive.progress_async.fixtures.{
+  IngestsFixture => ProgressFixture
+}
 
 class IngestsFeatureTest
     extends FunSpec

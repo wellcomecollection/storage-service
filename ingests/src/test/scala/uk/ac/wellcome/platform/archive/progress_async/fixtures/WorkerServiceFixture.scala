@@ -12,21 +12,27 @@ import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait WorkerServiceFixture extends Akka with CallbackNotificationServiceFixture with ProgressTrackerFixture with SQS {
-  def withWorkerService[R](queue: Queue, table: Table, topic: Topic)(testWith: TestWith[IngestsWorkerService, R]): R =
+trait WorkerServiceFixture
+    extends Akka
+    with CallbackNotificationServiceFixture
+    with ProgressTrackerFixture
+    with SQS {
+  def withWorkerService[R](queue: Queue, table: Table, topic: Topic)(
+    testWith: TestWith[IngestsWorkerService, R]): R =
     withActorSystem { implicit actorSystem =>
       withSQSStream[NotificationMessage, R](queue) { sqsStream =>
         withProgressTracker(table) { progressTracker =>
-          withCallbackNotificationService(topic) { callbackNotificationService =>
-            val service = new IngestsWorkerService(
-              sqsStream = sqsStream,
-              progressTracker = progressTracker,
-              callbackNotificationService = callbackNotificationService
-            )
+          withCallbackNotificationService(topic) {
+            callbackNotificationService =>
+              val service = new IngestsWorkerService(
+                sqsStream = sqsStream,
+                progressTracker = progressTracker,
+                callbackNotificationService = callbackNotificationService
+              )
 
-            service.run()
+              service.run()
 
-            testWith(service)
+              testWith(service)
           }
         }
       }

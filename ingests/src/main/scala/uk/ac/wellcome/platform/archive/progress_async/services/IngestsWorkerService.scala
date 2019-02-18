@@ -14,7 +14,8 @@ class IngestsWorkerService(
   sqsStream: SQSStream[NotificationMessage],
   progressTracker: ProgressTracker,
   callbackNotificationService: CallbackNotificationService
-)(implicit ec: ExecutionContext) extends Runnable {
+)(implicit ec: ExecutionContext)
+    extends Runnable {
   def run(): Future[Done] =
     sqsStream.foreach(this.getClass.getSimpleName, processMessage)
 

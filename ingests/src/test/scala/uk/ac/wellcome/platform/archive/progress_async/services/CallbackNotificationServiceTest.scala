@@ -6,10 +6,17 @@ import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.progress.models.{Callback, Progress}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Callback,
+  Progress
+}
 import uk.ac.wellcome.platform.archive.progress_async.fixtures.CallbackNotificationServiceFixture
 
-class CallbackNotificationServiceTest extends FunSpec with ScalaFutures with CallbackNotificationServiceFixture with ProgressGenerators {
+class CallbackNotificationServiceTest
+    extends FunSpec
+    with ScalaFutures
+    with CallbackNotificationServiceFixture
+    with ProgressGenerators {
 
   val sendsCallbackStatus = Table(
     ("progress-status", "callback-status"),
@@ -17,7 +24,8 @@ class CallbackNotificationServiceTest extends FunSpec with ScalaFutures with Cal
     (Progress.Completed, Callback.Pending)
   )
 
-  it("sends a notification if there's a pending callback and the progress is complete") {
+  it(
+    "sends a notification if there's a pending callback and the progress is complete") {
     forAll(sendsCallbackStatus) { (progressStatus, callbackStatus) =>
       withLocalSnsTopic { topic =>
         withCallbackNotificationService(topic) { service =>

@@ -54,7 +54,8 @@ trait ProgressGenerators extends BagIdGenerators {
     id: UUID = randomUUID,
     status: Status = Progress.Accepted,
     maybeBag: Option[BagId] = Some(createBagId),
-    events: Seq[ProgressEvent] = List(createProgressEvent)): ProgressStatusUpdate =
+    events: Seq[ProgressEvent] = List(createProgressEvent))
+    : ProgressStatusUpdate =
     ProgressStatusUpdate(
       id = id,
       status = status,

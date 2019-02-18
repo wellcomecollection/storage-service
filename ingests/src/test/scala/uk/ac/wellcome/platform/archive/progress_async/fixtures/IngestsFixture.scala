@@ -24,8 +24,7 @@ trait IngestsFixture
     }
   }
 
-  def withConfiguredApp[R](
-    testWith: TestWith[(Queue, Topic, Table), R]): R = {
+  def withConfiguredApp[R](testWith: TestWith[(Queue, Topic, Table), R]): R = {
     withLocalSqsQueue { queue =>
       withLocalSnsTopic { topic =>
         withProgressTrackerTable { table =>
