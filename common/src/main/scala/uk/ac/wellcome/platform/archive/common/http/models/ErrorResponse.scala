@@ -23,12 +23,4 @@ case object ErrorResponse {
       description = Some(description),
       label = statusCode.reason()
     )
-
-  def apply(context: URL, statusCode: StatusCode): ErrorResponse =
-    ErrorResponse(
-      context = context.toString,
-      httpStatus = statusCode.intValue(),
-      description = None,
-      label = statusCode.reason()
-    )
 }
