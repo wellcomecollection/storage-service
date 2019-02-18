@@ -28,7 +28,9 @@ case class InternalServerErrorResponse(
 ) extends ErrorResponse
 
 case object ErrorResponse {
-  def apply(context: URL, statusCode: StatusCode, description: String): ErrorResponse =
+  def apply(context: URL,
+            statusCode: StatusCode,
+            description: String): ErrorResponse =
     if (statusCode.intValue() >= 500) {
       InternalServerErrorResponse(
         context = context.toString,

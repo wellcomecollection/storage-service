@@ -105,11 +105,10 @@ trait HttpFixtures extends Akka with ScalaFutures { this: Matchers =>
 
   val contextURL: URL
 
-  def assertIsUserErrorResponse(
-    response: HttpResponse,
-    description: String,
-    statusCode: StatusCode = StatusCodes.BadRequest,
-    label: String = "Bad Request")(
+  def assertIsUserErrorResponse(response: HttpResponse,
+                                description: String,
+                                statusCode: StatusCode = StatusCodes.BadRequest,
+                                label: String = "Bad Request")(
     implicit materializer: ActorMaterializer): Assertion = {
     response.status shouldBe statusCode
     response.entity.contentType shouldBe ContentTypes.`application/json`
@@ -131,7 +130,8 @@ trait HttpFixtures extends Akka with ScalaFutures { this: Matchers =>
     response.status shouldBe StatusCodes.InternalServerError
     response.entity.contentType shouldBe ContentTypes.`application/json`
 
-    val progressFuture = Unmarshal(response.entity).to[InternalServerErrorResponse]
+    val progressFuture = Unmarshal(response.entity)
+      .to[InternalServerErrorResponse]
 
     whenReady(progressFuture) { actualError =>
       actualError shouldBe InternalServerErrorResponse(
