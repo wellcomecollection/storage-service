@@ -6,19 +6,18 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Completed
 import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
-import uk.ac.wellcome.platform.archive.progress_async.fixtures.{ProgressAsyncFixture => ProgressFixture}
+import uk.ac.wellcome.platform.archive.progress_async.fixtures.{IngestsFixture => ProgressFixture}
 
-class ProgressAsyncFeatureTest
+class IngestsFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
     with ProgressFixture
     with IntegrationPatience {
 
-  // TODO: This test is flaky FIXIT FIXIT FIXIT
   it("updates an existing progress status to Completed") {
     withConfiguredApp {
-      case (queue, topic, table, app) => {
+      case (queue, topic, table) => {
         withProgressTracker(table) { monitor =>
           withProgress(monitor) { progress =>
             val someBagId = Some(createBagId)

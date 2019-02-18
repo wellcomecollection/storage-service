@@ -10,10 +10,10 @@ import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress.{Completed, Processing}
 import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
 import uk.ac.wellcome.platform.archive.common.progress.monitor.IdConstraintError
-import uk.ac.wellcome.platform.archive.progress_async.fixtures.{ProgressAsyncFixture, WorkerServiceFixture}
+import uk.ac.wellcome.platform.archive.progress_async.fixtures.{IngestsFixture, WorkerServiceFixture}
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
-class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with ProgressAsyncFixture with WorkerServiceFixture {
+class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with IngestsFixture with WorkerServiceFixture {
   it("updates the status of an existing Progress to Completed") {
     withLocalSqsQueue { queue =>
       withProgressTrackerTable { table =>

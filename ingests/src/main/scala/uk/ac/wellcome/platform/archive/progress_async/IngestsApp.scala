@@ -23,7 +23,7 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
 
-class ProgressAsync(
+class IngestsApp(
   messageStream: MessageStream[NotificationMessage, Unit],
   progressTracker: ProgressTracker,
   snsClient: AmazonSNS,

@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.progress.models.{
   ProgressEvent,
   ProgressEventUpdate
 }
-import uk.ac.wellcome.platform.archive.progress_async.fixtures.ProgressAsyncFixture
+import uk.ac.wellcome.platform.archive.progress_async.fixtures.IngestsFixture
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 
 class ProgressUpdateFlowTest
@@ -23,7 +23,7 @@ class ProgressUpdateFlowTest
     with RandomThings
     with ProgressTrackerFixture
     with ProgressGenerators
-    with ProgressAsyncFixture
+    with IngestsFixture
     with ScalaFutures {
 
   it("adds an event to a monitor with none") {
