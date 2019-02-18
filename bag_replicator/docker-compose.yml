@@ -8,6 +8,8 @@ sns:
   ports:
     - "9292:9292"
 s3:
-  image: scality/s3server:mem-latest
+  image: zenko/cloudserver
+  environment:
+    - "S3BACKEND=mem"
   ports:
     - "33333:8000"

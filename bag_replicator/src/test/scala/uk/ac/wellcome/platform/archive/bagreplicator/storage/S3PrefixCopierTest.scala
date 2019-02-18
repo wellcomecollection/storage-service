@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.S3CopierFixtures
 import uk.ac.wellcome.storage.ObjectLocation
@@ -12,6 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class S3PrefixCopierTest
     extends FunSpec
     with Matchers
+    with IntegrationPatience
     with ScalaFutures
     with S3CopierFixtures {
   val s3PrefixCopier = new S3PrefixCopier(s3Client)
@@ -112,15 +113,38 @@ class S3PrefixCopierTest
     }
   }
 
+  it("explodes if you try to copy more objects than are returned in a single ListObject call") {
+    withLocalS3Bucket { srcBucket =>
+      withLocalS3Bucket { dstBucket =>
+        val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
+
+        // You can get up to 1000 objects in a single S3 ListObject call.
+        (1 to 1002).map { i =>
+          val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
+          createObject(src, content="")
+          src
+        }
+
+        val dstPrefix = createObjectLocationWith(dstBucket, key = "dst/")
+
+        val future = s3PrefixCopier.copyObjects(srcPrefix, dstPrefix)
+
+        whenReady(future.failed) { err =>
+          err shouldBe a[RuntimeException]
+        }
+      }
+    }
+  }
+
   ignore("copies more objects than are returned in a single ListObject call") {
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
         val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
 
         // You can get up to 1000 objects in a single S3 ListObject call.
-        val srcLocations = (1 to 1100).map { i =>
+        val srcLocations = (1 to 1002).map { i =>
           val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
-          createObject(src)
+          createObject(src, content="")
           src
         }
 
@@ -136,6 +160,8 @@ class S3PrefixCopierTest
         val future = s3PrefixCopier.copyObjects(srcPrefix, dstPrefix)
 
         whenReady(future) { _ =>
+          // @@AWLC: What's the betting this helper doesn't paginate
+          // through ListObjects correctly?
           val actualKeys = listKeysInBucket(dstBucket)
           val expectedKeys = dstLocations.map { _.key }
           actualKeys.size shouldBe expectedKeys.size

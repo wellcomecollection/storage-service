@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{ObjectListing, S3ObjectSummary}
+import com.amazonaws.services.s3.model.{ListObjectsV2Result, S3ObjectSummary}
 import com.amazonaws.services.s3.transfer.model.CopyResult
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.storage.ObjectLocation
@@ -40,7 +40,7 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext)
     } yield ()
 
   private def listObjects(
-    objectLocation: ObjectLocation): Future[ObjectListing] = {
+    objectLocation: ObjectLocation): Future[ListObjectsV2Result] = {
     val prefix =
       if (objectLocation.key.endsWith("/"))
         objectLocation.key
@@ -48,12 +48,24 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext)
         objectLocation.key + "/"
 
     Future {
-      s3Client.listObjects(objectLocation.namespace, prefix)
+      val listObjectsResult = s3Client.listObjectsV2(objectLocation.namespace, prefix)
+
+      // @@AWLC We should remove this when we have a fix in place for
+      // https://github.com/wellcometrust/platform/issues/3450, but for now it's
+      // here to ensure the bag replicator doesn't silently pass bags which it
+      // can't copy correctly.
+      if (listObjectsResult.isTruncated)
+        throw new RuntimeException(
+          "ListObjectsV2 result truncated! The replicator couldn't copy everything. " +
+          "See https://github.com/wellcometrust/platform/issues/3450"
+        )
+
+      listObjectsResult
     }
   }
 
   private def getObjectLocations(
-    listing: ObjectListing,
+    listing: ListObjectsV2Result,
     objectLocation: ObjectLocation
   ): List[ObjectLocation] =
     listing.getObjectSummaries.asScala
