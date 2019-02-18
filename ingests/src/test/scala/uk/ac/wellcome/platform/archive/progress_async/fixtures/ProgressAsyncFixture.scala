@@ -34,11 +34,11 @@ trait ProgressAsyncFixture
     with Messaging
     with ScalaFutures {
 
-  def withProgress[R](monitor: ProgressTracker)(
+  def withProgress[R](progressTracker: ProgressTracker)(
     testWith: TestWith[Progress, R]): R = {
     val createdProgress = createProgress
 
-    whenReady(monitor.initialise(createdProgress)) { storedProgress =>
+    whenReady(progressTracker.initialise(createdProgress)) { storedProgress =>
       testWith(storedProgress)
     }
   }

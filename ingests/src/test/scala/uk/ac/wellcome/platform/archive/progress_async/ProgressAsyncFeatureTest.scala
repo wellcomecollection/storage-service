@@ -5,9 +5,8 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Completed
-import uk.ac.wellcome.platform.archive.progress_async.fixtures.{
-  ProgressAsyncFixture => ProgressFixture
-}
+import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
+import uk.ac.wellcome.platform.archive.progress_async.fixtures.{ProgressAsyncFixture => ProgressFixture}
 
 class ProgressAsyncFeatureTest
     extends FunSpec
@@ -29,7 +28,7 @@ class ProgressAsyncFeatureTest
                 status = Completed,
                 maybeBag = someBagId)
 
-            sendNotificationToSQS(queue, progressStatusUpdate)
+            sendNotificationToSQS[ProgressUpdate](queue, progressStatusUpdate)
 
             eventually {
               val actualMessage =
