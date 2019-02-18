@@ -7,7 +7,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Completed
+import uk.ac.wellcome.platform.archive.common.progress.models.Progress.{Completed, Processing}
 import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
 import uk.ac.wellcome.platform.archive.common.progress.monitor.IdConstraintError
 import uk.ac.wellcome.platform.archive.progress_async.fixtures.{ProgressAsyncFixture, WorkerServiceFixture}
@@ -59,6 +59,60 @@ class IngestsWorkerServiceTest extends FunSpec with ProgressGenerators with Prog
               }
             }
 
+          }
+        }
+      }
+    }
+  }
+
+  it("adds multiple events to a Progress") {
+    withLocalSqsQueue { queue =>
+      withProgressTrackerTable { table =>
+        withLocalSnsTopic { topic =>
+          withWorkerService(queue, table, topic) { service =>
+            withProgressTracker(table) { monitor =>
+              withProgress(monitor) { progress =>
+                val progressStatusUpdate1 =
+                  createProgressStatusUpdateWith(
+                    id = progress.id,
+                    status = Processing
+                  )
+
+                val progressStatusUpdate2 =
+                  createProgressStatusUpdateWith(
+                    id = progress.id,
+                    status = Processing,
+                    maybeBag = progressStatusUpdate1.affectedBag
+                  )
+
+                val notification1 = createNotificationMessageWith[ProgressUpdate](progressStatusUpdate1)
+                val notification2 = createNotificationMessageWith[ProgressUpdate](progressStatusUpdate2)
+
+                val expectedProgress = progress.copy(
+                  status = Completed,
+                  events = progressStatusUpdate1.events ++ progressStatusUpdate2.events,
+                  bag = progressStatusUpdate1.affectedBag
+                )
+
+                val future1 = service.processMessage(notification1)
+                whenReady(future1) { _ =>
+                  val future2 = service.processMessage(notification2)
+                  whenReady(future2) { _ =>
+                    assertProgressCreated(expectedProgress, table)
+
+                    val expectedEventDescriptions =
+                      (progressStatusUpdate1.events ++ progressStatusUpdate2.events)
+                        .map { _.description }
+
+                    assertProgressRecordedRecentEvents(
+                      id = progressStatusUpdate1.id,
+                      expectedEventDescriptions = expectedEventDescriptions,
+                      table = table
+                    )
+                  }
+                }
+              }
+            }
           }
         }
       }
