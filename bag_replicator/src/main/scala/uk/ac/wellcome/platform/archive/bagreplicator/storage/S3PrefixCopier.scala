@@ -48,7 +48,8 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext)
         objectLocation.key + "/"
 
     Future {
-      val listObjectsResult = s3Client.listObjectsV2(objectLocation.namespace, prefix)
+      val listObjectsResult =
+        s3Client.listObjectsV2(objectLocation.namespace, prefix)
 
       // @@AWLC We should remove this when we have a fix in place for
       // https://github.com/wellcometrust/platform/issues/3450, but for now it's
@@ -57,7 +58,7 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext)
       if (listObjectsResult.isTruncated)
         throw new RuntimeException(
           "ListObjectsV2 result truncated! The replicator couldn't copy everything. " +
-          "See https://github.com/wellcometrust/platform/issues/3450"
+            "See https://github.com/wellcometrust/platform/issues/3450"
         )
 
       listObjectsResult

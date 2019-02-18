@@ -113,7 +113,8 @@ class S3PrefixCopierTest
     }
   }
 
-  it("explodes if you try to copy more objects than are returned in a single ListObject call") {
+  it(
+    "explodes if you try to copy more objects than are returned in a single ListObject call") {
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
         val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
@@ -121,7 +122,7 @@ class S3PrefixCopierTest
         // You can get up to 1000 objects in a single S3 ListObject call.
         (1 to 1002).map { i =>
           val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
-          createObject(src, content="")
+          createObject(src, content = "")
           src
         }
 
@@ -144,7 +145,7 @@ class S3PrefixCopierTest
         // You can get up to 1000 objects in a single S3 ListObject call.
         val srcLocations = (1 to 1002).map { i =>
           val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
-          createObject(src, content="")
+          createObject(src, content = "")
           src
         }
 

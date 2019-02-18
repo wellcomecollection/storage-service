@@ -19,7 +19,8 @@ trait S3CopierFixtures extends S3 with RandomThings {
 
   def createObjectLocation: ObjectLocation = createObjectLocationWith()
 
-  def createObject(location: ObjectLocation, content: String = randomAlphanumeric()): PutObjectResult =
+  def createObject(location: ObjectLocation,
+                   content: String = randomAlphanumeric()): PutObjectResult =
     s3Client.putObject(
       location.namespace,
       location.key,
