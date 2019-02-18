@@ -118,7 +118,7 @@ trait HttpFixtures extends Akka with ScalaFutures { this: Matchers =>
     whenReady(progressFuture) { actualError =>
       actualError shouldBe UserErrorResponse(
         context = contextURL.toString,
-        httpStatus = statusCode.intValue(),
+        httpStatus = statusCode.intValue,
         description = description,
         label = label
       )
@@ -136,7 +136,7 @@ trait HttpFixtures extends Akka with ScalaFutures { this: Matchers =>
     whenReady(progressFuture) { actualError =>
       actualError shouldBe InternalServerErrorResponse(
         context = contextURL.toString,
-        httpStatus = StatusCodes.InternalServerError.intValue(),
+        httpStatus = StatusCodes.InternalServerError.intValue,
         label = StatusCodes.InternalServerError.reason
       )
     }
