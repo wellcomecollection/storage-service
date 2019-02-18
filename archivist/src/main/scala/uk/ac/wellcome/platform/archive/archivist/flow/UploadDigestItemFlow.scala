@@ -5,11 +5,8 @@ import java.io.InputStream
 import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import com.amazonaws.services.s3.AmazonS3
+import uk.ac.wellcome.platform.archive.archivist.models.DigestItemJob
 import uk.ac.wellcome.platform.archive.archivist.models.errors.FileNotFoundError
-import uk.ac.wellcome.platform.archive.archivist.models.{
-  ArchiveDigestItemJob,
-  ZipLocation
-}
 import uk.ac.wellcome.platform.archive.archivist.zipfile.ZipFileReader
 import uk.ac.wellcome.platform.archive.common.flows.{
   FoldEitherFlow,
@@ -31,24 +28,29 @@ import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 object UploadDigestItemFlow {
   def apply(parallelism: Int)(
     implicit s3Client: AmazonS3
-  ): Flow[ArchiveDigestItemJob,
-          Either[ArchiveError[ArchiveDigestItemJob], ArchiveDigestItemJob],
+  ): Flow[DigestItemJob,
+          Either[ArchiveError[DigestItemJob], DigestItemJob],
           NotUsed] = {
 
-    Flow[ArchiveDigestItemJob]
-      .map(job => (job, ZipFileReader.maybeInputStream(ZipLocation(job))))
+    Flow[DigestItemJob]
+      .map(
+        job =>
+          (
+            job,
+            ZipFileReader.maybeInputStream(job.zipEntryPointer)
+        ))
       .map {
         case (job, option) =>
           option
-            .toRight(FileNotFoundError(job.bagDigestItem.path.toString, job))
+            .toRight(FileNotFoundError(job.zipEntryPointer.zipPath, job))
             .map(inputStream => (job, inputStream))
       }
       .via(
         FoldEitherFlow[
-          ArchiveError[ArchiveDigestItemJob],
-          (ArchiveDigestItemJob, InputStream),
-          Either[ArchiveError[ArchiveDigestItemJob], ArchiveDigestItemJob]](
-          OnErrorFlow())(UploadDigestInputStreamFlow(parallelism)))
+          ArchiveError[DigestItemJob],
+          (DigestItemJob, InputStream),
+          Either[ArchiveError[DigestItemJob], DigestItemJob]](OnErrorFlow())(
+          UploadDigestInputStreamFlow(parallelism)))
   }
 
 }

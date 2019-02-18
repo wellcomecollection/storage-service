@@ -44,11 +44,11 @@ class UploadDigestItemFlowTest
           val digest =
             "52dbe81fda7f771f83ed4afc9a7c156d3bf486f8d654970fa5c5dbebb4ff7b73"
 
-          val archiveItemJob = createArchiveDigestItemJobWith(
+          val archiveItemJob = createDigestItemJobWith(
             file = file,
             bucket = bucket,
             digest = digest,
-            s3Key = fileName
+            itemPath = fileName
           )
 
           val source = Source.single(archiveItemJob)
@@ -81,11 +81,11 @@ class UploadDigestItemFlowTest
         withZipFile(List(FileEntry(s"$fileName", fileContent))) { file =>
           val digest = "wrong!"
 
-          val archiveItemJob = createArchiveDigestItemJobWith(
+          val archiveItemJob = createDigestItemJobWith(
             file = file,
             bucket = bucket,
             digest = digest,
-            s3Key = fileName
+            itemPath = fileName
           )
 
           val source = Source.single(archiveItemJob)
@@ -114,11 +114,11 @@ class UploadDigestItemFlowTest
           val fileName = "key.txt"
           val bagIdentifier = createExternalIdentifier
 
-          val archiveItemJob = createArchiveDigestItemJobWith(
+          val archiveItemJob = createDigestItemJobWith(
             file = file,
             bucket = bucket,
             bagIdentifier = bagIdentifier,
-            s3Key = fileName
+            itemPath = fileName
           )
 
           val source = Source.single(archiveItemJob)
@@ -148,10 +148,10 @@ class UploadDigestItemFlowTest
 
       val fileName = "key.txt"
       withZipFile(List(FileEntry(s"$fileName", fileContent))) { file =>
-        val failingArchiveItemJob = createArchiveDigestItemJobWith(
+        val failingArchiveItemJob = createDigestItemJobWith(
           file = file,
           bucket = Bucket("does-not-exist"),
-          s3Key = fileName
+          itemPath = fileName
         )
 
         val source = Source.single(failingArchiveItemJob)

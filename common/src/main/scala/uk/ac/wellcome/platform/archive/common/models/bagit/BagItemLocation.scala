@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.models.bagit
 
+import java.nio.file.Paths
+
 import uk.ac.wellcome.storage.ObjectLocation
 
 case class BagItemLocation(
@@ -7,7 +9,7 @@ case class BagItemLocation(
   bagItemPath: BagItemPath
 ) {
   def completePath: String =
-    List(bagLocation.completePath, bagItemPath).mkString("/")
+    Paths.get(bagLocation.completePath, bagItemPath.toString).toString
 
   def objectLocation: ObjectLocation =
     ObjectLocation(

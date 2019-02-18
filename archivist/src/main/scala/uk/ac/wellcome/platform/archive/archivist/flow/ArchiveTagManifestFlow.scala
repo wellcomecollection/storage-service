@@ -4,17 +4,13 @@ import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.archivist.builders.UploadLocationBuilder
+import uk.ac.wellcome.platform.archive.archivist.models._
 import uk.ac.wellcome.platform.archive.archivist.models.errors.{
   ArchiveItemJobError,
   ArchiveJobError
 }
-import uk.ac.wellcome.platform.archive.archivist.models.{
-  ArchiveDigestItemJob,
-  ArchiveItemJob,
-  ArchiveJob
-}
 import uk.ac.wellcome.platform.archive.common.flows.FoldEitherFlow
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagDigestFile
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 /** This flow extracts a tag manifest from a ZIP file, and uploads it to S3
@@ -31,7 +27,7 @@ object ArchiveTagManifestFlow extends Logging {
     : Flow[ArchiveJob, Either[ArchiveError[ArchiveJob], ArchiveJob], NotUsed] =
     Flow[ArchiveJob]
       .log("archiving tag manifest")
-      .map(archiveTagManifestItemJob)
+      .map(createTagManifestItemJob)
       .via(UploadItemFlow(parallelism))
       .via(
         FoldEitherFlow[
@@ -42,36 +38,44 @@ object ArchiveTagManifestFlow extends Logging {
             Left(ArchiveItemJobError(error.t.archiveJob, List(error)))
           })(
           ifRight = Flow[(ArchiveItemJob, String)]
-            .map(context => archiveDigestItemJob _ tupled context)
+            .map(context => createDigestItemJob _ tupled context)
             .via(DownloadAndVerifyDigestItemFlow(parallelism))
             .via(extractArchiveJobFlow)
         )
       )
 
-  private def archiveTagManifestItemJob(
-    archiveJob: ArchiveJob): ArchiveItemJob = {
-    ArchiveItemJob(
+  private def createTagManifestItemJob(
+    archiveJob: ArchiveJob): TagManifestItemJob =
+    TagManifestItemJob(
       archiveJob = archiveJob,
-      bagItemPath = archiveJob.tagManifestLocation
+      zipEntryPointer = ZipEntryPointer(
+        zipFile = archiveJob.zipFile,
+        zipPath = archiveJob.tagManifestLocation.underlying
+      ),
+      uploadLocation = UploadLocationBuilder.create(
+        bagUploadLocation = archiveJob.bagUploadLocation,
+        itemPathInZip = archiveJob.tagManifestLocation.underlying,
+        maybeBagRootPathInZip = archiveJob.maybeBagRootPathInZip
+      )
     )
-  }
 
-  private def archiveDigestItemJob(archiveItemJob: ArchiveItemJob,
-                                   digest: String): ArchiveDigestItemJob = {
-    ArchiveDigestItemJob(
+  private def createDigestItemJob(archiveItemJob: ArchiveItemJob,
+                                  digest: String): DigestItemJob =
+    DigestItemJob(
       archiveJob = archiveItemJob.archiveJob,
-      bagDigestItem = BagDigestFile(digest, archiveItemJob.bagItemPath)
+      zipEntryPointer = archiveItemJob.zipEntryPointer,
+      uploadLocation = archiveItemJob.uploadLocation,
+      digest = digest
     )
-  }
 
   private def extractArchiveJobFlow = {
     FoldEitherFlow[
-      ArchiveError[ArchiveDigestItemJob],
-      ArchiveDigestItemJob,
+      ArchiveError[DigestItemJob],
+      DigestItemJob,
       Either[ArchiveError[ArchiveJob], ArchiveJob]](
-      ifLeft = Flow[ArchiveError[ArchiveDigestItemJob]].map { error =>
+      ifLeft = Flow[ArchiveError[DigestItemJob]].map { error =>
         Left(ArchiveJobError(error.t.archiveJob, List(error)))
-      })(ifRight = Flow[ArchiveDigestItemJob].map { archiveDigestItemJob =>
+      })(ifRight = Flow[DigestItemJob].map { archiveDigestItemJob =>
       Right(archiveDigestItemJob.archiveJob)
     })
   }

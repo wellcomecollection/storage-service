@@ -74,7 +74,7 @@ trait BagIt extends RandomThings {
             case (existingFileName, validFileDigest) =>
               s"""$validFileDigest  $existingFileName"""
           }
-          (validContent :+ """1234567890qwer  this/does/not/exists.jpg""")
+          (validContent :+ """invalidchecksum  this/does/not/exists.jpg""")
             .mkString("\n")
         }
       ))

@@ -37,12 +37,11 @@ class UploadItemFlowTest
         val fileContent = "bah buh bih beh"
         val fileName = "key.txt"
         withZipFile(List(FileEntry(fileName, fileContent))) { file =>
-          val archiveItemJob = createArchiveItemJobWith(
+          val archiveItemJob = createTagManifestItemJobWith(
             file = file,
             bucket = bucket,
-            s3Key = fileName
+            itemPath = fileName
           )
-
           val source = Source.single(archiveItemJob)
           val futureResult = source via flow runWith Sink.head
 
@@ -68,11 +67,11 @@ class UploadItemFlowTest
           val fileName = "key.txt"
           val bagIdentifier = createExternalIdentifier
 
-          val archiveItemJob = createArchiveItemJobWith(
+          val archiveItemJob = createTagManifestItemJobWith(
             file = file,
             bucket = bucket,
             bagIdentifier = bagIdentifier,
-            s3Key = fileName
+            itemPath = fileName
           )
 
           val source = Source.single(archiveItemJob)
@@ -99,10 +98,10 @@ class UploadItemFlowTest
       val fileContent = "bah buh bih beh"
       val fileName = "key.txt"
       withZipFile(List(FileEntry(s"$fileName", fileContent))) { file =>
-        val failingArchiveItemJob = createArchiveItemJobWith(
+        val failingArchiveItemJob = createTagManifestItemJobWith(
           file = file,
           bucket = Bucket("does-not-exist"),
-          s3Key = fileName
+          itemPath = fileName
         )
 
         val source = Source.single(failingArchiveItemJob)

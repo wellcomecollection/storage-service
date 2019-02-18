@@ -8,8 +8,8 @@ import uk.ac.wellcome.platform.archive.archivist.bag.ArchiveItemJobCreator
 import uk.ac.wellcome.platform.archive.archivist.models.TypeAliases.ArchiveCompletion
 import uk.ac.wellcome.platform.archive.archivist.models.errors.ArchiveJobError
 import uk.ac.wellcome.platform.archive.archivist.models.{
-  ArchiveDigestItemJob,
-  ArchiveJob
+  ArchiveJob,
+  DigestItemJob
 }
 import uk.ac.wellcome.platform.archive.common.flows.{
   FoldEitherFlow,
@@ -26,34 +26,35 @@ object ArchiveJobDigestItemsFlow extends Logging {
     implicit s3Client: AmazonS3): Flow[ArchiveJob, ArchiveCompletion, NotUsed] =
     Flow[ArchiveJob]
       .log("creating archive item jobs")
-      .map(job => ArchiveItemJobCreator.createArchiveDigestItemJobs(job))
+      .map(job => {
+        ArchiveItemJobCreator.createDigestItemJobs(job)
+      })
       .via(
         FoldEitherFlow[
           ArchiveError[ArchiveJob],
-          List[ArchiveDigestItemJob],
+          List[DigestItemJob],
           ArchiveCompletion](OnErrorFlow())(
           mapReduceArchiveItemJobs(parallelism, ingestBagRequest)))
 
   private def mapReduceArchiveItemJobs(
     parallelism: Int,
     ingestBagRequest: IngestBagRequest)(implicit s3Client: AmazonS3)
-    : Flow[List[ArchiveDigestItemJob], ArchiveCompletion, NotUsed] =
-    Flow[List[ArchiveDigestItemJob]]
+    : Flow[List[DigestItemJob], ArchiveCompletion, NotUsed] =
+    Flow[List[DigestItemJob]]
       .mapConcat(identity)
-      .via(ArchiveDigestItemJobFlow(parallelism))
+      .via(DigestItemJobFlow(parallelism))
       .groupBy(Int.MaxValue, {
         case Right(archiveItemJob) => archiveItemJob.archiveJob
         case Left(error)           => error.t.archiveJob
       })
-      .fold((
-        Nil: List[ArchiveError[ArchiveDigestItemJob]],
-        None: Option[ArchiveJob])) { (accumulator, archiveItemJobResult) =>
-        (accumulator, archiveItemJobResult) match {
-          case ((errorList, _), Right(archiveItemJob)) =>
-            (errorList, Some(archiveItemJob.archiveJob))
-          case ((errorList, _), Left(error)) =>
-            (error :: errorList, Some(error.t.archiveJob))
-        }
+      .fold((Nil: List[ArchiveError[DigestItemJob]], None: Option[ArchiveJob])) {
+        (accumulator, archiveItemJobResult) =>
+          (accumulator, archiveItemJobResult) match {
+            case ((errorList, _), Right(archiveItemJob)) =>
+              (errorList, Some(archiveItemJob.archiveJob))
+            case ((errorList, _), Left(error)) =>
+              (error :: errorList, Some(error.t.archiveJob))
+          }
 
       }
       .collect {

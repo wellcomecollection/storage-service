@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.archivist.generators
 import java.io.File
 import java.util.zip.ZipFile
 
+import uk.ac.wellcome.platform.archive.archivist.builders.UploadLocationBuilder
 import uk.ac.wellcome.platform.archive.archivist.models._
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
@@ -16,41 +17,55 @@ trait ArchiveJobGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators {
 
-  def createArchiveItemJobWith(
+  def createTagManifestItemJobWith(
     file: File,
-    bucket: S3.Bucket,
+    bucket: S3.Bucket = randomBucket,
     bagIdentifier: ExternalIdentifier = createExternalIdentifier,
-    s3Key: String
-  ): ArchiveItemJob =
-    ArchiveItemJob(
-      archiveJob = createArchiveJobWith(file, bagIdentifier, bucket),
-      bagItemPath = BagItemPath(s3Key)
+    itemPath: String = randomAlphanumeric()): TagManifestItemJob = {
+    val archiveJob = createArchiveJobWith(file, bagIdentifier, bucket)
+    TagManifestItemJob(
+      archiveJob = archiveJob,
+      zipEntryPointer = ZipEntryPointer(
+        zipFile = archiveJob.zipFile,
+        zipPath = itemPath
+      ),
+      uploadLocation = UploadLocationBuilder.create(
+        archiveJob.bagUploadLocation,
+        itemPath
+      )
     )
+  }
 
-  def createArchiveDigestItemJobWith(
+  def createDigestItemJobWith(
     file: File,
     bucket: S3.Bucket,
     digest: String = randomAlphanumeric(),
     bagIdentifier: ExternalIdentifier = createExternalIdentifier,
-    s3Key: String = randomAlphanumeric()
-  ): ArchiveDigestItemJob =
-    ArchiveDigestItemJob(
-      archiveJob = createArchiveJobWith(
-        file = file,
-        bagIdentifier = bagIdentifier,
-        bucket = bucket
-      ),
-      bagDigestItem = BagDigestFile(
-        checksum = digest,
-        path = BagItemPath(s3Key)
-      )
+    itemPath: String = randomAlphanumeric()): DigestItemJob = {
+    val archiveJob = createArchiveJobWith(
+      file = file,
+      bagIdentifier = bagIdentifier,
+      bucket = bucket
     )
+    DigestItemJob(
+      archiveJob = archiveJob,
+      zipEntryPointer = ZipEntryPointer(
+        zipFile = archiveJob.zipFile,
+        zipPath = itemPath
+      ),
+      uploadLocation = UploadLocationBuilder.create(
+        archiveJob.bagUploadLocation,
+        itemPath
+      ),
+      digest = digest
+    )
+  }
 
   // todo
   def createArchiveJobWith(
     file: File,
     bagIdentifier: ExternalIdentifier = createExternalIdentifier,
-    bucket: Bucket
+    bucket: Bucket,
   ): ArchiveJob = {
     val bagLocation = BagLocation(
       storageNamespace = bucket.name,
