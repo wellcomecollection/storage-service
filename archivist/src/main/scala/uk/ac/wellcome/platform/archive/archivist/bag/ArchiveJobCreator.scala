@@ -35,7 +35,9 @@ object ArchiveJobCreator extends Logging {
   ): Either[ArchiveError[IngestBagRequest], ArchiveJob] = {
     ZippedBagFile.locateBagInfo(zipFile) match {
       case Success(bagInfoPath) =>
-        getBagIdentifier(ZipEntryPointer(zipFile, bagInfoPath), ingestBagRequest)
+        getBagIdentifier(
+          ZipEntryPointer(zipFile, bagInfoPath),
+          ingestBagRequest)
           .map { externalIdentifier =>
             val bagRootPathInZip =
               ZippedBagFile.bagPathFromBagInfoPath(bagInfoPath)
@@ -87,7 +89,9 @@ object ArchiveJobCreator extends Logging {
     ZipFileReader
       .maybeInputStream(bagIdentifierZipEntryPointer)
       .toRight[ArchiveError[IngestBagRequest]](
-        FileNotFoundError(bagIdentifierZipEntryPointer.zipPath, ingestBagRequest))
+        FileNotFoundError(
+          bagIdentifierZipEntryPointer.zipPath,
+          ingestBagRequest))
       .flatMap { inputStream =>
         BagInfoParser
           .parseBagInfo(ingestBagRequest, inputStream)

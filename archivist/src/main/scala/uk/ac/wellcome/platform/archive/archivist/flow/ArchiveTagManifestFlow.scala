@@ -6,7 +6,10 @@ import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.archivist.builders.UploadLocationBuilder
 import uk.ac.wellcome.platform.archive.archivist.models._
-import uk.ac.wellcome.platform.archive.archivist.models.errors.{ArchiveItemJobError, ArchiveJobError}
+import uk.ac.wellcome.platform.archive.archivist.models.errors.{
+  ArchiveItemJobError,
+  ArchiveJobError
+}
 import uk.ac.wellcome.platform.archive.common.flows.FoldEitherFlow
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 

@@ -20,4 +20,3 @@ case class DigestItemJob(
   uploadLocation: ObjectLocation,
   digest: String
 ) extends ArchiveItemJob
-

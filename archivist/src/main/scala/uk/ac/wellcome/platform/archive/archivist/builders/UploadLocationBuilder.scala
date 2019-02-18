@@ -1,6 +1,10 @@
 package uk.ac.wellcome.platform.archive.archivist.builders
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagItemLocation, BagItemPath, BagLocation}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagItemLocation,
+  BagItemPath,
+  BagLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 object UploadLocationBuilder {
