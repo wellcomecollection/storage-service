@@ -35,7 +35,7 @@ class DownloadAndVerifyDigestItemFlowTest
           val fileContent = "bah buh bih beh"
           val fileName = "key.txt"
 
-          val archiveItemJob = createArchiveDigestItemJobWith(
+          val archiveItemJob = createDigestItemJobWith(
             file = file,
             bucket = bucket,
             digest = sha256(fileContent),
@@ -66,7 +66,7 @@ class DownloadAndVerifyDigestItemFlowTest
           val digest = "bad-digest"
           val fileName = "key.txt"
 
-          val archiveItemJob = createArchiveDigestItemJobWith(
+          val archiveItemJob = createDigestItemJobWith(
             file = file,
             bucket = bucket,
             digest = digest,
@@ -99,7 +99,7 @@ class DownloadAndVerifyDigestItemFlowTest
     withMaterializer { implicit materializer =>
       withLocalS3Bucket { bucket =>
         withZipFile(List()) { file =>
-          val archiveItemJob = createArchiveDigestItemJobWith(
+          val archiveItemJob = createDigestItemJobWith(
             file = file,
             bucket = bucket
           )

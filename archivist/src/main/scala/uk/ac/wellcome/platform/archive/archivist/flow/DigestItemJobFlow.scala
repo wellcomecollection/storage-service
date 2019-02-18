@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.flows.{
 }
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
-object ArchiveDigestItemJobFlow extends Logging {
+object DigestItemJobFlow extends Logging {
   def apply(parallelism: Int)(
     implicit s3Client: AmazonS3
   ): Flow[DigestItemJob,

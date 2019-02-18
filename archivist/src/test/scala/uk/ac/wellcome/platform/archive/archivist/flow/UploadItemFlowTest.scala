@@ -37,7 +37,7 @@ class UploadItemFlowTest
         val fileContent = "bah buh bih beh"
         val fileName = "key.txt"
         withZipFile(List(FileEntry(fileName, fileContent))) { file =>
-          val archiveItemJob = createArchiveItemJobWith(
+          val archiveItemJob = createTagManifestItemJobWith(
             file = file,
             bucket = bucket,
             itemPath = fileName
@@ -67,7 +67,7 @@ class UploadItemFlowTest
           val fileName = "key.txt"
           val bagIdentifier = createExternalIdentifier
 
-          val archiveItemJob = createArchiveItemJobWith(
+          val archiveItemJob = createTagManifestItemJobWith(
             file = file,
             bucket = bucket,
             bagIdentifier = bagIdentifier,
@@ -98,7 +98,7 @@ class UploadItemFlowTest
       val fileContent = "bah buh bih beh"
       val fileName = "key.txt"
       withZipFile(List(FileEntry(s"$fileName", fileContent))) { file =>
-        val failingArchiveItemJob = createArchiveItemJobWith(
+        val failingArchiveItemJob = createTagManifestItemJobWith(
           file = file,
           bucket = Bucket("does-not-exist"),
           itemPath = fileName

@@ -3,14 +3,12 @@ package uk.ac.wellcome.platform.archive.archivist.bag
 import java.io.InputStream
 
 import cats.implicits._
+import uk.ac.wellcome.platform.archive.archivist.builders.UploadLocationBuilder
 import uk.ac.wellcome.platform.archive.archivist.models.errors.FileNotFoundError
 import uk.ac.wellcome.platform.archive.archivist.models._
 import uk.ac.wellcome.platform.archive.archivist.zipfile.ZipFileReader
 import uk.ac.wellcome.platform.archive.common.bag.BagDigestFileCreator
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagDigestFile,
-  BagItemPath
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 object ArchiveItemJobCreator {
@@ -21,7 +19,7 @@ object ArchiveItemJobCreator {
     * If any of the manifests are incorrectly formatted, it returns an error.
     *
     */
-  def createArchiveDigestItemJobs(
+  def createDigestItemJobs(
     job: ArchiveJob): Either[ArchiveError[ArchiveJob], List[DigestItemJob]] =
     job.bagManifestLocations
       .map { manifestLocation: BagItemPath =>

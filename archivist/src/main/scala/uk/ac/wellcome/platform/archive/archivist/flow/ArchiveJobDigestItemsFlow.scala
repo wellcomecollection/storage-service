@@ -27,7 +27,7 @@ object ArchiveJobDigestItemsFlow extends Logging {
     Flow[ArchiveJob]
       .log("creating archive item jobs")
       .map(job => {
-        ArchiveItemJobCreator.createArchiveDigestItemJobs(job)
+        ArchiveItemJobCreator.createDigestItemJobs(job)
       })
       .via(
         FoldEitherFlow[
@@ -42,7 +42,7 @@ object ArchiveJobDigestItemsFlow extends Logging {
     : Flow[List[DigestItemJob], ArchiveCompletion, NotUsed] =
     Flow[List[DigestItemJob]]
       .mapConcat(identity)
-      .via(ArchiveDigestItemJobFlow(parallelism))
+      .via(DigestItemJobFlow(parallelism))
       .groupBy(Int.MaxValue, {
         case Right(archiveItemJob) => archiveItemJob.archiveJob
         case Left(error)           => error.t.archiveJob

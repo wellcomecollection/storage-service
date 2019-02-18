@@ -3,11 +3,9 @@ package uk.ac.wellcome.platform.archive.archivist.generators
 import java.io.File
 import java.util.zip.ZipFile
 
+import uk.ac.wellcome.platform.archive.archivist.builders.UploadLocationBuilder
 import uk.ac.wellcome.platform.archive.archivist.models._
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.models.bagit._
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -16,7 +14,7 @@ trait ArchiveJobGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators {
 
-  def createArchiveItemJobWith(
+  def createTagManifestItemJobWith(
     file: File,
     bucket: S3.Bucket = randomBucket,
     bagIdentifier: ExternalIdentifier = createExternalIdentifier,
@@ -35,7 +33,7 @@ trait ArchiveJobGenerators
     )
   }
 
-  def createArchiveDigestItemJobWith(
+  def createDigestItemJobWith(
     file: File,
     bucket: S3.Bucket,
     digest: String = randomAlphanumeric(),
