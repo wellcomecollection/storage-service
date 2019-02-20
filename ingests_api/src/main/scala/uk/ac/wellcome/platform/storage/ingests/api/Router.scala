@@ -85,11 +85,11 @@ class Router(progressTracker: ProgressTracker,
     } else {
       info(s"""errors fetching ingests for $bagId: ${results.mkString(" ")}""")
       complete(
-        InternalServerError -> ErrorResponse(
+        InternalServerError -> InternalServerErrorResponse(
           context = contextURL,
-          statusCode = InternalServerError,
-          description = InternalServerError.reason
-        ))
+          statusCode = InternalServerError
+        )
+      )
     }
   }
 

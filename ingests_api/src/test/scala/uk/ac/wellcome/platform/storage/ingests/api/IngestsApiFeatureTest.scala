@@ -174,15 +174,17 @@ class IngestsApiFeatureTest
     }
 
     it("returns a 500 Server Error if reading from DynamoDB fails") {
-      withBrokenApp {
-        case (_, _, metricsSender, baseUrl) =>
-          whenGetRequestReady(s"$baseUrl/progress/$randomUUID") { response =>
-            assertIsInternalServerErrorResponse(response)
+      withMaterializer { implicit materializer =>
+        withBrokenApp {
+          case (_, _, metricsSender, baseUrl) =>
+            whenGetRequestReady(s"$baseUrl/progress/$randomUUID") { response =>
+              assertIsInternalServerErrorResponse(response)
 
-            assertMetricSent(
-              metricsSender,
-              result = HttpMetricResults.ServerError)
-          }
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.ServerError)
+            }
+        }
       }
     }
   }
@@ -620,43 +622,45 @@ class IngestsApiFeatureTest
     }
 
     it("returns a 500 Server Error if updating DynamoDB fails") {
-      withBrokenApp {
-        case (_, _, metricsSender, baseUrl) =>
-          val entity = HttpEntity(
-            ContentTypes.`application/json`,
-            s"""|{
-                |  "type": "Ingest",
-                |  "ingestType": {
-                |    "id": "create",
-                |    "type": "IngestType"
-                |  },
-                |  "sourceLocation":{
-                |    "type": "Location",
-                |    "provider": {
-                |      "type": "Provider",
-                |      "id": "${StandardDisplayProvider.id}"
-                |    },
-                |    "bucket": "bukkit",
-                |    "path": "key"
-                |  },
-                |  "space": {
-                |    "id": "space",
-                |    "type": "Space"
-                |  },
-                |  "callback": {
-                |    "url": "${testCallbackUri.toString}"
-                |  }
-                |}""".stripMargin
-          )
+      withMaterializer { implicit materializer =>
+        withBrokenApp {
+          case (_, _, metricsSender, baseUrl) =>
+            val entity = HttpEntity(
+              ContentTypes.`application/json`,
+              s"""|{
+                  |  "type": "Ingest",
+                  |  "ingestType": {
+                  |    "id": "create",
+                  |    "type": "IngestType"
+                  |  },
+                  |  "sourceLocation":{
+                  |    "type": "Location",
+                  |    "provider": {
+                  |      "type": "Provider",
+                  |      "id": "${StandardDisplayProvider.id}"
+                  |    },
+                  |    "bucket": "bukkit",
+                  |    "path": "key"
+                  |  },
+                  |  "space": {
+                  |    "id": "space",
+                  |    "type": "Space"
+                  |  },
+                  |  "callback": {
+                  |    "url": "${testCallbackUri.toString}"
+                  |  }
+                  |}""".stripMargin
+            )
 
-          whenPostRequestReady(s"$baseUrl/progress/$randomUUID", entity) {
-            response =>
-              assertIsInternalServerErrorResponse(response)
+            whenPostRequestReady(s"$baseUrl/progress/$randomUUID", entity) {
+              response =>
+                assertIsInternalServerErrorResponse(response)
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.ServerError)
-          }
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.ServerError)
+            }
+        }
       }
     }
   }
