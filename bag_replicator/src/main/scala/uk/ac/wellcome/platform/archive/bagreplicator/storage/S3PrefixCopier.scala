@@ -9,7 +9,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
-class S3PrefixCopier(s3Client: AmazonS3, copier: ObjectCopier)(implicit ec: ExecutionContext)
+class S3PrefixCopier(s3Client: AmazonS3, copier: ObjectCopier)(
+  implicit ec: ExecutionContext)
     extends Logging {
 
   /** Copy all the objects from under ObjectLocation into another ObjectLocation,

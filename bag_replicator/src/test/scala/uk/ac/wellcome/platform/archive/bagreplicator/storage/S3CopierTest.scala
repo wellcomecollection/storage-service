@@ -5,10 +5,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.S3CopierFixtures
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-class S3CopierTest
-    extends FunSpec
-    with Matchers
-    with S3CopierFixtures {
+class S3CopierTest extends FunSpec with Matchers with S3CopierFixtures {
 
   val s3Copier = new S3Copier(s3Client)
 

@@ -192,10 +192,13 @@ class S3PrefixCopierTest
   // A modified version of listKeysInBucket that can retrieve everything,
   // even if it takes multiple ListObject calls.
   override def listKeysInBucket(bucket: Bucket): List[String] =
-    S3Objects.inBucket(s3Client, bucket.name)
+    S3Objects
+      .inBucket(s3Client, bucket.name)
       .withBatchSize(1000)
       .iterator()
       .asScala
       .toList
-      .map { objectSummary: S3ObjectSummary => objectSummary.getKey }
+      .map { objectSummary: S3ObjectSummary =>
+        objectSummary.getKey
+      }
 }
