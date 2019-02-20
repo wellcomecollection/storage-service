@@ -17,12 +17,9 @@ object Main extends WellcomeTypesafeApp {
       s3Client = S3Builder.buildS3Client(config),
       snsClient = SNSBuilder.buildSNSClient(config),
       sqsStream = SQSBuilder.buildSQSStream[NotificationMessage](config),
-      bagVerifierConfig =
-        BagVerifierConfig.buildBagVerifierConfig(config),
-
+      bagVerifierConfig = BagVerifierConfig.buildBagVerifierConfig(config),
       progressSnsConfig =
         SNSBuilder.buildSNSConfig(config, namespace = "progress"),
-
       outgoingSnsConfig =
         SNSBuilder.buildSNSConfig(config, namespace = "outgoing")
     )

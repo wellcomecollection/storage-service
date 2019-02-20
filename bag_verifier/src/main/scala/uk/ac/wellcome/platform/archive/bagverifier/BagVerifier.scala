@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagverifier
 
-
 import akka.Done
 import akka.actor.ActorSystem
 import com.amazonaws.services.s3.AmazonS3
@@ -28,7 +27,8 @@ class BagVerifier(
   outgoingSnsConfig: SNSConfig
 )(
   implicit val actorSystem: ActorSystem
-) extends Logging with Runnable {
+) extends Logging
+    with Runnable {
 
   def run(): Future[Done] =
     sqsStream.foreach(
@@ -38,7 +38,8 @@ class BagVerifier(
 
   def processMessage(
     notificationMessage: NotificationMessage
-  ): Future[Unit] = for {
+  ): Future[Unit] =
+    for {
       replicationRequest <- Future.fromTry(
         fromJson[ReplicationRequest](notificationMessage.body)
       )
@@ -68,6 +69,7 @@ class BagVerifier(
           messageString,
           "bag_verifier"
         )
-      }.map(snsClient.publish)
+      }
+      .map(snsClient.publish)
   }
 }

@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.json.JsonUtil._
 
 class BagVerifierFeatureTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with RandomThings
@@ -18,14 +18,12 @@ class BagVerifierFeatureTest
 
   it("receives and forwards a notification") {
     withApp {
-      case (
-        sourceBucket,
-        queue,
-        progressTopic,
-        outgoingTopic) =>
+      case (sourceBucket, queue, progressTopic, outgoingTopic) =>
         val requestId = randomUUID
         withBagNotification(
-          queue, sourceBucket, requestId
+          queue,
+          sourceBucket,
+          requestId
         ) { replicationRequest =>
           eventually {
 

@@ -11,13 +11,17 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.bagverifier.BagVerifier
 import uk.ac.wellcome.platform.archive.bagverifier.config.BagVerifierConfig
-import uk.ac.wellcome.platform.archive.common.fixtures.{ArchiveMessaging, BagLocationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  ArchiveMessaging,
+  BagLocationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.platform.archive.common.models.ReplicationRequest
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 trait BagVerifierFixtures
-  extends S3
+    extends S3
     with RandomThings
     with Messaging
     with Akka
@@ -25,10 +29,10 @@ trait BagVerifierFixtures
     with ArchiveMessaging {
 
   def withBagNotification[R](
-                              queue: Queue,
-                              storageBucket: Bucket,
-                              archiveRequestId: UUID
-                            )(testWith: TestWith[ReplicationRequest, R]): R =
+    queue: Queue,
+    storageBucket: Bucket,
+    archiveRequestId: UUID
+  )(testWith: TestWith[ReplicationRequest, R]): R =
     withBag(storageBucket) { bagLocation =>
       val replicationRequest = ReplicationRequest(
         randomUUID,
@@ -40,14 +44,13 @@ trait BagVerifierFixtures
     }
 
   def withBagVerifier[R](
-                          queue: Queue,
-                          progressTopic: Topic,
-                          outgoingTopic: Topic,
-                          dstBucket: Bucket
-                        )(testWith: TestWith[BagVerifier, R]): R =
+    queue: Queue,
+    progressTopic: Topic,
+    outgoingTopic: Topic,
+    dstBucket: Bucket
+  )(testWith: TestWith[BagVerifier, R]): R =
     withActorSystem { implicit actorSystem =>
       withSQSStream[NotificationMessage, R](queue) { sqsStream =>
-
         val bagVerifier = new BagVerifier(
           s3Client = s3Client,
           snsClient = snsClient,
@@ -55,10 +58,8 @@ trait BagVerifierFixtures
           bagVerifierConfig = BagVerifierConfig(
             parallelism = 10
           ),
-          ingestsSnsConfig =
-            createSNSConfigWith(progressTopic),
-          outgoingSnsConfig =
-            createSNSConfigWith(outgoingTopic)
+          ingestsSnsConfig = createSNSConfigWith(progressTopic),
+          outgoingSnsConfig = createSNSConfigWith(outgoingTopic)
         )
 
         bagVerifier.run()
@@ -67,13 +68,7 @@ trait BagVerifierFixtures
       }
     }
 
-  def withApp[R](
-                  testWith: TestWith[(
-                    Bucket,
-                      Queue,
-                      Topic,
-                      Topic), R]): R =
-
+  def withApp[R](testWith: TestWith[(Bucket, Queue, Topic, Topic), R]): R =
     withLocalSqsQueue { queue =>
       withLocalSnsTopic { progressTopic =>
         withLocalSnsTopic { outgoingTopic =>
