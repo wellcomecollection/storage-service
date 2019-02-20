@@ -5,8 +5,6 @@ import com.amazonaws.services.s3.transfer.model.CopyResult
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.concurrent.{ExecutionContext, Future}
-
 class S3Copier(s3Client: AmazonS3) extends Logging {
 
   import com.amazonaws.services.s3.transfer.TransferManagerBuilder
@@ -18,8 +16,7 @@ class S3Copier(s3Client: AmazonS3) extends Logging {
   def copy(
     src: ObjectLocation,
     dst: ObjectLocation
-  )(implicit
-    ec: ExecutionContext): Future[CopyResult] = Future {
+  ): CopyResult = {
     debug(s"Copying ${s3Uri(src)} -> ${s3Uri(dst)}")
 
     val copyTransfer = transferManager.copy(
