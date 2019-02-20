@@ -16,7 +16,8 @@ class S3PrefixCopierTest
     with Matchers
     with ScalaFutures
     with S3CopierFixtures {
-  val s3PrefixCopier = new S3PrefixCopier(s3Client)
+  val copier = new S3Copier(s3Client)
+  val s3PrefixCopier = new S3PrefixCopier(s3Client, copier = copier)
 
   it("returns a successful Future if there are no files in the prefix") {
     withLocalS3Bucket { bucket =>
@@ -153,6 +154,37 @@ class S3PrefixCopierTest
               assertEqualObjects(src, dst)
           }
         }
+      }
+    }
+  }
+
+  it("returns a failed Future if one of the objects fails to copy") {
+    val exception = new RuntimeException("Nope, that's not going to work")
+
+    val brokenCopier = new ObjectCopier {
+      def copy(src: ObjectLocation, dst: ObjectLocation): Unit =
+        if (src.key.endsWith("5.txt"))
+          throw exception
+    }
+
+    val brokenPrefixCopier = new S3PrefixCopier(s3Client, copier = brokenCopier)
+
+    withLocalS3Bucket { srcBucket =>
+      val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
+
+      (1 to 10).map { i =>
+        val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
+        createObject(src)
+        src
+      }
+
+      val future = brokenPrefixCopier.copyObjects(
+        srcLocationPrefix = srcPrefix,
+        dstLocationPrefix = srcPrefix.copy(key = "dst/")
+      )
+
+      whenReady(future.failed) { err =>
+        err shouldBe exception
       }
     }
   }

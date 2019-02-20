@@ -3,21 +3,14 @@ package uk.ac.wellcome.platform.archive.bagreplicator.storage
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.iterable.S3Objects
 import com.amazonaws.services.s3.model.S3ObjectSummary
-import com.amazonaws.services.s3.transfer.{TransferManager, TransferManagerBuilder}
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
-class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext)
+class S3PrefixCopier(s3Client: AmazonS3, copier: ObjectCopier)(implicit ec: ExecutionContext)
     extends Logging {
-
-  val transferManager: TransferManager = TransferManagerBuilder.standard
-    .withS3Client(s3Client)
-    .build
-
-  val s3Copier = new S3Copier(s3Client)
 
   /** Copy all the objects from under ObjectLocation into another ObjectLocation,
     * preserving the relative path from the source in the destination.
@@ -64,7 +57,7 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext)
         key = dstLocationPrefix.key + relativeKey
       )
 
-      s3Copier.copy(srcLocation, dstLocation)
+      copier.copy(srcLocation, dstLocation)
     }
   }
 }
