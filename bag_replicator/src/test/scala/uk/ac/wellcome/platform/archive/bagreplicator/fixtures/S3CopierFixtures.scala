@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagverifier.fixtures
+package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
 
 import com.amazonaws.services.s3.model.PutObjectResult
 import org.scalatest.Assertion

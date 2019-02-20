@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagverifier.models.messages
+package uk.ac.wellcome.platform.archive.bagreplicator.models.messages
 
 import uk.ac.wellcome.platform.archive.common.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation

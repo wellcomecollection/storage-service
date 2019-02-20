@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagverifier.storage
+package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.{ObjectListing, S3ObjectSummary}

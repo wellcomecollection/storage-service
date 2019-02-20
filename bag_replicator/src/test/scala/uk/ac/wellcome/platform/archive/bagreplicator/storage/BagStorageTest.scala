@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.archive.bagverifier.storage
+package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bagverifier.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagReplicatorFixtures
+import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagLocation,

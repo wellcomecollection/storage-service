@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagverifier.fixtures
+package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
 
 import java.util.UUID
 
@@ -11,8 +11,8 @@ import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.platform.archive.bagverifier.BagReplicator
-import uk.ac.wellcome.platform.archive.bagverifier.config.{
+import uk.ac.wellcome.platform.archive.bagreplicator.BagReplicator
+import uk.ac.wellcome.platform.archive.bagreplicator.config.{
   BagReplicatorConfig,
   ReplicatorDestinationConfig
 }

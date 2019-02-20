@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagverifier
+package uk.ac.wellcome.platform.archive.bagreplicator
 
 import akka.Done
 import akka.actor.ActorSystem
@@ -12,18 +12,18 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{NotificationMessage, SNSConfig}
-import uk.ac.wellcome.platform.archive.bagverifier.config.{
+import uk.ac.wellcome.platform.archive.bagreplicator.config.{
   BagReplicatorConfig,
   ReplicatorDestinationConfig
 }
-import uk.ac.wellcome.platform.archive.bagverifier.models.errors.{
+import uk.ac.wellcome.platform.archive.bagreplicator.models.errors.{
   BagReplicationError,
   DuplicationFailed,
   NotificationFailed,
   NotificationParsingFailed
 }
-import uk.ac.wellcome.platform.archive.bagverifier.models.messages._
-import uk.ac.wellcome.platform.archive.bagverifier.storage.BagStorage
+import uk.ac.wellcome.platform.archive.bagreplicator.models.messages._
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.BagStorage
 import uk.ac.wellcome.platform.archive.common.flows.SupervisedMaterializer
 import uk.ac.wellcome.platform.archive.common.messaging.MessageStream
 import uk.ac.wellcome.platform.archive.common.models.{
