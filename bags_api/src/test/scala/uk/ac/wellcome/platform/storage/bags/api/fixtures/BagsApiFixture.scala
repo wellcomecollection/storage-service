@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   RandomThings
 }
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
-import uk.ac.wellcome.platform.archive.registrar.fixtures.StorageManifestVHSFixture
+import uk.ac.wellcome.platform.archive.bags.fixtures.StorageManifestVHSFixture
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket

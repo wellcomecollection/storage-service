@@ -42,7 +42,8 @@ class BagReplicator(
   messageStream: MessageStream[NotificationMessage, Unit],
   bagReplicatorConfig: BagReplicatorConfig,
   progressSnsConfig: SNSConfig,
-  outgoingSnsConfig: SNSConfig)(implicit val actorSystem: ActorSystem)
+  outgoingSnsConfig: SNSConfig
+)(implicit val actorSystem: ActorSystem)
     extends Logging
     with Runnable {
 
