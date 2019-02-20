@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import com.amazonaws.services.s3.iterable.S3Objects
+import com.amazonaws.services.s3.model._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.S3CopierFixtures
@@ -8,6 +9,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.collection.JavaConverters._
 
 class S3PrefixCopierTest
     extends FunSpec
@@ -112,17 +114,22 @@ class S3PrefixCopierTest
     }
   }
 
-  ignore("copies more objects than are returned in a single ListObject call") {
+  it("copies more objects than are returned in a single ListObject call") {
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
         val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
 
         // You can get up to 1000 objects in a single S3 ListObject call.
-        val srcLocations = (1 to 1100).map { i =>
+        val count = 1001
+        val srcLocations = (1 to count).map { i =>
           val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
           createObject(src)
           src
         }
+
+        // Check the listKeys call can really retrieve all the objects
+        // we're about to copy around!
+        listKeysInBucket(srcBucket) should have size count
 
         val dstPrefix = createObjectLocationWith(dstBucket, key = "dst/")
 
@@ -149,4 +156,14 @@ class S3PrefixCopierTest
       }
     }
   }
+
+  // A modified version of listKeysInBucket that can retrieve everything,
+  // even if it takes multiple ListObject calls.
+  override def listKeysInBucket(bucket: Bucket): List[String] =
+    S3Objects.inBucket(s3Client, bucket.name)
+      .withBatchSize(1000)
+      .iterator()
+      .asScala
+      .toList
+      .map { objectSummary: S3ObjectSummary => objectSummary.getKey }
 }
