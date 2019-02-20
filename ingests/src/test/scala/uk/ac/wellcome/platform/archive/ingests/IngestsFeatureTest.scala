@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.progress_async
+package uk.ac.wellcome.platform.archive.ingests
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
@@ -6,7 +6,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Completed
 import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
-import uk.ac.wellcome.platform.archive.progress_async.fixtures.{
+import uk.ac.wellcome.platform.archive.ingests.fixtures.{
   IngestsFixture => ProgressFixture
 }
 

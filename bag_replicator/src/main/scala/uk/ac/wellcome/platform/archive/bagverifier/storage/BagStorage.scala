@@ -1,8 +1,8 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.storage
+package uk.ac.wellcome.platform.archive.bagverifier.storage
 
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagverifier.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 
 import scala.concurrent.{ExecutionContext, Future}

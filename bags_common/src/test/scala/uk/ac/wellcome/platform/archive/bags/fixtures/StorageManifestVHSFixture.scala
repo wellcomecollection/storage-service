@@ -1,7 +1,7 @@
-package uk.ac.wellcome.platform.archive.registrar.fixtures
+package uk.ac.wellcome.platform.archive.bags.fixtures
 
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.registrar.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
 import uk.ac.wellcome.storage.ObjectStore
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table

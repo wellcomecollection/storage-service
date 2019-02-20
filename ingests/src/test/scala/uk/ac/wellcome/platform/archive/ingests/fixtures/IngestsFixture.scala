@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.progress_async.fixtures
+package uk.ac.wellcome.platform.archive.ingests.fixtures
 
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith

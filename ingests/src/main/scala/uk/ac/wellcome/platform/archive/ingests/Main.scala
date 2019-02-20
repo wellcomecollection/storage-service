@@ -1,11 +1,11 @@
-package uk.ac.wellcome.platform.archive.progress_async
+package uk.ac.wellcome.platform.archive.ingests
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.messaging.typesafe.{SNSBuilder, SQSBuilder}
 import uk.ac.wellcome.platform.archive.common.progress.monitor.ProgressTracker
-import uk.ac.wellcome.platform.archive.progress_async.services.{
+import uk.ac.wellcome.platform.archive.ingests.services.{
   CallbackNotificationService,
   IngestsWorkerService
 }

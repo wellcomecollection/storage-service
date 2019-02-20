@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.progress_async.services
+package uk.ac.wellcome.platform.archive.ingests.services
 
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.progress.models.{
   Callback,
   Progress
 }
-import uk.ac.wellcome.platform.archive.progress_async.fixtures.CallbackNotificationServiceFixture
+import uk.ac.wellcome.platform.archive.ingests.fixtures.CallbackNotificationServiceFixture
 
 class CallbackNotificationServiceTest
     extends FunSpec

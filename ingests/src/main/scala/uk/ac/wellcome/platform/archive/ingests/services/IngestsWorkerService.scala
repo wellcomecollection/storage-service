@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.progress_async.services
+package uk.ac.wellcome.platform.archive.ingests.services
 
 import akka.Done
 import uk.ac.wellcome.json.JsonUtil._

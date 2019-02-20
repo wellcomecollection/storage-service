@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.display.{
   DisplayLocation,
   DisplayStorageSpace
 }
-import uk.ac.wellcome.platform.archive.registrar.common.models._
+import uk.ac.wellcome.platform.archive.bags.common.models._
 
 case class DisplayBag(
   @JsonKey("@context")

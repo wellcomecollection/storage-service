@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.registrar.async.factories
+package uk.ac.wellcome.platform.archive.bags.async.factories
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.{FunSpec, Inside}
@@ -11,8 +11,8 @@ import uk.ac.wellcome.platform.archive.common.models.error.{
   DownloadError,
   InvalidBagManifestError
 }
-import uk.ac.wellcome.platform.archive.registrar.async.generators.BagManifestUpdateGenerators
-import uk.ac.wellcome.platform.archive.registrar.common.models._
+import uk.ac.wellcome.platform.archive.bags.async.generators.BagManifestUpdateGenerators
+import uk.ac.wellcome.platform.archive.bags.common.models._
 
 class StorageManifestFactoryTest
     extends FunSpec

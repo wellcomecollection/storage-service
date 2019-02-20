@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.registrar.async.models
+package uk.ac.wellcome.platform.archive.bags.async.models
 
 import java.util.UUID
 

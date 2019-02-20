@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.registrar.async.factories
+package uk.ac.wellcome.platform.archive.bags.async.factories
 
 import java.io.InputStream
 import java.time.Instant
@@ -22,8 +22,8 @@ import uk.ac.wellcome.platform.archive.common.progress.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
-import uk.ac.wellcome.platform.archive.registrar.async.models.BagManifestUpdate
-import uk.ac.wellcome.platform.archive.registrar.common.models._
+import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
+import uk.ac.wellcome.platform.archive.bags.common.models._
 import uk.ac.wellcome.storage.ObjectLocation
 
 object StorageManifestFactory {

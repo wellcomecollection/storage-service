@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.registrar.async.fixtures
+package uk.ac.wellcome.platform.archive.bags.async.fixtures
 
 import java.util.UUID
 
@@ -20,11 +20,11 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagInfo,
   BagLocation
 }
-import uk.ac.wellcome.platform.archive.registrar.async.Registrar
+import uk.ac.wellcome.platform.archive.bags.async.Registrar
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import uk.ac.wellcome.storage.fixtures.{LocalDynamoDb, S3}
-import uk.ac.wellcome.platform.archive.registrar.fixtures.StorageManifestVHSFixture
+import uk.ac.wellcome.platform.archive.bags.fixtures.StorageManifestVHSFixture
 
 trait RegistrarFixtures
     extends S3

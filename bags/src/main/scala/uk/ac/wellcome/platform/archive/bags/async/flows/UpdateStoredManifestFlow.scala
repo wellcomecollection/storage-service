@@ -1,18 +1,18 @@
-package uk.ac.wellcome.platform.archive.registrar.async.flows
+package uk.ac.wellcome.platform.archive.bags.async.flows
 import java.util.UUID
 
 import akka.stream.scaladsl.Flow
 import com.amazonaws.services.sns.AmazonSNS
 import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.platform.archive.common.messaging.SnsPublishFlow
-import uk.ac.wellcome.platform.archive.registrar.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
 import uk.ac.wellcome.storage.ObjectStore
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.models._
-import uk.ac.wellcome.platform.archive.registrar.async.models.BagManifestUpdate
+import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
 
 import scala.concurrent.{ExecutionContext, Future}
 

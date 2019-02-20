@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.archive.progress_async.fixtures
+package uk.ac.wellcome.platform.archive.ingests.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.platform.archive.progress_async.services.CallbackNotificationService
+import uk.ac.wellcome.platform.archive.ingests.services.CallbackNotificationService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

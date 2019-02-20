@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.registrar.async
+package uk.ac.wellcome.platform.archive.bags.async
 
 import java.time.Instant
 
@@ -20,7 +20,7 @@ import uk.ac.wellcome.platform.archive.common.progress.models.{
   Progress,
   StorageLocation
 }
-import uk.ac.wellcome.platform.archive.registrar.async.fixtures.RegistrarFixtures
+import uk.ac.wellcome.platform.archive.bags.async.fixtures.RegistrarFixtures
 import uk.ac.wellcome.storage.dynamo._
 
 class RegistrarFeatureTest

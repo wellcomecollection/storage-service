@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.models.errors
+package uk.ac.wellcome.platform.archive.bagverifier.models.errors
 
 import uk.ac.wellcome.platform.archive.common.models.ReplicationRequest
 

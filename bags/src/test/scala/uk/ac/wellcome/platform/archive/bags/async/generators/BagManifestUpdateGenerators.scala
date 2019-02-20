@@ -1,8 +1,8 @@
-package uk.ac.wellcome.platform.archive.registrar.async.generators
+package uk.ac.wellcome.platform.archive.bags.async.generators
 
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.registrar.async.models.BagManifestUpdate
+import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
 
 trait BagManifestUpdateGenerators extends RandomThings {
   def createBagManifestUpdateWith(

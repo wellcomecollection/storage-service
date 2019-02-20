@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.registrar.async
+package uk.ac.wellcome.platform.archive.bags.async
 
 import akka.Done
 import akka.actor.ActorSystem
@@ -22,13 +22,13 @@ import uk.ac.wellcome.platform.archive.common.messaging.{
 }
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
-import uk.ac.wellcome.platform.archive.registrar.async.factories.StorageManifestFactory
-import uk.ac.wellcome.platform.archive.registrar.async.flows.{
+import uk.ac.wellcome.platform.archive.bags.async.factories.StorageManifestFactory
+import uk.ac.wellcome.platform.archive.bags.async.flows.{
   NotifyFailureFlow,
   UpdateStoredManifestFlow
 }
-import uk.ac.wellcome.platform.archive.registrar.async.models.BagManifestUpdate
-import uk.ac.wellcome.platform.archive.registrar.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
+import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
 import uk.ac.wellcome.storage.ObjectStore
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
 import uk.ac.wellcome.typesafe.Runnable

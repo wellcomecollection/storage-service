@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.registrar.common.models
+package uk.ac.wellcome.platform.archive.bags.common.models
 
 import java.time.Instant
 

@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.storage
+package uk.ac.wellcome.platform.archive.bagverifier.storage
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.S3CopierFixtures
+import uk.ac.wellcome.platform.archive.bagverifier.fixtures.S3CopierFixtures
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global

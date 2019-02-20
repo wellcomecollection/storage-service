@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator
+package uk.ac.wellcome.platform.archive.bagverifier
 
 import akka.Done
 import akka.actor.ActorSystem
@@ -12,18 +12,18 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{NotificationMessage, SNSConfig}
-import uk.ac.wellcome.platform.archive.bagreplicator.config.{
+import uk.ac.wellcome.platform.archive.bagverifier.config.{
   BagReplicatorConfig,
   ReplicatorDestinationConfig
 }
-import uk.ac.wellcome.platform.archive.bagreplicator.models.errors.{
+import uk.ac.wellcome.platform.archive.bagverifier.models.errors.{
   BagReplicationError,
   DuplicationFailed,
   NotificationFailed,
   NotificationParsingFailed
 }
-import uk.ac.wellcome.platform.archive.bagreplicator.models.messages._
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.BagStorage
+import uk.ac.wellcome.platform.archive.bagverifier.models.messages._
+import uk.ac.wellcome.platform.archive.bagverifier.storage.BagStorage
 import uk.ac.wellcome.platform.archive.common.flows.SupervisedMaterializer
 import uk.ac.wellcome.platform.archive.common.messaging.MessageStream
 import uk.ac.wellcome.platform.archive.common.models.{
@@ -42,7 +42,8 @@ class BagReplicator(
   messageStream: MessageStream[NotificationMessage, Unit],
   bagReplicatorConfig: BagReplicatorConfig,
   progressSnsConfig: SNSConfig,
-  outgoingSnsConfig: SNSConfig)(implicit val actorSystem: ActorSystem)
+  outgoingSnsConfig: SNSConfig
+                   )(implicit val actorSystem: ActorSystem)
     extends Logging
     with Runnable {
 

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.registrar.async
+package uk.ac.wellcome.platform.archive.bags.async
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
@@ -6,7 +6,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders._
-import uk.ac.wellcome.platform.archive.registrar.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
 import uk.ac.wellcome.storage.typesafe.{S3Builder, VHSBuilder}
 import uk.ac.wellcome.storage.vhs.EmptyMetadata
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp

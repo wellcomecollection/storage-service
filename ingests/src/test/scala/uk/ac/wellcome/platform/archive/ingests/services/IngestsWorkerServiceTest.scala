@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.progress_async.services
+package uk.ac.wellcome.platform.archive.ingests.services
 
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
 import com.amazonaws.services.sns.model.AmazonSNSException
@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.progress.models.Progress.{
 }
 import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
 import uk.ac.wellcome.platform.archive.common.progress.monitor.IdConstraintError
-import uk.ac.wellcome.platform.archive.progress_async.fixtures.{
+import uk.ac.wellcome.platform.archive.ingests.fixtures.{
   IngestsFixture,
   WorkerServiceFixture
 }

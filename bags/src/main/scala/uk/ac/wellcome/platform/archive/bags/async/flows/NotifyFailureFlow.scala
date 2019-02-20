@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.registrar.async.flows
+package uk.ac.wellcome.platform.archive.bags.async.flows
 import java.util.UUID
 
 import akka.stream.scaladsl.Flow

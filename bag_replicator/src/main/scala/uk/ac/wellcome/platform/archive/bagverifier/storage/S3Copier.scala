@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.storage
+package uk.ac.wellcome.platform.archive.bagverifier.storage
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.transfer.model.CopyResult

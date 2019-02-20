@@ -1,10 +1,10 @@
-package uk.ac.wellcome.platform.archive.bagreplicator
+package uk.ac.wellcome.platform.archive.bagverifier
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
-import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
+import uk.ac.wellcome.platform.archive.bagverifier.config.BagReplicatorConfig
 import uk.ac.wellcome.platform.archive.common.config.builders.MessagingBuilder
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
