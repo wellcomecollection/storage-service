@@ -1,10 +1,11 @@
 package uk.ac.wellcome.platform.archive.bagverifier
 
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
+import uk.ac.wellcome.json.JsonUtil._
 
 class BagVerifierFeatureTest
   extends FunSpec
@@ -12,9 +13,10 @@ class BagVerifierFeatureTest
     with ScalaFutures
     with RandomThings
     with BagVerifierFixtures
+    with IntegrationPatience
     with ProgressUpdateAssertions {
 
-  it("receives a notification") {
+  it("receives and forwards a notification") {
     withApp {
       case (
         sourceBucket,
@@ -22,10 +24,15 @@ class BagVerifierFeatureTest
         progressTopic,
         outgoingTopic) =>
         val requestId = randomUUID
-        withBagNotification(queue, sourceBucket, requestId) { bagLocation =>
+        withBagNotification(
+          queue, sourceBucket, requestId
+        ) { replicationRequest =>
           eventually {
 
-            true shouldBe(false)
+            assertSnsReceivesOnly(
+              replicationRequest,
+              outgoingTopic
+            )
           }
         }
     }
