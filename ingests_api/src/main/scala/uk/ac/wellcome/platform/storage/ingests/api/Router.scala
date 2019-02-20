@@ -9,7 +9,7 @@ import akka.http.scaladsl.server._
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.models.ErrorResponse
+import uk.ac.wellcome.platform.archive.common.http.models.InternalServerErrorResponse
 import uk.ac.wellcome.platform.archive.common.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagId,
@@ -85,11 +85,11 @@ class Router(progressTracker: ProgressTracker,
     } else {
       info(s"""errors fetching ingests for $bagId: ${results.mkString(" ")}""")
       complete(
-        InternalServerError -> ErrorResponse(
+        InternalServerError -> InternalServerErrorResponse(
           context = contextURL,
-          statusCode = InternalServerError,
-          description = InternalServerError.reason
-        ))
+          statusCode = InternalServerError
+        )
+      )
     }
   }
 

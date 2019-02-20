@@ -16,7 +16,10 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport.DecodingFai
 import grizzled.slf4j.Logging
 import io.circe.CursorOp
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.models.ErrorResponse
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -81,7 +84,7 @@ class WellcomeHttpApp(routes: Route,
     }
 
     complete(
-      BadRequest -> ErrorResponse(
+      BadRequest -> UserErrorResponse(
         context = contextURL,
         statusCode = BadRequest,
         description = message.toList.mkString("\n")
@@ -116,10 +119,9 @@ class WellcomeHttpApp(routes: Route,
     ExceptionHandler {
       case err: Exception =>
         logger.error(s"Unexpected exception $err")
-        val error = ErrorResponse(
+        val error = InternalServerErrorResponse(
           context = contextURL,
-          statusCode = InternalServerError,
-          description = err.toString
+          statusCode = InternalServerError
         )
         httpMetrics.sendMetricForStatus(InternalServerError)
         complete(InternalServerError -> error)
@@ -129,12 +131,21 @@ class WellcomeHttpApp(routes: Route,
                                            res: HttpResponse): HttpResponse = {
     val errorResponseMarshallingFlow = Flow[ByteString]
       .mapAsync(parallelism = 1)(data => {
-        val message = data.utf8String
-        Marshal(
-          ErrorResponse(
+        val description = data.utf8String
+        if (statusCode.intValue() >= 500) {
+          val response = InternalServerErrorResponse(
+            context = contextURL,
+            statusCode = statusCode
+          )
+          Marshal(response).to[MessageEntity]
+        } else {
+          val response = UserErrorResponse(
             context = contextURL,
             statusCode = statusCode,
-            description = message)).to[MessageEntity]
+            description = description
+          )
+          Marshal(response).to[MessageEntity]
+        }
       })
       .flatMapConcat(_.dataBytes)
 

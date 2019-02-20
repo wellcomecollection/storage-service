@@ -183,18 +183,20 @@ class BagsApiFeatureTest
     }
 
     it("returns a 500 error if looking up the bag fails") {
-      withBrokenApp {
-        case (_, metricsSender, baseUrl) =>
-          val bagId = createBagId
-          whenGetRequestReady(
-            s"$baseUrl/registrar/${bagId.space}/${bagId.externalIdentifier}") {
-            response =>
-              response.status shouldBe StatusCodes.InternalServerError
+      withMaterializer { implicit materializer =>
+        withBrokenApp {
+          case (_, metricsSender, baseUrl) =>
+            val bagId = createBagId
+            whenGetRequestReady(
+              s"$baseUrl/registrar/${bagId.space}/${bagId.externalIdentifier}") {
+              response =>
+                assertIsInternalServerErrorResponse(response)
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.ServerError)
-          }
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.ServerError)
+            }
+        }
       }
     }
   }

@@ -5,30 +5,38 @@ import java.net.URL
 import akka.http.scaladsl.model.StatusCode
 import io.circe.generic.extras.JsonKey
 
-case class ErrorResponse(
+case class UserErrorResponse(
   @JsonKey("@context") context: String,
   httpStatus: Int,
-  description: Option[String],
+  description: String,
   label: String,
   `type`: String = "Error"
 )
 
-case object ErrorResponse {
+case object UserErrorResponse {
   def apply(context: URL,
             statusCode: StatusCode,
-            description: String): ErrorResponse =
-    ErrorResponse(
+            description: String): UserErrorResponse =
+    UserErrorResponse(
       context = context.toString,
       httpStatus = statusCode.intValue(),
-      description = Some(description),
+      description = description,
       label = statusCode.reason()
     )
+}
 
-  def apply(context: URL, statusCode: StatusCode): ErrorResponse =
-    ErrorResponse(
+case class InternalServerErrorResponse(
+  @JsonKey("@context") context: String,
+  httpStatus: Int,
+  label: String,
+  `type`: String = "Error"
+)
+
+case object InternalServerErrorResponse {
+  def apply(context: URL, statusCode: StatusCode): InternalServerErrorResponse =
+    InternalServerErrorResponse(
       context = context.toString,
       httpStatus = statusCode.intValue(),
-      description = None,
       label = statusCode.reason()
     )
 }
