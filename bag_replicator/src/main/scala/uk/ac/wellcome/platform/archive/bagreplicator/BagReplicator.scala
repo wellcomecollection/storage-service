@@ -43,7 +43,7 @@ class BagReplicator(
   bagReplicatorConfig: BagReplicatorConfig,
   progressSnsConfig: SNSConfig,
   outgoingSnsConfig: SNSConfig
-                   )(implicit val actorSystem: ActorSystem)
+)(implicit val actorSystem: ActorSystem)
     extends Logging
     with Runnable {
 
