@@ -1,17 +1,17 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{ObjectListing, S3ObjectSummary}
-import com.amazonaws.services.s3.transfer.model.CopyResult
+import com.amazonaws.services.s3.iterable.S3Objects
+import com.amazonaws.services.s3.model.S3ObjectSummary
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
-class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext)
+class S3PrefixCopier(s3Client: AmazonS3, copier: ObjectCopier)(
+  implicit ec: ExecutionContext)
     extends Logging {
-  val s3Copier = new S3Copier(s3Client)
 
   /** Copy all the objects from under ObjectLocation into another ObjectLocation,
     * preserving the relative path from the source in the destination.
@@ -28,66 +28,26 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext)
   def copyObjects(
     srcLocationPrefix: ObjectLocation,
     dstLocationPrefix: ObjectLocation
-  ): Future[Unit] =
-    for {
-      sourceObjects <- listObjectsUnderPrefix(srcLocationPrefix)
-      copyObjectPairs = getCopyObjectPairs(
-        sourceObjects = sourceObjects,
-        srcLocationPrefix = srcLocationPrefix,
-        dstLocationPrefix = dstLocationPrefix
+  ): Future[Unit] = Future {
+    val objects: Iterator[S3ObjectSummary] = S3Objects
+      .withPrefix(s3Client, srcLocationPrefix.namespace, srcLocationPrefix.key)
+      .iterator()
+      .asScala
+
+    // Implementation note: this means we're single-threaded within a single bag.
+    // That is, we're copying objects in a bag one at a time.
+    //
+    // We could rewrite this code to process objects in parallel, but it would
+    // make it more complicated and introduces more failure modes.  For now we'll
+    // just use this simple version, and we can revisit it if it's not fast
+    // enough in practice.
+
+    objects.foreach { summary: S3ObjectSummary =>
+      val srcLocation = ObjectLocation(
+        namespace = srcLocationPrefix.namespace,
+        key = summary.getKey
       )
-      _ <- duplicateObjects(copyObjectPairs)
-    } yield ()
 
-  private def listObjects(
-    objectLocation: ObjectLocation): Future[ObjectListing] = {
-    val prefix =
-      if (objectLocation.key.endsWith("/"))
-        objectLocation.key
-      else
-        objectLocation.key + "/"
-
-    Future {
-      s3Client.listObjects(objectLocation.namespace, prefix)
-    }
-  }
-
-  private def getObjectLocations(
-    listing: ObjectListing,
-    objectLocation: ObjectLocation
-  ): List[ObjectLocation] =
-    listing.getObjectSummaries.asScala
-      .map { summary: S3ObjectSummary =>
-        summary.getKey
-      }
-      .map { key: String =>
-        ObjectLocation(
-          namespace = objectLocation.namespace,
-          key = key
-        )
-      }
-      .toList
-
-  private def listObjectsUnderPrefix(
-    locationPrefix: ObjectLocation
-  ): Future[List[ObjectLocation]] = {
-    // TODO: limit size of the returned List
-    // use Marker to paginate(?)
-    // needs care if bag contents can change during copy.
-    debug(s"listing items in $locationPrefix")
-
-    for {
-      listing <- listObjects(locationPrefix)
-      summaries = getObjectLocations(listing, locationPrefix)
-    } yield summaries
-  }
-
-  private def getCopyObjectPairs(
-    sourceObjects: List[ObjectLocation],
-    srcLocationPrefix: ObjectLocation,
-    dstLocationPrefix: ObjectLocation
-  ): List[(ObjectLocation, ObjectLocation)] =
-    sourceObjects.map { srcLocation =>
       val relativeKey = srcLocation.key
         .stripPrefix(srcLocationPrefix.key)
 
@@ -96,16 +56,7 @@ class S3PrefixCopier(s3Client: AmazonS3)(implicit ec: ExecutionContext)
         key = dstLocationPrefix.key + relativeKey
       )
 
-      (srcLocation, dstLocation)
+      copier.copy(srcLocation, dstLocation)
     }
-
-  private def duplicateObjects(
-    copyObjectPairs: List[(ObjectLocation, ObjectLocation)]
-  ): Future[List[CopyResult]] =
-    Future.sequence(
-      copyObjectPairs.map {
-        case (src: ObjectLocation, dst: ObjectLocation) =>
-          s3Copier.copy(src = src, dst = dst)
-      }
-    )
+  }
 }

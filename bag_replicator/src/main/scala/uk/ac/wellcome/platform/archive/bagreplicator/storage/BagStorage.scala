@@ -10,7 +10,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class BagStorage(s3Client: AmazonS3)(implicit ec: ExecutionContext)
     extends Logging {
 
-  val s3PrefixCopier = new S3PrefixCopier(s3Client)
+  val copier = new S3Copier(s3Client)
+  val s3PrefixCopier = new S3PrefixCopier(s3Client, copier = copier)
 
   def duplicateBag(
     sourceBagLocation: BagLocation,
