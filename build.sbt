@@ -92,3 +92,7 @@ lazy val ingests_api = setupProject(project, "ingests_api",
 lazy val bag_replicator = setupProject(project, "bag_replicator",
   localDependencies = Seq(common)
 )
+
+lazy val bag_verifier = setupProject(project, "bag_verifier",
+  localDependencies = Seq(common)
+)
