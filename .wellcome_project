@@ -11,5 +11,6 @@
   ],
   "id": "storage",
   "name": "Storage service",
-  "profile": "storage-dev"
+  "profile": "storage-dev",
+  "github_repository": "wellcometrust/storage-service"
 }
