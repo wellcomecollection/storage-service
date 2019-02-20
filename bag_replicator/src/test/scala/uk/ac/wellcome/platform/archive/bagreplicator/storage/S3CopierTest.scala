@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.S3CopierFixtures
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -52,11 +53,9 @@ class S3CopierTest
     val src = createObjectLocation
     val dst = createObjectLocation
 
-    s3Copier.copy(src, dst)
-
-//    whenReady(future.failed) { err =>
-//      err shouldBe a[AmazonS3Exception]
-//    }
+    intercept[AmazonS3Exception] {
+      s3Copier.copy(src, dst)
+    }
   }
 
   it("returns a failed Future if the destination bucket does not exist") {
@@ -64,11 +63,9 @@ class S3CopierTest
       val src = createObjectLocationWith(bucket)
       val dst = createObjectLocationWith(Bucket("no_such_bucket"))
 
-      s3Copier.copy(src, dst)
-
-//      whenReady(future.failed) { err =>
-//        err shouldBe a[AmazonS3Exception]
-//      }
+      intercept[AmazonS3Exception] {
+        s3Copier.copy(src, dst)
+      }
     }
   }
 }
