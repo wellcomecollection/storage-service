@@ -42,9 +42,7 @@ class S3PrefixCopier(s3Client: AmazonS3, copier: ObjectCopier)(
     // just use this simple version, and we can revisit it if it's not fast
     // enough in practice.
 
-    while (objects.hasNext) {
-      val summary = objects.next()
-
+    objects.foreach { summary: S3ObjectSummary =>
       val srcLocation = ObjectLocation(
         namespace = srcLocationPrefix.namespace,
         key = summary.getKey
