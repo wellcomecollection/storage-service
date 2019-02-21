@@ -102,27 +102,35 @@ the AMD to start at _0001
             continue
 
         refs = root.findall(".//mets:div[@ADMID='{0}']".format(old_id), namespaces)
-        if len(refs) == 0 and is_ignorable_file(tech_md):
+        tech_md_filename = get_tech_md_filename(tech_md)
+        if len(refs) == 0 and is_ignorable_file(tech_md_filename):
             amd_sec.remove(tech_md)
             continue
 
         new_id = "AMD_" + str(counter).zfill(4)
         tech_md.set("ID", new_id)
-        assert len(refs) == 1, "Expected 1 AMD ref for {0}, got {1}".format(
-            old_id, len(refs)
-        )
+        if len(refs) != 1:
+            message = "Expected 1 AMD ref for {0}, got {1}, filename: {2}".format(
+                old_id, len(refs), tech_md_filename
+            )
+            raise RuntimeError(message)
+
         refs[0].set("ADMID", new_id)
         counter = counter + 1
 
 
-def is_ignorable_file(tech_md):
+def get_tech_md_filename(tech_md):
     file_name_els = tech_md.findall(
         "./mets:mdWrap/mets:xmlData/tessella:File/tessella:FileName", namespaces
     )
-    if len(file_name_els) == 1:
-        logging.debug("ignoring techMd file " + file_name_els[0].text)
-        return file_name_els[0].text in mappings.IGNORED_TECHMD_FILENAMES
-    return False
+    assert len(file_name_els) == 1, "More than one file in {0}".format(
+        tech_md.get("ID")
+    )
+    return file_name_els[0].text
+
+
+def is_ignorable_file(tech_md_filename):
+    return tech_md_filename in mappings.IGNORED_TECHMD_FILENAMES
 
 
 def remodel_file_section(root):
