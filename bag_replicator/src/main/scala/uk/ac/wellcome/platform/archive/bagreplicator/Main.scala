@@ -21,6 +21,9 @@ object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
 
+    implicit val executionContext =
+      actorSystem.dispatcher
+
     val s3Client = S3Builder.buildS3Client(config)
 
     val s3PrefixCopier = new S3PrefixCopier(

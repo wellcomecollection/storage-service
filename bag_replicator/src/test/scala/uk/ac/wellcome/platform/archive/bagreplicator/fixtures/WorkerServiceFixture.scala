@@ -48,7 +48,7 @@ trait WorkerServiceFixture extends Akka with S3 with SNS with SQS {
                   parallelism = 1,
                   destination = ReplicatorDestinationConfig(
                     namespace = dstBucket.name,
-                    rootPath = "destinations/"
+                    rootPath = Some("destinations/")
                   )
                 ),
                 progressSnsWriter = progressSnsWriter,

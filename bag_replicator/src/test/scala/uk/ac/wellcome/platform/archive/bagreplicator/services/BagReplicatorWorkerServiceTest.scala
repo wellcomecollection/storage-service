@@ -92,7 +92,7 @@ class BagReplicatorWorkerServiceTest
             outgoingTopic = outgoingTopic) { service =>
             val srcBagLocation = BagLocation(
               storageNamespace = "does-not-exist",
-              storagePrefix = "does/not/",
+              storagePrefix = Some("does/not/"),
               storageSpace = createStorageSpace,
               bagPath = BagPath("exist.txt")
             )
