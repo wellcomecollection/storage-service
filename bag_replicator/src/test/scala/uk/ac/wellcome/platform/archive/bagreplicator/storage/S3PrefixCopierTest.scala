@@ -18,12 +18,10 @@ class S3PrefixCopierTest
     with IntegrationPatience
     with S3CopierFixtures {
 
-  val batchSize = 10
   val copier = new S3Copier(s3Client)
   val s3PrefixCopier = new S3PrefixCopier(
     s3Client = s3Client,
-    copier = copier,
-    batchSize = batchSize
+    copier = copier
   )
 
   it("returns a successful Future if there are no files in the prefix") {
@@ -128,7 +126,7 @@ class S3PrefixCopierTest
         val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
 
         // You can get up to 1000 objects in a single S3 ListObject call.
-        val count = 10
+        val count = 1001
         val srcLocations = (1 to count).par.map { i =>
           val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
           createObject(src)
