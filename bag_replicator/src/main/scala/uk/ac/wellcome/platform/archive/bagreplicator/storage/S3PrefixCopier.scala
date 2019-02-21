@@ -9,8 +9,11 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
-class S3PrefixCopier(s3Client: AmazonS3, copier: ObjectCopier)(
-  implicit ec: ExecutionContext)
+class S3PrefixCopier(
+  s3Client: AmazonS3,
+  copier: ObjectCopier,
+  batchSize: Int = 1000
+)(implicit ec: ExecutionContext)
     extends Logging {
 
   /** Copy all the objects from under ObjectLocation into another ObjectLocation,
@@ -30,7 +33,12 @@ class S3PrefixCopier(s3Client: AmazonS3, copier: ObjectCopier)(
     dstLocationPrefix: ObjectLocation
   ): Future[Unit] = Future {
     val objects: Iterator[S3ObjectSummary] = S3Objects
-      .withPrefix(s3Client, srcLocationPrefix.namespace, srcLocationPrefix.key)
+      .withPrefix(
+        s3Client,
+        srcLocationPrefix.namespace,
+        srcLocationPrefix.key
+      )
+      .withBatchSize(batchSize)
       .iterator()
       .asScala
 

@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
 import com.amazonaws.services.s3.iterable.S3Objects
 import com.amazonaws.services.s3.model._
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.S3CopierFixtures
 import uk.ac.wellcome.storage.ObjectLocation
@@ -15,9 +15,16 @@ class S3PrefixCopierTest
     extends FunSpec
     with Matchers
     with ScalaFutures
+    with IntegrationPatience
     with S3CopierFixtures {
+
+  val batchSize = 10
   val copier = new S3Copier(s3Client)
-  val s3PrefixCopier = new S3PrefixCopier(s3Client, copier = copier)
+  val s3PrefixCopier = new S3PrefixCopier(
+    s3Client = s3Client,
+    copier = copier,
+    batchSize = batchSize
+  )
 
   it("returns a successful Future if there are no files in the prefix") {
     withLocalS3Bucket { bucket =>
@@ -121,8 +128,8 @@ class S3PrefixCopierTest
         val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
 
         // You can get up to 1000 objects in a single S3 ListObject call.
-        val count = 1001
-        val srcLocations = (1 to count).map { i =>
+        val count = 10
+        val srcLocations = (1 to count).par.map { i =>
           val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
           createObject(src)
           src
@@ -172,7 +179,7 @@ class S3PrefixCopierTest
     withLocalS3Bucket { srcBucket =>
       val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
 
-      (1 to 10).map { i =>
+      (1 to 10).par.map { i =>
         val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
         createObject(src)
         src
@@ -198,7 +205,10 @@ class S3PrefixCopierTest
       .iterator()
       .asScala
       .toList
+      .par
       .map { objectSummary: S3ObjectSummary =>
         objectSummary.getKey
       }
+      .toList
+
 }

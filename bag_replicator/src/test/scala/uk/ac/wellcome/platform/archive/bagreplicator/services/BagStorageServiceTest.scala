@@ -1,27 +1,31 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.storage
+package uk.ac.wellcome.platform.archive.bagreplicator.services
 
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import com.amazonaws.services.s3.model.AmazonS3Exception
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagLocation,
-  ExternalIdentifier
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.{
+  S3Copier,
+  S3PrefixCopier
 }
+import uk.ac.wellcome.platform.archive.common.models.bagit.ExternalIdentifier
+import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
-class BagStorageTest
+class BagStorageServiceTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with IntegrationPatience
-    with BagInfoGenerators
-    with BagReplicatorFixtures {
+    with BagReplicatorFixtures
+    with S3 {
 
-  val bagStorage = new BagStorage(s3Client = s3Client)
+  val s3PrefixCopier = new S3PrefixCopier(
+    s3Client = s3Client,
+    copier = new S3Copier(s3Client)
+  )
+  val bagStorage = new BagStorageService(s3PrefixCopier = s3PrefixCopier)
 
   it("duplicates a bag within the same bucket") {
     withLocalS3Bucket { bucket =>
@@ -31,12 +35,13 @@ class BagStorageTest
           rootPath = Some(randomAlphanumeric())
         )
 
-        val result: Future[BagLocation] = bagStorage.duplicateBag(
+        val future = bagStorage.duplicateBag(
           sourceBagLocation = srcBagLocation,
-          storageDestination = destinationConfig
+          destinationConfig = destinationConfig
         )
 
-        whenReady(result) { dstBagLocation =>
+        whenReady(future) { result =>
+          val dstBagLocation = result.right.get
           verifyBagCopied(
             src = srcBagLocation,
             dst = dstBagLocation
@@ -55,13 +60,13 @@ class BagStorageTest
             rootPath = Some(randomAlphanumeric())
           )
 
-          val result: Future[BagLocation] =
-            bagStorage.duplicateBag(
-              sourceBagLocation = srcBagLocation,
-              storageDestination = destinationConfig
-            )
+          val future = bagStorage.duplicateBag(
+            sourceBagLocation = srcBagLocation,
+            destinationConfig = destinationConfig
+          )
 
-          whenReady(result) { dstBagLocation =>
+          whenReady(future) { result =>
+            val dstBagLocation = result.right.get
             verifyBagCopied(
               src = srcBagLocation,
               dst = dstBagLocation
@@ -91,13 +96,13 @@ class BagStorageTest
                 rootPath = Some(randomAlphanumeric())
               )
 
-              val result: Future[BagLocation] =
-                bagStorage.duplicateBag(
-                  sourceBagLocation = srcBagLocation,
-                  storageDestination = destinationConfig
-                )
+              val future = bagStorage.duplicateBag(
+                sourceBagLocation = srcBagLocation,
+                destinationConfig = destinationConfig
+              )
 
-              whenReady(result) { dstBagLocation =>
+              whenReady(future) { result =>
+                val dstBagLocation = result.right.get
                 verifyBagCopied(
                   src = srcBagLocation,
                   dst = dstBagLocation
@@ -105,6 +110,27 @@ class BagStorageTest
               }
             }
           }
+        }
+      }
+    }
+  }
+
+  it("returns a Left[Throwable] if there's an error while copying the bag") {
+    withLocalS3Bucket { bucket =>
+      withBag(bucket) { srcBagLocation =>
+        val destinationConfig = ReplicatorDestinationConfig(
+          namespace = "does-not-exist",
+          rootPath = Some(randomAlphanumeric())
+        )
+
+        val future = bagStorage.duplicateBag(
+          sourceBagLocation = srcBagLocation,
+          destinationConfig = destinationConfig
+        )
+
+        whenReady(future) { result =>
+          val exception = result.left.get
+          exception shouldBe a[AmazonS3Exception]
         }
       }
     }
