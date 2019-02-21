@@ -17,7 +17,8 @@ class BagsWorkerService(
   sqsStream: SQSStream[NotificationMessage],
   storageManifestService: StorageManifestService,
   updateStoredManifestService: UpdateStoredManifestService
-)(implicit ec: ExecutionContext) extends Runnable {
+)(implicit ec: ExecutionContext)
+    extends Runnable {
 
   def run(): Future[Done] =
     sqsStream.foreach(this.getClass.getSimpleName, processMessage)
@@ -36,7 +37,9 @@ class BagsWorkerService(
       _ <- updateManifest(replicationResult.archiveRequestId, tryManifest)
     } yield ()
 
-  private def updateManifest(archiveRequestId: UUID, tryManifest: Either[Throwable, StorageManifest]): Future[Unit] =
+  private def updateManifest(
+    archiveRequestId: UUID,
+    tryManifest: Either[Throwable, StorageManifest]): Future[Unit] =
     tryManifest match {
       case Right(storageManifest) =>
         updateStoredManifestService.updateManifest(

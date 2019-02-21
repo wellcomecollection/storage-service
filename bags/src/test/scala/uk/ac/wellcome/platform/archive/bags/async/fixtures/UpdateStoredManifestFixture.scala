@@ -11,7 +11,10 @@ import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait UpdateStoredManifestFixture extends SNS with StorageManifestVHSFixture {
-  def withUpdateStoredManifestService[R](table: Table, bucket: Bucket, topic: Topic)(testWith: TestWith[UpdateStoredManifestService, R]): R =
+  def withUpdateStoredManifestService[R](
+    table: Table,
+    bucket: Bucket,
+    topic: Topic)(testWith: TestWith[UpdateStoredManifestService, R]): R =
     withStorageManifestVHS(table, bucket) { vhs =>
       withSNSWriter(topic) { progressSnsWriter =>
         val service = new UpdateStoredManifestService(

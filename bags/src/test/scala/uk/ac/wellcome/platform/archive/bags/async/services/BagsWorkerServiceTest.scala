@@ -24,7 +24,7 @@ import uk.ac.wellcome.platform.archive.bags.async.fixtures.RegistrarFixtures
 import uk.ac.wellcome.storage.dynamo._
 
 class BagsWorkerServiceTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with IntegrationPatience

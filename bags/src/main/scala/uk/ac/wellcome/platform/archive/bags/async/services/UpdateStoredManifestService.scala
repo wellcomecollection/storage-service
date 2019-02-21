@@ -6,7 +6,12 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Progress,
+  ProgressEvent,
+  ProgressStatusUpdate,
+  ProgressUpdate
+}
 import uk.ac.wellcome.storage.ObjectStore
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
@@ -19,7 +24,8 @@ class UpdateStoredManifestService(
                             ObjectStore[StorageManifest]],
   progressSnsWriter: SNSWriter)(implicit ec: ExecutionContext) {
 
-  def updateManifest(archiveRequestId: UUID, storageManifest: StorageManifest): Future[Unit] =
+  def updateManifest(archiveRequestId: UUID,
+                     storageManifest: StorageManifest): Future[Unit] =
     for {
       result <- updateVHS(storageManifest)
       _ <- sendProgressUpdate(
@@ -29,7 +35,10 @@ class UpdateStoredManifestService(
       )
     } yield ()
 
-  private def sendProgressUpdate(requestId: UUID, bagId: BagId, result: Either[Throwable, Unit]): Future[PublishAttempt] = {
+  private def sendProgressUpdate(
+    requestId: UUID,
+    bagId: BagId,
+    result: Either[Throwable, Unit]): Future[PublishAttempt] = {
     val event = result match {
       case Right(_) =>
         ProgressStatusUpdate(
@@ -53,11 +62,15 @@ class UpdateStoredManifestService(
     )
   }
 
-  private def updateVHS(storageManifest: StorageManifest): Future[Either[Throwable, Unit]] =
-    vhs.updateRecord(storageManifest.id.toString)(
-      ifNotExisting = (storageManifest, EmptyMetadata()))(
-      ifExisting = (_, _) => (storageManifest, EmptyMetadata())
-    )
-      .map { _ => Right(()) }
-      .recover { case err: Throwable => Left(err)}
+  private def updateVHS(
+    storageManifest: StorageManifest): Future[Either[Throwable, Unit]] =
+    vhs
+      .updateRecord(storageManifest.id.toString)(
+        ifNotExisting = (storageManifest, EmptyMetadata()))(
+        ifExisting = (_, _) => (storageManifest, EmptyMetadata())
+      )
+      .map { _ =>
+        Right(())
+      }
+      .recover { case err: Throwable => Left(err) }
 }

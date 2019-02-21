@@ -10,12 +10,21 @@ import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.platform.archive.common.fixtures.{ArchiveMessaging, BagLocationFixtures}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  ArchiveMessaging,
+  BagLocationFixtures
+}
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 import uk.ac.wellcome.platform.archive.common.models._
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagInfo, BagLocation}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagInfo,
+  BagLocation
+}
 import uk.ac.wellcome.platform.archive.bags.async.Registrar
-import uk.ac.wellcome.platform.archive.bags.async.services.{BagsWorkerService, StorageManifestService}
+import uk.ac.wellcome.platform.archive.bags.async.services.{
+  BagsWorkerService,
+  StorageManifestService
+}
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import uk.ac.wellcome.storage.fixtures.{LocalDynamoDb, S3}
@@ -78,26 +87,28 @@ trait RegistrarFixtures
     table
   }
 
-  def withWorkerService[R](bucket: Bucket,
-                           table: Table,
-                           queue: Queue,
-                           progressTopic: Topic)(testWith: TestWith[BagsWorkerService, R]): R =
+  def withWorkerService[R](
+    bucket: Bucket,
+    table: Table,
+    queue: Queue,
+    progressTopic: Topic)(testWith: TestWith[BagsWorkerService, R]): R =
     withActorSystem { implicit actorSystem =>
       withSQSStream[NotificationMessage, R](queue) { sqsStream =>
-        withUpdateStoredManifestService(table, bucket, progressTopic) { updateStoredManifestService =>
-          val storageManifestService = new StorageManifestService(
-            s3Client = s3Client
-          )
+        withUpdateStoredManifestService(table, bucket, progressTopic) {
+          updateStoredManifestService =>
+            val storageManifestService = new StorageManifestService(
+              s3Client = s3Client
+            )
 
-          val service = new BagsWorkerService(
-            sqsStream = sqsStream,
-            storageManifestService = storageManifestService,
-            updateStoredManifestService = updateStoredManifestService
-          )
+            val service = new BagsWorkerService(
+              sqsStream = sqsStream,
+              storageManifestService = storageManifestService,
+              updateStoredManifestService = updateStoredManifestService
+            )
 
-          service.run()
+            service.run()
 
-          testWith(service)
+            testWith(service)
         }
       }
     }
@@ -154,20 +165,18 @@ trait RegistrarFixtures
   }
 
   def withNewRegistrar[R](
-                        testWith: TestWith[(Bucket, QueuePair, Topic, StorageManifestVHS), R]): R = {
+    testWith: TestWith[(Bucket, QueuePair, Topic, StorageManifestVHS), R])
+    : R = {
     withLocalSqsQueueAndDlqAndTimeout(15) { queuePair =>
       withLocalSnsTopic { progressTopic =>
         withLocalS3Bucket { storageBucket =>
           withLocalS3Bucket { bucket =>
             withLocalDynamoDbTable { table =>
-              withWorkerService(
-                bucket,
-                table,
-                queuePair.queue,
-                progressTopic) { _ =>
-                withStorageManifestVHS(table, bucket) { vhs =>
-                  testWith((storageBucket, queuePair, progressTopic, vhs))
-                }
+              withWorkerService(bucket, table, queuePair.queue, progressTopic) {
+                _ =>
+                  withStorageManifestVHS(table, bucket) { vhs =>
+                    testWith((storageBucket, queuePair, progressTopic, vhs))
+                  }
               }
             }
           }

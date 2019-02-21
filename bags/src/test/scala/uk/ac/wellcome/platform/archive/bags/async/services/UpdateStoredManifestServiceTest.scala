@@ -12,7 +12,13 @@ import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-class UpdateStoredManifestServiceTest extends FunSpec with Matchers with ScalaFutures with ProgressUpdateAssertions with StorageManifestGenerators with UpdateStoredManifestFixture {
+class UpdateStoredManifestServiceTest
+    extends FunSpec
+    with Matchers
+    with ScalaFutures
+    with ProgressUpdateAssertions
+    with StorageManifestGenerators
+    with UpdateStoredManifestFixture {
   it("puts a new StorageManifest in VHS") {
     val archiveRequestId = randomUUID
     val storageManifest = createStorageManifest
@@ -20,17 +26,27 @@ class UpdateStoredManifestServiceTest extends FunSpec with Matchers with ScalaFu
     withLocalDynamoDbTable { table =>
       withLocalS3Bucket { bucket =>
         withLocalSnsTopic { progressTopic =>
-          withUpdateStoredManifestService(table, bucket, progressTopic) { service =>
-            val future = service.updateManifest(archiveRequestId, storageManifest = storageManifest)
+          withUpdateStoredManifestService(table, bucket, progressTopic) {
+            service =>
+              val future = service.updateManifest(
+                archiveRequestId,
+                storageManifest = storageManifest)
 
-            whenReady(future) { _ =>
-              assertStored(table, storageManifest.id.toString, storageManifest)
+              whenReady(future) { _ =>
+                assertStored(
+                  table,
+                  storageManifest.id.toString,
+                  storageManifest)
 
-              assertTopicReceivesProgressStatusUpdate(archiveRequestId, progressTopic, status = Progress.Completed, expectedBag = Some(storageManifest.id)) { events =>
-                events should have size 1
-                events.head.description shouldBe "Bag registered successfully"
+                assertTopicReceivesProgressStatusUpdate(
+                  archiveRequestId,
+                  progressTopic,
+                  status = Progress.Completed,
+                  expectedBag = Some(storageManifest.id)) { events =>
+                  events should have size 1
+                  events.head.description shouldBe "Bag registered successfully"
+                }
               }
-            }
           }
         }
       }
@@ -46,10 +62,16 @@ class UpdateStoredManifestServiceTest extends FunSpec with Matchers with ScalaFu
 
     withLocalSnsTopic { progressTopic =>
       withUpdateStoredManifestService(table, bucket, progressTopic) { service =>
-        val future = service.updateManifest(archiveRequestId, storageManifest = storageManifest)
+        val future = service.updateManifest(
+          archiveRequestId,
+          storageManifest = storageManifest)
 
         whenReady(future) { _ =>
-          assertTopicReceivesProgressStatusUpdate(archiveRequestId, progressTopic, status = Progress.Failed, expectedBag = Some(storageManifest.id)) { events =>
+          assertTopicReceivesProgressStatusUpdate(
+            archiveRequestId,
+            progressTopic,
+            status = Progress.Failed,
+            expectedBag = Some(storageManifest.id)) { events =>
             events should have size 1
             events.head.description shouldBe "Failed to register bag"
           }
@@ -62,12 +84,15 @@ class UpdateStoredManifestServiceTest extends FunSpec with Matchers with ScalaFu
     withLocalDynamoDbTable { table =>
       withLocalS3Bucket { bucket =>
         val progressTopic = Topic("does-not-exist")
-        withUpdateStoredManifestService(table, bucket, progressTopic) { service =>
-          val future = service.updateManifest(randomUUID, storageManifest = createStorageManifest)
+        withUpdateStoredManifestService(table, bucket, progressTopic) {
+          service =>
+            val future = service.updateManifest(
+              randomUUID,
+              storageManifest = createStorageManifest)
 
-          whenReady(future.failed) { err =>
-            err shouldBe a[AmazonSNSException]
-          }
+            whenReady(future.failed) { err =>
+              err shouldBe a[AmazonSNSException]
+            }
         }
       }
     }
