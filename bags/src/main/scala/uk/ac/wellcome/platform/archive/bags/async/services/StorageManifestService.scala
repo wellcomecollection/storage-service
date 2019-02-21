@@ -5,21 +5,37 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
-import uk.ac.wellcome.platform.archive.bags.common.models.{ChecksumAlgorithm, FileManifest, StorageManifest}
-import uk.ac.wellcome.platform.archive.common.bag.{BagDigestFileCreator, BagInfoParser}
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagInfo, BagIt}
-import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.bags.common.models.{
+  ChecksumAlgorithm,
+  FileManifest,
+  StorageManifest
+}
+import uk.ac.wellcome.platform.archive.common.bag.{
+  BagDigestFileCreator,
+  BagInfoParser
+}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagInfo,
+  BagIt
+}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class StorageManifestService(s3Client: AmazonS3)(implicit ec: ExecutionContext) {
+class StorageManifestService(s3Client: AmazonS3)(
+  implicit ec: ExecutionContext) {
 
   val algorithm = "sha256"
   val checksumAlgorithm = ChecksumAlgorithm(algorithm)
 
-  def createManifest(bagManifestUpdate: BagManifestUpdate): Future[Either[Throwable, StorageManifest]] = {
+  def createManifest(bagManifestUpdate: BagManifestUpdate)
+    : Future[Either[Throwable, StorageManifest]] = {
     val future: Future[StorageManifest] = for {
       bagInfoInputStream <- downloadFile(
         bagManifestUpdate = bagManifestUpdate,
@@ -60,36 +76,40 @@ class StorageManifestService(s3Client: AmazonS3)(implicit ec: ExecutionContext) 
     }
 
     future
-      .map { manifest => Right(manifest) }
+      .map { manifest =>
+        Right(manifest)
+      }
       .recover { case err: Throwable => Left(err) }
   }
 
-  private def parseBagInfo(bagManifestUpdate: BagManifestUpdate, bagInfoInputStream: InputStream): Try[BagInfo] =
-    BagInfoParser.parseBagInfo(bagManifestUpdate, inputStream = bagInfoInputStream) match {
+  private def parseBagInfo(bagManifestUpdate: BagManifestUpdate,
+                           bagInfoInputStream: InputStream): Try[BagInfo] =
+    BagInfoParser.parseBagInfo(
+      bagManifestUpdate,
+      inputStream = bagInfoInputStream) match {
       case Right(bagInfo) => Success(bagInfo)
-      case Left(err) => Failure(throw new RuntimeException(err.toString))
+      case Left(err)      => Failure(throw new RuntimeException(err.toString))
     }
 
   private def getBagItems(bagManifestUpdate: BagManifestUpdate,
-                          filename: String)
-  : Future[List[BagDigestFile]] =
+                          filename: String): Future[List[BagDigestFile]] =
     for {
-      inputStream <- downloadFile(bagManifestUpdate = bagManifestUpdate, filename = filename)
-      lines: List[String] =
-        scala.io.Source
-          .fromInputStream(inputStream)
-          .mkString
-          .split("\n")
-          .filter { _.nonEmpty }
-          .toList
-      tryBagDigestFiles: List[Try[BagDigestFile]] =
-        lines.map { line =>
-          BagDigestFileCreator.create(
-            line = line,
-            bagRootPathInZip = None,
-            manifestName = filename
-          )
-        }
+      inputStream <- downloadFile(
+        bagManifestUpdate = bagManifestUpdate,
+        filename = filename)
+      lines: List[String] = scala.io.Source
+        .fromInputStream(inputStream)
+        .mkString
+        .split("\n")
+        .filter { _.nonEmpty }
+        .toList
+      tryBagDigestFiles: List[Try[BagDigestFile]] = lines.map { line =>
+        BagDigestFileCreator.create(
+          line = line,
+          bagRootPathInZip = None,
+          manifestName = filename
+        )
+      }
       bagDigestFiles: List[BagDigestFile] <- Future.sequence {
         tryBagDigestFiles.map { Future.fromTry }
       }

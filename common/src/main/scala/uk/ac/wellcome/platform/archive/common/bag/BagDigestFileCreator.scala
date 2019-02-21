@@ -1,7 +1,13 @@
 package uk.ac.wellcome.platform.archive.common.bag
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
-import uk.ac.wellcome.platform.archive.common.models.error.{ArchiveError, InvalidBagManifestError}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagItemPath
+}
+import uk.ac.wellcome.platform.archive.common.models.error.{
+  ArchiveError,
+  InvalidBagManifestError
+}
 
 import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
@@ -32,16 +38,17 @@ object BagDigestFileCreator {
             path = BagItemPath(bagRootPathInZip, itemPath.trim)
           )
         )
-      case _ => Failure(new RuntimeException(s"Line <<$line>> is incorrectly formatted!"))
+      case _ =>
+        Failure(
+          new RuntimeException(s"Line <<$line>> is incorrectly formatted!"))
     }
 
-  def create[T](
-    line: String,
-    job: T,
-    bagRootPathInZip: Option[String] = None,
-    manifestName: String): Either[ArchiveError[T], BagDigestFile] =
+  def create[T](line: String,
+                job: T,
+                bagRootPathInZip: Option[String] = None,
+                manifestName: String): Either[ArchiveError[T], BagDigestFile] =
     create(line, bagRootPathInZip, manifestName) match {
       case Success(bagDigestFile) => Right(bagDigestFile)
-      case Failure(_) => Left(InvalidBagManifestError(job, manifestName, line))
+      case Failure(_)             => Left(InvalidBagManifestError(job, manifestName, line))
     }
 }

@@ -5,15 +5,27 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bags.async.generators.BagManifestUpdateGenerators
 import uk.ac.wellcome.platform.archive.bags.common.models.ChecksumAlgorithm
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  FileEntry
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class StorageManifestServiceTest extends FunSpec with Matchers with ScalaFutures with BagLocationFixtures with BagManifestUpdateGenerators with S3 {
+class StorageManifestServiceTest
+    extends FunSpec
+    with Matchers
+    with ScalaFutures
+    with BagLocationFixtures
+    with BagManifestUpdateGenerators
+    with S3 {
 
   val service = new StorageManifestService(s3Client)
 
@@ -38,10 +50,12 @@ class StorageManifestServiceTest extends FunSpec with Matchers with ScalaFutures
                 storageManifest.space shouldBe archiveBagLocation.storageSpace
                 storageManifest.info shouldBe bagInfo
 
-                storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm("sha256")
+                storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
+                  "sha256")
                 storageManifest.manifest.files should have size 1
 
-                storageManifest.tagManifest.checksumAlgorithm shouldBe ChecksumAlgorithm("sha256")
+                storageManifest.tagManifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
+                  "sha256")
                 storageManifest.tagManifest.files should have size 3
                 val actualFiles =
                   storageManifest.tagManifest.files
