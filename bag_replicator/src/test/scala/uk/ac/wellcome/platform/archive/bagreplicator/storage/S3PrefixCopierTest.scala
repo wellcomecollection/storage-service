@@ -17,8 +17,14 @@ class S3PrefixCopierTest
     with ScalaFutures
     with IntegrationPatience
     with S3CopierFixtures {
+
+  val batchSize = 10
   val copier = new S3Copier(s3Client)
-  val s3PrefixCopier = new S3PrefixCopier(s3Client, copier = copier)
+  val s3PrefixCopier = new S3PrefixCopier(
+    s3Client = s3Client,
+    copier = copier,
+    batchSize = batchSize
+  )
 
   it("returns a successful Future if there are no files in the prefix") {
     withLocalS3Bucket { bucket =>
@@ -195,7 +201,7 @@ class S3PrefixCopierTest
   override def listKeysInBucket(bucket: Bucket): List[String] =
     S3Objects
       .inBucket(s3Client, bucket.name)
-      .withBatchSize(5)
+      .withBatchSize(1000)
       .iterator()
       .asScala
       .toList
