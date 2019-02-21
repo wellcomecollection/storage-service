@@ -158,7 +158,7 @@ def pack(bag_details):
 
     logging.debug(" ".join(["packing", archive_format, bag_details["b_number"]]))
 
-    base_name = "/".join([settings.WORKING_DIRECTORY, bag_details["b_number"]])
+    base_name = os.path.join(settings.WORKING_DIRECTORY, bag_details["b_number"])
 
     zip_file_path = shutil.make_archive(
         base_name, archive_format, bag_details["directory"]
