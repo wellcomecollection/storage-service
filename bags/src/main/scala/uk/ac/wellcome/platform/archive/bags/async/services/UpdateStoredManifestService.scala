@@ -5,6 +5,7 @@ import java.util.UUID
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
 import uk.ac.wellcome.storage.ObjectStore
 import uk.ac.wellcome.storage.dynamo._
@@ -23,11 +24,12 @@ class UpdateStoredManifestService(
       result <- updateVHS(storageManifest)
       _ <- sendProgressUpdate(
         requestId = archiveRequestId,
+        bagId = storageManifest.id,
         result = result
       )
     } yield ()
 
-  private def sendProgressUpdate(requestId: UUID, result: Either[Throwable, Unit]): Future[PublishAttempt] = {
+  private def sendProgressUpdate(requestId: UUID, bagId: BagId, result: Either[Throwable, Unit]): Future[PublishAttempt] = {
     val event: ProgressUpdate = result match {
       case Right(_) =>
         ProgressUpdate.event(
@@ -38,7 +40,7 @@ class UpdateStoredManifestService(
         ProgressStatusUpdate(
           id = requestId,
           status = Progress.Failed,
-          affectedBag = None,
+          affectedBag = Some(bagId),
           events = List(ProgressEvent("Failed to register bag"))
         )
     }

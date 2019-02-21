@@ -3,20 +3,16 @@ package uk.ac.wellcome.platform.archive.bags.async.services
 import com.amazonaws.services.sns.model.AmazonSNSException
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.platform.archive.bags.fixtures.StorageManifestVHSFixture
+import uk.ac.wellcome.platform.archive.bags.async.fixtures.UpdateStoredManifestFixture
 import uk.ac.wellcome.platform.archive.bags.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
-class UpdateStoredManifestServiceTest extends FunSpec with Matchers with ScalaFutures with ProgressUpdateAssertions with SNS with StorageManifestGenerators with StorageManifestVHSFixture {
+class UpdateStoredManifestServiceTest extends FunSpec with Matchers with ScalaFutures with ProgressUpdateAssertions with StorageManifestGenerators with UpdateStoredManifestFixture {
   it("puts a new StorageManifest in VHS") {
     val archiveRequestId = randomUUID
     val storageManifest = createStorageManifest
@@ -53,7 +49,7 @@ class UpdateStoredManifestServiceTest extends FunSpec with Matchers with ScalaFu
         val future = service.updateManifest(archiveRequestId, storageManifest = storageManifest)
 
         whenReady(future) { _ =>
-          assertTopicReceivesProgressStatusUpdate(archiveRequestId, progressTopic, status = Progress.Failed) { events =>
+          assertTopicReceivesProgressStatusUpdate(archiveRequestId, progressTopic, status = Progress.Failed, expectedBag = Some(storageManifest.id)) { events =>
             events should have size 1
             events.head.description shouldBe "Failed to register bag"
           }
@@ -76,15 +72,4 @@ class UpdateStoredManifestServiceTest extends FunSpec with Matchers with ScalaFu
       }
     }
   }
-
-  private def withUpdateStoredManifestService[R](table: Table, bucket: Bucket, topic: Topic)(testWith: TestWith[UpdateStoredManifestService, R]): R =
-    withStorageManifestVHS(table, bucket) { vhs =>
-      withSNSWriter(topic) { progressSnsWriter =>
-        val service = new UpdateStoredManifestService(
-          vhs = vhs,
-          progressSnsWriter = progressSnsWriter
-        )
-        testWith(service)
-      }
-    }
 }
