@@ -28,8 +28,7 @@ object ChecksumVerifier {
       .getObjectContent
     try {
       Hex.encodeHexString(
-          updateDigest(getDigest(digestAlgorithm), objectStream)
-          .digest)
+        updateDigest(getDigest(digestAlgorithm), objectStream).digest)
     } finally {
       objectStream.close()
     }
