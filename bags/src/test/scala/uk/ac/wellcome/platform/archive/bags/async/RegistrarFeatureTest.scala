@@ -108,13 +108,13 @@ class RegistrarFeatureTest
 
         val srcBagLocation = BagLocation(
           storageNamespace = storageBucket.name,
-          storagePrefix = "archive",
+          storagePrefix = Some("archive"),
           storageSpace = bagId.space,
           bagPath = randomBagPath
         )
 
         val dstBagLocation = srcBagLocation.copy(
-          storagePrefix = "access"
+          storagePrefix = Some("access")
         )
 
         sendNotificationToSQS(

@@ -48,7 +48,7 @@ trait RegistrarFixtures
       bagInfo = bagInfo,
       storageSpace = storageSpace,
       storagePrefix = "archive") { srcBagLocation =>
-      val dstBagLocation = srcBagLocation.copy(storagePrefix = "access")
+      val dstBagLocation = srcBagLocation.copy(storagePrefix = Some("access"))
       val replicationResult = ReplicationResult(
         archiveRequestId = archiveRequestId,
         srcBagLocation = srcBagLocation,

@@ -72,7 +72,7 @@ class StorageManifestFactoryTest
       withLocalS3Bucket { bucket =>
         val bagLocation = bagit.BagLocation(
           storageNamespace = bucket.name,
-          storagePrefix = "archive",
+          storagePrefix = Some("archive"),
           storageSpace = createStorageSpace,
           bagPath = randomBagPath
         )
