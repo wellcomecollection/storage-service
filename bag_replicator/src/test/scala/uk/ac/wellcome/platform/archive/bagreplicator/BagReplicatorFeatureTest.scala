@@ -5,7 +5,8 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.models.{ReplicationRequest, ReplicationResult}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
 class BagReplicatorFeatureTest
@@ -16,7 +17,7 @@ class BagReplicatorFeatureTest
     with BagReplicatorFixtures
     with ProgressUpdateAssertions {
 
-  it("receives a notification") {
+  it("sends a ProgressUpdate if it replicates a bag successfully") {
     withApp {
       case (
           sourceBucket,
@@ -48,6 +49,35 @@ class BagReplicatorFeatureTest
                 events should have size 1
                 events.head.description shouldBe s"Bag replicated successfully"
             }
+          }
+        }
+    }
+  }
+
+  it("sends a ProgressUpdate if it cannot replicate a bag") {
+    withApp {
+      case (_, queue, _, _, progressTopic, outgoingTopic) =>
+        val requestId = randomUUID
+
+        val replicationRequest = ReplicationRequest(
+          archiveRequestId = requestId,
+          srcBagLocation = BagLocation(
+            storageNamespace = randomAlphanumeric(),
+            storagePrefix = randomAlphanumeric(),
+            storageSpace = createStorageSpace,
+            bagPath = BagPath(randomAlphanumeric())
+          )
+        )
+
+        sendNotificationToSQS(queue, replicationRequest)
+
+        eventually {
+          assertSnsReceivesNothing(outgoingTopic)
+
+          assertTopicReceivesProgressEventUpdate(requestId, progressTopic) {
+            events =>
+              events should have size 1
+              events.head.description shouldBe s"Failed to replicate bag"
           }
         }
     }
