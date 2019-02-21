@@ -69,7 +69,7 @@ trait ArchiveJobGenerators
   ): ArchiveJob = {
     val bagLocation = BagLocation(
       storageNamespace = bucket.name,
-      storagePrefix = "archive",
+      storagePrefix = Some("archive"),
       storageSpace = createStorageSpace,
       bagPath = BagPath(bagIdentifier.toString)
     )

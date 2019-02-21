@@ -53,7 +53,7 @@ object ArchiveJobCreator extends Logging {
               maybeBagRootPathInZip = bagRootPathInZip,
               bagUploadLocation = BagLocation(
                 storageNamespace = config.uploadConfig.uploadNamespace,
-                storagePrefix = config.uploadConfig.uploadPrefix,
+                storagePrefix = Some(config.uploadConfig.uploadPrefix),
                 storageSpace = ingestBagRequest.storageSpace,
                 bagPath = BagPath(externalIdentifier.toString)
               ),

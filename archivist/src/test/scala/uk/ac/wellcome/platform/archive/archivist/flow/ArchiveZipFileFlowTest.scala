@@ -79,7 +79,7 @@ class ArchiveZipFileFlowTest
                   archiveRequestId = ingestContext.id,
                   srcBagLocation = BagLocation(
                     storageNamespace = storageBucket.name,
-                    storagePrefix = "archive",
+                    storagePrefix = Some("archive"),
                     storageSpace = ingestContext.storageSpace,
                     bagPath = BagPath(bagInfo.externalIdentifier.toString)
                   )
@@ -215,7 +215,7 @@ class ArchiveZipFileFlowTest
                           .asInstanceOf[ArchiveJob]
                           .bagUploadLocation shouldBe BagLocation(
                           storageNamespace = storageBucket.name,
-                          storagePrefix = "archive",
+                          storagePrefix = Some("archive"),
                           storageSpace = ingestContext.storageSpace,
                           bagPath = BagPath(bagInfo.externalIdentifier.toString)
                         )

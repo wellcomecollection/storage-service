@@ -66,7 +66,7 @@ trait BagReplicatorFixtures
             messageStream = messageStream,
             bagReplicatorConfig = BagReplicatorConfig(
               parallelism = 10,
-              ReplicatorDestinationConfig(dstBucket.name, dstRootPath)),
+              ReplicatorDestinationConfig(dstBucket.name, Some(dstRootPath))),
             progressSnsConfig = createSNSConfigWith(progressTopic),
             outgoingSnsConfig = createSNSConfigWith(outgoingTopic)
           )

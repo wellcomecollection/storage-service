@@ -44,7 +44,7 @@ trait BagLocationFixtures
 
     val bagLocation = BagLocation(
       storageNamespace = bucket.name,
-      storagePrefix = storagePrefix,
+      storagePrefix = Some(storagePrefix),
       storageSpace = storageSpace,
       bagPath = BagPath(bagIdentifier.toString)
     )

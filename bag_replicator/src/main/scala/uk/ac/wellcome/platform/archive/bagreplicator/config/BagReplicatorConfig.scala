@@ -17,7 +17,7 @@ object BagReplicatorConfig {
         namespace =
           config.required[String]("bag-replicator.storage.destination.bucket"),
         rootPath =
-          config.required[String]("bag-replicator.storage.destination.rootpath")
+          config.get("bag-replicator.storage.destination.rootpath")
       )
     )
   }

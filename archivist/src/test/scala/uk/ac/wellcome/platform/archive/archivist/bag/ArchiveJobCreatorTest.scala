@@ -47,7 +47,7 @@ class ArchiveJobCreatorTest
           actualZipFile.size() shouldBe new ZipFile(file).size()
           bagLocation shouldBe BagLocation(
             storageNamespace = bucketName,
-            storagePrefix = "archive",
+            storagePrefix = Some("archive"),
             storageSpace = ingestRequest.storageSpace,
             bagPath = BagPath(bagIdentifier.toString)
           )
