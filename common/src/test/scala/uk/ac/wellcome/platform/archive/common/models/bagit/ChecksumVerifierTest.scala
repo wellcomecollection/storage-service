@@ -13,38 +13,56 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
     withLocalS3Bucket { bucket =>
       val content = "text"
       val key = "key"
+
       s3Client.putObject(bucket.name, key, content)
-      val contentChecksum =
+
+      val expectedChecksum =
         "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
 
-      ChecksumVerifier.checksum(ObjectLocation(bucket.name, key), "sha256") shouldBe contentChecksum
+      val actualChecksumEither = ChecksumVerifier.checksum(
+        ObjectLocation(bucket.name, key),
+        bagItAlgorithm = "sha256"
+      )
+
+      actualChecksumEither shouldBe a[Right[_, _]]
+      val actualChecksum = actualChecksumEither.right.get
+
+      actualChecksum shouldBe expectedChecksum
     }
   }
 
-  it("fails for an unknown algorithm") {
-    val thrown = intercept[IllegalArgumentException] {
-      ChecksumVerifier.checksum(ObjectLocation("bucket", "key"), "unknown")
-    }
-    thrown.getMessage shouldBe "unknown algorithm 'unknown'"
+  it("returns Left for an unknown algorithm") {
+    val actualChecksumEither = ChecksumVerifier.checksum(
+      ObjectLocation("bucket", "key"),
+      bagItAlgorithm = "unknown"
+    )
+
+    actualChecksumEither shouldBe a[Left[_, _]]
+
+    actualChecksumEither.left.get shouldBe a[RuntimeException]
   }
 
-  it("fails if the bucket cannot be found") {
-    val thrown = intercept[AmazonS3Exception] {
-      ChecksumVerifier.checksum(ObjectLocation("bucket", "not-there"), "sha256")
-    }
-    thrown.getMessage should startWith("The specified bucket does not exist.")
+  it("returns Left if the bucket cannot be found") {
+    val actualChecksumEither = ChecksumVerifier.checksum(
+      ObjectLocation("bucket", "not-there"),
+      bagItAlgorithm = "sha256"
+    )
+
+    actualChecksumEither shouldBe a[Left[_, _]]
+
+    actualChecksumEither.left.get shouldBe a[AmazonS3Exception]
   }
 
-  it("fails if the object cannot be found") {
+  it("returns Left if the object cannot be found") {
     withLocalS3Bucket { bucket =>
-      val thrown = intercept[AmazonS3Exception] {
-        ChecksumVerifier.checksum(
-          ObjectLocation(bucket.name, "not-there"),
-          "sha256")
-      }
-      thrown.getMessage should startWith("The specified key does not exist.")
+      val actualChecksumEither = ChecksumVerifier.checksum(
+        ObjectLocation(bucket.name, "not-there"),
+        bagItAlgorithm = "sha256"
+      )
+
+      actualChecksumEither shouldBe a[Left[_, _]]
+
+      actualChecksumEither.left.get shouldBe a[AmazonS3Exception]
     }
   }
-
-  //  TODO: it("fails if the object get/stream fails") {
 }
