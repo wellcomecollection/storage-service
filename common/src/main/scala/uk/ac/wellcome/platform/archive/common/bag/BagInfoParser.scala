@@ -67,12 +67,11 @@ object BagInfoParser {
     validated.toEither.leftMap(list => InvalidBagInfo(t, list.toList))
   }
 
-  private def extractExternalIdentifier(bagInfoLines: Array[String]) = {
+  private def extractExternalIdentifier(bagInfoLines: Array[String]): Option[String] =
     extractRequiredValue(bagInfoLines, BagInfoKeys.externalIdentifier)
       .map(ExternalIdentifier.apply)
-  }
 
-  private def extractPayloadOxum(bagInfoLines: Array[String]) = {
+  private def extractPayloadOxum(bagInfoLines: Array[String]): Option[String] =
     bagInfoLines
       .collectFirst {
         case payloadOxumRegex(bytes, numberOfFiles) =>
@@ -80,49 +79,44 @@ object BagInfoParser {
       }
       .toValidNel(BagInfoKeys.payloadOxum)
 
-  }
-
-  private def extractBaggingDate(bagInfoLines: Array[String]) = {
+  private def extractBaggingDate(bagInfoLines: Array[String]): Validated[NonEmptyList[String], LocalDate] =
     extractRequiredValue(bagInfoLines, BagInfoKeys.baggingDate).andThen(
       dateString =>
         Try(LocalDate.parse(dateString)).toEither
           .leftMap(_ => BagInfoKeys.baggingDate)
           .toValidatedNel)
-  }
 
-  private def extractSourceOrganisation(bagInfoLines: Array[String]) = {
+  private def extractSourceOrganisation(bagInfoLines: Array[String]): ValidatedNel[Nothing, Option[SourceOrganisation]] = {
     extractOptionalValue(bagInfoLines, BagInfoKeys.sourceOrganisation)
       .map(SourceOrganisation)
       .validNel
   }
 
-  private def extractExternalDescription(bagInfoLines: Array[String]) =
+  private def extractExternalDescription(bagInfoLines: Array[String]): ValidatedNel[Nothing, Option[ExternalDescription]] =
     extractOptionalValue(bagInfoLines, BagInfoKeys.externalDescription)
       .map(ExternalDescription)
       .validNel
 
-  private def extractInternalSenderIdentifier(bagInfoLines: Array[String]) =
+  private def extractInternalSenderIdentifier(bagInfoLines: Array[String]): ValidatedNel[Nothing, Option[InternalSenderIdentifier]] =
     extractOptionalValue(bagInfoLines, BagInfoKeys.internalSenderIdentifier)
       .map(InternalSenderIdentifier)
       .validNel
 
-  private def extractInternalSenderDescription(bagInfoLines: Array[String]) =
+  private def extractInternalSenderDescription(bagInfoLines: Array[String]): ValidatedNel[Nothing, Option[InternalSenderDescription]] =
     extractOptionalValue(bagInfoLines, BagInfoKeys.internalSenderDescription)
       .map(InternalSenderDescription)
       .validNel
 
   private def extractRequiredValue(bagInfoLines: Array[String],
-                                   bagInfoKey: String) = {
+                                   bagInfoKey: String): ValidatedNel[String, String] =
     extractOptionalValue(bagInfoLines, bagInfoKey)
       .toValidNel(bagInfoKey)
-  }
 
   private def extractOptionalValue(bagInfoLines: Array[String],
-                                   bagInfoKey: String) = {
+                                   bagInfoKey: String): Option[String] =
     bagInfoLines
       .collectFirst {
         case bagInfoFieldRegex(key, value) if key == bagInfoKey =>
           value
       }
-  }
 }
