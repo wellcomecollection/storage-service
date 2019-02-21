@@ -8,6 +8,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.models.{ReplicationRequest, ReplicationResult}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
 class BagReplicatorFeatureTest
     extends FunSpec
@@ -74,10 +75,13 @@ class BagReplicatorFeatureTest
         eventually {
           assertSnsReceivesNothing(outgoingTopic)
 
-          assertTopicReceivesProgressEventUpdate(requestId, progressTopic) {
-            events =>
-              events should have size 1
-              events.head.description shouldBe s"Failed to replicate bag"
+          assertTopicReceivesProgressStatusUpdate(
+            requestId,
+            progressTopic = progressTopic,
+            status = Progress.Failed) {
+              events =>
+                events should have size 1
+                events.head.description shouldBe s"Failed to replicate bag"
           }
         }
     }
