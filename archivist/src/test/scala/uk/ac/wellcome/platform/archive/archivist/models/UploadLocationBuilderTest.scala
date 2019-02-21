@@ -2,13 +2,10 @@ package uk.ac.wellcome.platform.archive.archivist.models
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.archivist.builders.UploadLocationBuilder
-import uk.ac.wellcome.platform.archive.archivist.fixtures.ZipBagItFixture
 import uk.ac.wellcome.platform.archive.archivist.generators.ArchiveJobGenerators
+import uk.ac.wellcome.platform.archive.common.fixtures.ZipBagItFixture
 import uk.ac.wellcome.platform.archive.common.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagLocation,
-  BagPath
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
 import uk.ac.wellcome.storage.ObjectLocation
 
 class UploadLocationBuilderTest

@@ -56,7 +56,8 @@ object ExternalDependencies {
     val akkaHttp            = "10.1.5"
     val akkaHttpCirce       = "1.21.1"
     val akkaStreamAlpakka   = "0.20"
-    val apacheCommons       = "2.6"
+    val commonsCompress     = "1.18"
+    val commonsIO           = "2.6"
     val aws                 = "1.11.95"
     val circe               = "0.9.0"
     val mockito             = "1.9.5"
@@ -64,8 +65,12 @@ object ExternalDependencies {
     val wiremock            = "2.18.0"
   }
 
-  val apacheCommonsDependencies = Seq(
-    "commons-io" % "commons-io" % versions.apacheCommons % "test"
+  val commonsCompressDependencies = Seq(
+    "org.apache.commons" % "commons-compress" % "1.5"
+  )
+
+  val commonsIODependencies = Seq(
+    "commons-io" % "commons-io" % versions.commonsIO % "test"
   )
 
   val circeOpticsDependencies = Seq[ModuleID](
@@ -98,7 +103,7 @@ object ExternalDependencies {
 
 object StorageDependencies {
   val commonDependencies =
-    ExternalDependencies.apacheCommonsDependencies ++
+    ExternalDependencies.commonsIODependencies ++
     ExternalDependencies.akkaDependencies ++
     ExternalDependencies.cloudwatchMetricsDependencies ++
     ExternalDependencies.mockitoDependencies ++

@@ -1,11 +1,10 @@
-package uk.ac.wellcome.platform.archive.archivist.fixtures
+package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.io.{File, FileOutputStream}
 import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.fixtures._
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagIt, FileEntry}
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagInfo
 
@@ -17,6 +16,9 @@ trait ZipBagItFixture extends BagInfoGenerators with BagIt with Logging {
         val file = File.createTempFile(randomAlphanumeric(), ".zip")
         val zipFileOutputStream = new FileOutputStream(file)
         val zipOutputStream = new ZipOutputStream(zipFileOutputStream)
+
+        zipOutputStream.setLevel(5)
+
         files.foreach {
           case FileEntry(name, contents) =>
             info(s"Adding $name to zip contents")
