@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.models.bagit
 
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
@@ -15,51 +16,54 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
 
       s3Client.putObject(bucket.name, key, content)
 
-      val expectedChecksum = Some(
+      val expectedChecksum =
         "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
-      )
 
-      val actualChecksum = ChecksumVerifier.checksum(
+
+      val actualChecksumEither = ChecksumVerifier.checksum(
         ObjectLocation(bucket.name, key),
         bagItAlgorithm = "sha256"
       )
+
+      actualChecksumEither shouldBe a [Right[_,_]]
+      val actualChecksum = actualChecksumEither.right.get
 
       actualChecksum shouldBe expectedChecksum
     }
   }
 
   it("returns None for an unknown algorithm") {
-    val actualChecksum = ChecksumVerifier.checksum(
+    val actualChecksumEither = ChecksumVerifier.checksum(
       ObjectLocation("bucket", "key"),
       bagItAlgorithm = "unknown"
     )
 
-    val expectedChecksum = None
+    actualChecksumEither shouldBe a[Left[_,_]]
 
-    actualChecksum shouldBe expectedChecksum
+    actualChecksumEither.left.get shouldBe a[RuntimeException]
   }
 
   it("returns None if the bucket cannot be found") {
-    val actualChecksum = ChecksumVerifier.checksum(
+    val actualChecksumEither = ChecksumVerifier.checksum(
       ObjectLocation("bucket", "not-there"),
       bagItAlgorithm = "sha256"
     )
 
-    val expectedChecksum = None
+    actualChecksumEither shouldBe a[Left[_,_]]
 
-    actualChecksum shouldBe expectedChecksum
+    actualChecksumEither.left.get shouldBe a[AmazonS3Exception]
   }
 
   it("returns None if the object cannot be found") {
     withLocalS3Bucket { bucket =>
-      val actualChecksum = ChecksumVerifier.checksum(
+      val actualChecksumEither = ChecksumVerifier.checksum(
         ObjectLocation(bucket.name, "not-there"),
         bagItAlgorithm = "sha256"
       )
 
-      val expectedChecksum = None
+      actualChecksumEither shouldBe a[Left[_,_]]
 
-      actualChecksum shouldBe expectedChecksum
+      actualChecksumEither.left.get shouldBe a[AmazonS3Exception]
     }
   }
 }

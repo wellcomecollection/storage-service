@@ -8,7 +8,7 @@ import org.apache.commons.codec.digest.DigestUtils._
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 object ChecksumVerifier extends Logging {
 
@@ -16,10 +16,8 @@ object ChecksumVerifier extends Logging {
     objectLocation: ObjectLocation,
     bagItAlgorithm: String
   )(implicit
-    s3Client: AmazonS3): Option[String] = {
-
-    for {
-
+    s3Client: AmazonS3): Either[Throwable, String] = {
+    val triedChecksum: Try[String] = for {
       digestAlgorithm <- getChecksum(
         bagItAlgorithm
       )
@@ -30,14 +28,15 @@ object ChecksumVerifier extends Logging {
       )
 
     } yield checksum
+
+    triedChecksum.toEither
   }
+
 
   private def checksumObject(
     objectLocation: ObjectLocation,
     digestAlgorithm: String
-  )(implicit s3Client: AmazonS3): Option[String] = {
-
-    val checksumResult: Try[String] = for {
+  )(implicit s3Client: AmazonS3) = for {
       objectContent <- tryObjectContent(
         s3Client,
         objectLocation
@@ -50,18 +49,6 @@ object ChecksumVerifier extends Logging {
 
     } yield checksum
 
-    val stringOption: Option[String] = checksumResult
-      .map(Some(_))
-      .recover {
-        case t: Throwable => {
-          error("Failed to get checksum!", t)
-          None
-        }
-      }
-      .get
-
-    stringOption
-  }
 
   private def tryObjectContent(
     s3Client: AmazonS3,
@@ -92,13 +79,12 @@ object ChecksumVerifier extends Logging {
   }
 
   private def getChecksum(checksumAlgorithm: String) = {
-    val tryAlgorithm: Option[String] = checksumAlgorithms.get(checksumAlgorithm)
-
-    if (tryAlgorithm.isEmpty) {
-      error(s"Unknown algorithm: $checksumAlgorithm ")
+    checksumAlgorithms.get(checksumAlgorithm) match {
+      case Some(algo) => Success(algo)
+      case None => Failure(
+        new RuntimeException(s"Unknown algorithm: $checksumAlgorithm")
+      )
     }
-
-    tryAlgorithm
   }
 
   // Normalised BagIt checksum algorithms
