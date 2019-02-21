@@ -156,18 +156,12 @@ def load_xml(path):
 def pack(bag_details):
     archive_format = settings.ARCHIVE_FORMAT
 
-    logging.debug(
-        "packing %s %s",
-        archive_format,
-        bag_details["b_number"]
-    )
+    logging.debug("packing %s %s", archive_format, bag_details["b_number"])
 
     base_name = os.path.join(settings.WORKING_DIRECTORY, bag_details["b_number"])
 
     zip_file_path = shutil.make_archive(
-        base_name = base_name,
-        format = archive_format,
-        root_dir = bag_details["directory"]
+        base_name=base_name, format=archive_format, root_dir=bag_details["directory"]
     )
 
     zip_file_name = os.path.basename(zip_file_path)
@@ -187,7 +181,7 @@ def dispatch(bag_details):
         "uploaded %s %s s3://%s:%s",
         bag_details["zip_file_name"],
         upload_location["bucket"],
-        upload_location["key"]
+        upload_location["key"],
     )
 
     bag_details["upload_location"] = upload_location
