@@ -1,20 +1,22 @@
 package uk.ac.wellcome.platform.archive.bagunpacker
 
-
 import java.io.{BufferedInputStream, InputStream}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveInputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.archivers.{
+  ArchiveEntry,
+  ArchiveInputStream,
+  ArchiveStreamFactory
+}
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 
 import scala.util.Try
 
-
 object Unpacker extends Logging {
 
   def apply(
-             inputStream: InputStream
-           ): Either[Throwable, Stream[ArchiveEntry]] = {
+    inputStream: InputStream
+  ): Either[Throwable, Stream[ArchiveEntry]] = {
     (for {
       compressorInputStream <- uncompress(
         new BufferedInputStream(inputStream)
@@ -27,8 +29,8 @@ object Unpacker extends Logging {
   }
 
   private def entries(
-                       inputStream: ArchiveInputStream
-                     ): Stream[ArchiveEntry] =
+    inputStream: ArchiveInputStream
+  ): Stream[ArchiveEntry] =
     inputStream.getNextEntry match {
       case null => {
         inputStream.close()

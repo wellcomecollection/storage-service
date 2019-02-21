@@ -11,9 +11,16 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.bagunpacker.BagUnpacker
 import uk.ac.wellcome.platform.archive.bagunpacker.config.BagUnpackerConfig
-import uk.ac.wellcome.platform.archive.common.fixtures.{ArchiveMessaging, BagLocationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  ArchiveMessaging,
+  BagLocationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.models.{
+  StorageSpace,
+  UnpackBagRequest
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -48,7 +55,6 @@ trait BagUnpackerFixtures
     sendNotificationToSQS(queue, unpackBagRequest)
     testWith(unpackBagRequest)
   }
-
 
   def withBagUnpacker[R](
     queue: Queue,

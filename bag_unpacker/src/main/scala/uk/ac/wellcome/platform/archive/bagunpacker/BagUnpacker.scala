@@ -12,7 +12,10 @@ import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.platform.archive.bagunpacker.config.BagUnpackerConfig
 import uk.ac.wellcome.typesafe.Runnable
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.models.{BagRequest, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
+  UnpackBagRequest
+}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -45,10 +48,11 @@ class BagUnpacker(
       )
 
       _ <- Future.fromTry(
-        notifyNext(BagRequest(
-          unpackBagRequest.requestId,
-          unpackBagRequest.bagDestination
-        )))
+        notifyNext(
+          BagRequest(
+            unpackBagRequest.requestId,
+            unpackBagRequest.bagDestination
+          )))
 
     } yield ()
 
@@ -61,9 +65,9 @@ class BagUnpacker(
     )
 
   private def publishNotification[T](
-                                      msg: T,
-                                      snsConfig: SNSConfig
-                                    )(
+    msg: T,
+    snsConfig: SNSConfig
+  )(
     implicit encoder: Encoder[T]
   ): Try[PublishResult] = {
     toJson[T](msg)

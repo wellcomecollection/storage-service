@@ -4,10 +4,17 @@ import java.util.zip.ZipFile
 
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.platform.archive.archivist.generators.BagUploaderConfigGenerators
-import uk.ac.wellcome.platform.archive.archivist.models.{ArchiveJob, BagItConfig}
+import uk.ac.wellcome.platform.archive.archivist.models.{
+  ArchiveJob,
+  BagItConfig
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.ZipBagItFixture
 import uk.ac.wellcome.platform.archive.common.generators.IngestBagRequestGenerators
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagItemPath, BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagItemPath,
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class ArchiveJobCreatorTest

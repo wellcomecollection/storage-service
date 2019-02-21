@@ -8,7 +8,10 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Inside}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.archivist.generators.ArchiveJobGenerators
-import uk.ac.wellcome.platform.archive.archivist.models.errors.{ArchiveItemJobError, UploadError}
+import uk.ac.wellcome.platform.archive.archivist.models.errors.{
+  ArchiveItemJobError,
+  UploadError
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.ZipBagItFixture
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
