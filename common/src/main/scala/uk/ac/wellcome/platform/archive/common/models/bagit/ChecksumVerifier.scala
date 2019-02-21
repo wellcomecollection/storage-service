@@ -32,11 +32,11 @@ object ChecksumVerifier extends Logging {
     triedChecksum.toEither
   }
 
-
   private def checksumObject(
     objectLocation: ObjectLocation,
     digestAlgorithm: String
-  )(implicit s3Client: AmazonS3) = for {
+  )(implicit s3Client: AmazonS3) =
+    for {
       objectContent <- tryObjectContent(
         s3Client,
         objectLocation
@@ -48,7 +48,6 @@ object ChecksumVerifier extends Logging {
       )
 
     } yield checksum
-
 
   private def tryObjectContent(
     s3Client: AmazonS3,
@@ -81,9 +80,10 @@ object ChecksumVerifier extends Logging {
   private def getChecksum(checksumAlgorithm: String) = {
     checksumAlgorithms.get(checksumAlgorithm) match {
       case Some(algo) => Success(algo)
-      case None => Failure(
-        new RuntimeException(s"Unknown algorithm: $checksumAlgorithm")
-      )
+      case None =>
+        Failure(
+          new RuntimeException(s"Unknown algorithm: $checksumAlgorithm")
+        )
     }
   }
 

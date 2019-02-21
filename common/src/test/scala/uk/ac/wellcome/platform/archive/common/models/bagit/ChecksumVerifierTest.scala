@@ -19,13 +19,12 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
       val expectedChecksum =
         "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
 
-
       val actualChecksumEither = ChecksumVerifier.checksum(
         ObjectLocation(bucket.name, key),
         bagItAlgorithm = "sha256"
       )
 
-      actualChecksumEither shouldBe a [Right[_,_]]
+      actualChecksumEither shouldBe a[Right[_, _]]
       val actualChecksum = actualChecksumEither.right.get
 
       actualChecksum shouldBe expectedChecksum
@@ -38,7 +37,7 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
       bagItAlgorithm = "unknown"
     )
 
-    actualChecksumEither shouldBe a[Left[_,_]]
+    actualChecksumEither shouldBe a[Left[_, _]]
 
     actualChecksumEither.left.get shouldBe a[RuntimeException]
   }
@@ -49,7 +48,7 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
       bagItAlgorithm = "sha256"
     )
 
-    actualChecksumEither shouldBe a[Left[_,_]]
+    actualChecksumEither shouldBe a[Left[_, _]]
 
     actualChecksumEither.left.get shouldBe a[AmazonS3Exception]
   }
@@ -61,7 +60,7 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
         bagItAlgorithm = "sha256"
       )
 
-      actualChecksumEither shouldBe a[Left[_,_]]
+      actualChecksumEither shouldBe a[Left[_, _]]
 
       actualChecksumEither.left.get shouldBe a[AmazonS3Exception]
     }
