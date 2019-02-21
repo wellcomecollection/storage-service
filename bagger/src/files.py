@@ -183,7 +183,9 @@ def process_assets(root, bag_details, assets, skip_file_download):
             # But it is the only way of getting restricted files out.
             user, password = settings.DDS_API_KEY, settings.DDS_API_SECRET
             # This is horribly slow, why?
-            message = "Try to fetch this from Preservica directly, via DDS, at {0}".format(origin_info["web_url"])
+            message = "Try to fetch this from Preservica directly, via DDS, at {0}".format(
+                origin_info["web_url"]
+            )
             logging.debug(message)
             resp = requests.get(
                 origin_info["web_url"], auth=(user, password), stream=True

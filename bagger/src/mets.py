@@ -123,7 +123,9 @@ def get_tech_md_filename(tech_md):
     file_name_els = tech_md.findall(
         "./mets:mdWrap/mets:xmlData/tessella:File/tessella:FileName", namespaces
     )
-    assert len(file_name_els) == 1, "More than one file in {0}".format(tech_md.get("ID"))
+    assert len(file_name_els) == 1, "More than one file in {0}".format(
+        tech_md.get("ID")
+    )
     return file_name_els[0].text
 
 
