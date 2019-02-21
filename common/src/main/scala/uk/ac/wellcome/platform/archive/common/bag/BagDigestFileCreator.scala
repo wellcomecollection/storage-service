@@ -22,7 +22,7 @@ object BagDigestFileCreator {
     *
     */
   def create(line: String,
-             bagRootPathInZip: Option[String] = None,
+             bagRootPathInZip: Option[String],
              manifestName: String): Try[BagDigestFile] =
     line match {
       case checksumLineRegex(checksum, itemPath) =>

@@ -11,10 +11,10 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagIn
 import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class StorageManifestService(s3Client: AmazonS3) {
+class StorageManifestService(s3Client: AmazonS3)(implicit ec: ExecutionContext) {
 
   val algorithm = "sha256"
   val checksumAlgorithm = ChecksumAlgorithm(algorithm)
@@ -84,6 +84,7 @@ class StorageManifestService(s3Client: AmazonS3) {
         lines.map { line =>
           BagDigestFileCreator.create(
             line = line,
+            bagRootPathInZip = None,
             manifestName = filename
           )
         }
