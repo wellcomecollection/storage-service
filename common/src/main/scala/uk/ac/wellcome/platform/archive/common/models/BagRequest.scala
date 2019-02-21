@@ -6,5 +6,5 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 
 case class BagRequest(
                        archiveRequestId: UUID,
-                       srcBagLocation: BagLocation
-                     )
+                       bagLocation: BagLocation
+)

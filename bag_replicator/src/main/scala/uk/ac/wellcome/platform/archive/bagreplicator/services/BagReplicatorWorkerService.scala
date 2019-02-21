@@ -38,7 +38,7 @@ class BagReplicatorWorkerService(
         fromJson[BagRequest](notificationMessage.body)
       )
       result: Either[Throwable, BagLocation] <- bagStorageService.duplicateBag(
-        sourceBagLocation = replicationRequest.srcBagLocation,
+        sourceBagLocation = replicationRequest.bagLocation,
         destinationConfig = bagReplicatorConfig.destination
       )
       _ <- sendProgressUpdate(
@@ -52,14 +52,14 @@ class BagReplicatorWorkerService(
     } yield ()
 
   def sendOngoingNotification(
-                               replicationRequest: BagRequest,
-                               result: Either[Throwable, BagLocation]): Future[Unit] =
+    replicationRequest: BagRequest,
+    result: Either[Throwable, BagLocation]): Future[Unit] =
     result match {
       case Left(_) => Future.successful(())
       case Right(dstBagLocation) =>
         val result = ReplicationResult(
           archiveRequestId = replicationRequest.archiveRequestId,
-          srcBagLocation = replicationRequest.srcBagLocation,
+          srcBagLocation = replicationRequest.bagLocation,
           dstBagLocation = dstBagLocation
         )
         outgoingSnsWriter
@@ -73,8 +73,8 @@ class BagReplicatorWorkerService(
     }
 
   def sendProgressUpdate(
-                          replicationRequest: BagRequest,
-                          result: Either[Throwable, BagLocation]): Future[PublishAttempt] = {
+    replicationRequest: BagRequest,
+    result: Either[Throwable, BagLocation]): Future[PublishAttempt] = {
     val event: ProgressUpdate = result match {
       case Right(_) =>
         ProgressUpdate.event(

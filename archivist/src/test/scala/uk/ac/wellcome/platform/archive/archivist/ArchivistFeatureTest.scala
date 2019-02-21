@@ -46,7 +46,7 @@ class ArchivistFeatureTest
               assertSnsReceivesOnly(
                 BagRequest(
                   archiveRequestId = request.id,
-                  srcBagLocation = BagLocation(
+                  bagLocation = BagLocation(
                     storageNamespace = storageBucket.name,
                     storagePrefix = Some("archive"),
                     storageSpace = request.storageSpace,
@@ -159,7 +159,7 @@ class ArchivistFeatureTest
                     Set(
                       BagRequest(
                         archiveRequestId = validRequest1.id,
-                        srcBagLocation = BagLocation(
+                        bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest1.storageSpace,
@@ -169,7 +169,7 @@ class ArchivistFeatureTest
                       ),
                       BagRequest(
                         archiveRequestId = validRequest2.id,
-                        srcBagLocation = BagLocation(
+                        bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest2.storageSpace,
@@ -250,7 +250,7 @@ class ArchivistFeatureTest
                 Set(
                   BagRequest(
                     archiveRequestId = validRequest1.id,
-                    srcBagLocation = BagLocation(
+                    bagLocation = BagLocation(
                       storageNamespace = storageBucket.name,
                       storagePrefix = Some("archive"),
                       storageSpace = validRequest1.storageSpace,
@@ -259,7 +259,7 @@ class ArchivistFeatureTest
                   ),
                   BagRequest(
                     archiveRequestId = validRequest2.id,
-                    srcBagLocation = BagLocation(
+                    bagLocation = BagLocation(
                       storageNamespace = storageBucket.name,
                       storagePrefix = Some("archive"),
                       storageSpace = validRequest2.storageSpace,
@@ -325,7 +325,7 @@ class ArchivistFeatureTest
                         Set(
                           BagRequest(
                             archiveRequestId = validRequest1.id,
-                            srcBagLocation = BagLocation(
+                            bagLocation = BagLocation(
                               storageNamespace = storageBucket.name,
                               storagePrefix = Some("archive"),
                               storageSpace = validRequest1.storageSpace,
@@ -335,7 +335,7 @@ class ArchivistFeatureTest
                           ),
                           BagRequest(
                             archiveRequestId = validRequest2.id,
-                            srcBagLocation = BagLocation(
+                            bagLocation = BagLocation(
                               storageNamespace = storageBucket.name,
                               storagePrefix = Some("archive"),
                               storageSpace = validRequest2.storageSpace,
@@ -402,7 +402,7 @@ class ArchivistFeatureTest
                     Set(
                       BagRequest(
                         archiveRequestId = validRequest1.id,
-                        srcBagLocation = BagLocation(
+                        bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest1.storageSpace,
@@ -412,7 +412,7 @@ class ArchivistFeatureTest
                       ),
                       BagRequest(
                         archiveRequestId = validRequest2.id,
-                        srcBagLocation = BagLocation(
+                        bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest2.storageSpace,

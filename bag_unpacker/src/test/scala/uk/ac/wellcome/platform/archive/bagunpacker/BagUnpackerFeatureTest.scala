@@ -30,7 +30,7 @@ class BagUnpackerFeatureTest
 
             val expectedNotification = BagRequest(
               archiveRequestId = unpackBagRequest.requestId,
-              srcBagLocation = unpackBagRequest.bagDestination
+              bagLocation = unpackBagRequest.bagDestination
             )
 
             assertSnsReceivesOnly(

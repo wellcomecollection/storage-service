@@ -38,7 +38,7 @@ class BagReplicatorWorkerServiceTest
               withBag(bucket) { srcBagLocation =>
                 val replicationRequest = BagRequest(
                   archiveRequestId = randomUUID,
-                  srcBagLocation = srcBagLocation
+                  bagLocation = srcBagLocation
                 )
 
                 val notification = createNotificationMessageWith(
@@ -58,7 +58,7 @@ class BagReplicatorWorkerServiceTest
                   results should have size 1
                   val result = results.head
                   result.archiveRequestId shouldBe replicationRequest.archiveRequestId
-                  result.srcBagLocation shouldBe replicationRequest.srcBagLocation
+                  result.srcBagLocation shouldBe replicationRequest.bagLocation
 
                   val dstBagLocation = result.dstBagLocation
 
@@ -99,7 +99,7 @@ class BagReplicatorWorkerServiceTest
 
             val replicationRequest = BagRequest(
               archiveRequestId = randomUUID,
-              srcBagLocation = srcBagLocation
+              bagLocation = srcBagLocation
             )
 
             val notification = createNotificationMessageWith(

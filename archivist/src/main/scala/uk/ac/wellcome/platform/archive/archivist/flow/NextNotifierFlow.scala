@@ -12,8 +12,7 @@ import uk.ac.wellcome.platform.archive.common.models.BagRequest
 object NextNotifierFlow {
 
   def apply(snsNextConfig: SNSConfig, snsProgressConfig: SNSConfig)(
-    implicit snsClient: AmazonSNS)
-    : Flow[BagRequest, PublishResult, NotUsed] = {
+    implicit snsClient: AmazonSNS): Flow[BagRequest, PublishResult, NotUsed] = {
 
     Flow[BagRequest]
       .via(

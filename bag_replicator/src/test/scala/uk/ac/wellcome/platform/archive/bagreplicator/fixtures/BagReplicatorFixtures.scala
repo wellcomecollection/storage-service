@@ -37,7 +37,7 @@ trait BagReplicatorFixtures
     withBag(storageBucket) { bagLocation =>
       val replicationRequest = BagRequest(
         archiveRequestId = archiveRequestId,
-        srcBagLocation = bagLocation
+        bagLocation = bagLocation
       )
 
       sendNotificationToSQS(queue, replicationRequest)

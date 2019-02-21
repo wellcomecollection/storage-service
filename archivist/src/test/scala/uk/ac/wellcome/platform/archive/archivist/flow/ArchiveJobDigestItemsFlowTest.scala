@@ -43,7 +43,7 @@ class ArchiveJobDigestItemsFlowTest
               Right(
                 BagRequest(
                   archiveRequestId = ingestRequest.id,
-                  srcBagLocation = archiveJob.bagUploadLocation
+                  bagLocation = archiveJob.bagUploadLocation
                 )
               )
             )
