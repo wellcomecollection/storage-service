@@ -162,7 +162,7 @@ def pack(bag_details):
         bag_details["b_number"]
     )
 
-    base_name = "/".join([settings.WORKING_DIRECTORY, bag_details["b_number"]])
+    base_name = os.path.join(settings.WORKING_DIRECTORY, bag_details["b_number"])
 
     zip_file_path = shutil.make_archive(
         base_name = base_name,
@@ -170,7 +170,7 @@ def pack(bag_details):
         root_dir = bag_details["directory"]
     )
 
-    zip_file_name = zip_file_path.split("/")[-1]
+    zip_file_name = os.path.basename(zip_file_path)
 
     bag_details["zip_file_path"] = zip_file_path
     bag_details["zip_file_name"] = zip_file_name
