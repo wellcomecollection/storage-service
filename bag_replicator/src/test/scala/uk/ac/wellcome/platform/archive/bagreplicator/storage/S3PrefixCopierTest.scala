@@ -122,8 +122,8 @@ class S3PrefixCopierTest
         val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
 
         // You can get up to 1000 objects in a single S3 ListObject call.
-        val count = 1001
-        val srcLocations = (1 to count).map { i =>
+        val count = 10
+        val srcLocations = (1 to count).par.map { i =>
           val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
           createObject(src)
           src
@@ -173,7 +173,7 @@ class S3PrefixCopierTest
     withLocalS3Bucket { srcBucket =>
       val srcPrefix = createObjectLocationWith(srcBucket, key = "src/")
 
-      (1 to 10).map { i =>
+      (1 to 10).par.map { i =>
         val src = srcPrefix.copy(key = srcPrefix.key + s"$i.txt")
         createObject(src)
         src
@@ -195,11 +195,14 @@ class S3PrefixCopierTest
   override def listKeysInBucket(bucket: Bucket): List[String] =
     S3Objects
       .inBucket(s3Client, bucket.name)
-      .withBatchSize(1000)
+      .withBatchSize(5)
       .iterator()
       .asScala
       .toList
+      .par
       .map { objectSummary: S3ObjectSummary =>
         objectSummary.getKey
       }
+      .toList
+
 }
