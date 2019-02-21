@@ -32,7 +32,7 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
     }
   }
 
-  it("returns None for an unknown algorithm") {
+  it("returns Left for an unknown algorithm") {
     val actualChecksumEither = ChecksumVerifier.checksum(
       ObjectLocation("bucket", "key"),
       bagItAlgorithm = "unknown"
@@ -43,7 +43,7 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
     actualChecksumEither.left.get shouldBe a[RuntimeException]
   }
 
-  it("returns None if the bucket cannot be found") {
+  it("returns Left if the bucket cannot be found") {
     val actualChecksumEither = ChecksumVerifier.checksum(
       ObjectLocation("bucket", "not-there"),
       bagItAlgorithm = "sha256"
@@ -54,7 +54,7 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
     actualChecksumEither.left.get shouldBe a[AmazonS3Exception]
   }
 
-  it("returns None if the object cannot be found") {
+  it("returns Left if the object cannot be found") {
     withLocalS3Bucket { bucket =>
       val actualChecksumEither = ChecksumVerifier.checksum(
         ObjectLocation(bucket.name, "not-there"),
