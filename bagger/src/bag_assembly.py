@@ -62,5 +62,4 @@ def get_separator():
 def ensure_directory(destination):
     destination_dir = os.path.dirname(destination)
     if not os.path.exists(destination_dir):
-        os.makedirs(destination_dir)
-        # TODO: beware race condition if threaded
+        os.makedirs(destination_dir, exist_ok=True)
