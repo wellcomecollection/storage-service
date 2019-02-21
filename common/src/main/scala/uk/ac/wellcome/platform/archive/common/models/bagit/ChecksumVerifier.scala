@@ -44,7 +44,7 @@ object ChecksumVerifier extends Logging {
         objectLocation
       )
 
-      checksum <- tryChecksum(
+      checksum: String <- tryChecksum(
         objectContent,
         digestAlgorithm
       )
@@ -77,13 +77,20 @@ object ChecksumVerifier extends Logging {
   private def tryChecksum(
     objectStream: S3ObjectInputStream,
     digestAlgorithm: String
-  ): Try[String] = Try {
-    Hex.encodeHexString(
-      updateDigest(
-        getDigest(digestAlgorithm),
-        objectStream
-      ).digest
-    )
+  ): Try[String] = {
+    val triedChecksum = Try {
+      Hex.encodeHexString(
+        updateDigest(
+          getDigest(digestAlgorithm),
+          objectStream
+        ).digest
+      )
+    }
+
+    // We are done with the stream here so close it.
+    objectStream.close()
+
+    triedChecksum
   }
 
   private def getChecksum(checksumAlgorithm: String) = {
