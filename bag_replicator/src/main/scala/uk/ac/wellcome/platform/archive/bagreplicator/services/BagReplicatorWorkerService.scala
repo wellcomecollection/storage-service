@@ -12,7 +12,7 @@ import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.models.{
-  ReplicationRequest,
+  BagRequest,
   ReplicationResult
 }
 import uk.ac.wellcome.platform.archive.common.progress.models._
@@ -35,10 +35,10 @@ class BagReplicatorWorkerService(
   def processMessage(notificationMessage: NotificationMessage): Future[Unit] =
     for {
       replicationRequest <- Future.fromTry(
-        fromJson[ReplicationRequest](notificationMessage.body)
+        fromJson[BagRequest](notificationMessage.body)
       )
       result: Either[Throwable, BagLocation] <- bagStorageService.duplicateBag(
-        sourceBagLocation = replicationRequest.srcBagLocation,
+        sourceBagLocation = replicationRequest.bagLocation,
         destinationConfig = bagReplicatorConfig.destination
       )
       _ <- sendProgressUpdate(
@@ -52,14 +52,14 @@ class BagReplicatorWorkerService(
     } yield ()
 
   def sendOngoingNotification(
-    replicationRequest: ReplicationRequest,
+    replicationRequest: BagRequest,
     result: Either[Throwable, BagLocation]): Future[Unit] =
     result match {
       case Left(_) => Future.successful(())
       case Right(dstBagLocation) =>
         val result = ReplicationResult(
           archiveRequestId = replicationRequest.archiveRequestId,
-          srcBagLocation = replicationRequest.srcBagLocation,
+          srcBagLocation = replicationRequest.bagLocation,
           dstBagLocation = dstBagLocation
         )
         outgoingSnsWriter
@@ -73,7 +73,7 @@ class BagReplicatorWorkerService(
     }
 
   def sendProgressUpdate(
-    replicationRequest: ReplicationRequest,
+    replicationRequest: BagRequest,
     result: Either[Throwable, BagLocation]): Future[PublishAttempt] = {
     val event: ProgressUpdate = result match {
       case Right(_) =>

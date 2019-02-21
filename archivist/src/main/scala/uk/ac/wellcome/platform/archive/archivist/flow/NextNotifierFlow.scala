@@ -7,17 +7,16 @@ import com.amazonaws.services.sns.model.PublishResult
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.platform.archive.common.messaging.SnsPublishFlow
-import uk.ac.wellcome.platform.archive.common.models.ReplicationRequest
+import uk.ac.wellcome.platform.archive.common.models.BagRequest
 
 object NextNotifierFlow {
 
   def apply(snsNextConfig: SNSConfig, snsProgressConfig: SNSConfig)(
-    implicit snsClient: AmazonSNS)
-    : Flow[ReplicationRequest, PublishResult, NotUsed] = {
+    implicit snsClient: AmazonSNS): Flow[BagRequest, PublishResult, NotUsed] = {
 
-    Flow[ReplicationRequest]
+    Flow[BagRequest]
       .via(
-        SnsPublishFlow[ReplicationRequest](
+        SnsPublishFlow[BagRequest](
           snsClient,
           snsNextConfig,
           subject = "archivist_completed"))

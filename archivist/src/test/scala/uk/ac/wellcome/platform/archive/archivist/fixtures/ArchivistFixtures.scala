@@ -14,7 +14,8 @@ import uk.ac.wellcome.platform.archive.archivist.Archivist
 import uk.ac.wellcome.platform.archive.archivist.generators.BagUploaderConfigGenerators
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   ArchiveMessaging,
-  FileEntry
+  FileEntry,
+  ZipBagItFixture
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,

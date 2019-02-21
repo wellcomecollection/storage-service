@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
+package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
 import java.util.UUID
 
@@ -9,18 +9,23 @@ import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.platform.archive.bagverifier.BagVerifier
-import uk.ac.wellcome.platform.archive.bagverifier.config.BagVerifierConfig
+import uk.ac.wellcome.platform.archive.bagunpacker.BagUnpacker
+import uk.ac.wellcome.platform.archive.bagunpacker.config.BagUnpackerConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   ArchiveMessaging,
   BagLocationFixtures,
   RandomThings
 }
-import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
+import uk.ac.wellcome.platform.archive.common.models.{
+  StorageSpace,
+  UnpackBagRequest
+}
+import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-trait BagVerifierFixtures
+trait BagUnpackerFixtures
     extends S3
     with RandomThings
     with Messaging
@@ -32,39 +37,47 @@ trait BagVerifierFixtures
     queue: Queue,
     storageBucket: Bucket,
     archiveRequestId: UUID
-  )(testWith: TestWith[BagRequest, R]): R =
-    withBag(storageBucket) { bagLocation =>
-      val replicationRequest = BagRequest(
-        randomUUID,
-        bagLocation
+  )(testWith: TestWith[UnpackBagRequest, R]): R = {
+    val unpackBagRequest = UnpackBagRequest(
+      requestId = randomUUID,
+      packedBagLocation = ObjectLocation(
+        namespace = storageBucket.name,
+        key = "not_a_real_file"
+      ),
+      bagDestination = BagLocation(
+        storageNamespace = randomAlphanumeric(),
+        storagePrefix = None,
+        storageSpace = StorageSpace(randomAlphanumeric()),
+        bagPath = randomBagPath
       )
+    )
 
-      sendNotificationToSQS(queue, replicationRequest)
-      testWith(replicationRequest)
-    }
+    sendNotificationToSQS(queue, unpackBagRequest)
+    testWith(unpackBagRequest)
+  }
 
-  def withBagVerifier[R](
+  def withBagUnpacker[R](
     queue: Queue,
     progressTopic: Topic,
     outgoingTopic: Topic,
     dstBucket: Bucket
-  )(testWith: TestWith[BagVerifier, R]): R =
+  )(testWith: TestWith[BagUnpacker, R]): R =
     withActorSystem { implicit actorSystem =>
       withSQSStream[NotificationMessage, R](queue) { sqsStream =>
-        val bagVerifier = new BagVerifier(
+        val bagUnpacker = new BagUnpacker(
           s3Client = s3Client,
           snsClient = snsClient,
           sqsStream,
-          bagVerifierConfig = BagVerifierConfig(
+          bagUnpackerConfig = BagUnpackerConfig(
             parallelism = 10
           ),
           ingestsSnsConfig = createSNSConfigWith(progressTopic),
           outgoingSnsConfig = createSNSConfigWith(outgoingTopic)
         )
 
-        bagVerifier.run()
+        bagUnpacker.run()
 
-        testWith(bagVerifier)
+        testWith(bagUnpacker)
       }
     }
 
@@ -73,7 +86,7 @@ trait BagVerifierFixtures
       withLocalSnsTopic { progressTopic =>
         withLocalSnsTopic { outgoingTopic =>
           withLocalS3Bucket { sourceBucket =>
-            withBagVerifier(
+            withBagUnpacker(
               queue,
               progressTopic,
               outgoingTopic,

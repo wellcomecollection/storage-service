@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagverifier
+package uk.ac.wellcome.platform.archive.bagunpacker
 
 import akka.Done
 import akka.actor.ActorSystem
@@ -9,20 +9,23 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.messaging.sns.{NotificationMessage, SNSConfig}
 import uk.ac.wellcome.messaging.sqs.SQSStream
-import uk.ac.wellcome.platform.archive.bagverifier.config.BagVerifierConfig
+import uk.ac.wellcome.platform.archive.bagunpacker.config.BagUnpackerConfig
 import uk.ac.wellcome.typesafe.Runnable
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
+  UnpackBagRequest
+}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
-class BagVerifier(
+class BagUnpacker(
   s3Client: AmazonS3,
   snsClient: AmazonSNS,
   sqsStream: SQSStream[NotificationMessage],
-  bagVerifierConfig: BagVerifierConfig,
+  bagUnpackerConfig: BagUnpackerConfig,
   ingestsSnsConfig: SNSConfig,
   outgoingSnsConfig: SNSConfig
 )(
@@ -40,13 +43,17 @@ class BagVerifier(
     notificationMessage: NotificationMessage
   ): Future[Unit] =
     for {
-      replicationRequest <- Future.fromTry(
-        fromJson[BagRequest](notificationMessage.body)
+      unpackBagRequest <- Future.fromTry(
+        fromJson[UnpackBagRequest](notificationMessage.body)
       )
 
       _ <- Future.fromTry(
-        notifyNext(replicationRequest)
-      )
+        notifyNext(
+          BagRequest(
+            unpackBagRequest.requestId,
+            unpackBagRequest.bagDestination
+          )))
+
     } yield ()
 
   private def notifyNext(
@@ -70,7 +77,7 @@ class BagVerifier(
         new PublishRequest(
           snsConfig.topicArn,
           messageString,
-          "bag_verifier"
+          "bag_unpacker"
         )
       }
       .map(snsClient.publish)

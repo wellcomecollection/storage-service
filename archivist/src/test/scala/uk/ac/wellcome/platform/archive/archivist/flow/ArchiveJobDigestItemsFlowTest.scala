@@ -7,10 +7,12 @@ import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Inside}
 import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.platform.archive.archivist.fixtures.ZipBagItFixture
 import uk.ac.wellcome.platform.archive.archivist.generators.ArchiveJobGenerators
 import uk.ac.wellcome.platform.archive.archivist.models.errors._
-import uk.ac.wellcome.platform.archive.common.fixtures.FileEntry
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  FileEntry,
+  ZipBagItFixture
+}
 import uk.ac.wellcome.platform.archive.common.generators.IngestBagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.common.models.error.InvalidBagManifestError
@@ -42,9 +44,9 @@ class ArchiveJobDigestItemsFlowTest
           whenReady(eventualArchiveJobs) { archiveJobs =>
             archiveJobs shouldBe List(
               Right(
-                ReplicationRequest(
+                BagRequest(
                   archiveRequestId = ingestRequest.id,
-                  srcBagLocation = archiveJob.bagUploadLocation
+                  bagLocation = archiveJob.bagUploadLocation
                 )
               )
             )

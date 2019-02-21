@@ -44,9 +44,9 @@ class ArchivistFeatureTest
               assertQueuePairSizes(queuePair, 0, 0)
 
               assertSnsReceivesOnly(
-                ReplicationRequest(
+                BagRequest(
                   archiveRequestId = request.id,
-                  srcBagLocation = BagLocation(
+                  bagLocation = BagLocation(
                     storageNamespace = storageBucket.name,
                     storagePrefix = Some("archive"),
                     storageSpace = request.storageSpace,
@@ -157,9 +157,9 @@ class ArchivistFeatureTest
 
                   assertSnsReceives(
                     Set(
-                      ReplicationRequest(
+                      BagRequest(
                         archiveRequestId = validRequest1.id,
-                        srcBagLocation = BagLocation(
+                        bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest1.storageSpace,
@@ -167,9 +167,9 @@ class ArchivistFeatureTest
                             BagPath(bagInfo1.externalIdentifier.toString)
                         )
                       ),
-                      ReplicationRequest(
+                      BagRequest(
                         archiveRequestId = validRequest2.id,
-                        srcBagLocation = BagLocation(
+                        bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest2.storageSpace,
@@ -248,18 +248,18 @@ class ArchivistFeatureTest
 
               assertSnsReceives(
                 Set(
-                  ReplicationRequest(
+                  BagRequest(
                     archiveRequestId = validRequest1.id,
-                    srcBagLocation = BagLocation(
+                    bagLocation = BagLocation(
                       storageNamespace = storageBucket.name,
                       storagePrefix = Some("archive"),
                       storageSpace = validRequest1.storageSpace,
                       bagPath = BagPath(bagInfo1.externalIdentifier.toString)
                     )
                   ),
-                  ReplicationRequest(
+                  BagRequest(
                     archiveRequestId = validRequest2.id,
-                    srcBagLocation = BagLocation(
+                    bagLocation = BagLocation(
                       storageNamespace = storageBucket.name,
                       storagePrefix = Some("archive"),
                       storageSpace = validRequest2.storageSpace,
@@ -323,9 +323,9 @@ class ArchivistFeatureTest
                     eventually {
                       assertSnsReceives(
                         Set(
-                          ReplicationRequest(
+                          BagRequest(
                             archiveRequestId = validRequest1.id,
-                            srcBagLocation = BagLocation(
+                            bagLocation = BagLocation(
                               storageNamespace = storageBucket.name,
                               storagePrefix = Some("archive"),
                               storageSpace = validRequest1.storageSpace,
@@ -333,9 +333,9 @@ class ArchivistFeatureTest
                                 BagPath(bagInfo1.externalIdentifier.toString)
                             )
                           ),
-                          ReplicationRequest(
+                          BagRequest(
                             archiveRequestId = validRequest2.id,
-                            srcBagLocation = BagLocation(
+                            bagLocation = BagLocation(
                               storageNamespace = storageBucket.name,
                               storagePrefix = Some("archive"),
                               storageSpace = validRequest2.storageSpace,
@@ -400,9 +400,9 @@ class ArchivistFeatureTest
 
                   assertSnsReceives(
                     Set(
-                      ReplicationRequest(
+                      BagRequest(
                         archiveRequestId = validRequest1.id,
-                        srcBagLocation = BagLocation(
+                        bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest1.storageSpace,
@@ -410,9 +410,9 @@ class ArchivistFeatureTest
                             BagPath(bagInfo1.externalIdentifier.toString)
                         )
                       ),
-                      ReplicationRequest(
+                      BagRequest(
                         archiveRequestId = validRequest2.id,
-                        srcBagLocation = BagLocation(
+                        bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest2.storageSpace,

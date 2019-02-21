@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagPath
 }
 import uk.ac.wellcome.platform.archive.common.models.{
-  ReplicationRequest,
+  BagRequest,
   ReplicationResult
 }
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
@@ -36,9 +36,9 @@ class BagReplicatorWorkerServiceTest
               progressTopic = progressTopic,
               outgoingTopic = outgoingTopic) { service =>
               withBag(bucket) { srcBagLocation =>
-                val replicationRequest = ReplicationRequest(
+                val replicationRequest = BagRequest(
                   archiveRequestId = randomUUID,
-                  srcBagLocation = srcBagLocation
+                  bagLocation = srcBagLocation
                 )
 
                 val notification = createNotificationMessageWith(
@@ -58,7 +58,7 @@ class BagReplicatorWorkerServiceTest
                   results should have size 1
                   val result = results.head
                   result.archiveRequestId shouldBe replicationRequest.archiveRequestId
-                  result.srcBagLocation shouldBe replicationRequest.srcBagLocation
+                  result.srcBagLocation shouldBe replicationRequest.bagLocation
 
                   val dstBagLocation = result.dstBagLocation
 
@@ -97,9 +97,9 @@ class BagReplicatorWorkerServiceTest
               bagPath = BagPath("exist.txt")
             )
 
-            val replicationRequest = ReplicationRequest(
+            val replicationRequest = BagRequest(
               archiveRequestId = randomUUID,
-              srcBagLocation = srcBagLocation
+              bagLocation = srcBagLocation
             )
 
             val notification = createNotificationMessageWith(
