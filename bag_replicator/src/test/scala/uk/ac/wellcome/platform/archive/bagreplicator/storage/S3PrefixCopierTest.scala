@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.storage
 
 import com.amazonaws.services.s3.iterable.S3Objects
 import com.amazonaws.services.s3.model._
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.S3CopierFixtures
 import uk.ac.wellcome.storage.ObjectLocation
@@ -15,6 +15,7 @@ class S3PrefixCopierTest
     extends FunSpec
     with Matchers
     with ScalaFutures
+    with IntegrationPatience
     with S3CopierFixtures {
   val copier = new S3Copier(s3Client)
   val s3PrefixCopier = new S3PrefixCopier(s3Client, copier = copier)
