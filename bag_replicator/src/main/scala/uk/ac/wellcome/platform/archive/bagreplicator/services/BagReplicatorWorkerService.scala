@@ -52,8 +52,8 @@ class BagReplicatorWorkerService(
     } yield ()
 
   def sendOngoingNotification(
-                               replicationRequest: BagRequest,
-                               result: Either[Throwable, BagLocation]): Future[Unit] =
+    replicationRequest: BagRequest,
+    result: Either[Throwable, BagLocation]): Future[Unit] =
     result match {
       case Left(_) => Future.successful(())
       case Right(dstBagLocation) =>
@@ -73,8 +73,8 @@ class BagReplicatorWorkerService(
     }
 
   def sendProgressUpdate(
-                          replicationRequest: BagRequest,
-                          result: Either[Throwable, BagLocation]): Future[PublishAttempt] = {
+    replicationRequest: BagRequest,
+    result: Either[Throwable, BagLocation]): Future[PublishAttempt] = {
     val event: ProgressUpdate = result match {
       case Right(_) =>
         ProgressUpdate.event(

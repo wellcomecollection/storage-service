@@ -58,9 +58,9 @@ class BagVerifier(
     )
 
   private def publishNotification[T](
-                                      msg: T,
-                                      snsConfig: SNSConfig
-                                    )(
+    msg: T,
+    snsConfig: SNSConfig
+  )(
     implicit encoder: Encoder[T]
   ): Try[PublishResult] = {
     toJson[T](msg)

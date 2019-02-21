@@ -17,8 +17,8 @@ import uk.ac.wellcome.platform.archive.common.flows.{
 }
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 import uk.ac.wellcome.platform.archive.common.models.{
-  IngestBagRequest,
-  BagRequest
+  BagRequest,
+  IngestBagRequest
 }
 
 object ArchiveJobDigestItemsFlow extends Logging {
