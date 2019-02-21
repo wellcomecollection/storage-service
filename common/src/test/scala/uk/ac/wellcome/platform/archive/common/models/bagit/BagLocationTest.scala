@@ -12,7 +12,9 @@ class BagLocationTest extends FunSpec with Matchers {
       storageSpace = StorageSpace("digitised"),
       bagPath = BagPath("a/bag")
     )
-    bagLocation.objectLocation shouldBe ObjectLocation("bucket", "storage/digitised/a/bag")
+    bagLocation.objectLocation shouldBe ObjectLocation(
+      "bucket",
+      "storage/digitised/a/bag")
   }
 
   it("creates a bagLocation with blank prefix") {
@@ -22,7 +24,9 @@ class BagLocationTest extends FunSpec with Matchers {
       storageSpace = StorageSpace("digitised"),
       bagPath = BagPath("a/bag")
     )
-    bagLocation.objectLocation shouldBe ObjectLocation("bucket", "digitised/a/bag")
+    bagLocation.objectLocation shouldBe ObjectLocation(
+      "bucket",
+      "digitised/a/bag")
   }
 
   it("creates a bagLocation with no prefix") {
@@ -32,6 +36,8 @@ class BagLocationTest extends FunSpec with Matchers {
       storageSpace = StorageSpace("digitised"),
       bagPath = BagPath("a/bag")
     )
-    bagLocation.objectLocation shouldBe ObjectLocation("bucket", "digitised/a/bag")
+    bagLocation.objectLocation shouldBe ObjectLocation(
+      "bucket",
+      "digitised/a/bag")
   }
 }
