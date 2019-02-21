@@ -7,7 +7,6 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.collection.JavaConverters._
-import scala.collection.parallel.immutable.ParSeq
 import scala.concurrent.{ExecutionContext, Future}
 
 class S3PrefixCopier(
@@ -33,7 +32,7 @@ class S3PrefixCopier(
     srcLocationPrefix: ObjectLocation,
     dstLocationPrefix: ObjectLocation
   ): Future[Unit] = Future {
-    val objects: ParSeq[S3ObjectSummary] = S3Objects
+    val objects: Iterator[S3ObjectSummary] = S3Objects
       .withPrefix(
         s3Client,
         srcLocationPrefix.namespace,
@@ -42,8 +41,14 @@ class S3PrefixCopier(
       .withBatchSize(batchSize)
       .iterator()
       .asScala
-      .toStream
-      .par
+
+    // Implementation note: this means we're single-threaded within a single bag.
+    // That is, we're copying objects in a bag one at a time.
+    //
+    // We could rewrite this code to process objects in parallel, but it would
+    // make it more complicated and introduces more failure modes.  For now we'll
+    // just use this simple version, and we can revisit it if it's not fast
+    // enough in practice.
 
     objects.foreach { summary: S3ObjectSummary =>
       val srcLocation = ObjectLocation(
