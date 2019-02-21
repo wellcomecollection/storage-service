@@ -14,7 +14,9 @@ SBT_APPS = notifier \
            bags \
            bags_api \
            bag_replicator \
-           bag_verifier
+           bag_verifier \
+           bag_unpacker
+
 
 SBT_DOCKER_LIBRARIES    = common ingests_common
 SBT_NO_DOCKER_LIBRARIES = bags_common display
