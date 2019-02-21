@@ -14,7 +14,8 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
       val content = "text"
       val key = "key"
       s3Client.putObject(bucket.name, key, content)
-      val contentChecksum = "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
+      val contentChecksum =
+        "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
 
       ChecksumVerifier.checksum(ObjectLocation(bucket.name, key), "sha256") shouldBe contentChecksum
     }
@@ -37,7 +38,9 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
   it("fails if the object cannot be found") {
     withLocalS3Bucket { bucket =>
       val thrown = intercept[AmazonS3Exception] {
-        ChecksumVerifier.checksum(ObjectLocation(bucket.name, "not-there"), "sha256")
+        ChecksumVerifier.checksum(
+          ObjectLocation(bucket.name, "not-there"),
+          "sha256")
       }
       thrown.getMessage should startWith("The specified key does not exist.")
     }
@@ -45,4 +48,3 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
 
   //  TODO: it("fails if the object get/stream fails") {
 }
-
