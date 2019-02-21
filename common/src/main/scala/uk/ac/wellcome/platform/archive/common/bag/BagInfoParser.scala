@@ -67,12 +67,11 @@ object BagInfoParser {
     validated.toEither.leftMap(list => InvalidBagInfo(t, list.toList))
   }
 
-  private def extractExternalIdentifier(bagInfoLines: Array[String]) = {
+  private def extractExternalIdentifier(bagInfoLines: Array[String]) =
     extractRequiredValue(bagInfoLines, BagInfoKeys.externalIdentifier)
       .map(ExternalIdentifier.apply)
-  }
 
-  private def extractPayloadOxum(bagInfoLines: Array[String]) = {
+  private def extractPayloadOxum(bagInfoLines: Array[String]) =
     bagInfoLines
       .collectFirst {
         case payloadOxumRegex(bytes, numberOfFiles) =>
@@ -80,21 +79,17 @@ object BagInfoParser {
       }
       .toValidNel(BagInfoKeys.payloadOxum)
 
-  }
-
-  private def extractBaggingDate(bagInfoLines: Array[String]) = {
+  private def extractBaggingDate(bagInfoLines: Array[String]) =
     extractRequiredValue(bagInfoLines, BagInfoKeys.baggingDate).andThen(
       dateString =>
         Try(LocalDate.parse(dateString)).toEither
           .leftMap(_ => BagInfoKeys.baggingDate)
           .toValidatedNel)
-  }
 
-  private def extractSourceOrganisation(bagInfoLines: Array[String]) = {
+  private def extractSourceOrganisation(bagInfoLines: Array[String]) =
     extractOptionalValue(bagInfoLines, BagInfoKeys.sourceOrganisation)
       .map(SourceOrganisation)
       .validNel
-  }
 
   private def extractExternalDescription(bagInfoLines: Array[String]) =
     extractOptionalValue(bagInfoLines, BagInfoKeys.externalDescription)
@@ -112,17 +107,15 @@ object BagInfoParser {
       .validNel
 
   private def extractRequiredValue(bagInfoLines: Array[String],
-                                   bagInfoKey: String) = {
+                                   bagInfoKey: String) =
     extractOptionalValue(bagInfoLines, bagInfoKey)
       .toValidNel(bagInfoKey)
-  }
 
   private def extractOptionalValue(bagInfoLines: Array[String],
-                                   bagInfoKey: String) = {
+                                   bagInfoKey: String) =
     bagInfoLines
       .collectFirst {
         case bagInfoFieldRegex(key, value) if key == bagInfoKey =>
           value
       }
-  }
 }

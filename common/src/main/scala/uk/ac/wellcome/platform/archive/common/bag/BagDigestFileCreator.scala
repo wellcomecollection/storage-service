@@ -9,7 +9,12 @@ import uk.ac.wellcome.platform.archive.common.models.error.{
   InvalidBagManifestError
 }
 
+import scala.util.{Failure, Success, Try}
+import scala.util.matching.Regex
+
 object BagDigestFileCreator {
+
+  val checksumLineRegex: Regex = """(.+?)\s+(.+)""".r
 
   /** Within a manifest, each entry in the bag is a single line, containing
     * a checksum and the location.  For example:
@@ -22,22 +27,28 @@ object BagDigestFileCreator {
     * location, or returns an error if the line is incorrectly formatted.
     *
     */
-  def create[T](
-    line: String,
-    job: T,
-    bagRootPathInZip: Option[String] = None,
-    manifestName: String): Either[ArchiveError[T], BagDigestFile] = {
-    val checksumLineRegex = """(.+?)\s+(.+)""".r
-
+  def create(line: String,
+             bagRootPathInZip: Option[String],
+             manifestName: String): Try[BagDigestFile] =
     line match {
       case checksumLineRegex(checksum, itemPath) =>
-        Right(
+        Success(
           BagDigestFile(
             checksum = checksum.trim,
             path = BagItemPath(bagRootPathInZip, itemPath.trim)
           )
         )
-      case _ => Left(InvalidBagManifestError(job, manifestName, line))
+      case _ =>
+        Failure(
+          new RuntimeException(s"Line <<$line>> is incorrectly formatted!"))
     }
-  }
+
+  def create[T](line: String,
+                job: T,
+                bagRootPathInZip: Option[String] = None,
+                manifestName: String): Either[ArchiveError[T], BagDigestFile] =
+    create(line, bagRootPathInZip, manifestName) match {
+      case Success(bagDigestFile) => Right(bagDigestFile)
+      case Failure(_)             => Left(InvalidBagManifestError(job, manifestName, line))
+    }
 }
