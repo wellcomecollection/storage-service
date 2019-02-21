@@ -18,7 +18,7 @@ object Main extends WellcomeTypesafeApp {
       snsClient = SNSBuilder.buildSNSClient(config),
       sqsStream = SQSBuilder.buildSQSStream[NotificationMessage](config),
       bagVerifierConfig = BagVerifierConfig.buildBagVerifierConfig(config),
-      progressSnsConfig =
+      ingestsSnsConfig =
         SNSBuilder.buildSNSConfig(config, namespace = "progress"),
       outgoingSnsConfig =
         SNSBuilder.buildSNSConfig(config, namespace = "outgoing")
