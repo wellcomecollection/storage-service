@@ -10,11 +10,10 @@ import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
 class S3PrefixCopier(
-                      s3Client: AmazonS3,
-                      copier: ObjectCopier,
-                      batchSize: Int = 1000
-                    )(
-  implicit ec: ExecutionContext)
+  s3Client: AmazonS3,
+  copier: ObjectCopier,
+  batchSize: Int = 1000
+)(implicit ec: ExecutionContext)
     extends Logging {
 
   /** Copy all the objects from under ObjectLocation into another ObjectLocation,
