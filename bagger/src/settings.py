@@ -1,5 +1,7 @@
 import os
 
+ARCHIVE_FORMAT = os.environ.get("ARCHIVE_FORMAT", "zip")
+
 # For running on Windows on the Wellcome network with domain credentials
 METS_FILESYSTEM_ROOT = os.getenv("METS_FILESYSTEM_ROOT")
 

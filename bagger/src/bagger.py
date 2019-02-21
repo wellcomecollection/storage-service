@@ -23,12 +23,15 @@ logging.basicConfig(
     format="%(process)d - %(threadName)s - %(levelname)s: %(message)s",
     level=logging.INFO,
 )
+
 logging.getLogger("bagit").setLevel(logging.ERROR)
 
 
 def bag_from_identifier(identifier, skip_file_download):
+
     b_number = identifiers.normalise_b_number(identifier)
     bag_details = bag_assembly.prepare_bag_dir(b_number)
+
     id_map = collections.OrderedDict()
     mets_path = "{0}{1}.xml".format(bag_details["mets_partial_path"], b_number)
 
@@ -112,20 +115,23 @@ def bag_from_identifier(identifier, skip_file_download):
     aws.save_id_map(b_number, id_map)
 
     if skip_file_download:
-        print(b_number)
         logging.info("Finished {0} without bagging".format(b_number))
-        bag_assembly.cleanup_bnumber_files(b_number)
+
+        bag_assembly.cleanup(b_number)
+
         return None
 
     bagit.make_bag(bag_details["directory"], get_bag_info(b_number, title))
 
-    upload_location = dispatch_bag(bag_details)
+    bag_details = pack(bag_details)
 
-    bag_assembly.cleanup_bnumber_files(b_number)
+    bag_details = dispatch(bag_details)
 
-    logging.debug("Finished bagging {0}".format(b_number))
+    bag_assembly.cleanup(bag_details)
 
-    return upload_location
+    logging.debug(" ".join(["finished", b_number]))
+
+    return bag_details["upload_location"]
 
 
 def process_manifestation(root, bag_details, skip_file_download, id_map):
@@ -147,23 +153,40 @@ def load_xml(path):
     return load_from_string(xml_string)
 
 
-def dispatch_bag(bag_details):
-    # now zip this bag in a way that will be efficient for the archiver
-    logging.debug("creating zip file for " + bag_details["b_number"])
+def pack(bag_details):
+    archive_format = settings.ARCHIVE_FORMAT
 
-    shutil.make_archive(
-        bag_details["zip_file_path"][0:-4], "zip", bag_details["directory"]
+    logging.debug("packing %s %s", archive_format, bag_details["b_number"])
+
+    base_name = os.path.join(settings.WORKING_DIRECTORY, bag_details["b_number"])
+
+    zip_file_path = shutil.make_archive(
+        base_name=base_name, format=archive_format, root_dir=bag_details["directory"]
     )
 
-    logging.debug("uploading " + bag_details["zip_file_name"] + " to S3")
+    zip_file_name = os.path.basename(zip_file_path)
 
+    bag_details["zip_file_path"] = zip_file_path
+    bag_details["zip_file_name"] = zip_file_name
+
+    return bag_details
+
+
+def dispatch(bag_details):
     upload_location = aws.upload(
         bag_details["zip_file_path"], bag_details["zip_file_name"]
     )
 
-    logging.debug("upload completed")
+    logging.debug(
+        "uploaded %s %s s3://%s:%s",
+        bag_details["zip_file_name"],
+        upload_location["bucket"],
+        upload_location["key"],
+    )
 
-    return upload_location
+    bag_details["upload_location"] = upload_location
+
+    return bag_details
 
 
 def get_bag_info(b_number, title):
