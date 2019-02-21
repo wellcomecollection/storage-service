@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.models.{ReplicationRequest, ReplicationResult}
 import uk.ac.wellcome.platform.archive.common.progress.models._
+import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -17,7 +18,7 @@ class BagReplicatorWorkerService(
   bagStorageService: BagStorageService,
   bagReplicatorConfig: BagReplicatorConfig,
   progressSnsWriter: SNSWriter,
-  outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext) extends Logging {
+  outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext) extends Logging with Runnable {
 
   def run(): Future[Done] =
     sqsStream.foreach(this.getClass.getSimpleName, processMessage)
