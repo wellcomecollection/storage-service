@@ -26,7 +26,7 @@ class UpdateStoredManifestServiceTest extends FunSpec with Matchers with ScalaFu
             whenReady(future) { _ =>
               assertStored(table, storageManifest.id.toString, storageManifest)
 
-              assertTopicReceivesProgressEventUpdate(archiveRequestId, progressTopic) { events =>
+              assertTopicReceivesProgressStatusUpdate(archiveRequestId, progressTopic, status = Progress.Completed, expectedBag = Some(storageManifest.id)) { events =>
                 events should have size 1
                 events.head.description shouldBe "Bag registered successfully"
               }

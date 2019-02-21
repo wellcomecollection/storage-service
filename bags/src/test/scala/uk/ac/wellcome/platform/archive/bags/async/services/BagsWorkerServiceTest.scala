@@ -42,7 +42,7 @@ class BagsWorkerServiceTest
   implicit val _ = s3Client
 
   it("registers an access BagIt bag from S3 and notifies the progress tracker") {
-    withRegistrar {
+    withNewRegistrar {
       case (storageBucket, queuePair, progressTopic, vhs) =>
         val requestId = randomUUID
         val storageSpace = createStorageSpace

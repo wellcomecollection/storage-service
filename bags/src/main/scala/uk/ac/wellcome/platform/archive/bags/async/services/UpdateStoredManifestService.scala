@@ -30,11 +30,13 @@ class UpdateStoredManifestService(
     } yield ()
 
   private def sendProgressUpdate(requestId: UUID, bagId: BagId, result: Either[Throwable, Unit]): Future[PublishAttempt] = {
-    val event: ProgressUpdate = result match {
+    val event = result match {
       case Right(_) =>
-        ProgressUpdate.event(
+        ProgressStatusUpdate(
           id = requestId,
-          description = "Bag registered successfully"
+          status = Progress.Completed,
+          affectedBag = Some(bagId),
+          events = List(ProgressEvent("Bag registered successfully"))
         )
       case Left(_) =>
         ProgressStatusUpdate(
@@ -45,7 +47,7 @@ class UpdateStoredManifestService(
         )
     }
 
-    progressSnsWriter.writeMessage(
+    progressSnsWriter.writeMessage[ProgressUpdate](
       event,
       subject = s"Sent by ${this.getClass.getSimpleName}"
     )
