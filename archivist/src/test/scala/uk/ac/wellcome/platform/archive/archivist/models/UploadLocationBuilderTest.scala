@@ -25,7 +25,7 @@ class UploadLocationBuilderTest
 
   val bagUploadLocation = BagLocation(
     uploadNamespace,
-    uploadStoragePrefix,
+    Some(uploadStoragePrefix),
     StorageSpace(uploadSpace),
     BagPath(bagIdentifier))
 

@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.models.bagit
 
+import java.nio.file.Paths
+
 import uk.ac.wellcome.platform.archive.common.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -13,11 +15,14 @@ import uk.ac.wellcome.storage.ObjectLocation
   */
 case class BagLocation(
   storageNamespace: String,
-  storagePrefix: String,
+  storagePrefix: Option[String],
   storageSpace: StorageSpace,
   bagPath: BagPath
 ) {
-  def completePath = s"$storagePrefix/$storageSpace/$bagPath"
+  def completePath =
+    Paths
+      .get(storagePrefix.getOrElse(""), storageSpace.toString, bagPath.toString)
+      .toString
 
   def objectLocation: ObjectLocation =
     ObjectLocation(

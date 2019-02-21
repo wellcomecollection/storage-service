@@ -30,7 +30,7 @@ class BagReplicatorFeatureTest
           eventually {
             val dstBagLocation = srcBagLocation.copy(
               storageNamespace = destinationBucket.name,
-              storagePrefix = dstRootPath
+              storagePrefix = Some(dstRootPath)
             )
 
             verifyBagCopied(srcBagLocation, dstBagLocation)

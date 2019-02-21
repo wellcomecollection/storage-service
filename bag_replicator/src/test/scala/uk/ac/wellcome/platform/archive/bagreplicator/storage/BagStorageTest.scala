@@ -28,7 +28,7 @@ class BagStorageTest
       withBag(bucket) { srcBagLocation =>
         val destinationConfig = ReplicatorDestinationConfig(
           namespace = bucket.name,
-          rootPath = randomAlphanumeric()
+          rootPath = Some(randomAlphanumeric())
         )
 
         val result: Future[BagLocation] = bagStorage.duplicateBag(
@@ -52,7 +52,7 @@ class BagStorageTest
         withBag(sourceBucket) { srcBagLocation =>
           val destinationConfig = ReplicatorDestinationConfig(
             namespace = destinationBucket.name,
-            rootPath = randomAlphanumeric()
+            rootPath = Some(randomAlphanumeric())
           )
 
           val result: Future[BagLocation] =
@@ -88,7 +88,7 @@ class BagStorageTest
             withBag(sourceBucket, bagInfo = bagInfo2) { _ =>
               val destinationConfig = ReplicatorDestinationConfig(
                 namespace = destinationBucket.name,
-                rootPath = randomAlphanumeric()
+                rootPath = Some(randomAlphanumeric())
               )
 
               val result: Future[BagLocation] =
