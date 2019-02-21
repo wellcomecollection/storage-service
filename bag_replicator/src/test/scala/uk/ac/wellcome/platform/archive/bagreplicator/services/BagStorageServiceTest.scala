@@ -5,13 +5,21 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.{S3Copier, S3PrefixCopier}
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.{
+  S3Copier,
+  S3PrefixCopier
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.ExternalIdentifier
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class BagStorageServiceTest extends FunSpec with Matchers with ScalaFutures with BagReplicatorFixtures with S3 {
+class BagStorageServiceTest
+    extends FunSpec
+    with Matchers
+    with ScalaFutures
+    with BagReplicatorFixtures
+    with S3 {
 
   val s3PrefixCopier = new S3PrefixCopier(
     s3Client = s3Client,

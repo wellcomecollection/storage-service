@@ -3,11 +3,18 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import akka.Done
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.{NotificationMessage, PublishAttempt, SNSWriter}
+import uk.ac.wellcome.messaging.sns.{
+  NotificationMessage,
+  PublishAttempt,
+  SNSWriter
+}
 import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.models.{ReplicationRequest, ReplicationResult}
+import uk.ac.wellcome.platform.archive.common.models.{
+  ReplicationRequest,
+  ReplicationResult
+}
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -18,7 +25,9 @@ class BagReplicatorWorkerService(
   bagStorageService: BagStorageService,
   bagReplicatorConfig: BagReplicatorConfig,
   progressSnsWriter: SNSWriter,
-  outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext) extends Logging with Runnable {
+  outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
+    extends Logging
+    with Runnable {
 
   def run(): Future[Done] =
     sqsStream.foreach(this.getClass.getSimpleName, processMessage)
@@ -53,9 +62,14 @@ class BagReplicatorWorkerService(
           srcBagLocation = replicationRequest.srcBagLocation,
           dstBagLocation = dstBagLocation
         )
-        outgoingSnsWriter.writeMessage(
-          result, subject = s"Sent by ${this.getClass.getSimpleName}"
-        ).map { _ => () }
+        outgoingSnsWriter
+          .writeMessage(
+            result,
+            subject = s"Sent by ${this.getClass.getSimpleName}"
+          )
+          .map { _ =>
+            ()
+          }
     }
 
   def sendProgressUpdate(
@@ -77,7 +91,8 @@ class BagReplicatorWorkerService(
     }
 
     progressSnsWriter.writeMessage(
-      event, subject = s"Sent by ${this.getClass.getSimpleName}"
+      event,
+      subject = s"Sent by ${this.getClass.getSimpleName}"
     )
   }
 }

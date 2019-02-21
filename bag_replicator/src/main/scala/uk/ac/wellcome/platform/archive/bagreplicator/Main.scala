@@ -5,8 +5,14 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.sns.{NotificationMessage, SNSWriter}
 import uk.ac.wellcome.messaging.typesafe.{SNSBuilder, SQSBuilder}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.{S3Copier, S3PrefixCopier}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagReplicatorWorkerService,
+  BagStorageService
+}
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.{
+  S3Copier,
+  S3PrefixCopier
+}
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder

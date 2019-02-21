@@ -9,7 +9,11 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.common.fixtures.{ArchiveMessaging, BagLocationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  ArchiveMessaging,
+  BagLocationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.storage.fixtures.S3

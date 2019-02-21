@@ -7,7 +7,9 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class BagStorageService(s3PrefixCopier: S3PrefixCopier)(implicit ec: ExecutionContext) extends Logging {
+class BagStorageService(s3PrefixCopier: S3PrefixCopier)(
+  implicit ec: ExecutionContext)
+    extends Logging {
   def duplicateBag(
     sourceBagLocation: BagLocation,
     destinationConfig: ReplicatorDestinationConfig
@@ -25,7 +27,9 @@ class BagStorageService(s3PrefixCopier: S3PrefixCopier)(implicit ec: ExecutionCo
     )
 
     future
-      .map { _ => Right(dstBagLocation) }
+      .map { _ =>
+        Right(dstBagLocation)
+      }
       .recover {
         case err: Throwable => Left(err)
       }

@@ -3,9 +3,18 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{BagReplicatorFixtures, WorkerServiceFixture}
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
-import uk.ac.wellcome.platform.archive.common.models.{ReplicationRequest, ReplicationResult}
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
+  BagReplicatorFixtures,
+  WorkerServiceFixture
+}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagLocation,
+  BagPath
+}
+import uk.ac.wellcome.platform.archive.common.models.{
+  ReplicationRequest,
+  ReplicationResult
+}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
@@ -22,7 +31,10 @@ class BagReplicatorWorkerServiceTest
       withLocalSqsQueue { queue =>
         withLocalSnsTopic { progressTopic =>
           withLocalSnsTopic { outgoingTopic =>
-            withWorkerService(queue, progressTopic = progressTopic, outgoingTopic = outgoingTopic) { service =>
+            withWorkerService(
+              queue,
+              progressTopic = progressTopic,
+              outgoingTopic = outgoingTopic) { service =>
               withBag(bucket) { srcBagLocation =>
                 val replicationRequest = ReplicationRequest(
                   archiveRequestId = randomUUID,
@@ -36,11 +48,12 @@ class BagReplicatorWorkerServiceTest
                 val future = service.processMessage(notification)
 
                 whenReady(future) { _ =>
-                  val outgoingMessages = listMessagesReceivedFromSNS(outgoingTopic)
+                  val outgoingMessages =
+                    listMessagesReceivedFromSNS(outgoingTopic)
                   val results =
-                    outgoingMessages
-                      .map { msg => fromJson[ReplicationResult](msg.message).get }
-                      .distinct
+                    outgoingMessages.map { msg =>
+                      fromJson[ReplicationResult](msg.message).get
+                    }.distinct
 
                   results should have size 1
                   val result = results.head
@@ -54,10 +67,11 @@ class BagReplicatorWorkerServiceTest
                     dst = dstBagLocation
                   )
 
-                  assertTopicReceivesProgressEventUpdate(replicationRequest.archiveRequestId, progressTopic) {
-                    events =>
-                      events should have size 1
-                      events.head.description shouldBe "Bag replicated successfully"
+                  assertTopicReceivesProgressEventUpdate(
+                    replicationRequest.archiveRequestId,
+                    progressTopic) { events =>
+                    events should have size 1
+                    events.head.description shouldBe "Bag replicated successfully"
                   }
                 }
               }
@@ -72,7 +86,10 @@ class BagReplicatorWorkerServiceTest
     withLocalSqsQueue { queue =>
       withLocalSnsTopic { progressTopic =>
         withLocalSnsTopic { outgoingTopic =>
-          withWorkerService(queue, progressTopic = progressTopic, outgoingTopic = outgoingTopic) { service =>
+          withWorkerService(
+            queue,
+            progressTopic = progressTopic,
+            outgoingTopic = outgoingTopic) { service =>
             val srcBagLocation = BagLocation(
               storageNamespace = "does-not-exist",
               storagePrefix = "does/not/",
@@ -97,10 +114,9 @@ class BagReplicatorWorkerServiceTest
               assertTopicReceivesProgressStatusUpdate(
                 replicationRequest.archiveRequestId,
                 progressTopic = progressTopic,
-                status = Progress.Failed) {
-                events =>
-                  events should have size 1
-                  events.head.description shouldBe s"Failed to replicate bag"
+                status = Progress.Failed) { events =>
+                events should have size 1
+                events.head.description shouldBe s"Failed to replicate bag"
               }
             }
           }

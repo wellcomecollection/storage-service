@@ -6,15 +6,27 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.{SNS, SQS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.platform.archive.bagreplicator.config.{BagReplicatorConfig, ReplicatorDestinationConfig}
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.{S3Copier, S3PrefixCopier}
+import uk.ac.wellcome.platform.archive.bagreplicator.config.{
+  BagReplicatorConfig,
+  ReplicatorDestinationConfig
+}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagReplicatorWorkerService,
+  BagStorageService
+}
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.{
+  S3Copier,
+  S3PrefixCopier
+}
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture extends Akka with S3 with SNS with SQS {
-  def withWorkerService[R](queue: Queue, progressTopic: Topic, outgoingTopic: Topic)(testWith: TestWith[BagReplicatorWorkerService, R]): R = {
+  def withWorkerService[R](queue: Queue,
+                           progressTopic: Topic,
+                           outgoingTopic: Topic)(
+    testWith: TestWith[BagReplicatorWorkerService, R]): R = {
     val s3PrefixCopier = new S3PrefixCopier(
       s3Client = s3Client,
       copier = new S3Copier(s3Client = s3Client)
