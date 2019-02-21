@@ -33,15 +33,9 @@ def bag_from_identifier(identifier, skip_file_download):
     bag_details = bag_assembly.prepare_bag_dir(b_number)
 
     id_map = collections.OrderedDict()
-    mets_path = "{0}{1}.xml".format(
-        bag_details["mets_partial_path"],
-        b_number
-    )
+    mets_path = "{0}{1}.xml".format(bag_details["mets_partial_path"], b_number)
 
-    logging.debug(
-        "process METS or anchor file at %s",
-        mets_path
-    )
+    logging.debug("process METS or anchor file at %s", mets_path)
 
     tree = load_xml(mets_path)
     root = tree.getroot()
@@ -121,40 +115,23 @@ def bag_from_identifier(identifier, skip_file_download):
     aws.save_id_map(b_number, id_map)
 
     if skip_file_download:
-        logging.info(
-            "Finished {0} without bagging".format(b_number)
-        )
+        logging.info("Finished {0} without bagging".format(b_number))
 
         bag_assembly.cleanup(b_number)
 
         return None
 
-    bagit.make_bag(
-        bag_details["directory"],
-        get_bag_info(
-            b_number,
-            title
-        )
-    )
+    bagit.make_bag(bag_details["directory"], get_bag_info(b_number, title))
 
-    bag_details = pack(
-        bag_details
-    )
+    bag_details = pack(bag_details)
 
-    bag_details = dispatch(
-        bag_details
-    )
+    bag_details = dispatch(bag_details)
 
-    bag_assembly.cleanup(
-        bag_details
-    )
+    bag_assembly.cleanup(bag_details)
 
-    logging.debug(" ".join([
-        "finished",
-        b_number
-    ]))
+    logging.debug(" ".join(["finished", b_number]))
 
-    return bag_details['upload_location']
+    return bag_details["upload_location"]
 
 
 def process_manifestation(root, bag_details, skip_file_download, id_map):
@@ -179,46 +156,35 @@ def load_xml(path):
 def pack(bag_details):
     archive_format = settings.ARCHIVE_FORMAT
 
-    logging.debug(" ".join([
-        "packing",
-        archive_format,
-        bag_details["b_number"]
-    ]))
+    logging.debug(" ".join(["packing", archive_format, bag_details["b_number"]]))
 
-    base_name = "/".join([
-        settings.WORKING_DIRECTORY,
-        bag_details['b_number']
-    ])
+    base_name = "/".join([settings.WORKING_DIRECTORY, bag_details["b_number"]])
 
     zip_file_path = shutil.make_archive(
-        base_name,
-        archive_format,
-        bag_details["directory"]
+        base_name, archive_format, bag_details["directory"]
     )
 
     zip_file_name = zip_file_path.split("/")[-1]
 
-    bag_details['zip_file_path'] = zip_file_path
-    bag_details['zip_file_name'] = zip_file_name
+    bag_details["zip_file_path"] = zip_file_path
+    bag_details["zip_file_name"] = zip_file_name
 
     return bag_details
 
 
 def dispatch(bag_details):
     upload_location = aws.upload(
-        bag_details["zip_file_path"],
-        bag_details["zip_file_name"]
+        bag_details["zip_file_path"], bag_details["zip_file_name"]
     )
 
-    logging.debug(" ".join([
-        "uploaded",
-        bag_details["zip_file_name"],
-        f"{upload_location}"
-    ]))
+    logging.debug(
+        " ".join(["uploaded", bag_details["zip_file_name"], f"{upload_location}"])
+    )
 
-    bag_details['upload_location'] = upload_location
+    bag_details["upload_location"] = upload_location
 
     return bag_details
+
 
 def get_bag_info(b_number, title):
     bag_info = dict(settings.BAG_INFO)

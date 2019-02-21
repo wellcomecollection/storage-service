@@ -1,6 +1,6 @@
 import os
 
-ARCHIVE_FORMAT = os.environ.get('ARCHIVE_FORMAT', 'tar')
+ARCHIVE_FORMAT = os.environ.get("ARCHIVE_FORMAT", "tar")
 
 # For running on Windows on the Wellcome network with domain credentials
 METS_FILESYSTEM_ROOT = os.getenv("METS_FILESYSTEM_ROOT")
