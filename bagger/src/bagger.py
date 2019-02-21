@@ -151,8 +151,10 @@ def dispatch_bag(bag_details):
     # now zip this bag in a way that will be efficient for the archiver
     logging.debug("creating zip file for " + bag_details["b_number"])
 
+    archive_format = settings.ARCHIVE_FORMAT
+
     shutil.make_archive(
-        bag_details["zip_file_path"][0:-4], "zip", bag_details["directory"]
+        bag_details["zip_file_path"][0:-4], archive_format, bag_details["directory"]
     )
 
     logging.debug("uploading " + bag_details["zip_file_name"] + " to S3")
