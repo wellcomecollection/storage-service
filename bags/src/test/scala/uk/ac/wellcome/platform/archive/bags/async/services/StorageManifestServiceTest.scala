@@ -7,6 +7,7 @@ import uk.ac.wellcome.platform.archive.bags.async.generators.BagManifestUpdateGe
 import uk.ac.wellcome.platform.archive.bags.common.models.ChecksumAlgorithm
 import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
 import uk.ac.wellcome.platform.archive.common.models.bagit
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -77,10 +78,8 @@ class StorageManifestServiceTest extends FunSpec with Matchers with ScalaFutures
           storageSpace = createStorageSpace,
           bagPath = randomBagPath
         )
-        val bagManifestUpdate = createBagManifestUpdateWith(
-          archiveBagLocation = bagLocation,
-          accessBagLocation = bagLocation
-        )
+
+        val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
 
         val future = service.createManifest(bagManifestUpdate)
 
@@ -93,17 +92,58 @@ class StorageManifestServiceTest extends FunSpec with Matchers with ScalaFutures
       }
     }
 
-    it("if the BagLocation has an invalid manifest") {
+    it("the bag-info.txt file is missing") {
+      withLocalS3Bucket { bucket =>
+        withBag(bucket) { bagLocation =>
+          s3Client.deleteObject(
+            bucket.name,
+            bagLocation.completePath + "/bag-info.txt"
+          )
+
+          val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
+
+          val future = service.createManifest(bagManifestUpdate)
+
+          whenReady(future) { result =>
+            result.isLeft shouldBe true
+            val err = result.left.get
+            err shouldBe a[AmazonS3Exception]
+            err.getMessage should startWith("The specified key does not exist.")
+          }
+        }
+      }
+    }
+
+    it("the manifest.txt file is missing") {
+      withLocalS3Bucket { bucket =>
+        withBag(bucket) { bagLocation =>
+          s3Client.deleteObject(
+            bucket.name,
+            bagLocation.completePath + "/manifest-sha256.txt"
+          )
+
+          val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
+
+          val future = service.createManifest(bagManifestUpdate)
+
+          whenReady(future) { result =>
+            result.isLeft shouldBe true
+            val err = result.left.get
+            err shouldBe a[AmazonS3Exception]
+            err.getMessage should startWith("The specified key does not exist.")
+          }
+        }
+      }
+    }
+
+    it("if the manifest.txt file has a badly formatted line") {
       withLocalS3Bucket { bucket =>
         withBag(
           bucket,
           createDataManifest =
             _ => Some(FileEntry("manifest-sha256.txt", "bleeergh!"))) {
           bagLocation =>
-            val bagManifestUpdate = createBagManifestUpdateWith(
-              archiveBagLocation = bagLocation,
-              accessBagLocation = bagLocation
-            )
+            val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
 
             val future = service.createManifest(bagManifestUpdate)
 
@@ -117,17 +157,36 @@ class StorageManifestServiceTest extends FunSpec with Matchers with ScalaFutures
       }
     }
 
-    it("if the BagLocation has an invalid tagmanifest") {
+    it("the tagmanifest.txt file is missing") {
+      withLocalS3Bucket { bucket =>
+        withBag(bucket) { bagLocation =>
+          s3Client.deleteObject(
+            bucket.name,
+            bagLocation.completePath + "/tagmanifest-sha256.txt"
+          )
+
+          val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
+
+          val future = service.createManifest(bagManifestUpdate)
+
+          whenReady(future) { result =>
+            result.isLeft shouldBe true
+            val err = result.left.get
+            err shouldBe a[AmazonS3Exception]
+            err.getMessage should startWith("The specified key does not exist.")
+          }
+        }
+      }
+    }
+
+    it("if the tag-manifest.txt file has a badly formatted line") {
       withLocalS3Bucket { bucket =>
         withBag(
           bucket,
           createTagManifest =
             _ => Some(FileEntry("tagmanifest-sha256.txt", "blaaargh!"))) {
           bagLocation =>
-            val bagManifestUpdate = createBagManifestUpdateWith(
-              archiveBagLocation = bagLocation,
-              accessBagLocation = bagLocation
-            )
+            val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
 
             val future = service.createManifest(bagManifestUpdate)
 
@@ -140,5 +199,11 @@ class StorageManifestServiceTest extends FunSpec with Matchers with ScalaFutures
         }
       }
     }
+
+    def createBagManifestUpdateFor(bagLocation: BagLocation) =
+      createBagManifestUpdateWith(
+        archiveBagLocation = bagLocation,
+        accessBagLocation = bagLocation
+      )
   }
 }

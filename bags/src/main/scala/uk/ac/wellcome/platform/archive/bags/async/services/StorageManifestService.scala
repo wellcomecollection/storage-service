@@ -52,7 +52,9 @@ class StorageManifestService(s3Client: AmazonS3)(implicit ec: ExecutionContext) 
         archiveLocations = List(
           StorageLocation(
             provider = InfrequentAccessStorageProvider,
-            location = bagManifestUpdate.archiveBagLocation.objectLocation)),
+            location = bagManifestUpdate.archiveBagLocation.objectLocation
+          )
+        ),
         createdDate = Instant.now()
       )
     }
