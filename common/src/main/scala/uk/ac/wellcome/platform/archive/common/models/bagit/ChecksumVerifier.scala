@@ -16,8 +16,7 @@ object ChecksumVerifier extends Logging {
     objectLocation: ObjectLocation,
     bagItAlgorithm: String
   )(implicit
-      s3Client: AmazonS3
-  ): Option[String] = {
+    s3Client: AmazonS3): Option[String] = {
 
     for {
 
@@ -58,7 +57,8 @@ object ChecksumVerifier extends Logging {
           error("Failed to get checksum!", t)
           None
         }
-      }.get
+      }
+      .get
 
     stringOption
   }
@@ -68,9 +68,7 @@ object ChecksumVerifier extends Logging {
     objectLocation: ObjectLocation
   ): Try[S3ObjectInputStream] = Try {
     s3Client
-      .getObject(
-        objectLocation.namespace,
-        objectLocation.key)
+      .getObject(objectLocation.namespace, objectLocation.key)
       .getObjectContent
   }
 
@@ -96,7 +94,7 @@ object ChecksumVerifier extends Logging {
   private def getChecksum(checksumAlgorithm: String) = {
     val tryAlgorithm: Option[String] = checksumAlgorithms.get(checksumAlgorithm)
 
-    if(tryAlgorithm.isEmpty){
+    if (tryAlgorithm.isEmpty) {
       error(s"Unknown algorithm: $checksumAlgorithm ")
     }
 

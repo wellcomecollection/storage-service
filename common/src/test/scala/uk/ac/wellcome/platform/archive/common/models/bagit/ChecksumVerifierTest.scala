@@ -30,9 +30,9 @@ class ChecksumVerifierTest extends FunSpec with Matchers with S3 {
 
   it("returns None for an unknown algorithm") {
     val actualChecksum = ChecksumVerifier.checksum(
-        ObjectLocation("bucket", "key"),
-        bagItAlgorithm = "unknown"
-      )
+      ObjectLocation("bucket", "key"),
+      bagItAlgorithm = "unknown"
+    )
 
     val expectedChecksum = None
 
