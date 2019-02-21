@@ -178,7 +178,7 @@ def dispatch(bag_details):
     )
 
     logging.debug(
-        " ".join(["uploaded", bag_details["zip_file_name"], f"{upload_location}"])
+        "uploaded %s %s", bag_details["zip_file_name"], upload_location)
     )
 
     bag_details["upload_location"] = upload_location
