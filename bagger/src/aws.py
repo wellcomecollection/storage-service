@@ -25,16 +25,9 @@ def get_s3():
 
 def upload(source, key):
     client = get_boto_session().client("s3")
-    client.upload_file(
-        source,
-        settings.DROP_BUCKET_NAME,
-        key
-    )
+    client.upload_file(source, settings.DROP_BUCKET_NAME, key)
 
-    return {
-        "bucket": settings.DROP_BUCKET_NAME,
-        "key": key
-    }
+    return {"bucket": settings.DROP_BUCKET_NAME, "key": key}
 
 
 def get_mets_xml(s3_path):
