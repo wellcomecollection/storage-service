@@ -4,11 +4,11 @@ import java.util.zip.ZipFile
 
 import org.scalatest.TryValues._
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.archivist.fixtures.ZipBagItFixture
 import uk.ac.wellcome.platform.archive.archivist.generators.FileGenerators
 
 import scala.util.Success
 import org.scalatest.prop.TableDrivenPropertyChecks._
+import uk.ac.wellcome.platform.archive.common.fixtures.ZipBagItFixture
 
 class ZippedBagFileTest
     extends FunSpec
