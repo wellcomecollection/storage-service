@@ -24,7 +24,7 @@ import uk.ac.wellcome.platform.archive.common.messaging.SnsPublishFlow
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 import uk.ac.wellcome.platform.archive.common.models.{
   IngestBagRequest,
-  ReplicationRequest
+  BagRequest
 }
 import uk.ac.wellcome.platform.archive.common.progress.models._
 
@@ -82,10 +82,10 @@ object ArchiveZipFileFlow extends Logging {
   }
 
   private def toProgressUpdate(
-    result: Either[ArchiveError[_], ReplicationRequest],
-    ingestBagRequest: IngestBagRequest): ProgressUpdate = {
+                                result: Either[ArchiveError[_], BagRequest],
+                                ingestBagRequest: IngestBagRequest): ProgressUpdate = {
     result match {
-      case Right(ReplicationRequest(id, _)) =>
+      case Right(BagRequest(id, _)) =>
         ProgressEventUpdate(
           id,
           List(ProgressEvent("Bag uploaded and verified successfully")))

@@ -18,7 +18,7 @@ import uk.ac.wellcome.platform.archive.common.flows.{
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 import uk.ac.wellcome.platform.archive.common.models.{
   IngestBagRequest,
-  ReplicationRequest
+  BagRequest
 }
 
 object ArchiveJobDigestItemsFlow extends Logging {
@@ -64,7 +64,7 @@ object ArchiveJobDigestItemsFlow extends Logging {
       .map {
         case (Nil, archiveJob) =>
           Right(
-            ReplicationRequest(
+            BagRequest(
               archiveRequestId = ingestBagRequest.id,
               srcBagLocation = archiveJob.bagUploadLocation
             ))

@@ -12,7 +12,7 @@ import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.platform.archive.bagverifier.config.BagVerifierConfig
 import uk.ac.wellcome.typesafe.Runnable
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.models.ReplicationRequest
+import uk.ac.wellcome.platform.archive.common.models.BagRequest
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,7 +41,7 @@ class BagVerifier(
   ): Future[Unit] =
     for {
       replicationRequest <- Future.fromTry(
-        fromJson[ReplicationRequest](notificationMessage.body)
+        fromJson[BagRequest](notificationMessage.body)
       )
 
       _ <- Future.fromTry(
@@ -50,14 +50,17 @@ class BagVerifier(
     } yield ()
 
   private def notifyNext(
-    replicationRequest: ReplicationRequest
+    bagRequest: BagRequest
   ): Try[PublishResult] =
-    publishNotification[ReplicationRequest](
-      replicationRequest,
+    publishNotification[BagRequest](
+      bagRequest,
       outgoingSnsConfig
     )
 
-  private def publishNotification[T](msg: T, snsConfig: SNSConfig)(
+  private def publishNotification[T](
+                                      msg: T,
+                                      snsConfig: SNSConfig
+                                    )(
     implicit encoder: Encoder[T]
   ): Try[PublishResult] = {
     toJson[T](msg)

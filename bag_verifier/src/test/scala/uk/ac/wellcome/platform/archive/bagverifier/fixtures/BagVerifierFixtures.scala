@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   RandomThings
 }
-import uk.ac.wellcome.platform.archive.common.models.ReplicationRequest
+import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -32,9 +32,9 @@ trait BagVerifierFixtures
     queue: Queue,
     storageBucket: Bucket,
     archiveRequestId: UUID
-  )(testWith: TestWith[ReplicationRequest, R]): R =
+  )(testWith: TestWith[BagRequest, R]): R =
     withBag(storageBucket) { bagLocation =>
-      val replicationRequest = ReplicationRequest(
+      val replicationRequest = BagRequest(
         randomUUID,
         bagLocation
       )

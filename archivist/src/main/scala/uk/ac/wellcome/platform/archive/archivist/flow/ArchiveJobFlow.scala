@@ -13,13 +13,13 @@ import uk.ac.wellcome.platform.archive.common.flows.{
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 import uk.ac.wellcome.platform.archive.common.models.{
   IngestBagRequest,
-  ReplicationRequest
+  BagRequest
 }
 
 object ArchiveJobFlow extends Logging {
   def apply(parallelism: Int, ingestBagRequest: IngestBagRequest)(
     implicit s3Client: AmazonS3)
-    : Flow[ArchiveJob, Either[ArchiveError[_], ReplicationRequest], NotUsed] =
+    : Flow[ArchiveJob, Either[ArchiveError[_], BagRequest], NotUsed] =
     Flow[ArchiveJob]
       .log("archive job")
       .via(ArchiveTagManifestFlow(parallelism))
