@@ -6,17 +6,14 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Route
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.models.StorageManifest
-import uk.ac.wellcome.storage.ObjectStore
-import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
+import uk.ac.wellcome.platform.archive.common.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBag
-import uk.ac.wellcome.storage.dynamo._
 
 import scala.concurrent.ExecutionContext
 
-class Router(vhs: VersionedHybridStore[StorageManifest,
-                                       EmptyMetadata,
-                                       ObjectStore[StorageManifest]],
+class Router(vhs: StorageManifestVHS,
              contextURL: URL)(implicit val ec: ExecutionContext) {
 
   def routes: Route = {
@@ -25,9 +22,14 @@ class Router(vhs: VersionedHybridStore[StorageManifest,
     implicit val printer: Printer = Printer.noSpaces.copy(dropNullValues = true)
 
     pathPrefix("registrar") {
-      path(Segment / Segment) { (space, id) =>
+      path(Segment / Segment) { (space, externalIdentifier) =>
+        val bagId = BagId(
+          space = StorageSpace(space),
+          externalIdentifier = ExternalIdentifier(externalIdentifier)
+        )
+
         get {
-          onSuccess(vhs.getRecord(s"$space/$id")) {
+          onSuccess(vhs.getRecord(bagId)) {
             case Some(storageManifest) =>
               complete(DisplayBag(storageManifest, contextURL))
             case None => complete(NotFound -> "Storage manifest not found!")

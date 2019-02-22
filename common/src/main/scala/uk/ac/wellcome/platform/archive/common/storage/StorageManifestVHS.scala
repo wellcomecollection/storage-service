@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.common.storage
 import uk.ac.wellcome.platform.archive.common.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.storage.ObjectStore
-import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VHSIndexEntry, VersionedHybridStore}
+import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
 
 import scala.concurrent.{ExecutionContext, Future}
 

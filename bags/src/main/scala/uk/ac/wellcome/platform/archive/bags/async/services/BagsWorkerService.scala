@@ -4,24 +4,18 @@ import java.util.UUID
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.{
-  NotificationMessage,
-  PublishAttempt,
-  SNSWriter
-}
+import uk.ac.wellcome.messaging.sns.{NotificationMessage, PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
 import uk.ac.wellcome.platform.archive.common.SQSWorkerService
-import uk.ac.wellcome.platform.archive.common.models.{
-  ReplicationResult,
-  StorageManifest
-}
+import uk.ac.wellcome.platform.archive.common.models.{ReplicationResult, StorageManifest}
 import uk.ac.wellcome.platform.archive.common.progress.models.{
   Progress,
   ProgressEvent,
   ProgressStatusUpdate,
   ProgressUpdate
 }
+import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -29,7 +23,7 @@ import scala.util.{Failure, Success, Try}
 class BagsWorkerService(
   sqsStream: SQSStream[NotificationMessage],
   storageManifestService: StorageManifestService,
-  updateStoredManifestService: UpdateStoredManifestService,
+  storageManifestVHS: StorageManifestVHS,
   progressSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
     extends SQSWorkerService(sqsStream)
     with Logging {
@@ -62,7 +56,7 @@ class BagsWorkerService(
     tryStorageManifest: Try[StorageManifest]): Future[Try[Unit]] =
     tryStorageManifest match {
       case Success(storageManifest) =>
-        updateStoredManifestService.updateStoredManifest(storageManifest)
+        storageManifestVHS.updateRecord(storageManifest)(_ => storageManifest)
           .map { _ => Success(()) }
           .recover { case err: Throwable => Failure(err) }
       case Failure(err) => Future.successful(Failure(err))

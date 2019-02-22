@@ -7,21 +7,14 @@ import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.{
-  HttpMetrics,
-  WellcomeHttpApp
-}
-import uk.ac.wellcome.platform.archive.common.models.StorageManifest
-import uk.ac.wellcome.storage.ObjectStore
-import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
+import uk.ac.wellcome.platform.archive.common.http.{HttpMetrics, WellcomeHttpApp}
+import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagsApi(
-  vhs: VersionedHybridStore[StorageManifest,
-                            EmptyMetadata,
-                            ObjectStore[StorageManifest]],
+  vhs: StorageManifestVHS,
   httpMetrics: HttpMetrics,
   httpServerConfig: HTTPServerConfig,
   contextURL: URL
