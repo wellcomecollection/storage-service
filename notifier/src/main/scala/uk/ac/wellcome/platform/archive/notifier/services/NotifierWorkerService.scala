@@ -1,22 +1,18 @@
 package uk.ac.wellcome.platform.archive.notifier.services
 
-import akka.Done
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{NotificationMessage, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.SQSStream
+import uk.ac.wellcome.platform.archive.common.SQSWorkerService
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
-import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class NotifierWorkerService(callbackUrlService: CallbackUrlService,
                             sqsStream: SQSStream[NotificationMessage],
                             snsWriter: SNSWriter)(implicit ec: ExecutionContext)
-    extends Runnable {
-
-  def run(): Future[Done] =
-    sqsStream.foreach(this.getClass.getSimpleName, processMessage)
+    extends SQSWorkerService(sqsStream) {
 
   def processMessage(notificationMessage: NotificationMessage): Future[Unit] =
     for {
