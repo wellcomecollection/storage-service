@@ -23,7 +23,7 @@ import uk.ac.wellcome.storage.fixtures.S3
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture extends Akka with S3 with SNS with SQS {
-  def withWorkerService[R](queue: Queue,
+  def withWorkerService[R](queue: Queue = Queue("default_q", "arn::default_q"),
                            progressTopic: Topic,
                            outgoingTopic: Topic)(
     testWith: TestWith[BagReplicatorWorkerService, R]): R = {
