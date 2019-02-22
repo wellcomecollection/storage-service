@@ -9,7 +9,7 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bags.async.fixtures.{RegistrarFixtures, WorkerServiceFixture}
 import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, BagLocation}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.dynamo._
@@ -70,6 +70,48 @@ class BagsWorkerServiceTest extends FunSpec with Matchers with WorkerServiceFixt
                   events.size should be >= 1
                   events.head.description shouldBe "Bag registered successfully"
                 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  it("sends a failed ProgressUpdate if it can't create a StorageManifest") {
+    withLocalDynamoDbTable { table =>
+      withLocalS3Bucket { bucket =>
+        withLocalSnsTopic { progressTopic =>
+          withWorkerService(table, bucket, progressTopic) { service =>
+            val archiveRequestId = randomUUID
+
+            val archiveBagLocation = BagLocation(
+              storageNamespace = bucket.name,
+              storagePrefix = Some(randomAlphanumeric()),
+              storageSpace = createStorageSpace,
+              bagPath = BagPath(randomAlphanumeric())
+            )
+
+            val accessBagLocation = archiveBagLocation.copy(storagePrefix = Some("access"))
+
+            val replicationResult = ReplicationResult(
+              archiveRequestId = archiveRequestId,
+              srcBagLocation = archiveBagLocation,
+              dstBagLocation = accessBagLocation
+            )
+
+            val notification = createNotificationMessageWith(replicationResult)
+
+            val future = service.processMessage(notification)
+
+            whenReady(future) { _ =>
+              assertTopicReceivesProgressStatusUpdate(
+                requestId = archiveRequestId,
+                progressTopic = progressTopic,
+                status = Progress.Failed,
+                expectedBag = None) { events =>
+                events.size should be >= 1
+                events.head.description shouldBe "Failed to create storage manifest"
               }
             }
           }
