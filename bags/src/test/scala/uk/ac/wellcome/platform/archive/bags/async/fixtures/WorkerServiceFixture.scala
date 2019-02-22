@@ -6,13 +6,14 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.{SNS, SQS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.platform.archive.bags.async.services.{
-  BagsWorkerService,
-  StorageManifestService
+import uk.ac.wellcome.platform.archive.bags.async.services.BagsWorkerService
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  RandomThings,
+  StorageManifestVHSFixture
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
+import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -23,7 +24,7 @@ trait WorkerServiceFixture
     with RandomThings
     with SNS
     with SQS
-    with UpdateStoredManifestServiceFixture {
+    with StorageManifestVHSFixture {
   def withWorkerService[R](
     table: Table,
     bucket: Bucket,
@@ -32,33 +33,32 @@ trait WorkerServiceFixture
     testWith: TestWith[BagsWorkerService, R]): R =
     withActorSystem { implicit actorSystem =>
       withSQSStream[NotificationMessage, R](queue) { sqsStream =>
-        withUpdateStoredManifestService(table, bucket) {
-          updateStoredManifestService =>
-            withSNSWriter(topic) { progressSnsWriter =>
-              val storageManifestService = new StorageManifestService(
-                s3Client = s3Client
-              )
+        withStorageManifestVHS(table, bucket) { storageManifestVHS =>
+          withSNSWriter(topic) { progressSnsWriter =>
+            val storageManifestService = new StorageManifestService(
+              s3Client = s3Client
+            )
 
-              val service = new BagsWorkerService(
-                sqsStream = sqsStream,
-                storageManifestService = storageManifestService,
-                updateStoredManifestService = updateStoredManifestService,
-                progressSnsWriter = progressSnsWriter
-              )
+            val service = new BagsWorkerService(
+              sqsStream = sqsStream,
+              storageManifestService = storageManifestService,
+              storageManifestVHS = storageManifestVHS,
+              progressSnsWriter = progressSnsWriter
+            )
 
-              service.run()
+            service.run()
 
-              testWith(service)
-            }
+            testWith(service)
+          }
         }
       }
     }
 
   def createReplicationResultWith(
-    archiveBagLocation: BagLocation): ReplicationResult =
+    accessBagLocation: BagLocation): ReplicationResult =
     ReplicationResult(
       archiveRequestId = randomUUID,
-      srcBagLocation = archiveBagLocation,
-      dstBagLocation = archiveBagLocation.copy(storagePrefix = Some("access"))
+      srcBagLocation = accessBagLocation.copy(storagePrefix = Some("archive")),
+      dstBagLocation = accessBagLocation
     )
 }

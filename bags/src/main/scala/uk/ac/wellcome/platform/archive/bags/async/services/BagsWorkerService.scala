@@ -10,16 +10,20 @@ import uk.ac.wellcome.messaging.sns.{
   SNSWriter
 }
 import uk.ac.wellcome.messaging.sqs.SQSStream
-import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
-import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.SQSWorkerService
-import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
+import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
+  ReplicationResult,
+  StorageManifest
+}
 import uk.ac.wellcome.platform.archive.common.progress.models.{
   Progress,
   ProgressEvent,
   ProgressStatusUpdate,
   ProgressUpdate
 }
+import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
+import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -27,7 +31,7 @@ import scala.util.{Failure, Success, Try}
 class BagsWorkerService(
   sqsStream: SQSStream[NotificationMessage],
   storageManifestService: StorageManifestService,
-  updateStoredManifestService: UpdateStoredManifestService,
+  storageManifestVHS: StorageManifestVHS,
   progressSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
     extends SQSWorkerService(sqsStream)
     with Logging {
@@ -37,13 +41,11 @@ class BagsWorkerService(
       replicationResult <- Future.fromTry(
         fromJson[ReplicationResult](notificationMessage.body)
       )
-      bagManifestUpdate = BagManifestUpdate(
+      bagRequest = BagRequest(
         archiveRequestId = replicationResult.archiveRequestId,
-        archiveBagLocation = replicationResult.srcBagLocation,
-        accessBagLocation = replicationResult.dstBagLocation
+        bagLocation = replicationResult.dstBagLocation
       )
-      tryStorageManifest: Try[StorageManifest] <- storageManifestService
-        .createManifest(bagManifestUpdate)
+      tryStorageManifest: Try[StorageManifest] <- createManifest(bagRequest)
       tryUpdateVHSResult: Try[Unit] <- updateStorageManifest(tryStorageManifest)
       _ <- sendProgressUpdate(
         archiveRequestId = replicationResult.archiveRequestId,
@@ -52,11 +54,25 @@ class BagsWorkerService(
       )
     } yield ()
 
+  private def createManifest(
+    bagRequest: BagRequest): Future[Try[StorageManifest]] =
+    storageManifestService
+      .createManifest(bagRequest)
+      .map { storageManifest =>
+        Success(storageManifest)
+      }
+      .recover { case err: Throwable => Failure(err) }
+
   private def updateStorageManifest(
     tryStorageManifest: Try[StorageManifest]): Future[Try[Unit]] =
     tryStorageManifest match {
       case Success(storageManifest) =>
-        updateStoredManifestService.updateStoredManifest(storageManifest)
+        storageManifestVHS
+          .updateRecord(storageManifest)(_ => storageManifest)
+          .map { _ =>
+            Success(())
+          }
+          .recover { case err: Throwable => Failure(err) }
       case Failure(err) => Future.successful(Failure(err))
     }
 

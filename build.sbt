@@ -61,17 +61,13 @@ lazy val notifier = setupProject(project, "notifier",
   externalDependencies = ExternalDependencies.wiremockDependencies
 )
 
-lazy val bags_common = setupProject(project, "bags_common",
-  localDependencies = Seq(common)
-)
-
 lazy val bags = setupProject(project, "bags",
-  localDependencies = Seq(bags_common),
+  localDependencies = Seq(common),
   externalDependencies = ExternalDependencies.circeOpticsDependencies
 )
 
 lazy val bags_api = setupProject(project, "bags_api",
-  localDependencies = Seq(bags_common, display),
+  localDependencies = Seq(common, display),
   externalDependencies = ExternalDependencies.circeOpticsDependencies
 )
 

@@ -7,7 +7,8 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.monitoring.typesafe.MetricsSenderBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders._
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
-import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.storage.typesafe.VHSBuilder
 import uk.ac.wellcome.storage.vhs.EmptyMetadata
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -23,7 +24,9 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
 
-    val vhs = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
+    val vhs = new StorageManifestVHS(
+      underlying = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
+    )
 
     val httpMetrics = new HttpMetrics(
       name = "BagsApi",

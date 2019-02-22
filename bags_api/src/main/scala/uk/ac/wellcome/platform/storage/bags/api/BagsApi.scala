@@ -11,17 +11,13 @@ import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
 }
-import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
-import uk.ac.wellcome.storage.ObjectStore
-import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
+import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagsApi(
-  vhs: VersionedHybridStore[StorageManifest,
-                            EmptyMetadata,
-                            ObjectStore[StorageManifest]],
+  vhs: StorageManifestVHS,
   httpMetrics: HttpMetrics,
   httpServerConfig: HTTPServerConfig,
   contextURL: URL

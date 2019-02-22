@@ -1,1 +1,1 @@
-{"id" : "bags_api", "folder" : "bags_api", "dependencyIds" : ["bags_common", "display"]}
+{"id" : "bags_api", "folder" : "bags_api", "dependencyIds" : ["common", "display"]}

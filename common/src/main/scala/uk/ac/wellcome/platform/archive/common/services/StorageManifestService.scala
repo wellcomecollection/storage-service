@@ -1,23 +1,24 @@
-package uk.ac.wellcome.platform.archive.bags.async.services
+package uk.ac.wellcome.platform.archive.common.services
 
 import java.io.InputStream
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
-import uk.ac.wellcome.platform.archive.bags.common.models.{
-  ChecksumAlgorithm,
-  FileManifest,
-  StorageManifest
-}
 import uk.ac.wellcome.platform.archive.common.bag.{
   BagDigestFileCreator,
   BagInfoParser
 }
+import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
+  ChecksumAlgorithm,
+  FileManifest,
+  StorageManifest
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagDigestFile,
   BagInfo,
-  BagIt
+  BagIt,
+  BagLocation
 }
 import uk.ac.wellcome.platform.archive.common.progress.models.{
   InfrequentAccessStorageProvider,
@@ -34,69 +35,51 @@ class StorageManifestService(s3Client: AmazonS3)(
   val algorithm = "sha256"
   val checksumAlgorithm = ChecksumAlgorithm(algorithm)
 
-  def createManifest(
-    bagManifestUpdate: BagManifestUpdate): Future[Try[StorageManifest]] = {
-    val future: Future[StorageManifest] = for {
+  def createManifest(bagRequest: BagRequest): Future[StorageManifest] =
+    for {
       bagInfoInputStream <- downloadFile(
-        bagManifestUpdate = bagManifestUpdate,
+        bagLocation = bagRequest.bagLocation,
         filename = BagIt.BagInfoFilename
       )
       bagInfo <- Future.fromTry {
-        parseBagInfo(
-          bagManifestUpdate = bagManifestUpdate,
-          bagInfoInputStream = bagInfoInputStream
-        )
+        parseBagInfo(bagInfoInputStream = bagInfoInputStream)
       }
       manifestTuples <- getBagItems(
-        bagManifestUpdate = bagManifestUpdate,
+        bagLocation = bagRequest.bagLocation,
         filename = s"manifest-$algorithm.txt"
       )
       tagManifestTuples <- getBagItems(
-        bagManifestUpdate = bagManifestUpdate,
+        bagLocation = bagRequest.bagLocation,
         filename = s"tagmanifest-$algorithm.txt"
       )
     } yield {
       StorageManifest(
-        space = bagManifestUpdate.archiveBagLocation.storageSpace,
+        space = bagRequest.bagLocation.storageSpace,
         info = bagInfo,
         manifest = FileManifest(checksumAlgorithm, manifestTuples),
         tagManifest = FileManifest(checksumAlgorithm, tagManifestTuples),
         accessLocation = StorageLocation(
           provider = InfrequentAccessStorageProvider,
-          location = bagManifestUpdate.accessBagLocation.objectLocation
+          location = bagRequest.bagLocation.objectLocation
         ),
-        archiveLocations = List(
-          StorageLocation(
-            provider = InfrequentAccessStorageProvider,
-            location = bagManifestUpdate.archiveBagLocation.objectLocation
-          )
-        ),
+        archiveLocations = List.empty,
         createdDate = Instant.now()
       )
     }
 
-    future
-      .map { manifest =>
-        Success(manifest)
-      }
-      .recover { case err: Throwable => Failure(err) }
-  }
-
-  private def parseBagInfo(bagManifestUpdate: BagManifestUpdate,
-                           bagInfoInputStream: InputStream): Try[BagInfo] =
-    BagInfoParser.parseBagInfo(
-      bagManifestUpdate,
-      inputStream = bagInfoInputStream) match {
+  private def parseBagInfo(bagInfoInputStream: InputStream): Try[BagInfo] =
+    BagInfoParser.parseBagInfo((), inputStream = bagInfoInputStream) match {
       case Right(bagInfo) => Success(bagInfo)
       case Left(err)      => Failure(throw new RuntimeException(err.toString))
     }
 
-  private def getBagItems(bagManifestUpdate: BagManifestUpdate,
+  private def getBagItems(bagLocation: BagLocation,
                           filename: String): Future[List[BagDigestFile]] =
     for {
       inputStream <- downloadFile(
-        bagManifestUpdate = bagManifestUpdate,
-        filename = filename)
+        bagLocation = bagLocation,
+        filename = filename
+      )
       lines: List[String] = scala.io.Source
         .fromInputStream(inputStream)
         .mkString
@@ -115,9 +98,8 @@ class StorageManifestService(s3Client: AmazonS3)(
       }
     } yield bagDigestFiles
 
-  private def downloadFile(bagManifestUpdate: BagManifestUpdate,
+  private def downloadFile(bagLocation: BagLocation,
                            filename: String): Future[InputStream] = {
-    val bagLocation = bagManifestUpdate.archiveBagLocation
     val location = ObjectLocation(
       namespace = bagLocation.storageNamespace,
       key = List(bagLocation.completePath, filename).mkString("/")
