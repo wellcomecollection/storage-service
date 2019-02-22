@@ -3,16 +3,12 @@ package uk.ac.wellcome.platform.archive.bags.async.services
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
-import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bags.fixtures.StorageManifestVHSFixture
+import uk.ac.wellcome.platform.archive.bags.async.fixtures.UpdateStoredManifestServiceFixture
 import uk.ac.wellcome.platform.archive.bags.generators.StorageManifestGenerators
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
-class UpdateStoredManifestServiceTest extends FunSpec with ScalaFutures with StorageManifestGenerators with StorageManifestVHSFixture {
+class UpdateStoredManifestServiceTest extends FunSpec with ScalaFutures with StorageManifestGenerators with UpdateStoredManifestServiceFixture {
   it("returns a successful Right if registering the StorageManifest succeeds") {
     val storageManifest = createStorageManifest
     withLocalDynamoDbTable { table =>
@@ -42,10 +38,4 @@ class UpdateStoredManifestServiceTest extends FunSpec with ScalaFutures with Sto
       }
     }
   }
-
-  def withUpdateStoredManifestService[R](table: Table, bucket: Bucket)(testWith: TestWith[UpdateStoredManifestService, R]): R =
-    withStorageManifestVHS(table, bucket) { vhs =>
-      val service = new UpdateStoredManifestService(vhs = vhs)
-      testWith(service)
-    }
 }
