@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
-import akka.Done
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{
@@ -10,13 +9,13 @@ import uk.ac.wellcome.messaging.sns.{
 }
 import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
+import uk.ac.wellcome.platform.archive.common.SQSWorkerService
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.models.{
   BagRequest,
   ReplicationResult
 }
 import uk.ac.wellcome.platform.archive.common.progress.models._
-import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -26,11 +25,8 @@ class BagReplicatorWorkerService(
   bagReplicatorConfig: BagReplicatorConfig,
   progressSnsWriter: SNSWriter,
   outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
-    extends Logging
-    with Runnable {
-
-  def run(): Future[Done] =
-    sqsStream.foreach(this.getClass.getSimpleName, processMessage)
+    extends SQSWorkerService(sqsStream)
+    with Logging {
 
   def processMessage(notificationMessage: NotificationMessage): Future[Unit] =
     for {

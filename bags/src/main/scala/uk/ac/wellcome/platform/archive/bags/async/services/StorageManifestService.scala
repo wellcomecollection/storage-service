@@ -34,8 +34,8 @@ class StorageManifestService(s3Client: AmazonS3)(
   val algorithm = "sha256"
   val checksumAlgorithm = ChecksumAlgorithm(algorithm)
 
-  def createManifest(bagManifestUpdate: BagManifestUpdate)
-    : Future[Either[Throwable, StorageManifest]] = {
+  def createManifest(
+    bagManifestUpdate: BagManifestUpdate): Future[Try[StorageManifest]] = {
     val future: Future[StorageManifest] = for {
       bagInfoInputStream <- downloadFile(
         bagManifestUpdate = bagManifestUpdate,
@@ -77,9 +77,9 @@ class StorageManifestService(s3Client: AmazonS3)(
 
     future
       .map { manifest =>
-        Right(manifest)
+        Success(manifest)
       }
-      .recover { case err: Throwable => Left(err) }
+      .recover { case err: Throwable => Failure(err) }
   }
 
   private def parseBagInfo(bagManifestUpdate: BagManifestUpdate,
