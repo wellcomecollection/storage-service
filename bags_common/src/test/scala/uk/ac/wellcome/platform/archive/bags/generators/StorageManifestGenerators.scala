@@ -42,4 +42,7 @@ trait StorageManifestGenerators
       archiveLocations.map(StorageLocation(StandardStorageProvider, _)),
       Instant.now
     )
+
+  def createStorageManifest: StorageManifest =
+    createStorageManifestWith()
 }
