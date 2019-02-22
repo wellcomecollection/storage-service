@@ -21,7 +21,8 @@ import scala.concurrent.ExecutionContext
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
-    implicit val executionContext: ExecutionContext = AkkaBuilder.buildExecutionContext()
+    implicit val executionContext: ExecutionContext =
+      AkkaBuilder.buildExecutionContext()
 
     val storageManifestService = new StorageManifestService(
       s3Client = S3Builder.buildS3Client(config)

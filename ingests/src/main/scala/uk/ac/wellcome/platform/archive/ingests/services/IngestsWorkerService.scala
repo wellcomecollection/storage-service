@@ -13,7 +13,8 @@ class IngestsWorkerService(
   sqsStream: SQSStream[NotificationMessage],
   progressTracker: ProgressTracker,
   callbackNotificationService: CallbackNotificationService
-)(implicit ec: ExecutionContext) extends SQSWorkerService(sqsStream) {
+)(implicit ec: ExecutionContext)
+    extends SQSWorkerService(sqsStream) {
 
   def processMessage(notificationMessage: NotificationMessage): Future[Unit] =
     for {

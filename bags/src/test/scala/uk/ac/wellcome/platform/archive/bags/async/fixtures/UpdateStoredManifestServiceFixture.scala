@@ -9,7 +9,8 @@ import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait UpdateStoredManifestServiceFixture extends StorageManifestVHSFixture {
-  def withUpdateStoredManifestService[R](table: Table, bucket: Bucket)(testWith: TestWith[UpdateStoredManifestService, R]): R =
+  def withUpdateStoredManifestService[R](table: Table, bucket: Bucket)(
+    testWith: TestWith[UpdateStoredManifestService, R]): R =
     withStorageManifestVHS(table, bucket) { vhs =>
       val service = new UpdateStoredManifestService(vhs = vhs)
       testWith(service)

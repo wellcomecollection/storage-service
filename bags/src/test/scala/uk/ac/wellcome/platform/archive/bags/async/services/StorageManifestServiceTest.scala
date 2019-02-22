@@ -6,10 +6,16 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bags.async.generators.BagManifestUpdateGenerators
 import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
 import uk.ac.wellcome.platform.archive.bags.common.models.ChecksumAlgorithm
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  FileEntry
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -209,7 +215,8 @@ class StorageManifestServiceTest
       }
     }
 
-    def createBagManifestUpdateFor(bagLocation: BagLocation): BagManifestUpdate =
+    def createBagManifestUpdateFor(
+      bagLocation: BagLocation): BagManifestUpdate =
       createBagManifestUpdateWith(
         archiveBagLocation = bagLocation,
         accessBagLocation = bagLocation

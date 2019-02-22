@@ -8,7 +8,11 @@ import uk.ac.wellcome.platform.archive.bags.async.fixtures.UpdateStoredManifestS
 import uk.ac.wellcome.platform.archive.bags.generators.StorageManifestGenerators
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-class UpdateStoredManifestServiceTest extends FunSpec with ScalaFutures with StorageManifestGenerators with UpdateStoredManifestServiceFixture {
+class UpdateStoredManifestServiceTest
+    extends FunSpec
+    with ScalaFutures
+    with StorageManifestGenerators
+    with UpdateStoredManifestServiceFixture {
   it("returns a successful Right if registering the StorageManifest succeeds") {
     val storageManifest = createStorageManifest
     withLocalDynamoDbTable { table =>
@@ -27,14 +31,15 @@ class UpdateStoredManifestServiceTest extends FunSpec with ScalaFutures with Sto
 
   it("returns a failed Left if updating VHS fails") {
     withLocalDynamoDbTable { table =>
-      withUpdateStoredManifestService(table, Bucket("does-not-exist")) { service =>
-        val future = service.updateStoredManifest(createStorageManifest)
+      withUpdateStoredManifestService(table, Bucket("does-not-exist")) {
+        service =>
+          val future = service.updateStoredManifest(createStorageManifest)
 
-        whenReady(future) { result =>
-          result.isFailure shouldBe true
-          val err = result.failed.get
-          err shouldBe a[AmazonS3Exception]
-        }
+          whenReady(future) { result =>
+            result.isFailure shouldBe true
+            val err = result.failed.get
+            err shouldBe a[AmazonS3Exception]
+          }
       }
     }
   }

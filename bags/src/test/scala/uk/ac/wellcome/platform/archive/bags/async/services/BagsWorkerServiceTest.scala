@@ -7,21 +7,28 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bags.async.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators}
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  BagInfoGenerators
+}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagId,
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagsWorkerServiceTest
-  extends FunSpec
-  with Matchers
-  with ScalaFutures
-  with BagIdGenerators
-  with BagInfoGenerators
-  with BagLocationFixtures
-  with ProgressUpdateAssertions
-  with WorkerServiceFixture {
+    extends FunSpec
+    with Matchers
+    with ScalaFutures
+    with BagIdGenerators
+    with BagInfoGenerators
+    with BagLocationFixtures
+    with ProgressUpdateAssertions
+    with WorkerServiceFixture {
 
   it("sends a successful ProgressUpdate if it registers a Bag successfully") {
     withLocalDynamoDbTable { table =>
@@ -32,7 +39,8 @@ class BagsWorkerServiceTest
             val bagInfo = createBagInfo
 
             withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
-              val replicationResult = createReplicationResultWith(archiveBagLocation)
+              val replicationResult =
+                createReplicationResultWith(archiveBagLocation)
               val accessBagLocation = replicationResult.dstBagLocation
 
               val bagId = BagId(
@@ -40,7 +48,8 @@ class BagsWorkerServiceTest
                 externalIdentifier = bagInfo.externalIdentifier
               )
 
-              val notification = createNotificationMessageWith(replicationResult)
+              val notification =
+                createNotificationMessageWith(replicationResult)
 
               val future = service.processMessage(notification)
 
@@ -92,7 +101,8 @@ class BagsWorkerServiceTest
               bagPath = BagPath(randomAlphanumeric())
             )
 
-            val replicationResult = createReplicationResultWith(archiveBagLocation)
+            val replicationResult =
+              createReplicationResultWith(archiveBagLocation)
 
             val notification = createNotificationMessageWith(replicationResult)
 
@@ -118,33 +128,36 @@ class BagsWorkerServiceTest
     withLocalDynamoDbTable { table =>
       withLocalS3Bucket { bucket =>
         withLocalSnsTopic { progressTopic =>
-          withWorkerService(table, Bucket("does-not-exist"), progressTopic) { service =>
-            val bagInfo = createBagInfo
+          withWorkerService(table, Bucket("does-not-exist"), progressTopic) {
+            service =>
+              val bagInfo = createBagInfo
 
-            withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
-              val replicationResult = createReplicationResultWith(archiveBagLocation)
-              val accessBagLocation = replicationResult.dstBagLocation
+              withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
+                val replicationResult =
+                  createReplicationResultWith(archiveBagLocation)
+                val accessBagLocation = replicationResult.dstBagLocation
 
-              val bagId = BagId(
-                space = accessBagLocation.storageSpace,
-                externalIdentifier = bagInfo.externalIdentifier
-              )
+                val bagId = BagId(
+                  space = accessBagLocation.storageSpace,
+                  externalIdentifier = bagInfo.externalIdentifier
+                )
 
-              val notification = createNotificationMessageWith(replicationResult)
+                val notification =
+                  createNotificationMessageWith(replicationResult)
 
-              val future = service.processMessage(notification)
+                val future = service.processMessage(notification)
 
-              whenReady(future) { _ =>
-                assertTopicReceivesProgressStatusUpdate(
-                  requestId = replicationResult.archiveRequestId,
-                  progressTopic = progressTopic,
-                  status = Progress.Failed,
-                  expectedBag = Some(bagId)) { events =>
-                  events.size should be >= 1
-                  events.head.description shouldBe "Failed to register bag"
+                whenReady(future) { _ =>
+                  assertTopicReceivesProgressStatusUpdate(
+                    requestId = replicationResult.archiveRequestId,
+                    progressTopic = progressTopic,
+                    status = Progress.Failed,
+                    expectedBag = Some(bagId)) { events =>
+                    events.size should be >= 1
+                    events.head.description shouldBe "Failed to register bag"
+                  }
                 }
               }
-            }
           }
         }
       }

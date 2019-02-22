@@ -8,14 +8,17 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bags.async.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  BagInfoGenerators
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagsFeatureTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with BagIdGenerators
@@ -34,7 +37,8 @@ class BagsFeatureTest
               val bagInfo = createBagInfo
 
               withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
-                val replicationResult = createReplicationResultWith(archiveBagLocation)
+                val replicationResult =
+                  createReplicationResultWith(archiveBagLocation)
                 val accessBagLocation = replicationResult.dstBagLocation
 
                 val bagId = BagId(
@@ -83,42 +87,50 @@ class BagsFeatureTest
     }
   }
 
-  it("sends a failed ProgressUpdate and discards SQS messages if something goes wrong") {
+  it(
+    "sends a failed ProgressUpdate and discards SQS messages if something goes wrong") {
     withLocalDynamoDbTable { table =>
       withLocalS3Bucket { bucket =>
         withLocalSnsTopic { progressTopic =>
-          withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
-            withWorkerService(table, Bucket("does-not-exist"), progressTopic, queue) { service =>
-              val bagInfo = createBagInfo
+          withLocalSqsQueueAndDlq {
+            case QueuePair(queue, dlq) =>
+              withWorkerService(
+                table,
+                Bucket("does-not-exist"),
+                progressTopic,
+                queue) { service =>
+                val bagInfo = createBagInfo
 
-              withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
-                val replicationResult = createReplicationResultWith(archiveBagLocation)
-                val accessBagLocation = replicationResult.dstBagLocation
+                withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
+                  val replicationResult =
+                    createReplicationResultWith(archiveBagLocation)
+                  val accessBagLocation = replicationResult.dstBagLocation
 
-                val bagId = BagId(
-                  space = accessBagLocation.storageSpace,
-                  externalIdentifier = bagInfo.externalIdentifier
-                )
+                  val bagId = BagId(
+                    space = accessBagLocation.storageSpace,
+                    externalIdentifier = bagInfo.externalIdentifier
+                  )
 
-                val notification = createNotificationMessageWith(replicationResult)
+                  val notification =
+                    createNotificationMessageWith(replicationResult)
 
-                val future = service.processMessage(notification)
+                  val future = service.processMessage(notification)
 
-                whenReady(future) { _ =>
-                  assertTopicReceivesProgressStatusUpdate(
-                    requestId = replicationResult.archiveRequestId,
-                    progressTopic = progressTopic,
-                    status = Progress.Failed,
-                    expectedBag = Some(bagId)) { events =>
-                    events.size should be >= 1
-                    events.head.description shouldBe "Failed to register bag"
+                  whenReady(future) { _ =>
+                    assertTopicReceivesProgressStatusUpdate(
+                      requestId = replicationResult.archiveRequestId,
+                      progressTopic = progressTopic,
+                      status = Progress.Failed,
+                      expectedBag = Some(bagId)) { events =>
+                      events.size should be >= 1
+                      events.head.description shouldBe "Failed to register bag"
+                    }
                   }
-                }
 
-                assertQueueEmpty(queue)
-                assertQueueEmpty(dlq)
+                  assertQueueEmpty(queue)
+                  assertQueueEmpty(dlq)
+                }
               }
-            }
           }
         }
       }

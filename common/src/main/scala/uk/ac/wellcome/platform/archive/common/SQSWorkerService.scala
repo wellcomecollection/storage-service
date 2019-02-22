@@ -8,7 +8,8 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
 
-abstract class SQSWorkerService(sqsStream: SQSStream[NotificationMessage]) extends Runnable {
+abstract class SQSWorkerService(sqsStream: SQSStream[NotificationMessage])
+    extends Runnable {
   def run(): Future[Done] =
     sqsStream.foreach(this.getClass.getSimpleName, processMessage)
 

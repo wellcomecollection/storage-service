@@ -13,12 +13,15 @@ class UpdateStoredManifestService(
                             EmptyMetadata,
                             ObjectStore[StorageManifest]]
 )(implicit ec: ExecutionContext) {
-  def updateStoredManifest(storageManifest: StorageManifest): Future[Try[Unit]] =
+  def updateStoredManifest(
+    storageManifest: StorageManifest): Future[Try[Unit]] =
     vhs
       .updateRecord(storageManifest.id.toString)(
         ifNotExisting = (storageManifest, EmptyMetadata()))(
         ifExisting = (_, _) => (storageManifest, EmptyMetadata())
       )
-      .map { _ => Success(()) }
-      .recover { case err: Throwable => Failure(err)}
+      .map { _ =>
+        Success(())
+      }
+      .recover { case err: Throwable => Failure(err) }
 }
