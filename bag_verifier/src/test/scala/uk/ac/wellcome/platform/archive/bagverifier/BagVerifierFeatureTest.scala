@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagVerifierFixtures
+import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.json.JsonUtil._
