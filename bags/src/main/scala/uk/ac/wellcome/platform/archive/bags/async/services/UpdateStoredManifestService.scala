@@ -6,18 +6,19 @@ import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 class UpdateStoredManifestService(
   vhs: VersionedHybridStore[StorageManifest,
                             EmptyMetadata,
                             ObjectStore[StorageManifest]]
 )(implicit ec: ExecutionContext) {
-  def updateStoredManifest(storageManifest: StorageManifest): Future[Either[Throwable, Unit]] =
+  def updateStoredManifest(storageManifest: StorageManifest): Future[Try[Unit]] =
     vhs
       .updateRecord(storageManifest.id.toString)(
         ifNotExisting = (storageManifest, EmptyMetadata()))(
         ifExisting = (_, _) => (storageManifest, EmptyMetadata())
       )
-      .map { _ => Right(()) }
-      .recover { case err: Throwable => Left(err)}
+      .map { _ => Success(()) }
+      .recover { case err: Throwable => Failure(err)}
 }

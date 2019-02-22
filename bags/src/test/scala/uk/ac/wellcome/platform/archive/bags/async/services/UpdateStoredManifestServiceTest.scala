@@ -21,7 +21,7 @@ class UpdateStoredManifestServiceTest extends FunSpec with ScalaFutures with Sto
           val future = service.updateStoredManifest(storageManifest)
 
           whenReady(future) { result =>
-            result.isRight shouldBe true
+            result.isSuccess shouldBe true
             assertStored(table, storageManifest.id.toString, storageManifest)
           }
         }
@@ -35,8 +35,9 @@ class UpdateStoredManifestServiceTest extends FunSpec with ScalaFutures with Sto
         val future = service.updateStoredManifest(createStorageManifest)
 
         whenReady(future) { result =>
-          result.isLeft shouldBe true
-          result.left.get shouldBe a[AmazonS3Exception]
+          result.isFailure shouldBe true
+          val err = result.failed.get
+          err shouldBe a[AmazonS3Exception]
         }
       }
     }

@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common
 
 import akka.Done
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.typesafe.Runnable

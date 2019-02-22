@@ -4,17 +4,12 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bags.async.generators.BagManifestUpdateGenerators
+import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
 import uk.ac.wellcome.platform.archive.bags.common.models.ChecksumAlgorithm
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  FileEntry
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
 import uk.ac.wellcome.platform.archive.common.models.bagit
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,8 +39,8 @@ class StorageManifestServiceTest
               val future = service.createManifest(bagManifestUpdate)
 
               whenReady(future) { result =>
-                result.isRight shouldBe true
-                val storageManifest = result.right.get
+                result.isSuccess shouldBe true
+                val storageManifest = result.get
 
                 storageManifest.space shouldBe archiveBagLocation.storageSpace
                 storageManifest.info shouldBe bagInfo
@@ -98,8 +93,8 @@ class StorageManifestServiceTest
         val future = service.createManifest(bagManifestUpdate)
 
         whenReady(future) { result =>
-          result.isLeft shouldBe true
-          val err = result.left.get
+          result.isFailure shouldBe true
+          val err = result.failed.get
           err shouldBe a[AmazonS3Exception]
           err.getMessage should startWith("The specified key does not exist.")
         }
@@ -119,8 +114,8 @@ class StorageManifestServiceTest
           val future = service.createManifest(bagManifestUpdate)
 
           whenReady(future) { result =>
-            result.isLeft shouldBe true
-            val err = result.left.get
+            result.isFailure shouldBe true
+            val err = result.failed.get
             err shouldBe a[AmazonS3Exception]
             err.getMessage should startWith("The specified key does not exist.")
           }
@@ -141,8 +136,8 @@ class StorageManifestServiceTest
           val future = service.createManifest(bagManifestUpdate)
 
           whenReady(future) { result =>
-            result.isLeft shouldBe true
-            val err = result.left.get
+            result.isFailure shouldBe true
+            val err = result.failed.get
             err shouldBe a[AmazonS3Exception]
             err.getMessage should startWith("The specified key does not exist.")
           }
@@ -162,8 +157,8 @@ class StorageManifestServiceTest
             val future = service.createManifest(bagManifestUpdate)
 
             whenReady(future) { result =>
-              result.isLeft shouldBe true
-              val err = result.left.get
+              result.isFailure shouldBe true
+              val err = result.failed.get
               err shouldBe a[RuntimeException]
               err.getMessage shouldBe "Line <<bleeergh!>> is incorrectly formatted!"
             }
@@ -184,8 +179,8 @@ class StorageManifestServiceTest
           val future = service.createManifest(bagManifestUpdate)
 
           whenReady(future) { result =>
-            result.isLeft shouldBe true
-            val err = result.left.get
+            result.isFailure shouldBe true
+            val err = result.failed.get
             err shouldBe a[AmazonS3Exception]
             err.getMessage should startWith("The specified key does not exist.")
           }
@@ -205,8 +200,8 @@ class StorageManifestServiceTest
             val future = service.createManifest(bagManifestUpdate)
 
             whenReady(future) { result =>
-              result.isLeft shouldBe true
-              val err = result.left.get
+              result.isFailure shouldBe true
+              val err = result.failed.get
               err shouldBe a[RuntimeException]
               err.getMessage shouldBe "Line <<blaaargh!>> is incorrectly formatted!"
             }
@@ -214,7 +209,7 @@ class StorageManifestServiceTest
       }
     }
 
-    def createBagManifestUpdateFor(bagLocation: BagLocation) =
+    def createBagManifestUpdateFor(bagLocation: BagLocation): BagManifestUpdate =
       createBagManifestUpdateWith(
         archiveBagLocation = bagLocation,
         accessBagLocation = bagLocation
