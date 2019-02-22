@@ -1,4 +1,5 @@
-package uk.ac.wellcome.platform.archive.common.flows
+package uk.ac.wellcome.platform.archive.archivist.flow
+
 import akka.NotUsed
 import akka.stream.FlowShape
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Merge}

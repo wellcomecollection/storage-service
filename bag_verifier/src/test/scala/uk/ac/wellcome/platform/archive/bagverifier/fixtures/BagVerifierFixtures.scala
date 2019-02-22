@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
+package uk.ac.wellcome.platform.archive.bagverifier.fixtures
 
 import java.util.UUID
 
@@ -12,7 +12,6 @@ import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.bagverifier.BagVerifier
 import uk.ac.wellcome.platform.archive.bagverifier.config.BagVerifierConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  ArchiveMessaging,
   BagLocationFixtures,
   RandomThings
 }
@@ -25,8 +24,7 @@ trait BagVerifierFixtures
     with RandomThings
     with Messaging
     with Akka
-    with BagLocationFixtures
-    with ArchiveMessaging {
+    with BagLocationFixtures {
 
   def withBagNotification[R](
     queue: Queue,

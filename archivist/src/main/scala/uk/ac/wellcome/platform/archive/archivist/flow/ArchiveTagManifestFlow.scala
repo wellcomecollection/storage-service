@@ -10,7 +10,6 @@ import uk.ac.wellcome.platform.archive.archivist.models.errors.{
   ArchiveItemJobError,
   ArchiveJobError
 }
-import uk.ac.wellcome.platform.archive.common.flows.FoldEitherFlow
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 /** This flow extracts a tag manifest from a ZIP file, and uploads it to S3

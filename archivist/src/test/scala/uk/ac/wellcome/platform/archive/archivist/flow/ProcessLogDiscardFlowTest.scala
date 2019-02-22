@@ -1,16 +1,19 @@
-package uk.ac.wellcome.platform.archive.common.flows
+package uk.ac.wellcome.platform.archive.archivist.flow
 
 import akka.stream.scaladsl.{Sink, Source}
 import org.scalatest.{FunSpec, Matchers}
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.platform.archive.common.progress.models.FailedEvent
 
 import scala.util.Try
 
-class EitherFlowTest extends FunSpec with Akka with Matchers with ScalaFutures {
+class ProcessLogDiscardFlowTest
+    extends FunSpec
+    with Akka
+    with Matchers
+    with ScalaFutures {
 
-  it("turns a Try into an Either, wrapping a FailedEvent[In]") {
+  it("process, logs & discards failed events") {
     withMaterializer { implicit materializer =>
       val e = new RuntimeException("EitherFlowTest")
       val func: String => Try[Int] = (in: String) =>
@@ -27,22 +30,15 @@ class EitherFlowTest extends FunSpec with Akka with Matchers with ScalaFutures {
 
       val listIn = succeedList.patch(2, failList, 0)
       val source = Source(listIn)
-      val eitherFlow = EitherFlow(func)
+      val pldFlow = ProcessLogDiscardFlow("ProcessLogDiscardFlowTest")(func)
 
       val eventualResult = source
-        .via(eitherFlow)
+        .via(pldFlow)
         .async
         .runWith(Sink.seq)
 
-      whenReady(eventualResult) {
-        result: Seq[Either[FailedEvent[String], Int]] =>
-          val lefts = result.filter(_.isLeft)
-          lefts.collect { case Left(l) => l } shouldBe failList.map(
-            FailedEvent(e, _))
-
-          val rights = result.filter(_.isRight)
-          rights.collect { case Right(r) => r } shouldBe succeedList.map(
-            func(_).get)
+      whenReady(eventualResult) { result =>
+        result shouldBe succeedList.map(func).map(_.get)
       }
     }
   }

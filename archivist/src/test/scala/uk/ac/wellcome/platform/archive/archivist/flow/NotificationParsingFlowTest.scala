@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.flows
+package uk.ac.wellcome.platform.archive.archivist.flow
 
 import akka.stream.scaladsl.{Sink, Source}
 import org.scalatest.{FunSpec, Matchers}
@@ -6,7 +6,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.platform.archive.common.messaging.NotificationParsingFlow
+import uk.ac.wellcome.platform.archive.archivist.messaging.NotificationParsingFlow
 
 class NotificationParsingFlowTest
     extends FunSpec

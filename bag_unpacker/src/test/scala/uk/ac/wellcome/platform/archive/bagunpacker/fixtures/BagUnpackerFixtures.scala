@@ -12,7 +12,6 @@ import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.bagunpacker.BagUnpacker
 import uk.ac.wellcome.platform.archive.bagunpacker.config.BagUnpackerConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  ArchiveMessaging,
   BagLocationFixtures,
   RandomThings
 }
@@ -30,8 +29,7 @@ trait BagUnpackerFixtures
     with RandomThings
     with Messaging
     with Akka
-    with BagLocationFixtures
-    with ArchiveMessaging {
+    with BagLocationFixtures {
 
   def withBagNotification[R](
     queue: Queue,

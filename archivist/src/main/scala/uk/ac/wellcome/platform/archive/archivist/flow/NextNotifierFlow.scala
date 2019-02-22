@@ -6,7 +6,7 @@ import com.amazonaws.services.sns.AmazonSNS
 import com.amazonaws.services.sns.model.PublishResult
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSConfig
-import uk.ac.wellcome.platform.archive.common.messaging.SnsPublishFlow
+import uk.ac.wellcome.platform.archive.archivist.messaging.SnsPublishFlow
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 
 object NextNotifierFlow {

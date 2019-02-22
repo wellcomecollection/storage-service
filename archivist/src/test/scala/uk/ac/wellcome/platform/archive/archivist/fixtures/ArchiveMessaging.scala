@@ -1,10 +1,10 @@
-package uk.ac.wellcome.platform.archive.common.fixtures
+package uk.ac.wellcome.platform.archive.archivist.fixtures
 
 import akka.actor.ActorSystem
+import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.common.messaging.MessageStream
-import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.archivist.messaging.MessageStream
 
 trait ArchiveMessaging extends SQS {
   def withArchiveMessageStream[I, O, R](queue: Queue)(

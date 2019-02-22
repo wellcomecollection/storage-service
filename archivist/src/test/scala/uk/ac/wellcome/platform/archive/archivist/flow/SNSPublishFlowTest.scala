@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.flows
+package uk.ac.wellcome.platform.archive.archivist.flow
 
 import akka.stream.scaladsl.{Sink, Source}
 import com.amazonaws.services.sns.model.PublishResult
@@ -9,7 +9,7 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.platform.archive.common.messaging.SnsPublishFlow
+import uk.ac.wellcome.platform.archive.archivist.messaging.SnsPublishFlow
 
 class SNSPublishFlowTest
     extends FunSpec

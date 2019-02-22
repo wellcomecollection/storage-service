@@ -1,10 +1,10 @@
-package uk.ac.wellcome.platform.archive.common.config.builders
+package uk.ac.wellcome.platform.archive.archivist.config
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SQSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsSenderBuilder
-import uk.ac.wellcome.platform.archive.common.messaging.MessageStream
+import uk.ac.wellcome.platform.archive.archivist.messaging.MessageStream
 
 object MessagingBuilder {
   def buildMessageStream[T, R](config: Config)(
