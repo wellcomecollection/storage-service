@@ -38,10 +38,9 @@ class BagsWorkerServiceTest
             val createdAfterDate = Instant.now()
             val bagInfo = createBagInfo
 
-            withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
+            withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") { accessBagLocation =>
               val replicationResult =
-                createReplicationResultWith(archiveBagLocation)
-              val accessBagLocation = replicationResult.dstBagLocation
+                createReplicationResultWith(accessBagLocation)
 
               val bagId = BagId(
                 space = accessBagLocation.storageSpace,
@@ -64,12 +63,7 @@ class BagsWorkerServiceTest
                   provider = InfrequentAccessStorageProvider,
                   location = accessBagLocation.objectLocation
                 )
-                storageManifest.archiveLocations shouldBe List(
-                  StorageLocation(
-                    provider = InfrequentAccessStorageProvider,
-                    location = archiveBagLocation.objectLocation
-                  )
-                )
+                storageManifest.archiveLocations shouldBe List.empty
 
                 storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
@@ -94,7 +88,7 @@ class BagsWorkerServiceTest
       withLocalS3Bucket { bucket =>
         withLocalSnsTopic { progressTopic =>
           withWorkerService(table, bucket, progressTopic) { service =>
-            val archiveBagLocation = BagLocation(
+            val accessBagLocation = BagLocation(
               storageNamespace = bucket.name,
               storagePrefix = Some(randomAlphanumeric()),
               storageSpace = createStorageSpace,
@@ -102,7 +96,7 @@ class BagsWorkerServiceTest
             )
 
             val replicationResult =
-              createReplicationResultWith(archiveBagLocation)
+              createReplicationResultWith(accessBagLocation)
 
             val notification = createNotificationMessageWith(replicationResult)
 
@@ -132,10 +126,9 @@ class BagsWorkerServiceTest
             service =>
               val bagInfo = createBagInfo
 
-              withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
+              withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") { accessBagLocation =>
                 val replicationResult =
-                  createReplicationResultWith(archiveBagLocation)
-                val accessBagLocation = replicationResult.dstBagLocation
+                  createReplicationResultWith(accessBagLocation)
 
                 val bagId = BagId(
                   space = accessBagLocation.storageSpace,

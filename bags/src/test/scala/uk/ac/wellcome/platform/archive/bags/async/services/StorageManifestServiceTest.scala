@@ -47,7 +47,7 @@ class StorageManifestServiceTest
               val future = service.createManifest(bagManifestUpdate)
 
               whenReady(future) { storageManifest =>
-                storageManifest.space shouldBe archiveBagLocation.storageSpace
+                storageManifest.space shouldBe accessBagLocation.storageSpace
                 storageManifest.info shouldBe bagInfo
 
                 storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
@@ -71,12 +71,7 @@ class StorageManifestServiceTest
                   provider = InfrequentAccessStorageProvider,
                   location = accessBagLocation.objectLocation
                 )
-                storageManifest.archiveLocations shouldBe List(
-                  StorageLocation(
-                    provider = InfrequentAccessStorageProvider,
-                    location = archiveBagLocation.objectLocation
-                  )
-                )
+                storageManifest.archiveLocations shouldBe List.empty
               }
           }
       }

@@ -36,10 +36,10 @@ class BagsFeatureTest
               val createdAfterDate = Instant.now()
               val bagInfo = createBagInfo
 
-              withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
+              withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") { accessBagLocation =>
                 val replicationResult =
-                  createReplicationResultWith(archiveBagLocation)
-                val accessBagLocation = replicationResult.dstBagLocation
+                  createReplicationResultWith(accessBagLocation)
+                val archiveBagLocation = replicationResult.srcBagLocation
 
                 val bagId = BagId(
                   space = archiveBagLocation.storageSpace,
@@ -59,12 +59,7 @@ class BagsFeatureTest
                     provider = InfrequentAccessStorageProvider,
                     location = accessBagLocation.objectLocation
                   )
-                  storageManifest.archiveLocations shouldBe List(
-                    StorageLocation(
-                      provider = InfrequentAccessStorageProvider,
-                      location = archiveBagLocation.objectLocation
-                    )
-                  )
+                  storageManifest.archiveLocations shouldBe List.empty
 
                   storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
@@ -101,10 +96,9 @@ class BagsFeatureTest
                 queue) { service =>
                 val bagInfo = createBagInfo
 
-                withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
+                withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") { accessBagLocation =>
                   val replicationResult =
-                    createReplicationResultWith(archiveBagLocation)
-                  val accessBagLocation = replicationResult.dstBagLocation
+                    createReplicationResultWith(accessBagLocation)
 
                   val bagId = BagId(
                     space = accessBagLocation.storageSpace,
