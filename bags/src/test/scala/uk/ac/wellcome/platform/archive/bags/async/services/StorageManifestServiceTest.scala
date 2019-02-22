@@ -3,13 +3,12 @@ package uk.ac.wellcome.platform.archive.bags.async.services
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bags.async.generators.BagManifestUpdateGenerators
-import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
 }
 import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
   ChecksumAlgorithm,
   bagit
 }
@@ -27,7 +26,6 @@ class StorageManifestServiceTest
     with Matchers
     with ScalaFutures
     with BagLocationFixtures
-    with BagManifestUpdateGenerators
     with S3 {
 
   val service = new StorageManifestService(s3Client)
@@ -35,45 +33,40 @@ class StorageManifestServiceTest
   it("returns a StorageManifest if reading a bag location succeeds") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(bucket, bagInfo = bagInfo, storagePrefix = "archive") {
-        archiveBagLocation =>
-          withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") {
-            accessBagLocation =>
-              val bagManifestUpdate = createBagManifestUpdateWith(
-                archiveBagLocation = archiveBagLocation,
-                accessBagLocation = accessBagLocation
-              )
+      withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+        val bagRequest = createBagRequestWith(bagLocation)
 
-              val future = service.createManifest(bagManifestUpdate)
+        val future = service.createManifest(bagRequest)
 
-              whenReady(future) { storageManifest =>
-                storageManifest.space shouldBe accessBagLocation.storageSpace
-                storageManifest.info shouldBe bagInfo
+        whenReady(future) { storageManifest =>
+          storageManifest.space shouldBe bagLocation.storageSpace
+          storageManifest.info shouldBe bagInfo
 
-                storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
-                  "sha256")
-                storageManifest.manifest.files should have size 1
+          storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
+            "sha256")
+          storageManifest.manifest.files should have size 1
 
-                storageManifest.tagManifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
-                  "sha256")
-                storageManifest.tagManifest.files should have size 3
-                val actualFiles =
-                  storageManifest.tagManifest.files
-                    .map { _.path.toString }
-                val expectedFiles = List(
-                  "manifest-sha256.txt",
-                  "bag-info.txt",
-                  "bagit.txt"
-                )
-                actualFiles should contain theSameElementsAs expectedFiles
-
-                storageManifest.accessLocation shouldBe StorageLocation(
-                  provider = InfrequentAccessStorageProvider,
-                  location = accessBagLocation.objectLocation
-                )
-                storageManifest.archiveLocations shouldBe List.empty
+          storageManifest.tagManifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
+            "sha256")
+          storageManifest.tagManifest.files should have size 3
+          val actualFiles =
+            storageManifest.tagManifest.files
+              .map {
+                _.path.toString
               }
-          }
+          val expectedFiles = List(
+            "manifest-sha256.txt",
+            "bag-info.txt",
+            "bagit.txt"
+          )
+          actualFiles should contain theSameElementsAs expectedFiles
+
+          storageManifest.accessLocation shouldBe StorageLocation(
+            provider = InfrequentAccessStorageProvider,
+            location = bagLocation.objectLocation
+          )
+          storageManifest.archiveLocations shouldBe List.empty
+        }
       }
     }
   }
@@ -88,9 +81,9 @@ class StorageManifestServiceTest
           bagPath = randomBagPath
         )
 
-        val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
+        val bagRequest = createBagRequestWith(bagLocation)
 
-        val future = service.createManifest(bagManifestUpdate)
+        val future = service.createManifest(bagRequest)
 
         whenReady(future.failed) { err =>
           err shouldBe a[AmazonS3Exception]
@@ -107,9 +100,9 @@ class StorageManifestServiceTest
             bagLocation.completePath + "/bag-info.txt"
           )
 
-          val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
+          val bagRequest = createBagRequestWith(bagLocation)
 
-          val future = service.createManifest(bagManifestUpdate)
+          val future = service.createManifest(bagRequest)
 
           whenReady(future.failed) { err =>
             err shouldBe a[AmazonS3Exception]
@@ -127,9 +120,9 @@ class StorageManifestServiceTest
             bagLocation.completePath + "/manifest-sha256.txt"
           )
 
-          val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
+          val bagRequest = createBagRequestWith(bagLocation)
 
-          val future = service.createManifest(bagManifestUpdate)
+          val future = service.createManifest(bagRequest)
 
           whenReady(future.failed) { err =>
             err shouldBe a[AmazonS3Exception]
@@ -146,9 +139,9 @@ class StorageManifestServiceTest
           createDataManifest =
             _ => Some(FileEntry("manifest-sha256.txt", "bleeergh!"))) {
           bagLocation =>
-            val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
+            val bagRequest = createBagRequestWith(bagLocation)
 
-            val future = service.createManifest(bagManifestUpdate)
+            val future = service.createManifest(bagRequest)
 
             whenReady(future.failed) { err =>
               err shouldBe a[RuntimeException]
@@ -166,9 +159,9 @@ class StorageManifestServiceTest
             bagLocation.completePath + "/tagmanifest-sha256.txt"
           )
 
-          val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
+          val bagRequest = createBagRequestWith(bagLocation)
 
-          val future = service.createManifest(bagManifestUpdate)
+          val future = service.createManifest(bagRequest)
 
           whenReady(future.failed) { err =>
             err shouldBe a[AmazonS3Exception]
@@ -185,9 +178,9 @@ class StorageManifestServiceTest
           createTagManifest =
             _ => Some(FileEntry("tagmanifest-sha256.txt", "blaaargh!"))) {
           bagLocation =>
-            val bagManifestUpdate = createBagManifestUpdateFor(bagLocation)
+            val bagRequest = createBagRequestWith(bagLocation)
 
-            val future = service.createManifest(bagManifestUpdate)
+            val future = service.createManifest(bagRequest)
 
             whenReady(future.failed) { err =>
               err shouldBe a[RuntimeException]
@@ -196,12 +189,11 @@ class StorageManifestServiceTest
         }
       }
     }
-
-    def createBagManifestUpdateFor(
-      bagLocation: BagLocation): BagManifestUpdate =
-      createBagManifestUpdateWith(
-        archiveBagLocation = bagLocation,
-        accessBagLocation = bagLocation
-      )
   }
+
+  def createBagRequestWith(bagLocation: BagLocation): BagRequest =
+    BagRequest(
+      archiveRequestId = randomUUID,
+      bagLocation = bagLocation
+    )
 }

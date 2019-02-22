@@ -8,7 +8,11 @@ import uk.ac.wellcome.messaging.sns.{NotificationMessage, PublishAttempt, SNSWri
 import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
 import uk.ac.wellcome.platform.archive.common.SQSWorkerService
-import uk.ac.wellcome.platform.archive.common.models.{ReplicationResult, StorageManifest}
+import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
+  ReplicationResult,
+  StorageManifest
+}
 import uk.ac.wellcome.platform.archive.common.progress.models.{
   Progress,
   ProgressEvent,
@@ -47,10 +51,16 @@ class BagsWorkerService(
       )
     } yield ()
 
-  private def createManifest(bagManifestUpdate: BagManifestUpdate): Future[Try[StorageManifest]] =
-    storageManifestService.createManifest(bagManifestUpdate)
+  private def createManifest(bagManifestUpdate: BagManifestUpdate): Future[Try[StorageManifest]] = {
+    val bagRequest = BagRequest(
+      archiveRequestId = bagManifestUpdate.archiveRequestId,
+      bagLocation = bagManifestUpdate.accessBagLocation
+    )
+
+    storageManifestService.createManifest(bagRequest)
       .map { storageManifest => Success(storageManifest) }
       .recover { case err: Throwable => Failure(err) }
+  }
 
   private def updateStorageManifest(
     tryStorageManifest: Try[StorageManifest]): Future[Try[Unit]] =

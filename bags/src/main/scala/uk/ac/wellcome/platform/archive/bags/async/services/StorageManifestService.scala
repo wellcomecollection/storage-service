@@ -4,7 +4,6 @@ import java.io.InputStream
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
 import uk.ac.wellcome.platform.archive.common.bag.{
   BagDigestFileCreator,
   BagInfoParser
@@ -35,16 +34,6 @@ class StorageManifestService(s3Client: AmazonS3)(
 
   val algorithm = "sha256"
   val checksumAlgorithm = ChecksumAlgorithm(algorithm)
-
-  def createManifest(
-                      bagManifestUpdate: BagManifestUpdate): Future[StorageManifest] = {
-    val bagRequest = BagRequest(
-      archiveRequestId = bagManifestUpdate.archiveRequestId,
-      bagLocation = bagManifestUpdate.accessBagLocation
-    )
-
-    createManifest(bagRequest)
-  }
 
   def createManifest(bagRequest: BagRequest): Future[StorageManifest] =
     for {
