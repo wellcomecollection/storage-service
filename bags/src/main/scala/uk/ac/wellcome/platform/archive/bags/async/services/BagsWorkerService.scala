@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.common.progress.models.{
   ProgressStatusUpdate,
   ProgressUpdate
 }
+import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 
 import scala.concurrent.{ExecutionContext, Future}

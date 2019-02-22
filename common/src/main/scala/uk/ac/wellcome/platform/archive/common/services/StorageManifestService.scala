@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bags.async.services
+package uk.ac.wellcome.platform.archive.common.services
 
 import java.io.InputStream
 import java.time.Instant
