@@ -44,10 +44,7 @@ class StorageManifestServiceTest
 
               val future = service.createManifest(bagManifestUpdate)
 
-              whenReady(future) { result =>
-                result.isSuccess shouldBe true
-                val storageManifest = result.get
-
+              whenReady(future) { storageManifest =>
                 storageManifest.space shouldBe archiveBagLocation.storageSpace
                 storageManifest.info shouldBe bagInfo
 
@@ -98,9 +95,7 @@ class StorageManifestServiceTest
 
         val future = service.createManifest(bagManifestUpdate)
 
-        whenReady(future) { result =>
-          result.isFailure shouldBe true
-          val err = result.failed.get
+        whenReady(future.failed) { err =>
           err shouldBe a[AmazonS3Exception]
           err.getMessage should startWith("The specified key does not exist.")
         }
@@ -119,9 +114,7 @@ class StorageManifestServiceTest
 
           val future = service.createManifest(bagManifestUpdate)
 
-          whenReady(future) { result =>
-            result.isFailure shouldBe true
-            val err = result.failed.get
+          whenReady(future.failed) { err =>
             err shouldBe a[AmazonS3Exception]
             err.getMessage should startWith("The specified key does not exist.")
           }
@@ -141,9 +134,7 @@ class StorageManifestServiceTest
 
           val future = service.createManifest(bagManifestUpdate)
 
-          whenReady(future) { result =>
-            result.isFailure shouldBe true
-            val err = result.failed.get
+          whenReady(future.failed) { err =>
             err shouldBe a[AmazonS3Exception]
             err.getMessage should startWith("The specified key does not exist.")
           }
@@ -162,9 +153,7 @@ class StorageManifestServiceTest
 
             val future = service.createManifest(bagManifestUpdate)
 
-            whenReady(future) { result =>
-              result.isFailure shouldBe true
-              val err = result.failed.get
+            whenReady(future.failed) { err =>
               err shouldBe a[RuntimeException]
               err.getMessage shouldBe "Line <<bleeergh!>> is incorrectly formatted!"
             }
@@ -184,9 +173,7 @@ class StorageManifestServiceTest
 
           val future = service.createManifest(bagManifestUpdate)
 
-          whenReady(future) { result =>
-            result.isFailure shouldBe true
-            val err = result.failed.get
+          whenReady(future.failed) { err =>
             err shouldBe a[AmazonS3Exception]
             err.getMessage should startWith("The specified key does not exist.")
           }
@@ -205,9 +192,7 @@ class StorageManifestServiceTest
 
             val future = service.createManifest(bagManifestUpdate)
 
-            whenReady(future) { result =>
-              result.isFailure shouldBe true
-              val err = result.failed.get
+            whenReady(future.failed) { err =>
               err shouldBe a[RuntimeException]
               err.getMessage shouldBe "Line <<blaaargh!>> is incorrectly formatted!"
             }

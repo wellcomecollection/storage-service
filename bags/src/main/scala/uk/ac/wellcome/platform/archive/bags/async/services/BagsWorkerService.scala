@@ -42,8 +42,7 @@ class BagsWorkerService(
         archiveBagLocation = replicationResult.srcBagLocation,
         accessBagLocation = replicationResult.dstBagLocation
       )
-      tryStorageManifest: Try[StorageManifest] <- storageManifestService
-        .createManifest(bagManifestUpdate)
+      tryStorageManifest: Try[StorageManifest] <- createManifest(bagManifestUpdate)
       tryUpdateVHSResult: Try[Unit] <- updateStorageManifest(tryStorageManifest)
       _ <- sendProgressUpdate(
         archiveRequestId = replicationResult.archiveRequestId,
@@ -51,6 +50,11 @@ class BagsWorkerService(
         tryUpdateVHSResult = tryUpdateVHSResult
       )
     } yield ()
+
+  private def createManifest(bagManifestUpdate: BagManifestUpdate): Future[Try[StorageManifest]] =
+    storageManifestService.createManifest(bagManifestUpdate)
+      .map { storageManifest => Success(storageManifest) }
+      .recover { case err: Throwable => Failure(err) }
 
   private def updateStorageManifest(
     tryStorageManifest: Try[StorageManifest]): Future[Try[Unit]] =
