@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
+import java.io.{File, FileOutputStream}
 import java.time.LocalDate
 import java.util.UUID
 
@@ -20,6 +21,21 @@ trait RandomThings {
     // avoiding the beginning or the end.
     val spaceIndex = Random.nextInt(str.length - 2) + 1
     str.updated(spaceIndex, ' ')
+  }
+
+  def randomFile(size: Int = 256) = {
+    val file = File.createTempFile(
+      randomUUID.toString,
+      ".test"
+    )
+
+    val fileOutputStream = new FileOutputStream(file)
+    val contents = randomAlphanumeric(size)
+
+    fileOutputStream.write(contents.getBytes)
+    fileOutputStream.close()
+
+    file
   }
 
   def randomUUID = UUID.randomUUID()

@@ -99,5 +99,5 @@ lazy val bag_verifier = setupProject(project, "bag_verifier",
 
 lazy val bag_unpacker = setupProject(project, "bag_unpacker",
   localDependencies = Seq(common),
-  externalDependencies = ExternalDependencies.commonsCompressDependencies
+  externalDependencies = ExternalDependencies.commonsCompressDependencies ++ ExternalDependencies.commonsIODependencies
 )
