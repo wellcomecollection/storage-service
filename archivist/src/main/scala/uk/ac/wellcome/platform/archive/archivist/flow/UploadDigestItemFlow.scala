@@ -8,10 +8,6 @@ import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.archivist.models.DigestItemJob
 import uk.ac.wellcome.platform.archive.archivist.models.errors.FileNotFoundError
 import uk.ac.wellcome.platform.archive.archivist.zipfile.ZipFileReader
-import uk.ac.wellcome.platform.archive.common.flows.{
-  FoldEitherFlow,
-  OnErrorFlow
-}
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 /** This flow extracts an item from a ZIP file, uploads it to S3 and validates

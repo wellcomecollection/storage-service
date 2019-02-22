@@ -16,7 +16,7 @@ import scala.util.{Failure, Success}
 
 object DownloadAndVerifyDigestItemFlow extends Logging {
 
-  import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
+  import uk.ac.wellcome.platform.archive.archivist.ConvertibleToInputStream._
 
   def apply(parallelism: Int)(implicit s3Client: AmazonS3)
     : Flow[DigestItemJob,

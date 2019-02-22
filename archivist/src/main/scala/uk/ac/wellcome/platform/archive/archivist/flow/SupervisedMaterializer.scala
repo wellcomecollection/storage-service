@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.flows
+package uk.ac.wellcome.platform.archive.archivist.flow
 
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings, Supervision}

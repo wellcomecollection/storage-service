@@ -13,7 +13,6 @@ import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.archivist.Archivist
 import uk.ac.wellcome.platform.archive.archivist.generators.BagUploaderConfigGenerators
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  ArchiveMessaging,
   FileEntry,
   ZipBagItFixture
 }

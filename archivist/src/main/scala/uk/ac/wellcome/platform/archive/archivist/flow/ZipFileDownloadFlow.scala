@@ -6,11 +6,11 @@ import com.amazonaws.services.s3.transfer.TransferManager
 import com.amazonaws.services.sns.AmazonSNS
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSConfig
+import uk.ac.wellcome.platform.archive.archivist.error.FileDownloadingError
+import uk.ac.wellcome.platform.archive.archivist.messaging.SnsPublishFlow
 import uk.ac.wellcome.platform.archive.archivist.models.FileDownloadComplete
 import uk.ac.wellcome.platform.archive.archivist.models.TypeAliases._
 import uk.ac.wellcome.platform.archive.common.config.models.Parallelism
-import uk.ac.wellcome.platform.archive.common.errors.FileDownloadingError
-import uk.ac.wellcome.platform.archive.common.messaging.SnsPublishFlow
 import uk.ac.wellcome.platform.archive.common.models.IngestBagRequest
 import uk.ac.wellcome.platform.archive.common.progress.models._
 

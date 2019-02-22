@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.messaging
+package uk.ac.wellcome.platform.archive.archivist.messaging
 
 import akka.NotUsed
 import akka.stream.ActorAttributes
@@ -9,7 +9,7 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSConfig
-import uk.ac.wellcome.platform.archive.common.flows.ProcessLogDiscardFlow
+import uk.ac.wellcome.platform.archive.archivist.flow.ProcessLogDiscardFlow
 
 import scala.util.Try
 

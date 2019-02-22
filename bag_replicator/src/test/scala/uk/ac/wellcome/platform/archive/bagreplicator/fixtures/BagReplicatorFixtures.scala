@@ -10,7 +10,6 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  ArchiveMessaging,
   BagLocationFixtures,
   RandomThings
 }
@@ -26,8 +25,7 @@ trait BagReplicatorFixtures
     with RandomThings
     with Messaging
     with Akka
-    with BagLocationFixtures
-    with ArchiveMessaging {
+    with BagLocationFixtures {
 
   def withBagNotification[R](
     queue: Queue,

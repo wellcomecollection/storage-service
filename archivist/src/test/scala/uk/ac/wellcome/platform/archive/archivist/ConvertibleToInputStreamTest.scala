@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common
+package uk.ac.wellcome.platform.archive.archivist
 
 import org.scalatest.FunSpec
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings

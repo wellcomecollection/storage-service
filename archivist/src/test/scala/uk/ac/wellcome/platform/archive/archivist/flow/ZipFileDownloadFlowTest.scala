@@ -15,13 +15,13 @@ import uk.ac.wellcome.platform.archive.archivist.fixtures.ArchivistFixtures
 import uk.ac.wellcome.platform.archive.archivist.models.FileDownloadComplete
 import uk.ac.wellcome.platform.archive.archivist.models.TypeAliases.BagDownload
 import uk.ac.wellcome.platform.archive.common.config.models.Parallelism
-import uk.ac.wellcome.platform.archive.common.errors.FileDownloadingError
 import uk.ac.wellcome.platform.archive.common.generators.IngestBagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models.IngestBagRequest
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.archivist.error.FileDownloadingError
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable

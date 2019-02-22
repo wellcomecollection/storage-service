@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.errors
+package uk.ac.wellcome.platform.archive.archivist.error
 
 import uk.ac.wellcome.platform.archive.common.models.IngestBagRequest
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
