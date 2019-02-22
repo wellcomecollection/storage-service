@@ -66,7 +66,7 @@ class BagsWorkerService(
           id = archiveRequestId,
           status = Progress.Failed,
           affectedBag = Some(storageManifest.id),
-          events = List(ProgressEvent("Failed to update storage manifest in VHS"))
+          events = List(ProgressEvent("Failed to register bag"))
         )
       case _ =>
         ProgressStatusUpdate(

@@ -5,16 +5,25 @@ import java.time.Instant
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
-import uk.ac.wellcome.platform.archive.bags.async.fixtures.{RegistrarFixtures, WorkerServiceFixture}
-import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
+import uk.ac.wellcome.platform.archive.bags.async.fixtures.WorkerServiceFixture
+import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
+import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators}
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models._
-import uk.ac.wellcome.storage.dynamo._
+import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-class BagsWorkerServiceTest extends FunSpec with Matchers with WorkerServiceFixture with RegistrarFixtures with ScalaFutures with ProgressUpdateAssertions with BagIdGenerators {
+class BagsWorkerServiceTest
+  extends FunSpec
+  with Matchers
+  with ScalaFutures
+  with BagIdGenerators
+  with BagInfoGenerators
+  with BagLocationFixtures
+  with ProgressUpdateAssertions
+  with WorkerServiceFixture {
+
   it("sends a successful ProgressUpdate if it registers a Bag successfully") {
     withLocalDynamoDbTable { table =>
       withLocalS3Bucket { bucket =>
@@ -120,64 +129,46 @@ class BagsWorkerServiceTest extends FunSpec with Matchers with WorkerServiceFixt
     }
   }
 
-  it("notifies the progress tracker if registering a bag fails") {
-    withRegistrar {
-      case (storageBucket, queuePair, progressTopic, vhs) =>
-        val requestId = randomUUID
-        val bagId = createBagId
+  it("sends a failed ProgressUpdate if updating the VHS fails") {
+    withLocalDynamoDbTable { table =>
+      withLocalS3Bucket { bucket =>
+        withLocalSnsTopic { progressTopic =>
+          withWorkerService(table, Bucket("does-not-exist"), progressTopic) { service =>
+            val archiveRequestId = randomUUID
+            val bagInfo = createBagInfo
 
-        val srcBagLocation = BagLocation(
-          storageNamespace = storageBucket.name,
-          storagePrefix = Some("archive"),
-          storageSpace = bagId.space,
-          bagPath = randomBagPath
-        )
+            withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
+              val accessBagLocation = archiveBagLocation.copy(storagePrefix = Some("access"))
 
-        val dstBagLocation = srcBagLocation.copy(
-          storagePrefix = Some("access")
-        )
+              val replicationResult = ReplicationResult(
+                archiveRequestId = archiveRequestId,
+                srcBagLocation = archiveBagLocation,
+                dstBagLocation = accessBagLocation
+              )
 
-        sendNotificationToSQS(
-          queuePair.queue,
-          ReplicationResult(
-            archiveRequestId = requestId,
-            srcBagLocation = srcBagLocation,
-            dstBagLocation = dstBagLocation
-          )
-        )
+              val bagId = BagId(
+                space = accessBagLocation.storageSpace,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
 
-        eventually {
-          val futureMaybeManifest = vhs.getRecord(bagId.toString)
+              val notification = createNotificationMessageWith(replicationResult)
 
-          whenReady(futureMaybeManifest) { maybeStorageManifest =>
-            maybeStorageManifest shouldNot be(defined)
-          }
+              val future = service.processMessage(notification)
 
-          assertTopicReceivesProgressStatusUpdate(
-            requestId,
-            progressTopic,
-            Progress.Failed) { events =>
-            events should have size 1
-            events.head.description should startWith(
-              "There was an exception while downloading object")
-          }
-        }
-    }
-  }
-
-  it("discards messages if it fails writing to the VHS") {
-    withRegistrarAndBrokenVHS {
-      case (storageBucket, QueuePair(queue, dlq), progressTopic, _) =>
-        withBagNotification(queue, storageBucket) { _ =>
-          withBagNotification(queue, storageBucket) { _ =>
-            eventually {
-              listMessagesReceivedFromSNS(progressTopic) shouldBe empty
-
-              assertQueueEmpty(queue)
-              assertQueueHasSize(dlq, 2)
+              whenReady(future) { _ =>
+                assertTopicReceivesProgressStatusUpdate(
+                  requestId = archiveRequestId,
+                  progressTopic = progressTopic,
+                  status = Progress.Failed,
+                  expectedBag = Some(bagId)) { events =>
+                  events.size should be >= 1
+                  events.head.description shouldBe "Failed to register bag"
+                }
+              }
             }
           }
         }
+      }
     }
   }
 }
