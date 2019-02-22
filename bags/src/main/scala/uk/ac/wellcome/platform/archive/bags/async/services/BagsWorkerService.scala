@@ -2,39 +2,29 @@ package uk.ac.wellcome.platform.archive.bags.async.services
 
 import java.util.UUID
 
+import akka.Done
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.{
-  NotificationMessage,
-  PublishAttempt,
-  SNSWriter
-}
-import uk.ac.wellcome.messaging.sqs.SQSStream
-import uk.ac.wellcome.platform.archive.common.SQSWorkerService
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  ReplicationResult,
-  StorageManifest
-}
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  Progress,
-  ProgressEvent,
-  ProgressStatusUpdate,
-  ProgressUpdate
-}
+import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
+import uk.ac.wellcome.platform.archive.common.messaging.NotificationStream
+import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult, StorageManifest}
+import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
+import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class BagsWorkerService(
-  sqsStream: SQSStream[NotificationMessage],
+  notificationStream: NotificationStream[ReplicationResult],
   storageManifestService: StorageManifestService,
   storageManifestVHS: StorageManifestVHS,
   progressSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
-    extends SQSWorkerService[ReplicationResult](sqsStream)
-    with Logging {
+    extends Logging with Runnable {
+
+  def run(): Future[Done] =
+    notificationStream.run(processMessage)
 
   def processMessage(replicationResult: ReplicationResult): Future[Unit] = {
     val bagRequest = BagRequest(

@@ -3,10 +3,10 @@ package uk.ac.wellcome.platform.archive.bags.async
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.messaging.typesafe.{SNSBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.platform.archive.bags.async.services.BagsWorkerService
-import uk.ac.wellcome.platform.archive.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.messaging.NotificationStreamBuilder
+import uk.ac.wellcome.platform.archive.common.models.{ReplicationResult, StorageManifest}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.storage.typesafe.{S3Builder, VHSBuilder}
@@ -31,7 +31,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new BagsWorkerService(
-      sqsStream = SQSBuilder.buildSQSStream[NotificationMessage](config),
+      notificationStream = NotificationStreamBuilder.buildStream[ReplicationResult](config),
       storageManifestService = storageManifestService,
       storageManifestVHS = storageManifestVHS,
       progressSnsWriter = SNSBuilder.buildSNSWriter(config)

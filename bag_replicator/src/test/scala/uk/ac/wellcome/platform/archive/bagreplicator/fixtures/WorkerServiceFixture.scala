@@ -1,28 +1,20 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
 
-import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.{SNS, SQS}
+import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.platform.archive.bagreplicator.config.{
-  BagReplicatorConfig,
-  ReplicatorDestinationConfig
-}
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicatorWorkerService,
-  BagStorageService
-}
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.{
-  S3Copier,
-  S3PrefixCopier
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.config.{BagReplicatorConfig, ReplicatorDestinationConfig}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.{S3Copier, S3PrefixCopier}
+import uk.ac.wellcome.platform.archive.common.fixtures.NotificationStreamFixture
+import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait WorkerServiceFixture extends Akka with S3 with SNS with SQS {
+trait WorkerServiceFixture extends NotificationStreamFixture with S3 with SNS {
   def withWorkerService[R](queue: Queue = Queue("default_q", "arn::default_q"),
                            progressTopic: Topic,
                            outgoingTopic: Topic)(
@@ -36,29 +28,27 @@ trait WorkerServiceFixture extends Akka with S3 with SNS with SQS {
       s3PrefixCopier = s3PrefixCopier
     )
 
-    withActorSystem { implicit actorSystem =>
-      withSQSStream[NotificationMessage, R](queue) { sqsStream =>
-        withSNSWriter(progressTopic) { progressSnsWriter =>
-          withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-            withLocalS3Bucket { dstBucket =>
-              val service = new BagReplicatorWorkerService(
-                sqsStream = sqsStream,
-                bagStorageService = bagStorageService,
-                bagReplicatorConfig = BagReplicatorConfig(
-                  parallelism = 1,
-                  destination = ReplicatorDestinationConfig(
-                    namespace = dstBucket.name,
-                    rootPath = Some("destinations/")
-                  )
-                ),
-                progressSnsWriter = progressSnsWriter,
-                outgoingSnsWriter = outgoingSnsWriter
-              )
+    withNotificationStream[BagRequest, R](queue) { notificationStream =>
+      withSNSWriter(progressTopic) { progressSnsWriter =>
+        withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
+          withLocalS3Bucket { dstBucket =>
+            val service = new BagReplicatorWorkerService(
+              notificationStream = notificationStream,
+              bagStorageService = bagStorageService,
+              bagReplicatorConfig = BagReplicatorConfig(
+                parallelism = 1,
+                destination = ReplicatorDestinationConfig(
+                  namespace = dstBucket.name,
+                  rootPath = Some("destinations/")
+                )
+              ),
+              progressSnsWriter = progressSnsWriter,
+              outgoingSnsWriter = outgoingSnsWriter
+            )
 
-              service.run()
+            service.run()
 
-              testWith(service)
-            }
+            testWith(service)
           }
         }
       }
