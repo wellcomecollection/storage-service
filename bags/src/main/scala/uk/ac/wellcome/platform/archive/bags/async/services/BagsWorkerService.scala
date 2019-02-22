@@ -6,7 +6,7 @@ import akka.Done
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
-import uk.ac.wellcome.platform.archive.common.messaging.NotificationStream
+import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult, StorageManifest}
 import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService

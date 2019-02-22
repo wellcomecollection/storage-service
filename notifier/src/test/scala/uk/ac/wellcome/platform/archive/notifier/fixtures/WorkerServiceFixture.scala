@@ -4,8 +4,8 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.SNS
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagIt, NotificationStreamFixture}
+import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
+import uk.ac.wellcome.platform.archive.common.fixtures.BagIt
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.notifier.services.NotifierWorkerService
 

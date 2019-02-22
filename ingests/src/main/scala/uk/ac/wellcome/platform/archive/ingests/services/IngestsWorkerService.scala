@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
 import akka.Done
-import uk.ac.wellcome.platform.archive.common.messaging.NotificationStream
+import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
 import uk.ac.wellcome.platform.archive.common.progress.monitor.ProgressTracker
 import uk.ac.wellcome.typesafe.Runnable

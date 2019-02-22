@@ -3,9 +3,8 @@ package uk.ac.wellcome.platform.archive.bags.async
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.SNSBuilder
+import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bags.async.services.BagsWorkerService
-import uk.ac.wellcome.platform.archive.common.messaging.NotificationStreamBuilder
 import uk.ac.wellcome.platform.archive.common.models.{ReplicationResult, StorageManifest}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
