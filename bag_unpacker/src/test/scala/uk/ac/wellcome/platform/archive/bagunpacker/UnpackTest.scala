@@ -11,9 +11,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.io.Source
 
-
 class UnpackTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with Compress
@@ -35,9 +34,7 @@ class UnpackTest
 
     val unpack = Unpack(inputStream) { entry =>
       new FileOutputStream(
-        new File(tmp,
-          s"${entry.getName}-$testUUID"
-        )
+        new File(tmp, s"${entry.getName}-$testUUID")
       )
     }
 
@@ -52,9 +49,8 @@ class UnpackTest
         .toMap
 
       val actualFiles = actualEntries
-        .map(entry => entry.getName -> new File(tmp,
-          s"${entry.getName}-$testUUID"
-        ))
+        .map(entry =>
+          entry.getName -> new File(tmp, s"${entry.getName}-$testUUID"))
         .toMap
 
       expectedFiles.foreach {
@@ -72,20 +68,19 @@ class UnpackTest
           val expectedContents =
             Source.fromFile(expectedFile).getLines().mkString
 
-          actualContents shouldEqual(expectedContents)
+          actualContents shouldEqual (expectedContents)
         }
       }
     }
   }
 }
 
-trait Compress
-  extends RandomThings {
+trait Compress extends RandomThings {
   def createArchive(
-                     archiverName: String,
-                     compressorName: String,
-                     fileCount: Int = 10
-                   ) = {
+    archiverName: String,
+    compressorName: String,
+    fileCount: Int = 10
+  ) = {
 
     val file = File.createTempFile(
       randomUUID.toString,

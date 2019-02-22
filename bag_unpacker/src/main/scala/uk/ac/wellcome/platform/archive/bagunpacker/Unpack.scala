@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.archive.bagunpacker
 import java.io.{BufferedInputStream, InputStream, OutputStream}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveInputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.archivers.{
+  ArchiveEntry,
+  ArchiveInputStream,
+  ArchiveStreamFactory
+}
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.compress.utils.IOUtils
 
@@ -11,16 +15,15 @@ import scala.util.{Failure, Success, Try}
 
 object Unpack extends Logging {
 
-  def apply(
-             inputStream: InputStream)(
-             out: ArchiveEntry => OutputStream
-           ): Stream[ArchiveEntry] = {
+  def apply(inputStream: InputStream)(
+    out: ArchiveEntry => OutputStream
+  ): Stream[ArchiveEntry] = {
 
     val readArchive = new ReadArchive(inputStream)
 
     def entries(stream: InputStream): Stream[ArchiveEntry] = {
       readArchive.next(out) match {
-        case None => Stream.empty
+        case None        => Stream.empty
         case Some(entry) => entry #:: entries(stream)
       }
     }
