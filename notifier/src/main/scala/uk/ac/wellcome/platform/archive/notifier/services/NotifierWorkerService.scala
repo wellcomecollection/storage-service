@@ -12,13 +12,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class NotifierWorkerService(callbackUrlService: CallbackUrlService,
                             sqsStream: SQSStream[NotificationMessage],
                             snsWriter: SNSWriter)(implicit ec: ExecutionContext)
-    extends SQSWorkerService(sqsStream) {
+    extends SQSWorkerService[CallbackNotification](sqsStream) {
 
-  def processMessage(notificationMessage: NotificationMessage): Future[Unit] =
+  def processMessage(callbackNotification: CallbackNotification): Future[Unit] =
     for {
-      callbackNotification <- Future.fromTry(
-        fromJson[CallbackNotification](notificationMessage.body)
-      )
       httpResponse <- callbackUrlService.getHttpResponse(callbackNotification)
       progressUpdate = PrepareNotificationService.prepare(
         callbackNotification.id,

@@ -11,7 +11,6 @@ import uk.ac.wellcome.platform.archive.common.progress.models.Progress.{
   Completed,
   Processing
 }
-import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
 import uk.ac.wellcome.platform.archive.common.progress.monitor.IdConstraintError
 import uk.ac.wellcome.platform.archive.ingests.fixtures.{
   IngestsFixture,
@@ -37,11 +36,7 @@ class IngestsWorkerServiceTest
                     status = Completed
                   )
 
-                val notification =
-                  createNotificationMessageWith[ProgressUpdate](
-                    progressStatusUpdate)
-
-                val future = service.processMessage(notification)
+                val future = service.processMessage(progressStatusUpdate)
 
                 val expectedProgress = progress.copy(
                   status = Completed,
@@ -98,22 +93,15 @@ class IngestsWorkerServiceTest
                     maybeBag = progressStatusUpdate1.affectedBag
                   )
 
-                val notification1 =
-                  createNotificationMessageWith[ProgressUpdate](
-                    progressStatusUpdate1)
-                val notification2 =
-                  createNotificationMessageWith[ProgressUpdate](
-                    progressStatusUpdate2)
-
                 val expectedProgress = progress.copy(
                   status = Completed,
                   events = progressStatusUpdate1.events ++ progressStatusUpdate2.events,
                   bag = progressStatusUpdate1.affectedBag
                 )
 
-                val future1 = service.processMessage(notification1)
+                val future1 = service.processMessage(progressStatusUpdate1)
                 whenReady(future1) { _ =>
-                  val future2 = service.processMessage(notification2)
+                  val future2 = service.processMessage(progressStatusUpdate2)
                   whenReady(future2) { _ =>
                     assertProgressCreated(expectedProgress, table)
 
@@ -147,10 +135,7 @@ class IngestsWorkerServiceTest
                 status = Completed
               )
 
-            val notification = createNotificationMessageWith[ProgressUpdate](
-              progressStatusUpdate)
-
-            val future = service.processMessage(notification)
+            val future = service.processMessage(progressStatusUpdate)
 
             whenReady(future.failed) { err =>
               err shouldBe a[IdConstraintError]
@@ -174,10 +159,7 @@ class IngestsWorkerServiceTest
               status = Completed
             )
 
-          val notification =
-            createNotificationMessageWith[ProgressUpdate](progressStatusUpdate)
-
-          val future = service.processMessage(notification)
+          val future = service.processMessage(progressStatusUpdate)
 
           whenReady(future.failed) { err =>
             err shouldBe a[ResourceNotFoundException]
@@ -199,10 +181,7 @@ class IngestsWorkerServiceTest
                   status = Completed
                 )
 
-              val notification = createNotificationMessageWith[ProgressUpdate](
-                progressStatusUpdate)
-
-              val future = service.processMessage(notification)
+              val future = service.processMessage(progressStatusUpdate)
 
               whenReady(future.failed) { err =>
                 err shouldBe a[AmazonSNSException]

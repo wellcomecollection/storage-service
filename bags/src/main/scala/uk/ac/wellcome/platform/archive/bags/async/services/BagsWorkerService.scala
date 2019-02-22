@@ -33,18 +33,16 @@ class BagsWorkerService(
   storageManifestService: StorageManifestService,
   storageManifestVHS: StorageManifestVHS,
   progressSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
-    extends SQSWorkerService(sqsStream)
+    extends SQSWorkerService[ReplicationResult](sqsStream)
     with Logging {
 
-  def processMessage(notificationMessage: NotificationMessage): Future[Unit] =
+  def processMessage(replicationResult: ReplicationResult): Future[Unit] = {
+    val bagRequest = BagRequest(
+      archiveRequestId = replicationResult.archiveRequestId,
+      bagLocation = replicationResult.dstBagLocation
+    )
+
     for {
-      replicationResult <- Future.fromTry(
-        fromJson[ReplicationResult](notificationMessage.body)
-      )
-      bagRequest = BagRequest(
-        archiveRequestId = replicationResult.archiveRequestId,
-        bagLocation = replicationResult.dstBagLocation
-      )
       tryStorageManifest: Try[StorageManifest] <- createManifest(bagRequest)
       tryUpdateVHSResult: Try[Unit] <- updateStorageManifest(tryStorageManifest)
       _ <- sendProgressUpdate(
@@ -53,6 +51,7 @@ class BagsWorkerService(
         tryUpdateVHSResult = tryUpdateVHSResult
       )
     } yield ()
+  }
 
   private def createManifest(
     bagRequest: BagRequest): Future[Try[StorageManifest]] =

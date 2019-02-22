@@ -14,13 +14,10 @@ class IngestsWorkerService(
   progressTracker: ProgressTracker,
   callbackNotificationService: CallbackNotificationService
 )(implicit ec: ExecutionContext)
-    extends SQSWorkerService(sqsStream) {
+    extends SQSWorkerService[ProgressUpdate](sqsStream) {
 
-  def processMessage(notificationMessage: NotificationMessage): Future[Unit] =
+  def processMessage(progressUpdate: ProgressUpdate): Future[Unit] =
     for {
-      progressUpdate <- Future.fromTry(
-        fromJson[ProgressUpdate](notificationMessage.body)
-      )
       progress <- Future.fromTry(progressTracker.update(progressUpdate))
       _ <- callbackNotificationService.sendNotification(progress)
     } yield ()
