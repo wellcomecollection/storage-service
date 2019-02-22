@@ -13,6 +13,7 @@ import uk.ac.wellcome.storage.vhs.{
   VersionedHybridStore
 }
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -39,4 +40,9 @@ trait StorageManifestVHSFixture extends LocalVersionedHybridStore {
     )(
       ifExisting = (_, _) => throw new RuntimeException("VHS should be empty!")
     )
+
+  def getStorageManifest(table: Table, id: BagId): StorageManifest = {
+    val hybridRecord = getHybridRecord(table, id.toString)
+    getObjectFromS3[StorageManifest](hybridRecord.location)
+  }
 }

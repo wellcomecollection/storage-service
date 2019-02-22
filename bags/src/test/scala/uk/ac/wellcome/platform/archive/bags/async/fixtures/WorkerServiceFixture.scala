@@ -13,7 +13,7 @@ import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture extends Akka with SNS with SQS with UpdateStoredManifestServiceFixture {
-  def withWorkerService[R](queue: Queue, table: Table, bucket: Bucket, topic: Topic)(testWith: TestWith[BagsWorkerService, R]): R =
+  def withWorkerService[R](table: Table, bucket: Bucket, topic: Topic, queue: Queue = Queue("bags_queue", "arn::bags_queue"))(testWith: TestWith[BagsWorkerService, R]): R =
     withActorSystem { implicit actorSystem =>
       withSQSStream[NotificationMessage, R](queue) { sqsStream =>
         withUpdateStoredManifestService(table, bucket) { updateStoredManifestService =>
