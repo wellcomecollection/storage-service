@@ -6,7 +6,6 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{NotificationMessage, PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.SQSStream
-import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
 import uk.ac.wellcome.platform.archive.common.SQSWorkerService
 import uk.ac.wellcome.platform.archive.common.models.{
   BagRequest,
@@ -37,12 +36,11 @@ class BagsWorkerService(
       replicationResult <- Future.fromTry(
         fromJson[ReplicationResult](notificationMessage.body)
       )
-      bagManifestUpdate = BagManifestUpdate(
+      bagRequest = BagRequest(
         archiveRequestId = replicationResult.archiveRequestId,
-        archiveBagLocation = replicationResult.srcBagLocation,
-        accessBagLocation = replicationResult.dstBagLocation
+        bagLocation = replicationResult.dstBagLocation
       )
-      tryStorageManifest: Try[StorageManifest] <- createManifest(bagManifestUpdate)
+      tryStorageManifest: Try[StorageManifest] <- createManifest(bagRequest)
       tryUpdateVHSResult: Try[Unit] <- updateStorageManifest(tryStorageManifest)
       _ <- sendProgressUpdate(
         archiveRequestId = replicationResult.archiveRequestId,
@@ -51,16 +49,10 @@ class BagsWorkerService(
       )
     } yield ()
 
-  private def createManifest(bagManifestUpdate: BagManifestUpdate): Future[Try[StorageManifest]] = {
-    val bagRequest = BagRequest(
-      archiveRequestId = bagManifestUpdate.archiveRequestId,
-      bagLocation = bagManifestUpdate.accessBagLocation
-    )
-
+  private def createManifest(bagRequest: BagRequest): Future[Try[StorageManifest]] =
     storageManifestService.createManifest(bagRequest)
       .map { storageManifest => Success(storageManifest) }
       .recover { case err: Throwable => Failure(err) }
-  }
 
   private def updateStorageManifest(
     tryStorageManifest: Try[StorageManifest]): Future[Try[Unit]] =
