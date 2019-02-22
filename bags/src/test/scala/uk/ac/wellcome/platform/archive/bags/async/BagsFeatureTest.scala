@@ -9,7 +9,6 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bags.async.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators}
-import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models._
@@ -31,21 +30,15 @@ class BagsFeatureTest
         withLocalSnsTopic { progressTopic =>
           withLocalSqsQueue { queue =>
             withWorkerService(table, bucket, progressTopic, queue) { service =>
-              val archiveRequestId = randomUUID
               val createdAfterDate = Instant.now()
               val bagInfo = createBagInfo
 
               withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
-                val accessBagLocation = archiveBagLocation.copy(storagePrefix = Some("access"))
-
-                val replicationResult = ReplicationResult(
-                  archiveRequestId = archiveRequestId,
-                  srcBagLocation = archiveBagLocation,
-                  dstBagLocation = accessBagLocation
-                )
+                val replicationResult = createReplicationResultWith(archiveBagLocation)
+                val accessBagLocation = replicationResult.dstBagLocation
 
                 val bagId = BagId(
-                  space = accessBagLocation.storageSpace,
+                  space = archiveBagLocation.storageSpace,
                   externalIdentifier = bagInfo.externalIdentifier
                 )
 
@@ -72,7 +65,7 @@ class BagsFeatureTest
                   storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
                   assertTopicReceivesProgressStatusUpdate(
-                    requestId = archiveRequestId,
+                    requestId = replicationResult.archiveRequestId,
                     progressTopic = progressTopic,
                     status = Progress.Completed,
                     expectedBag = Some(bagId)) { events =>
@@ -96,17 +89,11 @@ class BagsFeatureTest
         withLocalSnsTopic { progressTopic =>
           withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
             withWorkerService(table, Bucket("does-not-exist"), progressTopic, queue) { service =>
-              val archiveRequestId = randomUUID
               val bagInfo = createBagInfo
 
               withBag(bucket, bagInfo = bagInfo) { archiveBagLocation =>
-                val accessBagLocation = archiveBagLocation.copy(storagePrefix = Some("access"))
-
-                val replicationResult = ReplicationResult(
-                  archiveRequestId = archiveRequestId,
-                  srcBagLocation = archiveBagLocation,
-                  dstBagLocation = accessBagLocation
-                )
+                val replicationResult = createReplicationResultWith(archiveBagLocation)
+                val accessBagLocation = replicationResult.dstBagLocation
 
                 val bagId = BagId(
                   space = accessBagLocation.storageSpace,
@@ -119,7 +106,7 @@ class BagsFeatureTest
 
                 whenReady(future) { _ =>
                   assertTopicReceivesProgressStatusUpdate(
-                    requestId = archiveRequestId,
+                    requestId = replicationResult.archiveRequestId,
                     progressTopic = progressTopic,
                     status = Progress.Failed,
                     expectedBag = Some(bagId)) { events =>
