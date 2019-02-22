@@ -1,1 +1,1 @@
-{"id" : "bags", "folder" : "bags", "dependencyIds" : ["bags_common"]}
+{"id" : "bags", "folder" : "bags", "dependencyIds" : ["common"]}

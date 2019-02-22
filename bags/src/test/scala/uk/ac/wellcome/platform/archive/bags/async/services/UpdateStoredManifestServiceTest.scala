@@ -5,7 +5,7 @@ import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bags.async.fixtures.UpdateStoredManifestServiceFixture
-import uk.ac.wellcome.platform.archive.bags.generators.StorageManifestGenerators
+import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class UpdateStoredManifestServiceTest
@@ -20,8 +20,7 @@ class UpdateStoredManifestServiceTest
         withUpdateStoredManifestService(table, bucket) { service =>
           val future = service.updateStoredManifest(storageManifest)
 
-          whenReady(future) { result =>
-            result.isSuccess shouldBe true
+          whenReady(future) { _ =>
             assertStored(table, storageManifest.id.toString, storageManifest)
           }
         }
@@ -35,9 +34,7 @@ class UpdateStoredManifestServiceTest
         service =>
           val future = service.updateStoredManifest(createStorageManifest)
 
-          whenReady(future) { result =>
-            result.isFailure shouldBe true
-            val err = result.failed.get
+          whenReady(future.failed) { err =>
             err shouldBe a[AmazonS3Exception]
           }
       }

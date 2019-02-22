@@ -10,7 +10,8 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
-  BagInfoGenerators
+  BagInfoGenerators,
+  StorageManifestGenerators
 }
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.display.{
@@ -18,7 +19,6 @@ import uk.ac.wellcome.platform.archive.display.{
   DisplayStorageSpace,
   StandardDisplayProvider
 }
-import uk.ac.wellcome.platform.archive.bags.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
 import uk.ac.wellcome.platform.storage.bags.api.models.{
   DisplayBag,

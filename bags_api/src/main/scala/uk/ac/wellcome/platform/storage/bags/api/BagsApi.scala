@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
 }
-import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.models.StorageManifest
 import uk.ac.wellcome.storage.ObjectStore
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
 import uk.ac.wellcome.typesafe.Runnable

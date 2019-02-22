@@ -9,10 +9,10 @@ import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
-  RandomThings
+  RandomThings,
+  StorageManifestVHSFixture
 }
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
-import uk.ac.wellcome.platform.archive.bags.fixtures.StorageManifestVHSFixture
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket

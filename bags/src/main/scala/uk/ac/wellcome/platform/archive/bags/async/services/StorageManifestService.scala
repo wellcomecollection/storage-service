@@ -5,14 +5,14 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
-import uk.ac.wellcome.platform.archive.bags.common.models.{
-  ChecksumAlgorithm,
-  FileManifest,
-  StorageManifest
-}
 import uk.ac.wellcome.platform.archive.common.bag.{
   BagDigestFileCreator,
   BagInfoParser
+}
+import uk.ac.wellcome.platform.archive.common.models.{
+  ChecksumAlgorithm,
+  FileManifest,
+  StorageManifest
 }
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagDigestFile,

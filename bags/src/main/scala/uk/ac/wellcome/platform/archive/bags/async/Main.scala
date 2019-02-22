@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.bags.async.services.{
   StorageManifestService,
   UpdateStoredManifestService
 }
-import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.models.StorageManifest
 import uk.ac.wellcome.storage.typesafe.{S3Builder, VHSBuilder}
 import uk.ac.wellcome.storage.vhs.EmptyMetadata
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp

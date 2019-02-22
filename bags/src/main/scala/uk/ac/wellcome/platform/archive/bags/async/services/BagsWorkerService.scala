@@ -11,9 +11,11 @@ import uk.ac.wellcome.messaging.sns.{
 }
 import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
-import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.SQSWorkerService
-import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
+import uk.ac.wellcome.platform.archive.common.models.{
+  ReplicationResult,
+  StorageManifest
+}
 import uk.ac.wellcome.platform.archive.common.progress.models.{
   Progress,
   ProgressEvent,
@@ -61,6 +63,8 @@ class BagsWorkerService(
     tryStorageManifest match {
       case Success(storageManifest) =>
         updateStoredManifestService.updateStoredManifest(storageManifest)
+          .map { _ => Success(()) }
+          .recover { case err: Throwable => Failure(err) }
       case Failure(err) => Future.successful(Failure(err))
     }
 

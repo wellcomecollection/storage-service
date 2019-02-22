@@ -1,7 +1,9 @@
-package uk.ac.wellcome.platform.archive.bags.fixtures
+package uk.ac.wellcome.platform.archive.common.fixtures
 
+import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bags.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.storage.ObjectStore
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
@@ -12,8 +14,6 @@ import uk.ac.wellcome.storage.vhs.{
   VHSIndexEntry,
   VersionedHybridStore
 }
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

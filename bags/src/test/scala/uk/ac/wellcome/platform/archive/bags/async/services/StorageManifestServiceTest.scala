@@ -5,12 +5,14 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bags.async.generators.BagManifestUpdateGenerators
 import uk.ac.wellcome.platform.archive.bags.async.models.BagManifestUpdate
-import uk.ac.wellcome.platform.archive.bags.common.models.ChecksumAlgorithm
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
 }
-import uk.ac.wellcome.platform.archive.common.models.bagit
+import uk.ac.wellcome.platform.archive.common.models.{
+  ChecksumAlgorithm,
+  bagit
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.progress.models.{
   InfrequentAccessStorageProvider,
