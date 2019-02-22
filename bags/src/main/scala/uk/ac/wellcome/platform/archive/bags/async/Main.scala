@@ -7,10 +7,10 @@ import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.messaging.typesafe.{SNSBuilder, SQSBuilder}
 import uk.ac.wellcome.platform.archive.bags.async.services.{
   BagsWorkerService,
-  StorageManifestService,
-  UpdateStoredManifestService
+  StorageManifestService
 }
 import uk.ac.wellcome.platform.archive.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.storage.typesafe.{S3Builder, VHSBuilder}
 import uk.ac.wellcome.storage.vhs.EmptyMetadata
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -28,14 +28,14 @@ object Main extends WellcomeTypesafeApp {
       s3Client = S3Builder.buildS3Client(config)
     )
 
-    val updateStoredManifestService = new UpdateStoredManifestService(
+    val storageManifestVHS = new StorageManifestVHS(
       vhs = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
     )
 
     new BagsWorkerService(
       sqsStream = SQSBuilder.buildSQSStream[NotificationMessage](config),
       storageManifestService = storageManifestService,
-      updateStoredManifestService = updateStoredManifestService,
+      storageManifestVHS = storageManifestVHS,
       progressSnsWriter = SNSBuilder.buildSNSWriter(config)
     )
   }
