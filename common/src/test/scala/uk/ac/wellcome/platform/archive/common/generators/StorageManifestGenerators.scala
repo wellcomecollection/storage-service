@@ -10,7 +10,8 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
 import uk.ac.wellcome.platform.archive.common.models.{
   ChecksumAlgorithm,
   FileManifest,
-  StorageManifest
+  StorageManifest,
+  StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.progress.models.{
   StandardStorageProvider,
@@ -22,13 +23,14 @@ trait StorageManifestGenerators
     extends BagInfoGenerators
     with StorageSpaceGenerators {
   def createStorageManifestWith(
+    space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
     checksumAlgorithm: String = "sha256",
     accessLocation: ObjectLocation = ObjectLocation("bucket", "path"),
     archiveLocations: List[ObjectLocation] = List.empty
   ): StorageManifest =
     StorageManifest(
-      space = createStorageSpace,
+      space = space,
       info = bagInfo,
       manifest = FileManifest(
         checksumAlgorithm = ChecksumAlgorithm(checksumAlgorithm),

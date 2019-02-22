@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.common.storage
 import uk.ac.wellcome.platform.archive.common.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.storage.ObjectStore
+import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,4 +29,7 @@ class StorageManifestVHS(
         (ifExisting(existingStorageManifest: StorageManifest), existingMetadata: EmptyMetadata)
     )
       .map { _ => () }
+
+  def insertRecord(storageManifest: StorageManifest): Future[Unit] =
+    updateRecord(storageManifest)(_ => storageManifest)
 }
