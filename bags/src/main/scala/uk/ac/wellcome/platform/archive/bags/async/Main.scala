@@ -29,7 +29,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val storageManifestVHS = new StorageManifestVHS(
-      vhs = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
+      underlying = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
     )
 
     new BagsWorkerService(

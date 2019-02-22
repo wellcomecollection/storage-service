@@ -17,7 +17,7 @@ trait StorageManifestVHSFixture extends LocalVersionedHybridStore {
   def withStorageManifestVHS[R](table: Table, bucket: Bucket)(
     testWith: TestWith[StorageManifestVHS, R]): R =
     withTypeVHS[StorageManifest, EmptyMetadata, R](bucket, table) { vhs =>
-      val storageManifestVHS = new StorageManifestVHS(vhs = vhs)
+      val storageManifestVHS = new StorageManifestVHS(underlying = vhs)
       testWith(storageManifestVHS)
     }
 

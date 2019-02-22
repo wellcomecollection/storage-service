@@ -9,18 +9,18 @@ import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
 import scala.concurrent.{ExecutionContext, Future}
 
 class StorageManifestVHS(
-  vhs: VersionedHybridStore[StorageManifest,
-                            EmptyMetadata,
-                            ObjectStore[StorageManifest]]
+  underlying: VersionedHybridStore[StorageManifest,
+                                   EmptyMetadata,
+                                   ObjectStore[StorageManifest]]
 )(implicit ec: ExecutionContext) {
 
   def getRecord(id: BagId): Future[Option[StorageManifest]] =
-    vhs.getRecord(id = id.toString)
+    underlying.getRecord(id = id.toString)
 
   def updateRecord(
     ifNotExisting: StorageManifest)(
     ifExisting: StorageManifest => StorageManifest): Future[Unit] =
-    vhs.updateRecord(
+    underlying.updateRecord(
       id = ifNotExisting.id.toString
     )(
       ifNotExisting = (ifNotExisting, EmptyMetadata())
