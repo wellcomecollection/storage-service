@@ -4,7 +4,11 @@ import java.util.UUID
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.{NotificationMessage, PublishAttempt, SNSWriter}
+import uk.ac.wellcome.messaging.sns.{
+  NotificationMessage,
+  PublishAttempt,
+  SNSWriter
+}
 import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.platform.archive.common.SQSWorkerService
 import uk.ac.wellcome.platform.archive.common.models.{
@@ -50,17 +54,24 @@ class BagsWorkerService(
       )
     } yield ()
 
-  private def createManifest(bagRequest: BagRequest): Future[Try[StorageManifest]] =
-    storageManifestService.createManifest(bagRequest)
-      .map { storageManifest => Success(storageManifest) }
+  private def createManifest(
+    bagRequest: BagRequest): Future[Try[StorageManifest]] =
+    storageManifestService
+      .createManifest(bagRequest)
+      .map { storageManifest =>
+        Success(storageManifest)
+      }
       .recover { case err: Throwable => Failure(err) }
 
   private def updateStorageManifest(
     tryStorageManifest: Try[StorageManifest]): Future[Try[Unit]] =
     tryStorageManifest match {
       case Success(storageManifest) =>
-        storageManifestVHS.updateRecord(storageManifest)(_ => storageManifest)
-          .map { _ => Success(()) }
+        storageManifestVHS
+          .updateRecord(storageManifest)(_ => storageManifest)
+          .map { _ =>
+            Success(())
+          }
           .recover { case err: Throwable => Failure(err) }
       case Failure(err) => Future.successful(Failure(err))
     }

@@ -7,14 +7,17 @@ import akka.http.scaladsl.server.Route
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagId,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBag
 
 import scala.concurrent.ExecutionContext
 
-class Router(vhs: StorageManifestVHS,
-             contextURL: URL)(implicit val ec: ExecutionContext) {
+class Router(vhs: StorageManifestVHS, contextURL: URL)(
+  implicit val ec: ExecutionContext) {
 
   def routes: Route = {
     import akka.http.scaladsl.server.Directives._

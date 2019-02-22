@@ -38,44 +38,45 @@ class BagsWorkerServiceTest
             val createdAfterDate = Instant.now()
             val bagInfo = createBagInfo
 
-            withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") { accessBagLocation =>
-              val replicationResult =
-                createReplicationResultWith(accessBagLocation)
+            withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") {
+              accessBagLocation =>
+                val replicationResult =
+                  createReplicationResultWith(accessBagLocation)
 
-              val bagId = BagId(
-                space = accessBagLocation.storageSpace,
-                externalIdentifier = bagInfo.externalIdentifier
-              )
-
-              val notification =
-                createNotificationMessageWith(replicationResult)
-
-              val future = service.processMessage(notification)
-
-              whenReady(future) { _ =>
-                val storageManifest = getStorageManifest(table, id = bagId)
-
-                storageManifest.space shouldBe bagId.space
-                storageManifest.info shouldBe bagInfo
-                storageManifest.manifest.files should have size 1
-
-                storageManifest.accessLocation shouldBe StorageLocation(
-                  provider = InfrequentAccessStorageProvider,
-                  location = accessBagLocation.objectLocation
+                val bagId = BagId(
+                  space = accessBagLocation.storageSpace,
+                  externalIdentifier = bagInfo.externalIdentifier
                 )
-                storageManifest.archiveLocations shouldBe List.empty
 
-                storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+                val notification =
+                  createNotificationMessageWith(replicationResult)
 
-                assertTopicReceivesProgressStatusUpdate(
-                  requestId = replicationResult.archiveRequestId,
-                  progressTopic = progressTopic,
-                  status = Progress.Completed,
-                  expectedBag = Some(bagId)) { events =>
-                  events.size should be >= 1
-                  events.head.description shouldBe "Bag registered successfully"
+                val future = service.processMessage(notification)
+
+                whenReady(future) { _ =>
+                  val storageManifest = getStorageManifest(table, id = bagId)
+
+                  storageManifest.space shouldBe bagId.space
+                  storageManifest.info shouldBe bagInfo
+                  storageManifest.manifest.files should have size 1
+
+                  storageManifest.accessLocation shouldBe StorageLocation(
+                    provider = InfrequentAccessStorageProvider,
+                    location = accessBagLocation.objectLocation
+                  )
+                  storageManifest.archiveLocations shouldBe List.empty
+
+                  storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+
+                  assertTopicReceivesProgressStatusUpdate(
+                    requestId = replicationResult.archiveRequestId,
+                    progressTopic = progressTopic,
+                    status = Progress.Completed,
+                    expectedBag = Some(bagId)) { events =>
+                    events.size should be >= 1
+                    events.head.description shouldBe "Bag registered successfully"
+                  }
                 }
-              }
             }
           }
         }
@@ -126,30 +127,31 @@ class BagsWorkerServiceTest
             service =>
               val bagInfo = createBagInfo
 
-              withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") { accessBagLocation =>
-                val replicationResult =
-                  createReplicationResultWith(accessBagLocation)
+              withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") {
+                accessBagLocation =>
+                  val replicationResult =
+                    createReplicationResultWith(accessBagLocation)
 
-                val bagId = BagId(
-                  space = accessBagLocation.storageSpace,
-                  externalIdentifier = bagInfo.externalIdentifier
-                )
+                  val bagId = BagId(
+                    space = accessBagLocation.storageSpace,
+                    externalIdentifier = bagInfo.externalIdentifier
+                  )
 
-                val notification =
-                  createNotificationMessageWith(replicationResult)
+                  val notification =
+                    createNotificationMessageWith(replicationResult)
 
-                val future = service.processMessage(notification)
+                  val future = service.processMessage(notification)
 
-                whenReady(future) { _ =>
-                  assertTopicReceivesProgressStatusUpdate(
-                    requestId = replicationResult.archiveRequestId,
-                    progressTopic = progressTopic,
-                    status = Progress.Failed,
-                    expectedBag = Some(bagId)) { events =>
-                    events.size should be >= 1
-                    events.head.description shouldBe "Failed to register bag"
+                  whenReady(future) { _ =>
+                    assertTopicReceivesProgressStatusUpdate(
+                      requestId = replicationResult.archiveRequestId,
+                      progressTopic = progressTopic,
+                      status = Progress.Failed,
+                      expectedBag = Some(bagId)) { events =>
+                      events.size should be >= 1
+                      events.head.description shouldBe "Failed to register bag"
+                    }
                   }
-                }
               }
           }
         }

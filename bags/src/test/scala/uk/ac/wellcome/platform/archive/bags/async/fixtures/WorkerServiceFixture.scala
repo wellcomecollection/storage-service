@@ -7,7 +7,10 @@ import uk.ac.wellcome.messaging.fixtures.{SNS, SQS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.sns.NotificationMessage
 import uk.ac.wellcome.platform.archive.bags.async.services.BagsWorkerService
-import uk.ac.wellcome.platform.archive.common.fixtures.{RandomThings, StorageManifestVHSFixture}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  RandomThings,
+  StorageManifestVHSFixture
+}
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService

@@ -21,9 +21,8 @@ trait StorageManifestVHSFixture extends LocalVersionedHybridStore {
       testWith(storageManifestVHS)
     }
 
-  def storeSingleManifest(
-    vhs: StorageManifestVHS,
-    storageManifest: StorageManifest): Future[Unit] =
+  def storeSingleManifest(vhs: StorageManifestVHS,
+                          storageManifest: StorageManifest): Future[Unit] =
     vhs.updateRecord(
       ifNotExisting = storageManifest
     )(

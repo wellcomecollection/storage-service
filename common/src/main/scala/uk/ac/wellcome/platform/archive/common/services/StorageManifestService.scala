@@ -68,9 +68,7 @@ class StorageManifestService(s3Client: AmazonS3)(
     }
 
   private def parseBagInfo(bagInfoInputStream: InputStream): Try[BagInfo] =
-    BagInfoParser.parseBagInfo(
-      (),
-      inputStream = bagInfoInputStream) match {
+    BagInfoParser.parseBagInfo((), inputStream = bagInfoInputStream) match {
       case Right(bagInfo) => Success(bagInfo)
       case Left(err)      => Failure(throw new RuntimeException(err.toString))
     }

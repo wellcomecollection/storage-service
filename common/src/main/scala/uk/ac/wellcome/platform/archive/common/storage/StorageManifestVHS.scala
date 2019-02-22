@@ -17,18 +17,23 @@ class StorageManifestVHS(
   def getRecord(id: BagId): Future[Option[StorageManifest]] =
     underlying.getRecord(id = id.toString)
 
-  def updateRecord(
-    ifNotExisting: StorageManifest)(
+  def updateRecord(ifNotExisting: StorageManifest)(
     ifExisting: StorageManifest => StorageManifest): Future[Unit] =
-    underlying.updateRecord(
-      id = ifNotExisting.id.toString
-    )(
-      ifNotExisting = (ifNotExisting, EmptyMetadata())
-    )(
-      ifExisting = (existingStorageManifest: StorageManifest, existingMetadata: EmptyMetadata) =>
-        (ifExisting(existingStorageManifest: StorageManifest), existingMetadata: EmptyMetadata)
-    )
-      .map { _ => () }
+    underlying
+      .updateRecord(
+        id = ifNotExisting.id.toString
+      )(
+        ifNotExisting = (ifNotExisting, EmptyMetadata())
+      )(
+        ifExisting = (existingStorageManifest: StorageManifest,
+                      existingMetadata: EmptyMetadata) =>
+          (
+            ifExisting(existingStorageManifest: StorageManifest),
+            existingMetadata: EmptyMetadata)
+      )
+      .map { _ =>
+        ()
+      }
 
   def insertRecord(storageManifest: StorageManifest): Future[Unit] =
     updateRecord(storageManifest)(_ => storageManifest)

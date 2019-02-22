@@ -8,9 +8,9 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   FileEntry
 }
 import uk.ac.wellcome.platform.archive.common.models.{
+  bagit,
   BagRequest,
-  ChecksumAlgorithm,
-  bagit
+  ChecksumAlgorithm
 }
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.progress.models.{

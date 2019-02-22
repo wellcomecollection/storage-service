@@ -5,7 +5,12 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 
-class StorageManifestVHSTest extends FunSpec with Matchers with ScalaFutures with StorageManifestGenerators with StorageManifestVHSFixture {
+class StorageManifestVHSTest
+    extends FunSpec
+    with Matchers
+    with ScalaFutures
+    with StorageManifestGenerators
+    with StorageManifestVHSFixture {
   it("allows storing and retrieving a record") {
     val storageManifest = createStorageManifest
 
@@ -28,7 +33,8 @@ class StorageManifestVHSTest extends FunSpec with Matchers with ScalaFutures wit
           whenReady(futureInsert) { _ =>
             getStorageManifest(table, storageManifest.id) shouldBe storageManifest
 
-            val future = vhs.updateRecord(newStorageManifest)(_ => newStorageManifest)
+            val future =
+              vhs.updateRecord(newStorageManifest)(_ => newStorageManifest)
             whenReady(future) { _ =>
               getStorageManifest(table, storageManifest.id) shouldBe newStorageManifest
 
