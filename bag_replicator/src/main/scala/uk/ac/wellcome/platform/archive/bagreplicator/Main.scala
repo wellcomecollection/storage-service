@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.bagreplicator
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.SNSWriter
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
@@ -33,24 +32,12 @@ object Main extends WellcomeTypesafeApp {
       s3PrefixCopier = s3PrefixCopier
     )
 
-    val snsMessageWriter = SNSBuilder.buildSNSMessageWriter(config)
-
-    val progressSnsConfig = new SNSWriter(
-      snsMessageWriter = snsMessageWriter,
-      snsConfig = SNSBuilder.buildSNSConfig(config, namespace = "progress")
-    )
-
-    val outgoingSnsWriter = new SNSWriter(
-      snsMessageWriter = snsMessageWriter,
-      snsConfig = SNSBuilder.buildSNSConfig(config, namespace = "outgoing")
-    )
-
     new BagReplicatorWorkerService(
       notificationStream = NotificationStreamBuilder.buildStream[BagRequest](config),
       bagStorageService = bagStorageService,
       bagReplicatorConfig = BagReplicatorConfig.buildBagReplicatorConfig(config),
-      progressSnsWriter = progressSnsConfig,
-      outgoingSnsWriter = outgoingSnsWriter
+      progressSnsWriter = SNSBuilder.buildSNSWriter(config, namespace = "progress"),
+      outgoingSnsWriter = SNSBuilder.buildSNSWriter(config, namespace = "outgoing")
     )
   }
 }
