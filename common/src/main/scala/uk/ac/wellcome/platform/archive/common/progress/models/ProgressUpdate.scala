@@ -25,7 +25,10 @@ case class ProgressStatusUpdate(
 ) extends ProgressUpdate
 
 case object ProgressStatusUpdate {
-  def apply(id: UUID, status: Progress.Status, affectedBag: BagId, events: Seq[String] = List.empty): ProgressStatusUpdate =
+  def apply(id: UUID,
+            status: Progress.Status,
+            affectedBag: BagId,
+            events: Seq[String] = List.empty): ProgressStatusUpdate =
     ProgressStatusUpdate(
       id = id,
       status = status,
@@ -33,7 +36,9 @@ case object ProgressStatusUpdate {
       events = events.map { ProgressEvent(_) }
     )
 
-  def apply(id: UUID, status: Progress.Status, events: Seq[String] = List.empty): ProgressStatusUpdate =
+  def apply(id: UUID,
+            status: Progress.Status,
+            events: Seq[String] = List.empty): ProgressStatusUpdate =
     ProgressStatusUpdate(
       id = id,
       status = status,

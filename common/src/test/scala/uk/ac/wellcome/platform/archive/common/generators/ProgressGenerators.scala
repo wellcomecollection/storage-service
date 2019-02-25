@@ -50,11 +50,10 @@ trait ProgressGenerators extends BagIdGenerators {
   def createProgressEventUpdate: ProgressEventUpdate =
     createProgressEventUpdateWith(id = UUID.randomUUID())
 
-  def createProgressStatusUpdateWith(
-    id: UUID = randomUUID,
-    status: Status = Progress.Accepted,
-    affectedBag: Option[BagId] = Some(createBagId))
-    : ProgressStatusUpdate =
+  def createProgressStatusUpdateWith(id: UUID = randomUUID,
+                                     status: Status = Progress.Accepted,
+                                     affectedBag: Option[BagId] = Some(
+                                       createBagId)): ProgressStatusUpdate =
     ProgressStatusUpdate(
       id = id,
       status = status,
