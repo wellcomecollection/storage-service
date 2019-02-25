@@ -6,7 +6,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.common.config.builders.HTTPServerBuilder
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.notifier.services.{CallbackUrlService, NotifierWorkerService}
+import uk.ac.wellcome.platform.archive.notifier.services.{
+  CallbackUrlService,
+  NotifierWorkerService
+}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
@@ -23,7 +26,8 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new NotifierWorkerService(
-      notificationStream = NotificationStreamBuilder.buildStream[CallbackNotification](config),
+      notificationStream =
+        NotificationStreamBuilder.buildStream[CallbackNotification](config),
       callbackUrlService = callbackUrlService,
       snsWriter = SNSBuilder.buildSNSWriter(config)
     )

@@ -10,9 +10,10 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NotifierWorkerService(notificationStream: NotificationStream[CallbackNotification],
-                            callbackUrlService: CallbackUrlService,
-                            snsWriter: SNSWriter)(implicit ec: ExecutionContext)
+class NotifierWorkerService(
+  notificationStream: NotificationStream[CallbackNotification],
+  callbackUrlService: CallbackUrlService,
+  snsWriter: SNSWriter)(implicit ec: ExecutionContext)
     extends Runnable {
 
   def run(): Future[Done] =

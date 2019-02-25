@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.models.{
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
 class BagReplicatorFeatureTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with BagReplicatorFixtures
@@ -38,7 +38,7 @@ class BagReplicatorFeatureTest
 
                 sendNotificationToSQS(queue, replicationRequest)
 
-               eventually {
+                eventually {
                   val outgoingMessages =
                     listMessagesReceivedFromSNS(outgoingTopic)
                   val results =

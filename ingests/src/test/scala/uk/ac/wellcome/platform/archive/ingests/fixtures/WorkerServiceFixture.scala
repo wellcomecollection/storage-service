@@ -20,17 +20,16 @@ trait WorkerServiceFixture
     testWith: TestWith[IngestsWorkerService, R]): R =
     withNotificationStream[ProgressUpdate, R](queue) { notificationStream =>
       withProgressTracker(table) { progressTracker =>
-        withCallbackNotificationService(topic) {
-          callbackNotificationService =>
-            val service = new IngestsWorkerService(
-              notificationStream = notificationStream,
-              progressTracker = progressTracker,
-              callbackNotificationService = callbackNotificationService
-            )
+        withCallbackNotificationService(topic) { callbackNotificationService =>
+          val service = new IngestsWorkerService(
+            notificationStream = notificationStream,
+            progressTracker = progressTracker,
+            callbackNotificationService = callbackNotificationService
+          )
 
-            service.run()
+          service.run()
 
-            testWith(service)
+          testWith(service)
         }
       }
     }

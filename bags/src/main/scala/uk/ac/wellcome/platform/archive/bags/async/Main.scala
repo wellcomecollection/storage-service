@@ -5,7 +5,10 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bags.async.services.BagsWorkerService
-import uk.ac.wellcome.platform.archive.common.models.{ReplicationResult, StorageManifest}
+import uk.ac.wellcome.platform.archive.common.models.{
+  ReplicationResult,
+  StorageManifest
+}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.storage.typesafe.{S3Builder, VHSBuilder}
@@ -30,7 +33,8 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new BagsWorkerService(
-      notificationStream = NotificationStreamBuilder.buildStream[ReplicationResult](config),
+      notificationStream =
+        NotificationStreamBuilder.buildStream[ReplicationResult](config),
       storageManifestService = storageManifestService,
       storageManifestVHS = storageManifestVHS,
       progressSnsWriter = SNSBuilder.buildSNSWriter(config)

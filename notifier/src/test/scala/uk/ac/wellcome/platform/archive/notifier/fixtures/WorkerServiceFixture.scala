@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.notifier.services.NotifierWorkerService
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture
-    extends  BagIt
+    extends BagIt
     with CallbackUrlServiceFixture
     with NotificationStreamFixture
     with SNS {
@@ -20,20 +20,21 @@ trait WorkerServiceFixture
   private def withApp[R](queue: Queue, topic: Topic)(
     testWith: TestWith[NotifierWorkerService, R]): R =
     withActorSystem { implicit actorSystem =>
-      withNotificationStream[CallbackNotification, R](queue) { notificationStream =>
-        withCallbackUrlService { callbackUrlService =>
-          withSNSWriter(topic) { snsWriter =>
-            val workerService = new NotifierWorkerService(
-              notificationStream = notificationStream,
-              callbackUrlService = callbackUrlService,
-              snsWriter = snsWriter
-            )
+      withNotificationStream[CallbackNotification, R](queue) {
+        notificationStream =>
+          withCallbackUrlService { callbackUrlService =>
+            withSNSWriter(topic) { snsWriter =>
+              val workerService = new NotifierWorkerService(
+                notificationStream = notificationStream,
+                callbackUrlService = callbackUrlService,
+                snsWriter = snsWriter
+              )
 
-            workerService.run()
+              workerService.run()
 
-            testWith(workerService)
+              testWith(workerService)
+            }
           }
-        }
       }
     }
 

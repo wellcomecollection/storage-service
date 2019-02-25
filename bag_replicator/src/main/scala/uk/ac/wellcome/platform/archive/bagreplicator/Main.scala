@@ -5,8 +5,14 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.{S3Copier, S3PrefixCopier}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagReplicatorWorkerService,
+  BagStorageService
+}
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.{
+  S3Copier,
+  S3PrefixCopier
+}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -33,11 +39,14 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new BagReplicatorWorkerService(
-      notificationStream = NotificationStreamBuilder.buildStream[BagRequest](config),
+      notificationStream =
+        NotificationStreamBuilder.buildStream[BagRequest](config),
       bagStorageService = bagStorageService,
       bagReplicatorConfig = BagReplicatorConfig.buildBagReplicatorConfig(config),
-      progressSnsWriter = SNSBuilder.buildSNSWriter(config, namespace = "progress"),
-      outgoingSnsWriter = SNSBuilder.buildSNSWriter(config, namespace = "outgoing")
+      progressSnsWriter =
+        SNSBuilder.buildSNSWriter(config, namespace = "progress"),
+      outgoingSnsWriter =
+        SNSBuilder.buildSNSWriter(config, namespace = "outgoing")
     )
   }
 }

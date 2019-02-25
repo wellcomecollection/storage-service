@@ -7,8 +7,17 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
-import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult, StorageManifest}
-import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
+import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
+  ReplicationResult,
+  StorageManifest
+}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Progress,
+  ProgressEvent,
+  ProgressStatusUpdate,
+  ProgressUpdate
+}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.typesafe.Runnable
@@ -21,7 +30,8 @@ class BagsWorkerService(
   storageManifestService: StorageManifestService,
   storageManifestVHS: StorageManifestVHS,
   progressSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
-    extends Logging with Runnable {
+    extends Logging
+    with Runnable {
 
   def run(): Future[Done] =
     notificationStream.run(processMessage)

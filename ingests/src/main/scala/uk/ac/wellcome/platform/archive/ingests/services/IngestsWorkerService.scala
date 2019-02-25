@@ -12,7 +12,8 @@ class IngestsWorkerService(
   notificationStream: NotificationStream[ProgressUpdate],
   progressTracker: ProgressTracker,
   callbackNotificationService: CallbackNotificationService
-)(implicit ec: ExecutionContext) extends Runnable {
+)(implicit ec: ExecutionContext)
+    extends Runnable {
 
   def run(): Future[Done] =
     notificationStream.run(processMessage)
