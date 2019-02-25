@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.notifier.fixtures
 
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
@@ -12,7 +13,8 @@ import uk.ac.wellcome.platform.archive.notifier.services.NotifierWorkerService
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture
-    extends BagIt
+    extends Akka
+    with BagIt
     with CallbackUrlServiceFixture
     with NotificationStreamFixture
     with SNS {
