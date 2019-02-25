@@ -92,3 +92,25 @@ variable "s3_bagger_errors_arn" {}
 variable "s3_bagger_drop_name" {}
 variable "s3_bagger_drop_mets_only_name" {}
 variable "s3_bagger_errors_name" {}
+
+# Task counts
+
+variable "desired_archivist_count" {
+  default = 2
+}
+
+variable "desired_bagger_count" {
+  default = 4
+}
+
+variable "desired_bags_api_count" {
+  default = 3
+}
+
+variable "desired_ingests_api_count" {
+  default = 3
+}
+
+variable "desired_archivist_ec2_instances" {
+  default = 2
+}

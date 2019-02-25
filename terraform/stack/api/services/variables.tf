@@ -17,6 +17,9 @@ data "aws_vpc" "vpc" {
   id = "${var.vpc_id}"
 }
 
+variable "desired_bags_api_count" {}
+variable "desired_ingests_api_count" {}
+
 # Ingests Endpoint
 
 variable "ingests_container_image" {}

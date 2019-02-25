@@ -10,6 +10,9 @@ module "services" {
   vpc_id     = "${var.vpc_id}"
   nlb_arn    = "${module.nlb.arn}"
 
+  desired_bags_api_count    = "${var.desired_bags_api_count}"
+  desired_ingests_api_count = "${var.desired_ingests_api_count}"
+
   # Bags endpoint
 
   bags_container_image       = "${var.bags_container_image}"
