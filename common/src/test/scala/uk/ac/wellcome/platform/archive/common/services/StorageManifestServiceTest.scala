@@ -28,7 +28,9 @@ class StorageManifestServiceTest
     with BagLocationFixtures
     with S3 {
 
-  val service = new StorageManifestService(s3Client)
+  implicit val _ = s3Client
+
+  val service = new StorageManifestService()
 
   it("returns a StorageManifest if reading a bag location succeeds") {
     withLocalS3Bucket { bucket =>

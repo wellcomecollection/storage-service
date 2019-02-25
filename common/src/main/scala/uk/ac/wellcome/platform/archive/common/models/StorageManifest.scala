@@ -9,7 +9,9 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
 }
 import uk.ac.wellcome.platform.archive.common.progress.models.StorageLocation
 
-case class ChecksumAlgorithm(value: String)
+case class ChecksumAlgorithm(value: String) {
+  override def toString: String = value
+}
 
 case class StorageManifest(
   space: StorageSpace,

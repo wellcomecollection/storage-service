@@ -5,7 +5,7 @@ import java.io.InputStream
 import uk.ac.wellcome.platform.archive.common.models.{ChecksumAlgorithm, FileManifest}
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
@@ -16,7 +16,7 @@ object FileManifestParser {
   def create(
               inputStream: InputStream,
               checksumAlgorithm: ChecksumAlgorithm
-            ): Future[FileManifest] = {
+            )(implicit executionContext: ExecutionContext): Future[FileManifest] = {
 
     val lines = scala.io.Source
       .fromInputStream(inputStream)

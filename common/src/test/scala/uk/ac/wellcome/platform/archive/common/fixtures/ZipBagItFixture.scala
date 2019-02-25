@@ -21,7 +21,7 @@ trait ZipBagItFixture extends BagInfoGenerators with BagIt with Logging {
 
         files.foreach {
           case FileEntry(name, contents) =>
-            info(s"Adding $name to zip contents")
+            println(s"Adding $name to zip contents")
             val zipEntry = new ZipEntry(name)
             zipOutputStream.putNextEntry(zipEntry)
             zipOutputStream.write(contents.getBytes)
@@ -57,6 +57,7 @@ trait ZipBagItFixture extends BagInfoGenerators with BagIt with Logging {
       createBagItFile = createBagItFile,
       createBagInfoFile = createBagInfoFile
     )
+
     info(s"Adding files $allFiles to bag ${bagInfo.externalIdentifier}")
     withZipFile(allFiles) { zipFile =>
       testWith(zipFile)

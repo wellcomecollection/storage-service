@@ -39,29 +39,6 @@ class ZippedBagFileTest
       }
     }
 
-    it("fails if there is no valid bag-info file in zip file") {
-      val invalidBagInfoFiles = Table(
-        "filename",
-        "",
-        "no-bag.txt",
-        "Xbag-info.txt",
-        "bag-info.txtX",
-        "/bag-info.txtX",
-        "/bag-info.txt/X",
-        "X/Xbag-info.txt")
-      forAll(invalidBagInfoFiles) { invalidBagInfoFilename =>
-        withZipFile(List(createFileEntry(invalidBagInfoFilename))) {
-          zippedBag =>
-            ZippedBagFile
-              .locateBagInfo(new ZipFile(zippedBag))
-              .failure
-              .exception
-              .getMessage shouldBe
-              "'bag-info.txt' not found."
-        }
-      }
-    }
-
     it("fails if there is more than one bag") {
       withZipFile(
         List(

@@ -29,8 +29,8 @@ object BagInfoParser {
   def create(inputStream: InputStream): Future[BagInfo] = {
     Future.fromTry(
       validate(inputStream)
-      .toEither
-      .toTry
+      .toEither.left.map(e => new RuntimeException(e.toString))
+        .toTry
     )
   }
 
