@@ -170,5 +170,6 @@ module "bag_replicator_queue" {
   # of S3 objects for a single message), we keep a high visibility timeout to
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = "${60 * 60 * 5}"
-  max_receive_count          = 1
+
+  max_receive_count = 1
 }
