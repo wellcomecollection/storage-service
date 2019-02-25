@@ -36,7 +36,8 @@ class StorageManifestServiceTest
       withBag(bucket, bagInfo = bagInfo) { bagLocation =>
         val bagRequest = createBagRequestWith(bagLocation)
 
-        val future = service.createManifest(bagRequest)
+        val future = service.createManifest(bagRequest.bagLocation)
+
 
         whenReady(future) { storageManifest =>
           storageManifest.space shouldBe bagLocation.storageSpace
@@ -83,7 +84,7 @@ class StorageManifestServiceTest
 
         val bagRequest = createBagRequestWith(bagLocation)
 
-        val future = service.createManifest(bagRequest)
+        val future = service.createManifest(bagRequest.bagLocation)
 
         whenReady(future.failed) { err =>
           err shouldBe a[AmazonS3Exception]
@@ -102,7 +103,7 @@ class StorageManifestServiceTest
 
           val bagRequest = createBagRequestWith(bagLocation)
 
-          val future = service.createManifest(bagRequest)
+          val future = service.createManifest(bagRequest.bagLocation)
 
           whenReady(future.failed) { err =>
             err shouldBe a[AmazonS3Exception]
@@ -122,7 +123,7 @@ class StorageManifestServiceTest
 
           val bagRequest = createBagRequestWith(bagLocation)
 
-          val future = service.createManifest(bagRequest)
+          val future = service.createManifest(bagRequest.bagLocation)
 
           whenReady(future.failed) { err =>
             err shouldBe a[AmazonS3Exception]
@@ -141,7 +142,7 @@ class StorageManifestServiceTest
           bagLocation =>
             val bagRequest = createBagRequestWith(bagLocation)
 
-            val future = service.createManifest(bagRequest)
+            val future = service.createManifest(bagRequest.bagLocation)
 
             whenReady(future.failed) { err =>
               err shouldBe a[RuntimeException]
@@ -161,7 +162,7 @@ class StorageManifestServiceTest
 
           val bagRequest = createBagRequestWith(bagLocation)
 
-          val future = service.createManifest(bagRequest)
+          val future = service.createManifest(bagRequest.bagLocation)
 
           whenReady(future.failed) { err =>
             err shouldBe a[AmazonS3Exception]
@@ -180,7 +181,7 @@ class StorageManifestServiceTest
           bagLocation =>
             val bagRequest = createBagRequestWith(bagLocation)
 
-            val future = service.createManifest(bagRequest)
+            val future = service.createManifest(bagRequest.bagLocation)
 
             whenReady(future.failed) { err =>
               err shouldBe a[RuntimeException]

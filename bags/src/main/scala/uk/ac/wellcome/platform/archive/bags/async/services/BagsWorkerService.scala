@@ -56,7 +56,7 @@ class BagsWorkerService(
   private def createManifest(
     bagRequest: BagRequest): Future[Try[StorageManifest]] =
     storageManifestService
-      .createManifest(bagRequest)
+      .createManifest(bagRequest.bagLocation)
       .map { storageManifest =>
         Success(storageManifest)
       }
