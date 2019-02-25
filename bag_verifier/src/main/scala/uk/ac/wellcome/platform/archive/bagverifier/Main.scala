@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.archive.bagverifier
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.messaging.typesafe.{SNSBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagverifier.config.BagVerifierConfig
+import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -14,9 +14,9 @@ object Main extends WellcomeTypesafeApp {
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
 
     new BagVerifier(
+      notificationStream = NotificationStreamBuilder.buildStream[BagRequest](config),
       s3Client = S3Builder.buildS3Client(config),
       snsClient = SNSBuilder.buildSNSClient(config),
-      sqsStream = SQSBuilder.buildSQSStream[NotificationMessage](config),
       bagVerifierConfig = BagVerifierConfig.buildBagVerifierConfig(config),
       ingestsSnsConfig =
         SNSBuilder.buildSNSConfig(config, namespace = "progress"),

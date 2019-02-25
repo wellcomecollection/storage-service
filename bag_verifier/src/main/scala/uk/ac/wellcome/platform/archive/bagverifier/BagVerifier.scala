@@ -7,8 +7,8 @@ import com.amazonaws.services.sns.AmazonSNS
 import com.amazonaws.services.sns.model.{PublishRequest, PublishResult}
 import grizzled.slf4j.Logging
 import io.circe.Encoder
-import uk.ac.wellcome.messaging.sns.{NotificationMessage, SNSConfig}
-import uk.ac.wellcome.messaging.sqs.SQSStream
+import uk.ac.wellcome.messaging.sns.SNSConfig
+import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagverifier.config.BagVerifierConfig
 import uk.ac.wellcome.typesafe.Runnable
 import uk.ac.wellcome.json.JsonUtil._
@@ -21,7 +21,7 @@ import scala.util.Try
 class BagVerifier(
   s3Client: AmazonS3,
   snsClient: AmazonSNS,
-  sqsStream: SQSStream[NotificationMessage],
+  notificationStream: NotificationStream[BagRequest],
   bagVerifierConfig: BagVerifierConfig,
   ingestsSnsConfig: SNSConfig,
   outgoingSnsConfig: SNSConfig
@@ -31,22 +31,11 @@ class BagVerifier(
     with Runnable {
 
   def run(): Future[Done] =
-    sqsStream.foreach(
-      this.getClass.getSimpleName,
-      processMessage
-    )
+    notificationStream.run(processMessage)
 
-  def processMessage(
-    notificationMessage: NotificationMessage
-  ): Future[Unit] =
+  def processMessage(bagRequest: BagRequest): Future[Unit] =
     for {
-      replicationRequest <- Future.fromTry(
-        fromJson[BagRequest](notificationMessage.body)
-      )
-
-      _ <- Future.fromTry(
-        notifyNext(replicationRequest)
-      )
+      _ <- Future.fromTry(notifyNext(bagRequest))
     } yield ()
 
   private def notifyNext(

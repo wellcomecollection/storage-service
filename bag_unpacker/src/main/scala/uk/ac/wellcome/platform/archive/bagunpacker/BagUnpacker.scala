@@ -7,8 +7,8 @@ import com.amazonaws.services.sns.AmazonSNS
 import com.amazonaws.services.sns.model.{PublishRequest, PublishResult}
 import grizzled.slf4j.Logging
 import io.circe.Encoder
-import uk.ac.wellcome.messaging.sns.{NotificationMessage, SNSConfig}
-import uk.ac.wellcome.messaging.sqs.SQSStream
+import uk.ac.wellcome.messaging.sns.SNSConfig
+import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagunpacker.config.BagUnpackerConfig
 import uk.ac.wellcome.typesafe.Runnable
 import uk.ac.wellcome.json.JsonUtil._
@@ -22,9 +22,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
 class BagUnpacker(
+  notificationStream: NotificationStream[UnpackBagRequest],
   s3Client: AmazonS3,
   snsClient: AmazonSNS,
-  sqsStream: SQSStream[NotificationMessage],
   bagUnpackerConfig: BagUnpackerConfig,
   ingestsSnsConfig: SNSConfig,
   outgoingSnsConfig: SNSConfig
@@ -34,25 +34,18 @@ class BagUnpacker(
     with Runnable {
 
   def run(): Future[Done] =
-    sqsStream.foreach(
-      this.getClass.getSimpleName,
-      processMessage
-    )
+    notificationStream.run(processMessage)
 
-  def processMessage(
-    notificationMessage: NotificationMessage
-  ): Future[Unit] =
+  def processMessage(unpackBagRequest: UnpackBagRequest): Future[Unit] =
     for {
-      unpackBagRequest <- Future.fromTry(
-        fromJson[UnpackBagRequest](notificationMessage.body)
-      )
-
       _ <- Future.fromTry(
         notifyNext(
           BagRequest(
-            unpackBagRequest.requestId,
-            unpackBagRequest.bagDestination
-          )))
+            archiveRequestId = unpackBagRequest.requestId,
+            bagLocation = unpackBagRequest.bagDestination
+          )
+        )
+      )
 
     } yield ()
 

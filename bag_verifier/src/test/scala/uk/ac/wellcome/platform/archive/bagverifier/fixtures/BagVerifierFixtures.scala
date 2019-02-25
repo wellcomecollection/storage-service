@@ -5,7 +5,7 @@ import java.util.UUID
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.Messaging
+import uk.ac.wellcome.messaging.fixtures.{Messaging, NotificationStreamFixture}
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.sns.NotificationMessage
@@ -24,7 +24,8 @@ trait BagVerifierFixtures
     with RandomThings
     with Messaging
     with Akka
-    with BagLocationFixtures {
+    with BagLocationFixtures
+    with NotificationStreamFixture {
 
   def withBagNotification[R](
     queue: Queue,
@@ -48,11 +49,11 @@ trait BagVerifierFixtures
     dstBucket: Bucket
   )(testWith: TestWith[BagVerifier, R]): R =
     withActorSystem { implicit actorSystem =>
-      withSQSStream[NotificationMessage, R](queue) { sqsStream =>
+      withNotificationStream[BagRequest, R](queue) { notificationStream =>
         val bagVerifier = new BagVerifier(
+          notificationStream = notificationStream,
           s3Client = s3Client,
           snsClient = snsClient,
-          sqsStream,
           bagVerifierConfig = BagVerifierConfig(
             parallelism = 10
           ),
