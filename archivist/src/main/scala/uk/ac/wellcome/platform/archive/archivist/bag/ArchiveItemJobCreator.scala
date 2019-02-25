@@ -8,7 +8,10 @@ import uk.ac.wellcome.platform.archive.archivist.builders.UploadLocationBuilder
 import uk.ac.wellcome.platform.archive.archivist.models.errors.FileNotFoundError
 import uk.ac.wellcome.platform.archive.archivist.models._
 import uk.ac.wellcome.platform.archive.archivist.zipfile.ZipFileReader
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagItemPath
+}
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 object ArchiveItemJobCreator {
@@ -60,10 +63,10 @@ object ArchiveItemJobCreator {
         .filter { _.nonEmpty }
         .traverse { manifestLine =>
           create(
-              manifestLine.trim(),
-              job,
-              job.maybeBagRootPathInZip,
-              manifestZipEntryPointer.zipPath)
+            manifestLine.trim(),
+            job,
+            job.maybeBagRootPathInZip,
+            manifestZipEntryPointer.zipPath)
             .map(bagDigestFile => createDigestItemJob(job, bagDigestFile))
         }
     }

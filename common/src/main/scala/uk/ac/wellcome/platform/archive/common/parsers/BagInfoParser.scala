@@ -6,7 +6,10 @@ import java.time.LocalDate
 import cats.data._
 import cats.implicits._
 import uk.ac.wellcome.platform.archive.common.models.bagit._
-import uk.ac.wellcome.platform.archive.common.models.error.{ArchiveError, InvalidBagInfo}
+import uk.ac.wellcome.platform.archive.common.models.error.{
+  ArchiveError,
+  InvalidBagInfo
+}
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -28,8 +31,8 @@ object BagInfoParser {
 
   def create(inputStream: InputStream): Future[BagInfo] = {
     Future.fromTry(
-      validate(inputStream)
-      .toEither.left.map(e => new RuntimeException(e.toString))
+      validate(inputStream).toEither.left
+        .map(e => new RuntimeException(e.toString))
         .toTry
     )
   }
@@ -71,9 +74,9 @@ object BagInfoParser {
   def parseBagInfo[T](
     t: T,
     inputStream: InputStream
-                     ): Either[ArchiveError[T], BagInfo] = {
+  ): Either[ArchiveError[T], BagInfo] = {
 
-   val validated = validate(inputStream)
+    val validated = validate(inputStream)
 
     validated.toEither.leftMap(list => InvalidBagInfo(t, list.toList))
   }

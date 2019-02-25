@@ -26,6 +26,6 @@ case class StorageManifest(
 }
 
 case class FileManifest(
-                        checksumAlgorithm: ChecksumAlgorithm,
-                        files: List[BagDigestFile]
-                       )
+  checksumAlgorithm: ChecksumAlgorithm,
+  files: List[BagDigestFile]
+)

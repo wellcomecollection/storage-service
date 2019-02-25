@@ -11,19 +11,22 @@ case class BagItemPath(underlying: String) extends AnyVal {
   override def toString: String = underlying
 
   def toObjectLocation(bagLocation: BagLocation) = {
-    bagLocation.objectLocation.copy(key = Paths.get(
-      bagLocation.objectLocation.key,
-      underlying
-    ).toString)
+    bagLocation.objectLocation.copy(
+      key = Paths
+        .get(
+          bagLocation.objectLocation.key,
+          underlying
+        )
+        .toString)
   }
 
 }
 
 object BagItemPath {
   def apply(
-             itemPath: String,
-             maybeBagRootPath: Option[String] = None
-           ): BagItemPath = {
+    itemPath: String,
+    maybeBagRootPath: Option[String] = None
+  ): BagItemPath = {
 
     maybeBagRootPath match {
       case None => BagItemPath(itemPath)

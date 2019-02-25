@@ -40,7 +40,6 @@ class StorageManifestServiceTest
 
         val future = service.createManifest(bagRequest.bagLocation)
 
-
         whenReady(future) { storageManifest =>
           storageManifest.space shouldBe bagLocation.storageSpace
           storageManifest.info shouldBe bagInfo

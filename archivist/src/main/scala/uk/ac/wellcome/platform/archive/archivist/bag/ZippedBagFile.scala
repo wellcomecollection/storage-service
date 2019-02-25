@@ -21,7 +21,9 @@ object ZippedBagFile extends Logging {
 
   def locateBagInfo(zipFile: ZipFile): Try[String] = Try {
     val entries = zipFile
-      .entries().asScala.toList
+      .entries()
+      .asScala
+      .toList
 
     entries
       .filter { e =>

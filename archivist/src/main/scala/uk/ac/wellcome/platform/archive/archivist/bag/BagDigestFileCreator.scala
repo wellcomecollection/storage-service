@@ -1,7 +1,13 @@
 package uk.ac.wellcome.platform.archive.archivist.bag
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
-import uk.ac.wellcome.platform.archive.common.models.error.{ArchiveError, InvalidBagManifestError}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagItemPath
+}
+import uk.ac.wellcome.platform.archive.common.models.error.{
+  ArchiveError,
+  InvalidBagManifestError
+}
 
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
