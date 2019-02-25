@@ -15,7 +15,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
 
     new BagUnpacker(
-      notificationStream = NotificationStreamBuilder.buildStream[UnpackBagRequest](config),
+      notificationStream =
+        NotificationStreamBuilder.buildStream[UnpackBagRequest](config),
       s3Client = S3Builder.buildS3Client(config),
       snsClient = SNSBuilder.buildSNSClient(config),
       bagUnpackerConfig = BagUnpackerConfig.buildBagUnpackerConfig(config),
