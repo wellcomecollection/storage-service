@@ -2,24 +2,16 @@ package uk.ac.wellcome.platform.archive.bagunpacker
 
 import java.io._
 
-import org.apache.commons.compress.archivers.{
-  ArchiveOutputStream,
-  ArchiveStreamFactory
-}
-import org.apache.commons.compress.compressors.{
-  CompressorOutputStream,
-  CompressorStreamFactory
-}
+import org.apache.commons.compress.archivers.{ArchiveOutputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.compressors.{CompressorOutputStream, CompressorStreamFactory}
 import org.apache.commons.io.IOUtils
 
-import scala.concurrent.Future
-import scala.util.Try
 
 class Archive(
-  archiverName: String,
-  compressorName: String,
-  outputStream: OutputStream
-) {
+               archiverName: String,
+               compressorName: String,
+               outputStream: OutputStream
+             ) {
 
   private val compress = compressor(compressorName)(_)
   private val pack = packer(archiverName)(_)
@@ -31,20 +23,18 @@ class Archive(
     compressorOutputStream
   )
 
-  def finish() = synchronized {
-    Future.fromTry(Try {
-      archiveOutputStream.flush()
-      archiveOutputStream.finish()
-      compressorOutputStream.flush()
-      compressorOutputStream.close()
-    })
+  def finish() = {
+    archiveOutputStream.flush()
+    archiveOutputStream.finish()
+    compressorOutputStream.flush()
+    compressorOutputStream.close()
   }
 
   def addFile(
-    file: File,
-    entryName: String
-  ) = synchronized {
-    Future.fromTry(Try {
+               file: File,
+               entryName: String
+             ) = {
+    synchronized {
 
       val entry = archiveOutputStream
         .createArchiveEntry(file, entryName)
@@ -65,14 +55,14 @@ class Archive(
       fileInputStream.close()
 
       entry
-    })
+    }
   }
 
   private def compressor(
-    compressorName: String
-  )(
-    outputStream: OutputStream
-  ): CompressorOutputStream = {
+                          compressorName: String
+                        )(
+                          outputStream: OutputStream
+                        ): CompressorOutputStream = {
 
     val compressorStreamFactory =
       new CompressorStreamFactory()
@@ -88,10 +78,10 @@ class Archive(
   }
 
   private def packer(
-    archiverName: String
-  )(
-    outputStream: OutputStream
-  ): ArchiveOutputStream = {
+                      archiverName: String
+                    )(
+                      outputStream: OutputStream
+                    ): ArchiveOutputStream = {
 
     val archiveStreamFactory =
       new ArchiveStreamFactory()

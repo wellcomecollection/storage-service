@@ -7,19 +7,17 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.io.Source
 
 class UnpackTest
-    extends FunSpec
+  extends FunSpec
     with Matchers
     with ScalaFutures
     with Compress
     with RandomThings {
 
   it("should unpack a tar.gz file") {
-    val (archiveFile, files, expectedEntriesF) =
+    val (archiveFile, files, expectedEntries) =
       createArchive(
         archiverName = "tar",
         compressorName = "gz",
@@ -32,7 +30,7 @@ class UnpackTest
 
     val tmp = System.getProperty("java.io.tmpdir")
 
-    val unpack = Unpack(inputStream) { entry =>
+    val unpack = Unpack.stream(inputStream) { entry =>
       new FileOutputStream(
         new File(tmp, s"${entry.getName}-$testUUID")
       )
@@ -41,35 +39,33 @@ class UnpackTest
     // Small stream so just process it!
     val actualEntries = unpack.toSet
 
-    whenReady(expectedEntriesF) { expectedEntries =>
-      actualEntries.diff(expectedEntries) shouldBe Set.empty
+    actualEntries.diff(expectedEntries) shouldBe Set.empty
 
-      val expectedFiles = files
-        .map(file => file.getName -> file)
-        .toMap
+    val expectedFiles = files
+      .map(file => file.getName -> file)
+      .toMap
 
-      val actualFiles = actualEntries
-        .map(entry =>
-          entry.getName -> new File(tmp, s"${entry.getName}-$testUUID"))
-        .toMap
+    val actualFiles = actualEntries
+      .map(entry =>
+        entry.getName -> new File(tmp, s"${entry.getName}-$testUUID"))
+      .toMap
 
-      expectedFiles.foreach {
-        case (key, expectedFile) => {
-          val maybeActualFile = actualFiles.get(key)
-          maybeActualFile shouldBe a[Some[_]]
+    expectedFiles.foreach {
+      case (key, expectedFile) => {
+        val maybeActualFile = actualFiles.get(key)
+        maybeActualFile shouldBe a[Some[_]]
 
-          val actualFile = maybeActualFile.get
+        val actualFile = maybeActualFile.get
 
-          actualFile.exists() shouldBe true
+        actualFile.exists() shouldBe true
 
-          val actualContents =
-            Source.fromFile(actualFile).getLines().mkString
+        val actualContents =
+          Source.fromFile(actualFile).getLines().mkString
 
-          val expectedContents =
-            Source.fromFile(expectedFile).getLines().mkString
+        val expectedContents =
+          Source.fromFile(expectedFile).getLines().mkString
 
-          actualContents shouldEqual (expectedContents)
-        }
+        actualContents shouldEqual (expectedContents)
       }
     }
   }
@@ -77,10 +73,10 @@ class UnpackTest
 
 trait Compress extends RandomThings {
   def createArchive(
-    archiverName: String,
-    compressorName: String,
-    fileCount: Int = 10
-  ) = {
+                     archiverName: String,
+                     compressorName: String,
+                     fileCount: Int = 10
+                   ) = {
 
     val file = File.createTempFile(
       randomUUID.toString,
@@ -98,18 +94,13 @@ trait Compress extends RandomThings {
     val randomFiles = (1 to fileCount)
       .map(_ => randomFile(1024))
 
-    val addFiles = Future.sequence(
+    val entries =
       randomFiles.map { randomFile =>
         archive.addFile(
           randomFile,
           randomFile.getName
         )
-      }
-    )
-
-    val entries = for {
-      entries <- addFiles
-    } yield entries.toSet
+      } toSet
 
     archive.finish()
     fileOutputStream.close()

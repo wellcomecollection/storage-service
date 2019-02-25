@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
 
 object Unpack extends Logging {
 
-  def apply(inputStream: InputStream)(
+  def stream(inputStream: InputStream)(
     out: ArchiveEntry => OutputStream
   ): Stream[ArchiveEntry] = {
 
