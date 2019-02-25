@@ -21,9 +21,9 @@ class UnpackTest
   it("should unpack a tar.gz file") {
     val (archiveFile, files, expectedEntriesF) =
       createArchive(
-        "tar",
-        "gz",
-        10
+        archiverName = "tar",
+        compressorName = "gz",
+        fileCount = 10
       )
 
     val testUUID = UUID.randomUUID()
