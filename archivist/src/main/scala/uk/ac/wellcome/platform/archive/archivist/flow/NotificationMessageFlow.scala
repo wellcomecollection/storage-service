@@ -12,7 +12,6 @@ import uk.ac.wellcome.platform.archive.archivist.messaging.{
 import uk.ac.wellcome.platform.archive.common.config.models.Parallelism
 import uk.ac.wellcome.platform.archive.common.models.IngestBagRequest
 import uk.ac.wellcome.platform.archive.common.progress.models.{
-  ProgressEvent,
   ProgressEventUpdate,
   ProgressUpdate
 }
@@ -33,9 +32,7 @@ object NotificationMessageFlow {
         bagRequest => {
           val progressUpdate = ProgressEventUpdate(
             id = bagRequest.id,
-            events = List(
-              ProgressEvent("Started work on ingest")
-            )
+            description = "Started work on ingest"
           )
 
           Source

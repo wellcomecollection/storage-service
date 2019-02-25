@@ -53,14 +53,13 @@ trait ProgressGenerators extends BagIdGenerators {
   def createProgressStatusUpdateWith(
     id: UUID = randomUUID,
     status: Status = Progress.Accepted,
-    maybeBag: Option[BagId] = Some(createBagId),
-    events: Seq[ProgressEvent] = List(createProgressEvent))
+    affectedBag: Option[BagId] = Some(createBagId))
     : ProgressStatusUpdate =
     ProgressStatusUpdate(
       id = id,
       status = status,
-      affectedBag = maybeBag,
-      events = events
+      affectedBag = affectedBag,
+      events = List(createProgressEvent)
     )
 
   def createSpace = Namespace(randomAlphanumeric())

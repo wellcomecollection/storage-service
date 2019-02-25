@@ -27,7 +27,7 @@ class IngestsFeatureTest
               createProgressStatusUpdateWith(
                 id = progress.id,
                 status = Completed,
-                maybeBag = someBagId)
+                affectedBag = someBagId)
 
             sendNotificationToSQS[ProgressUpdate](queue, progressStatusUpdate)
 

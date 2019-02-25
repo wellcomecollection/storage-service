@@ -84,22 +84,21 @@ class BagsWorkerService(
         ProgressStatusUpdate(
           id = archiveRequestId,
           status = Progress.Completed,
-          affectedBag = Some(storageManifest.id),
-          events = List(ProgressEvent("Bag registered successfully"))
+          affectedBag = storageManifest.id,
+          events = List("Bag registered successfully")
         )
       case (Success(storageManifest), Failure(_)) =>
         ProgressStatusUpdate(
           id = archiveRequestId,
           status = Progress.Failed,
-          affectedBag = Some(storageManifest.id),
-          events = List(ProgressEvent("Failed to register bag"))
+          affectedBag = storageManifest.id,
+          events = List("Failed to register bag")
         )
       case _ =>
         ProgressStatusUpdate(
           id = archiveRequestId,
           status = Progress.Failed,
-          affectedBag = None,
-          events = List(ProgressEvent("Failed to create storage manifest"))
+          events = List("Failed to create storage manifest")
         )
     }
 

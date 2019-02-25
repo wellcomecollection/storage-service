@@ -138,12 +138,9 @@ class ProgressTrackerTest
       withProgressTrackerTable { table =>
         withProgressTracker(table) { progressTracker =>
           whenReady(progressTracker.initialise(createProgress)) { progress =>
-            val bagId = createBagId
-
-            val progressUpdate = ProgressStatusUpdate(
-              progress.id,
-              Progress.Processing,
-              Some(bagId)
+            val progressUpdate = createProgressStatusUpdateWith(
+              id = progress.id,
+              status = Progress.Processing
             )
 
             progressTracker.update(progressUpdate)
@@ -190,12 +187,9 @@ class ProgressTrackerTest
       withProgressTrackerTable { table =>
         withProgressTracker(table) { progressTracker =>
           whenReady(progressTracker.initialise(createProgress)) { progress =>
-            val someBagId = Some(createBagId)
-            val progressUpdate = ProgressStatusUpdate(
-              progress.id,
-              Progress.Completed,
-              affectedBag = someBagId,
-              List(createProgressEvent)
+            val progressUpdate = createProgressStatusUpdateWith(
+              id = progress.id,
+              status = Progress.Accepted
             )
 
             progressTracker.update(progressUpdate)
@@ -203,7 +197,7 @@ class ProgressTrackerTest
             val actualProgress = assertProgressCreated(progress, table)
 
             actualProgress.status shouldBe Progress.Completed
-            actualProgress.bag shouldBe someBagId
+            actualProgress.bag shouldBe progressUpdate.affectedBag
 
             assertProgressRecordedRecentEvents(
               progressUpdate.id,
@@ -219,9 +213,9 @@ class ProgressTrackerTest
         withProgressTracker(table) { progressTracker =>
           whenReady(progressTracker.initialise(createProgress)) { progress =>
             val progressUpdate = ProgressCallbackStatusUpdate(
-              progress.id,
-              Callback.Succeeded,
-              List(createProgressEvent)
+              id = progress.id,
+              callbackStatus = Callback.Succeeded,
+              events = List(createProgressEvent)
             )
 
             progressTracker.update(progressUpdate)
@@ -245,8 +239,8 @@ class ProgressTrackerTest
         withProgressTracker(table) { progressTracker =>
           whenReady(progressTracker.initialise(createProgress)) { progress =>
             val progressUpdate = ProgressEventUpdate(
-              progress.id,
-              List(createProgressEvent, createProgressEvent)
+              id = progress.id,
+              events = List(createProgressEvent, createProgressEvent)
             )
 
             progressTracker.update(progressUpdate)
@@ -381,6 +375,6 @@ class ProgressTrackerTest
     createProgressStatusUpdateWith(
       id = id,
       status = Progress.Processing,
-      maybeBag = Some(bagId)
+      affectedBag = Some(bagId)
     )
 }

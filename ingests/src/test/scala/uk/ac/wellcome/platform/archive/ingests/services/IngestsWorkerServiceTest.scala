@@ -90,7 +90,7 @@ class IngestsWorkerServiceTest
                   createProgressStatusUpdateWith(
                     id = progress.id,
                     status = Processing,
-                    maybeBag = progressStatusUpdate1.affectedBag
+                    affectedBag = progressStatusUpdate1.affectedBag
                   )
 
                 val expectedProgress = progress.copy(

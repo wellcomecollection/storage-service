@@ -49,8 +49,12 @@ object ZipFileDownloadFlow {
           .map { either =>
             {
               either.fold(
-                error => ProgressUpdate.failed(request.id, error),
-                _ => ProgressUpdate.event(request.id, downloadSuccessMessage)
+                error => ProgressStatusUpdate(
+                  id = request.id,
+                  status = Progress.Failed,
+                  events = List(error.toString)
+                ) ,
+                _ => ProgressEventUpdate(request.id, description = downloadSuccessMessage)
               )
             }
           }

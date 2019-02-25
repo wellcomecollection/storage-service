@@ -70,7 +70,7 @@ class BagReplicatorWorkerService(
     result: Either[Throwable, BagLocation]): Future[PublishAttempt] = {
     val event: ProgressUpdate = result match {
       case Right(_) =>
-        ProgressUpdate.event(
+        ProgressEventUpdate(
           id = bagRequest.archiveRequestId,
           description = "Bag replicated successfully"
         )
@@ -78,8 +78,7 @@ class BagReplicatorWorkerService(
         ProgressStatusUpdate(
           id = bagRequest.archiveRequestId,
           status = Progress.Failed,
-          affectedBag = None,
-          events = List(ProgressEvent("Failed to replicate bag"))
+          events = List("Failed to replicate bag")
         )
     }
 
