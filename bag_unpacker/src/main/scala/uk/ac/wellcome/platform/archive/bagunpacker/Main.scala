@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagunpacker
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagunpacker.config.BagUnpackerConfig
 import uk.ac.wellcome.platform.archive.common.models.UnpackBagRequest

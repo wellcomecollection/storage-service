@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagverifier.config.BagVerifierConfig
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
