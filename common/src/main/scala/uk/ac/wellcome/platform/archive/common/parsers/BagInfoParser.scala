@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.bag
+package uk.ac.wellcome.platform.archive.common.parsers
 
 import java.io.InputStream
 import java.time.LocalDate
@@ -6,11 +6,9 @@ import java.time.LocalDate
 import cats.data._
 import cats.implicits._
 import uk.ac.wellcome.platform.archive.common.models.bagit._
-import uk.ac.wellcome.platform.archive.common.models.error.{
-  ArchiveError,
-  InvalidBagInfo
-}
+import uk.ac.wellcome.platform.archive.common.models.error.{ArchiveError, InvalidBagInfo}
 
+import scala.concurrent.Future
 import scala.util.Try
 
 object BagInfoKeys {
@@ -28,10 +26,15 @@ object BagInfoParser {
   private val payloadOxumRegex =
     s"""${BagInfoKeys.payloadOxum}\\s*:\\s*([0-9]+)\\.([0-9]+)\\s*""".r
 
-  def parseBagInfo[T](
-    t: T,
-    inputStream: InputStream): Either[ArchiveError[T], BagInfo] = {
+  def create(inputStream: InputStream): Future[BagInfo] = {
+    Future.fromTry(
+      validate(inputStream)
+      .toEither
+      .toTry
+    )
+  }
 
+  private def validate(inputStream: InputStream) = {
     val bagInfoLines = scala.io.Source
       .fromInputStream(inputStream, "UTF-8")
       .mkString
@@ -62,7 +65,15 @@ object BagInfoParser {
           internalSenderIdentifier,
           internalSenderDescription))
 
-    inputStream.close()
+    validated
+  }
+
+  def parseBagInfo[T](
+    t: T,
+    inputStream: InputStream
+                     ): Either[ArchiveError[T], BagInfo] = {
+
+   val validated = validate(inputStream)
 
     validated.toEither.leftMap(list => InvalidBagInfo(t, list.toList))
   }

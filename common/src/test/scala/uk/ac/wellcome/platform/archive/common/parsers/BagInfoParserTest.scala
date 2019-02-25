@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.bag
+package uk.ac.wellcome.platform.archive.common.parsers
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FunSpec, Matchers}

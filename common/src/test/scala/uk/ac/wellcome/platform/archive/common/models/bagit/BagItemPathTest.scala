@@ -9,15 +9,15 @@ class BagItemPathTest extends FunSpec with Matchers {
   }
 
   it("can be created with an optional root path") {
-    BagItemPath(Some("bag"), "bag-info.txt").underlying shouldBe "bag/bag-info.txt"
+    BagItemPath("bag-info.txt", Some("bag")).underlying shouldBe "bag/bag-info.txt"
   }
 
   it("normalises item path when joining paths") {
-    BagItemPath(Some("bag"), "/bag-info.txt").underlying shouldBe "bag/bag-info.txt"
+    BagItemPath("/bag-info.txt", Some("bag")).underlying shouldBe "bag/bag-info.txt"
   }
 
   it("normalises root path when joining paths") {
-    BagItemPath(Some("bag/"), "bag-info.txt").underlying shouldBe "bag/bag-info.txt"
+    BagItemPath("bag-info.txt", Some("bag/")).underlying shouldBe "bag/bag-info.txt"
   }
 
 }

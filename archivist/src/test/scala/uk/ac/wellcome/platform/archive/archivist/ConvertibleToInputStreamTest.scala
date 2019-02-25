@@ -11,7 +11,7 @@ class ConvertibleToInputStreamTest extends FunSpec with S3 with RandomThings {
 
   implicit val implicitS3Client = s3Client
 
-  import ConvertibleToInputStream._
+  import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 
   describe("converts to a Try[InputStream]") {
     it("produces a failure from an invalid ObjectLocation") {

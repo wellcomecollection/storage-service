@@ -23,5 +23,7 @@ case class StorageManifest(
   val id = BagId(space, info.externalIdentifier)
 }
 
-case class FileManifest(checksumAlgorithm: ChecksumAlgorithm,
-                        files: List[BagDigestFile])
+case class FileManifest(
+                        checksumAlgorithm: ChecksumAlgorithm,
+                        files: List[BagDigestFile]
+                       )
