@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.services
 
+import java.io.InputStream
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
@@ -7,7 +8,8 @@ import uk.ac.wellcome.platform.archive.common.models.bagit._
 import uk.ac.wellcome.platform.archive.common.models.{ChecksumAlgorithm, FileManifest, StorageManifest}
 import uk.ac.wellcome.platform.archive.common.parsers.{BagInfoParser, FileManifestParser}
 import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, StorageLocation}
-import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
+import uk.ac.wellcome.storage.ObjectLocation
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class StorageManifestService(
@@ -35,12 +37,11 @@ class StorageManifestService(
     createdDate = Instant.now()
   )
 
-  def createBagInfo(bagLocation: BagLocation
-                   ): Future[BagInfo] = for {
-    bagInfoInputStream <- Future.fromTry(
+  def createBagInfo(bagLocation: BagLocation): Future[BagInfo] = for {
+    bagInfoInputStream <- getInputStream(
       BagIt.bagInfoPath
         .toObjectLocation(bagLocation)
-          .toInputStream)
+    )
 
     bagInfo <- BagInfoParser.create(
       bagInfoInputStream
@@ -68,14 +69,20 @@ class StorageManifestService(
                               bagLocation: BagLocation
                             ): Future[FileManifest] = for {
     fileManifestInputStream <-
-      Future.fromTry(
+      getInputStream(
         BagItemPath(name)
-        .toObjectLocation(bagLocation)
-          .toInputStream)
+          .toObjectLocation(bagLocation)
+      )
 
     fileManifest <- FileManifestParser.create(
       fileManifestInputStream, checksumAlgorithm
     )
   } yield fileManifest
 
+  private def getInputStream(objectLocation: ObjectLocation): Future[InputStream] =
+    Future {
+      s3Client
+        .getObject(objectLocation.namespace, objectLocation.key)
+        .getObjectContent
+    }
 }
