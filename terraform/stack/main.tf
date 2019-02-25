@@ -10,8 +10,8 @@ module "archivist" {
   subnets                          = "${var.private_subnets}"
   service_name                     = "${var.namespace}-archivist"
 
-  max_capacity       = "2"
-  desired_task_count = "2"
+  max_capacity       = "${var.desired_archivist_count}"
+  desired_task_count = "${var.desired_archivist_count}"
 
   env_vars = {
     queue_url              = "${module.archivist_queue.url}"
@@ -161,6 +161,9 @@ module "api" {
   namespace    = "${var.namespace}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
 
+  desired_bags_api_count    = "${var.desired_bags_api_count}"
+  desired_ingests_api_count = "${var.desired_ingests_api_count}"
+
   # Auth
 
   auth_scopes = [
@@ -259,10 +262,10 @@ module "bagger" {
   cpu    = "1900"
   memory = "14000"
 
-  min_capacity = "4"
-  max_capacity = "4"
+  min_capacity = "${var.desired_bagger_count}"
+  max_capacity = "${var.desired_bagger_count}"
 
-  desired_task_count = "4"
+  desired_task_count = "${var.desired_bagger_count}"
 
   container_image = "${local.bagger_image}"
 }

@@ -38,4 +38,6 @@ module "bags" {
 
   app_cpu    = 3584
   app_memory = 7168
+
+  task_desired_count = "${var.desired_bags_api_count}"
 }
