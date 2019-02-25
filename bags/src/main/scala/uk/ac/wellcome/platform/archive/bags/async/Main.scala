@@ -24,9 +24,9 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
 
-    val storageManifestService = new StorageManifestService(
-      s3Client = S3Builder.buildS3Client(config)
-    )
+    implicit val s3Client = S3Builder.buildS3Client(config)
+
+    val storageManifestService = new StorageManifestService()
 
     val storageManifestVHS = new StorageManifestVHS(
       underlying = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
