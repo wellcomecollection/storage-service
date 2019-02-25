@@ -11,16 +11,16 @@ import scala.concurrent.{ExecutionContext, Future}
 object ChecksumVerifier extends Logging {
 
   def checksum(
-                inputStream: InputStream,
-                algorithm: String
-              )(implicit ec: ExecutionContext): Future[String] = Future {
+    inputStream: InputStream,
+    algorithm: String
+  )(implicit ec: ExecutionContext): Future[String] = Future {
     tryChecksum(inputStream, algorithm)
   }
 
   private def tryChecksum(
-                           objectStream: InputStream,
-                           digestAlgorithm: String
-                         ) = {
+    objectStream: InputStream,
+    digestAlgorithm: String
+  ) = {
     val checksum = Hex.encodeHexString(
       updateDigest(
         getDigest(digestAlgorithm),

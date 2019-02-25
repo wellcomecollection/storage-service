@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ChecksumVerifierTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with RandomThings {
