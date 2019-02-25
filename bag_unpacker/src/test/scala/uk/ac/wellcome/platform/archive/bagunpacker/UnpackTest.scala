@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import scala.io.Source
 
 class UnpackTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with Compress
@@ -73,10 +73,10 @@ class UnpackTest
 
 trait Compress extends RandomThings {
   def createArchive(
-                     archiverName: String,
-                     compressorName: String,
-                     fileCount: Int = 10
-                   ) = {
+    archiverName: String,
+    compressorName: String,
+    fileCount: Int = 10
+  ) = {
 
     val file = File.createTempFile(
       randomUUID.toString,

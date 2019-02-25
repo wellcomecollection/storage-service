@@ -2,16 +2,21 @@ package uk.ac.wellcome.platform.archive.bagunpacker
 
 import java.io._
 
-import org.apache.commons.compress.archivers.{ArchiveOutputStream, ArchiveStreamFactory}
-import org.apache.commons.compress.compressors.{CompressorOutputStream, CompressorStreamFactory}
+import org.apache.commons.compress.archivers.{
+  ArchiveOutputStream,
+  ArchiveStreamFactory
+}
+import org.apache.commons.compress.compressors.{
+  CompressorOutputStream,
+  CompressorStreamFactory
+}
 import org.apache.commons.io.IOUtils
 
-
 class Archive(
-               archiverName: String,
-               compressorName: String,
-               outputStream: OutputStream
-             ) {
+  archiverName: String,
+  compressorName: String,
+  outputStream: OutputStream
+) {
 
   private val compress = compressor(compressorName)(_)
   private val pack = packer(archiverName)(_)
@@ -31,9 +36,9 @@ class Archive(
   }
 
   def addFile(
-               file: File,
-               entryName: String
-             ) = {
+    file: File,
+    entryName: String
+  ) = {
     synchronized {
 
       val entry = archiveOutputStream
@@ -59,10 +64,10 @@ class Archive(
   }
 
   private def compressor(
-                          compressorName: String
-                        )(
-                          outputStream: OutputStream
-                        ): CompressorOutputStream = {
+    compressorName: String
+  )(
+    outputStream: OutputStream
+  ): CompressorOutputStream = {
 
     val compressorStreamFactory =
       new CompressorStreamFactory()
@@ -78,10 +83,10 @@ class Archive(
   }
 
   private def packer(
-                      archiverName: String
-                    )(
-                      outputStream: OutputStream
-                    ): ArchiveOutputStream = {
+    archiverName: String
+  )(
+    outputStream: OutputStream
+  ): ArchiveOutputStream = {
 
     val archiveStreamFactory =
       new ArchiveStreamFactory()
