@@ -28,51 +28,44 @@ class BagReplicatorWorkerServiceTest
 
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { bucket =>
-      withLocalSqsQueue { queue =>
-        withLocalSnsTopic { progressTopic =>
-          withLocalSnsTopic { outgoingTopic =>
-            withWorkerService(
-              queue,
-              progressTopic = progressTopic,
-              outgoingTopic = outgoingTopic) { service =>
-              withBag(bucket) { srcBagLocation =>
-                val replicationRequest = BagRequest(
-                  archiveRequestId = randomUUID,
-                  bagLocation = srcBagLocation
+      withLocalSnsTopic { progressTopic =>
+        withLocalSnsTopic { outgoingTopic =>
+          withWorkerService(
+            progressTopic = progressTopic,
+            outgoingTopic = outgoingTopic) { service =>
+            withBag(bucket) { srcBagLocation =>
+              val replicationRequest = BagRequest(
+                archiveRequestId = randomUUID,
+                bagLocation = srcBagLocation
+              )
+
+              val future = service.processMessage(replicationRequest)
+
+              whenReady(future) { _ =>
+                val outgoingMessages =
+                  listMessagesReceivedFromSNS(outgoingTopic)
+                val results =
+                  outgoingMessages.map { msg =>
+                    fromJson[ReplicationResult](msg.message).get
+                  }.distinct
+
+                results should have size 1
+                val result = results.head
+                result.archiveRequestId shouldBe replicationRequest.archiveRequestId
+                result.srcBagLocation shouldBe replicationRequest.bagLocation
+
+                val dstBagLocation = result.dstBagLocation
+
+                verifyBagCopied(
+                  src = srcBagLocation,
+                  dst = dstBagLocation
                 )
 
-                val notification = createNotificationMessageWith(
-                  replicationRequest
-                )
-
-                val future = service.processMessage(notification)
-
-                whenReady(future) { _ =>
-                  val outgoingMessages =
-                    listMessagesReceivedFromSNS(outgoingTopic)
-                  val results =
-                    outgoingMessages.map { msg =>
-                      fromJson[ReplicationResult](msg.message).get
-                    }.distinct
-
-                  results should have size 1
-                  val result = results.head
-                  result.archiveRequestId shouldBe replicationRequest.archiveRequestId
-                  result.srcBagLocation shouldBe replicationRequest.bagLocation
-
-                  val dstBagLocation = result.dstBagLocation
-
-                  verifyBagCopied(
-                    src = srcBagLocation,
-                    dst = dstBagLocation
-                  )
-
-                  assertTopicReceivesProgressEventUpdate(
-                    replicationRequest.archiveRequestId,
-                    progressTopic) { events =>
-                    events should have size 1
-                    events.head.description shouldBe "Bag replicated successfully"
-                  }
+                assertTopicReceivesProgressEventUpdate(
+                  replicationRequest.archiveRequestId,
+                  progressTopic) { events =>
+                  events should have size 1
+                  events.head.description shouldBe "Bag replicated successfully"
                 }
               }
             }
@@ -83,41 +76,34 @@ class BagReplicatorWorkerServiceTest
   }
 
   it("sends a failed ProgressUpdate if the bag fails to replicate") {
-    withLocalSqsQueue { queue =>
-      withLocalSnsTopic { progressTopic =>
-        withLocalSnsTopic { outgoingTopic =>
-          withWorkerService(
-            queue,
-            progressTopic = progressTopic,
-            outgoingTopic = outgoingTopic) { service =>
-            val srcBagLocation = BagLocation(
-              storageNamespace = "does-not-exist",
-              storagePrefix = Some("does/not/"),
-              storageSpace = createStorageSpace,
-              bagPath = BagPath("exist.txt")
-            )
+    withLocalSnsTopic { progressTopic =>
+      withLocalSnsTopic { outgoingTopic =>
+        withWorkerService(
+          progressTopic = progressTopic,
+          outgoingTopic = outgoingTopic) { service =>
+          val srcBagLocation = BagLocation(
+            storageNamespace = "does-not-exist",
+            storagePrefix = Some("does/not/"),
+            storageSpace = createStorageSpace,
+            bagPath = BagPath("exist.txt")
+          )
 
-            val replicationRequest = BagRequest(
-              archiveRequestId = randomUUID,
-              bagLocation = srcBagLocation
-            )
+          val replicationRequest = BagRequest(
+            archiveRequestId = randomUUID,
+            bagLocation = srcBagLocation
+          )
 
-            val notification = createNotificationMessageWith(
-              replicationRequest
-            )
+          val future = service.processMessage(replicationRequest)
 
-            val future = service.processMessage(notification)
+          whenReady(future) { _ =>
+            assertSnsReceivesNothing(outgoingTopic)
 
-            whenReady(future) { _ =>
-              assertSnsReceivesNothing(outgoingTopic)
-
-              assertTopicReceivesProgressStatusUpdate(
-                replicationRequest.archiveRequestId,
-                progressTopic = progressTopic,
-                status = Progress.Failed) { events =>
-                events should have size 1
-                events.head.description shouldBe s"Failed to replicate bag"
-              }
+            assertTopicReceivesProgressStatusUpdate(
+              replicationRequest.archiveRequestId,
+              progressTopic = progressTopic,
+              status = Progress.Failed) { events =>
+              events should have size 1
+              events.head.description shouldBe s"Failed to replicate bag"
             }
           }
         }

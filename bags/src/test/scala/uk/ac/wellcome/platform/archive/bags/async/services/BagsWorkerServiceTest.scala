@@ -4,7 +4,6 @@ import java.time.Instant
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bags.async.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
@@ -48,10 +47,7 @@ class BagsWorkerServiceTest
                   externalIdentifier = bagInfo.externalIdentifier
                 )
 
-                val notification =
-                  createNotificationMessageWith(replicationResult)
-
-                val future = service.processMessage(notification)
+                val future = service.processMessage(replicationResult)
 
                 whenReady(future) { _ =>
                   val storageManifest = getStorageManifest(table, id = bagId)
@@ -99,9 +95,7 @@ class BagsWorkerServiceTest
             val replicationResult =
               createReplicationResultWith(accessBagLocation)
 
-            val notification = createNotificationMessageWith(replicationResult)
-
-            val future = service.processMessage(notification)
+            val future = service.processMessage(replicationResult)
 
             whenReady(future) { _ =>
               assertTopicReceivesProgressStatusUpdate(
@@ -137,10 +131,7 @@ class BagsWorkerServiceTest
                     externalIdentifier = bagInfo.externalIdentifier
                   )
 
-                  val notification =
-                    createNotificationMessageWith(replicationResult)
-
-                  val future = service.processMessage(notification)
+                  val future = service.processMessage(replicationResult)
 
                   whenReady(future) { _ =>
                     assertTopicReceivesProgressStatusUpdate(

@@ -2,15 +2,11 @@ package uk.ac.wellcome.platform.archive.bags.async.services
 
 import java.util.UUID
 
+import akka.Done
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.{
-  NotificationMessage,
-  PublishAttempt,
-  SNSWriter
-}
-import uk.ac.wellcome.messaging.sqs.SQSStream
-import uk.ac.wellcome.platform.archive.common.SQSWorkerService
+import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
+import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.models.{
   BagRequest,
   ReplicationResult,
@@ -24,27 +20,29 @@ import uk.ac.wellcome.platform.archive.common.progress.models.{
 }
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
+import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class BagsWorkerService(
-  sqsStream: SQSStream[NotificationMessage],
+  notificationStream: NotificationStream[ReplicationResult],
   storageManifestService: StorageManifestService,
   storageManifestVHS: StorageManifestVHS,
   progressSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
-    extends SQSWorkerService(sqsStream)
-    with Logging {
+    extends Logging
+    with Runnable {
 
-  def processMessage(notificationMessage: NotificationMessage): Future[Unit] =
+  def run(): Future[Done] =
+    notificationStream.run(processMessage)
+
+  def processMessage(replicationResult: ReplicationResult): Future[Unit] = {
+    val bagRequest = BagRequest(
+      archiveRequestId = replicationResult.archiveRequestId,
+      bagLocation = replicationResult.dstBagLocation
+    )
+
     for {
-      replicationResult <- Future.fromTry(
-        fromJson[ReplicationResult](notificationMessage.body)
-      )
-      bagRequest = BagRequest(
-        archiveRequestId = replicationResult.archiveRequestId,
-        bagLocation = replicationResult.dstBagLocation
-      )
       tryStorageManifest: Try[StorageManifest] <- createManifest(bagRequest)
       tryUpdateVHSResult: Try[Unit] <- updateStorageManifest(tryStorageManifest)
       _ <- sendProgressUpdate(
@@ -53,6 +51,7 @@ class BagsWorkerService(
         tryUpdateVHSResult = tryUpdateVHSResult
       )
     } yield ()
+  }
 
   private def createManifest(
     bagRequest: BagRequest): Future[Try[StorageManifest]] =

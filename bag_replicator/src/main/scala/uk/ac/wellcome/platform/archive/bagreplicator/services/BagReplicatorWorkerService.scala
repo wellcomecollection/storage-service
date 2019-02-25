@@ -1,61 +1,58 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
+import akka.Done
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.{
-  NotificationMessage,
-  PublishAttempt,
-  SNSWriter
-}
-import uk.ac.wellcome.messaging.sqs.SQSStream
+import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
+import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
-import uk.ac.wellcome.platform.archive.common.SQSWorkerService
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.models.{
   BagRequest,
   ReplicationResult
 }
 import uk.ac.wellcome.platform.archive.common.progress.models._
+import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagReplicatorWorkerService(
-  sqsStream: SQSStream[NotificationMessage],
+  notificationStream: NotificationStream[BagRequest],
   bagStorageService: BagStorageService,
   bagReplicatorConfig: BagReplicatorConfig,
   progressSnsWriter: SNSWriter,
   outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
-    extends SQSWorkerService(sqsStream)
+    extends Runnable
     with Logging {
 
-  def processMessage(notificationMessage: NotificationMessage): Future[Unit] =
+  def run(): Future[Done] =
+    notificationStream.run(processMessage)
+
+  def processMessage(bagRequest: BagRequest): Future[Unit] =
     for {
-      replicationRequest <- Future.fromTry(
-        fromJson[BagRequest](notificationMessage.body)
-      )
       result: Either[Throwable, BagLocation] <- bagStorageService.duplicateBag(
-        sourceBagLocation = replicationRequest.bagLocation,
+        sourceBagLocation = bagRequest.bagLocation,
         destinationConfig = bagReplicatorConfig.destination
       )
       _ <- sendProgressUpdate(
-        replicationRequest = replicationRequest,
+        bagRequest = bagRequest,
         result = result
       )
       _ <- sendOngoingNotification(
-        replicationRequest = replicationRequest,
+        bagRequest = bagRequest,
         result = result
       )
     } yield ()
 
   def sendOngoingNotification(
-    replicationRequest: BagRequest,
+    bagRequest: BagRequest,
     result: Either[Throwable, BagLocation]): Future[Unit] =
     result match {
       case Left(_) => Future.successful(())
       case Right(dstBagLocation) =>
         val result = ReplicationResult(
-          archiveRequestId = replicationRequest.archiveRequestId,
-          srcBagLocation = replicationRequest.bagLocation,
+          archiveRequestId = bagRequest.archiveRequestId,
+          srcBagLocation = bagRequest.bagLocation,
           dstBagLocation = dstBagLocation
         )
         outgoingSnsWriter
@@ -69,17 +66,17 @@ class BagReplicatorWorkerService(
     }
 
   def sendProgressUpdate(
-    replicationRequest: BagRequest,
+    bagRequest: BagRequest,
     result: Either[Throwable, BagLocation]): Future[PublishAttempt] = {
     val event: ProgressUpdate = result match {
       case Right(_) =>
         ProgressUpdate.event(
-          id = replicationRequest.archiveRequestId,
+          id = bagRequest.archiveRequestId,
           description = "Bag replicated successfully"
         )
       case Left(_) =>
         ProgressStatusUpdate(
-          id = replicationRequest.archiveRequestId,
+          id = bagRequest.archiveRequestId,
           status = Progress.Failed,
           affectedBag = None,
           events = List(ProgressEvent("Failed to replicate bag"))

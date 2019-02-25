@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.bags.async
 
 import java.time.Instant
 
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
@@ -20,7 +19,6 @@ import uk.ac.wellcome.storage.fixtures.S3.Bucket
 class BagsFeatureTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
     with BagIdGenerators
     with BagInfoGenerators
     with BagLocationFixtures
@@ -107,12 +105,9 @@ class BagsFeatureTest
                       externalIdentifier = bagInfo.externalIdentifier
                     )
 
-                    val notification =
-                      createNotificationMessageWith(replicationResult)
+                    sendNotificationToSQS(queue, replicationResult)
 
-                    val future = service.processMessage(notification)
-
-                    whenReady(future) { _ =>
+                    eventually {
                       assertTopicReceivesProgressStatusUpdate(
                         requestId = replicationResult.archiveRequestId,
                         progressTopic = progressTopic,

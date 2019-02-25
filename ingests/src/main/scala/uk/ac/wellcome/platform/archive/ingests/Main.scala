@@ -2,8 +2,9 @@ package uk.ac.wellcome.platform.archive.ingests
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.messaging.typesafe.{SNSBuilder, SQSBuilder}
+import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
+import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
 import uk.ac.wellcome.platform.archive.common.progress.monitor.ProgressTracker
 import uk.ac.wellcome.platform.archive.ingests.services.{
   CallbackNotificationService,
@@ -31,7 +32,8 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new IngestsWorkerService(
-      sqsStream = SQSBuilder.buildSQSStream[NotificationMessage](config),
+      notificationStream =
+        NotificationStreamBuilder.buildStream[ProgressUpdate](config),
       progressTracker = progressTracker,
       callbackNotificationService = callbackNotificationService
     )
