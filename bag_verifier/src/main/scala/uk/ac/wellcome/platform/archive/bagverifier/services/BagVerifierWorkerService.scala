@@ -1,24 +1,29 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import akka.Done
-import com.amazonaws.services.s3.AmazonS3
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
+import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
+import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerification
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagDigestFile,
-  BagLocation
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Progress,
+  ProgressEvent,
+  ProgressStatusUpdate,
+  ProgressUpdate
 }
-import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
-import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 class BagVerifierWorkerService(
   notificationStream: NotificationStream[BagRequest],
-  storageManifestService: StorageManifestService,
-  s3Client: AmazonS3
+  verifyDigestFilesService: VerifyDigestFilesService,
+  progressSnsWriter: SNSWriter,
+  ongoingSnsWriter: SNSWriter,
 )(implicit ec: ExecutionContext)
     extends Runnable {
 
@@ -29,42 +34,66 @@ class BagVerifierWorkerService(
 
   def processMessage(bagRequest: BagRequest): Future[Unit] =
     for {
-      manifest <- storageManifestService.createManifest(bagRequest.bagLocation)
-      tagManifest <- storageManifestService.createTagManifest(
-        bagRequest.bagLocation)
-      digestFiles = manifest.manifest.files ++ tagManifest.files
-      _ <- verifyFiles(bagRequest.bagLocation, digestFiles = digestFiles)
+      tryBagVerification <- verifyBagLocation(bagRequest.bagLocation)
+
+      // We deliberately send to the progress monitor first
+      _ <- sendProgressNotification(bagRequest, tryBagVerification)
+
+      _ <- sendOngoingNotification(bagRequest, tryBagVerification)
     } yield ()
 
-  private def verifyFiles(bagLocation: BagLocation,
-                          digestFiles: Seq[BagDigestFile]): Future[Unit] =
-    Future
-      .traverse(digestFiles) { digestFile: BagDigestFile =>
-        verifyIndividualFile(bagLocation, digestFile = digestFile)
+  private def verifyBagLocation(
+    bagLocation: BagLocation): Future[Try[BagVerification]] =
+    verifyDigestFilesService
+      .verifyBagLocation(bagLocation)
+      .map { bagVerification =>
+        Success(bagVerification)
       }
-      .map { _ =>
-        ()
-      }
+      .recover { case throwable: Throwable => Failure(throwable) }
 
-  private def verifyIndividualFile(bagLocation: BagLocation,
-                                   digestFile: BagDigestFile): Future[Unit] = {
-    val expectedChecksum = digestFile.checksum
+  private def sendProgressNotification(
+    bagRequest: BagRequest,
+    tryBagVerification: Try[BagVerification]): Future[PublishAttempt] = {
+    val (status, description) = tryBagVerification match {
+      case Success(bagVerification) =>
+        if (bagVerification.verificationSucceeded) {
+          (Progress.Processing, "Successfully verified bag contents")
+        } else {
+          (
+            Progress.Failed,
+            "There were problems verifying the bag: not every checksum matched the manifest")
+        }
+      case _ =>
+        (
+          Progress.Failed,
+          "There were problems verifying the bag: verification could not be performed")
+    }
 
-    val objectLocation = digestFile.path.toObjectLocation(bagLocation)
+    val progressUpdate = ProgressStatusUpdate(
+      id = bagRequest.archiveRequestId,
+      status = status,
+      affectedBag = None,
+      events = List(ProgressEvent(description))
+    )
 
-    for {
-      inputStream <- Future {
-        s3Client
-          .getObject(objectLocation.namespace, objectLocation.key)
-          .getObjectContent
-      }
-      actualChecksum <- ChecksumVerifier.checksum(
-        inputStream,
-        algorithm = algorithm)
-      _ = if (expectedChecksum != actualChecksum) {
-        throw new RuntimeException(
-          s"Incorrect checksum for $digestFile; read $actualChecksum, expected $expectedChecksum")
-      }
-    } yield ()
+    progressSnsWriter.writeMessage[ProgressUpdate](
+      progressUpdate,
+      subject = s"Sent by ${this.getClass.getSimpleName}")
   }
+
+  private def sendOngoingNotification(
+    bagRequest: BagRequest,
+    tryBagVerification: Try[BagVerification]): Future[Unit] =
+    tryBagVerification match {
+      case Success(bagVerification) if bagVerification.verificationSucceeded =>
+        ongoingSnsWriter
+          .writeMessage(
+            bagRequest,
+            subject = s"Sent by ${this.getClass.getSimpleName}"
+          )
+          .map { _ =>
+            ()
+          }
+      case _ => Future.successful(())
+    }
 }

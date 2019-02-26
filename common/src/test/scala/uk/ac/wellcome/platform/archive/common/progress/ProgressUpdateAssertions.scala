@@ -24,7 +24,7 @@ trait ProgressUpdateAssertions extends SNS with Inside with Logging {
 
     progressUpdates.size should be > 0
 
-    val (success, _) = progressUpdates
+    val (success, failures) = progressUpdates
       .map { progressUpdate =>
         println(s"Received ProgressUpdate: $progressUpdate")
         Try(inside(progressUpdate) {
@@ -36,6 +36,10 @@ trait ProgressUpdateAssertions extends SNS with Inside with Logging {
         })
       }
       .partition(_.isSuccess)
+
+    if (success.size != 1) {
+      println(s"Failures: $failures")
+    }
 
     success should have size 1
   }
