@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagunpacker
+package uk.ac.wellcome.platform.archive.bagunpacker.storage
 
 import java.io.{BufferedInputStream, InputStream, OutputStream}
 

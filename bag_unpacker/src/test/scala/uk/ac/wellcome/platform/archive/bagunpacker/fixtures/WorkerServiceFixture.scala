@@ -5,12 +5,10 @@ import java.util.UUID
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.sns.NotificationMessage
-import uk.ac.wellcome.platform.archive.bagunpacker.BagUnpacker
-import uk.ac.wellcome.platform.archive.bagunpacker.config.BagUnpackerConfig
+import uk.ac.wellcome.messaging.fixtures.{Messaging, NotificationStreamFixture}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorkerService
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   RandomThings
@@ -24,8 +22,9 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-trait BagUnpackerFixtures
+trait WorkerServiceFixture
     extends S3
+    with NotificationStreamFixture
     with RandomThings
     with Messaging
     with Akka
@@ -59,24 +58,23 @@ trait BagUnpackerFixtures
     progressTopic: Topic,
     outgoingTopic: Topic,
     dstBucket: Bucket
-  )(testWith: TestWith[BagUnpacker, R]): R =
-    withActorSystem { implicit actorSystem =>
-      withSQSStream[NotificationMessage, R](queue) { sqsStream =>
-        val bagUnpacker = new BagUnpacker(
-          s3Client = s3Client,
-          snsClient = snsClient,
-          sqsStream,
-          bagUnpackerConfig = BagUnpackerConfig(
-            parallelism = 10
-          ),
-          ingestsSnsConfig = createSNSConfigWith(progressTopic),
-          outgoingSnsConfig = createSNSConfigWith(outgoingTopic)
-        )
+  )(testWith: TestWith[BagUnpackerWorkerService, R]): R =
+    withSNSWriter(progressTopic) { progressSnsWriter =>
+      withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
+        withNotificationStream[UnpackBagRequest, R](queue) {
+          notificationStream =>
+            val bagUnpacker = new BagUnpackerWorkerService(
+              stream = notificationStream,
+              progressSnsWriter = progressSnsWriter,
+              outgoingSnsWriter = outgoingSnsWriter
+            )
 
-        bagUnpacker.run()
+            bagUnpacker.run()
 
-        testWith(bagUnpacker)
+            testWith(bagUnpacker)
+        }
       }
+
     }
 
   def withApp[R](testWith: TestWith[(Bucket, Queue, Topic, Topic), R]): R =

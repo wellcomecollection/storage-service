@@ -1,19 +1,19 @@
-package uk.ac.wellcome.platform.archive.bagunpacker
+package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.BagUnpackerFixtures
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.WorkerServiceFixture
+import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
-class BagUnpackerFeatureTest
+class BagUnpackerWorkerServiceFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
     with RandomThings
-    with BagUnpackerFixtures
+    with WorkerServiceFixture
     with IntegrationPatience
     with ProgressUpdateAssertions {
 
