@@ -2,11 +2,10 @@ package uk.ac.wellcome.platform.archive.bagverifier
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
@@ -15,6 +14,7 @@ class BagVerifierFeatureTest
     with Matchers
     with ScalaFutures
     with BagLocationFixtures
+    with BagRequestGenerators
     with IntegrationPatience
     with ProgressUpdateAssertions
     with WorkerServiceFixture {
@@ -28,10 +28,7 @@ class BagVerifierFeatureTest
             withWorkerService(progressTopic, ongoingTopic, queue) { service =>
               withLocalS3Bucket { bucket =>
                 withBag(bucket) { bagLocation =>
-                  val bagRequest = BagRequest(
-                    archiveRequestId = randomUUID,
-                    bagLocation = bagLocation
-                  )
+                  val bagRequest = createBagRequestWith(bagLocation)
 
                   sendNotificationToSQS(queue, bagRequest)
 
@@ -71,10 +68,7 @@ class BagVerifierFeatureTest
                   bucket,
                   createDataManifest = dataManifestWithWrongChecksum) {
                   bagLocation =>
-                    val bagRequest = BagRequest(
-                      archiveRequestId = randomUUID,
-                      bagLocation = bagLocation
-                    )
+                    val bagRequest = createBagRequestWith(bagLocation)
 
                     sendNotificationToSQS(queue, bagRequest)
 

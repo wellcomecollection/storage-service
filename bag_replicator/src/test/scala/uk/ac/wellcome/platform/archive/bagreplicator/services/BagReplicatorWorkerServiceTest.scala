@@ -4,7 +4,8 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{BagReplicatorFixtures, WorkerServiceFixture}
-import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult}
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
@@ -13,6 +14,7 @@ class BagReplicatorWorkerServiceTest
     with Matchers
     with ScalaFutures
     with BagReplicatorFixtures
+    with BagRequestGenerators
     with ProgressUpdateAssertions
     with WorkerServiceFixture {
 
@@ -24,12 +26,11 @@ class BagReplicatorWorkerServiceTest
             progressTopic = progressTopic,
             outgoingTopic = outgoingTopic) { service =>
             withBag(bucket) { srcBagLocation =>
-              val replicationRequest = BagRequest(
-                archiveRequestId = randomUUID,
-                bagLocation = srcBagLocation
+              val bagRequest = createBagRequestWith(
+                srcBagLocation
               )
 
-              val future = service.processMessage(replicationRequest)
+              val future = service.processMessage(bagRequest)
 
               whenReady(future) { _ =>
                 val outgoingMessages =
@@ -41,8 +42,8 @@ class BagReplicatorWorkerServiceTest
 
                 results should have size 1
                 val result = results.head
-                result.archiveRequestId shouldBe replicationRequest.archiveRequestId
-                result.srcBagLocation shouldBe replicationRequest.bagLocation
+                result.archiveRequestId shouldBe bagRequest.archiveRequestId
+                result.srcBagLocation shouldBe bagRequest.bagLocation
 
                 val dstBagLocation = result.dstBagLocation
 
@@ -52,7 +53,7 @@ class BagReplicatorWorkerServiceTest
                 )
 
                 assertTopicReceivesProgressEventUpdate(
-                  replicationRequest.archiveRequestId,
+                  bagRequest.archiveRequestId,
                   progressTopic) { events =>
                   events should have size 1
                   events.head.description shouldBe "Bag replicated successfully"
@@ -71,20 +72,15 @@ class BagReplicatorWorkerServiceTest
         withWorkerService(
           progressTopic = progressTopic,
           outgoingTopic = outgoingTopic) { service =>
-          val srcBagLocation = createBagLocation
+          val bagRequest = createBagRequest
 
-          val replicationRequest = BagRequest(
-            archiveRequestId = randomUUID,
-            bagLocation = srcBagLocation
-          )
-
-          val future = service.processMessage(replicationRequest)
+          val future = service.processMessage(bagRequest)
 
           whenReady(future) { _ =>
             assertSnsReceivesNothing(outgoingTopic)
 
             assertTopicReceivesProgressStatusUpdate(
-              replicationRequest.archiveRequestId,
+              bagRequest.archiveRequestId,
               progressTopic = progressTopic,
               status = Progress.Failed) { events =>
               events should have size 1

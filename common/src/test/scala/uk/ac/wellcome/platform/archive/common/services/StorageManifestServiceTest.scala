@@ -4,8 +4,8 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ChecksumAlgorithm}
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.models.ChecksumAlgorithm
 import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -16,6 +16,7 @@ class StorageManifestServiceTest
     with Matchers
     with ScalaFutures
     with BagLocationFixtures
+    with BagRequestGenerators
     with S3 {
 
   implicit val _ = s3Client
@@ -177,10 +178,4 @@ class StorageManifestServiceTest
       }
     }
   }
-
-  def createBagRequestWith(bagLocation: BagLocation): BagRequest =
-    BagRequest(
-      archiveRequestId = randomUUID,
-      bagLocation = bagLocation
-    )
 }
