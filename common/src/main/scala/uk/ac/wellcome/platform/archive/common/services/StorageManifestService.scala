@@ -49,10 +49,10 @@ class StorageManifestService(
 
   def createBagInfo(bagLocation: BagLocation): Future[BagInfo] =
     for {
-      bagInfoInputStream <- Future.fromTry(
+      bagInfoInputStream <-
         BagIt.bagInfoPath
           .toObjectLocation(bagLocation)
-          .toInputStream)
+          .toInputStream
 
       bagInfo <- BagInfoParser.create(
         bagInfoInputStream
@@ -78,10 +78,10 @@ class StorageManifestService(
     bagLocation: BagLocation
   ): Future[FileManifest] =
     for {
-      fileManifestInputStream <- Future.fromTry(
+      fileManifestInputStream <-
         BagItemPath(name)
           .toObjectLocation(bagLocation)
-          .toInputStream)
+          .toInputStream
 
       fileManifest <- FileManifestParser.create(
         fileManifestInputStream,
