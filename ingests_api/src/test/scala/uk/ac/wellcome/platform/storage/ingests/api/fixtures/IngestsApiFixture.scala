@@ -43,7 +43,6 @@ trait IngestsApiFixture
     metricsSender: MetricsSender)(testWith: TestWith[IngestsApi, R]): R =
     withSNSWriter(archivistTopic) { archivistSnsWriter =>
       withSNSWriter(unpackerTopic) { unpackerSnsWriter =>
-
         withActorSystem { implicit actorSystem =>
           withMaterializer(actorSystem) { implicit materializer =>
             val httpMetrics = new HttpMetrics(
@@ -72,13 +71,17 @@ trait IngestsApiFixture
   def withBrokenApp[R](
     testWith: TestWith[(Table, Topic, Topic, MetricsSender, String), R]): R = {
     withLocalSnsTopic { archivistTopic =>
-
       withLocalSnsTopic { unpackerTopic =>
         val table = Table("does-not-exist", index = "does-not-exist")
         withMockMetricSender { metricsSender =>
           withApp(table, archivistTopic, unpackerTopic, metricsSender) { _ =>
             testWith(
-              (table, archivistTopic, unpackerTopic, metricsSender, httpServerConfig.externalBaseURL))
+              (
+                table,
+                archivistTopic,
+                unpackerTopic,
+                metricsSender,
+                httpServerConfig.externalBaseURL))
           }
         }
       }
@@ -93,7 +96,12 @@ trait IngestsApiFixture
           withMockMetricSender { metricsSender =>
             withApp(table, archivistTopic, unpackerTopic, metricsSender) { _ =>
               testWith(
-                (table, archivistTopic, unpackerTopic, metricsSender, httpServerConfig.externalBaseURL))
+                (
+                  table,
+                  archivistTopic,
+                  unpackerTopic,
+                  metricsSender,
+                  httpServerConfig.externalBaseURL))
             }
           }
         }

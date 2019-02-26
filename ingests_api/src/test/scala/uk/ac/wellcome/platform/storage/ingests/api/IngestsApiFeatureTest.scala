@@ -447,7 +447,6 @@ class IngestsApiFeatureTest
                        |Invalid value at .ingestType: required property not supplied.""".stripMargin
                 )
 
-
                 assertSnsReceivesNothing(archivistTopic)
                 assertSnsReceivesNothing(unpackerTopic)
 

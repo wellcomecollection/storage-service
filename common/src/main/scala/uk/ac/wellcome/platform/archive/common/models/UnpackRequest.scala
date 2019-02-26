@@ -5,7 +5,7 @@ import java.util.UUID
 import uk.ac.wellcome.storage.ObjectLocation
 
 case class UnpackRequest(
-                          requestId: UUID,
-                          sourceLocation: ObjectLocation,
-                          storageSpace: StorageSpace
-                        )
+  requestId: UUID,
+  sourceLocation: ObjectLocation,
+  storageSpace: StorageSpace
+)

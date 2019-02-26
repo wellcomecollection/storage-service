@@ -7,7 +7,11 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
-import uk.ac.wellcome.platform.archive.common.models.{IngestBagRequest, StorageSpace, UnpackRequest}
+import uk.ac.wellcome.platform.archive.common.models.{
+  IngestBagRequest,
+  StorageSpace,
+  UnpackRequest
+}
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
@@ -29,56 +33,47 @@ class ProgressStarterTest
     withLocalSnsTopic { archivistTopic =>
       withLocalSnsTopic { unpackerTopic =>
         withProgressTrackerTable { table =>
-          withProgressStarter(table, archivistTopic, unpackerTopic) { progressStarter =>
-            whenReady(
-              progressStarter.initialise(progress)) { p =>
+          withProgressStarter(table, archivistTopic, unpackerTopic) {
+            progressStarter =>
+              whenReady(progressStarter.initialise(progress)) { p =>
+                p shouldBe progress
 
-              p shouldBe progress
+                assertTableOnlyHasItem(progress, table)
 
-              assertTableOnlyHasItem(progress, table)
+                // Archivist
+                val archivistRequests =
+                  listMessagesReceivedFromSNS(
+                    archivistTopic
+                  ).map(messageInfo =>
+                    fromJson[IngestBagRequest](messageInfo.message).get)
 
-              // Archivist
-              val archivistRequests =
-                listMessagesReceivedFromSNS(
-                  archivistTopic
-                ).map(messageInfo =>
-                  fromJson[IngestBagRequest](
-                    messageInfo.message).get
-                )
-
-              archivistRequests shouldBe List(
-                IngestBagRequest(
-                  p.id,
-                  storageSpace =
-                    StorageSpace(p.space.underlying),
-                  archiveCompleteCallbackUrl =
-                    p.callback.map(_.uri),
-                  zippedBagLocation = ObjectLocation(
-                    progress.sourceLocation.location.namespace,
-                    progress.sourceLocation.location.key
+                archivistRequests shouldBe List(
+                  IngestBagRequest(
+                    p.id,
+                    storageSpace = StorageSpace(p.space.underlying),
+                    archiveCompleteCallbackUrl = p.callback.map(_.uri),
+                    zippedBagLocation = ObjectLocation(
+                      progress.sourceLocation.location.namespace,
+                      progress.sourceLocation.location.key
+                    )
                   )
                 )
-              )
 
-              // Unpacker
-              val unpackerRequests =
-                listMessagesReceivedFromSNS(
-                  unpackerTopic
-                ).map(messageInfo =>
-                  fromJson[UnpackRequest](
-                    messageInfo.message).get
-                )
+                // Unpacker
+                val unpackerRequests =
+                  listMessagesReceivedFromSNS(
+                    unpackerTopic
+                  ).map(messageInfo =>
+                    fromJson[UnpackRequest](messageInfo.message).get)
 
-              unpackerRequests shouldBe List(
-                UnpackRequest(
-                  requestId = progress.id,
-                  sourceLocation =
-                    progress.sourceLocation.location,
-                  storageSpace =
-                    StorageSpace(progress.space.underlying)
+                unpackerRequests shouldBe List(
+                  UnpackRequest(
+                    requestId = progress.id,
+                    sourceLocation = progress.sourceLocation.location,
+                    storageSpace = StorageSpace(progress.space.underlying)
+                  )
                 )
-              )
-            }
+              }
           }
         }
       }
@@ -88,11 +83,12 @@ class ProgressStarterTest
   it("returns a failed future if saving to DynamoDB fails") {
     withLocalSnsTopic { archivistTopic =>
       withLocalSnsTopic { unpackerTopic =>
-
         val fakeTable = Table("does-not-exist", index = "does-not-exist")
 
         withProgressStarter(
-          fakeTable, archivistTopic, unpackerTopic
+          fakeTable,
+          archivistTopic,
+          unpackerTopic
         ) { progressStarter =>
           val future = progressStarter.initialise(progress)
 
@@ -111,7 +107,9 @@ class ProgressStarterTest
       val fakeUnpackerTopic = Topic("does-not-exist")
 
       withProgressStarter(
-        table, fakeArchivistTopic, fakeUnpackerTopic
+        table,
+        fakeArchivistTopic,
+        fakeUnpackerTopic
       ) { progressStarter =>
         val future = progressStarter.initialise(progress)
 
@@ -132,7 +130,6 @@ class ProgressStarterTest
     withSNSWriter(archivistTopic) { archivistSnsWriter =>
       withSNSWriter(unpackerTopic) { unpackerSnsWriter =>
         withProgressTracker(table) { progressTracker =>
-
           val progressStarter = new ProgressStarter(
             progressTracker = progressTracker,
             archivistSnsWriter = archivistSnsWriter,

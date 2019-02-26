@@ -29,5 +29,4 @@ locals {
   bag_replicator_image = "${module.images.services["bag_replicator"]}"
   bag_verifier_image   = "${module.images.services["bag_verifier"]}"
   bag_unpacker_image   = "${module.images.services["bag_unpacker"]}"
-
 }
