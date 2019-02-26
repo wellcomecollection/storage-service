@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.bag
+package uk.ac.wellcome.platform.archive.archivist.bag
 
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagDigestFile,
@@ -9,8 +9,8 @@ import uk.ac.wellcome.platform.archive.common.models.error.{
   InvalidBagManifestError
 }
 
-import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
+import scala.util.{Failure, Success, Try}
 
 object BagDigestFileCreator {
 
@@ -35,7 +35,7 @@ object BagDigestFileCreator {
         Success(
           BagDigestFile(
             checksum = checksum.trim,
-            path = BagItemPath(bagRootPathInZip, itemPath.trim)
+            path = BagItemPath(itemPath.trim, bagRootPathInZip)
           )
         )
       case _ =>

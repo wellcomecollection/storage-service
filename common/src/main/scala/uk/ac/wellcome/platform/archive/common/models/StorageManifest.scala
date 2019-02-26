@@ -9,7 +9,9 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
 }
 import uk.ac.wellcome.platform.archive.common.progress.models.StorageLocation
 
-case class ChecksumAlgorithm(value: String)
+case class ChecksumAlgorithm(value: String) {
+  override def toString: String = value
+}
 
 case class StorageManifest(
   space: StorageSpace,
@@ -23,5 +25,7 @@ case class StorageManifest(
   val id = BagId(space, info.externalIdentifier)
 }
 
-case class FileManifest(checksumAlgorithm: ChecksumAlgorithm,
-                        files: List[BagDigestFile])
+case class FileManifest(
+  checksumAlgorithm: ChecksumAlgorithm,
+  files: List[BagDigestFile]
+)

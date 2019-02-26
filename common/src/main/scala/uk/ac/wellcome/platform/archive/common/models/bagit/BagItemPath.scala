@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.models.bagit
 
+import java.nio.file.Paths
+
 import com.gu.scanamo.DynamoFormat
 import com.gu.scanamo.error.TypeCoercionError
 import io.circe.{Decoder, Encoder, Json}
@@ -7,11 +9,25 @@ import uk.ac.wellcome.json.JsonUtil.{fromJson, toJson}
 
 case class BagItemPath(underlying: String) extends AnyVal {
   override def toString: String = underlying
+
+  def toObjectLocation(bagLocation: BagLocation) = {
+    bagLocation.objectLocation.copy(
+      key = Paths
+        .get(
+          bagLocation.objectLocation.key,
+          underlying
+        )
+        .toString)
+  }
+
 }
 
 object BagItemPath {
-  def apply(maybeBagRootPath: Option[String] = None,
-            itemPath: String): BagItemPath = {
+  def apply(
+    itemPath: String,
+    maybeBagRootPath: Option[String] = None
+  ): BagItemPath = {
+
     maybeBagRootPath match {
       case None => BagItemPath(itemPath)
       case Some(bagRootPath) =>

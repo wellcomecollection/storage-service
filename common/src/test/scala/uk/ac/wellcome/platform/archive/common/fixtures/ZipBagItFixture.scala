@@ -57,6 +57,7 @@ trait ZipBagItFixture extends BagInfoGenerators with BagIt with Logging {
       createBagItFile = createBagItFile,
       createBagInfoFile = createBagInfoFile
     )
+
     info(s"Adding files $allFiles to bag ${bagInfo.externalIdentifier}")
     withZipFile(allFiles) { zipFile =>
       testWith(zipFile)

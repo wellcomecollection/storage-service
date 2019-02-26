@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.archivist
+package uk.ac.wellcome.platform.archive.common
 
 import java.io.InputStream
 

@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.archivist.models.errors.{
   FileNotFoundError
 }
 import uk.ac.wellcome.platform.archive.archivist.zipfile.ZipFileReader
-import uk.ac.wellcome.platform.archive.common.bag.BagInfoParser
+import uk.ac.wellcome.platform.archive.common.parsers.BagInfoParser
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagItemPath,
@@ -42,10 +42,11 @@ object ArchiveJobCreator extends Logging {
             val bagRootPathInZip =
               ZippedBagFile.bagPathFromBagInfoPath(bagInfoPath)
             val tagManifestLocation = BagItemPath(
-              bagRootPathInZip,
-              config.bagItConfig.tagManifestFileName)
+              config.bagItConfig.tagManifestFileName,
+              bagRootPathInZip)
             val bagManifestLocations = config.bagItConfig.digestNames
-              .map(BagItemPath(bagRootPathInZip, _))
+              .map((itemPath: String) =>
+                BagItemPath(itemPath, bagRootPathInZip))
 
             ArchiveJob(
               externalIdentifier = externalIdentifier,
