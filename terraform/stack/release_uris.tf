@@ -13,6 +13,7 @@ module "images" {
     "notifier",
     "bagger",
     "bag_replicator",
+    "bag_verifier",
   ]
 }
 
@@ -25,4 +26,5 @@ locals {
   notifier_image       = "${module.images.services["notifier"]}"
   bagger_image         = "${module.images.services["bagger"]}"
   bag_replicator_image = "${module.images.services["bag_replicator"]}"
+  bag_verifier_image = "${module.images.services["bag_verifier"]}"
 }
