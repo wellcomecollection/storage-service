@@ -12,14 +12,12 @@ import uk.ac.wellcome.json.JsonUtil._
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
-
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
 
     implicit val ec = actorSystem.dispatcher
 
     new BagUnpackerWorkerService(
-      stream =
-        NotificationStreamBuilder.buildStream[UnpackBagRequest](config),
+      stream = NotificationStreamBuilder.buildStream[UnpackBagRequest](config),
       progressSnsWriter =
         SNSBuilder.buildSNSWriter(config, namespace = "progress"),
       outgoingSnsWriter =

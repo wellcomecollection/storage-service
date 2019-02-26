@@ -2,17 +2,23 @@ package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
 import java.io._
 
-import org.apache.commons.compress.archivers.{ArchiveOutputStream, ArchiveStreamFactory}
-import org.apache.commons.compress.compressors.{CompressorOutputStream, CompressorStreamFactory}
+import org.apache.commons.compress.archivers.{
+  ArchiveOutputStream,
+  ArchiveStreamFactory
+}
+import org.apache.commons.compress.compressors.{
+  CompressorOutputStream,
+  CompressorStreamFactory
+}
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 
 trait CompressFixture extends RandomThings {
   def createArchive(
-                     archiverName: String,
-                     compressorName: String,
-                     fileCount: Int = 10
-                   ) = {
+    archiverName: String,
+    compressorName: String,
+    fileCount: Int = 10
+  ) = {
 
     val file = File.createTempFile(
       randomUUID.toString,
@@ -45,10 +51,10 @@ trait CompressFixture extends RandomThings {
   }
 
   class Archive(
-                 archiverName: String,
-                 compressorName: String,
-                 outputStream: OutputStream
-               ) {
+    archiverName: String,
+    compressorName: String,
+    outputStream: OutputStream
+  ) {
 
     private val compress = compressor(compressorName)(_)
     private val pack = packer(archiverName)(_)
@@ -68,9 +74,9 @@ trait CompressFixture extends RandomThings {
     }
 
     def addFile(
-                 file: File,
-                 entryName: String
-               ) = {
+      file: File,
+      entryName: String
+    ) = {
       synchronized {
 
         val entry = archiveOutputStream
@@ -96,10 +102,10 @@ trait CompressFixture extends RandomThings {
     }
 
     private def compressor(
-                            compressorName: String
-                          )(
-                            outputStream: OutputStream
-                          ): CompressorOutputStream = {
+      compressorName: String
+    )(
+      outputStream: OutputStream
+    ): CompressorOutputStream = {
 
       val compressorStreamFactory =
         new CompressorStreamFactory()
@@ -115,10 +121,10 @@ trait CompressFixture extends RandomThings {
     }
 
     private def packer(
-                        archiverName: String
-                      )(
-                        outputStream: OutputStream
-                      ): ArchiveOutputStream = {
+      archiverName: String
+    )(
+      outputStream: OutputStream
+    ): ArchiveOutputStream = {
 
       val archiveStreamFactory =
         new ArchiveStreamFactory()

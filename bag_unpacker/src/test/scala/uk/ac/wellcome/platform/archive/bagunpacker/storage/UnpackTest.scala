@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import scala.io.Source
 
 class UnpackTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with CompressFixture
