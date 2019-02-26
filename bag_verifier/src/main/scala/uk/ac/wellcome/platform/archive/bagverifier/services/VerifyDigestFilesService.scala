@@ -37,7 +37,7 @@ class VerifyDigestFilesService(storageManifestService: StorageManifestService, s
     }.map { results =>
       val woke = results.collect { case Right(digestFile) => digestFile }
       val problematicFaves = results.collect { case Left(failedVerification) => failedVerification }
-      assert(woke.size + problematicFaves.size == digestFiles.size, )
+      assert(woke.size + problematicFaves.size == digestFiles.size)
 
       BagVerification(
         woke = woke,
