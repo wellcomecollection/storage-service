@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import java.security.MessageDigest
-
 import akka.Done
 import com.amazonaws.services.s3.AmazonS3
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
@@ -12,14 +10,13 @@ import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.collection.immutable
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class BagVerifierWorkerService(
   notificationStream: NotificationStream[BagRequest],
   storageManifestService: StorageManifestService,
   s3Client: AmazonS3
-) extends Runnable {
+)(implicit ec: ExecutionContext) extends Runnable {
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
@@ -52,8 +49,7 @@ class BagVerifierWorkerService(
           .getObjectContent
       }
       actualChecksum <- ChecksumVerifier.checksum(inputStream, algorithm = algorithm)
-      checksumIsCorrect = expectedChecksum == actualChecksum
-      _ <- if (!checksumIsCorrect) {
+      _ = if (expectedChecksum != actualChecksum) {
         throw new RuntimeException(s"Incorrect checksum for $digestFile; read $actualChecksum, expected $expectedChecksum")
       }
     } yield ()

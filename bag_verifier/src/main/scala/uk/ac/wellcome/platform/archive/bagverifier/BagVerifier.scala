@@ -1,21 +1,19 @@
 package uk.ac.wellcome.platform.archive.bagverifier
 
 import akka.Done
-import akka.actor.ActorSystem
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sns.AmazonSNS
 import com.amazonaws.services.sns.model.{PublishRequest, PublishResult}
 import grizzled.slf4j.Logging
 import io.circe.Encoder
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{NotificationMessage, SNSConfig}
 import uk.ac.wellcome.messaging.sqs.SQSStream
 import uk.ac.wellcome.platform.archive.bagverifier.config.BagVerifierConfig
-import uk.ac.wellcome.typesafe.Runnable
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class BagVerifier(
@@ -25,9 +23,7 @@ class BagVerifier(
   bagVerifierConfig: BagVerifierConfig,
   ingestsSnsConfig: SNSConfig,
   outgoingSnsConfig: SNSConfig
-)(
-  implicit val actorSystem: ActorSystem
-) extends Logging
+)(implicit ec: ExecutionContext) extends Logging
     with Runnable {
 
   def run(): Future[Done] =

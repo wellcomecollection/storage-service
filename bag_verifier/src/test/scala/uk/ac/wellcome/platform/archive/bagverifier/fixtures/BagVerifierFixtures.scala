@@ -19,6 +19,8 @@ import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 trait BagVerifierFixtures
     extends S3
     with RandomThings
