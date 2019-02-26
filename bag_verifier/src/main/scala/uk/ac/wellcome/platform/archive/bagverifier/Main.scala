@@ -9,9 +9,13 @@ import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
+import scala.concurrent.ExecutionContext
+
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
+    implicit val executionContext: ExecutionContext =
+      AkkaBuilder.buildExecutionContext()
 
     new BagVerifier(
       s3Client = S3Builder.buildS3Client(config),
