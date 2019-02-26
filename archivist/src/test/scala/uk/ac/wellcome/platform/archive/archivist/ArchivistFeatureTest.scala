@@ -7,20 +7,18 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.archivist.fixtures.ArchivistFixtures
+import uk.ac.wellcome.platform.archive.common.generators.BagLocationGenerators
 import uk.ac.wellcome.platform.archive.common.models._
-import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagLocation,
-  BagPath
-}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
+import uk.ac.wellcome.storage.ObjectLocation
 
 class ArchivistFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
     with ArchivistFixtures
+    with BagLocationGenerators
     with IntegrationPatience
     with ProgressUpdateAssertions {
 
@@ -46,11 +44,11 @@ class ArchivistFeatureTest
               assertSnsReceivesOnly(
                 BagRequest(
                   archiveRequestId = request.id,
-                  bagLocation = BagLocation(
-                    storageNamespace = storageBucket.name,
+                  bagLocation = createBagLocationWith(
+                    bucket = storageBucket,
                     storagePrefix = Some("archive"),
                     storageSpace = request.storageSpace,
-                    bagPath = BagPath(bagInfo.externalIdentifier.toString)
+                    bagIdentifier = bagInfo.externalIdentifier
                   )
                 ),
                 nextTopic
@@ -159,22 +157,20 @@ class ArchivistFeatureTest
                     Set(
                       BagRequest(
                         archiveRequestId = validRequest1.id,
-                        bagLocation = BagLocation(
-                          storageNamespace = storageBucket.name,
+                        bagLocation = createBagLocationWith(
+                          bucket = storageBucket,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest1.storageSpace,
-                          bagPath =
-                            BagPath(bagInfo1.externalIdentifier.toString)
+                          bagIdentifier = bagInfo1.externalIdentifier
                         )
                       ),
                       BagRequest(
                         archiveRequestId = validRequest2.id,
-                        bagLocation = BagLocation(
-                          storageNamespace = storageBucket.name,
+                        bagLocation = createBagLocationWith(
+                          bucket = storageBucket,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest2.storageSpace,
-                          bagPath =
-                            BagPath(bagInfo2.externalIdentifier.toString)
+                          bagIdentifier = bagInfo2.externalIdentifier
                         )
                       )
                     ),
@@ -250,20 +246,20 @@ class ArchivistFeatureTest
                 Set(
                   BagRequest(
                     archiveRequestId = validRequest1.id,
-                    bagLocation = BagLocation(
-                      storageNamespace = storageBucket.name,
+                    bagLocation = createBagLocationWith(
+                      bucket = storageBucket,
                       storagePrefix = Some("archive"),
                       storageSpace = validRequest1.storageSpace,
-                      bagPath = BagPath(bagInfo1.externalIdentifier.toString)
+                      bagIdentifier = bagInfo1.externalIdentifier
                     )
                   ),
                   BagRequest(
                     archiveRequestId = validRequest2.id,
-                    bagLocation = BagLocation(
-                      storageNamespace = storageBucket.name,
+                    bagLocation = createBagLocationWith(
+                      bucket = storageBucket,
                       storagePrefix = Some("archive"),
                       storageSpace = validRequest2.storageSpace,
-                      bagPath = BagPath(bagInfo2.externalIdentifier.toString)
+                      bagIdentifier = bagInfo2.externalIdentifier
                     )
                   )
                 ),
@@ -325,22 +321,20 @@ class ArchivistFeatureTest
                         Set(
                           BagRequest(
                             archiveRequestId = validRequest1.id,
-                            bagLocation = BagLocation(
-                              storageNamespace = storageBucket.name,
+                            bagLocation = createBagLocationWith(
+                              bucket = storageBucket,
                               storagePrefix = Some("archive"),
                               storageSpace = validRequest1.storageSpace,
-                              bagPath =
-                                BagPath(bagInfo1.externalIdentifier.toString)
+                              bagIdentifier = bagInfo1.externalIdentifier
                             )
                           ),
                           BagRequest(
                             archiveRequestId = validRequest2.id,
-                            bagLocation = BagLocation(
-                              storageNamespace = storageBucket.name,
+                            bagLocation = createBagLocationWith(
+                              bucket = storageBucket,
                               storagePrefix = Some("archive"),
                               storageSpace = validRequest2.storageSpace,
-                              bagPath =
-                                BagPath(bagInfo2.externalIdentifier.toString)
+                              bagIdentifier = bagInfo2.externalIdentifier
                             )
                           )
                         ),
@@ -402,22 +396,20 @@ class ArchivistFeatureTest
                     Set(
                       BagRequest(
                         archiveRequestId = validRequest1.id,
-                        bagLocation = BagLocation(
-                          storageNamespace = storageBucket.name,
+                        bagLocation = createBagLocationWith(
+                          bucket = storageBucket,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest1.storageSpace,
-                          bagPath =
-                            BagPath(bagInfo1.externalIdentifier.toString)
+                          bagIdentifier = bagInfo1.externalIdentifier
                         )
                       ),
                       BagRequest(
                         archiveRequestId = validRequest2.id,
-                        bagLocation = BagLocation(
-                          storageNamespace = storageBucket.name,
+                        bagLocation = createBagLocationWith(
+                          bucket = storageBucket,
                           storagePrefix = Some("archive"),
                           storageSpace = validRequest2.storageSpace,
-                          bagPath =
-                            BagPath(bagInfo2.externalIdentifier.toString)
+                          bagIdentifier = bagInfo2.externalIdentifier
                         )
                       )
                     ),

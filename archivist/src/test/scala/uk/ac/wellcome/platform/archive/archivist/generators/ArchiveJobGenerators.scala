@@ -5,17 +5,12 @@ import java.util.zip.ZipFile
 
 import uk.ac.wellcome.platform.archive.archivist.builders.UploadLocationBuilder
 import uk.ac.wellcome.platform.archive.archivist.models._
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.BagLocationGenerators
 import uk.ac.wellcome.platform.archive.common.models.bagit._
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-trait ArchiveJobGenerators
-    extends ExternalIdentifierGenerators
-    with StorageSpaceGenerators {
+trait ArchiveJobGenerators extends BagLocationGenerators {
 
   def createTagManifestItemJobWith(
     file: File,
@@ -67,11 +62,10 @@ trait ArchiveJobGenerators
     bagIdentifier: ExternalIdentifier = createExternalIdentifier,
     bucket: Bucket,
   ): ArchiveJob = {
-    val bagLocation = BagLocation(
-      storageNamespace = bucket.name,
+    val bagLocation = createBagLocationWith(
+      bucket = bucket,
       storagePrefix = Some("archive"),
-      storageSpace = createStorageSpace,
-      bagPath = BagPath(bagIdentifier.toString)
+      bagIdentifier = bagIdentifier
     )
 
     ArchiveJob(

@@ -6,15 +6,8 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bags.async.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagIdGenerators,
-  BagInfoGenerators
-}
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagId,
-  BagLocation,
-  BagPath
-}
+import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators}
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -85,12 +78,7 @@ class BagsWorkerServiceTest
       withLocalS3Bucket { bucket =>
         withLocalSnsTopic { progressTopic =>
           withWorkerService(table, bucket, progressTopic) { service =>
-            val accessBagLocation = BagLocation(
-              storageNamespace = bucket.name,
-              storagePrefix = Some(randomAlphanumeric()),
-              storageSpace = createStorageSpace,
-              bagPath = BagPath(randomAlphanumeric())
-            )
+            val accessBagLocation = createBagLocationWith(bucket)
 
             val replicationResult =
               createReplicationResultWith(accessBagLocation)

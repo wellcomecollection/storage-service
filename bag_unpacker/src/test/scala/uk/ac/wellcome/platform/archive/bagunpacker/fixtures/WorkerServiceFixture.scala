@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   RandomThings
 }
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.models.{
   StorageSpace,
   UnpackBagRequest
@@ -41,12 +40,7 @@ trait WorkerServiceFixture
         namespace = storageBucket.name,
         key = "not_a_real_file"
       ),
-      bagDestination = BagLocation(
-        storageNamespace = randomAlphanumeric(),
-        storagePrefix = None,
-        storageSpace = StorageSpace(randomAlphanumeric()),
-        bagPath = randomBagPath
-      )
+      bagDestination = createBagLocation
     )
 
     sendNotificationToSQS(queue, unpackBagRequest)

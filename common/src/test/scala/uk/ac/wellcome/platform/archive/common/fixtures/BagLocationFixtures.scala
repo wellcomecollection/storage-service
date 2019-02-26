@@ -1,22 +1,16 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
+import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, BagLocationGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.models._
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagInfo,
-  BagLocation,
-  BagPath
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagInfo, BagLocation}
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagInfoGenerators,
-  StorageSpaceGenerators
-}
 
 trait BagLocationFixtures
     extends S3
     with BagInfoGenerators
+    with BagLocationGenerators
     with BagIt
     with StorageSpaceGenerators {
   // TODO
@@ -42,11 +36,11 @@ trait BagLocationFixtures
       createDataManifest = createDataManifest,
       createTagManifest = createTagManifest)
 
-    val bagLocation = BagLocation(
-      storageNamespace = bucket.name,
+    val bagLocation = createBagLocationWith(
+      bucket = bucket,
       storagePrefix = Some(storagePrefix),
       storageSpace = storageSpace,
-      bagPath = BagPath(bagIdentifier.toString)
+      bagIdentifier = bagIdentifier
     )
 
     fileEntries.map((entry: FileEntry) => {
