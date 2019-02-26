@@ -89,7 +89,7 @@ module "bag_replicator" {
   container_image = "${local.bag_replicator_image}"
 }
 
-# bag_replicator
+# bag_verifier
 
 module "bag_verifier" {
   source = "../modules/service/worker"

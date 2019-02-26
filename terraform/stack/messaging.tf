@@ -183,7 +183,7 @@ module "bag_replicator_queue" {
 module "bag_verifier_queue" {
   source = "../modules/queue"
 
-  name = "${var.namespace}_bag_replicator"
+  name = "${var.namespace}_bag_verifier"
 
   topic_names = ["${module.bags_topic.name}"]
 
@@ -193,8 +193,7 @@ module "bag_verifier_queue" {
 
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 
-  # Because these operations take a long time (potentially copying thousands
-  # of S3 objects for a single message), we keep a high visibility timeout to
+  # We keep a high visibility timeout to
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = "${60 * 60 * 5}"
 
