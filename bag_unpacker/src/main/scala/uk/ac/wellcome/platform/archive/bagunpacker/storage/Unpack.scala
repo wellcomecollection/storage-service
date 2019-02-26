@@ -1,13 +1,9 @@
-package uk.ac.wellcome.platform.archive.bagunpacker
+package uk.ac.wellcome.platform.archive.bagunpacker.storage
 
 import java.io.{BufferedInputStream, InputStream, OutputStream}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{
-  ArchiveEntry,
-  ArchiveInputStream,
-  ArchiveStreamFactory
-}
+import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveInputStream, ArchiveStreamFactory}
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.compress.utils.IOUtils
 

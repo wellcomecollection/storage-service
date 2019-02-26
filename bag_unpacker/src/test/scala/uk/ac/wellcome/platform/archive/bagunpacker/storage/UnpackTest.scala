@@ -1,19 +1,20 @@
-package uk.ac.wellcome.platform.archive.bagunpacker
+package uk.ac.wellcome.platform.archive.bagunpacker.storage
 
 import java.io._
 import java.util.UUID
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 
 import scala.io.Source
 
 class UnpackTest
-    extends FunSpec
+  extends FunSpec
     with Matchers
     with ScalaFutures
-    with Compress
+    with CompressFixture
     with RandomThings {
 
   it("should unpack a tar.gz file") {
@@ -68,43 +69,5 @@ class UnpackTest
         actualContents shouldEqual (expectedContents)
       }
     }
-  }
-}
-
-trait Compress extends RandomThings {
-  def createArchive(
-    archiverName: String,
-    compressorName: String,
-    fileCount: Int = 10
-  ) = {
-
-    val file = File.createTempFile(
-      randomUUID.toString,
-      ".tar.gz"
-    )
-
-    val fileOutputStream = new FileOutputStream(file)
-
-    val archive = new Archive(
-      archiverName,
-      compressorName,
-      fileOutputStream
-    )
-
-    val randomFiles = (1 to fileCount)
-      .map(_ => randomFile(1024))
-
-    val entries =
-      randomFiles.map { randomFile =>
-        archive.addFile(
-          randomFile,
-          randomFile.getName
-        )
-      } toSet
-
-    archive.finish()
-    fileOutputStream.close()
-
-    (file, randomFiles, entries)
   }
 }
