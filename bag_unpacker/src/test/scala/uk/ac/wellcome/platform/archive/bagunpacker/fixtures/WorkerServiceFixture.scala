@@ -9,15 +9,8 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{Messaging, NotificationStreamFixture}
 import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorkerService
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  RandomThings
-}
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.models.{
-  StorageSpace,
-  UnpackBagRequest
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackRequest}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -34,19 +27,14 @@ trait WorkerServiceFixture
     queue: Queue,
     storageBucket: Bucket,
     archiveRequestId: UUID
-  )(testWith: TestWith[UnpackBagRequest, R]): R = {
-    val unpackBagRequest = UnpackBagRequest(
+  )(testWith: TestWith[UnpackRequest, R]): R = {
+    val unpackBagRequest = UnpackRequest(
       requestId = randomUUID,
-      packedBagLocation = ObjectLocation(
+      sourceLocation = ObjectLocation(
         namespace = storageBucket.name,
         key = "not_a_real_file"
       ),
-      bagDestination = BagLocation(
-        storageNamespace = randomAlphanumeric(),
-        storagePrefix = None,
-        storageSpace = StorageSpace(randomAlphanumeric()),
-        bagPath = randomBagPath
-      )
+      storageSpace = StorageSpace(randomAlphanumeric())
     )
 
     sendNotificationToSQS(queue, unpackBagRequest)
@@ -61,7 +49,7 @@ trait WorkerServiceFixture
   )(testWith: TestWith[BagUnpackerWorkerService, R]): R =
     withSNSWriter(progressTopic) { progressSnsWriter =>
       withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-        withNotificationStream[UnpackBagRequest, R](queue) {
+        withNotificationStream[UnpackRequest, R](queue) {
           notificationStream =>
             val bagUnpacker = new BagUnpackerWorkerService(
               stream = notificationStream,

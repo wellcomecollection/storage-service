@@ -37,8 +37,8 @@ class IngestsApiFeatureTest
   describe("GET /progress/:id") {
     it("returns a progress tracker when available") {
       withConfiguredApp {
-        case (table, _, metricsSender, baseUrl) =>
-          withMaterializer { implicit materialiser =>
+        case (table, _, _, metricsSender, baseUrl) =>
+          withMaterializer { implicit mat =>
             withProgressTracker(table) { progressTracker =>
               val progress = createProgress
 
@@ -136,7 +136,7 @@ class IngestsApiFeatureTest
 
     it("does not output empty values") {
       withConfiguredApp {
-        case (table, _, metricsSender, baseUrl) =>
+        case (table, _, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
             withProgressTracker(table) { progressTracker =>
               val progress = createProgressWith(callback = None)
@@ -161,7 +161,7 @@ class IngestsApiFeatureTest
 
     it("returns a 404 NotFound if no progress tracker matches id") {
       withConfiguredApp {
-        case (_, _, metricsSender, baseUrl) =>
+        case (_, _, _, metricsSender, baseUrl) =>
           whenGetRequestReady(s"$baseUrl/progress/$randomUUID") { response =>
             response.status shouldBe StatusCodes.NotFound
             response.entity.contentType shouldBe ContentTypes.`application/json`
@@ -176,7 +176,7 @@ class IngestsApiFeatureTest
     it("returns a 500 Server Error if reading from DynamoDB fails") {
       withMaterializer { implicit materializer =>
         withBrokenApp {
-          case (_, _, metricsSender, baseUrl) =>
+          case (_, _, _, metricsSender, baseUrl) =>
             whenGetRequestReady(s"$baseUrl/progress/$randomUUID") { response =>
               assertIsInternalServerErrorResponse(response)
 
@@ -192,8 +192,8 @@ class IngestsApiFeatureTest
   describe("POST /progress") {
     it("creates a progress tracker") {
       withConfiguredApp {
-        case (table, topic, metricsSender, baseUrl) =>
-          withMaterializer { implicit materialiser =>
+        case (table, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
+          withMaterializer { implicit mat =>
             val url = s"$baseUrl/progress"
 
             val bucketName = "bucket"
@@ -288,16 +288,29 @@ class IngestsApiFeatureTest
                     )
                 }
 
-                val requests =
-                  listMessagesReceivedFromSNS(topic).map(messageInfo =>
+                // Archivist
+                val archivistRequests =
+                  listMessagesReceivedFromSNS(archivistTopic).map(messageInfo =>
                     fromJson[IngestBagRequest](messageInfo.message).get)
 
-                requests shouldBe List(
+                archivistRequests shouldBe List(
                   IngestBagRequest(
                     id,
                     storageSpace = StorageSpace(spaceName),
                     archiveCompleteCallbackUrl = Some(testCallbackUri),
                     zippedBagLocation = ObjectLocation("bucket", "key.txt")
+                  ))
+
+                // Unpacker
+                val unpackerRequests =
+                  listMessagesReceivedFromSNS(unpackerTopic).map(messageInfo =>
+                    fromJson[UnpackRequest](messageInfo.message).get)
+
+                unpackerRequests shouldBe List(
+                  UnpackRequest(
+                    requestId = id,
+                    sourceLocation = ObjectLocation("bucket", "key.txt"),
+                    storageSpace = StorageSpace(spaceName)
                   ))
               }
 
@@ -312,8 +325,8 @@ class IngestsApiFeatureTest
     describe("returns a 400 error for malformed requests") {
       it("if the ingest request doesn't have a sourceLocation") {
         withConfiguredApp {
-          case (_, topic, metricsSender, baseUrl) =>
-            withMaterializer { implicit materialiser =>
+          case (_, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
+            withMaterializer { implicit mat =>
               val url = s"$baseUrl/progress"
 
               val entity = HttpEntity(
@@ -338,7 +351,9 @@ class IngestsApiFeatureTest
                     "Invalid value at .sourceLocation: required property not supplied."
                 )
 
-                assertSnsReceivesNothing(topic)
+                assertSnsReceivesNothing(archivistTopic)
+                assertSnsReceivesNothing(unpackerTopic)
+
                 assertMetricSent(
                   metricsSender,
                   result = HttpMetricResults.UserError)
@@ -349,7 +364,7 @@ class IngestsApiFeatureTest
 
       it("if the body of the request is not valid JSON") {
         withConfiguredApp {
-          case (_, topic, metricsSender, baseUrl) =>
+          case (_, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/progress"
 
@@ -365,7 +380,9 @@ class IngestsApiFeatureTest
                     "The request content was malformed:\nexpected json value got h (line 1, column 1)"
                 )
 
-                assertSnsReceivesNothing(topic)
+                assertSnsReceivesNothing(archivistTopic)
+                assertSnsReceivesNothing(unpackerTopic)
+
                 assertMetricSent(
                   metricsSender,
                   result = HttpMetricResults.UserError)
@@ -376,7 +393,7 @@ class IngestsApiFeatureTest
 
       it("if the Content-Type of the request is not an accepted type") {
         withConfiguredApp {
-          case (_, topic, metricsSender, baseUrl) =>
+          case (_, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/progress"
 
@@ -394,7 +411,9 @@ class IngestsApiFeatureTest
                   label = "Unsupported Media Type"
                 )
 
-                assertSnsReceivesNothing(topic)
+                assertSnsReceivesNothing(archivistTopic)
+                assertSnsReceivesNothing(unpackerTopic)
+
                 assertMetricSent(
                   metricsSender,
                   result = HttpMetricResults.UserError)
@@ -405,7 +424,7 @@ class IngestsApiFeatureTest
 
       it("if the ingest request doesn't have a sourceLocation or ingestType") {
         withConfiguredApp {
-          case (_, topic, metricsSender, baseUrl) =>
+          case (_, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/progress"
 
@@ -428,7 +447,10 @@ class IngestsApiFeatureTest
                        |Invalid value at .ingestType: required property not supplied.""".stripMargin
                 )
 
-                assertSnsReceivesNothing(topic)
+
+                assertSnsReceivesNothing(archivistTopic)
+                assertSnsReceivesNothing(unpackerTopic)
+
                 assertMetricSent(
                   metricsSender,
                   result = HttpMetricResults.UserError)
@@ -439,7 +461,7 @@ class IngestsApiFeatureTest
 
       it("if the sourceLocation doesn't have a bucket field") {
         withConfiguredApp {
-          case (_, topic, metricsSender, baseUrl) =>
+          case (_, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/progress"
 
@@ -473,7 +495,9 @@ class IngestsApiFeatureTest
                     "Invalid value at .sourceLocation.bucket: required property not supplied."
                 )
 
-                assertSnsReceivesNothing(topic)
+                assertSnsReceivesNothing(archivistTopic)
+                assertSnsReceivesNothing(unpackerTopic)
+
                 assertMetricSent(
                   metricsSender,
                   result = HttpMetricResults.UserError)
@@ -484,7 +508,7 @@ class IngestsApiFeatureTest
 
       it("if the sourceLocation has an invalid bucket field") {
         withConfiguredApp {
-          case (_, topic, metricsSender, baseUrl) =>
+          case (_, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/progress"
 
@@ -519,7 +543,9 @@ class IngestsApiFeatureTest
                     "Invalid value at .sourceLocation.bucket: should be a String."
                 )
 
-                assertSnsReceivesNothing(topic)
+                assertSnsReceivesNothing(archivistTopic)
+                assertSnsReceivesNothing(unpackerTopic)
+
                 assertMetricSent(
                   metricsSender,
                   result = HttpMetricResults.UserError)
@@ -530,7 +556,7 @@ class IngestsApiFeatureTest
 
       it("if the provider doesn't have a valid id field") {
         withConfiguredApp {
-          case (_, topic, metricsSender, baseUrl) =>
+          case (_, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/progress"
 
@@ -565,7 +591,9 @@ class IngestsApiFeatureTest
                     """Invalid value at .sourceLocation.provider.id: got "blipbloop", valid values are: aws-s3-standard, aws-s3-ia."""
                 )
 
-                assertSnsReceivesNothing(topic)
+                assertSnsReceivesNothing(archivistTopic)
+                assertSnsReceivesNothing(unpackerTopic)
+
                 assertMetricSent(
                   metricsSender,
                   result = HttpMetricResults.UserError)
@@ -576,7 +604,7 @@ class IngestsApiFeatureTest
 
       it("if the ingestType doesn't have a valid id field") {
         withConfiguredApp {
-          case (_, topic, metricsSender, baseUrl) =>
+          case (_, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/progress"
 
@@ -611,7 +639,9 @@ class IngestsApiFeatureTest
                     """Invalid value at .ingestType.id: got "baboop", valid values are: create."""
                 )
 
-                assertSnsReceivesNothing(topic)
+                assertSnsReceivesNothing(archivistTopic)
+                assertSnsReceivesNothing(unpackerTopic)
+
                 assertMetricSent(
                   metricsSender,
                   result = HttpMetricResults.UserError)
@@ -624,7 +654,7 @@ class IngestsApiFeatureTest
     it("returns a 500 Server Error if updating DynamoDB fails") {
       withMaterializer { implicit materializer =>
         withBrokenApp {
-          case (_, _, metricsSender, baseUrl) =>
+          case (_, _, _, metricsSender, baseUrl) =>
             val entity = HttpEntity(
               ContentTypes.`application/json`,
               s"""|{
@@ -668,7 +698,7 @@ class IngestsApiFeatureTest
   describe("GET /progress/find-by-bag-id/:bag-id") {
     it("returns a list of progresses for the given bag id") {
       withConfiguredApp {
-        case (table, _, metricsSender, baseUrl) =>
+        case (table, _, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
             withProgressTracker(table) { progressTracker =>
               val progress = createProgress
@@ -693,7 +723,8 @@ class IngestsApiFeatureTest
 
                     assertMetricSent(
                       metricsSender,
-                      result = HttpMetricResults.Success)
+                      result = HttpMetricResults.Success
+                    )
                 }
               }
             }
@@ -704,7 +735,7 @@ class IngestsApiFeatureTest
     it(
       "returns a list of progresses for the given bag id with : separated parts") {
       withConfiguredApp {
-        case (table, _, metricsSender, baseUrl) =>
+        case (table, _, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
             withProgressTracker(table) { progressTracker =>
               val progress = createProgress
@@ -729,7 +760,8 @@ class IngestsApiFeatureTest
 
                         assertMetricSent(
                           metricsSender,
-                          result = HttpMetricResults.Success)
+                          result = HttpMetricResults.Success
+                        )
                     }
                 }
               }
@@ -740,7 +772,7 @@ class IngestsApiFeatureTest
 
     it("returns 'Not Found' if there are no progresses for the given bag id") {
       withConfiguredApp {
-        case (_, _, metricsSender, baseUrl) =>
+        case (_, _, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
             whenGetRequestReady(s"$baseUrl/progress/find-by-bag-id/$randomUUID") {
               response =>
@@ -753,7 +785,8 @@ class IngestsApiFeatureTest
 
                   assertMetricSent(
                     metricsSender,
-                    result = HttpMetricResults.UserError)
+                    result = HttpMetricResults.UserError
+                  )
                 }
             }
           }

@@ -21,7 +21,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class IngestsApi(
   dynamoClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig,
-  snsWriter: SNSWriter,
+  archivistSnsWriter: SNSWriter,
+  unpackerSnsWriter: SNSWriter,
   httpMetrics: HttpMetrics,
   httpServerConfig: HTTPServerConfig,
   contextURL: URL
@@ -38,7 +39,8 @@ class IngestsApi(
     progressTracker = progressTracker,
     progressStarter = new ProgressStarter(
       progressTracker = progressTracker,
-      snsWriter = snsWriter
+      archivistSnsWriter = archivistSnsWriter,
+      unpackerSnsWriter = unpackerSnsWriter
     ),
     httpServerConfig = httpServerConfig,
     contextURL = contextURL

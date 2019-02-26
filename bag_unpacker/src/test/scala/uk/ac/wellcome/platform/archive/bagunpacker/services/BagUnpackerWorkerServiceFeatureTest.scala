@@ -6,6 +6,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
 class BagUnpackerWorkerServiceFeatureTest
@@ -30,7 +31,12 @@ class BagUnpackerWorkerServiceFeatureTest
 
             val expectedNotification = BagRequest(
               archiveRequestId = unpackBagRequest.requestId,
-              bagLocation = unpackBagRequest.bagDestination
+              bagLocation = BagLocation(
+                storageNamespace = "uploadNamespace",
+                storagePrefix = Some("uploadPrefix"),
+                unpackBagRequest.storageSpace,
+                bagPath = BagPath("externalIdentifier")
+              )
             )
 
             assertSnsReceivesOnly(

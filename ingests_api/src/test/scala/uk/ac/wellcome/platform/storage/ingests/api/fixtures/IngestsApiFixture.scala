@@ -38,53 +38,63 @@ trait IngestsApiFixture
 
   private def withApp[R](
     table: Table,
-    topic: Topic,
+    archivistTopic: Topic,
+    unpackerTopic: Topic,
     metricsSender: MetricsSender)(testWith: TestWith[IngestsApi, R]): R =
-    withSNSWriter(topic) { snsWriter =>
-      withActorSystem { implicit actorSystem =>
-        withMaterializer(actorSystem) { implicit materializer =>
-          val httpMetrics = new HttpMetrics(
-            name = metricsName,
-            metricsSender = metricsSender
-          )
+    withSNSWriter(archivistTopic) { archivistSnsWriter =>
+      withSNSWriter(unpackerTopic) { unpackerSnsWriter =>
 
-          val ingestsApi = new IngestsApi(
-            dynamoClient = dynamoDbClient,
-            dynamoConfig = createDynamoConfigWith(table),
-            snsWriter = snsWriter,
-            httpMetrics = httpMetrics,
-            httpServerConfig = httpServerConfig,
-            contextURL = contextURL
-          )
+        withActorSystem { implicit actorSystem =>
+          withMaterializer(actorSystem) { implicit materializer =>
+            val httpMetrics = new HttpMetrics(
+              name = metricsName,
+              metricsSender = metricsSender
+            )
 
-          ingestsApi.run()
+            val ingestsApi = new IngestsApi(
+              dynamoClient = dynamoDbClient,
+              dynamoConfig = createDynamoConfigWith(table),
+              archivistSnsWriter = archivistSnsWriter,
+              unpackerSnsWriter = unpackerSnsWriter,
+              httpMetrics = httpMetrics,
+              httpServerConfig = httpServerConfig,
+              contextURL = contextURL
+            )
 
-          testWith(ingestsApi)
+            ingestsApi.run()
+
+            testWith(ingestsApi)
+          }
         }
       }
     }
 
   def withBrokenApp[R](
-    testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R = {
-    withLocalSnsTopic { topic =>
-      val table = Table("does-not-exist", index = "does-not-exist")
-      withMockMetricSender { metricsSender =>
-        withApp(table, topic, metricsSender) { _ =>
-          testWith(
-            (table, topic, metricsSender, httpServerConfig.externalBaseURL))
+    testWith: TestWith[(Table, Topic, Topic, MetricsSender, String), R]): R = {
+    withLocalSnsTopic { archivistTopic =>
+
+      withLocalSnsTopic { unpackerTopic =>
+        val table = Table("does-not-exist", index = "does-not-exist")
+        withMockMetricSender { metricsSender =>
+          withApp(table, archivistTopic, unpackerTopic, metricsSender) { _ =>
+            testWith(
+              (table, archivistTopic, unpackerTopic, metricsSender, httpServerConfig.externalBaseURL))
+          }
         }
       }
     }
   }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R = {
-    withLocalSnsTopic { topic =>
-      withProgressTrackerTable { table =>
-        withMockMetricSender { metricsSender =>
-          withApp(table, topic, metricsSender) { _ =>
-            testWith(
-              (table, topic, metricsSender, httpServerConfig.externalBaseURL))
+    testWith: TestWith[(Table, Topic, Topic, MetricsSender, String), R]): R = {
+    withLocalSnsTopic { archivistTopic =>
+      withLocalSnsTopic { unpackerTopic =>
+        withProgressTrackerTable { table =>
+          withMockMetricSender { metricsSender =>
+            withApp(table, archivistTopic, unpackerTopic, metricsSender) { _ =>
+              testWith(
+                (table, archivistTopic, unpackerTopic, metricsSender, httpServerConfig.externalBaseURL))
+            }
           }
         }
       }

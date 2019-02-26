@@ -29,7 +29,10 @@ object Main extends WellcomeTypesafeApp {
     new IngestsApi(
       dynamoClient = DynamoBuilder.buildDynamoClient(config),
       dynamoConfig = DynamoBuilder.buildDynamoConfig(config),
-      snsWriter = SNSBuilder.buildSNSWriter(config),
+      archivistSnsWriter =
+        SNSBuilder.buildSNSWriter(config, "archivist"),
+      unpackerSnsWriter =
+        SNSBuilder.buildSNSWriter(config, "unpacker"),
       httpMetrics = httpMetrics,
       httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
       contextURL = HTTPServerBuilder.buildContextURL(config)
