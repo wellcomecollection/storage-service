@@ -1,14 +1,12 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import java.io.InputStream
-
 import com.amazonaws.services.s3.AmazonS3
+import uk.ac.wellcome.platform.archive.common.models.FileManifest
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagLocation}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
 
 case class FailedVerification(
   digestFile: BagDigestFile,
@@ -23,19 +21,32 @@ case class BagVerification(
 class VerifyDigestFilesService(storageManifestService: StorageManifestService, s3Client: AmazonS3, algorithm: String)(implicit ec: ExecutionContext) {
   def verifyBagLocation(bagLocation: BagLocation): Future[BagVerification] =
     for {
-      manifest <- storageManifestService.createManifest(bagLocation)
-      tagManifest <- storageManifestService.createTagManifest(bagLocation)
-      digestFiles = manifest.manifest.files ++ tagManifest.files
+      fileManifest <- getManifest("file manifest") { storageManifestService.createFileManifest(bagLocation) }
+      tagManifest <- getManifest("tag manifest") { storageManifestService.createTagManifest(bagLocation) }
+      digestFiles = fileManifest.files ++ tagManifest.files
       result <- verifyFiles(bagLocation, digestFiles = digestFiles)
     } yield result
+
+  private def getManifest(name: String)(result: Future[FileManifest]): Future[FileManifest] =
+    result.recover {
+      case err: Throwable =>
+        throw new RuntimeException(s"Error getting $name: ${err.getMessage}")
+    }
 
   private def verifyFiles(bagLocation: BagLocation, digestFiles: Seq[BagDigestFile]): Future[BagVerification] =
     Future.traverse(digestFiles) {
       digestFile: BagDigestFile =>
         verifyIndividualFile(bagLocation, digestFile = digestFile)
-    }.map { results: Seq[Either[FailedVerification, BagDigestFile]] =>
+          .recover { case reason: Throwable =>
+            Left(FailedVerification(
+              digestFile = digestFile,
+              reason = reason
+            ))
+          }
+    }.map { results =>
       val woke = results.collect { case Right(digestFile) => digestFile }
       val problematicFaves = results.collect { case Left(failedVerification) => failedVerification }
+      assert(woke.size + problematicFaves.size == digestFiles.size, )
 
       BagVerification(
         woke = woke,
@@ -46,30 +57,15 @@ class VerifyDigestFilesService(storageManifestService: StorageManifestService, s
   private def verifyIndividualFile(bagLocation: BagLocation, digestFile: BagDigestFile): Future[Either[FailedVerification, BagDigestFile]] = {
     val objectLocation = digestFile.path.toObjectLocation(bagLocation)
 
-    Future {
-      Try {
+    for {
+      inputStream <- Future {
         s3Client
           .getObject(objectLocation.namespace, objectLocation.key)
           .getObjectContent
       }
-    }.flatMap { tryInputStream: Try[InputStream] => verifyInputStream(digestFile, tryInputStream = tryInputStream) }
+      actualChecksum <- ChecksumVerifier.checksum(inputStream, algorithm = algorithm)
+    } yield getResult(digestFile, actualChecksum = actualChecksum)
   }
-
-  private def verifyInputStream(digestFile: BagDigestFile, tryInputStream: Try[InputStream]): Future[Either[FailedVerification, BagDigestFile]] =
-    tryInputStream match {
-      case Failure(reason) => Future.successful {
-        Left(
-          FailedVerification(
-            digestFile = digestFile,
-            reason = reason
-          )
-        )
-      }
-      case Success(inputStream) =>
-        for {
-          actualChecksum <- ChecksumVerifier.checksum(inputStream, algorithm = algorithm)
-        } yield getResult(digestFile, actualChecksum = actualChecksum)
-    }
 
   private def getResult(digestFile: BagDigestFile, actualChecksum: String): Either[FailedVerification, BagDigestFile] =
     if (digestFile.checksum == actualChecksum) {

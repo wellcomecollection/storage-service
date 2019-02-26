@@ -71,7 +71,7 @@ class VerifyDigestFilesServiceTest extends FunSpec with Matchers with ScalaFutur
     }
   }
 
-  it("fails a bag if the data manifest refers to a non-existent file") {
+  it("fails a bag if the file manifest refers to a non-existent file") {
     def createDataManifestWithExtraFile(dataFiles: List[(String, String)]): Option[FileEntry] =
       createValidDataManifest(dataFiles ++ List(("doesnotexist", "doesnotexist")))
 
@@ -91,33 +91,31 @@ class VerifyDigestFilesServiceTest extends FunSpec with Matchers with ScalaFutur
     }
   }
 
-  // missing file manifest
+  it("fails a bag if the file manifest does not exist") {
+    def dontCreateTheDataManifest(dataFiles: List[(String, String)]): Option[FileEntry] = None
 
-  // missing tag manifest
+    withLocalS3Bucket { bucket =>
+      withBag(bucket, createDataManifest = dontCreateTheDataManifest) { bagLocation =>
+        val future = service.verifyBagLocation(bagLocation)
+        whenReady(future.failed) { err =>
+          err shouldBe a[RuntimeException]
+          err.getMessage should startWith("Error getting file manifest: The specified key does not exist")
+        }
+      }
+    }
+  }
 
+  it("fails a bag if the tag manifest does not exist") {
+    def dontCreateTheTagManifest(dataFiles: List[(String, String)]): Option[FileEntry] = None
 
-
-
-
-
-
-
-
-
-//  it("is philosophically correct") {
-//    val bagLocation = BagLocation(
-//      storageNamespace = randomAlphanumeric(),
-//      storagePrefix = None,
-//      storageSpace = StorageSpace(randomAlphanumeric()),
-//      bagPath = BagPath(randomAlphanumeric())
-//    )
-//
-//    val future = service.verifyBagLocation(bagLocation)
-//    whenReady(future) { result =>
-//      true shouldBe true
-//    }
-//    whenReady(future.failed) { result =>
-//      true shouldBe true
-//    }
-//  }
+    withLocalS3Bucket { bucket =>
+      withBag(bucket, createTagManifest = dontCreateTheTagManifest) { bagLocation =>
+        val future = service.verifyBagLocation(bagLocation)
+        whenReady(future.failed) { err =>
+          err shouldBe a[RuntimeException]
+          err.getMessage should startWith("Error getting tag manifest: The specified key does not exist")
+        }
+      }
+    }
+  }
 }

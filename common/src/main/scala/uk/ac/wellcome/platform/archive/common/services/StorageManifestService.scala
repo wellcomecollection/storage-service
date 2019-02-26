@@ -58,19 +58,17 @@ class StorageManifestService(
       )
     } yield bagInfo
 
-  def createFileManifest(bagLocation: BagLocation): Future[FileManifest] = {
+  def createFileManifest(bagLocation: BagLocation): Future[FileManifest] =
     createManifest(
       s"manifest-$checksumAlgorithm.txt",
       bagLocation
     )
-  }
 
-  def createTagManifest(bagLocation: BagLocation): Future[FileManifest] = {
+  def createTagManifest(bagLocation: BagLocation): Future[FileManifest] =
     createManifest(
       s"tagmanifest-$checksumAlgorithm.txt",
       bagLocation
     )
-  }
 
   private def createManifest(
     name: String,
