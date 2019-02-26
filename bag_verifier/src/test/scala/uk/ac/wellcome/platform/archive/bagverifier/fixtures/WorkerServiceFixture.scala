@@ -33,6 +33,8 @@ trait WorkerServiceFixture extends NotificationStreamFixture with SNS with S3 {
             ongoingSnsWriter = ongoingSnsWriter
           )
 
+          service.run()
+
           testWith(service)
         }
       }
