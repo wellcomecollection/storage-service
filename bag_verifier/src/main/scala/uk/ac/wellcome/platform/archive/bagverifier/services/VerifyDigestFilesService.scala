@@ -1,22 +1,13 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import com.amazonaws.services.s3.AmazonS3
+import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerification, FailedVerification}
 import uk.ac.wellcome.platform.archive.common.models.FileManifest
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagLocation}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 
 import scala.concurrent.{ExecutionContext, Future}
-
-case class FailedVerification(
-  digestFile: BagDigestFile,
-  reason: Throwable
-)
-
-case class BagVerification(
-  woke: Seq[BagDigestFile],
-  problematicFaves: Seq[FailedVerification]
-)
 
 class VerifyDigestFilesService(storageManifestService: StorageManifestService, s3Client: AmazonS3, algorithm: String)(implicit ec: ExecutionContext) {
   def verifyBagLocation(bagLocation: BagLocation): Future[BagVerification] =
