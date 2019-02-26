@@ -1,18 +1,19 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
+import java.io.InputStream
+
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagLocation}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 case class FailedVerification(
   digestFile: BagDigestFile,
-  actualChecksum: String
-) {
-  def expectedChecksum: String = digestFile.checksum
-}
+  reason: Throwable
+)
 
 case class BagVerification(
   woke: Seq[BagDigestFile],
@@ -45,15 +46,30 @@ class VerifyDigestFilesService(storageManifestService: StorageManifestService, s
   private def verifyIndividualFile(bagLocation: BagLocation, digestFile: BagDigestFile): Future[Either[FailedVerification, BagDigestFile]] = {
     val objectLocation = digestFile.path.toObjectLocation(bagLocation)
 
-    for {
-      inputStream <- Future {
+    Future {
+      Try {
         s3Client
           .getObject(objectLocation.namespace, objectLocation.key)
           .getObjectContent
       }
-      actualChecksum <- ChecksumVerifier.checksum(inputStream, algorithm = algorithm)
-    } yield getResult(digestFile, actualChecksum = actualChecksum)
+    }.flatMap { tryInputStream: Try[InputStream] => verifyInputStream(digestFile, tryInputStream = tryInputStream) }
   }
+
+  private def verifyInputStream(digestFile: BagDigestFile, tryInputStream: Try[InputStream]): Future[Either[FailedVerification, BagDigestFile]] =
+    tryInputStream match {
+      case Failure(reason) => Future.successful {
+        Left(
+          FailedVerification(
+            digestFile = digestFile,
+            reason = reason
+          )
+        )
+      }
+      case Success(inputStream) =>
+        for {
+          actualChecksum <- ChecksumVerifier.checksum(inputStream, algorithm = algorithm)
+        } yield getResult(digestFile, actualChecksum = actualChecksum)
+    }
 
   private def getResult(digestFile: BagDigestFile, actualChecksum: String): Either[FailedVerification, BagDigestFile] =
     if (digestFile.checksum == actualChecksum) {
@@ -61,7 +77,7 @@ class VerifyDigestFilesService(storageManifestService: StorageManifestService, s
     } else {
       Left(FailedVerification(
         digestFile = digestFile,
-        actualChecksum = actualChecksum
+        reason = new RuntimeException(s"Checksums do not match: expected ${digestFile.checksum}, actually saw $actualChecksum")
       ))
     }
 }

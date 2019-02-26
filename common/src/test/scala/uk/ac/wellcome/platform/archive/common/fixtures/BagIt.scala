@@ -79,10 +79,10 @@ trait BagIt extends RandomThings {
         }
       ))
 
-  def dataManifestWithWrongChecksum(filesAndDigests: List[(String, String)]) =
+  private def createManifestWithWrongChecksum(filename: String)(filesAndDigests: List[(String, String)]) =
     Some(
       FileEntry(
-        name = s"manifest-sha256.txt",
+        name = filename,
         contents = {
           filesAndDigests match {
             case (head: (String, String)) :: (list: List[(String, String)]) =>
@@ -99,10 +99,16 @@ trait BagIt extends RandomThings {
         }
       ))
 
-  def createValidDataManifest(dataFiles: List[(String, String)]) =
+  def dataManifestWithWrongChecksum(filesAndDigests: List[(String, String)]): Option[FileEntry] =
+    createManifestWithWrongChecksum("manifest-sha256.txt")(filesAndDigests)
+
+  def tagManifestWithWrongChecksum(filesAndDigests: List[(String, String)]): Option[FileEntry] =
+    createManifestWithWrongChecksum("tagmanifest-sha256.txt")(filesAndDigests)
+
+  def createValidDataManifest(dataFiles: List[(String, String)]): Option[FileEntry] =
     createValidManifestFile(dataFiles, "manifest-sha256.txt")
 
-  def createValidTagManifest(dataFiles: List[(String, String)]) =
+  def createValidTagManifest(dataFiles: List[(String, String)]): Option[FileEntry] =
     createValidManifestFile(dataFiles, "tagmanifest-sha256.txt")
 
   private def createValidManifestFile(dataFiles: List[(String, String)],
