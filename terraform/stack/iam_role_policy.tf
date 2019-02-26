@@ -97,6 +97,23 @@ resource "aws_iam_role_policy" "bag_replicator_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
+# bag_verifier
+
+resource "aws_iam_role_policy" "bag_verifier_task_read_s3" {
+  role   = "${module.bag_verifier.task_role_name}"
+  policy = "${data.aws_iam_policy_document.storage_archive_read.json}"
+}
+
+resource "aws_iam_role_policy" "bag_verifier_task_store_s3" {
+  role   = "${module.bag_verifier.task_role_name}"
+  policy = "${data.aws_iam_policy_document.storage_access_read.json}"
+}
+
+resource "aws_iam_role_policy" "bag_verifier_metrics" {
+  role   = "${module.bag_verifier.task_role_name}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+}
+
 # notifier
 
 resource "aws_iam_role_policy" "notifier_metrics" {

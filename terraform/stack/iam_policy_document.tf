@@ -163,6 +163,20 @@ data "aws_iam_policy_document" "storage_archive_read" {
   }
 }
 
+data "aws_iam_policy_document" "storage_access_read" {
+  statement {
+    actions = [
+      "s3:ListBucket",
+      "s3:GetObject*",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.access_bucket_name}",
+      "arn:aws:s3:::${var.access_bucket_name}/*",
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "storage_archive_readwrite" {
   statement {
     actions = [
