@@ -19,78 +19,86 @@ class BagVerifierFeatureTest
     with ProgressUpdateAssertions
     with WorkerServiceFixture {
 
-  it("updates the progress monitor and sends an ongoing notification if verification succeeds") {
+  it(
+    "updates the progress monitor and sends an ongoing notification if verification succeeds") {
     withLocalSnsTopic { progressTopic =>
       withLocalSnsTopic { ongoingTopic =>
-        withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
-          withWorkerService(progressTopic, ongoingTopic, queue) { service =>
-            withLocalS3Bucket { bucket =>
-              withBag(bucket) { bagLocation =>
-                val bagRequest = BagRequest(
-                  archiveRequestId = randomUUID,
-                  bagLocation = bagLocation
-                )
+        withLocalSqsQueueAndDlq {
+          case QueuePair(queue, dlq) =>
+            withWorkerService(progressTopic, ongoingTopic, queue) { service =>
+              withLocalS3Bucket { bucket =>
+                withBag(bucket) { bagLocation =>
+                  val bagRequest = BagRequest(
+                    archiveRequestId = randomUUID,
+                    bagLocation = bagLocation
+                  )
 
-                sendNotificationToSQS(queue, bagRequest)
+                  sendNotificationToSQS(queue, bagRequest)
 
-                eventually {
-                  assertSnsReceivesOnly(bagRequest, topic = ongoingTopic)
+                  eventually {
+                    assertSnsReceivesOnly(bagRequest, topic = ongoingTopic)
 
-                  assertTopicReceivesProgressStatusUpdate(
-                    requestId = bagRequest.archiveRequestId,
-                    progressTopic = progressTopic,
-                    status = Progress.Processing
-                  ) { events =>
-                    events.map {
-                      _.description
-                    } shouldBe List("Successfully verified bag contents")
+                    assertTopicReceivesProgressStatusUpdate(
+                      requestId = bagRequest.archiveRequestId,
+                      progressTopic = progressTopic,
+                      status = Progress.Processing
+                    ) { events =>
+                      events.map {
+                        _.description
+                      } shouldBe List("Successfully verified bag contents")
+                    }
+
+                    assertQueueEmpty(queue)
+                    assertQueueEmpty(dlq)
                   }
-
-                  assertQueueEmpty(queue)
-                  assertQueueEmpty(dlq)
                 }
               }
             }
-          }
         }
       }
     }
   }
 
-  it("deletes the SQS message if the bag can be verified but has incorrect checksums") {
+  it(
+    "deletes the SQS message if the bag can be verified but has incorrect checksums") {
     withLocalSnsTopic { progressTopic =>
       withLocalSnsTopic { ongoingTopic =>
-        withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
-          withWorkerService(progressTopic, ongoingTopic, queue) { _ =>
-            withLocalS3Bucket { bucket =>
-              withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) { bagLocation =>
-                val bagRequest = BagRequest(
-                  archiveRequestId = randomUUID,
-                  bagLocation = bagLocation
-                )
+        withLocalSqsQueueAndDlq {
+          case QueuePair(queue, dlq) =>
+            withWorkerService(progressTopic, ongoingTopic, queue) { _ =>
+              withLocalS3Bucket { bucket =>
+                withBag(
+                  bucket,
+                  createDataManifest = dataManifestWithWrongChecksum) {
+                  bagLocation =>
+                    val bagRequest = BagRequest(
+                      archiveRequestId = randomUUID,
+                      bagLocation = bagLocation
+                    )
 
-                sendNotificationToSQS(queue, bagRequest)
+                    sendNotificationToSQS(queue, bagRequest)
 
-                eventually {
-                  assertSnsReceivesNothing(ongoingTopic)
+                    eventually {
+                      assertSnsReceivesNothing(ongoingTopic)
 
-                  assertTopicReceivesProgressStatusUpdate(
-                    requestId = bagRequest.archiveRequestId,
-                    progressTopic = progressTopic,
-                    status = Progress.Failed
-                  ) { events =>
-                    val description = events.map {
-                      _.description
-                    }.head
-                    description should startWith("There were problems verifying the bag: not every checksum matched the manifest")
-                  }
+                      assertTopicReceivesProgressStatusUpdate(
+                        requestId = bagRequest.archiveRequestId,
+                        progressTopic = progressTopic,
+                        status = Progress.Failed
+                      ) { events =>
+                        val description = events.map {
+                          _.description
+                        }.head
+                        description should startWith(
+                          "There were problems verifying the bag: not every checksum matched the manifest")
+                      }
 
-                  assertQueueEmpty(queue)
-                  assertQueueEmpty(dlq)
+                      assertQueueEmpty(queue)
+                      assertQueueEmpty(dlq)
+                    }
                 }
               }
             }
-          }
         }
       }
     }

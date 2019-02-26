@@ -6,7 +6,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorkerService, VerifyDigestFilesService}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifierWorkerService,
+  VerifyDigestFilesService
+}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
@@ -14,7 +17,11 @@ import uk.ac.wellcome.storage.fixtures.S3
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture extends NotificationStreamFixture with SNS with S3 {
-  def withWorkerService[R](progressTopic: Topic, ongoingTopic: Topic, queue: Queue = Queue("fixture", arn = "arn::fixture"))(testWith: TestWith[BagVerifierWorkerService, R]): R =
+  def withWorkerService[R](
+    progressTopic: Topic,
+    ongoingTopic: Topic,
+    queue: Queue = Queue("fixture", arn = "arn::fixture"))(
+    testWith: TestWith[BagVerifierWorkerService, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
       implicit val _ = s3Client
 

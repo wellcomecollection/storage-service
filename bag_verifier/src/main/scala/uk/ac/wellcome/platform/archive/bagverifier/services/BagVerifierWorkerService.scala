@@ -8,7 +8,12 @@ import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerification
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Progress,
+  ProgressEvent,
+  ProgressStatusUpdate,
+  ProgressUpdate
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,21 +42,31 @@ class BagVerifierWorkerService(
       _ <- sendOngoingNotification(bagRequest, tryBagVerification)
     } yield ()
 
-  private def verifyBagLocation(bagLocation: BagLocation): Future[Try[BagVerification]] =
-    verifyDigestFilesService.verifyBagLocation(bagLocation)
-      .map { bagVerification => Success(bagVerification) }
+  private def verifyBagLocation(
+    bagLocation: BagLocation): Future[Try[BagVerification]] =
+    verifyDigestFilesService
+      .verifyBagLocation(bagLocation)
+      .map { bagVerification =>
+        Success(bagVerification)
+      }
       .recover { case throwable: Throwable => Failure(throwable) }
 
-  private def sendProgressNotification(bagRequest: BagRequest, tryBagVerification: Try[BagVerification]): Future[PublishAttempt] = {
+  private def sendProgressNotification(
+    bagRequest: BagRequest,
+    tryBagVerification: Try[BagVerification]): Future[PublishAttempt] = {
     val (status, description) = tryBagVerification match {
       case Success(bagVerification) =>
         if (bagVerification.verificationSucceeded) {
           (Progress.Processing, "Successfully verified bag contents")
         } else {
-          (Progress.Failed, "There were problems verifying the bag: not every checksum matched the manifest")
+          (
+            Progress.Failed,
+            "There were problems verifying the bag: not every checksum matched the manifest")
         }
       case _ =>
-        (Progress.Failed, "There were problems verifying the bag: verification could not be performed")
+        (
+          Progress.Failed,
+          "There were problems verifying the bag: verification could not be performed")
     }
 
     val progressUpdate = ProgressStatusUpdate(
@@ -61,16 +76,24 @@ class BagVerifierWorkerService(
       events = List(ProgressEvent(description))
     )
 
-    progressSnsWriter.writeMessage[ProgressUpdate](progressUpdate, subject = s"Sent by ${this.getClass.getSimpleName}")
+    progressSnsWriter.writeMessage[ProgressUpdate](
+      progressUpdate,
+      subject = s"Sent by ${this.getClass.getSimpleName}")
   }
 
-  private def sendOngoingNotification(bagRequest: BagRequest, tryBagVerification: Try[BagVerification]): Future[Unit] =
+  private def sendOngoingNotification(
+    bagRequest: BagRequest,
+    tryBagVerification: Try[BagVerification]): Future[Unit] =
     tryBagVerification match {
       case Success(bagVerification) if bagVerification.verificationSucceeded =>
-        ongoingSnsWriter.writeMessage(
-          bagRequest,
-          subject = s"Sent by ${this.getClass.getSimpleName}"
-        ).map { _ => () }
+        ongoingSnsWriter
+          .writeMessage(
+            bagRequest,
+            subject = s"Sent by ${this.getClass.getSimpleName}"
+          )
+          .map { _ =>
+            ()
+          }
       case _ => Future.successful(())
     }
 }
