@@ -23,7 +23,8 @@ class BagVerifier(
   bagVerifierConfig: BagVerifierConfig,
   ingestsSnsConfig: SNSConfig,
   outgoingSnsConfig: SNSConfig
-)(implicit ec: ExecutionContext) extends Logging
+)(implicit ec: ExecutionContext)
+    extends Logging
     with Runnable {
 
   def run(): Future[Done] =
