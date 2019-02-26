@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.archivist.flow
 
+import java.io.InputStream
+
 import akka.NotUsed
 import akka.stream.ActorAttributes
 import akka.stream.scaladsl.{Flow, Source, StreamConverters}
@@ -11,12 +13,11 @@ import uk.ac.wellcome.platform.archive.common.models.error.{
   ArchiveError,
   DownloadError
 }
+import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 object DownloadAndVerifyDigestItemFlow extends Logging {
-
-  import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 
   def apply(parallelism: Int)(implicit s3Client: AmazonS3)
     : Flow[DigestItemJob,
@@ -26,7 +27,7 @@ object DownloadAndVerifyDigestItemFlow extends Logging {
       .log("download to verify")
       .flatMapMerge(
         parallelism, { job =>
-          job.uploadLocation.toInputStream match {
+          toInputStream(job.uploadLocation) match {
             case Failure(exception) =>
               warn(
                 s"Failed downloading object ${job.uploadLocation} from S3 : ${exception.getMessage}")
@@ -54,6 +55,13 @@ object DownloadAndVerifyDigestItemFlow extends Logging {
       )
       .withAttributes(ActorAttributes.dispatcher(
         "akka.stream.materializer.blocking-io-dispatcher"))
+  }
+
+  def toInputStream(objectLocation: ObjectLocation)(
+    implicit s3Client: AmazonS3): Try[InputStream] = Try {
+    s3Client
+      .getObject(objectLocation.namespace, objectLocation.key)
+      .getObjectContent
   }
 
 }
