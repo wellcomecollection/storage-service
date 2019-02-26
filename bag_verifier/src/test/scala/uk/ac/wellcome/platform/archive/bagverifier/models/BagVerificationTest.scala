@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagIt
 class BagVerificationTest extends FunSpec with Matchers with RandomThings {
   it("reports a verification with no failures as successful") {
     val result = BagVerification(
-      wokeBaes = Seq(createBagDigestFile, createBagDigestFile, createBagDigestFile),
+      woke = Seq(createBagDigestFile, createBagDigestFile, createBagDigestFile),
       problematicFaves = List.empty
     )
 
@@ -16,7 +16,7 @@ class BagVerificationTest extends FunSpec with Matchers with RandomThings {
 
   it("reports a verification with some problems as unsuccessful") {
     val result = BagVerification(
-      wokeBaes = Seq(createBagDigestFile, createBagDigestFile),
+      woke = Seq(createBagDigestFile, createBagDigestFile),
       problematicFaves = List(
         FailedVerification(
           digestFile = createBagDigestFile,
