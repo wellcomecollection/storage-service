@@ -11,7 +11,8 @@ object ConvertibleToInputStream {
 
   implicit class ConvertibleToInputStreamOps[T](t: T) {
     def toInputStream(implicit toInputStream: ToInputStream[T],
-                      s3Client: AmazonS3, ec: ExecutionContext): Future[InputStream] = {
+                      s3Client: AmazonS3,
+                      ec: ExecutionContext): Future[InputStream] = {
       toInputStream.apply(t)
     }
   }
@@ -19,8 +20,9 @@ object ConvertibleToInputStream {
   implicit object ConvertibleToInputStreamObjectLocation
       extends ToInputStream[ObjectLocation] {
 
-    def apply(t: ObjectLocation)(
-      implicit s3Client: AmazonS3, ec: ExecutionContext): Future[InputStream] = Future(
+    def apply(t: ObjectLocation)(implicit s3Client: AmazonS3,
+                                 ec: ExecutionContext): Future[InputStream] =
+      Future(
         s3Client.getObject(t.namespace, t.key)
       ).map(
         response => response.getObjectContent
@@ -29,5 +31,6 @@ object ConvertibleToInputStream {
 }
 
 trait ToInputStream[T] {
-  def apply(t: T)(implicit s3Client: AmazonS3, ec: ExecutionContext): Future[InputStream]
+  def apply(t: T)(implicit s3Client: AmazonS3,
+                  ec: ExecutionContext): Future[InputStream]
 }

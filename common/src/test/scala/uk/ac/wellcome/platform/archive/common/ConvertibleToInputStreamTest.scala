@@ -9,7 +9,7 @@ import uk.ac.wellcome.storage.fixtures.S3
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ConvertibleToInputStreamTest
-  extends FunSpec
+    extends FunSpec
     with S3
     with ScalaFutures
     with RandomThings {
@@ -46,7 +46,8 @@ class ConvertibleToInputStreamTest
           scala.io.Source
             .fromInputStream(
               inputStream
-            ).mkString shouldEqual content
+            )
+            .mkString shouldEqual content
         }
       }
     }
