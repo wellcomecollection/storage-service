@@ -33,7 +33,19 @@ case class ProgressStatusUpdate(id: UUID,
                                 events: Seq[ProgressEvent] = List.empty)
     extends ProgressUpdate
 
-case class ProgressCallbackStatusUpdate(id: UUID,
-                                        callbackStatus: Callback.CallbackStatus,
-                                        events: Seq[ProgressEvent] = List.empty)
-    extends ProgressUpdate
+case class ProgressCallbackStatusUpdate(
+  id: UUID,
+  callbackStatus: Callback.CallbackStatus,
+  events: Seq[ProgressEvent]
+) extends ProgressUpdate
+
+case object ProgressCallbackStatusUpdate {
+  def apply(id: UUID,
+            callbackStatus: Callback.CallbackStatus,
+            description: String): ProgressCallbackStatusUpdate =
+    ProgressCallbackStatusUpdate(
+      id = id,
+      callbackStatus = callbackStatus,
+      events = List(ProgressEvent(description))
+    )
+}

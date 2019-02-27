@@ -8,10 +8,7 @@ import uk.ac.wellcome.platform.archive.common.progress.models.Callback.{
   Failed,
   Succeeded
 }
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  ProgressCallbackStatusUpdate,
-  ProgressEvent
-}
+import uk.ac.wellcome.platform.archive.common.progress.models.ProgressCallbackStatusUpdate
 
 import scala.util.{Failure, Success, Try}
 
@@ -26,7 +23,7 @@ object PrepareNotificationService extends Logging {
           ProgressCallbackStatusUpdate(
             id = id,
             callbackStatus = Succeeded,
-            events = List(ProgressEvent("Callback fulfilled."))
+            description = "Callback fulfilled."
           )
         } else {
           debug(s"Callback failed for: $id, got $status!")
@@ -34,8 +31,7 @@ object PrepareNotificationService extends Logging {
           ProgressCallbackStatusUpdate(
             id = id,
             callbackStatus = Failed,
-            events =
-              List(ProgressEvent(s"Callback failed for: $id, got $status!"))
+            description = s"Callback failed for: $id, got $status!"
           )
         }
       case Failure(e) =>
@@ -44,8 +40,7 @@ object PrepareNotificationService extends Logging {
         ProgressCallbackStatusUpdate(
           id = id,
           callbackStatus = Failed,
-          events =
-            List(ProgressEvent(s"Callback failed for: $id (${e.getMessage})"))
+          description = s"Callback failed for: $id (${e.getMessage})"
         )
     }
 }
