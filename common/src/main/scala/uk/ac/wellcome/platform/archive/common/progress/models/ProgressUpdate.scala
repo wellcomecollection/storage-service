@@ -40,7 +40,9 @@ case class ProgressCallbackStatusUpdate(
 ) extends ProgressUpdate
 
 case object ProgressCallbackStatusUpdate {
-  def apply(id: UUID, callbackStatus: Callback.CallbackStatus, description: String): ProgressCallbackStatusUpdate =
+  def apply(id: UUID,
+            callbackStatus: Callback.CallbackStatus,
+            description: String): ProgressCallbackStatusUpdate =
     ProgressCallbackStatusUpdate(
       id = id,
       callbackStatus = callbackStatus,
