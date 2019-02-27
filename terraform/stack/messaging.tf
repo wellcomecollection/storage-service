@@ -1,4 +1,5 @@
-# Messaging - ingests aka progress-async
+# Ingests topic.  Every app needs to be able to write to this, because they
+# use it to send progress updates for the ingests API.
 
 module "ingests_topic" {
   source = "../modules/topic"
@@ -6,10 +7,11 @@ module "ingests_topic" {
   name = "${var.namespace}_ingests"
 
   role_names = [
-    "${module.ingests.task_role_name}",
-    "${module.bags.task_role_name}",
     "${module.archivist.task_role_name}",
+    "${module.bags.task_role_name}",
     "${module.bag_replicator.task_role_name}",
+    "${module.bag_verifier.task_role_name}",
+    "${module.ingests.task_role_name}",
     "${module.notifier.task_role_name}",
   ]
 }
