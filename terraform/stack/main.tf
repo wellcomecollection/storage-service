@@ -121,6 +121,38 @@ module "bag_verifier" {
   container_image = "${local.bag_verifier_image}"
 }
 
+# bag_unpacker
+
+module "bag_unpacker" {
+  source = "../modules/service/worker"
+
+  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
+
+  security_group_ids = [
+    "${aws_security_group.interservice.id}",
+    "${aws_security_group.service_egress.id}",
+  ]
+
+  cluster_name = "${aws_ecs_cluster.cluster.name}"
+  cluster_id   = "${aws_ecs_cluster.cluster.id}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
+  subnets      = "${var.private_subnets}"
+  vpc_id       = "${var.vpc_id}"
+  service_name = "${var.namespace}-bag-unpacker"
+
+  env_vars = {
+    queue_url               = "${module.bag_unpacker_queue.url}"
+    destination_bucket_name = "${var.access_bucket_name}"
+    progress_topic_arn      = "${module.ingests_topic.arn}"
+    outgoing_topic_arn      = "${module.null_topic.arn}"
+    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-unpacker"
+  }
+
+  env_vars_length = 5
+
+  container_image = "${local.bag_unpacker_image}"
+}
+
 # notifier
 
 module "notifier" {
@@ -226,7 +258,8 @@ module "api" {
   ingests_env_vars = {
     context_url                     = "${var.api_url}/context.json"
     app_base_url                    = "${var.api_url}/storage/v1/ingests"
-    topic_arn                       = "${module.ingest_requests_topic.arn}"
+    archivist_topic_arn             = "${module.ingest_requests_topic.arn}"
+    unpacker_topic_arn              = "${module.bag_unpacker_topic.arn}"
     archive_progress_table_name     = "${var.ingests_table_name}"
     archive_bag_progress_index_name = "${var.ingests_table_progress_index_name}"
     JAVA_OPTS                       = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests-api"

@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   RandomThings
 }
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.models.{
   StorageSpace,
   UnpackBagRequest
@@ -37,16 +36,11 @@ trait WorkerServiceFixture
   )(testWith: TestWith[UnpackBagRequest, R]): R = {
     val unpackBagRequest = UnpackBagRequest(
       requestId = randomUUID,
-      packedBagLocation = ObjectLocation(
+      sourceLocation = ObjectLocation(
         namespace = storageBucket.name,
         key = "not_a_real_file"
       ),
-      bagDestination = BagLocation(
-        storageNamespace = randomAlphanumeric(),
-        storagePrefix = None,
-        storageSpace = StorageSpace(randomAlphanumeric()),
-        bagPath = randomBagPath
-      )
+      storageSpace = StorageSpace(randomAlphanumeric())
     )
 
     sendNotificationToSQS(queue, unpackBagRequest)

@@ -5,6 +5,10 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
 import uk.ac.wellcome.messaging.sqs.NotificationStream
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.models.{
   BagRequest,
   UnpackBagRequest
@@ -31,7 +35,15 @@ class BagUnpackerWorkerService(
       .writeMessage(
         BagRequest(
           unpackBagRequest.requestId,
-          unpackBagRequest.bagDestination
+          // TODO: The unpacker will need some more info
+          // namespace/prefix from config.
+          // externalIdentifier from bag-info.txt
+          BagLocation(
+            storageNamespace = "uploadNamespace",
+            storagePrefix = Some("uploadPrefix"),
+            unpackBagRequest.storageSpace,
+            bagPath = BagPath("externalIdentifier")
+          )
         ),
         subject = s"Sent by ${this.getClass.getSimpleName}"
       )
