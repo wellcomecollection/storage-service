@@ -55,16 +55,17 @@ trait WorkerServiceFixture
   )(testWith: TestWith[BagUnpackerWorkerService, R]): R =
     withSNSWriter(progressTopic) { progressSnsWriter =>
       withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-        withNotificationStream[UnpackBagRequest, R](queue) { notificationStream =>
-          val bagUnpacker = new BagUnpackerWorkerService(
-            stream = notificationStream,
-            progressSnsWriter = progressSnsWriter,
-            outgoingSnsWriter = outgoingSnsWriter
-          )
+        withNotificationStream[UnpackBagRequest, R](queue) {
+          notificationStream =>
+            val bagUnpacker = new BagUnpackerWorkerService(
+              stream = notificationStream,
+              progressSnsWriter = progressSnsWriter,
+              outgoingSnsWriter = outgoingSnsWriter
+            )
 
-          bagUnpacker.run()
+            bagUnpacker.run()
 
-          testWith(bagUnpacker)
+            testWith(bagUnpacker)
         }
       }
 
