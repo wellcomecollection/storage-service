@@ -27,7 +27,6 @@ module "stack-colbert" {
   ssh_key_name = "${local.key_name}"
   infra_bucket = "${aws_s3_bucket.infra.id}"
 
-  current_account_id     = "${data.aws_caller_identity.current.account_id}"
   lambda_error_alarm_arn = "${local.lambda_error_alarm_arn}"
   dlq_alarm_arn          = "${local.dlq_alarm_arn}"
 

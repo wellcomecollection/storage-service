@@ -19,16 +19,14 @@ module "ingests_topic" {
 module "ingests_queue" {
   source = "../modules/queue"
 
-  name = "${var.namespace}_ingests"
-
+  name        = "${var.namespace}_ingests"
   topic_names = ["${module.ingests_topic.name}"]
-
-  aws_region = "${var.aws_region}"
-  account_id = "${var.current_account_id}"
 
   role_names = [
     "${module.ingests.task_role_name}",
   ]
+
+  aws_region = "${var.aws_region}"
 
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
@@ -52,7 +50,6 @@ module "archivist_queue" {
   ]
 
   aws_region = "${var.aws_region}"
-  account_id = "${var.current_account_id}"
 
   role_names = [
     "${module.archivist.task_role_name}",
@@ -84,7 +81,6 @@ module "bags_queue" {
   topic_names = ["${module.bags_topic.name}"]
 
   aws_region = "${var.aws_region}"
-  account_id = "${var.current_account_id}"
   role_names = ["${module.bags.task_role_name}"]
 
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
@@ -107,7 +103,6 @@ module "notifier_queue" {
   topic_names = ["${module.notifier_topic.name}"]
 
   aws_region = "${var.aws_region}"
-  account_id = "${var.current_account_id}"
   role_names = ["${module.notifier.task_role_name}"]
 
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
@@ -130,7 +125,6 @@ module "bagger_queue" {
   topic_names = ["${module.bagger_topic.name}"]
 
   aws_region = "${var.aws_region}"
-  account_id = "${var.current_account_id}"
   role_names = ["${module.bagger.task_role_name}"]
 
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
@@ -163,7 +157,6 @@ module "bag_replicator_queue" {
   topic_names = ["${module.bag_replicator_topic.name}"]
 
   aws_region = "${var.aws_region}"
-  account_id = "${var.current_account_id}"
   role_names = ["${module.bag_replicator.task_role_name}"]
 
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
@@ -190,7 +183,6 @@ module "bag_verifier_queue" {
   topic_names = ["${module.bags_topic.name}"]
 
   aws_region = "${var.aws_region}"
-  account_id = "${var.current_account_id}"
   role_names = ["${module.bag_verifier.task_role_name}"]
 
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
