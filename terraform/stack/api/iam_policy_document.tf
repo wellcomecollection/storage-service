@@ -13,3 +13,15 @@ data "aws_iam_policy_document" "archive_static_content_get" {
     ]
   }
 }
+
+data "aws_iam_policy_document" "allow_ingests_publish_to_unpacker_topic" {
+  statement {
+    actions = [
+      "sns:Publish",
+    ]
+
+    resources = [
+      "${var.bag_unpacker_topic_arn}",
+    ]
+  }
+}
