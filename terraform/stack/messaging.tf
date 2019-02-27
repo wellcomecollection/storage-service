@@ -1,3 +1,23 @@
+locals {
+  progress_topic = "${module.ingests_topic.arn}"
+
+  archivist_input_queue   = "${module.archivist_queue.url}"
+  archivist_ongoing_topic = "${module.bag_replicator_topic.arn}"
+
+  bag_replicator_input_queue   = "${module.bag_replicator_queue.url}"
+  bag_replicator_ongoing_topic = "${module.bags_topic.arn}"
+
+  bag_verifier_input_queue   = "${module.bag_verifier_queue.url}"
+  bag_verifier_ongoing_topic = "${module.null_topic.arn}"
+
+  notifier_input_queue = "${module.notifier_queue.url}"
+
+  ingests_input_queue   = "${module.ingests_queue.url}"
+  ingests_ongoing_topic = "${module.notifier_topic.arn}"
+
+  bags_input_queue = "${module.bags_queue.url}"
+}
+
 # Ingests topic.  Every app needs to be able to write to this, because they
 # use it to send progress updates for the ingests API.
 

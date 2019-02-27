@@ -14,11 +14,11 @@ module "archivist" {
   desired_task_count = "${var.desired_archivist_count}"
 
   env_vars = {
-    queue_url              = "${module.archivist_queue.url}"
+    queue_url              = "${local.archivist_input_queue}"
     queue_parallelism      = "${var.archivist_queue_parallelism}"
     archive_bucket         = "${var.archive_bucket_name}"
-    next_service_topic_arn = "${module.bag_replicator_topic.arn}"
-    progress_topic_arn     = "${module.ingests_topic.arn}"
+    next_service_topic_arn = "${local.archivist_ongoing_topic}"
+    progress_topic_arn     = "${local.progress_topic}"
     JAVA_OPTS              = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-archivist"
   }
 
@@ -44,9 +44,9 @@ module "bags" {
   service_name                     = "${var.namespace}-bags"
 
   env_vars = {
-    queue_url          = "${module.bags_queue.url}"
+    queue_url          = "${local.bags_input_queue}"
     archive_bucket     = "${var.archive_bucket_name}"
-    progress_topic_arn = "${module.ingests_topic.arn}"
+    progress_topic_arn = "${local.progress_topic}"
     vhs_bucket_name    = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name     = "${var.vhs_archive_manifest_table_name}"
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bags"
@@ -77,10 +77,10 @@ module "bag_replicator" {
   service_name = "${var.namespace}-bag-replicator"
 
   env_vars = {
-    queue_url               = "${module.bag_replicator_queue.url}"
+    queue_url               = "${local.bag_replicator_input_queue}"
     destination_bucket_name = "${var.access_bucket_name}"
-    progress_topic_arn      = "${module.ingests_topic.arn}"
-    outgoing_topic_arn      = "${module.bags_topic.arn}"
+    progress_topic_arn      = "${local.progress_topic}"
+    outgoing_topic_arn      = "${local.bag_replicator_ongoing_topic}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-replicator"
   }
 
@@ -109,10 +109,10 @@ module "bag_verifier" {
   service_name = "${var.namespace}-bag-verifier"
 
   env_vars = {
-    queue_url               = "${module.bag_verifier_queue.url}"
+    queue_url               = "${local.bag_verifier_input_queue}"
     destination_bucket_name = "${var.access_bucket_name}"
-    progress_topic_arn      = "${module.ingests_topic.arn}"
-    outgoing_topic_arn      = "${module.null_topic.arn}"
+    progress_topic_arn      = "${local.progress_topic}"
+    outgoing_topic_arn      = "${local.bag_verifier_ongoing_topic}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-verifier"
   }
 
@@ -142,8 +142,8 @@ module "notifier" {
 
   env_vars = {
     context_url        = "https://api.wellcomecollection.org/storage/v1/context.json"
-    notifier_queue_url = "${module.notifier_queue.url}"
-    progress_topic_arn = "${module.ingests_topic.arn}"
+    notifier_queue_url = "${local.notifier_input_queue}"
+    progress_topic_arn = "${local.progress_topic}"
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-notifier"
   }
 
@@ -167,8 +167,8 @@ module "ingests" {
   service_name = "${var.namespace}-ingests"
 
   env_vars = {
-    queue_url                   = "${module.ingests_queue.url}"
-    topic_arn                   = "${module.notifier_topic.arn}"
+    queue_url                   = "${local.ingests_input_queue}"
+    topic_arn                   = "${local.ingests_ongoing_topic}"
     archive_progress_table_name = "${var.ingests_table_name}"
     JAVA_OPTS                   = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests"
   }
