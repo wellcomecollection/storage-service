@@ -19,15 +19,15 @@ module "ingests_topic" {
 module "ingests_queue" {
   source = "../modules/queue"
 
-  name        = "${var.namespace}_ingests"
+  name = "${var.namespace}_ingests"
+
   topic_names = ["${module.ingests_topic.name}"]
 
   role_names = [
     "${module.ingests.task_role_name}",
   ]
 
-  aws_region = "${var.aws_region}"
-
+  aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
@@ -49,15 +49,14 @@ module "archivist_queue" {
     "${module.ingest_requests_topic.name}",
   ]
 
-  aws_region = "${var.aws_region}"
-
   role_names = [
     "${module.archivist.task_role_name}",
   ]
 
-  visibility_timeout_seconds = "3600"
-  max_receive_count          = "1"
+  visibility_timeout_seconds = 3600
+  max_receive_count          = 1
 
+  aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
@@ -80,9 +79,9 @@ module "bags_queue" {
 
   topic_names = ["${module.bags_topic.name}"]
 
-  aws_region = "${var.aws_region}"
   role_names = ["${module.bags.task_role_name}"]
 
+  aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
@@ -102,9 +101,9 @@ module "notifier_queue" {
 
   topic_names = ["${module.notifier_topic.name}"]
 
-  aws_region = "${var.aws_region}"
   role_names = ["${module.notifier.task_role_name}"]
 
+  aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
@@ -124,9 +123,9 @@ module "bagger_queue" {
 
   topic_names = ["${module.bagger_topic.name}"]
 
-  aws_region = "${var.aws_region}"
   role_names = ["${module.bagger.task_role_name}"]
 
+  aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
@@ -156,10 +155,7 @@ module "bag_replicator_queue" {
 
   topic_names = ["${module.bag_replicator_topic.name}"]
 
-  aws_region = "${var.aws_region}"
   role_names = ["${module.bag_replicator.task_role_name}"]
-
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
 
   # Because these operations take a long time (potentially copying thousands
   # of S3 objects for a single message), we keep a high visibility timeout to
@@ -167,6 +163,9 @@ module "bag_replicator_queue" {
   visibility_timeout_seconds = "${60 * 60 * 5}"
 
   max_receive_count = 1
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
 # Messaging - bag_verifier
@@ -182,16 +181,16 @@ module "bag_verifier_queue" {
 
   topic_names = ["${module.bags_topic.name}"]
 
-  aws_region = "${var.aws_region}"
   role_names = ["${module.bag_verifier.task_role_name}"]
-
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
 
   # We keep a high visibility timeout to
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = "${60 * 60 * 5}"
 
   max_receive_count = 1
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
 # Services using the null topic are sending their
