@@ -231,17 +231,16 @@ module "bag_unpacker_queue" {
 
   topic_names = ["${module.bag_unpacker_topic.name}"]
 
-  aws_region = "${var.aws_region}"
-  account_id = "${var.current_account_id}"
   role_names = ["${module.bag_unpacker.task_role_name}"]
-
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
 
   # We keep a high visibility timeout to
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = "${60 * 60 * 5}"
 
   max_receive_count = 1
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
 # Services using the null topic are sending their
@@ -255,5 +254,25 @@ module "null_topic" {
   role_names = [
     "${module.bag_verifier.task_role_name}",
     "${module.bag_unpacker.task_role_name}",
+  ]
+}
+
+module "bag_unpacker_output_topic" {
+  source = "../modules/topic"
+
+  name = "${var.namespace}_bag_unpacker_output"
+
+  role_names = [
+    "${module.bag_unpacker.task_role_name}",
+  ]
+}
+
+module "bag_verifier_output_topic" {
+  source = "../modules/topic"
+
+  name = "${var.namespace}_bag_verifier_output"
+
+  role_names = [
+    "${module.bag_verifier.task_role_name}",
   ]
 }
