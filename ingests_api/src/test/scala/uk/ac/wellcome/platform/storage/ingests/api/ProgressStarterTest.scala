@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
 import uk.ac.wellcome.platform.archive.common.models.{
   IngestBagRequest,
   StorageSpace,
-  UnpackRequest
+  UnpackBagRequest
 }
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
 import uk.ac.wellcome.storage.ObjectLocation
@@ -64,10 +64,10 @@ class ProgressStarterTest
                   listMessagesReceivedFromSNS(
                     unpackerTopic
                   ).map(messageInfo =>
-                    fromJson[UnpackRequest](messageInfo.message).get)
+                    fromJson[UnpackBagRequest](messageInfo.message).get)
 
                 unpackerRequests shouldBe List(
-                  UnpackRequest(
+                  UnpackBagRequest(
                     requestId = progress.id,
                     sourceLocation = progress.sourceLocation.location,
                     storageSpace = StorageSpace(progress.space.underlying)

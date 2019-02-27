@@ -5,7 +5,7 @@ import uk.ac.wellcome.messaging.sns.SNSWriter
 import uk.ac.wellcome.platform.archive.common.models.{
   IngestBagRequest,
   StorageSpace,
-  UnpackRequest
+  UnpackBagRequest
 }
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 import uk.ac.wellcome.platform.archive.common.progress.monitor.ProgressTracker
@@ -40,9 +40,9 @@ class ProgressStarter(
 
   private def toUnpackRequest(
     progress: Progress
-  ): UnpackRequest = {
+  ): UnpackBagRequest = {
 
-    UnpackRequest(
+    UnpackBagRequest(
       requestId = progress.id,
       sourceLocation = progress.sourceLocation.location,
       storageSpace = StorageSpace(progress.space.underlying)

@@ -38,7 +38,7 @@ class IngestsApiFeatureTest
     it("returns a progress tracker when available") {
       withConfiguredApp {
         case (table, _, _, metricsSender, baseUrl) =>
-          withMaterializer { implicit mat =>
+          withMaterializer { implicit materializer =>
             withProgressTracker(table) { progressTracker =>
               val progress = createProgress
 
@@ -193,7 +193,7 @@ class IngestsApiFeatureTest
     it("creates a progress tracker") {
       withConfiguredApp {
         case (table, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
-          withMaterializer { implicit mat =>
+          withMaterializer { implicit materializer =>
             val url = s"$baseUrl/progress"
 
             val bucketName = "bucket"
@@ -304,10 +304,10 @@ class IngestsApiFeatureTest
                 // Unpacker
                 val unpackerRequests =
                   listMessagesReceivedFromSNS(unpackerTopic).map(messageInfo =>
-                    fromJson[UnpackRequest](messageInfo.message).get)
+                    fromJson[UnpackBagRequest](messageInfo.message).get)
 
                 unpackerRequests shouldBe List(
-                  UnpackRequest(
+                  UnpackBagRequest(
                     requestId = id,
                     sourceLocation = ObjectLocation("bucket", "key.txt"),
                     storageSpace = StorageSpace(spaceName)
@@ -326,7 +326,7 @@ class IngestsApiFeatureTest
       it("if the ingest request doesn't have a sourceLocation") {
         withConfiguredApp {
           case (_, archivistTopic, unpackerTopic, metricsSender, baseUrl) =>
-            withMaterializer { implicit mat =>
+            withMaterializer { implicit materializer =>
               val url = s"$baseUrl/progress"
 
               val entity = HttpEntity(

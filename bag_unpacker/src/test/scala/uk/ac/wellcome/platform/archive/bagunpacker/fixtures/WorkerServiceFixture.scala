@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.platform.archive.common.models.{
   StorageSpace,
-  UnpackRequest
+  UnpackBagRequest
 }
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
@@ -33,8 +33,8 @@ trait WorkerServiceFixture
     queue: Queue,
     storageBucket: Bucket,
     archiveRequestId: UUID
-  )(testWith: TestWith[UnpackRequest, R]): R = {
-    val unpackBagRequest = UnpackRequest(
+  )(testWith: TestWith[UnpackBagRequest, R]): R = {
+    val unpackBagRequest = UnpackBagRequest(
       requestId = randomUUID,
       sourceLocation = ObjectLocation(
         namespace = storageBucket.name,
@@ -55,7 +55,7 @@ trait WorkerServiceFixture
   )(testWith: TestWith[BagUnpackerWorkerService, R]): R =
     withSNSWriter(progressTopic) { progressSnsWriter =>
       withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-        withNotificationStream[UnpackRequest, R](queue) { notificationStream =>
+        withNotificationStream[UnpackBagRequest, R](queue) { notificationStream =>
           val bagUnpacker = new BagUnpackerWorkerService(
             stream = notificationStream,
             progressSnsWriter = progressSnsWriter,

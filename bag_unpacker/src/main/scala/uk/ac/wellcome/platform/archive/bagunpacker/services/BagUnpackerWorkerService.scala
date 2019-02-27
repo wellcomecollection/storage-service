@@ -9,16 +9,16 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagLocation,
   BagPath
 }
-import uk.ac.wellcome.platform.archive.common.models.{BagRequest, UnpackRequest}
+import uk.ac.wellcome.platform.archive.common.models.{BagRequest, UnpackBagRequest}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class BagUnpackerWorkerService(
-  stream: NotificationStream[UnpackRequest],
-  progressSnsWriter: SNSWriter,
-  outgoingSnsWriter: SNSWriter
+                                stream: NotificationStream[UnpackBagRequest],
+                                progressSnsWriter: SNSWriter,
+                                outgoingSnsWriter: SNSWriter
 ) extends Logging
     with Runnable {
 
@@ -26,7 +26,7 @@ class BagUnpackerWorkerService(
     stream.run(processMessage)
 
   def processMessage(
-    unpackBagRequest: UnpackRequest
+    unpackBagRequest: UnpackBagRequest
   ): Future[Unit] =
     outgoingSnsWriter
       .writeMessage(

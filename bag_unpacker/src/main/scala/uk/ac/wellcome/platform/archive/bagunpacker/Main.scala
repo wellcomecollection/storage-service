@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorkerService
-import uk.ac.wellcome.platform.archive.common.models.UnpackRequest
+import uk.ac.wellcome.platform.archive.common.models.UnpackBagRequest
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
@@ -17,7 +17,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val ec = actorSystem.dispatcher
 
     new BagUnpackerWorkerService(
-      stream = NotificationStreamBuilder.buildStream[UnpackRequest](config),
+      stream = NotificationStreamBuilder.buildStream[UnpackBagRequest](config),
       progressSnsWriter =
         SNSBuilder.buildSNSWriter(config, namespace = "progress"),
       outgoingSnsWriter =
