@@ -5,7 +5,6 @@ variable "topic_names" {
   type = "list"
 }
 
-variable "account_id" {}
 variable "dlq_alarm_arn" {}
 
 variable "role_names" {
