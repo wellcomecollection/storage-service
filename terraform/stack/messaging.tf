@@ -1,8 +1,9 @@
 locals {
   progress_topic = "${module.ingests_topic.arn}"
 
-  archivist_input_queue   = "${module.archivist_queue.url}"
-  archivist_ongoing_topic = "${module.bag_replicator_topic.arn}"
+  archivist_input_queue        = "${module.archivist_queue.url}"
+  archivist_ongoing_topic_arn  = "${module.bag_replicator_topic.arn}"
+  archivist_ongoing_topic_name = "${module.bag_replicator_topic.name}"
 
   bag_replicator_input_queue   = "${module.bag_replicator_queue.url}"
   bag_replicator_ongoing_topic = "${module.bags_topic.arn}"
@@ -41,7 +42,7 @@ module "ingests_queue" {
 
   name = "${var.namespace}_ingests"
 
-  topic_names = ["${module.ingests_topic.name}"]
+  topic_names = ["${local.progress_topic}"]
 
   role_names = [
     "${module.ingests.task_role_name}",
@@ -173,7 +174,7 @@ module "bag_replicator_queue" {
 
   name = "${var.namespace}_bag_replicator"
 
-  topic_names = ["${module.bag_replicator_topic.name}"]
+  topic_names = ["${local.archivist_ongoing_topic_name}"]
 
   role_names = ["${module.bag_replicator.task_role_name}"]
 
@@ -192,14 +193,14 @@ module "bag_replicator_queue" {
 
 # This service is currently being "tap" tested
 # from the output of the Archivist service
-# It does not have it's own topic
+# It does not have its own topic
 
 module "bag_verifier_queue" {
   source = "../modules/queue"
 
   name = "${var.namespace}_bag_verifier"
 
-  topic_names = ["${module.bags_topic.name}"]
+  topic_names = ["${local.archivist_ongoing_topic_name}"]
 
   role_names = ["${module.bag_verifier.task_role_name}"]
 

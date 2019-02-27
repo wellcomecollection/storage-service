@@ -17,7 +17,7 @@ module "archivist" {
     queue_url              = "${local.archivist_input_queue}"
     queue_parallelism      = "${var.archivist_queue_parallelism}"
     archive_bucket         = "${var.archive_bucket_name}"
-    next_service_topic_arn = "${local.archivist_ongoing_topic}"
+    next_service_topic_arn = "${local.archivist_ongoing_topic_arn}"
     progress_topic_arn     = "${local.progress_topic}"
     JAVA_OPTS              = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-archivist"
   }
