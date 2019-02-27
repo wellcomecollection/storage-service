@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.services
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.{
@@ -88,8 +87,8 @@ class StorageManifestServiceTest
         val future = service.createManifest(bagRequest.bagLocation)
 
         whenReady(future.failed) { err =>
-          err shouldBe a[AmazonS3Exception]
-          err.getMessage should startWith("The specified key does not exist.")
+          err shouldBe a[RuntimeException]
+          err.getMessage should include("The specified key does not exist.")
         }
       }
     }
@@ -107,8 +106,8 @@ class StorageManifestServiceTest
           val future = service.createManifest(bagRequest.bagLocation)
 
           whenReady(future.failed) { err =>
-            err shouldBe a[AmazonS3Exception]
-            err.getMessage should startWith("The specified key does not exist.")
+            err shouldBe a[RuntimeException]
+            err.getMessage should include("The specified key does not exist.")
           }
         }
       }
@@ -127,8 +126,8 @@ class StorageManifestServiceTest
           val future = service.createManifest(bagRequest.bagLocation)
 
           whenReady(future.failed) { err =>
-            err shouldBe a[AmazonS3Exception]
-            err.getMessage should startWith("The specified key does not exist.")
+            err shouldBe a[RuntimeException]
+            err.getMessage should include("The specified key does not exist.")
           }
         }
       }
@@ -166,8 +165,8 @@ class StorageManifestServiceTest
           val future = service.createManifest(bagRequest.bagLocation)
 
           whenReady(future.failed) { err =>
-            err shouldBe a[AmazonS3Exception]
-            err.getMessage should startWith("The specified key does not exist.")
+            err shouldBe a[RuntimeException]
+            err.getMessage should include("The specified key does not exist.")
           }
         }
       }
