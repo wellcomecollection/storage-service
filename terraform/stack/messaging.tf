@@ -42,7 +42,7 @@ module "ingests_queue" {
 
   name = "${var.namespace}_ingests"
 
-  topic_names = ["${local.progress_topic}"]
+  topic_names = ["${module.ingests_topic.name}"]
 
   role_names = [
     "${module.ingests.task_role_name}",
