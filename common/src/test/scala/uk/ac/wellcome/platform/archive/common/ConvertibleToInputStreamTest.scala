@@ -27,6 +27,7 @@ class ConvertibleToInputStreamTest
 
       whenReady(inputStreamFuture.failed) { e =>
         e shouldBe a[RuntimeException]
+        e.getMessage should include("s3://invalid_bucket/invalid.key")
       }
     }
 
