@@ -276,3 +276,23 @@ module "bag_verifier_output_topic" {
     "${module.bag_verifier.task_role_name}",
   ]
 }
+
+module "bag_verifier_output_queue" {
+  source = "../modules/queue"
+
+  name = "${var.namespace}_bag_verifier_output"
+
+  topic_names = ["${module.bag_verifier_output_topic.name}"]
+
+  role_names = []
+
+  # We keep a high visibility timeout to
+  # avoid messages appearing to time out and fail.
+  visibility_timeout_seconds = "${60 * 60 * 5}"
+
+  max_receive_count = 1
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+}
+
