@@ -97,7 +97,8 @@ class BagsWorkerService(
         )
       }
       case (Failure(err), _) => {
-        warn(s"Failed to create storage manifest for $archiveRequestId: ${err.getMessage}")
+        warn(
+          s"Failed to create storage manifest for $archiveRequestId: ${err.getMessage}")
         ProgressStatusUpdate(
           id = archiveRequestId,
           status = Progress.Failed,

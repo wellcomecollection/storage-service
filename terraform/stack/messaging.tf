@@ -295,4 +295,3 @@ module "bag_verifier_output_queue" {
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
-

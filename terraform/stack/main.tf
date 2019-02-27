@@ -270,7 +270,6 @@ module "api" {
   static_content_bucket_name     = "${var.static_content_bucket_name}"
   interservice_security_group_id = "${aws_security_group.interservice.id}"
   alarm_topic_arn                = "${var.alarm_topic_arn}"
-
   bag_unpacker_topic_arn = "${module.bag_unpacker_topic.arn}"
 }
 
