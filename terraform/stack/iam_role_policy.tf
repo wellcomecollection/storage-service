@@ -5,6 +5,11 @@ resource "aws_iam_role_policy" "bags_archive_get" {
   policy = "${data.aws_iam_policy_document.storage_archive_read.json}"
 }
 
+resource "aws_iam_role_policy" "bags_access_get" {
+  role   = "${module.bags.task_role_name}"
+  policy = "${data.aws_iam_policy_document.storage_access_read.json}"
+}
+
 resource "aws_iam_role_policy" "bags_vhs_write" {
   role   = "${module.bags.task_role_name}"
   policy = "${var.vhs_archive_manifest_full_access_policy_json}"
