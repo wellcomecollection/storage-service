@@ -56,17 +56,22 @@ object ExternalDependencies {
     val akkaHttp            = "10.1.5"
     val akkaHttpCirce       = "1.21.1"
     val akkaStreamAlpakka   = "0.20"
-    val commonsCompress     = "1.18"
+    val commonsCompress     = "1.5"
     val commonsIO           = "2.6"
     val aws                 = "1.11.95"
     val circe               = "0.9.0"
     val mockito             = "1.9.5"
     val scalatest           = "3.0.1"
     val wiremock            = "2.18.0"
+    val logback             = "1.2.3"
   }
 
+  val logbackDependencies = Seq(
+    "ch.qos.logback" % "logback-classic" % versions.logback
+  )
+
   val commonsCompressDependencies = Seq(
-    "org.apache.commons" % "commons-compress" % "1.5"
+    "org.apache.commons" % "commons-compress" % versions.commonsCompress
   )
 
   val commonsIODependencies = Seq(
@@ -108,6 +113,7 @@ object StorageDependencies {
     ExternalDependencies.cloudwatchMetricsDependencies ++
     ExternalDependencies.mockitoDependencies ++
     ExternalDependencies.scalatestDependencies ++
+    ExternalDependencies.logbackDependencies ++
     WellcomeDependencies.jsonLibrary ++
     WellcomeDependencies.messagingTypesafeLibrary
 }
