@@ -52,3 +52,5 @@ variable "interservice_security_group_id" {}
 variable "domain_name" {}
 
 variable "cert_domain_name" {}
+
+variable "bag_unpacker_topic_arn" {}

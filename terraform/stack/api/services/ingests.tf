@@ -41,3 +41,8 @@ module "ingests" {
 
   task_desired_count = "${var.desired_ingests_api_count}"
 }
+
+resource "aws_iam_role_policy" "allow_ingests_publish_to_unpacker_topic" {
+  policy = "${var.allow_ingests_publish_to_unpacker_topic_json}"
+  role   = "${module.ingests.task_role_name}"
+}

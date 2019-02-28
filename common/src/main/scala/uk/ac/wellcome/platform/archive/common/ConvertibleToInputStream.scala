@@ -25,8 +25,13 @@ object ConvertibleToInputStream {
       Future(
         s3Client.getObject(t.namespace, t.key)
       ).map(
-        response => response.getObjectContent
-      )
+          response => response.getObjectContent
+        )
+        .recover {
+          case throwable: Throwable =>
+            throw new RuntimeException(
+              s"Error getting input stream for s3://$t: ${throwable.getMessage}")
+        }
   }
 }
 

@@ -112,7 +112,7 @@ module "bag_verifier" {
     queue_url               = "${local.bag_verifier_input_queue}"
     destination_bucket_name = "${var.access_bucket_name}"
     progress_topic_arn      = "${local.progress_topic}"
-    outgoing_topic_arn      = "${local.bag_verifier_ongoing_topic}"
+    outgoing_topic_arn      = "${module.bag_verifier_output_topic.arn}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-verifier"
   }
 
@@ -144,7 +144,7 @@ module "bag_unpacker" {
     queue_url               = "${module.bag_unpacker_queue.url}"
     destination_bucket_name = "${var.access_bucket_name}"
     progress_topic_arn      = "${module.ingests_topic.arn}"
-    outgoing_topic_arn      = "${module.null_topic.arn}"
+    outgoing_topic_arn      = "${module.bag_unpacker_output_topic.arn}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-unpacker"
   }
 
@@ -264,12 +264,13 @@ module "api" {
     archive_bag_progress_index_name = "${var.ingests_table_progress_index_name}"
     JAVA_OPTS                       = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests-api"
   }
-  ingests_env_vars_length        = 6
+  ingests_env_vars_length        = 7
   ingests_nginx_container_image  = "${var.nginx_image}"
   ingests_nginx_container_port   = "9000"
   static_content_bucket_name     = "${var.static_content_bucket_name}"
   interservice_security_group_id = "${aws_security_group.interservice.id}"
   alarm_topic_arn                = "${var.alarm_topic_arn}"
+  bag_unpacker_topic_arn         = "${module.bag_unpacker_topic.arn}"
 }
 
 # Migration services

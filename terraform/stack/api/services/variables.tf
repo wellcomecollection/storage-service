@@ -53,3 +53,5 @@ variable "bags_env_vars" {
 variable "bags_env_vars_length" {}
 
 variable "interservice_security_group_id" {}
+
+variable "allow_ingests_publish_to_unpacker_topic_json" {}

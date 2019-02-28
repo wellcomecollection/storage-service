@@ -87,20 +87,25 @@ class BagsWorkerService(
           affectedBag = Some(storageManifest.id),
           events = List(ProgressEvent("Bag registered successfully"))
         )
-      case (Success(storageManifest), Failure(_)) =>
+      case (Success(storageManifest), Failure(err)) => {
+        warn(s"Failed to register bag $archiveRequestId: ${err.getMessage}")
         ProgressStatusUpdate(
           id = archiveRequestId,
           status = Progress.Failed,
           affectedBag = Some(storageManifest.id),
           events = List(ProgressEvent("Failed to register bag"))
         )
-      case _ =>
+      }
+      case (Failure(err), _) => {
+        warn(
+          s"Failed to create storage manifest for $archiveRequestId: ${err.getMessage}")
         ProgressStatusUpdate(
           id = archiveRequestId,
           status = Progress.Failed,
           affectedBag = None,
           events = List(ProgressEvent("Failed to create storage manifest"))
         )
+      }
     }
 
     progressSnsWriter.writeMessage[ProgressUpdate](
