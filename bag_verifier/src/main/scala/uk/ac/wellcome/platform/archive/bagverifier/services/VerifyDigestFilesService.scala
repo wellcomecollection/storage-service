@@ -1,15 +1,12 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
+import java.time.{Duration, Instant}
+
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  BagVerification,
-  FailedVerification
-}
+import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerification, FailedVerification}
 import uk.ac.wellcome.platform.archive.common.models.FileManifest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagDigestFile,
-  BagLocation
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagLocation}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 
@@ -18,8 +15,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class VerifyDigestFilesService(
   storageManifestService: StorageManifestService,
   s3Client: AmazonS3,
-  algorithm: String)(implicit ec: ExecutionContext) {
-  def verifyBagLocation(bagLocation: BagLocation): Future[BagVerification] =
+  algorithm: String)(implicit ec: ExecutionContext) extends Logging {
+  def verifyBag(bagLocation: BagLocation): Future[BagVerification] =
     for {
       fileManifest <- getManifest("file manifest") {
         storageManifestService.createFileManifest(bagLocation)
@@ -40,7 +37,8 @@ class VerifyDigestFilesService(
 
   private def verifyFiles(
     bagLocation: BagLocation,
-    digestFiles: Seq[BagDigestFile]): Future[BagVerification] =
+    digestFiles: Seq[BagDigestFile]): Future[BagVerification] = {
+    val verificationStart = Instant.now
     Future
       .traverse(digestFiles) { digestFile: BagDigestFile =>
         verifyIndividualFile(bagLocation, digestFile = digestFile)
@@ -54,23 +52,27 @@ class VerifyDigestFilesService(
           }
       }
       .map { results =>
-        val woke = results.collect { case Right(digestFile) => digestFile }
-        val problematicFaves = results.collect {
+        val successfulVerifications = results.collect {
+          case Right(digestFile) => digestFile
+        }
+        val failedVerifications = results.collect {
           case Left(failedVerification) => failedVerification
         }
-        assert(woke.size + problematicFaves.size == digestFiles.size)
+
+        assert(successfulVerifications.size + failedVerifications.size == digestFiles.size)
 
         BagVerification(
-          woke = woke,
-          problematicFaves = problematicFaves
+          successfulVerifications = successfulVerifications,
+          failedVerifications = failedVerifications,
+          duration = Duration.between(verificationStart, Instant.now)
         )
       }
+  }
 
   private def verifyIndividualFile(bagLocation: BagLocation,
                                    digestFile: BagDigestFile)
     : Future[Either[FailedVerification, BagDigestFile]] = {
     val objectLocation = digestFile.path.toObjectLocation(bagLocation)
-
     for {
       inputStream <- Future {
         s3Client
@@ -80,7 +82,7 @@ class VerifyDigestFilesService(
       actualChecksum <- ChecksumVerifier.checksum(
         inputStream,
         algorithm = algorithm)
-    } yield getResult(digestFile, actualChecksum = actualChecksum)
+    } yield getResult(digestFile, actualChecksum)
   }
 
   private def getResult(

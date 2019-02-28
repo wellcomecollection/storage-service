@@ -25,7 +25,7 @@ class BagVerifierFeatureTest
       withLocalSnsTopic { ongoingTopic =>
         withLocalSqsQueueAndDlq {
           case QueuePair(queue, dlq) =>
-            withWorkerService(progressTopic, ongoingTopic, queue) { service =>
+            withWorkerService(progressTopic, ongoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
                 withBag(bucket) { bagLocation =>
                   val bagRequest = BagRequest(

@@ -1,17 +1,17 @@
 package uk.ac.wellcome.platform.archive.bagverifier.models
 
+import java.time.Duration
+
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagDigestFile,
-  BagItemPath
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
 
 class BagVerificationTest extends FunSpec with Matchers with RandomThings {
   it("reports a verification with no failures as successful") {
     val result = BagVerification(
-      woke = Seq(createBagDigestFile, createBagDigestFile, createBagDigestFile),
-      problematicFaves = List.empty
+      successfulVerifications = Seq(createBagDigestFile, createBagDigestFile, createBagDigestFile),
+      failedVerifications = List.empty,
+      duration = Duration.ofSeconds(1)
     )
 
     result.verificationSucceeded shouldBe true
@@ -19,13 +19,14 @@ class BagVerificationTest extends FunSpec with Matchers with RandomThings {
 
   it("reports a verification with some problems as unsuccessful") {
     val result = BagVerification(
-      woke = Seq(createBagDigestFile, createBagDigestFile),
-      problematicFaves = List(
+      successfulVerifications = Seq(createBagDigestFile, createBagDigestFile),
+      failedVerifications = List(
         FailedVerification(
           digestFile = createBagDigestFile,
           reason = new RuntimeException("AAARGH!")
         )
-      )
+      ),
+      duration = Duration.ofSeconds(1)
     )
 
     result.verificationSucceeded shouldBe false
