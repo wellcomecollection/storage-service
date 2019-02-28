@@ -124,8 +124,7 @@ class VerifyDigestFilesServiceTest
           val future = service.verifyBagLocation(bagLocation)
           whenReady(future.failed) { err =>
             err shouldBe a[RuntimeException]
-            err.getMessage should startWith(
-              "Error getting file manifest")
+            err.getMessage should startWith("Error getting file manifest")
           }
       }
     }
@@ -141,8 +140,7 @@ class VerifyDigestFilesServiceTest
           val future = service.verifyBagLocation(bagLocation)
           whenReady(future.failed) { err =>
             err shouldBe a[RuntimeException]
-            err.getMessage should startWith(
-              "Error getting tag manifest")
+            err.getMessage should startWith("Error getting tag manifest")
           }
       }
     }
