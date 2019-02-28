@@ -125,7 +125,7 @@ class VerifyDigestFilesServiceTest
           whenReady(future.failed) { err =>
             err shouldBe a[RuntimeException]
             err.getMessage should startWith(
-              "Error getting file manifest: The specified key does not exist")
+              "Error getting file manifest")
           }
       }
     }
@@ -142,7 +142,7 @@ class VerifyDigestFilesServiceTest
           whenReady(future.failed) { err =>
             err shouldBe a[RuntimeException]
             err.getMessage should startWith(
-              "Error getting tag manifest: The specified key does not exist")
+              "Error getting tag manifest")
           }
       }
     }
