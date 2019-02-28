@@ -8,6 +8,38 @@ resource "aws_s3_bucket" "ingests_drop" {
   acl    = "private"
 }
 
+resource "aws_s3_bucket" "access" {
+  bucket = "wellcomecollection-${var.namespace}-access"
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_policy" "access_read" {
+  bucket = "${aws_s3_bucket.access.id}"
+  policy = "${data.aws_iam_policy_document.access_read.json}"
+}
+
+data "aws_iam_policy_document" "access_read" {
+  statement {
+    actions = [
+      "s3:List*",
+      "s3:Get*",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.access.arn}",
+      "${aws_s3_bucket.access.arn}/*",
+    ]
+
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        "${var.access_read_principles}",
+      ]
+    }
+  }
+}
+
 resource "aws_s3_bucket" "archive" {
   bucket = "wellcomecollection-${var.namespace}-archive"
   acl    = "private"
@@ -22,17 +54,12 @@ resource "aws_s3_bucket" "archive" {
   }
 }
 
-resource "aws_s3_bucket" "access" {
-  bucket = "wellcomecollection-${var.namespace}-access"
-  acl    = "private"
-}
-
-resource "aws_s3_bucket_policy" "archive_read_access" {
+resource "aws_s3_bucket_policy" "archive_read" {
   bucket = "${aws_s3_bucket.archive.id}"
-  policy = "${data.aws_iam_policy_document.archive_readaccess.json}"
+  policy = "${data.aws_iam_policy_document.archive_read.json}"
 }
 
-data "aws_iam_policy_document" "archive_readaccess" {
+data "aws_iam_policy_document" "archive_read" {
   statement {
     actions = [
       "s3:List*",
@@ -48,7 +75,7 @@ data "aws_iam_policy_document" "archive_readaccess" {
       type = "AWS"
 
       identifiers = [
-        "${var.archive_readaccess_principles}",
+        "${var.archive_read_principles}",
       ]
     }
   }

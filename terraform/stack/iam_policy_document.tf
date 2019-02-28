@@ -119,33 +119,6 @@ data "aws_iam_policy_document" "bagger_preservica_read" {
   }
 }
 
-data "aws_iam_policy_document" "storage_dlcs_read" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type = "AWS"
-
-      identifiers = [
-        "arn:aws:iam::653428163053:user/echo-fs",
-        "arn:aws:iam::653428163053:user/api",
-      ]
-    }
-
-    actions = [
-      "s3:GetObject",
-      "s3:ListBucket",
-    ]
-
-    resources = [
-      "arn:aws:s3:::${var.archive_bucket_name}",
-      "arn:aws:s3:::${var.archive_bucket_name}/*",
-      "arn:aws:s3:::${var.access_bucket_name}",
-      "arn:aws:s3:::${var.access_bucket_name}/*",
-    ]
-  }
-}
-
 data "aws_iam_policy_document" "storage_archive_read" {
   statement {
     actions = [

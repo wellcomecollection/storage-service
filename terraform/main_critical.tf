@@ -20,9 +20,16 @@ module "critical" {
   service-wt-winnipeg = "${data.terraform_remote_state.infra_shared.service-wt-winnipeg}"
   service-pl-winslow  = "${data.terraform_remote_state.infra_shared.service-pl-winslow}"
 
-  archive_readaccess_principles = [
+  archive_read_principles = [
     "${local.goobi_task_role_arn}",
     "${aws_iam_user.dds_digirati.arn}",
+  ]
+
+  access_read_principles = [
+    "${local.goobi_task_role_arn}",
+    "${aws_iam_user.dds_digirati.arn}",
+    "arn:aws:iam::653428163053:user/echo-fs",
+    "arn:aws:iam::653428163053:user/api",
   ]
 }
 
@@ -35,9 +42,16 @@ module "critical-staging" {
   service-wt-winnipeg = "${data.terraform_remote_state.infra_shared.service-wt-winnipeg}"
   service-pl-winslow  = "${data.terraform_remote_state.infra_shared.service-pl-winslow}"
 
-  archive_readaccess_principles = [
+  archive_read_principles = [
     "${local.goobi_task_role_arn}",
     "${aws_iam_user.dds_digirati.arn}",
+  ]
+
+  access_read_principles = [
+    "${local.goobi_task_role_arn}",
+    "${aws_iam_user.dds_digirati.arn}",
+    "arn:aws:iam::653428163053:user/echo-fs",
+    "arn:aws:iam::653428163053:user/api",
   ]
 }
 
