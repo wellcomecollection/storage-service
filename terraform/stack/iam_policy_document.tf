@@ -140,6 +140,8 @@ data "aws_iam_policy_document" "storage_dlcs_read" {
     resources = [
       "arn:aws:s3:::${var.archive_bucket_name}",
       "arn:aws:s3:::${var.archive_bucket_name}/*",
+      "arn:aws:s3:::${var.access_bucket_name}",
+      "arn:aws:s3:::${var.access_bucket_name}/*",
     ]
   }
 }
