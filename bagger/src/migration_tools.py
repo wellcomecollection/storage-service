@@ -20,8 +20,11 @@ def json_default(o):
 
 
 class MigrationTool(object):
-    def update_status(self, delay, filter="", check_package=False, check_alto=False):
-        update_bag_and_ingest_status(delay, filter, check_package, check_alto)
+    def update_status(self, delay, filter=""):
+        update_bag_and_ingest_status(delay, filter)
+
+    def update_dds_status(self, delay, filter="", force=False):
+        update_dds_status_slow(delay, filter, force)
 
     def ingest(self, delay, filter=""):
         do_ingest(delay, filter)
@@ -63,7 +66,7 @@ def get_min_bag_date():
     return min_bag_date
 
 
-def update_bag_and_ingest_status(delay, filter, check_package, check_alto):
+def update_bag_and_ingest_status(delay, filter):
     table = status_table.get_table()
     no_ingest = {
         "id": "-",
@@ -75,9 +78,7 @@ def update_bag_and_ingest_status(delay, filter, check_package, check_alto):
 
     for bnumber in bnumber_generator(filter):
         try:
-            output = update_bag_and_ingest_status_bnumber(
-                bnumber, table, no_ingest, check_package, check_alto
-            )
+            output = update_bag_and_ingest_status_bnumber(bnumber, table, no_ingest)
         except Exception as e:
             err_obj = {"ERROR": bnumber, "error": e}
             print(err_obj)
@@ -90,13 +91,10 @@ def update_bag_and_ingest_status(delay, filter, check_package, check_alto):
     print("]")
 
 
-def update_bag_and_ingest_status_bnumber(
-    bnumber, table, no_ingest, check_package, check_alto
-):
+def update_bag_and_ingest_status_bnumber(bnumber, table, no_ingest):
     bag_date = "-"
     bag_size = 0
     bag_error = "-"
-    package_date = "-"
     dds_package_date = None
 
     # check for bag
@@ -115,11 +113,6 @@ def update_bag_and_ingest_status_bnumber(
     if ingest is None:
         ingest = no_ingest
 
-    if check_package:
-        dds_package_date = dds.get_package_file_modified(bnumber)
-        if dds_package_date is not None:
-            package_date = dds_package_date
-
     table.update_item(
         Key={"bnumber": bnumber},
         ExpressionAttributeValues={
@@ -130,15 +123,9 @@ def update_bag_and_ingest_status_bnumber(
             ":idt": ingest["events"][0]["createdDate"],
             ":iid": ingest["id"],
             ":ist": ingest["status"]["id"],
-            ":pkg": package_date,
         },
-        UpdateExpression="SET updated = :upd, bag_date = :bdt, bag_size = :bsz, mets_error = :bge, ingest_date = :idt, ingest_id = :iid, ingest_status = :ist, package_date = :pkg",
+        UpdateExpression="SET updated = :upd, bag_date = :bdt, bag_size = :bsz, mets_error = :bge, ingest_date = :idt, ingest_id = :iid, ingest_status = :ist",
     )
-
-    # TODO - fields for status table
-    # "texts_expected" - the number of cached TextObjs there should be in DDS
-    # "texts_cached" - the number actually present
-    # "dlcs_mismatch" - the sum across all manifestations of assets with sync issues
 
     return {
         "identifier": bnumber,
@@ -146,6 +133,69 @@ def update_bag_and_ingest_status_bnumber(
         "mets_error": bag_error,
         "ingest": ingest,
         "dds_package_date": dds_package_date,
+    }
+
+
+def update_dds_status_slow(delay, filter, force):
+    table = status_table.get_table()
+
+    print("[")
+
+    for bnumber in bnumber_generator(filter):
+        try:
+            output = update_dds_status_bnumber(bnumber, table, force)
+        except Exception as e:
+            err_obj = {"ERROR": bnumber, "error": e}
+            print(err_obj)
+            raise
+        print(json.dumps(output, default=json_default, indent=4))
+        print(",")
+        if delay > 0:
+            time.sleep(delay)
+
+    print("]")
+
+
+def update_dds_status_bnumber(bnumber, table, force):
+
+    status = table.get_item(Key={"bnumber": bnumber})["Item"]
+    package_date = status.get("package_date", "0")
+    # "texts_expected" - the number of cached TextObjs there should be in DDS
+    # "texts_cached" - the number actually present
+    # "dlcs_mismatch" - the sum across all manifestations of assets with sync issues
+    texts_expected = status.get("texts_expected", -1)
+    texts_cached = status.get("texts_cached", 0)
+    dlcs_mismatch = status.get("dlcs_mismatch", -1)
+
+    dds_package_date = dds.get_package_file_modified(bnumber)
+    if dds_package_date is None:
+        package_date = "0"
+    else:
+        if force or dds_package_date > package_date:
+            # there is a package, so we can ask this...
+            # but don't ask it unless we really have to, as it's expensive
+            texts_expected, texts_cached = dds.get_text_info(bnumber)
+            dlcs_mismatch = dds.get_dlcs_mismatch(bnumber)
+
+        package_date = dds_package_date
+
+    table.update_item(
+        Key={"bnumber": bnumber},
+        ExpressionAttributeValues={
+            ":pkg": package_date,
+            ":tex": texts_expected,
+            ":tch": texts_cached,
+            ":dmm": dlcs_mismatch,
+        },
+        UpdateExpression="SET package_date = :pkg, texts_expected = :tex, texts_cached = :tch, dlcs_mismatch = :dmm",
+    )
+
+    return {
+        "identifier": bnumber,
+        "package_date": package_date,
+        "texts_expected": texts_expected,
+        "texts_cached": texts_cached,
+        "dlcs_mismatch": dlcs_mismatch,
     }
 
 
