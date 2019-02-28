@@ -75,7 +75,7 @@ object ExternalDependencies {
   )
 
   val commonsIODependencies = Seq(
-    "commons-io" % "commons-io" % versions.commonsIO % "test"
+    "commons-io" % "commons-io" % versions.commonsIO
   )
 
   val circeOpticsDependencies = Seq[ModuleID](

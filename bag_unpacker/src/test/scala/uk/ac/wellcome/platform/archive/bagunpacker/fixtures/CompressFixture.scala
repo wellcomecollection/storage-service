@@ -25,6 +25,8 @@ trait CompressFixture extends RandomThings {
       ".tar.gz"
     )
 
+
+
     val fileOutputStream = new FileOutputStream(file)
 
     val archive = new Archive(

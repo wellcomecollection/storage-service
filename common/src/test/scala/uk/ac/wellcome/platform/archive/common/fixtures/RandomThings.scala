@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.io.{File, FileOutputStream}
+import java.nio.file.{Files, Path, Paths}
 import java.time.LocalDate
 import java.util.UUID
 
@@ -14,6 +15,16 @@ trait RandomThings {
     Random.alphanumeric take length mkString
   }
 
+  def randomPaths(maxDepth: Int = 4, dirs: Int = 4) = {
+    (1 to dirs).map { _ =>
+      val depth = Random.nextInt(maxDepth)
+
+      (1 to depth).foldLeft("") { (memo, _) =>
+        Paths.get(memo,randomAlphanumeric()).toString
+      }
+    }.toList
+  }
+
   def randomAlphanumericWithSpace(length: Int = 8) = {
     val str = randomAlphanumeric(length).toCharArray
 
@@ -23,11 +34,36 @@ trait RandomThings {
     str.updated(spaceIndex, ' ')
   }
 
-  def randomFile(size: Int = 256) = {
-    val file = File.createTempFile(
-      randomUUID.toString,
-      ".test"
-    )
+  def randomFiles(
+                   fileCount: Int = 10,
+                   dirs: Int = 4,
+                   maxDepth: Int = 4,
+                   minSize: Int = 265,
+                   maxSize: Int = 1024) = {
+
+    def createFile(name: String) = {
+      val fileSize =
+        Random.nextInt(maxSize - minSize) + minSize
+
+      randomFile(fileSize, name)
+    }
+
+
+    val paths = randomPaths(maxDepth, dirs)
+
+    paths.map { path =>
+      val tempDirWithPrefix: Path =
+        Files.createTempDirectory(path)
+
+      
+
+    }
+
+  }
+
+  def randomFile(size: Int = 256,
+                 path: String = randomUUID.toString) = {
+    val file = File.createTempFile(path,".test")
 
     val fileOutputStream = new FileOutputStream(file)
     val contents = randomAlphanumeric(size)

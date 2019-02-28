@@ -10,18 +10,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 object Unpack extends Logging {
-//
-//  implicit private class PrivateArchiveInputStream(archiveInputStream: ArchiveInputStream) {
-//    def close() = {
-//      println(
-//        "Stream will not be closed, please call reallyClose()!"
-//      )
-//    }
-//
-//    def reallyClose() = {
-//      archiveInputStream.close()
-//    }
-//  }
 
   def get[T](
     inputStream: InputStream
