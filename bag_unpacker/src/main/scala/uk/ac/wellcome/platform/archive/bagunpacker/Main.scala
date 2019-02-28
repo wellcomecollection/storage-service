@@ -7,7 +7,6 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorkerSer
 import uk.ac.wellcome.platform.archive.common.models.UnpackBagRequest
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-
 import uk.ac.wellcome.json.JsonUtil._
 
 object Main extends WellcomeTypesafeApp {

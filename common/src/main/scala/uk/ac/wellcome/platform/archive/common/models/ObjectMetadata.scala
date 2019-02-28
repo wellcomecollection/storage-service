@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.archivist.models.storage
+package uk.ac.wellcome.platform.archive.common.models
 
 import com.amazonaws.services.s3.model.{ObjectMetadata => S3ObjectMetadata}
 

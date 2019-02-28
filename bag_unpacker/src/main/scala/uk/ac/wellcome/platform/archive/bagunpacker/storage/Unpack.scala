@@ -1,61 +1,78 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.storage
 
-import java.io.{BufferedInputStream, InputStream, OutputStream}
+import java.io.{BufferedInputStream, InputStream}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{
-  ArchiveEntry,
-  ArchiveInputStream,
-  ArchiveStreamFactory
-}
+import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveInputStream, ArchiveStreamFactory}
 import org.apache.commons.compress.compressors.CompressorStreamFactory
-import org.apache.commons.compress.utils.IOUtils
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 object Unpack extends Logging {
+//
+//  implicit private class PrivateArchiveInputStream(archiveInputStream: ArchiveInputStream) {
+//    def close() = {
+//      println(
+//        "Stream will not be closed, please call reallyClose()!"
+//      )
+//    }
+//
+//    def reallyClose() = {
+//      archiveInputStream.close()
+//    }
+//  }
 
-  def stream(inputStream: InputStream)(
-    out: ArchiveEntry => OutputStream
-  ): Stream[ArchiveEntry] = {
+  def get[T](
+    inputStream: InputStream
+  )(
+    out: (InputStream, ArchiveEntry) => T
+  )(implicit ec: ExecutionContext): Future[List[T]] = Future {
 
-    val readArchive = new ReadArchive(inputStream)
+    val archiveReader = new ArchiveReader[T](inputStream)
 
-    def entries(stream: InputStream): Stream[ArchiveEntry] = {
-      readArchive.next(out) match {
+    def entries(stream: InputStream): Stream[T] = {
+      archiveReader.next(out) match {
         case None        => Stream.empty
         case Some(entry) => entry #:: entries(stream)
       }
     }
 
     entries(inputStream)
+      .toList
   }
 
-  private class ReadArchive(inputStream: InputStream) {
+  private class ArchiveReader[T](inputStream: InputStream) {
+    val unpack: Try[ArchiveInputStream] = for {
+      compressorInputStream <- uncompress(
+        new BufferedInputStream(inputStream)
+      )
+
+      archiveInputStream <- extract(
+        new BufferedInputStream(compressorInputStream)
+      )
+
+    } yield archiveInputStream
+
 
     def next(
-      out: ArchiveEntry => OutputStream
-    ): Option[ArchiveEntry] = {
+              out: (InputStream, ArchiveEntry) => T
+            ): Option[T] = {
 
       unpack match {
         case Failure(t) => throw t
-        case Success(archiveInputStream) => {
+        case Success(archiveInputStream: ArchiveInputStream) => {
           archiveInputStream.getNextEntry match {
             case null => {
               archiveInputStream.close()
               inputStream.close()
               None
             }
+
             case entry: ArchiveEntry => {
-              val outputStream = out(entry)
-
-              IOUtils.copy(
-                archiveInputStream,
-                outputStream
+              Some(
+                out(archiveInputStream, entry)
               )
-
-              outputStream.close()
-              Some(entry)
             }
           }
         }
@@ -72,16 +89,5 @@ object Unpack extends Logging {
       new ArchiveStreamFactory()
         .createArchiveInputStream(input)
     )
-
-    val unpack: Try[ArchiveInputStream] = for {
-      compressorInputStream <- uncompress(
-        new BufferedInputStream(inputStream)
-      )
-
-      archiveInputStream <- extract(
-        new BufferedInputStream(compressorInputStream)
-      )
-
-    } yield archiveInputStream
   }
 }

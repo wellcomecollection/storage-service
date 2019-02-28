@@ -1,7 +1,7 @@
-package uk.ac.wellcome.platform.archive.archivist.models.storage
+package uk.ac.wellcome.platform.archive.common.models
 
-import org.scalatest.{FunSpec, Matchers}
 import com.amazonaws.services.s3.model.{ObjectMetadata => S3ObjectMetadata}
+import org.scalatest.{FunSpec, Matchers}
 
 class ObjectMetadataTest extends FunSpec with Matchers {
   it("can be converted to S3ObjectMetadata") {

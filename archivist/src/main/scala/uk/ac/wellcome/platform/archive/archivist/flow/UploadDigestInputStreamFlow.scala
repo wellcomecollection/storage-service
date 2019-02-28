@@ -6,15 +6,9 @@ import akka.stream.ActorAttributes
 import akka.stream.scaladsl.{Flow, StreamConverters}
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.archivist.models.errors.{
-  ChecksumNotMatchedOnUploadError,
-  UploadDigestItemError
-}
-import uk.ac.wellcome.platform.archive.archivist.models.storage.ObjectMetadata
-import uk.ac.wellcome.platform.archive.archivist.models.{
-  DigestItemJob,
-  ItemDigest
-}
+import uk.ac.wellcome.platform.archive.archivist.models.errors.{ChecksumNotMatchedOnUploadError, UploadDigestItemError}
+import uk.ac.wellcome.platform.archive.archivist.models.{DigestItemJob, ItemDigest}
+import uk.ac.wellcome.platform.archive.common.models.ObjectMetadata
 import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
 
 import scala.util.{Failure, Success}

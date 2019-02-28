@@ -5,16 +5,13 @@ import java.io.ByteArrayInputStream
 import akka.stream.scaladsl.{Concat, Sink, Source, StreamConverters}
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings, Supervision}
 import akka.util.ByteString
-import com.amazonaws.services.s3.model.{
-  CompleteMultipartUploadResult,
-  ListMultipartUploadsRequest
-}
+import com.amazonaws.services.s3.model.{CompleteMultipartUploadResult, ListMultipartUploadsRequest}
 import org.apache.commons.io.IOUtils
 import org.scalatest.{Entry, FunSpec}
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.platform.archive.archivist.models.storage.ObjectMetadata
+import uk.ac.wellcome.platform.archive.common.models.ObjectMetadata
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -39,7 +36,8 @@ class S3UploadFlowTest
         val s3Key = "key.txt"
         val futureResult = StreamConverters
           .fromInputStream(() => new ByteArrayInputStream(content.getBytes()))
-          .via(S3UploadFlow(ObjectLocation(bucket.name, s3Key))(s3Client))
+          .via(
+            S3UploadFlow(ObjectLocation(bucket.name, s3Key))(s3Client))
           .runWith(Sink.head)
 
         whenReady(futureResult) {

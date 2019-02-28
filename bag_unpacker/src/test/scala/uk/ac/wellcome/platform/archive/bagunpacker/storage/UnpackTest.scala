@@ -3,15 +3,19 @@ package uk.ac.wellcome.platform.archive.bagunpacker.storage
 import java.io._
 import java.util.UUID
 
+import org.apache.commons.compress.archivers.ArchiveEntry
+import org.apache.commons.compress.utils.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import scala.io.Source
 
 class UnpackTest
-    extends FunSpec
+  extends FunSpec
     with Matchers
     with ScalaFutures
     with CompressFixture
@@ -31,42 +35,51 @@ class UnpackTest
 
     val tmp = System.getProperty("java.io.tmpdir")
 
-    val unpack = Unpack.stream(inputStream) { entry =>
-      new FileOutputStream(
+    val out = (inputStream: InputStream, entry: ArchiveEntry) => {
+      val os = new FileOutputStream(
         new File(tmp, s"${entry.getName}-$testUUID")
       )
+
+      IOUtils.copy(inputStream, os)
+
+      entry
     }
 
-    // Small stream so just process it!
-    val actualEntries = unpack.toSet
 
-    actualEntries.diff(expectedEntries) shouldBe Set.empty
+    val unpack = Unpack.get(inputStream)(out)
 
-    val expectedFiles = files
-      .map(file => file.getName -> file)
-      .toMap
+    whenReady(unpack) { unpacked =>
+      val actualEntries = unpacked.toSet
 
-    val actualFiles = actualEntries
-      .map(entry =>
-        entry.getName -> new File(tmp, s"${entry.getName}-$testUUID"))
-      .toMap
+      actualEntries.diff(expectedEntries) shouldBe Set.empty
 
-    expectedFiles.foreach {
-      case (key, expectedFile) => {
-        val maybeActualFile = actualFiles.get(key)
-        maybeActualFile shouldBe a[Some[_]]
+      val expectedFiles = files
+        .map(file => file.getName -> file)
+        .toMap
 
-        val actualFile = maybeActualFile.get
+      val actualFiles = actualEntries
+        .map(entry =>
+          entry.getName -> new File(tmp, s"${entry.getName}-$testUUID"))
+        .toMap
 
-        actualFile.exists() shouldBe true
 
-        val actualContents =
-          Source.fromFile(actualFile).getLines().mkString
+      expectedFiles.foreach {
+        case (key, expectedFile) => {
+          val maybeActualFile = actualFiles.get(key)
+          maybeActualFile shouldBe a[Some[_]]
 
-        val expectedContents =
-          Source.fromFile(expectedFile).getLines().mkString
+          val actualFile = maybeActualFile.get
 
-        actualContents shouldEqual (expectedContents)
+          actualFile.exists() shouldBe true
+
+          val actualContents =
+            Source.fromFile(actualFile).getLines().mkString
+
+          val expectedContents =
+            Source.fromFile(expectedFile).getLines().mkString
+
+          actualContents shouldEqual (expectedContents)
+        }
       }
     }
   }
