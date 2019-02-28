@@ -4,18 +4,24 @@ import java.time.{Duration, Instant}
 
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerification, FailedVerification}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  BagVerification,
+  FailedVerification
+}
 import uk.ac.wellcome.platform.archive.common.models.FileManifest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagLocation}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagLocation
+}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class VerifyDigestFilesService(
-  storageManifestService: StorageManifestService,
-  s3Client: AmazonS3,
-  algorithm: String)(implicit ec: ExecutionContext) extends Logging {
+class VerifyDigestFilesService(storageManifestService: StorageManifestService,
+                               s3Client: AmazonS3,
+                               algorithm: String)(implicit ec: ExecutionContext)
+    extends Logging {
   def verifyBag(bagLocation: BagLocation): Future[BagVerification] =
     for {
       fileManifest <- getManifest("file manifest") {
@@ -59,7 +65,8 @@ class VerifyDigestFilesService(
           case Left(failedVerification) => failedVerification
         }
 
-        assert(successfulVerifications.size + failedVerifications.size == digestFiles.size)
+        assert(
+          successfulVerifications.size + failedVerifications.size == digestFiles.size)
 
         BagVerification(
           successfulVerifications = successfulVerifications,

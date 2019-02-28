@@ -5,7 +5,10 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorkerService, VerifyDigestFilesService}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifierWorkerService,
+  VerifyDigestFilesService
+}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -31,10 +34,13 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new BagVerifierWorkerService(
-      notificationStream = NotificationStreamBuilder.buildStream[BagRequest](config),
+      notificationStream =
+        NotificationStreamBuilder.buildStream[BagRequest](config),
       verifyDigestFilesService = verifyDigestFilesService,
-      progressSnsWriter = SNSBuilder.buildSNSWriter(config, namespace = "progress"),
-      ongoingSnsWriter  = SNSBuilder.buildSNSWriter(config, namespace = "progress")
+      progressSnsWriter =
+        SNSBuilder.buildSNSWriter(config, namespace = "progress"),
+      ongoingSnsWriter =
+        SNSBuilder.buildSNSWriter(config, namespace = "progress")
     )
   }
 }

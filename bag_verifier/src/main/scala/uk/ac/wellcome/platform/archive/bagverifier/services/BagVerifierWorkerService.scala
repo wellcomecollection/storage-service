@@ -10,7 +10,12 @@ import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerification
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Progress,
+  ProgressEvent,
+  ProgressStatusUpdate,
+  ProgressUpdate
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,7 +27,8 @@ class BagVerifierWorkerService(
   progressSnsWriter: SNSWriter,
   ongoingSnsWriter: SNSWriter,
 )(implicit ec: ExecutionContext)
-    extends Runnable with Logging {
+    extends Runnable
+    with Logging {
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
@@ -62,15 +68,17 @@ class BagVerifierWorkerService(
       case Success(bagVerification) =>
         info(summarizeVerification(bagRequest, bagVerification))
         if (bagVerification.verificationSucceeded) {
-          (Progress.Processing,
-            "Successfully verified bag contents")
+          (Progress.Processing, "Successfully verified bag contents")
         } else {
-          (Progress.Failed,
+          (
+            Progress.Failed,
             "There were problems verifying the bag: not every checksum matched the manifest")
         }
       case Failure(exception) =>
-        warn(f"verification could not be performed:${exception.getMessage} for $bagRequest")
-        (Progress.Failed,
+        warn(
+          f"verification could not be performed:${exception.getMessage} for $bagRequest")
+        (
+          Progress.Failed,
           "There were problems verifying the bag: verification could not be performed")
     }
 
