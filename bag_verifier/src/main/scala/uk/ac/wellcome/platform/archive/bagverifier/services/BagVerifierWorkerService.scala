@@ -104,9 +104,9 @@ class BagVerifierWorkerService(
 
   private def summarizeVerification(bagRequest: BagRequest, bagVerification: BagVerification): String = {
     val verificationStatus = if(bagVerification.verificationSucceeded) {
-      "Successful"
+      "successful"
     } else {
-      "Failed"
+      "failed"
     }
     f"""$verificationStatus verification
        |of ${bagRequest.bagLocation.completePath}
