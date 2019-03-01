@@ -36,11 +36,11 @@ class VerifyDigestFilesServiceTest
   it("passes a bag with correct checksums") {
     withLocalS3Bucket { bucket =>
       withBag(bucket, dataFileCount = dataFileCount) { bagLocation =>
-        val future = service.verifyBagLocation(bagLocation)
+        val future = service.verifyBag(bagLocation)
         whenReady(future) { result =>
           result shouldBe a[BagVerification]
-          result.woke should have size expectedDataFileCount
-          result.problematicFaves shouldBe Seq.empty
+          result.successfulVerifications should have size expectedDataFileCount
+          result.failedVerifications shouldBe Seq.empty
         }
       }
     }
@@ -52,13 +52,13 @@ class VerifyDigestFilesServiceTest
         bucket,
         dataFileCount = dataFileCount,
         createDataManifest = dataManifestWithWrongChecksum) { bagLocation =>
-        val future = service.verifyBagLocation(bagLocation)
+        val future = service.verifyBag(bagLocation)
         whenReady(future) { result =>
           result shouldBe a[BagVerification]
-          result.woke should have size expectedDataFileCount - 1
-          result.problematicFaves should have size 1
+          result.successfulVerifications should have size expectedDataFileCount - 1
+          result.failedVerifications should have size 1
 
-          val brokenFile = result.problematicFaves.head
+          val brokenFile = result.failedVerifications.head
           brokenFile.reason shouldBe a[RuntimeException]
           brokenFile.reason.getMessage should startWith(
             "Checksums do not match:")
@@ -73,13 +73,13 @@ class VerifyDigestFilesServiceTest
         bucket,
         dataFileCount = dataFileCount,
         createTagManifest = tagManifestWithWrongChecksum) { bagLocation =>
-        val future = service.verifyBagLocation(bagLocation)
+        val future = service.verifyBag(bagLocation)
         whenReady(future) { result =>
           result shouldBe a[BagVerification]
-          result.woke should have size expectedDataFileCount - 1
-          result.problematicFaves should have size 1
+          result.successfulVerifications should have size expectedDataFileCount - 1
+          result.failedVerifications should have size 1
 
-          val brokenFile = result.problematicFaves.head
+          val brokenFile = result.failedVerifications.head
           brokenFile.reason shouldBe a[RuntimeException]
           brokenFile.reason.getMessage should startWith(
             "Checksums do not match:")
@@ -99,13 +99,13 @@ class VerifyDigestFilesServiceTest
         bucket,
         dataFileCount = dataFileCount,
         createDataManifest = createDataManifestWithExtraFile) { bagLocation =>
-        val future = service.verifyBagLocation(bagLocation)
+        val future = service.verifyBag(bagLocation)
         whenReady(future) { result =>
           result shouldBe a[BagVerification]
-          result.woke should have size expectedDataFileCount
-          result.problematicFaves should have size 1
+          result.successfulVerifications should have size expectedDataFileCount
+          result.failedVerifications should have size 1
 
-          val brokenFile = result.problematicFaves.head
+          val brokenFile = result.failedVerifications.head
           brokenFile.reason shouldBe a[RuntimeException]
           brokenFile.reason.getMessage should startWith(
             "The specified key does not exist")
@@ -121,7 +121,7 @@ class VerifyDigestFilesServiceTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
         bagLocation =>
-          val future = service.verifyBagLocation(bagLocation)
+          val future = service.verifyBag(bagLocation)
           whenReady(future.failed) { err =>
             err shouldBe a[RuntimeException]
             err.getMessage should startWith("Error getting file manifest")
@@ -137,7 +137,7 @@ class VerifyDigestFilesServiceTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, createTagManifest = dontCreateTheTagManifest) {
         bagLocation =>
-          val future = service.verifyBagLocation(bagLocation)
+          val future = service.verifyBag(bagLocation)
           whenReady(future.failed) { err =>
             err shouldBe a[RuntimeException]
             err.getMessage should startWith("Error getting tag manifest")
