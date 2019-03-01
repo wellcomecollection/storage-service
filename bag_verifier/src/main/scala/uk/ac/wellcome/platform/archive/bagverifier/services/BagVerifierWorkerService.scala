@@ -1,7 +1,9 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import akka.Done
+import grizzled.slf4j.Logging
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
+import org.slf4j.MDC
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
@@ -19,17 +21,20 @@ class BagVerifierWorkerService(
                                 notificationStream: NotificationStream[BagRequest],
                                 verifyDigestFilesService: VerifyDigestFilesService,
                                 progressSnsWriter: SNSWriter,
-                                ongoingSnsWriter: SNSWriter,
-                              )(implicit ec: ExecutionContext)
-  extends Runnable {
+                                outgoingSnsWriter: SNSWriter,
+)(implicit ec: ExecutionContext)
+    extends Runnable
+    with Logging {
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
   def run(): Future[Done] =
     notificationStream.run(processMessage)
 
-  def processMessage(bagRequest: BagRequest): Future[Unit] =
-    for {
+  def processMessage(bagRequest: BagRequest): Future[Unit] = {
+    MDC.put("requestId", bagRequest.archiveRequestId.toString)
+    info(s"received request for verification $bagRequest")
+    val result = for {
       tryBagVerification <- verifyBagLocation(bagRequest.bagLocation)
 
       // We deliberately send to the progress monitor first
@@ -37,6 +42,9 @@ class BagVerifierWorkerService(
 
       _ <- sendOngoingNotification(bagRequest, tryBagVerification)
     } yield ()
+    MDC.clear()
+    result
+  }
 
   private def verifyBagLocation(
                                  bagLocation: BagLocation): Future[Try[BagVerification]] =
@@ -45,13 +53,18 @@ class BagVerifierWorkerService(
       .map { bagVerification =>
         Success(bagVerification)
       }
-      .recover { case throwable: Throwable => Failure(throwable) }
+      .recover {
+        case throwable: Throwable =>
+          debug(s"verification failed for files in $bagLocation")
+          Failure(throwable)
+      }
 
   private def sendProgressNotification(
                                         bagRequest: BagRequest,
                                         tryBagVerification: Try[BagVerification]): Future[PublishAttempt] = {
     val (status, description) = tryBagVerification match {
       case Success(bagVerification) =>
+        info(summarizeVerification(bagRequest, bagVerification))
         if (bagVerification.verificationSucceeded) {
           (Progress.Processing, "Successfully verified bag contents")
         } else {
@@ -59,7 +72,9 @@ class BagVerifierWorkerService(
             Progress.Failed,
             "There were problems verifying the bag: not every checksum matched the manifest")
         }
-      case _ =>
+      case Failure(exception) =>
+        warn(
+          f"verification could not be performed:${exception.getMessage} for $bagRequest")
         (
           Progress.Failed,
           "There were problems verifying the bag: verification could not be performed")
@@ -82,7 +97,7 @@ class BagVerifierWorkerService(
                                        tryBagVerification: Try[BagVerification]): Future[Unit] =
     tryBagVerification match {
       case Success(bagVerification) if bagVerification.verificationSucceeded =>
-        ongoingSnsWriter
+        outgoingSnsWriter
           .writeMessage(
             bagRequest,
             subject = s"Sent by ${this.getClass.getSimpleName}"
@@ -92,4 +107,22 @@ class BagVerifierWorkerService(
           }
       case _ => Future.successful(())
     }
+
+  private def summarizeVerification(
+    bagRequest: BagRequest,
+    bagVerification: BagVerification): String = {
+    val verificationStatus = if (bagVerification.verificationSucceeded) {
+      "successful"
+    } else {
+      "failed"
+    }
+    f"""$verificationStatus verification
+       |of ${bagRequest.bagLocation.completePath}
+       |completed in ${bagVerification.duration.getSeconds}s
+       | :
+       |${bagVerification.successfulVerifications.size} succeeded /
+       |${bagVerification.failedVerifications.size} failed
+       """.stripMargin.replaceAll("\n", " ")
+  }
+
 }

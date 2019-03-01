@@ -20,10 +20,10 @@ class BagVerifierWorkerServiceTest
     with WorkerServiceFixture {
 
   it(
-    "updates the progress monitor and sends an ongoing notification if verification succeeds") {
+    "updates the progress monitor and sends an outgoing notification if verification succeeds") {
     withLocalSnsTopic { progressTopic =>
-      withLocalSnsTopic { ongoingTopic =>
-        withWorkerService(progressTopic, ongoingTopic) { service =>
+      withLocalSnsTopic { outgoingTopic =>
+        withWorkerService(progressTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket) { bagLocation =>
               val bagRequest = BagRequest(
@@ -34,7 +34,7 @@ class BagVerifierWorkerServiceTest
               val future = service.processMessage(bagRequest)
 
               whenReady(future) { _ =>
-                assertSnsReceivesOnly(bagRequest, topic = ongoingTopic)
+                assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
 
                 assertTopicReceivesProgressStatusUpdate(
                   requestId = bagRequest.archiveRequestId,
@@ -57,8 +57,8 @@ class BagVerifierWorkerServiceTest
 
   it("only updates the progress monitor if verification fails") {
     withLocalSnsTopic { progressTopic =>
-      withLocalSnsTopic { ongoingTopic =>
-        withWorkerService(progressTopic, ongoingTopic) { service =>
+      withLocalSnsTopic { outgoingTopic =>
+        withWorkerService(progressTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
               bagLocation =>
@@ -70,7 +70,7 @@ class BagVerifierWorkerServiceTest
                 val future = service.processMessage(bagRequest)
 
                 whenReady(future) { _ =>
-                  assertSnsReceivesNothing(ongoingTopic)
+                  assertSnsReceivesNothing(outgoingTopic)
 
                   assertTopicReceivesProgressStatusUpdate(
                     requestId = bagRequest.archiveRequestId,
@@ -96,8 +96,8 @@ class BagVerifierWorkerServiceTest
                                    dataFiles: List[(String, String)]): Option[FileEntry] = None
 
     withLocalSnsTopic { progressTopic =>
-      withLocalSnsTopic { ongoingTopic =>
-        withWorkerService(progressTopic, ongoingTopic) { service =>
+      withLocalSnsTopic { outgoingTopic =>
+        withWorkerService(progressTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
               bagLocation =>
@@ -109,7 +109,7 @@ class BagVerifierWorkerServiceTest
                 val future = service.processMessage(bagRequest)
 
                 whenReady(future) { _ =>
-                  assertSnsReceivesNothing(ongoingTopic)
+                  assertSnsReceivesNothing(outgoingTopic)
 
                   assertTopicReceivesProgressStatusUpdate(
                     requestId = bagRequest.archiveRequestId,
@@ -130,9 +130,9 @@ class BagVerifierWorkerServiceTest
     }
   }
 
-  it("sends a progress update before it sends an ongoing message") {
+  it("sends a progress update before it sends an outgoing message") {
     withLocalSnsTopic { progressTopic =>
-      withWorkerService(progressTopic, Topic("no-such-ongoing")) { service =>
+      withWorkerService(progressTopic, Topic("no-such-outgoing")) { service =>
         withLocalS3Bucket { bucket =>
           withBag(bucket) { bagLocation =>
             val bagRequest = BagRequest(

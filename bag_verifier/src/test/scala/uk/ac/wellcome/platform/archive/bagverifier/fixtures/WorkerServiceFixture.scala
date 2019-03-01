@@ -7,7 +7,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorkerService, TestWorkerService, VerifyDigestFilesService}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorkerService, VerifyDigestFilesService}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
@@ -15,7 +15,7 @@ import uk.ac.wellcome.storage.fixtures.S3
 trait WorkerServiceFixture extends NotificationStreamFixture with SNS with S3 with Akka {
   def withWorkerService[R](
                             progressTopic: Topic,
-                            ongoingTopic: Topic,
+                            outgoingTopic: Topic,
                             queue: Queue = Queue("fixture", arn = "arn::fixture"))(
                             testWith: TestWith[BagVerifierWorkerService, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
@@ -24,7 +24,7 @@ trait WorkerServiceFixture extends NotificationStreamFixture with SNS with S3 wi
         implicit val _materializer = materializer
 
         withSNSWriter(progressTopic) { progressSnsWriter =>
-          withSNSWriter(ongoingTopic) { ongoingSnsWriter =>
+          withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
 
             withActorSystem {
               actorSystem =>
@@ -44,7 +44,7 @@ trait WorkerServiceFixture extends NotificationStreamFixture with SNS with S3 wi
                   notificationStream = notificationStream,
                   verifyDigestFilesService = verifyDigestFilesService,
                   progressSnsWriter = progressSnsWriter,
-                  ongoingSnsWriter = ongoingSnsWriter
+                  outgoingSnsWriter = outgoingSnsWriter
                 )(ec)
 
                 service.run()

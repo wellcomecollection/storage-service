@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
+import java.time.{Duration, Instant}
+
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.amazonaws.services.s3.AmazonS3
@@ -26,7 +28,7 @@ class VerifyDigestFilesService(
         storageManifestService.createTagManifest(bagLocation)
       }
       digestFiles = fileManifest.files ++ tagManifest.files
-      result <- verifyFiles(bagLocation, digestFiles = digestFiles)
+      result <- verifyFiles(bagLocation, digestFiles)
     } yield result
 
   private def getManifest(name: String)(
@@ -41,20 +43,23 @@ class VerifyDigestFilesService(
                            digestFiles: Seq[BagDigestFile]
                          )(implicit materializer: Materializer)
   : Future[BagVerification] = {
+    val verificationStart = Instant.now
 
     Source[BagDigestFile](
       digestFiles.toList
     ).mapAsync(10) { digestFile: BagDigestFile =>
       Future(verifyIndividualFile(bagLocation, digestFile = digestFile))
      }.runWith(
-      Sink.fold(BagVerification()) {
-        (memo, item) =>item match {
+      Sink.fold(BagVerification(
+        duration = Duration.between(verificationStart, Instant.now))
+      ) {
+        (memo, item) => item match {
         case Left(failedVerification) =>
-          memo.copy(problematicFaves =
-            memo.problematicFaves :+ failedVerification)
+          memo.copy(failedVerifications =
+            memo.failedVerifications :+ failedVerification)
         case Right(digestFile) =>
-          memo.copy(woke =
-            memo.woke :+ digestFile)
+          memo.copy(successfulVerifications =
+            memo.successfulVerifications :+ digestFile)
       }
     })
 }
@@ -63,7 +68,6 @@ class VerifyDigestFilesService(
                                    digestFile: BagDigestFile): Either[FailedVerification, BagDigestFile]
   = {
     val objectLocation = digestFile.path.toObjectLocation(bagLocation)
-
     for {
       inputStream <- Try {
         s3Client

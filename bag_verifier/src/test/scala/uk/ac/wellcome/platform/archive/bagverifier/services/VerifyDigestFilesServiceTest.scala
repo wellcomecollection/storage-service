@@ -40,11 +40,10 @@ class VerifyDigestFilesServiceTest
             )
 
             val future = service.verifyBagLocation(bagLocation)
-
             whenReady(future) { result =>
               result shouldBe a[BagVerification]
-              result.woke should have size expectedDataFileCount
-              result.problematicFaves shouldBe Seq.empty
+              result.successfulVerifications should have size expectedDataFileCount
+              result.failedVerifications shouldBe Seq.empty
             }
           }
         }
@@ -68,13 +67,15 @@ class VerifyDigestFilesServiceTest
               s3Client = s3Client,
               algorithm = MessageDigestAlgorithms.SHA_256
             )
+
             val future = service.verifyBagLocation(bagLocation)
+
             whenReady(future) { result =>
               result shouldBe a[BagVerification]
-              result.woke should have size expectedDataFileCount - 1
-              result.problematicFaves should have size 1
+              result.successfulVerifications should have size expectedDataFileCount - 1
+              result.failedVerifications should have size 1
 
-              val brokenFile = result.problematicFaves.head
+              val brokenFile = result.failedVerifications.head
               brokenFile.reason shouldBe a[RuntimeException]
               brokenFile.reason.getMessage should startWith(
                 "Checksums do not match:")
@@ -104,10 +105,10 @@ class VerifyDigestFilesServiceTest
             val future = service.verifyBagLocation(bagLocation)
             whenReady(future) { result =>
               result shouldBe a[BagVerification]
-              result.woke should have size expectedDataFileCount - 1
-              result.problematicFaves should have size 1
+              result.successfulVerifications should have size expectedDataFileCount - 1
+              result.failedVerifications should have size 1
 
-              val brokenFile = result.problematicFaves.head
+              val brokenFile = result.failedVerifications.head
               brokenFile.reason shouldBe a[RuntimeException]
               brokenFile.reason.getMessage should startWith(
                 "Checksums do not match:")
@@ -143,10 +144,10 @@ class VerifyDigestFilesServiceTest
             val future = service.verifyBagLocation(bagLocation)
             whenReady(future) { result =>
               result shouldBe a[BagVerification]
-              result.woke should have size expectedDataFileCount
-              result.problematicFaves should have size 1
+              result.successfulVerifications should have size expectedDataFileCount
+              result.failedVerifications should have size 1
 
-              val brokenFile = result.problematicFaves.head
+              val brokenFile = result.failedVerifications.head
               brokenFile.reason shouldBe a[RuntimeException]
               brokenFile.reason.getMessage should startWith(
                 "The specified key does not exist")
