@@ -10,18 +10,22 @@ import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerification
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Progress,
+  ProgressEvent,
+  ProgressStatusUpdate,
+  ProgressUpdate
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-
 class BagVerifierWorkerService(
-                                notificationStream: NotificationStream[BagRequest],
-                                verifyDigestFilesService: VerifyDigestFilesService,
-                                progressSnsWriter: SNSWriter,
-                                outgoingSnsWriter: SNSWriter,
+  notificationStream: NotificationStream[BagRequest],
+  verifyDigestFilesService: VerifyDigestFilesService,
+  progressSnsWriter: SNSWriter,
+  outgoingSnsWriter: SNSWriter,
 )(implicit ec: ExecutionContext)
     extends Runnable
     with Logging {
@@ -47,7 +51,7 @@ class BagVerifierWorkerService(
   }
 
   private def verifyBagLocation(
-                                 bagLocation: BagLocation): Future[Try[BagVerification]] =
+    bagLocation: BagLocation): Future[Try[BagVerification]] =
     verifyDigestFilesService
       .verifyBagLocation(bagLocation)
       .map { bagVerification =>
@@ -60,8 +64,8 @@ class BagVerifierWorkerService(
       }
 
   private def sendProgressNotification(
-                                        bagRequest: BagRequest,
-                                        tryBagVerification: Try[BagVerification]): Future[PublishAttempt] = {
+    bagRequest: BagRequest,
+    tryBagVerification: Try[BagVerification]): Future[PublishAttempt] = {
     val (status, description) = tryBagVerification match {
       case Success(bagVerification) =>
         info(summarizeVerification(bagRequest, bagVerification))
@@ -93,8 +97,8 @@ class BagVerifierWorkerService(
   }
 
   private def sendOngoingNotification(
-                                       bagRequest: BagRequest,
-                                       tryBagVerification: Try[BagVerification]): Future[Unit] =
+    bagRequest: BagRequest,
+    tryBagVerification: Try[BagVerification]): Future[Unit] =
     tryBagVerification match {
       case Success(bagVerification) if bagVerification.verificationSucceeded =>
         outgoingSnsWriter

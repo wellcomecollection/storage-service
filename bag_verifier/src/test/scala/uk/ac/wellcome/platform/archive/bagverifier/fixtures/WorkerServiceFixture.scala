@@ -7,17 +7,24 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorkerService, VerifyDigestFilesService}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifierWorkerService,
+  VerifyDigestFilesService
+}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
-trait WorkerServiceFixture extends NotificationStreamFixture with SNS with S3 with Akka {
+trait WorkerServiceFixture
+    extends NotificationStreamFixture
+    with SNS
+    with S3
+    with Akka {
   def withWorkerService[R](
-                            progressTopic: Topic,
-                            outgoingTopic: Topic,
-                            queue: Queue = Queue("fixture", arn = "arn::fixture"))(
-                            testWith: TestWith[BagVerifierWorkerService, R]): R =
+    progressTopic: Topic,
+    outgoingTopic: Topic,
+    queue: Queue = Queue("fixture", arn = "arn::fixture"))(
+    testWith: TestWith[BagVerifierWorkerService, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
       withMaterializer { materializer =>
         implicit val _s3Client = s3Client
@@ -25,31 +32,28 @@ trait WorkerServiceFixture extends NotificationStreamFixture with SNS with S3 wi
 
         withSNSWriter(progressTopic) { progressSnsWriter =>
           withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
+            withActorSystem { actorSystem =>
+              val ec = actorSystem.dispatcher
 
-            withActorSystem {
-              actorSystem =>
+              info(ec.getClass.getSimpleName)
 
-                val ec = actorSystem.dispatcher
+              val verifyDigestFilesService = new VerifyDigestFilesService(
+                storageManifestService =
+                  new StorageManifestService()(ec, _s3Client),
+                s3Client = s3Client,
+                algorithm = MessageDigestAlgorithms.SHA_256
+              )(ec, _materializer)
 
-                info(ec.getClass.getSimpleName)
+              val service = new BagVerifierWorkerService(
+                notificationStream = notificationStream,
+                verifyDigestFilesService = verifyDigestFilesService,
+                progressSnsWriter = progressSnsWriter,
+                outgoingSnsWriter = outgoingSnsWriter
+              )(ec)
 
-                val verifyDigestFilesService = new VerifyDigestFilesService(
-                  storageManifestService = new StorageManifestService()(ec, _s3Client),
-                  s3Client = s3Client,
-                  algorithm = MessageDigestAlgorithms.SHA_256
-                )(ec, _materializer)
+              service.run()
 
-
-                val service = new BagVerifierWorkerService(
-                  notificationStream = notificationStream,
-                  verifyDigestFilesService = verifyDigestFilesService,
-                  progressSnsWriter = progressSnsWriter,
-                  outgoingSnsWriter = outgoingSnsWriter
-                )(ec)
-
-                service.run()
-
-                testWith(service)
+              testWith(service)
             }
           }
         }

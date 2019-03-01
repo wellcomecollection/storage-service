@@ -11,9 +11,9 @@ import scala.util.Try
 object ChecksumVerifier extends Logging {
 
   def checksum(
-                inputStream: InputStream,
-                algorithm: String
-              ): Try[String] = Try {
+    inputStream: InputStream,
+    algorithm: String
+  ): Try[String] = Try {
 
     val checksum = Hex.encodeHexString(
       updateDigest(
