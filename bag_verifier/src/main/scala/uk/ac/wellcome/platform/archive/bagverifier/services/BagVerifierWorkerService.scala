@@ -38,7 +38,7 @@ class BagVerifierWorkerService(
   def processMessage(bagRequest: BagRequest): Future[Unit] = {
     MDC.put("requestId", bagRequest.archiveRequestId.toString)
     info(s"received request for verification $bagRequest")
-    for {
+    val result = for {
       tryBagVerification <- verifyBagLocation(bagRequest.bagLocation)
 
       // We deliberately send to the progress monitor first
@@ -46,6 +46,8 @@ class BagVerifierWorkerService(
 
       _ <- sendOngoingNotification(bagRequest, tryBagVerification)
     } yield ()
+    MDC.clear()
+    result
   }
 
   private def verifyBagLocation(
