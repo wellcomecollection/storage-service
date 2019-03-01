@@ -1,24 +1,22 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  BagVerification,
-  FailedVerification
-}
+import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerification, FailedVerification}
 import uk.ac.wellcome.platform.archive.common.models.FileManifest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagDigestFile,
-  BagLocation
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagLocation}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class VerifyDigestFilesService(
   storageManifestService: StorageManifestService,
   s3Client: AmazonS3,
-  algorithm: String)(implicit ec: ExecutionContext) {
+  algorithm: String)(implicit ec: ExecutionContext, materializer: Materializer) extends Logging {
   def verifyBagLocation(bagLocation: BagLocation): Future[BagVerification] =
     for {
       fileManifest <- getManifest("file manifest") {
@@ -39,48 +37,53 @@ class VerifyDigestFilesService(
     }
 
   private def verifyFiles(
-    bagLocation: BagLocation,
-    digestFiles: Seq[BagDigestFile]): Future[BagVerification] =
-    Future
-      .traverse(digestFiles) { digestFile: BagDigestFile =>
-        verifyIndividualFile(bagLocation, digestFile = digestFile)
-          .recover {
-            case reason: Throwable =>
-              Left(
-                FailedVerification(
-                  digestFile = digestFile,
-                  reason = reason
-                ))
-          }
-      }
-      .map { results =>
-        val woke = results.collect { case Right(digestFile) => digestFile }
-        val problematicFaves = results.collect {
-          case Left(failedVerification) => failedVerification
-        }
-        assert(woke.size + problematicFaves.size == digestFiles.size)
+                           bagLocation: BagLocation,
+                           digestFiles: Seq[BagDigestFile]
+                         )(implicit materializer: Materializer)
+  : Future[BagVerification] = {
 
-        BagVerification(
-          woke = woke,
-          problematicFaves = problematicFaves
-        )
+    Source[BagDigestFile](
+      digestFiles.toList
+    ).mapAsync(10) { digestFile: BagDigestFile =>
+      Future(verifyIndividualFile(bagLocation, digestFile = digestFile))
+     }.runWith(
+      Sink.fold(BagVerification()) {
+        (memo, item) =>item match {
+        case Left(failedVerification) =>
+          memo.copy(problematicFaves =
+            memo.problematicFaves :+ failedVerification)
+        case Right(digestFile) =>
+          memo.copy(woke =
+            memo.woke :+ digestFile)
       }
+    })
+}
 
   private def verifyIndividualFile(bagLocation: BagLocation,
-                                   digestFile: BagDigestFile)
-    : Future[Either[FailedVerification, BagDigestFile]] = {
+                                   digestFile: BagDigestFile): Either[FailedVerification, BagDigestFile]
+  = {
     val objectLocation = digestFile.path.toObjectLocation(bagLocation)
 
     for {
-      inputStream <- Future {
+      inputStream <- Try {
         s3Client
           .getObject(objectLocation.namespace, objectLocation.key)
           .getObjectContent
-      }
+      }.toEither.left.map(e => FailedVerification(
+        digestFile = digestFile,
+        reason = e)
+      )
+
       actualChecksum <- ChecksumVerifier.checksum(
         inputStream,
-        algorithm = algorithm)
-    } yield getResult(digestFile, actualChecksum = actualChecksum)
+        algorithm = algorithm
+      ).toEither.left.map(e => FailedVerification(
+        digestFile = digestFile,
+        reason = e)
+      )
+
+      result <- getResult(digestFile, actualChecksum = actualChecksum)
+    } yield result
   }
 
   private def getResult(

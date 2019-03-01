@@ -6,7 +6,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
 
 class ChecksumVerifierTest
     extends FunSpec
@@ -26,24 +26,23 @@ class ChecksumVerifierTest
     val expectedChecksum =
       "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
 
-    val actualChecksumFuture = ChecksumVerifier.checksum(
+    val actualChecksumTry = ChecksumVerifier.checksum(
       inputStream,
       algorithm
     )
 
-    whenReady(actualChecksumFuture) { actualChecksum =>
-      actualChecksum shouldBe expectedChecksum
-    }
+    actualChecksumTry shouldBe a[Success[_]]
+    actualChecksumTry.get shouldBe expectedChecksum
   }
 
   it("fails for an unknown algorithm") {
-    val actualChecksumFuture = ChecksumVerifier.checksum(
+    val actualChecksumTry = ChecksumVerifier.checksum(
       toInputStream(randomAlphanumeric()),
       algorithm = "unknown"
     )
 
-    whenReady(actualChecksumFuture.failed) { throwable =>
-      throwable shouldBe a[RuntimeException]
-    }
+    actualChecksumTry shouldBe a[Failure[_]]
+
+    actualChecksumTry.get shouldBe a[RuntimeException]
   }
 }

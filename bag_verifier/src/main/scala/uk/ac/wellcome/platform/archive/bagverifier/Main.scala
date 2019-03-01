@@ -13,7 +13,9 @@ import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
+
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
+
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
 
