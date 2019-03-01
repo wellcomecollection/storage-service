@@ -112,8 +112,10 @@ class BagVerifierWorkerService(
       case _ => Future.successful(())
     }
 
-  private def summarizeVerification(bagRequest: BagRequest, bagVerification: BagVerification): String = {
-    val verificationStatus = if(bagVerification.verificationSucceeded) {
+  private def summarizeVerification(
+    bagRequest: BagRequest,
+    bagVerification: BagVerification): String = {
+    val verificationStatus = if (bagVerification.verificationSucceeded) {
       "successful"
     } else {
       "failed"
