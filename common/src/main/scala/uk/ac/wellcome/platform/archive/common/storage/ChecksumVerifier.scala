@@ -2,13 +2,12 @@ package uk.ac.wellcome.platform.archive.common.storage
 
 import java.io.InputStream
 
-import grizzled.slf4j.Logging
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object ChecksumVerifier extends Logging {
+object ChecksumVerifier {
 
   def checksum(
     inputStream: InputStream,

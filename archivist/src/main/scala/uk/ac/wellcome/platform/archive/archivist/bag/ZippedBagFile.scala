@@ -3,13 +3,12 @@ package uk.ac.wellcome.platform.archive.archivist.bag
 import java.io.FileNotFoundException
 import java.util.zip.ZipFile
 
-import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagIt
 
 import scala.collection.JavaConverters._
 import scala.util.Try
 
-object ZippedBagFile extends Logging {
+object ZippedBagFile {
   private val endsWithBagInfoFilenameRegexp = (BagIt.BagInfoFilename + "$").r
 
   def bagPathFromBagInfoPath(bagInfo: String): Option[String] = {

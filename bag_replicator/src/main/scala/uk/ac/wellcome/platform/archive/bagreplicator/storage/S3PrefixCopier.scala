@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.bagreplicator.storage
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.iterable.S3Objects
 import com.amazonaws.services.s3.model.S3ObjectSummary
-import grizzled.slf4j.Logging
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.collection.JavaConverters._
@@ -13,8 +12,7 @@ class S3PrefixCopier(
   s3Client: AmazonS3,
   copier: ObjectCopier,
   batchSize: Int = 1000
-)(implicit ec: ExecutionContext)
-    extends Logging {
+)(implicit ec: ExecutionContext) {
 
   /** Copy all the objects from under ObjectLocation into another ObjectLocation,
     * preserving the relative path from the source in the destination.

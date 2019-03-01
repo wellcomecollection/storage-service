@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import akka.Done
-import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
@@ -22,8 +21,7 @@ class BagReplicatorWorkerService(
   bagReplicatorConfig: BagReplicatorConfig,
   progressSnsWriter: SNSWriter,
   outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
-    extends Runnable
-    with Logging {
+    extends Runnable {
 
   def run(): Future[Done] =
     notificationStream.run(processMessage)
