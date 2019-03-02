@@ -14,14 +14,11 @@ object ChecksumVerifier extends Logging {
     inputStream: InputStream,
     algorithm: String
   ): Try[String] = Try {
-
-    val checksum = Hex.encodeHexString(
+     Hex.encodeHexString(
       updateDigest(
         getDigest(algorithm),
         inputStream
       ).digest
     )
-
-    checksum
   }
 }

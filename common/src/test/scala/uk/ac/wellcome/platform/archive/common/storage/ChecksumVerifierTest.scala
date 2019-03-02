@@ -43,6 +43,6 @@ class ChecksumVerifierTest
 
     actualChecksumTry shouldBe a[Failure[_]]
 
-    actualChecksumTry.get shouldBe a[RuntimeException]
+    actualChecksumTry.failed.get shouldBe a[RuntimeException]
   }
 }
