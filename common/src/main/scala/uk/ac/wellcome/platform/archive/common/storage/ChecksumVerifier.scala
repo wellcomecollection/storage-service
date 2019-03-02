@@ -14,7 +14,7 @@ object ChecksumVerifier extends Logging {
     inputStream: InputStream,
     algorithm: String
   ): Try[String] = Try {
-     Hex.encodeHexString(
+    Hex.encodeHexString(
       updateDigest(
         getDigest(algorithm),
         inputStream
