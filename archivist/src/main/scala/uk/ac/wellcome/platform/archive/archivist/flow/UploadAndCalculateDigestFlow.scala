@@ -6,7 +6,7 @@ import akka.stream.scaladsl.{Flow, GraphDSL, Zip}
 import akka.util.ByteString
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.CompleteMultipartUploadResult
-import uk.ac.wellcome.platform.archive.common.models.ObjectMetadata
+import uk.ac.wellcome.platform.archive.archivist.models.storage.ObjectMetadata
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.Try
