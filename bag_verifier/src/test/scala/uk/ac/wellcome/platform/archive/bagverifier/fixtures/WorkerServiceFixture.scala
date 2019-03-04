@@ -16,6 +16,8 @@ import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 trait WorkerServiceFixture
     extends NotificationStreamFixture
     with SNS
@@ -27,37 +29,29 @@ trait WorkerServiceFixture
     queue: Queue = Queue("fixture", arn = "arn::fixture"))(
     testWith: TestWith[BagVerifierWorkerService, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
-      withMaterializer { materializer =>
-        implicit val _materializer = materializer
-
+      withMaterializer { implicit materializer =>
         withSNSWriter(progressTopic) { progressSnsWriter =>
           withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-            withActorSystem { actorSystem =>
-              val ec = actorSystem.dispatcher
+            val verifyDigestFilesService = new VerifyDigestFilesService(
+              storageManifestService = new StorageManifestService(),
+              s3Client = s3Client,
+              algorithm = MessageDigestAlgorithms.SHA_256
+            )
 
-              info(ec.getClass.getSimpleName)
+            val notificationService = new NotificationService(
+              progressSnsWriter,
+              outgoingSnsWriter
+            )
 
-              val verifyDigestFilesService = new VerifyDigestFilesService(
-                storageManifestService = new StorageManifestService(),
-                s3Client = s3Client,
-                algorithm = MessageDigestAlgorithms.SHA_256
-              )(ec, _materializer)
+            val service = new BagVerifierWorkerService(
+              notificationStream,
+              verifyDigestFilesService,
+              notificationService
+            )
 
-              val notificationService = new NotificationService(
-                progressSnsWriter,
-                outgoingSnsWriter
-              )(ec)
+            service.run()
 
-              val service = new BagVerifierWorkerService(
-                notificationStream,
-                verifyDigestFilesService,
-                notificationService
-              )(ec)
-
-              service.run()
-
-              testWith(service)
-            }
+            testWith(service)
           }
         }
       }
