@@ -87,18 +87,16 @@ class NotificationService(
     }
 
   private def summarizeVerification(
-    bagRequest: BagRequest,
-    bagVerification: BagVerification): String = {
-
+                                     bagRequest: BagRequest,
+                                     bagVerification: BagVerification): String = {
     val verificationStatus = if (bagVerification.verificationSucceeded) {
       "successful"
     } else {
       "failed"
     }
-
-    s"""$verificationStatus verification
+    f"""$verificationStatus verification
        |of ${bagRequest.bagLocation.completePath}
-       |completed in ${bagVerification.duration.getSeconds}s
+       |completed in ${bagVerification.duration.getOrElse("")}
        | :
        |${bagVerification.successfulVerifications.size} succeeded /
        |${bagVerification.failedVerifications.size} failed
