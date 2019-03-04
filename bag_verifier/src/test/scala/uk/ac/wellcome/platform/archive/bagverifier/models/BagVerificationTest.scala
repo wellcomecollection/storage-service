@@ -1,21 +1,17 @@
 package uk.ac.wellcome.platform.archive.bagverifier.models
 
-import java.time.Instant
+import java.time.{Duration, Instant}
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagDigestFile,
-  BagItemPath
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
 
 class BagVerificationTest extends FunSpec with Matchers with RandomThings {
   it("reports a verification with no failures as successful") {
     val result = BagVerification(
       successfulVerifications =
         Seq(createBagDigestFile, createBagDigestFile, createBagDigestFile),
-      failedVerifications = List.empty,
-      startTime = Instant.now
+      failedVerifications = List.empty
     )
 
     result.verificationSucceeded shouldBe true
@@ -29,8 +25,7 @@ class BagVerificationTest extends FunSpec with Matchers with RandomThings {
           digestFile = createBagDigestFile,
           reason = new RuntimeException("AAARGH!")
         )
-      ),
-      startTime = Instant.now
+      )
     )
 
     result.verificationSucceeded shouldBe false
@@ -38,11 +33,11 @@ class BagVerificationTest extends FunSpec with Matchers with RandomThings {
 
   it("calculates duration once completed") {
     val result = BagVerification(
-      startTime = Instant.now
+      startTime = Instant.now.minus(Duration.ofSeconds(1))
     )
     val completed = result.complete
     completed.duration shouldBe defined
-    completed.duration.get.toMillis shouldBe >(0l)
+    completed.duration.get.toMillis shouldBe > (0l)
   }
 
   it("calculates duration as None when verification is not completed") {
