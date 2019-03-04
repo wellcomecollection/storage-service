@@ -1,45 +1,27 @@
 package uk.ac.wellcome.platform.archive.archivist.bag
 
-import java.io.FileNotFoundException
 import java.util.zip.ZipFile
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagIt
+import uk.ac.wellcome.platform.archive.common.bagit.BagInfoLocator
 
 import scala.collection.JavaConverters._
 import scala.util.Try
 
 object ZippedBagFile {
-  private val endsWithBagInfoFilenameRegexp = (BagIt.BagInfoFilename + "$").r
-
-  def bagPathFromBagInfoPath(bagInfo: String): Option[String] = {
-    endsWithBagInfoFilenameRegexp replaceFirstIn (bagInfo, "") match {
+  def bagPathFromBagInfoPath(bagInfo: String): Option[String] =
+    BagInfoLocator.bagPathFrom(bagInfoPath = bagInfo) match {
       case ""        => None
       case s: String => Some(s)
     }
-  }
 
-  def locateBagInfo(zipFile: ZipFile): Try[String] = Try {
-    val entries = zipFile
-      .entries()
-      .asScala
-      .toList
+  def locateBagInfo(zipFile: ZipFile): Try[String] = {
+    val entries =
+      zipFile
+        .entries()
+        .asScala
+        .filterNot { _.isDirectory }
+        .map { _.getName }
 
-    entries
-      .filter { e =>
-        e.getName
-          .split("/")
-          .last == BagIt.BagInfoFilename && !e.isDirectory
-      }
-      .map(_.getName)
-      .toList match {
-      case Seq(bagInfo) =>
-        bagInfo
-      case Seq() =>
-        throw new FileNotFoundException(
-          s"'${BagIt.BagInfoFilename}' not found.")
-      case matchingBagInfoFiles: Seq[_] =>
-        throw new IllegalArgumentException(
-          s"Expected only one '${BagIt.BagInfoFilename}' found $matchingBagInfoFiles.")
-    }
+    BagInfoLocator.locateBagInfo(entries)
   }
 }

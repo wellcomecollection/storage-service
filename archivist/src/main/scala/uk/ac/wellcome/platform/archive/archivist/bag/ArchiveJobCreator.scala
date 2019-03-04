@@ -41,11 +41,16 @@ object ArchiveJobCreator {
             val bagRootPathInZip =
               ZippedBagFile.bagPathFromBagInfoPath(bagInfoPath)
             val tagManifestLocation = BagItemPath(
-              config.bagItConfig.tagManifestFileName,
-              bagRootPathInZip)
+              itemPath = config.bagItConfig.tagManifestFileName,
+              maybeBagRootPath = bagRootPathInZip
+            )
             val bagManifestLocations = config.bagItConfig.digestNames
-              .map((itemPath: String) =>
-                BagItemPath(itemPath, bagRootPathInZip))
+              .map { itemPath: String =>
+                BagItemPath(
+                  itemPath = itemPath,
+                  maybeBagRootPath = bagRootPathInZip
+                )
+              }
 
             ArchiveJob(
               externalIdentifier = externalIdentifier,
