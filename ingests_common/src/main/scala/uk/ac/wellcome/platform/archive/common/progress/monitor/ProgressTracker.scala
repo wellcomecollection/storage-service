@@ -65,17 +65,17 @@ class ProgressTracker(
         eventsUpdate
       case statusUpdate: ProgressStatusUpdate =>
         val bagUpdate = statusUpdate.affectedBag
-          .map(bag => set(
-            'bag -> bag) and set(
-              'bagIdIndex -> bag.toString
-            )
-          )
+          .map(
+            bag =>
+              set('bag -> bag) and set(
+                'bagIdIndex -> bag.toString
+            ))
           .toList
 
         (List(
-            eventsUpdate,
-            set('status -> statusUpdate.status)
-          ) ++ bagUpdate)
+          eventsUpdate,
+          set('status -> statusUpdate.status)
+        ) ++ bagUpdate)
           .reduce(_ and _)
 
       case callbackStatusUpdate: ProgressCallbackStatusUpdate =>
@@ -92,7 +92,8 @@ class ProgressTracker(
       case Left(ConditionNotMet(e: ConditionalCheckFailedException)) => {
         val idConstraintError =
           IdConstraintError(
-            s"Progress does not exist for id:${update.id}", e
+            s"Progress does not exist for id:${update.id}",
+            e
           )
 
         Failure(idConstraintError)

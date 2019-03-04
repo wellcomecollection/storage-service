@@ -13,11 +13,11 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class BagVerifierWorkerService(
-                                notificationStream: NotificationStream[BagRequest],
-                                verifyDigestFilesService: VerifyDigestFilesService,
-                                notificationService: NotificationService
-                              )(implicit ec: ExecutionContext)
-  extends Runnable
+  notificationStream: NotificationStream[BagRequest],
+  verifyDigestFilesService: VerifyDigestFilesService,
+  notificationService: NotificationService
+)(implicit ec: ExecutionContext)
+    extends Runnable
     with Logging {
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
@@ -50,8 +50,8 @@ class BagVerifierWorkerService(
   }
 
   private def verifyBagLocation(
-                                 bagLocation: BagLocation
-                               ): Future[Try[BagVerification]] =
+    bagLocation: BagLocation
+  ): Future[Try[BagVerification]] =
     verifyDigestFilesService
       .verifyBagLocation(bagLocation)
       .map(Success(_))
