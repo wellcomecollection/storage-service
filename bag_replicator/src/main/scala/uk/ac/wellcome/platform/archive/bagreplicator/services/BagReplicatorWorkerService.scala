@@ -34,10 +34,12 @@ class BagReplicatorWorkerService(
         sourceBagLocation = bagRequest.bagLocation,
         destinationConfig = bagReplicatorConfig.destination
       )
+
       _ <- sendProgressUpdate(
         bagRequest = bagRequest,
         result = result
       )
+
       _ <- sendOngoingNotification(
         bagRequest = bagRequest,
         result = result

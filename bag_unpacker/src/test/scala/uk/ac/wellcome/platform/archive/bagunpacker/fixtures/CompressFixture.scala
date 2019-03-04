@@ -25,9 +25,8 @@ trait CompressFixture extends RandomThings {
       ".tar.gz"
     )
 
-
-
-    val fileOutputStream = new FileOutputStream(file)
+    val fileOutputStream =
+      new FileOutputStream(file)
 
     val archive = new Archive(
       archiverName,
@@ -35,14 +34,14 @@ trait CompressFixture extends RandomThings {
       fileOutputStream
     )
 
-    val randomFiles = (1 to fileCount)
-      .map(_ => randomFile(1024))
+    val randomFiles =
+      randomFilesInDirs()
 
     val entries =
       randomFiles.map { randomFile =>
         archive.addFile(
           randomFile,
-          randomFile.getName
+          randomFile.getAbsolutePath
         )
       } toSet
 

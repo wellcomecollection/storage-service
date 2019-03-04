@@ -48,6 +48,8 @@ class UnpackServiceTest
         whenReady(unpacking) { unpacked =>
           val keys = listKeysInBucket(bucket)
 
+          println(keys)
+
           unpacked should have size fileCount
           val unpackedKeys = keys.filter(_.startsWith(dstKey))
 

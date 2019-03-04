@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.io.{File, FileOutputStream}
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.UUID
 
@@ -36,7 +36,7 @@ trait RandomThings {
     str.updated(spaceIndex, ' ')
   }
 
-  def randomFiles(
+  def randomFilesInDirs(
                    fileCount: Int = 10,
                    dirs: Int = 4,
                    maxDepth: Int = 4,
@@ -53,19 +53,34 @@ trait RandomThings {
 
     val paths = randomPaths(maxDepth, dirs)
 
-    paths.map { path =>
-      val tempDirWithPrefix: Path =
-        Files.createTempDirectory(path)
+    (1 to fileCount).map { _ =>
+      val index = Random.nextInt(paths.length)
+      val path = paths(index)
 
-
-
-    }
-
+      createFile(
+        Paths.get(
+          path,
+          s"${randomAlphanumeric()}.test"
+        ).toString
+      )
+    }.toList
   }
 
-  def randomFile(size: Int = 256,
-                 path: String = randomUUID.toString) = {
-    val file = File.createTempFile(path,".test")
+  val tmpDir = System.getProperty("java.io.tmpdir")
+
+  def randomFile(
+    size: Int = 256,
+    path: String = s"${randomUUID.toString}.test"
+  ) = {
+
+    val absolutePath = Paths.get(tmpDir, path)
+
+    println(absolutePath)
+
+    val file = new File(absolutePath.toString)
+    val parentDir = new File(absolutePath.getParent.toString)
+
+    parentDir.mkdirs()
 
     val fileOutputStream = new FileOutputStream(file)
     val contents = randomAlphanumeric(size)
