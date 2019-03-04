@@ -52,7 +52,6 @@ class ArchiveZipFileFlowTest
     with Inside
     with ProgressUpdateAssertions {
 
-  implicit val s3client = s3Client
   implicit val snsclient = snsClient
 
   it("notifies success when verifying and uploading a valid bag") {

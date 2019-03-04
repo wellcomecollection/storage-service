@@ -39,7 +39,6 @@ class ZipFileDownloadFlowTest
   implicit val system = ActorSystem("test")
   implicit val ec = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  implicit val s3client = s3Client
   implicit val snsclient = snsClient
 
   it("downloads a zipfile from s3") {

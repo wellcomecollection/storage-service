@@ -20,8 +20,6 @@ class VerifyDigestFilesServiceTest
     with Akka
     with BagLocationFixtures {
 
-  implicit val _ = s3Client
-
   val dataFileCount = 3
 
   // Data files plus manifest-sha256.txt, bagit.txt, bag-info.txt
