@@ -7,11 +7,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinatio
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.models.bagit.ExternalIdentifier
 import uk.ac.wellcome.storage.fixtures.S3
-import uk.ac.wellcome.storage.s3.{
-  S3Copier,
-  S3PrefixCopier,
-  S3PrefixOperator
-}
+import uk.ac.wellcome.storage.s3.{S3Copier, S3PrefixCopier, S3PrefixOperator}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

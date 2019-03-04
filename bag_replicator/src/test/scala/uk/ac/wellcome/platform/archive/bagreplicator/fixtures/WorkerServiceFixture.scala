@@ -15,11 +15,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.services.{
 }
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
-import uk.ac.wellcome.storage.s3.{
-  S3Copier,
-  S3PrefixCopier,
-  S3PrefixOperator
-}
+import uk.ac.wellcome.storage.s3.{S3Copier, S3PrefixCopier, S3PrefixOperator}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
