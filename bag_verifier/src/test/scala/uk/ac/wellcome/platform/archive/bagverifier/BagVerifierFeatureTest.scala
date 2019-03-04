@@ -89,7 +89,7 @@ class BagVerifierFeatureTest
                           _.description
                         }.head
                         description should startWith(
-                          "Problem verifying bag: File checksum did not match manifeszt")
+                          "Problem verifying bag: File checksum did not match manifest")
                       }
 
                       assertQueueEmpty(queue)

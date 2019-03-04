@@ -37,15 +37,17 @@ class NotificationService(
 
         if (bagVerification.verificationSucceeded) {
           ProgressNotice(
-            bagRequest.archiveRequestId,
-            "Successfully verified bag contents"
+            id = bagRequest.archiveRequestId,
+            message =
+              "Successfully verified bag contents"
           )
         } else {
           ProgressNotice(
-            bagRequest.archiveRequestId,
-            Progress.Failed,
-            "Problem verifying bag:",
-            "File checksum did not match manifest"
+            id = bagRequest.archiveRequestId,
+            status = Progress.Failed,
+            message =
+              "Problem verifying bag:",
+              "File checksum did not match manifest"
           )
         }
 
@@ -58,10 +60,11 @@ class NotificationService(
         )
 
         ProgressNotice(
-          bagRequest.archiveRequestId,
-          Progress.Failed,
-          "Problem verifying bag:",
-          "Verification could not be performed"
+          id = bagRequest.archiveRequestId,
+          status = Progress.Failed,
+          message =
+            "Problem verifying bag:",
+            "Verification could not be performed"
         )
     }
 
@@ -89,12 +92,14 @@ class NotificationService(
   private def summarizeVerification(
     bagRequest: BagRequest,
     bagVerification: BagVerification): String = {
+
     val verificationStatus = if (bagVerification.verificationSucceeded) {
       "successful"
     } else {
       "failed"
     }
-    f"""$verificationStatus verification
+
+    s"""$verificationStatus verification
        |of ${bagRequest.bagLocation.completePath}
        |completed in ${bagVerification.duration.getSeconds}s
        | :
