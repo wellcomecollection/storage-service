@@ -11,5 +11,5 @@ case class BagVerification(
   endTime: Option[Instant] = None) {
   def duration: Option[Duration] = endTime.map(Duration.between(startTime, _))
   def verificationSucceeded: Boolean = failedVerifications.isEmpty
-  def complete: BagVerification = this.copy(endTime=Some(Instant.now()))
+  def complete: BagVerification = this.copy(endTime = Some(Instant.now()))
 }
