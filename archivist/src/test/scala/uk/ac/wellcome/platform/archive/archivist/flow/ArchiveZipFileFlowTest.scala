@@ -162,7 +162,7 @@ class ArchiveZipFileFlowTest
 
               whenReady(verification) { result =>
                 result shouldBe List(Left(
-                  BagNotFoundError("'bag-info.txt' not found.", ingestContext)))
+                  BagNotFoundError("No bag-info.txt file found!", ingestContext)))
 
                 assertTopicReceivesProgressStatusUpdate(
                   ingestContext.id,
