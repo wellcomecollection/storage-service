@@ -3,19 +3,10 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import akka.Done
 import grizzled.slf4j.Logging
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
-import org.slf4j.MDC
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerification
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  Progress,
-  ProgressEvent,
-  ProgressStatusUpdate,
-  ProgressUpdate
-}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -24,8 +15,7 @@ import scala.util.{Failure, Success, Try}
 class BagVerifierWorkerService(
   notificationStream: NotificationStream[BagRequest],
   verifyDigestFilesService: VerifyDigestFilesService,
-  progressSnsWriter: SNSWriter,
-  outgoingSnsWriter: SNSWriter,
+  notificationService: NotificationService
 )(implicit ec: ExecutionContext)
     extends Runnable
     with Logging {
@@ -36,30 +26,38 @@ class BagVerifierWorkerService(
     notificationStream.run(processMessage)
 
   def processMessage(bagRequest: BagRequest): Future[Unit] = {
-    MDC.put("requestId", bagRequest.archiveRequestId.toString)
-    info(s"received request for verification $bagRequest")
+    info(s"Received request $bagRequest")
+
     val result = for {
-      tryBagVerification <- verifyBagLocation(bagRequest.bagLocation)
+      tryBagVerification <- verifyBagLocation(
+        bagRequest.bagLocation
+      )
 
-      // We deliberately send to the progress monitor first
-      _ <- sendProgressNotification(bagRequest, tryBagVerification)
+      _ <- notificationService
+        .sendProgressNotification(
+          bagRequest,
+          tryBagVerification
+        )
 
-      _ <- sendOngoingNotification(bagRequest, tryBagVerification)
+      _ <- notificationService
+        .sendOutgoingNotification(
+          bagRequest,
+          tryBagVerification
+        )
     } yield ()
-    MDC.clear()
+
     result
   }
 
   private def verifyBagLocation(
-    bagLocation: BagLocation): Future[Try[BagVerification]] =
+    bagLocation: BagLocation
+  ): Future[Try[BagVerification]] =
     verifyDigestFilesService
       .verifyBagLocation(bagLocation)
-      .map { bagVerification =>
-        Success(bagVerification)
-      }
+      .map(Success(_))
       .recover {
         case throwable: Throwable =>
-          debug(s"verification failed for files in $bagLocation")
+          error(s"Failed for $bagLocation")
           Failure(throwable)
       }
 
@@ -122,10 +120,11 @@ class BagVerifierWorkerService(
     }
     f"""$verificationStatus verification
        |of ${bagRequest.bagLocation.completePath}
-       |completed in ${bagVerification.duration.getOrElse("")}
+       |completed in ${bagVerification.duration.getSeconds}s
        | :
        |${bagVerification.successfulVerifications.size} succeeded /
        |${bagVerification.failedVerifications.size} failed
        """.stripMargin.replaceAll("\n", " ")
   }
+
 }
