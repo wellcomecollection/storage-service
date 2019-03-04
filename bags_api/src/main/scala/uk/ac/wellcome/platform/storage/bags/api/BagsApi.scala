@@ -5,7 +5,6 @@ import java.net.URL
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
@@ -24,8 +23,7 @@ class BagsApi(
 )(implicit val actorSystem: ActorSystem,
   materializer: ActorMaterializer,
   ec: ExecutionContext)
-    extends Logging
-    with Runnable {
+    extends Runnable {
 
   val router = new Router(
     vhs = vhs,

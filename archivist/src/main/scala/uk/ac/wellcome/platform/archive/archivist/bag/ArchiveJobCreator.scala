@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.archivist.bag
 import java.util.zip.ZipFile
 
-import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.archivist.models._
 import uk.ac.wellcome.platform.archive.archivist.models.errors.{
   BagNotFoundError,
@@ -26,7 +25,7 @@ import scala.util.{Failure, Success}
   * If it's unable to find the identifier, it emits a Left[ArchiveError] instead.
   *
   */
-object ArchiveJobCreator extends Logging {
+object ArchiveJobCreator {
 
   def create(
     zipFile: ZipFile,

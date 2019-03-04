@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import akka.Done
-import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
 import uk.ac.wellcome.messaging.sqs.NotificationStream
@@ -22,8 +21,7 @@ class BagUnpackerWorkerService(
   stream: NotificationStream[UnpackBagRequest],
   progressSnsWriter: SNSWriter,
   outgoingSnsWriter: SNSWriter
-) extends Logging
-    with Runnable {
+) extends Runnable {
 
   def run(): Future[Done] =
     stream.run(processMessage)
@@ -48,5 +46,4 @@ class BagUnpackerWorkerService(
         subject = s"Sent by ${this.getClass.getSimpleName}"
       )
       .map(_ => ())
-
 }

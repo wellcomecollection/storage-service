@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.bagunpacker.storage
 
 import java.io.{BufferedInputStream, InputStream, OutputStream}
 
-import grizzled.slf4j.Logging
 import org.apache.commons.compress.archivers.{
   ArchiveEntry,
   ArchiveInputStream,
@@ -13,7 +12,7 @@ import org.apache.commons.compress.utils.IOUtils
 
 import scala.util.{Failure, Success, Try}
 
-object Unpack extends Logging {
+object Unpack {
 
   def stream(inputStream: InputStream)(
     out: ArchiveEntry => OutputStream
