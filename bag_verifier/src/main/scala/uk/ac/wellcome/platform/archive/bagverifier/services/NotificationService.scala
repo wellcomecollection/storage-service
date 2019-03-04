@@ -73,7 +73,7 @@ class NotificationService(
       subject = s"Sent by ${this.getClass.getSimpleName}")
   }
 
-  def sendOngoingNotification(
+  def sendOutgoingNotification(
     bagRequest: BagRequest,
     tryBagVerification: Try[BagVerification]): Future[Unit] =
     tryBagVerification match {

@@ -40,7 +40,7 @@ class BagVerifierWorkerService(
         )
 
       _ <- notificationService
-        .sendOngoingNotification(
+        .sendOutgoingNotification(
           bagRequest,
           tryBagVerification
         )
