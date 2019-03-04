@@ -9,6 +9,7 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifierWorkerService,
+  NotificationService,
   VerifyDigestFilesService
 }
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
@@ -44,11 +45,15 @@ trait WorkerServiceFixture
                 algorithm = MessageDigestAlgorithms.SHA_256
               )(ec, _materializer)
 
+              val notificationService = new NotificationService(
+                progressSnsWriter,
+                outgoingSnsWriter
+              )(ec)
+
               val service = new BagVerifierWorkerService(
-                notificationStream = notificationStream,
-                verifyDigestFilesService = verifyDigestFilesService,
-                progressSnsWriter = progressSnsWriter,
-                outgoingSnsWriter = outgoingSnsWriter
+                notificationStream,
+                verifyDigestFilesService,
+                notificationService
               )(ec)
 
               service.run()

@@ -31,9 +31,11 @@ class VerifyDigestFilesService(
       fileManifest <- getManifest("file manifest") {
         storageManifestService.createFileManifest(bagLocation)
       }
+
       tagManifest <- getManifest("tag manifest") {
         storageManifestService.createTagManifest(bagLocation)
       }
+
       digestFiles = fileManifest.files ++ tagManifest.files
       result <- verifyFiles(bagLocation, digestFiles)
     } yield result

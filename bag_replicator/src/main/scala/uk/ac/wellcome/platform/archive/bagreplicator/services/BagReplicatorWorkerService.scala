@@ -36,13 +36,13 @@ class BagReplicatorWorkerService(
         bagRequest = bagRequest,
         result = result
       )
-      _ <- sendOngoingNotification(
+      _ <- sendOutgoingNotification(
         bagRequest = bagRequest,
         result = result
       )
     } yield ()
 
-  def sendOngoingNotification(
+  def sendOutgoingNotification(
     bagRequest: BagRequest,
     result: Either[Throwable, BagLocation]): Future[Unit] =
     result match {

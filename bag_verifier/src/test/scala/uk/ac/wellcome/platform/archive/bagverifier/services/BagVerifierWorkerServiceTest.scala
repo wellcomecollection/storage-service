@@ -39,10 +39,9 @@ class BagVerifierWorkerServiceTest
               whenReady(future) { _ =>
                 assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
 
-                assertTopicReceivesProgressStatusUpdate(
+                assertTopicReceivesProgressEventUpdate(
                   requestId = bagRequest.archiveRequestId,
-                  progressTopic = progressTopic,
-                  status = Progress.Processing
+                  progressTopic = progressTopic
                 ) { events =>
                   events.map {
                     _.description
@@ -84,7 +83,7 @@ class BagVerifierWorkerServiceTest
                       _.description
                     }.head
                     description should startWith(
-                      "There were problems verifying the bag: not every checksum matched the manifest")
+                      "Problem verifying bag: File checksum did not match manifest")
                   }
                 }
             }
@@ -123,7 +122,7 @@ class BagVerifierWorkerServiceTest
                       _.description
                     }.head
                     description should startWith(
-                      "There were problems verifying the bag: verification could not be performed")
+                      "Problem verifying bag: Verification could not be performed")
                   }
                 }
             }
@@ -146,10 +145,9 @@ class BagVerifierWorkerServiceTest
             val future = service.processMessage(bagRequest)
 
             whenReady(future.failed) { _ =>
-              assertTopicReceivesProgressStatusUpdate(
+              assertTopicReceivesProgressEventUpdate(
                 requestId = bagRequest.archiveRequestId,
-                progressTopic = progressTopic,
-                status = Progress.Processing
+                progressTopic = progressTopic
               ) { events =>
                 events.map {
                   _.description

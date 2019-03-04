@@ -17,7 +17,7 @@ module "archivist" {
     queue_url              = "${local.archivist_input_queue}"
     queue_parallelism      = "${var.archivist_queue_parallelism}"
     archive_bucket         = "${var.archive_bucket_name}"
-    next_service_topic_arn = "${local.archivist_ongoing_topic_arn}"
+    next_service_topic_arn = "${local.archivist_outgoing_topic_arn}"
     progress_topic_arn     = "${local.progress_topic}"
     JAVA_OPTS              = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-archivist"
   }
@@ -80,7 +80,7 @@ module "bag_replicator" {
     queue_url               = "${local.bag_replicator_input_queue}"
     destination_bucket_name = "${var.access_bucket_name}"
     progress_topic_arn      = "${local.progress_topic}"
-    outgoing_topic_arn      = "${local.bag_replicator_ongoing_topic}"
+    outgoing_topic_arn      = "${local.bag_replicator_outgoing_topic}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-replicator"
   }
 
@@ -200,7 +200,7 @@ module "ingests" {
 
   env_vars = {
     queue_url                   = "${local.ingests_input_queue}"
-    topic_arn                   = "${local.ingests_ongoing_topic}"
+    topic_arn                   = "${local.ingests_outgoing_topic}"
     archive_progress_table_name = "${var.ingests_table_name}"
     JAVA_OPTS                   = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests"
   }
