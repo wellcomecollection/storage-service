@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.io.Source
 
-class UnpackTest
+class UnpackerTest
   extends FunSpec
     with Matchers
     with ScalaFutures
@@ -35,33 +35,30 @@ class UnpackTest
 
     val tmp = System.getProperty("java.io.tmpdir")
 
-    val out = (inputStream: InputStream, entry: ArchiveEntry) => {
+    val fold = (entries: Set[ArchiveEntry], inputStream: InputStream, entry: ArchiveEntry) => {
       val os = new FileOutputStream(
         new File(tmp, s"${entry.getName}-$testUUID")
       )
 
       IOUtils.copy(inputStream, os)
 
-      entry
+      entries + entry
     }
 
 
-    val unpack = Unpack.get(inputStream)(out)
+    val unpack = Unpacker.get(inputStream)(Set.empty[ArchiveEntry])(fold)
 
     whenReady(unpack) { unpacked =>
-      val actualEntries = unpacked.toSet
-
-      actualEntries.diff(expectedEntries) shouldBe Set.empty
+      unpacked.diff(expectedEntries) shouldBe Set.empty
 
       val expectedFiles = files
         .map(file => file.getName -> file)
         .toMap
 
-      val actualFiles = actualEntries
+      val actualFiles = unpacked
         .map(entry =>
           entry.getName -> new File(tmp, s"${entry.getName}-$testUUID"))
         .toMap
-
 
       expectedFiles.foreach {
         case (key, expectedFile) => {
@@ -78,7 +75,7 @@ class UnpackTest
           val expectedContents =
             Source.fromFile(expectedFile).getLines().mkString
 
-          actualContents shouldEqual (expectedContents)
+          actualContents shouldEqual expectedContents
         }
       }
     }

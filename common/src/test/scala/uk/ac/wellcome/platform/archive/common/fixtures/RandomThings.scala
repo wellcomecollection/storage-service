@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
-import java.io.{File, FileOutputStream}
+import java.io.FileOutputStream
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.UUID
@@ -13,6 +13,14 @@ import scala.util.Random
 trait RandomThings {
   def randomAlphanumeric(length: Int = 8) = {
     Random.alphanumeric take length mkString
+  }
+
+  def randomBytes(length: Int = 1024) = {
+    val byteArray = new Array[Byte](length)
+
+    Random.nextBytes(byteArray)
+
+    byteArray
   }
 
   def randomPaths(maxDepth: Int = 4, dirs: Int = 4) = {
@@ -47,9 +55,12 @@ trait RandomThings {
       val fileSize =
         Random.nextInt(maxSize - minSize) + minSize
 
-      randomFile(fileSize, name)
+      randomFile(
+        size = fileSize,
+        path = name,
+        useBytes = true
+      )
     }
-
 
     val paths = randomPaths(maxDepth, dirs)
 
@@ -70,22 +81,26 @@ trait RandomThings {
 
   def randomFile(
     size: Int = 256,
-    path: String = s"${randomUUID.toString}.test"
+    path: String = s"${randomUUID.toString}.test",
+    useBytes: Boolean = false
   ) = {
 
     val absolutePath = Paths.get(tmpDir, path)
 
-    println(absolutePath)
-
-    val file = new File(absolutePath.toString)
-    val parentDir = new File(absolutePath.getParent.toString)
+    val file = absolutePath.toFile
+    val parentDir = absolutePath.getParent.toFile
 
     parentDir.mkdirs()
 
     val fileOutputStream = new FileOutputStream(file)
-    val contents = randomAlphanumeric(size)
 
-    fileOutputStream.write(contents.getBytes)
+    val bytes = if(useBytes) {
+      randomBytes(size)
+    } else {
+      randomAlphanumeric(size).getBytes
+    }
+
+    fileOutputStream.write(bytes)
     fileOutputStream.close()
 
     file

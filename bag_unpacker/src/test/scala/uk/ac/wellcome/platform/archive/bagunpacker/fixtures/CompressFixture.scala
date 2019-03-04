@@ -2,27 +2,22 @@ package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
 import java.io._
 
-import org.apache.commons.compress.archivers.{
-  ArchiveOutputStream,
-  ArchiveStreamFactory
-}
-import org.apache.commons.compress.compressors.{
-  CompressorOutputStream,
-  CompressorStreamFactory
-}
+import grizzled.slf4j.Logging
+import org.apache.commons.compress.archivers.{ArchiveOutputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.compressors.{CompressorOutputStream, CompressorStreamFactory}
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 
-trait CompressFixture extends RandomThings {
+trait CompressFixture extends RandomThings with Logging {
   def createArchive(
     archiverName: String,
     compressorName: String,
-    fileCount: Int = 10
+    fileCount: Int = 100
   ) = {
 
     val file = File.createTempFile(
       randomUUID.toString,
-      ".tar.gz"
+      ".test"
     )
 
     val fileOutputStream =
@@ -35,13 +30,17 @@ trait CompressFixture extends RandomThings {
     )
 
     val randomFiles =
-      randomFilesInDirs()
+      randomFilesInDirs(
+        fileCount,
+        fileCount/4
+      )
 
     val entries =
       randomFiles.map { randomFile =>
+        println(s"Archiving ${randomFile.getAbsolutePath} in ${file.getAbsolutePath}")
         archive.addFile(
           randomFile,
-          randomFile.getAbsolutePath
+          relativeToTmpDir(randomFile)
         )
       } toSet
 
@@ -50,6 +49,10 @@ trait CompressFixture extends RandomThings {
 
     (file, randomFiles, entries)
   }
+
+  def relativeToTmpDir(file: File) = (new File(tmpDir).toURI)
+    .relativize(file.toURI)
+    .getPath
 
   class Archive(
     archiverName: String,
