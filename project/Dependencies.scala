@@ -6,7 +6,7 @@ object WellcomeDependencies {
     val json       = "1.1.1"
     val messaging  = "1.5.0"
     val monitoring = "1.3.0"
-    val storage    = "3.3.0"
+    val storage    = "3.4.0"
     val typesafe   = "1.0.0"
   }
 

@@ -13,12 +13,13 @@ import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagReplicatorWorkerService,
   BagStorageService
 }
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.{
-  S3Copier,
-  S3PrefixCopier
-}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.s3.{
+  S3Copier,
+  S3PrefixCopier,
+  S3PrefixOperator
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -28,7 +29,7 @@ trait WorkerServiceFixture extends NotificationStreamFixture with S3 with SNS {
                            outgoingTopic: Topic)(
     testWith: TestWith[BagReplicatorWorkerService, R]): R = {
     val s3PrefixCopier = new S3PrefixCopier(
-      s3Client = s3Client,
+      s3PrefixOperator = new S3PrefixOperator(s3Client = s3Client),
       copier = new S3Copier(s3Client = s3Client)
     )
 
