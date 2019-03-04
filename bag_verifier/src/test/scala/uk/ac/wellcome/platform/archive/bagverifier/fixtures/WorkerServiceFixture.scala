@@ -28,7 +28,6 @@ trait WorkerServiceFixture
     testWith: TestWith[BagVerifierWorkerService, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
       withMaterializer { materializer =>
-        implicit val _s3Client = s3Client
         implicit val _materializer = materializer
 
         withSNSWriter(progressTopic) { progressSnsWriter =>

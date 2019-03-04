@@ -32,7 +32,6 @@ trait WorkerServiceFixture
     withNotificationStream[ReplicationResult, R](queue) { notificationStream =>
       withStorageManifestVHS(table, bucket) { storageManifestVHS =>
         withSNSWriter(topic) { progressSnsWriter =>
-          implicit val _ = s3Client
           val storageManifestService = new StorageManifestService()
 
           val service = new BagsWorkerService(
