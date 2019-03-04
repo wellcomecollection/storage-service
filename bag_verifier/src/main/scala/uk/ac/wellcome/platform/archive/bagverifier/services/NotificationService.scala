@@ -96,7 +96,7 @@ class NotificationService(
     }
     f"""$verificationStatus verification
        |of ${bagRequest.bagLocation.completePath}
-       |completed in ${bagVerification.duration.getOrElse("")}
+       |completed in ${bagVerification.duration.getOrElse("<not-completed>")}
        | :
        |${bagVerification.successfulVerifications.size} succeeded /
        |${bagVerification.failedVerifications.size} failed
