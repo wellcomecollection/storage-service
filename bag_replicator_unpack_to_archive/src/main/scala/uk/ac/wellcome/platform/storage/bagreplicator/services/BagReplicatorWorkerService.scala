@@ -1,18 +1,21 @@
 package uk.ac.wellcome.platform.storage.bagreplicator.services
 
 import akka.Done
+import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
+import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.bagit.S3BagFile
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult}
+import uk.ac.wellcome.platform.archive.common.parsers.BagInfoParser
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.platform.storage.bagreplicator.config.BagReplicatorConfig
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class BagReplicatorWorkerService(
   notificationStream: NotificationStream[BagRequest],
@@ -20,7 +23,7 @@ class BagReplicatorWorkerService(
   bagReplicatorConfig: BagReplicatorConfig,
   s3BagFile: S3BagFile,
   progressSnsWriter: SNSWriter,
-  outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
+  outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext, s3Client: AmazonS3)
     extends Runnable {
 
   def run(): Future[Done] =
@@ -28,10 +31,13 @@ class BagReplicatorWorkerService(
 
   def processMessage(bagRequest: BagRequest): Future[Unit] =
     for {
-      bagInfoPath: Try[String] <- Future {
+      tryBagInfoPath: Try[String] <- Future {
         s3BagFile.locateBagInfo(bagRequest.bagLocation.objectLocation)
       }
-      _ = println(s"@@AWLC bagInfoPath = $bagInfoPath")
+      _ = println(s"@@AWLC bagInfoPath = $tryBagInfoPath")
+      externalIdentifier <- getBagExternalIdentifier(bagRequest, tryBagInfoPath)
+      _ = println(s"@@AWLC externalIdentifier = $externalIdentifier")
+
       result: Either[Throwable, BagLocation] <- bagStorageService.duplicateBag(
         sourceBagLocation = bagRequest.bagLocation,
         destinationConfig = bagReplicatorConfig.destination
@@ -45,6 +51,27 @@ class BagReplicatorWorkerService(
         result = result
       )
     } yield ()
+
+  private def getBagExternalIdentifier(
+    bagRequest: BagRequest,
+    tryBagInfoPath: Try[String]): Future[Try[ExternalIdentifier]] =
+    tryBagInfoPath match {
+      case Success(bagInfoPath) =>
+        val objectLocation = bagRequest.bagLocation.objectLocation.copy(
+          key = bagInfoPath
+        )
+
+        val externalIdentifier: Future[ExternalIdentifier] = for {
+          inputStream <- objectLocation.toInputStream
+          bagInfo <- BagInfoParser.create(inputStream)
+          externalIdentifier = bagInfo.externalIdentifier
+        } yield externalIdentifier
+
+        externalIdentifier
+          .map { Success(_) }
+          .recover { case err: Throwable => Failure(err) }
+      case Failure(err) => Future.successful(Failure(err))
+    }
 
   def sendOutgoingNotification(
     bagRequest: BagRequest,

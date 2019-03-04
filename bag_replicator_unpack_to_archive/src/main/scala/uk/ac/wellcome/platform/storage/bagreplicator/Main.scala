@@ -22,7 +22,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
 
-    val s3Client = S3Builder.buildS3Client(config)
+    implicit val s3Client = S3Builder.buildS3Client(config)
 
     val s3PrefixCopier = new S3PrefixCopier(
       s3PrefixOperator = new S3PrefixOperator(s3Client = s3Client),
