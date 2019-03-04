@@ -6,9 +6,15 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerification, FailedVerification}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  BagVerification,
+  FailedVerification
+}
 import uk.ac.wellcome.platform.archive.common.models.FileManifest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagLocation}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagLocation
+}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 
@@ -51,19 +57,17 @@ class VerifyDigestFilesService(
     ).mapAsync(10) { digestFile: BagDigestFile =>
         Future(verifyIndividualFile(bagLocation, digestFile = digestFile))
       }
-      .runWith(Sink.fold(bagVerification) {
-        (memo, item) =>
-          item match {
-            case Left(failedVerification) =>
-              memo.copy(
-                failedVerifications =
-                  memo.failedVerifications :+ failedVerification)
-            case Right(digestFile) =>
-              memo.copy(
-                successfulVerifications =
-                  memo.successfulVerifications :+ digestFile)
-          }
-      }).map(bagVerification => bagVerification.complete)
+      .runWith(Sink.fold(bagVerification) { (memo, item) =>
+        item match {
+          case Left(failedVerification) =>
+            memo.copy(failedVerifications =
+              memo.failedVerifications :+ failedVerification)
+          case Right(digestFile) =>
+            memo.copy(successfulVerifications =
+              memo.successfulVerifications :+ digestFile)
+        }
+      })
+      .map(bagVerification => bagVerification.complete)
   }
 
   private def verifyIndividualFile(

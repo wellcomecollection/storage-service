@@ -4,7 +4,10 @@ import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagItemPath
+}
 
 class BagVerificationTest extends FunSpec with Matchers with RandomThings {
   it("reports a verification with no failures as successful") {
@@ -39,7 +42,7 @@ class BagVerificationTest extends FunSpec with Matchers with RandomThings {
     )
     val completed = result.complete
     completed.duration shouldBe defined
-    completed.duration.get.toMillis shouldBe > (0l)
+    completed.duration.get.toMillis shouldBe >(0l)
   }
 
   it("calculates duration as None when verification is not completed") {
