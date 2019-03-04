@@ -7,7 +7,7 @@ import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.bagit.S3BagFile
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult}
 import uk.ac.wellcome.platform.archive.common.parsers.BagInfoParser
 import uk.ac.wellcome.platform.archive.common.progress.models._
@@ -35,8 +35,13 @@ class BagReplicatorWorkerService(
         s3BagFile.locateBagInfo(bagRequest.bagLocation.objectLocation)
       }
       _ = println(s"@@AWLC bagInfoPath = $tryBagInfoPath")
-      externalIdentifier <- getBagExternalIdentifier(bagRequest, tryBagInfoPath)
-      _ = println(s"@@AWLC externalIdentifier = $externalIdentifier")
+      tryExternalIdentifier <- getBagExternalIdentifier(bagRequest, tryBagInfoPath)
+      _ = println(s"@@AWLC externalIdentifier = $tryExternalIdentifier")
+      dstBagLocation = createDstBagLocation(
+        bagRequest, dstNamespace = "archivez", tryExternalIdentifier = tryExternalIdentifier
+      )
+      _ = println(s"@@AWLC dstBagLocation = $dstBagLocation")
+
 
       result: Either[Throwable, BagLocation] <- bagStorageService.duplicateBag(
         sourceBagLocation = bagRequest.bagLocation,
@@ -51,6 +56,16 @@ class BagReplicatorWorkerService(
         result = result
       )
     } yield ()
+
+    private def createDstBagLocation(bagRequest: BagRequest, dstNamespace: String, tryExternalIdentifier: Try[ExternalIdentifier]): Try[BagLocation] =
+      tryExternalIdentifier.map { externalIdentifier =>
+        BagLocation(
+          storageNamespace = dstNamespace,
+          storagePrefix = None,
+          storageSpace = bagRequest.bagLocation.storageSpace,
+          bagPath = BagPath(externalIdentifier.underlying)
+        )
+      }
 
   private def getBagExternalIdentifier(
     bagRequest: BagRequest,
