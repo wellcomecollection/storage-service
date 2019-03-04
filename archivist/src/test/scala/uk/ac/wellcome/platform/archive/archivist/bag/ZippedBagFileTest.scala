@@ -49,7 +49,7 @@ class ZippedBagFileTest
           .failure
           .exception
           .getMessage shouldBe
-          "Expected only one 'bag-info.txt' found List(bag-info.txt, bag/bag-info.txt)."
+          "Multiple bag-info.txt files found, only wanted one: bag-info.txt, bag/bag-info.txt"
       }
     }
   }
