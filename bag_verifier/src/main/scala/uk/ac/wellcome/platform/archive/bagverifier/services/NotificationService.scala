@@ -87,8 +87,8 @@ class NotificationService(
     }
 
   private def summarizeVerification(
-                                     bagRequest: BagRequest,
-                                     bagVerification: BagVerification): String = {
+    bagRequest: BagRequest,
+    bagVerification: BagVerification): String = {
     val verificationStatus = if (bagVerification.verificationSucceeded) {
       "successful"
     } else {
