@@ -5,7 +5,8 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult}
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
 class BagReplicatorFeatureTest
@@ -13,6 +14,7 @@ class BagReplicatorFeatureTest
     with Matchers
     with ScalaFutures
     with BagReplicatorFixtures
+    with BagRequestGenerators
     with ProgressUpdateAssertions
     with WorkerServiceFixture {
 
@@ -26,10 +28,7 @@ class BagReplicatorFeatureTest
               progressTopic = progressTopic,
               outgoingTopic = outgoingTopic) { service =>
               withBag(bucket) { srcBagLocation =>
-                val bagRequest = BagRequest(
-                  archiveRequestId = randomUUID,
-                  bagLocation = srcBagLocation
-                )
+                val bagRequest = createBagRequestWith(srcBagLocation)
 
                 sendNotificationToSQS(queue, bagRequest)
 

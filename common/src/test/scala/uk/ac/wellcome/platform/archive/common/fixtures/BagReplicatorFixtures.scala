@@ -1,18 +1,11 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
-import java.util.UUID
-
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import org.scalatest.Assertion
 import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.Messaging
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.storage.fixtures.S3
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.collection.JavaConverters._
 
@@ -22,21 +15,6 @@ trait BagReplicatorFixtures
     with Messaging
     with Akka
     with BagLocationFixtures {
-
-  def withBagNotification[R](
-    queue: Queue,
-    storageBucket: Bucket,
-    archiveRequestId: UUID = randomUUID
-  )(testWith: TestWith[BagLocation, R]): R =
-    withBag(storageBucket) { bagLocation =>
-      val bagRequest = BagRequest(
-        archiveRequestId = archiveRequestId,
-        bagLocation = bagLocation
-      )
-
-      sendNotificationToSQS(queue, bagRequest)
-      testWith(bagLocation)
-    }
 
   def verifyBagCopied(src: BagLocation, dst: BagLocation): Assertion = {
     val sourceItems = getObjectSummaries(src)

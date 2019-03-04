@@ -2,20 +2,10 @@ package uk.ac.wellcome.platform.archive.common.services
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  FileEntry
-}
-import uk.ac.wellcome.platform.archive.common.models.{
-  bagit,
-  BagRequest,
-  ChecksumAlgorithm
-}
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.models.{ChecksumAlgorithm, bagit}
+import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,6 +15,7 @@ class StorageManifestServiceTest
     with Matchers
     with ScalaFutures
     with BagLocationFixtures
+    with BagRequestGenerators
     with S3 {
 
   val service = new StorageManifestService()
@@ -189,10 +180,4 @@ class StorageManifestServiceTest
       }
     }
   }
-
-  def createBagRequestWith(bagLocation: BagLocation): BagRequest =
-    BagRequest(
-      archiveRequestId = randomUUID,
-      bagLocation = bagLocation
-    )
 }

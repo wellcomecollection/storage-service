@@ -5,6 +5,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagReplicatorFixtures
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
@@ -15,6 +16,7 @@ class BagReplicatorWorkerServiceTest
     with Matchers
     with ScalaFutures
     with BagReplicatorFixtures
+    with BagRequestGenerators
     with ProgressUpdateAssertions
     with WorkerServiceFixture {
 
@@ -26,10 +28,7 @@ class BagReplicatorWorkerServiceTest
             progressTopic = progressTopic,
             outgoingTopic = outgoingTopic) { service =>
             withBag(bucket) { srcBagLocation =>
-              val bagRequest = BagRequest(
-                archiveRequestId = randomUUID,
-                bagLocation = srcBagLocation
-              )
+              val bagRequest = createBagRequestWith(srcBagLocation)
 
               val future = service.processMessage(bagRequest)
 
@@ -80,10 +79,7 @@ class BagReplicatorWorkerServiceTest
             bagPath = BagPath("exist.txt")
           )
 
-          val bagRequest = BagRequest(
-            archiveRequestId = randomUUID,
-            bagLocation = srcBagLocation
-          )
+          val bagRequest = createBagRequestWith(srcBagLocation)
 
           val future = service.processMessage(bagRequest)
 

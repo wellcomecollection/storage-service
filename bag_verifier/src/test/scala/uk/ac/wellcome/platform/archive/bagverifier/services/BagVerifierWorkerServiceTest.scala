@@ -5,11 +5,8 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.WorkerServiceFixture
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  FileEntry
-}
-import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
@@ -18,6 +15,7 @@ class BagVerifierWorkerServiceTest
     with Matchers
     with ScalaFutures
     with BagLocationFixtures
+    with BagRequestGenerators
     with ProgressUpdateAssertions
     with IntegrationPatience
     with WorkerServiceFixture {
@@ -29,10 +27,7 @@ class BagVerifierWorkerServiceTest
         withWorkerService(progressTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket) { bagLocation =>
-              val bagRequest = BagRequest(
-                archiveRequestId = randomUUID,
-                bagLocation = bagLocation
-              )
+              val bagRequest = createBagRequestWith(bagLocation)
 
               val future = service.processMessage(bagRequest)
 
@@ -64,10 +59,7 @@ class BagVerifierWorkerServiceTest
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
               bagLocation =>
-                val bagRequest = BagRequest(
-                  archiveRequestId = randomUUID,
-                  bagLocation = bagLocation
-                )
+                val bagRequest = createBagRequestWith(bagLocation)
 
                 val future = service.processMessage(bagRequest)
 
@@ -103,10 +95,7 @@ class BagVerifierWorkerServiceTest
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
               bagLocation =>
-                val bagRequest = BagRequest(
-                  archiveRequestId = randomUUID,
-                  bagLocation = bagLocation
-                )
+                val bagRequest = createBagRequestWith(bagLocation)
 
                 val future = service.processMessage(bagRequest)
 
@@ -137,10 +126,7 @@ class BagVerifierWorkerServiceTest
       withWorkerService(progressTopic, Topic("no-such-outgoing")) { service =>
         withLocalS3Bucket { bucket =>
           withBag(bucket) { bagLocation =>
-            val bagRequest = BagRequest(
-              archiveRequestId = randomUUID,
-              bagLocation = bagLocation
-            )
+            val bagRequest = createBagRequestWith(bagLocation)
 
             val future = service.processMessage(bagRequest)
 
