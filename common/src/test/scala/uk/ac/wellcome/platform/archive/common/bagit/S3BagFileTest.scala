@@ -56,18 +56,22 @@ class S3BagFileTest extends FunSpec with Matchers with RandomThings with S3 {
       putObject(bucket)
       putObject(bucket, key = "/foo/bag-info.txt")
 
-      s3BagFile.locateBagInfo(
-        objectLocation = ObjectLocation(
-          namespace = bucket.name,
-          key = "/bar"
+      s3BagFile
+        .locateBagInfo(
+          objectLocation = ObjectLocation(
+            namespace = bucket.name,
+            key = "/bar"
+          )
         )
-      ).isFailure shouldBe true
+        .isFailure shouldBe true
     }
   }
-  
+
   it("looks through the entire bag, even if it's bigger than the batch size") {
     withLocalS3Bucket { bucket =>
-      (1 to 20).foreach { _ => putObject(bucket) }
+      (1 to 20).foreach { _ =>
+        putObject(bucket)
+      }
       putObject(bucket, key = "/foo/bag-info.txt")
 
       s3BagFile.locateBagInfo(
@@ -79,6 +83,7 @@ class S3BagFileTest extends FunSpec with Matchers with RandomThings with S3 {
     }
   }
 
-  private def putObject(bucket: Bucket, key: String = randomAlphanumeric()): PutObjectResult =
+  private def putObject(bucket: Bucket,
+                        key: String = randomAlphanumeric()): PutObjectResult =
     s3Client.putObject(bucket.name, key, randomAlphanumeric())
 }

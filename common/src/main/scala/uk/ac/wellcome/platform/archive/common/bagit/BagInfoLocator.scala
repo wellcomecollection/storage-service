@@ -14,21 +14,20 @@ object BagInfoLocator {
 
   def locateBagInfo(filenames: Iterator[String]): Try[String] = Try {
     val matching =
-      filenames
-        .filter { f: String =>
-          f
-            .split("/")
-            .last
-            .endsWith(bagInfoFilename)
-        }
-        .toSeq
+      filenames.filter { f: String =>
+        f.split("/")
+          .last
+          .endsWith(bagInfoFilename)
+      }.toSeq
 
     matching match {
       case Seq(filename) => filename
-      case Seq() => throw new FileNotFoundException(s"No $bagInfoFilename file found!")
-      case _ => throw new IllegalArgumentException(
-        s"Multiple $bagInfoFilename files found, only wanted one: ${matching.mkString(", ")}"
-      )
+      case Seq() =>
+        throw new FileNotFoundException(s"No $bagInfoFilename file found!")
+      case _ =>
+        throw new IllegalArgumentException(
+          s"Multiple $bagInfoFilename files found, only wanted one: ${matching.mkString(", ")}"
+        )
     }
   }
 

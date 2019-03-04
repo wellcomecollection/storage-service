@@ -9,12 +9,15 @@ import scala.util.Success
 class BagInfoLocatorTest extends FunSpec with Matchers {
   describe("locateBagInfo") {
     it("detects a bag-info.txt file") {
-      val filenames = Seq("/foo/README.txt", "/foo/data", "/foo/bag-info.txt").toIterator
-      BagInfoLocator.locateBagInfo(filenames) shouldBe Success("/foo/bag-info.txt")
+      val filenames =
+        Seq("/foo/README.txt", "/foo/data", "/foo/bag-info.txt").toIterator
+      BagInfoLocator.locateBagInfo(filenames) shouldBe Success(
+        "/foo/bag-info.txt")
     }
 
     it("detects a bag-info.txt file without a leading slash") {
-      val filenames = Seq("/foo/README.txt", "/foo/data", "bag-info.txt").toIterator
+      val filenames =
+        Seq("/foo/README.txt", "/foo/data", "bag-info.txt").toIterator
       BagInfoLocator.locateBagInfo(filenames) shouldBe Success("bag-info.txt")
     }
 
@@ -33,7 +36,8 @@ class BagInfoLocatorTest extends FunSpec with Matchers {
       val result = BagInfoLocator.locateBagInfo(filenames.toIterator)
       result.isFailure shouldBe true
       result.failed.get shouldBe a[IllegalArgumentException]
-      result.failed.get.getMessage shouldBe s"Multiple bag-info.txt files found, only wanted one: ${filenames.mkString(", ")}"
+      result.failed.get.getMessage shouldBe s"Multiple bag-info.txt files found, only wanted one: ${filenames
+        .mkString(", ")}"
     }
   }
 
@@ -48,7 +52,8 @@ class BagInfoLocatorTest extends FunSpec with Matchers {
       }
 
       it("ignores bag-info.txt not at the end") {
-        BagInfoLocator.bagPathFrom(bagInfoPath = "bag-info.txt/bag/bag-info.txt") shouldBe "bag-info.txt/bag/"
+        BagInfoLocator.bagPathFrom(
+          bagInfoPath = "bag-info.txt/bag/bag-info.txt") shouldBe "bag-info.txt/bag/"
       }
 
       it("preserves preceding slashes") {
