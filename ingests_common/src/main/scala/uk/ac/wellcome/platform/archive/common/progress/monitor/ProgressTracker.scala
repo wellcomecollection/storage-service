@@ -59,16 +59,25 @@ class ProgressTracker(
     debug(s"Updating record:${update.id} with:$update")
 
     val eventsUpdate = appendAll('events -> update.events.toList)
+
     val mergedUpdate = update match {
       case _: ProgressEventUpdate =>
         eventsUpdate
       case statusUpdate: ProgressStatusUpdate =>
         val bagUpdate = statusUpdate.affectedBag
-          .map(bag => set('bag -> bag) and set('bagIdIndex -> bag.toString))
+          .map(bag => set(
+            'bag -> bag) and set(
+              'bagIdIndex -> bag.toString
+            )
+          )
           .toList
 
-        (List(eventsUpdate, set('status -> statusUpdate.status)) ++ bagUpdate)
+        (List(
+            eventsUpdate,
+            set('status -> statusUpdate.status)
+          ) ++ bagUpdate)
           .reduce(_ and _)
+
       case callbackStatusUpdate: ProgressCallbackStatusUpdate =>
         eventsUpdate and set(
           'callback \ 'status -> callbackStatusUpdate.callbackStatus)
@@ -82,7 +91,9 @@ class ProgressTracker(
     Scanamo.exec(dynamoDbClient)(ops) match {
       case Left(ConditionNotMet(e: ConditionalCheckFailedException)) => {
         val idConstraintError =
-          IdConstraintError(s"Progress does not exist for id:${update.id}", e)
+          IdConstraintError(
+            s"Progress does not exist for id:${update.id}", e
+          )
 
         Failure(idConstraintError)
       }

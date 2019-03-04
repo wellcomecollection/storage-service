@@ -38,10 +38,9 @@ class BagVerifierFeatureTest
                   eventually {
                     assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
 
-                    assertTopicReceivesProgressStatusUpdate(
+                    assertTopicReceivesProgressEventUpdate(
                       requestId = bagRequest.archiveRequestId,
-                      progressTopic = progressTopic,
-                      status = Progress.Processing
+                      progressTopic = progressTopic
                     ) { events =>
                       events.map {
                         _.description
@@ -90,7 +89,7 @@ class BagVerifierFeatureTest
                           _.description
                         }.head
                         description should startWith(
-                          "There were problems verifying the bag: not every checksum matched the manifest")
+                          "Problem verifying bag: File checksum did not match manifeszt")
                       }
 
                       assertQueueEmpty(queue)

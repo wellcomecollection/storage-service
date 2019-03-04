@@ -20,7 +20,10 @@ class IngestsWorkerService(
 
   def processMessage(progressUpdate: ProgressUpdate): Future[Unit] =
     for {
-      progress <- Future.fromTry(progressTracker.update(progressUpdate))
-      _ <- callbackNotificationService.sendNotification(progress)
+      progress <- Future.fromTry(
+        progressTracker.update(progressUpdate)
+      )
+      _ <- callbackNotificationService
+        .sendNotification(progress)
     } yield ()
 }

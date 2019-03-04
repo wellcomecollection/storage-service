@@ -5,17 +5,14 @@ import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifierWorkerService,
-  VerifyDigestFilesService
-}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorkerService, NotificationService, VerifyDigestFilesService}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-import uk.ac.wellcome.json.JsonUtil._
 
 import scala.concurrent.ExecutionContext
 
@@ -30,20 +27,37 @@ object Main extends WellcomeTypesafeApp {
     implicit val materializer: Materializer =
       AkkaBuilder.buildActorMaterializer()
 
+    val progressSnsWriter =
+      SNSBuilder.buildSNSWriter(
+        config,
+        namespace = "progress"
+      )
+
+    val outgoingSnsWriter =
+      SNSBuilder.buildSNSWriter(
+        config,
+        namespace = "outgoing"
+      )
+
+    val notificationStream =
+      NotificationStreamBuilder
+        .buildStream[BagRequest](config)
+
     val verifyDigestFilesService = new VerifyDigestFilesService(
       storageManifestService = new StorageManifestService(),
       s3Client = s3Client,
       algorithm = MessageDigestAlgorithms.SHA_256
     )
 
+    val notificationService = new NotificationService(
+      progressSnsWriter,
+      outgoingSnsWriter
+    )
+
     new BagVerifierWorkerService(
-      notificationStream =
-        NotificationStreamBuilder.buildStream[BagRequest](config),
-      verifyDigestFilesService = verifyDigestFilesService,
-      progressSnsWriter =
-        SNSBuilder.buildSNSWriter(config, namespace = "progress"),
-      outgoingSnsWriter =
-        SNSBuilder.buildSNSWriter(config, namespace = "outgoing")
+      notificationStream,
+      verifyDigestFilesService,
+      notificationService
     )
   }
 }
