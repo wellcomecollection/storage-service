@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerification
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
@@ -11,22 +12,15 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class VerifyDigestFilesServiceTest
     extends FunSpec
     with Matchers
     with ScalaFutures
     with S3
+    with Akka
     with BagLocationFixtures {
 
   implicit val _ = s3Client
-
-  val service = new VerifyDigestFilesService(
-    storageManifestService = new StorageManifestService(),
-    s3Client = s3Client,
-    algorithm = MessageDigestAlgorithms.SHA_256
-  )
 
   val dataFileCount = 3
 
@@ -36,11 +30,25 @@ class VerifyDigestFilesServiceTest
   it("passes a bag with correct checksums") {
     withLocalS3Bucket { bucket =>
       withBag(bucket, dataFileCount = dataFileCount) { bagLocation =>
-        val future = service.verifyBag(bagLocation)
-        whenReady(future) { result =>
-          result shouldBe a[BagVerification]
-          result.successfulVerifications should have size expectedDataFileCount
-          result.failedVerifications shouldBe Seq.empty
+        withActorSystem { actorSystem =>
+          implicit val ec = actorSystem.dispatcher
+
+          withMaterializer { materializer =>
+            implicit val _materializer = materializer
+
+            val service = new VerifyDigestFilesService(
+              storageManifestService = new StorageManifestService(),
+              s3Client = s3Client,
+              algorithm = MessageDigestAlgorithms.SHA_256
+            )
+
+            val future = service.verifyBagLocation(bagLocation)
+            whenReady(future) { result =>
+              result shouldBe a[BagVerification]
+              result.successfulVerifications should have size expectedDataFileCount
+              result.failedVerifications shouldBe Seq.empty
+            }
+          }
         }
       }
     }
@@ -52,16 +60,30 @@ class VerifyDigestFilesServiceTest
         bucket,
         dataFileCount = dataFileCount,
         createDataManifest = dataManifestWithWrongChecksum) { bagLocation =>
-        val future = service.verifyBag(bagLocation)
-        whenReady(future) { result =>
-          result shouldBe a[BagVerification]
-          result.successfulVerifications should have size expectedDataFileCount - 1
-          result.failedVerifications should have size 1
+        withActorSystem { actorSystem =>
+          implicit val ec = actorSystem.dispatcher
+          withMaterializer { materializer =>
+            implicit val _materializer = materializer
 
-          val brokenFile = result.failedVerifications.head
-          brokenFile.reason shouldBe a[RuntimeException]
-          brokenFile.reason.getMessage should startWith(
-            "Checksums do not match:")
+            val service = new VerifyDigestFilesService(
+              storageManifestService = new StorageManifestService(),
+              s3Client = s3Client,
+              algorithm = MessageDigestAlgorithms.SHA_256
+            )
+
+            val future = service.verifyBagLocation(bagLocation)
+
+            whenReady(future) { result =>
+              result shouldBe a[BagVerification]
+              result.successfulVerifications should have size expectedDataFileCount - 1
+              result.failedVerifications should have size 1
+
+              val brokenFile = result.failedVerifications.head
+              brokenFile.reason shouldBe a[RuntimeException]
+              brokenFile.reason.getMessage should startWith(
+                "Checksums do not match:")
+            }
+          }
         }
       }
     }
@@ -73,16 +95,28 @@ class VerifyDigestFilesServiceTest
         bucket,
         dataFileCount = dataFileCount,
         createTagManifest = tagManifestWithWrongChecksum) { bagLocation =>
-        val future = service.verifyBag(bagLocation)
-        whenReady(future) { result =>
-          result shouldBe a[BagVerification]
-          result.successfulVerifications should have size expectedDataFileCount - 1
-          result.failedVerifications should have size 1
+        withActorSystem { actorSystem =>
+          implicit val ec = actorSystem.dispatcher
+          withMaterializer { materializer =>
+            implicit val _materializer = materializer
 
-          val brokenFile = result.failedVerifications.head
-          brokenFile.reason shouldBe a[RuntimeException]
-          brokenFile.reason.getMessage should startWith(
-            "Checksums do not match:")
+            val service = new VerifyDigestFilesService(
+              storageManifestService = new StorageManifestService(),
+              s3Client = s3Client,
+              algorithm = MessageDigestAlgorithms.SHA_256
+            )
+            val future = service.verifyBagLocation(bagLocation)
+            whenReady(future) { result =>
+              result shouldBe a[BagVerification]
+              result.successfulVerifications should have size expectedDataFileCount - 1
+              result.failedVerifications should have size 1
+
+              val brokenFile = result.failedVerifications.head
+              brokenFile.reason shouldBe a[RuntimeException]
+              brokenFile.reason.getMessage should startWith(
+                "Checksums do not match:")
+            }
+          }
         }
       }
     }
@@ -99,16 +133,29 @@ class VerifyDigestFilesServiceTest
         bucket,
         dataFileCount = dataFileCount,
         createDataManifest = createDataManifestWithExtraFile) { bagLocation =>
-        val future = service.verifyBag(bagLocation)
-        whenReady(future) { result =>
-          result shouldBe a[BagVerification]
-          result.successfulVerifications should have size expectedDataFileCount
-          result.failedVerifications should have size 1
+        withActorSystem { actorSystem =>
+          implicit val ec = actorSystem.dispatcher
+          withMaterializer { materializer =>
+            implicit val _materializer = materializer
 
-          val brokenFile = result.failedVerifications.head
-          brokenFile.reason shouldBe a[RuntimeException]
-          brokenFile.reason.getMessage should startWith(
-            "The specified key does not exist")
+            val service = new VerifyDigestFilesService(
+              storageManifestService = new StorageManifestService(),
+              s3Client = s3Client,
+              algorithm = MessageDigestAlgorithms.SHA_256
+            )
+
+            val future = service.verifyBagLocation(bagLocation)
+            whenReady(future) { result =>
+              result shouldBe a[BagVerification]
+              result.successfulVerifications should have size expectedDataFileCount
+              result.failedVerifications should have size 1
+
+              val brokenFile = result.failedVerifications.head
+              brokenFile.reason shouldBe a[RuntimeException]
+              brokenFile.reason.getMessage should startWith(
+                "The specified key does not exist")
+            }
+          }
         }
       }
     }
@@ -121,10 +168,22 @@ class VerifyDigestFilesServiceTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
         bagLocation =>
-          val future = service.verifyBag(bagLocation)
-          whenReady(future.failed) { err =>
-            err shouldBe a[RuntimeException]
-            err.getMessage should startWith("Error getting file manifest")
+          withActorSystem { actorSystem =>
+            implicit val ec = actorSystem.dispatcher
+            withMaterializer { materializer =>
+              implicit val _materializer = materializer
+
+              val service = new VerifyDigestFilesService(
+                storageManifestService = new StorageManifestService(),
+                s3Client = s3Client,
+                algorithm = MessageDigestAlgorithms.SHA_256
+              )
+              val future = service.verifyBagLocation(bagLocation)
+              whenReady(future.failed) { err =>
+                err shouldBe a[RuntimeException]
+                err.getMessage should startWith("Error getting file manifest")
+              }
+            }
           }
       }
     }
@@ -137,10 +196,22 @@ class VerifyDigestFilesServiceTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, createTagManifest = dontCreateTheTagManifest) {
         bagLocation =>
-          val future = service.verifyBag(bagLocation)
-          whenReady(future.failed) { err =>
-            err shouldBe a[RuntimeException]
-            err.getMessage should startWith("Error getting tag manifest")
+          withActorSystem { actorSystem =>
+            implicit val ec = actorSystem.dispatcher
+            withMaterializer { materializer =>
+              implicit val _materializer = materializer
+
+              val service = new VerifyDigestFilesService(
+                storageManifestService = new StorageManifestService(),
+                s3Client = s3Client,
+                algorithm = MessageDigestAlgorithms.SHA_256
+              )
+              val future = service.verifyBagLocation(bagLocation)
+              whenReady(future.failed) { err =>
+                err shouldBe a[RuntimeException]
+                err.getMessage should startWith("Error getting tag manifest")
+              }
+            }
           }
       }
     }

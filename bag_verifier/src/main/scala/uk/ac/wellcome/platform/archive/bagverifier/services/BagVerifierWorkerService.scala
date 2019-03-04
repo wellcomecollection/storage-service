@@ -25,7 +25,7 @@ class BagVerifierWorkerService(
   notificationStream: NotificationStream[BagRequest],
   verifyDigestFilesService: VerifyDigestFilesService,
   progressSnsWriter: SNSWriter,
-  ongoingSnsWriter: SNSWriter,
+  outgoingSnsWriter: SNSWriter,
 )(implicit ec: ExecutionContext)
     extends Runnable
     with Logging {
@@ -53,7 +53,7 @@ class BagVerifierWorkerService(
   private def verifyBagLocation(
     bagLocation: BagLocation): Future[Try[BagVerification]] =
     verifyDigestFilesService
-      .verifyBag(bagLocation)
+      .verifyBagLocation(bagLocation)
       .map { bagVerification =>
         Success(bagVerification)
       }
@@ -101,7 +101,7 @@ class BagVerifierWorkerService(
     tryBagVerification: Try[BagVerification]): Future[Unit] =
     tryBagVerification match {
       case Success(bagVerification) if bagVerification.verificationSucceeded =>
-        ongoingSnsWriter
+        outgoingSnsWriter
           .writeMessage(
             bagRequest,
             subject = s"Sent by ${this.getClass.getSimpleName}"

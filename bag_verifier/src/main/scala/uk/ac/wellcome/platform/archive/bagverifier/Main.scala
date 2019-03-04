@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier
 
 import akka.actor.ActorSystem
+import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
@@ -26,6 +27,8 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildExecutionContext()
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
+    implicit val materializer: Materializer =
+      AkkaBuilder.buildActorMaterializer()
 
     val verifyDigestFilesService = new VerifyDigestFilesService(
       storageManifestService = new StorageManifestService(),
@@ -39,8 +42,8 @@ object Main extends WellcomeTypesafeApp {
       verifyDigestFilesService = verifyDigestFilesService,
       progressSnsWriter =
         SNSBuilder.buildSNSWriter(config, namespace = "progress"),
-      ongoingSnsWriter =
-        SNSBuilder.buildSNSWriter(config, namespace = "progress")
+      outgoingSnsWriter =
+        SNSBuilder.buildSNSWriter(config, namespace = "outgoing")
     )
   }
 }
