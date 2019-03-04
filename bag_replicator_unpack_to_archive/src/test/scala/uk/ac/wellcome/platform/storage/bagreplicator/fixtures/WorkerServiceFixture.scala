@@ -5,6 +5,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
+import uk.ac.wellcome.platform.archive.common.bagit.S3BagFile
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.storage.bagreplicator.config.{BagReplicatorConfig, ReplicatorDestinationConfig}
 import uk.ac.wellcome.platform.storage.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
@@ -42,7 +43,8 @@ trait WorkerServiceFixture extends NotificationStreamFixture with S3 with SNS {
                 )
               ),
               progressSnsWriter = progressSnsWriter,
-              outgoingSnsWriter = outgoingSnsWriter
+              outgoingSnsWriter = outgoingSnsWriter,
+              s3BagFile = new S3BagFile(s3Client)
             )
 
             service.run()

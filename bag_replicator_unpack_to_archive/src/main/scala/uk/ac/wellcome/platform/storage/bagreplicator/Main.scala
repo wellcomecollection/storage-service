@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
+import uk.ac.wellcome.platform.archive.common.bagit.S3BagFile
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.storage.bagreplicator.config.BagReplicatorConfig
 import uk.ac.wellcome.platform.storage.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
@@ -40,7 +41,8 @@ object Main extends WellcomeTypesafeApp {
       progressSnsWriter =
         SNSBuilder.buildSNSWriter(config, namespace = "progress"),
       outgoingSnsWriter =
-        SNSBuilder.buildSNSWriter(config, namespace = "outgoing")
+        SNSBuilder.buildSNSWriter(config, namespace = "outgoing"),
+      s3BagFile = new S3BagFile(s3Client)
     )
   }
 }
