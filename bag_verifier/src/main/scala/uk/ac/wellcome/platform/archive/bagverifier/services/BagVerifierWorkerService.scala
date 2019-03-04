@@ -122,11 +122,10 @@ class BagVerifierWorkerService(
     }
     f"""$verificationStatus verification
        |of ${bagRequest.bagLocation.completePath}
-       |completed in ${bagVerification.duration}
+       |completed in ${bagVerification.duration.getOrElse("")}
        | :
        |${bagVerification.successfulVerifications.size} succeeded /
        |${bagVerification.failedVerifications.size} failed
        """.stripMargin.replaceAll("\n", " ")
   }
-
 }
