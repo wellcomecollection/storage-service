@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bagreplicator.fixtures
+package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.util.UUID
 
@@ -9,11 +9,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  RandomThings
-}
-import uk.ac.wellcome.platform.archive.common.models._
+import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket

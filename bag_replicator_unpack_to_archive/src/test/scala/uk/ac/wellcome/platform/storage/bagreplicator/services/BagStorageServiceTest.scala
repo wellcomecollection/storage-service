@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.storage.bagreplicator.services
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.models.bagit.ExternalIdentifier
 import uk.ac.wellcome.platform.storage.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.storage.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.s3.{S3Copier, S3PrefixCopier, S3PrefixOperator}
 

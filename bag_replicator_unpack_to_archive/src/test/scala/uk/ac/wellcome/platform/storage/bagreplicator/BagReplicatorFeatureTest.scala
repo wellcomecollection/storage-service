@@ -3,9 +3,10 @@ package uk.ac.wellcome.platform.storage.bagreplicator
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.storage.bagreplicator.fixtures.{BagReplicatorFixtures, WorkerServiceFixture}
+import uk.ac.wellcome.platform.storage.bagreplicator.fixtures.WorkerServiceFixture
 
 class BagReplicatorFeatureTest
     extends FunSpec
@@ -23,9 +24,11 @@ class BagReplicatorFeatureTest
             withWorkerService(
               queue,
               progressTopic = progressTopic,
-              outgoingTopic = outgoingTopic) { service =>
+              outgoingTopic = outgoingTopic) { _ =>
 
-              withBag(bucket) { srcBagLocation =>
+              val bagInfo = createBagInfo
+
+              withBag(bucket, bagInfo = bagInfo) { srcBagLocation =>
                 val bagRequest = BagRequest(
                   archiveRequestId = randomUUID,
                   bagLocation = srcBagLocation

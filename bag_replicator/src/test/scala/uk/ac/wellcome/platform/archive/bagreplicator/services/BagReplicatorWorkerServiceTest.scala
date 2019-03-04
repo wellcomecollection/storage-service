@@ -3,18 +3,10 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
-  BagReplicatorFixtures,
-  WorkerServiceFixture
-}
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagLocation,
-  BagPath
-}
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  ReplicationResult
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.WorkerServiceFixture
+import uk.ac.wellcome.platform.archive.common.fixtures.BagReplicatorFixtures
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
