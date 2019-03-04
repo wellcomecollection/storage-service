@@ -38,8 +38,7 @@ trait WorkerServiceFixture
               info(ec.getClass.getSimpleName)
 
               val verifyDigestFilesService = new VerifyDigestFilesService(
-                storageManifestService =
-                  new StorageManifestService()(ec, _s3Client),
+                storageManifestService = new StorageManifestService(),
                 s3Client = s3Client,
                 algorithm = MessageDigestAlgorithms.SHA_256
               )(ec, _materializer)
