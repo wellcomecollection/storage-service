@@ -193,6 +193,20 @@ data "aws_iam_policy_document" "ingests_read" {
   }
 }
 
+data "aws_iam_policy_document" "storage_ingests_drop_read_write" {
+  statement {
+    actions = [
+      "s3:GetObject*",
+      "s3:ListBucket",
+      "s3:PutObject*",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.ingest_drop_bucket_name}/*",
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "cloudwatch_put" {
   statement {
     actions = [
