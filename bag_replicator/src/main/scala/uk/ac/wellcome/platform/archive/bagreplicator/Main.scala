@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagStorageService
 }
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.storage.s3.{S3Copier, S3PrefixCopier, S3PrefixOperator}
+import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -24,11 +24,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
 
-    val s3Client = S3Builder.buildS3Client(config)
-
-    val s3PrefixCopier = new S3PrefixCopier(
-      s3PrefixOperator = new S3PrefixOperator(s3Client = s3Client),
-      copier = new S3Copier(s3Client = s3Client)
+    val s3PrefixCopier = S3PrefixCopier(
+      s3Client = S3Builder.buildS3Client(config)
     )
 
     val bagStorageService = new BagStorageService(
