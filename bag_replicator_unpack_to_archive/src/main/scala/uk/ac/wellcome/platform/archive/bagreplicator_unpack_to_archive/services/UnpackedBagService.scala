@@ -9,10 +9,12 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{BagInfo, ExternalIde
 import uk.ac.wellcome.platform.archive.common.parsers.BagInfoParser
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class UnpackedBagService(s3Client: AmazonS3) {
+class UnpackedBagService(s3Client: AmazonS3)(implicit ec: ExecutionContext) {
   val s3BagFile = new S3BagFile(s3Client)
+
+  implicit val _ = s3Client
 
   def getBagIdentifier(objectLocation: ObjectLocation): Future[ExternalIdentifier] =
     for {
