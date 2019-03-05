@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   RandomThings
 }
-import uk.ac.wellcome.platform.archive.common.models._
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -25,7 +25,8 @@ trait BagReplicatorFixtures
     with RandomThings
     with Messaging
     with Akka
-    with BagLocationFixtures {
+    with BagLocationFixtures
+    with BagRequestGenerators {
 
   def withBagNotification[R](
     queue: Queue,
@@ -33,10 +34,7 @@ trait BagReplicatorFixtures
     archiveRequestId: UUID = randomUUID
   )(testWith: TestWith[BagLocation, R]): R =
     withBag(storageBucket) { bagLocation =>
-      val replicationRequest = BagRequest(
-        archiveRequestId = archiveRequestId,
-        bagLocation = bagLocation
-      )
+      val replicationRequest = createBagRequestWith(bagLocation)
 
       sendNotificationToSQS(queue, replicationRequest)
       testWith(bagLocation)

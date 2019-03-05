@@ -7,10 +7,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
   BagReplicatorFixtures,
   WorkerServiceFixture
 }
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  ReplicationResult
-}
+import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
 class BagReplicatorFeatureTest
@@ -31,10 +28,7 @@ class BagReplicatorFeatureTest
               progressTopic = progressTopic,
               outgoingTopic = outgoingTopic) { service =>
               withBag(bucket) { srcBagLocation =>
-                val replicationRequest = BagRequest(
-                  archiveRequestId = randomUUID,
-                  bagLocation = srcBagLocation
-                )
+                val replicationRequest = createBagRequestWith(srcBagLocation)
 
                 sendNotificationToSQS(queue, replicationRequest)
 
