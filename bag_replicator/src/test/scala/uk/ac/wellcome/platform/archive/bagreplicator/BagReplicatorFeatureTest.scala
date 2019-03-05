@@ -37,15 +37,7 @@ class BagReplicatorFeatureTest
                 sendNotificationToSQS(queue, bagRequest)
 
                 eventually {
-                  val outgoingMessages =
-                    listMessagesReceivedFromSNS(outgoingTopic)
-                  val results =
-                    outgoingMessages.map { msg =>
-                      fromJson[ReplicationResult](msg.message).get
-                    }.distinct
-
-                  results should have size 1
-                  val result = results.head
+                  val result = notificationMessage[ReplicationResult](outgoingTopic)
                   result.archiveRequestId shouldBe bagRequest.archiveRequestId
                   result.srcBagLocation shouldBe bagRequest.bagLocation
 

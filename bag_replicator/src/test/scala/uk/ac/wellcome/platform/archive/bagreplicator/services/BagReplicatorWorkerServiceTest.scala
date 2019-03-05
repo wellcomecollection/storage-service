@@ -40,15 +40,7 @@ class BagReplicatorWorkerServiceTest
               val future = service.processMessage(bagRequest)
 
               whenReady(future) { _ =>
-                val outgoingMessages =
-                  listMessagesReceivedFromSNS(outgoingTopic)
-                val results =
-                  outgoingMessages.map { msg =>
-                    fromJson[ReplicationResult](msg.message).get
-                  }.distinct
-
-                results should have size 1
-                val result = results.head
+                val result = notificationMessage[ReplicationResult](outgoingTopic)
                 result.archiveRequestId shouldBe bagRequest.archiveRequestId
                 result.srcBagLocation shouldBe bagRequest.bagLocation
 
