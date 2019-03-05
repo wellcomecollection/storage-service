@@ -30,7 +30,7 @@ class BagReplicatorFeatureTest
             withWorkerService(
               queue,
               progressTopic = progressTopic,
-              outgoingTopic = outgoingTopic) { service =>
+              outgoingTopic = outgoingTopic) { _ =>
               withBag(bucket) { srcBagLocation =>
                 val bagRequest = createBagRequestWith(srcBagLocation)
 
