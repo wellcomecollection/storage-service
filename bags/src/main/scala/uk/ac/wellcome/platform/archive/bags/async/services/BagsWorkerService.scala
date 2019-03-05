@@ -38,7 +38,7 @@ class BagsWorkerService(
 
   def processMessage(replicationResult: ReplicationResult): Future[Unit] = {
     val bagRequest = BagRequest(
-      archiveRequestId = replicationResult.archiveRequestId,
+      requestId = replicationResult.archiveRequestId,
       bagLocation = replicationResult.dstBagLocation
     )
 

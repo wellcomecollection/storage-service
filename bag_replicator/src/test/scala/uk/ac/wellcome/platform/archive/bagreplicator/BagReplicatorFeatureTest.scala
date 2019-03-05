@@ -32,7 +32,7 @@ class BagReplicatorFeatureTest
               outgoingTopic = outgoingTopic) { service =>
               withBag(bucket) { srcBagLocation =>
                 val replicationRequest = BagRequest(
-                  archiveRequestId = randomUUID,
+                  requestId = randomUUID,
                   bagLocation = srcBagLocation
                 )
 
@@ -48,7 +48,7 @@ class BagReplicatorFeatureTest
 
                   results should have size 1
                   val result = results.head
-                  result.archiveRequestId shouldBe replicationRequest.archiveRequestId
+                  result.archiveRequestId shouldBe replicationRequest.requestId
                   result.srcBagLocation shouldBe replicationRequest.bagLocation
 
                   val dstBagLocation = result.dstBagLocation
@@ -59,7 +59,7 @@ class BagReplicatorFeatureTest
                   )
 
                   assertTopicReceivesProgressEventUpdate(
-                    replicationRequest.archiveRequestId,
+                    replicationRequest.requestId,
                     progressTopic) { events =>
                     events should have size 1
                     events.head.description shouldBe "Bag replicated successfully"

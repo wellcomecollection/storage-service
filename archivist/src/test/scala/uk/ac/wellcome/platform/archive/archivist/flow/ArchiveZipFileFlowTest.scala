@@ -75,7 +75,7 @@ class ArchiveZipFileFlowTest
               whenReady(verification) { result =>
                 listKeysInBucket(storageBucket) should have size 5
                 result shouldBe List(Right(BagRequest(
-                  archiveRequestId = ingestContext.id,
+                  requestId = ingestContext.id,
                   bagLocation = BagLocation(
                     storageNamespace = storageBucket.name,
                     storagePrefix = Some("archive"),

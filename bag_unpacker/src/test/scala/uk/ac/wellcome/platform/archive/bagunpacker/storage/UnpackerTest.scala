@@ -1,18 +1,16 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.storage
 
 import java.io._
-import java.util.UUID
 
 import org.apache.commons.compress.archivers.ArchiveEntry
-import org.apache.commons.compress.utils.IOUtils
+import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.OperationResult
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
-import scala.io.Source
 
 class UnpackerTest
   extends FunSpec
@@ -29,15 +27,13 @@ class UnpackerTest
         fileCount = 10
       )
 
-    val testUUID = UUID.randomUUID()
-
     val inputStream = new FileInputStream(archiveFile)
 
     val tmp = System.getProperty("java.io.tmpdir")
 
     val fold = (entries: Set[ArchiveEntry], inputStream: InputStream, entry: ArchiveEntry) => {
       val os = new FileOutputStream(
-        new File(tmp, s"${entry.getName}-$testUUID")
+        new File(tmp, entry.getName)
       )
 
       IOUtils.copy(inputStream, os)
@@ -46,18 +42,24 @@ class UnpackerTest
     }
 
 
-    val unpack = Unpacker.get(inputStream)(Set.empty[ArchiveEntry])(fold)
+    val unpack =
+      Unpacker.unpack(
+        inputStream
+      )(
+        Set.empty[ArchiveEntry]
+      )(fold)
 
-    whenReady(unpack) { unpacked =>
-      unpacked.diff(expectedEntries) shouldBe Set.empty
+    whenReady(unpack) { unpacked: OperationResult[Set[ArchiveEntry]] =>
+      unpacked.summary.diff(expectedEntries) shouldBe Set.empty
 
       val expectedFiles = files
-        .map(file => file.getName -> file)
+        .map(file => relativeToTmpDir(file) -> file)
         .toMap
 
-      val actualFiles = unpacked
+      val actualFiles = unpacked.summary
         .map(entry =>
-          entry.getName -> new File(tmp, s"${entry.getName}-$testUUID"))
+          entry.getName -> new File(tmp, entry.getName)
+        )
         .toMap
 
       expectedFiles.foreach {
@@ -69,13 +71,14 @@ class UnpackerTest
 
           actualFile.exists() shouldBe true
 
-          val actualContents =
-            Source.fromFile(actualFile).getLines().mkString
+          val actualFis = new FileInputStream(actualFile)
+          val actualBytes = IOUtils.toByteArray(actualFis)
 
-          val expectedContents =
-            Source.fromFile(expectedFile).getLines().mkString
+          val expectedFis = new FileInputStream(expectedFile)
+          val expectedBytes = IOUtils.toByteArray(expectedFis)
 
-          actualContents shouldEqual expectedContents
+          actualBytes.length shouldBe expectedBytes.length
+          actualBytes shouldEqual expectedBytes
         }
       }
     }

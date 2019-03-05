@@ -7,12 +7,13 @@ import java.time.Instant
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest}
 import org.apache.commons.compress.archivers.ArchiveEntry
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.OperationResult
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Unpacker
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 
 class UnpackerService(implicit s3Client: AmazonS3, ec: ExecutionContext) {
@@ -20,12 +21,13 @@ class UnpackerService(implicit s3Client: AmazonS3, ec: ExecutionContext) {
   def unpack(
               srcLocation: ObjectLocation,
               dstLocation: ObjectLocation
-            ) = {
+            ): Future[OperationResult[UnpackSummary]] = {
+
     val unpackSummary = UnpackSummary(startTime = Instant.now)
 
-    (for {
+    val futureSummary = for {
       packageInputStream <- srcLocation.toInputStream
-      result <- Unpacker.get(packageInputStream)(unpackSummary) {
+      result <- Unpacker.unpack(packageInputStream)(unpackSummary) {
         (summary: UnpackSummary,
          inputStream: InputStream,
          archiveEntry: ArchiveEntry) =>
@@ -41,14 +43,15 @@ class UnpackerService(implicit s3Client: AmazonS3, ec: ExecutionContext) {
 
           metadata.setContentLength(archiveEntry.getSize)
 
-          val request = new PutObjectRequest(dstLocation.namespace,
-            Paths.get(
-              dstLocation.key,
-              archiveEntry.getName
-            ).toString,
-            inputStream,
-            metadata
-          )
+          val request =
+            new PutObjectRequest(dstLocation.namespace,
+              Paths.get(
+                dstLocation.key,
+                archiveEntry.getName
+              ).toString,
+              inputStream,
+              metadata
+            )
 
           s3Client.putObject(request)
 
@@ -57,8 +60,9 @@ class UnpackerService(implicit s3Client: AmazonS3, ec: ExecutionContext) {
             bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
           )
       }
-    } yield result).map(_.complete)
+    } yield result
 
+    futureSummary
   }
 }
 

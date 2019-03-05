@@ -53,6 +53,7 @@ trait ProgressUpdateAssertions extends SNS with Inside with Logging {
     val progressUpdates = messages.map { messageinfo =>
       fromJson[ProgressUpdate](messageinfo.message).get
     }
+
     progressUpdates.size should be > 0
 
     val (success, failure) = progressUpdates

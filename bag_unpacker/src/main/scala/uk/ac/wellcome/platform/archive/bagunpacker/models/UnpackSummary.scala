@@ -9,8 +9,19 @@ case class UnpackSummary(
                          startTime: Instant,
                          endTime: Option[Instant] = None
                        ) extends Timed {
-  def complete: UnpackSummary = this.copy(endTime = Some(Instant.now()))
+  def complete: UnpackSummary =
+    this.copy(endTime = Some(Instant.now()))
+
+  override def toString() = {
+    f"""|
+        |
+        |
+     """
+      .stripMargin
+      .replaceAll("\n", " ")
+  }
 }
+
 
 trait Timed {
   val startTime: Instant

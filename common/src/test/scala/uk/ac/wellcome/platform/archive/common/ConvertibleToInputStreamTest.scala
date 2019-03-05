@@ -16,6 +16,8 @@ class ConvertibleToInputStreamTest
 
   import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 
+  implicit val _s3Client = s3Client
+
   describe("converts to a Try[InputStream]") {
     it("produces a failure from an invalid ObjectLocation") {
       val inputStreamFuture = ObjectLocation(

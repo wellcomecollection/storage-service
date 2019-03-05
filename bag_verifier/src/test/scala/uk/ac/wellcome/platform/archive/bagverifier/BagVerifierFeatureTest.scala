@@ -29,7 +29,7 @@ class BagVerifierFeatureTest
               withLocalS3Bucket { bucket =>
                 withBag(bucket) { bagLocation =>
                   val bagRequest = BagRequest(
-                    archiveRequestId = randomUUID,
+                    requestId = randomUUID,
                     bagLocation = bagLocation
                   )
 
@@ -39,7 +39,7 @@ class BagVerifierFeatureTest
                     assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
 
                     assertTopicReceivesProgressEventUpdate(
-                      requestId = bagRequest.archiveRequestId,
+                      requestId = bagRequest.requestId,
                       progressTopic = progressTopic
                     ) { events =>
                       events.map {
@@ -71,7 +71,7 @@ class BagVerifierFeatureTest
                   createDataManifest = dataManifestWithWrongChecksum) {
                   bagLocation =>
                     val bagRequest = BagRequest(
-                      archiveRequestId = randomUUID,
+                      requestId = randomUUID,
                       bagLocation = bagLocation
                     )
 
@@ -81,7 +81,7 @@ class BagVerifierFeatureTest
                       assertSnsReceivesNothing(outgoingTopic)
 
                       assertTopicReceivesProgressStatusUpdate(
-                        requestId = bagRequest.archiveRequestId,
+                        requestId = bagRequest.requestId,
                         progressTopic = progressTopic,
                         status = Progress.Failed
                       ) { events =>

@@ -27,6 +27,8 @@ class StorageManifestServiceTest
     with BagLocationFixtures
     with S3 {
 
+  implicit val _s3Client = s3Client
+
   val service = new StorageManifestService()
 
   it("returns a StorageManifest if reading a bag location succeeds") {
@@ -192,7 +194,7 @@ class StorageManifestServiceTest
 
   def createBagRequestWith(bagLocation: BagLocation): BagRequest =
     BagRequest(
-      archiveRequestId = randomUUID,
+      requestId = randomUUID,
       bagLocation = bagLocation
     )
 }

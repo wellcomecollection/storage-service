@@ -30,7 +30,7 @@ class BagVerifierWorkerServiceTest
           withLocalS3Bucket { bucket =>
             withBag(bucket) { bagLocation =>
               val bagRequest = BagRequest(
-                archiveRequestId = randomUUID,
+                requestId = randomUUID,
                 bagLocation = bagLocation
               )
 
@@ -40,7 +40,7 @@ class BagVerifierWorkerServiceTest
                 assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
 
                 assertTopicReceivesProgressEventUpdate(
-                  requestId = bagRequest.archiveRequestId,
+                  requestId = bagRequest.requestId,
                   progressTopic = progressTopic
                 ) { events =>
                   events.map {
@@ -65,7 +65,7 @@ class BagVerifierWorkerServiceTest
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
               bagLocation =>
                 val bagRequest = BagRequest(
-                  archiveRequestId = randomUUID,
+                  requestId = randomUUID,
                   bagLocation = bagLocation
                 )
 
@@ -75,7 +75,7 @@ class BagVerifierWorkerServiceTest
                   assertSnsReceivesNothing(outgoingTopic)
 
                   assertTopicReceivesProgressStatusUpdate(
-                    requestId = bagRequest.archiveRequestId,
+                    requestId = bagRequest.requestId,
                     progressTopic = progressTopic,
                     status = Progress.Failed
                   ) { events =>
@@ -104,7 +104,7 @@ class BagVerifierWorkerServiceTest
             withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
               bagLocation =>
                 val bagRequest = BagRequest(
-                  archiveRequestId = randomUUID,
+                  requestId = randomUUID,
                   bagLocation = bagLocation
                 )
 
@@ -114,7 +114,7 @@ class BagVerifierWorkerServiceTest
                   assertSnsReceivesNothing(outgoingTopic)
 
                   assertTopicReceivesProgressStatusUpdate(
-                    requestId = bagRequest.archiveRequestId,
+                    requestId = bagRequest.requestId,
                     progressTopic = progressTopic,
                     status = Progress.Failed
                   ) { events =>
@@ -138,7 +138,7 @@ class BagVerifierWorkerServiceTest
         withLocalS3Bucket { bucket =>
           withBag(bucket) { bagLocation =>
             val bagRequest = BagRequest(
-              archiveRequestId = randomUUID,
+              requestId = randomUUID,
               bagLocation = bagLocation
             )
 
@@ -146,7 +146,7 @@ class BagVerifierWorkerServiceTest
 
             whenReady(future.failed) { _ =>
               assertTopicReceivesProgressEventUpdate(
-                requestId = bagRequest.archiveRequestId,
+                requestId = bagRequest.requestId,
                 progressTopic = progressTopic
               ) { events =>
                 events.map {

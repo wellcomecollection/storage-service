@@ -1,25 +1,24 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
-import java.nio.file.Paths
-import java.util.UUID
-
 import akka.Done
 import grizzled.slf4j.Logging
+import io.circe.Encoder
 import uk.ac.wellcome.messaging.sqs.NotificationStream
-import uk.ac.wellcome.platform.archive.bagunpacker.BagUnpackerConfig
-import uk.ac.wellcome.platform.archive.common.models.UnpackBagRequest
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.BagLocationBuilder
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.{BagUnpackerConfig, OperationResult}
+import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
+import uk.ac.wellcome.platform.archive.common.models.{BagRequest, UnpackBagRequest}
 import uk.ac.wellcome.typesafe.Runnable
+import uk.ac.wellcome.json.JsonUtil._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class BagUnpackerWorkerService(
-  config: BagUnpackerConfig,
-  stream: NotificationStream[UnpackBagRequest],
-  notificationService: NotificationService,
-  unpackerService: UnpackerService
-) extends Logging
+                                bagUnpackerConfig: BagUnpackerConfig,
+                                stream: NotificationStream[UnpackBagRequest],
+                                operationNotifier: OperationNotifierService,
+                                unpackerService: UnpackerService
+)(implicit ec: ExecutionContext) extends Logging
     with Runnable {
 
   def run(): Future[Done] =
@@ -27,31 +26,33 @@ class BagUnpackerWorkerService(
 
   def processMessage(
     unpackBagRequest: UnpackBagRequest
-  ): Future[Unit] = {
+  )(implicit encoder: Encoder[BagRequest]): Future[Unit] = {
 
-    val destinationLocation = UnpackDestination(
-      config.namespace,
-      config.prefix,
-      unpackBagRequest.requestId
+    val bagLocation = BagLocationBuilder.build(
+      unpackBagRequest,
+      bagUnpackerConfig
     )
 
     for {
       unpackResult <- unpackerService.unpack(
-        unpackBagRequest.sourceLocation, destinationLocation
+        unpackBagRequest.sourceLocation,
+        bagLocation.objectLocation
       )
 
-      _ = info(s"Unpacked bag: $unpackResult")
+      _ <- operationNotifier
+        .send[
+          UnpackSummary,
+          OperationResult[UnpackSummary],
+          BagRequest
+        ](
+        unpackBagRequest.requestId,
+        unpackResult
+      ) { _ => BagRequest(
+          unpackBagRequest.requestId,
+          bagLocation
+        )
+      }
 
-      _ <- notificationService.sendOutgoingNotification(unpackBagRequest)
-    } yield unpackResult
-  }
-}
-
-object UnpackDestination {
-  def apply(namespace: String, prefix: String, id: UUID) = {
-    ObjectLocation(
-      namespace = namespace,
-      key = Paths.get(prefix, id.toString).toString
-    )
+    } yield ()
   }
 }

@@ -34,7 +34,7 @@ trait BagReplicatorFixtures
   )(testWith: TestWith[BagLocation, R]): R =
     withBag(storageBucket) { bagLocation =>
       val replicationRequest = BagRequest(
-        archiveRequestId = archiveRequestId,
+        requestId = archiveRequestId,
         bagLocation = bagLocation
       )
 

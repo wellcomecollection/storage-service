@@ -22,73 +22,72 @@ class UnpackerServiceTest
     it("unpacks that bag!") {
       withLocalS3Bucket { srcBucket =>
         withLocalS3Bucket { dstBucket =>
+          withArchive(srcBucket) { testArchive =>
 
-          implicit val _ = s3Client
+              val fileCount = defaultFileCount
+              val dstKey = "unpacked"
+              val dstLocation =
+                ObjectLocation(dstBucket.name, dstKey)
 
-          val fileCount = 10
+              val unpackService = new UnpackerService()
 
-          val (archiveFile, files, expectedEntries) =
-            createArchive(
-              archiverName = "tar",
-              compressorName = "gz",
-              fileCount
-            )
+              val unpacking = unpackService
+                .unpack(
+                  testArchive.location,
+                  dstLocation
+                )
 
-          val srcKey = archiveFile.getName
-          val dstKey = "unpacked"
+              whenReady(unpacking) { unpacked =>
 
-          val srcLocation = ObjectLocation(srcBucket.name, srcKey)
-          val dstLocation = ObjectLocation(dstBucket.name, dstKey)
+                val summary = unpacked.summary
+                val dstKeys = listKeysInBucket(dstBucket)
+                val expectedBytes = testArchive
+                  .containedFiles.foldLeft(0L)((n, file) => {
+                    n + file.length()
+                  })
 
-          s3Client.putObject(srcBucket.name, srcKey, archiveFile)
+                println(
+                  s"Unpacked bytes: ${summary.bytesUnpacked}")
+                println(
+                  s"Expected bytes: ${expectedBytes}")
 
-          println(
-            s"Put ${archiveFile.getAbsolutePath} to s3://${srcBucket.name}/${srcKey}")
+                summary.fileCount shouldBe fileCount
+                summary.bytesUnpacked shouldBe expectedBytes
 
-          val unpackService = new UnpackerService()
-          val unpacking = unpackService
-            .unpack(srcLocation, dstLocation)
+                val actualFileMap = dstKeys.map { key =>
+                  val s3Object = s3Client
+                    .getObject(dstBucket.name, key)
 
-          whenReady(unpacking) { unpacked =>
-            val dstKeys = listKeysInBucket(dstBucket)
-            val expectedBytes = files.foldLeft(0L)( (n,file) => {
-              n + file.length()
-            })
+                  val content = IOUtils
+                    .toByteArray(s3Object.getObjectContent)
 
-            println(s"Unpacked bytes: ${unpacked.bytesUnpacked}")
-            println(s"Expected bytes: ${expectedBytes}")
+                  val name = key
+                    .replaceFirst(
+                      s"$dstKey/", ""
+                    )
 
-            unpacked.fileCount shouldBe fileCount
-            unpacked.bytesUnpacked shouldBe expectedBytes
+                  println(s"Found $key in ${dstBucket.name}")
 
-            val actualFileMap = dstKeys.map { key =>
-              val s3Object = s3Client.getObject(dstBucket.name, key)
+                  name -> content
+                }.toMap
 
-              val content = IOUtils.toByteArray(s3Object.getObjectContent)
+                actualFileMap.size shouldBe testArchive
+                  .containedFiles.length
 
-              val name = key
-                .replaceFirst(s"$dstKey/", "")
+                testArchive.containedFiles.map { file =>
+                  val fis = new FileInputStream(file)
+                  val content = IOUtils.toByteArray(fis)
+                  val name = relativeToTmpDir(file)
 
-              println(s"Found $key in ${dstBucket.name}")
+                  val actualFile = actualFileMap.get(name)
 
-              name -> content
-            }.toMap
+                  actualFile shouldBe defined
+                  val actualBytes = actualFile.get
 
-            actualFileMap.size shouldBe files.length
-
-            files.map { file =>
-              val fis = new FileInputStream(file)
-              val content = IOUtils.toByteArray(fis)
-              val name = relativeToTmpDir(file)
-
-              val actualFile = actualFileMap.get(name)
-
-              actualFile shouldBe defined
-              val actualBytes = actualFile.get
-
-              actualBytes.length shouldBe content.length
-              actualBytes shouldEqual content
-            }
+                  actualBytes.length shouldBe content.length
+                  actualBytes shouldEqual content
+                }
+              }
           }
         }
       }
