@@ -1,6 +1,7 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.services
+package uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access.services
 
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 

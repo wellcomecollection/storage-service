@@ -1,13 +1,14 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.services
+package uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access.services
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{BagReplicatorFixtures, WorkerServiceFixture}
+import uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access.fixtures.WorkerServiceFixture
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
@@ -19,7 +20,7 @@ class BagReplicatorWorkerServiceTest
     with BagReplicatorFixtures
     with BagRequestGenerators
     with ProgressUpdateAssertions
-    with WorkerServiceFixture {
+      with WorkerServiceFixture {
 
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { bucket =>

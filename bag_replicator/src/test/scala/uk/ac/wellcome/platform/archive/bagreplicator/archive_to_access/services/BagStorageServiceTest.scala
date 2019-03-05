@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.services
+package uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access.services
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.concurrent.ScalaFutures

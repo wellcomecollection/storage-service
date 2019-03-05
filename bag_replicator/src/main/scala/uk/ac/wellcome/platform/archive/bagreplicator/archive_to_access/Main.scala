@@ -1,9 +1,11 @@
-package uk.ac.wellcome.platform.archive.bagreplicator
+package uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
+import uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access.services.{BagReplicatorWorkerService, BagStorageService}
+import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -31,7 +33,7 @@ object Main extends WellcomeTypesafeApp {
       notificationStream =
         NotificationStreamBuilder.buildStream[BagRequest](config),
       bagStorageService = bagStorageService,
-      bagReplicatorConfig = BagReplicatorConfig.buildBagReplicatorConfig(config),
+      replicatorDestinationConfig = ReplicatorDestinationConfig.buildDestinationConfig(config),
       progressSnsWriter =
         SNSBuilder.buildSNSWriter(config, namespace = "progress"),
       outgoingSnsWriter =

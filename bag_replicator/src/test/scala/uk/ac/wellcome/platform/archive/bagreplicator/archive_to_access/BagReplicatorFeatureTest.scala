@@ -1,9 +1,10 @@
-package uk.ac.wellcome.platform.archive.bagreplicator
+package uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{BagReplicatorFixtures, WorkerServiceFixture}
+import uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access.fixtures.WorkerServiceFixture
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult

@@ -1,12 +1,12 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
+package uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
+import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
+import uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access.services.{BagReplicatorWorkerService, BagStorageService}
+import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
@@ -29,11 +29,9 @@ trait WorkerServiceFixture extends NotificationStreamFixture with S3 with SNS {
             val service = new BagReplicatorWorkerService(
               notificationStream = notificationStream,
               bagStorageService = bagStorageService,
-              bagReplicatorConfig = BagReplicatorConfig(
-                destination = ReplicatorDestinationConfig(
-                  namespace = dstBucket.name,
-                  rootPath = Some("destinations/")
-                )
+              replicatorDestinationConfig = ReplicatorDestinationConfig(
+                namespace = dstBucket.name,
+                rootPath = Some("destinations/")
               ),
               progressSnsWriter = progressSnsWriter,
               outgoingSnsWriter = outgoingSnsWriter

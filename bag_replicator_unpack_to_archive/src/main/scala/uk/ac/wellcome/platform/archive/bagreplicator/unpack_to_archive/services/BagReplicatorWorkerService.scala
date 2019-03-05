@@ -1,10 +1,10 @@
-package uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.services
+package uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive.services
 
 import akka.Done
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
-import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.config.BagReplicatorConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.progress.models._
@@ -18,7 +18,7 @@ class BagReplicatorWorkerService(
   notificationStream: NotificationStream[BagRequest],
   unpackedBagService: UnpackedBagService,
   s3PrefixCopier: S3PrefixCopier,
-  bagReplicatorConfig: BagReplicatorConfig,
+  replicatorDestinationConfig: ReplicatorDestinationConfig,
   progressSnsWriter: SNSWriter,
   outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
     extends Runnable {
@@ -63,8 +63,8 @@ class BagReplicatorWorkerService(
     maybeExternalIdentifier: Either[Throwable, ExternalIdentifier]): Either[Throwable, BagLocation] =
     maybeExternalIdentifier.map { externalIdentifier =>
       BagLocation(
-        storageNamespace = bagReplicatorConfig.destination.namespace,
-        storagePrefix = bagReplicatorConfig.destination.rootPath,
+        storageNamespace = replicatorDestinationConfig.namespace,
+        storagePrefix = replicatorDestinationConfig.rootPath,
         storageSpace = bagRequest.bagLocation.storageSpace,
         bagPath = BagPath(externalIdentifier.underlying)
       )

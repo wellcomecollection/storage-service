@@ -1,14 +1,12 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.services
+package uk.ac.wellcome.platform.archive.bagreplicator.archive_to_access.services
 
 import akka.Done
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
+import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  ReplicationResult
-}
+import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult}
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -17,7 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class BagReplicatorWorkerService(
   notificationStream: NotificationStream[BagRequest],
   bagStorageService: BagStorageService,
-  bagReplicatorConfig: BagReplicatorConfig,
+  replicatorDestinationConfig: ReplicatorDestinationConfig,
   progressSnsWriter: SNSWriter,
   outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
     extends Runnable {
@@ -29,7 +27,7 @@ class BagReplicatorWorkerService(
     for {
       result: Either[Throwable, BagLocation] <- bagStorageService.duplicateBag(
         sourceBagLocation = bagRequest.bagLocation,
-        destinationConfig = bagReplicatorConfig.destination
+        destinationConfig = replicatorDestinationConfig
       )
       _ <- sendProgressUpdate(
         bagRequest = bagRequest,

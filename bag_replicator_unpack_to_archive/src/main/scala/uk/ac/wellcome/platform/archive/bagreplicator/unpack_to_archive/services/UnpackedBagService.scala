@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.services
+package uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive.services
 
 import java.io.InputStream
 
