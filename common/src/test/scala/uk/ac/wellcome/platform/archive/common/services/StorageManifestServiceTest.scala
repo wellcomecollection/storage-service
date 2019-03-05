@@ -7,10 +7,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   FileEntry
 }
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
-import uk.ac.wellcome.platform.archive.common.models.{
-  bagit,
-  ChecksumAlgorithm
-}
+import uk.ac.wellcome.platform.archive.common.models.{bagit, ChecksumAlgorithm}
 import uk.ac.wellcome.platform.archive.common.progress.models.{
   InfrequentAccessStorageProvider,
   StorageLocation

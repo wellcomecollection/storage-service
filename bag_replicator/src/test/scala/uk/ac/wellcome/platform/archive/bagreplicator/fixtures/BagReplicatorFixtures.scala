@@ -8,9 +8,7 @@ import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.collection.JavaConverters._
 
-trait BagReplicatorFixtures
-    extends S3
-    with RandomThings {
+trait BagReplicatorFixtures extends S3 with RandomThings {
 
   def verifyBagCopied(src: BagLocation, dst: BagLocation): Assertion = {
     val sourceItems = getObjectSummaries(src)
