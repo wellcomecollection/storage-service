@@ -119,7 +119,7 @@ def get_flattened_destination(file_element, keys, folder, bag_details):
     return current_location, destination
 
 
-def process_assets(root, bag_details, assets, skip_file_download):
+def process_assets(root, bag_details, assets, tech_md_files, skip_file_download):
     logging.debug("Collecting assets for " + bag_details["b_number"])
 
     chunk_size = 1024 * 1024
@@ -127,6 +127,15 @@ def process_assets(root, bag_details, assets, skip_file_download):
     asset_file_group = root.find(
         "./mets:fileSec/mets:fileGrp[@USE='OBJECTS']", namespaces
     )
+
+    # TODO - keep track of the asset IDs that we fetch.
+    # Compare with the tech_md_files passed.
+    # if there is a mismatch, download the techMD files
+    # log to the warnings bucket
+    # write to status table
+
+    uuids_downloaded = []
+
     for file_element in asset_file_group:
         current_location, destination = get_flattened_destination(
             file_element, OBJECT_KEYS, "objects", bag_details
@@ -199,5 +208,20 @@ def process_assets(root, bag_details, assets, skip_file_download):
         message = "Unable to find asset {0}".format(pres_uuid)
         assert asset_downloaded, message
 
+        uuids_downloaded.append(pres_uuid)
+
         logging.debug("TODO: doing checksums on " + destination)
         logging.debug("validate " + checksum)
+
+    # Now see if there are files we didn't collect in that set of downloads
+    for tech_md_file in tech_md_files:
+        preservica_id = tech_md_file["preservica_id"]
+        if preservica_id not in uuids_downloaded:
+            folder = "objects"
+            filename = tech_md_file["filename"]
+            destination = os.path.join(bag_details["directory"], folder, filename)
+            bag_assembly.ensure_directory(destination)
+
+            # need to refactor some of above file access to reuse here
+            # unlikely to have origin?
+            origin_info = storage.analyse_origin(None, pres_uuid)

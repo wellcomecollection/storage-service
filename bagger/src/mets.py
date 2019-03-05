@@ -60,7 +60,7 @@ def get_file_pointer_link(struct_div):
     return link
 
 
-def remove_deliverable_unit(root):
+def restructure_tech_md(root):
     """
 The Deliverable Unit concept is no longer required in the METS file.
 When removing it, we also want to renumber the remaining AMD blocks,
@@ -96,11 +96,14 @@ the AMD to start at _0001
 
     counter = 1
     ignore = ["RIGHTS", "DIGIPROV"]
+    tech_md_files = []
     for tech_md in amd_sec:
         old_id = tech_md.get("ID")
         if old_id in ignore:
             continue
 
+        # Find the file elements in the physical structmap that have this ID
+        # We expect 1; there may be 0, and if 0 we still need to collect the file and store it
         refs = root.findall(".//mets:div[@ADMID='{0}']".format(old_id), namespaces)
         tech_md_filename = get_tech_md_filename(tech_md)
         if len(refs) == 0 and is_ignorable_file(tech_md_filename):
@@ -108,15 +111,48 @@ the AMD to start at _0001
             continue
 
         new_id = "AMD_" + str(counter).zfill(4)
-        tech_md.set("ID", new_id)
-        if len(refs) != 1:
-            message = "Expected 1 AMD ref for {0}, got {1}, filename: {2}".format(
-                old_id, len(refs), tech_md_filename
-            )
-            raise RuntimeError(message)
-
-        refs[0].set("ADMID", new_id)
+        tech_md_preservica_id = get_tech_md_preservica_id(tech_md)
+        phys_file = None
+        if len(refs) == 1:
+            phys_file = refs[0]
+        tech_md_files.append({
+            "old_id": old_id,
+            "new_id": new_id,
+            "filename": tech_md_filename,
+            "preservica_id": tech_md_preservica_id,
+            "refs_count": len(refs),
+            "tech_md": tech_md,
+            "phys_file": phys_file
+        })
         counter = counter + 1
+
+    # Now go through tech_md_files, providing new renumbered IDs
+    tech_md_map = {}
+    for tech_md_file in tech_md_files:
+        tech_md_map[tech_md_file["new_id"]] = tech_md_file
+        tech_md_file["tech_md"].set("ID", tech_md_file["new_id"])
+        if tech_md_file.get("phys_file", None) is not None:
+            tech_md_file["phys_file"].set("ADMID", tech_md_file["new_id"])
+        else:
+            warnings = tech_md_map.get("__warnings", [])
+            message = "Expected 1 AMD ref for {0} (old) {1} (new), got {2}, filename: {3}".format(
+                tech_md_file["old_id"],
+                tech_md_file["new_id"],
+                tech_md_file["refs_count"],
+                tech_md_file["filename"]
+            )
+            warnings.append(message)
+            tech_md_map["__warnings"] = warnings
+
+    return tech_md_map
+    # if len(refs) != 1:
+    #     message = "Expected 1 AMD ref for {0}, got {1}, filename: {2}".format(
+    #         old_id, len(refs), tech_md_filename
+    #     )
+    #     raise RuntimeError(message)
+
+    # tech_md.set("ID", new_id)
+    # refs[0].set("ADMID", new_id)
 
 
 def get_tech_md_filename(tech_md):
@@ -127,6 +163,16 @@ def get_tech_md_filename(tech_md):
         tech_md.get("ID")
     )
     return file_name_els[0].text
+
+
+def get_tech_md_preservica_id(tech_md):
+    id_els = tech_md.findall(
+        "./mets:mdWrap/mets:xmlData/tessella:File/tessella:ID", namespaces
+    )
+    assert len(id_els) == 1, "More than one ID in {0}".format(
+        tech_md.get("ID")
+    )
+    return id_els[0].text
 
 
 def is_ignorable_file(tech_md_filename):

@@ -42,6 +42,7 @@ def save_mets_to_side(b_number, local_tmp_file):
     client.upload_file(local_tmp_file, settings.DROP_BUCKET_NAME_METS_ONLY, key)
 
 
+# This is used to drive the accelelrated DLCS migration
 def save_id_map(b_number, id_map):
     s3_path = "_idmaps/{0}.json".format(b_number)
     obj = get_s3().Object(settings.DROP_BUCKET_NAME_METS_ONLY, s3_path)
