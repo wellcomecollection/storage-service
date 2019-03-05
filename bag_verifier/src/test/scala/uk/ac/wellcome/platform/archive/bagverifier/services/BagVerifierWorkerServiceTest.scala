@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
@@ -19,12 +19,14 @@ class BagVerifierWorkerServiceTest
     with ScalaFutures
     with BagLocationFixtures
     with ProgressUpdateAssertions
+    with IntegrationPatience
     with WorkerServiceFixture {
+
   it(
-    "updates the progress monitor and sends an ongoing notification if verification succeeds") {
+    "updates the progress monitor and sends an outgoing notification if verification succeeds") {
     withLocalSnsTopic { progressTopic =>
-      withLocalSnsTopic { ongoingTopic =>
-        withWorkerService(progressTopic, ongoingTopic) { service =>
+      withLocalSnsTopic { outgoingTopic =>
+        withWorkerService(progressTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket) { bagLocation =>
               val bagRequest = BagRequest(
@@ -35,15 +37,17 @@ class BagVerifierWorkerServiceTest
               val future = service.processMessage(bagRequest)
 
               whenReady(future) { _ =>
-                assertSnsReceivesOnly(bagRequest, topic = ongoingTopic)
+                assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
 
-                assertTopicReceivesProgressStatusUpdate(
+                assertTopicReceivesProgressEventUpdate(
                   requestId = bagRequest.archiveRequestId,
-                  progressTopic = progressTopic,
-                  status = Progress.Processing
+                  progressTopic = progressTopic
                 ) { events =>
-                  events.map { _.description } shouldBe List(
-                    "Successfully verified bag contents")
+                  events.map {
+                    _.description
+                  } shouldBe List(
+                    "Successfully verified bag contents"
+                  )
                 }
               }
             }
@@ -55,8 +59,8 @@ class BagVerifierWorkerServiceTest
 
   it("only updates the progress monitor if verification fails") {
     withLocalSnsTopic { progressTopic =>
-      withLocalSnsTopic { ongoingTopic =>
-        withWorkerService(progressTopic, ongoingTopic) { service =>
+      withLocalSnsTopic { outgoingTopic =>
+        withWorkerService(progressTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
               bagLocation =>
@@ -68,16 +72,18 @@ class BagVerifierWorkerServiceTest
                 val future = service.processMessage(bagRequest)
 
                 whenReady(future) { _ =>
-                  assertSnsReceivesNothing(ongoingTopic)
+                  assertSnsReceivesNothing(outgoingTopic)
 
                   assertTopicReceivesProgressStatusUpdate(
                     requestId = bagRequest.archiveRequestId,
                     progressTopic = progressTopic,
                     status = Progress.Failed
                   ) { events =>
-                    val description = events.map { _.description }.head
+                    val description = events.map {
+                      _.description
+                    }.head
                     description should startWith(
-                      "There were problems verifying the bag: not every checksum matched the manifest")
+                      "Problem verifying bag: File checksum did not match manifest")
                   }
                 }
             }
@@ -92,8 +98,8 @@ class BagVerifierWorkerServiceTest
       dataFiles: List[(String, String)]): Option[FileEntry] = None
 
     withLocalSnsTopic { progressTopic =>
-      withLocalSnsTopic { ongoingTopic =>
-        withWorkerService(progressTopic, ongoingTopic) { service =>
+      withLocalSnsTopic { outgoingTopic =>
+        withWorkerService(progressTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
               bagLocation =>
@@ -105,16 +111,18 @@ class BagVerifierWorkerServiceTest
                 val future = service.processMessage(bagRequest)
 
                 whenReady(future) { _ =>
-                  assertSnsReceivesNothing(ongoingTopic)
+                  assertSnsReceivesNothing(outgoingTopic)
 
                   assertTopicReceivesProgressStatusUpdate(
                     requestId = bagRequest.archiveRequestId,
                     progressTopic = progressTopic,
                     status = Progress.Failed
                   ) { events =>
-                    val description = events.map { _.description }.head
+                    val description = events.map {
+                      _.description
+                    }.head
                     description should startWith(
-                      "There were problems verifying the bag: verification could not be performed")
+                      "Problem verifying bag: Verification could not be performed")
                   }
                 }
             }
@@ -124,9 +132,9 @@ class BagVerifierWorkerServiceTest
     }
   }
 
-  it("sends a progress update before it sends an ongoing message") {
+  it("sends a progress update before it sends an outgoing message") {
     withLocalSnsTopic { progressTopic =>
-      withWorkerService(progressTopic, Topic("no-such-ongoing")) { service =>
+      withWorkerService(progressTopic, Topic("no-such-outgoing")) { service =>
         withLocalS3Bucket { bucket =>
           withBag(bucket) { bagLocation =>
             val bagRequest = BagRequest(
@@ -137,10 +145,9 @@ class BagVerifierWorkerServiceTest
             val future = service.processMessage(bagRequest)
 
             whenReady(future.failed) { _ =>
-              assertTopicReceivesProgressStatusUpdate(
+              assertTopicReceivesProgressEventUpdate(
                 requestId = bagRequest.archiveRequestId,
-                progressTopic = progressTopic,
-                status = Progress.Processing
+                progressTopic = progressTopic
               ) { events =>
                 events.map {
                   _.description

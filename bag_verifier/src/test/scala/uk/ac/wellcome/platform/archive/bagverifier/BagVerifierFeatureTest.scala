@@ -20,12 +20,12 @@ class BagVerifierFeatureTest
     with WorkerServiceFixture {
 
   it(
-    "updates the progress monitor and sends an ongoing notification if verification succeeds") {
+    "updates the progress monitor and sends an outgoing notification if verification succeeds") {
     withLocalSnsTopic { progressTopic =>
-      withLocalSnsTopic { ongoingTopic =>
+      withLocalSnsTopic { outgoingTopic =>
         withLocalSqsQueueAndDlq {
           case QueuePair(queue, dlq) =>
-            withWorkerService(progressTopic, ongoingTopic, queue) { _ =>
+            withWorkerService(progressTopic, outgoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
                 withBag(bucket) { bagLocation =>
                   val bagRequest = BagRequest(
@@ -36,12 +36,11 @@ class BagVerifierFeatureTest
                   sendNotificationToSQS(queue, bagRequest)
 
                   eventually {
-                    assertSnsReceivesOnly(bagRequest, topic = ongoingTopic)
+                    assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
 
-                    assertTopicReceivesProgressStatusUpdate(
+                    assertTopicReceivesProgressEventUpdate(
                       requestId = bagRequest.archiveRequestId,
-                      progressTopic = progressTopic,
-                      status = Progress.Processing
+                      progressTopic = progressTopic
                     ) { events =>
                       events.map {
                         _.description
@@ -62,10 +61,10 @@ class BagVerifierFeatureTest
   it(
     "deletes the SQS message if the bag can be verified but has incorrect checksums") {
     withLocalSnsTopic { progressTopic =>
-      withLocalSnsTopic { ongoingTopic =>
+      withLocalSnsTopic { outgoingTopic =>
         withLocalSqsQueueAndDlq {
           case QueuePair(queue, dlq) =>
-            withWorkerService(progressTopic, ongoingTopic, queue) { _ =>
+            withWorkerService(progressTopic, outgoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
                 withBag(
                   bucket,
@@ -79,7 +78,7 @@ class BagVerifierFeatureTest
                     sendNotificationToSQS(queue, bagRequest)
 
                     eventually {
-                      assertSnsReceivesNothing(ongoingTopic)
+                      assertSnsReceivesNothing(outgoingTopic)
 
                       assertTopicReceivesProgressStatusUpdate(
                         requestId = bagRequest.archiveRequestId,
@@ -90,7 +89,7 @@ class BagVerifierFeatureTest
                           _.description
                         }.head
                         description should startWith(
-                          "There were problems verifying the bag: not every checksum matched the manifest")
+                          "Problem verifying bag: File checksum did not match manifest")
                       }
 
                       assertQueueEmpty(queue)

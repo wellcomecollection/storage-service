@@ -29,8 +29,6 @@ class ArchiveJobDigestItemsFlowTest
     with ZipBagItFixture
     with Inside
     with IngestBagRequestGenerators {
-  implicit val s = s3Client
-
   it("outputs a right of archive complete if all of the items succeed") {
     withMaterializer { implicit materializer =>
       withLocalS3Bucket { bucket =>

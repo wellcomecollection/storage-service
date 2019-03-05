@@ -14,8 +14,6 @@ class ConvertibleToInputStreamTest
     with ScalaFutures
     with RandomThings {
 
-  implicit val _ = s3Client
-
   import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 
   describe("converts to a Try[InputStream]") {

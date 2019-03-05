@@ -52,7 +52,6 @@ class ArchiveZipFileFlowTest
     with Inside
     with ProgressUpdateAssertions {
 
-  implicit val s3client = s3Client
   implicit val snsclient = snsClient
 
   it("notifies success when verifying and uploading a valid bag") {
@@ -161,8 +160,10 @@ class ArchiveZipFileFlowTest
                   Sink.seq)
 
               whenReady(verification) { result =>
-                result shouldBe List(Left(
-                  BagNotFoundError("'bag-info.txt' not found.", ingestContext)))
+                result shouldBe List(
+                  Left(BagNotFoundError(
+                    "No bag-info.txt file found!",
+                    ingestContext)))
 
                 assertTopicReceivesProgressStatusUpdate(
                   ingestContext.id,

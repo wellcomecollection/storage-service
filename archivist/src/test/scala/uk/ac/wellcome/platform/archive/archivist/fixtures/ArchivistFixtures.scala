@@ -88,7 +88,6 @@ trait ArchivistFixtures
     withActorSystem { implicit actorSystem =>
       withArchiveMessageStream[NotificationMessage, Unit, R](queue) {
         messageStream =>
-          implicit val s3 = s3Client
           implicit val sns = snsClient
           implicit val tf =
             TransferManagerBuilder.standard().withS3Client(s3Client).build()

@@ -5,12 +5,9 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.{
-  S3Copier,
-  S3PrefixCopier
-}
 import uk.ac.wellcome.platform.archive.common.models.bagit.ExternalIdentifier
 import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.s3.{S3Copier, S3PrefixCopier, S3PrefixOperator}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -22,9 +19,10 @@ class BagStorageServiceTest
     with S3 {
 
   val s3PrefixCopier = new S3PrefixCopier(
-    s3Client = s3Client,
-    copier = new S3Copier(s3Client)
+    s3PrefixOperator = new S3PrefixOperator(s3Client = s3Client),
+    copier = new S3Copier(s3Client = s3Client)
   )
+
   val bagStorage = new BagStorageService(s3PrefixCopier = s3PrefixCopier)
 
   it("duplicates a bag within the same bucket") {
