@@ -6,7 +6,7 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.config.{BagReplicatorConfig, ReplicatorDestinationConfig}
-import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.services.{BagReplicatorWorkerService, BagStorageService, UnpackedBagService}
+import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.services.{BagReplicatorWorkerService, UnpackedBagService}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
@@ -21,17 +21,12 @@ trait WorkerServiceFixture extends NotificationStreamFixture with RandomThings w
     progressTopic: Topic,
     outgoingTopic: Topic,
     destination: ReplicatorDestinationConfig = createReplicatorDestinationConfigWith(Bucket(randomAlphanumeric())))(
-    testWith: TestWith[BagReplicatorWorkerService, R]): R = {
-    val bagStorageService = new BagStorageService(
-      s3PrefixCopier = S3PrefixCopier(s3Client)
-    )
-
+    testWith: TestWith[BagReplicatorWorkerService, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
       withSNSWriter(progressTopic) { progressSnsWriter =>
         withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
           val service = new BagReplicatorWorkerService(
             notificationStream = notificationStream,
-            bagStorageService = bagStorageService,
             bagReplicatorConfig = BagReplicatorConfig(
               destination = destination
             ),
@@ -47,7 +42,6 @@ trait WorkerServiceFixture extends NotificationStreamFixture with RandomThings w
         }
       }
     }
-  }
 
   def createReplicatorDestinationConfigWith(bucket: Bucket): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(

@@ -6,8 +6,8 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.fixtures.{BagReplicatorFixtures, WorkerServiceFixture}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
-import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
@@ -37,11 +37,10 @@ class BagReplicatorWorkerServiceTest
                 val future = service.processMessage(bagRequest)
 
                 whenReady(future) { _ =>
-                  val result = notificationMessage[ReplicationResult](outgoingTopic)
+                  val result = notificationMessage[BagRequest](outgoingTopic)
                   result.archiveRequestId shouldBe bagRequest.archiveRequestId
-                  result.srcBagLocation shouldBe bagRequest.bagLocation
 
-                  val dstBagLocation = result.dstBagLocation
+                  val dstBagLocation = result.bagLocation
 
                   verifyBagCopied(
                     src = srcBagLocation,
@@ -52,7 +51,7 @@ class BagReplicatorWorkerServiceTest
                     bagRequest.archiveRequestId,
                     progressTopic) { events =>
                     events should have size 1
-                    events.head.description shouldBe "Bag replicated successfully"
+                    events.head.description shouldBe "Bag successfully copied from ingest location"
                   }
                 }
               }
@@ -88,7 +87,7 @@ class BagReplicatorWorkerServiceTest
               progressTopic = progressTopic,
               status = Progress.Failed) { events =>
               events should have size 1
-              events.head.description shouldBe s"Failed to replicate bag"
+              events.head.description shouldBe "Failed to copy bag from ingest location"
             }
           }
         }

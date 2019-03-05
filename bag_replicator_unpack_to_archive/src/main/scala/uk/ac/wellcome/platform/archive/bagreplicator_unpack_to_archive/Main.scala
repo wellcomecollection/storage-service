@@ -5,7 +5,7 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.config.BagReplicatorConfig
-import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.services.{BagReplicatorWorkerService, BagStorageService, UnpackedBagService}
+import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.services.{BagReplicatorWorkerService, UnpackedBagService}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -23,18 +23,9 @@ object Main extends WellcomeTypesafeApp {
 
     val s3Client = S3Builder.buildS3Client(config)
 
-    val s3PrefixCopier = S3PrefixCopier(
-      s3Client = S3Builder.buildS3Client(config)
-    )
-
-    val bagStorageService = new BagStorageService(
-      s3PrefixCopier = s3PrefixCopier
-    )
-
     new BagReplicatorWorkerService(
       notificationStream =
         NotificationStreamBuilder.buildStream[BagRequest](config),
-      bagStorageService = bagStorageService,
       unpackedBagService = new UnpackedBagService(s3Client),
       s3PrefixCopier = S3PrefixCopier(s3Client),
       bagReplicatorConfig = BagReplicatorConfig.buildBagReplicatorConfig(config),

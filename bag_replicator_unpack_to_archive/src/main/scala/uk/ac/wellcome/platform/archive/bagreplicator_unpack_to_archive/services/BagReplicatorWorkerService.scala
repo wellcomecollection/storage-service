@@ -16,7 +16,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class BagReplicatorWorkerService(
   notificationStream: NotificationStream[BagRequest],
-  bagStorageService: BagStorageService,
   unpackedBagService: UnpackedBagService,
   s3PrefixCopier: S3PrefixCopier,
   bagReplicatorConfig: BagReplicatorConfig,

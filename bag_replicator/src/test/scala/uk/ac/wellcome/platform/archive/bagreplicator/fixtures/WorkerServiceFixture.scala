@@ -5,6 +5,8 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
+import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
