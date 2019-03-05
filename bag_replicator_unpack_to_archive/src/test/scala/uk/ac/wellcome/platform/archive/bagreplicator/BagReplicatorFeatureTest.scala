@@ -10,6 +10,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
 class BagReplicatorFeatureTest
@@ -23,36 +24,50 @@ class BagReplicatorFeatureTest
     with WorkerServiceFixture {
 
   it("replicates a bag successfully and updates both topics") {
-    withLocalS3Bucket { bucket =>
-      withLocalSqsQueue { queue =>
-        withLocalSnsTopic { progressTopic =>
-          withLocalSnsTopic { outgoingTopic =>
-            withWorkerService(
-              queue,
-              progressTopic = progressTopic,
-              outgoingTopic = outgoingTopic) { _ =>
-              withBag(bucket) { srcBagLocation =>
-                val bagRequest = createBagRequestWith(srcBagLocation)
+    withLocalS3Bucket { ingestsBucket =>
+      withLocalS3Bucket { archiveBucket =>
+        val destination = createReplicatorDestinationConfigWith(archiveBucket)
 
-                sendNotificationToSQS(queue, bagRequest)
+        withLocalSqsQueue { queue =>
+          withLocalSnsTopic { progressTopic =>
+            withLocalSnsTopic { outgoingTopic =>
+              withWorkerService(
+                queue,
+                progressTopic = progressTopic,
+                outgoingTopic = outgoingTopic,
+                destination = destination) { _ =>
+                val bagInfo = createBagInfo
 
-                eventually {
-                  val result = notificationMessage[ReplicationResult](outgoingTopic)
-                  result.archiveRequestId shouldBe bagRequest.archiveRequestId
-                  result.srcBagLocation shouldBe bagRequest.bagLocation
+                withBag(ingestsBucket, bagInfo = bagInfo) { srcBagLocation =>
+                  val bagRequest = createBagRequestWith(srcBagLocation)
 
-                  val dstBagLocation = result.dstBagLocation
+                  sendNotificationToSQS(queue, bagRequest)
 
-                  verifyBagCopied(
-                    src = srcBagLocation,
-                    dst = dstBagLocation
-                  )
+                  eventually {
+                    val result = notificationMessage[ReplicationResult](outgoingTopic)
+                    result.archiveRequestId shouldBe bagRequest.archiveRequestId
+                    result.srcBagLocation shouldBe bagRequest.bagLocation
 
-                  assertTopicReceivesProgressEventUpdate(
-                    bagRequest.archiveRequestId,
-                    progressTopic) { events =>
-                    events should have size 1
-                    events.head.description shouldBe "Bag replicated successfully"
+                    val dstBagLocation = result.dstBagLocation
+
+                    dstBagLocation shouldBe BagLocation(
+                      storageNamespace = destination.namespace,
+                      storagePrefix = destination.rootPath,
+                      storageSpace = srcBagLocation.storageSpace,
+                      bagPath = BagPath(bagInfo.externalIdentifier.underlying)
+                    )
+
+                    verifyBagCopied(
+                      src = srcBagLocation,
+                      dst = dstBagLocation
+                    )
+
+                    assertTopicReceivesProgressEventUpdate(
+                      bagRequest.archiveRequestId,
+                      progressTopic) { events =>
+                      events should have size 1
+                      events.head.description shouldBe "Bag replicated successfully"
+                    }
                   }
                 }
               }

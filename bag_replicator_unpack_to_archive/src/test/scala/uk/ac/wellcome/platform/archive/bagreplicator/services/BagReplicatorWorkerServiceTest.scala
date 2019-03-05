@@ -28,34 +28,38 @@ class BagReplicatorWorkerServiceTest
     with WorkerServiceFixture {
 
   it("replicates a bag successfully and updates both topics") {
-    withLocalS3Bucket { bucket =>
-      withLocalSnsTopic { progressTopic =>
-        withLocalSnsTopic { outgoingTopic =>
-          withWorkerService(
-            progressTopic = progressTopic,
-            outgoingTopic = outgoingTopic) { service =>
-            withBag(bucket) { srcBagLocation =>
-              val bagRequest = createBagRequestWith(srcBagLocation)
+    withLocalS3Bucket { ingestsBucket =>
+      withLocalS3Bucket { archiveBucket =>
+        val destination = createReplicatorDestinationConfigWith(archiveBucket)
+        withLocalSnsTopic { progressTopic =>
+          withLocalSnsTopic { outgoingTopic =>
+            withWorkerService(
+              progressTopic = progressTopic,
+              outgoingTopic = outgoingTopic,
+              destination = destination) { service =>
+              withBag(ingestsBucket) { srcBagLocation =>
+                val bagRequest = createBagRequestWith(srcBagLocation)
 
-              val future = service.processMessage(bagRequest)
+                val future = service.processMessage(bagRequest)
 
-              whenReady(future) { _ =>
-                val result = notificationMessage[ReplicationResult](outgoingTopic)
-                result.archiveRequestId shouldBe bagRequest.archiveRequestId
-                result.srcBagLocation shouldBe bagRequest.bagLocation
+                whenReady(future) { _ =>
+                  val result = notificationMessage[ReplicationResult](outgoingTopic)
+                  result.archiveRequestId shouldBe bagRequest.archiveRequestId
+                  result.srcBagLocation shouldBe bagRequest.bagLocation
 
-                val dstBagLocation = result.dstBagLocation
+                  val dstBagLocation = result.dstBagLocation
 
-                verifyBagCopied(
-                  src = srcBagLocation,
-                  dst = dstBagLocation
-                )
+                  verifyBagCopied(
+                    src = srcBagLocation,
+                    dst = dstBagLocation
+                  )
 
-                assertTopicReceivesProgressEventUpdate(
-                  bagRequest.archiveRequestId,
-                  progressTopic) { events =>
-                  events should have size 1
-                  events.head.description shouldBe "Bag replicated successfully"
+                  assertTopicReceivesProgressEventUpdate(
+                    bagRequest.archiveRequestId,
+                    progressTopic) { events =>
+                    events should have size 1
+                    events.head.description shouldBe "Bag replicated successfully"
+                  }
                 }
               }
             }
