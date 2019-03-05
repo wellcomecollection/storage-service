@@ -7,6 +7,8 @@ import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
   BagReplicatorFixtures,
   WorkerServiceFixture
 }
+import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
@@ -14,7 +16,9 @@ class BagReplicatorFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
+    with BagLocationFixtures
     with BagReplicatorFixtures
+    with BagRequestGenerators
     with ProgressUpdateAssertions
     with WorkerServiceFixture {
 

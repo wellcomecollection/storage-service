@@ -7,6 +7,8 @@ import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
   BagReplicatorFixtures,
   WorkerServiceFixture
 }
+import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagLocation,
   BagPath
@@ -19,7 +21,9 @@ class BagReplicatorWorkerServiceTest
     extends FunSpec
     with Matchers
     with ScalaFutures
+    with BagLocationFixtures
     with BagReplicatorFixtures
+    with BagRequestGenerators
     with ProgressUpdateAssertions
     with WorkerServiceFixture {
 
