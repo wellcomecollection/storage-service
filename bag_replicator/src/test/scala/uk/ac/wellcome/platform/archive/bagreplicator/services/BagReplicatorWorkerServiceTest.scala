@@ -31,9 +31,9 @@ class BagReplicatorWorkerServiceTest
             progressTopic = progressTopic,
             outgoingTopic = outgoingTopic) { service =>
             withBag(bucket) { srcBagLocation =>
-              val replicationRequest = createBagRequestWith(srcBagLocation)
+              val bagRequest = createBagRequestWith(srcBagLocation)
 
-              val future = service.processMessage(replicationRequest)
+              val future = service.processMessage(bagRequest)
 
               whenReady(future) { _ =>
                 val outgoingMessages =
@@ -45,8 +45,8 @@ class BagReplicatorWorkerServiceTest
 
                 results should have size 1
                 val result = results.head
-                result.archiveRequestId shouldBe replicationRequest.archiveRequestId
-                result.srcBagLocation shouldBe replicationRequest.bagLocation
+                result.archiveRequestId shouldBe bagRequest.archiveRequestId
+                result.srcBagLocation shouldBe bagRequest.bagLocation
 
                 val dstBagLocation = result.dstBagLocation
 
@@ -56,7 +56,7 @@ class BagReplicatorWorkerServiceTest
                 )
 
                 assertTopicReceivesProgressEventUpdate(
-                  replicationRequest.archiveRequestId,
+                  bagRequest.archiveRequestId,
                   progressTopic) { events =>
                   events should have size 1
                   events.head.description shouldBe "Bag replicated successfully"
@@ -82,15 +82,15 @@ class BagReplicatorWorkerServiceTest
             bagPath = BagPath("exist.txt")
           )
 
-          val replicationRequest = createBagRequestWith(srcBagLocation)
+          val bagRequest = createBagRequestWith(srcBagLocation)
 
-          val future = service.processMessage(replicationRequest)
+          val future = service.processMessage(bagRequest)
 
           whenReady(future) { _ =>
             assertSnsReceivesNothing(outgoingTopic)
 
             assertTopicReceivesProgressStatusUpdate(
-              replicationRequest.archiveRequestId,
+              bagRequest.archiveRequestId,
               progressTopic = progressTopic,
               status = Progress.Failed) { events =>
               events should have size 1
