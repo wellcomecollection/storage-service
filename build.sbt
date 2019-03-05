@@ -89,6 +89,10 @@ lazy val bag_replicator = setupProject(project, "bag_replicator",
   localDependencies = Seq(common)
 )
 
+lazy val bag_replicator_unpack_to_archive = setupProject(project, "bag_replicator_unpack_to_archive",
+  localDependencies = Seq(common)
+)
+
 lazy val bag_verifier = setupProject(project, "bag_verifier",
   localDependencies = Seq(common)
 )
