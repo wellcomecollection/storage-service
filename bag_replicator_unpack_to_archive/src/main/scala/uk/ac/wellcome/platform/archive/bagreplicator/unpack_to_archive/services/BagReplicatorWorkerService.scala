@@ -6,7 +6,11 @@ import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagLocation,
+  BagPath,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
@@ -32,11 +36,12 @@ class BagReplicatorWorkerService(
       bagRoot <- getBagRoot(bagRequest)
       dstBagLocation = buildDstBagLocation(bagRequest, externalIdentifier)
       result <- copyBag(bagRoot, dstBagLocation)
-      dstBagRequest: Either[Throwable, BagRequest] = dstBagLocation.map { bagLocation =>
-        BagRequest(
-          archiveRequestId = bagRequest.archiveRequestId,
-          bagLocation = bagLocation
-        )
+      dstBagRequest: Either[Throwable, BagRequest] = dstBagLocation.map {
+        bagLocation =>
+          BagRequest(
+            archiveRequestId = bagRequest.archiveRequestId,
+            bagLocation = bagLocation
+          )
       }
       _ <- sendProgressUpdate(
         bagRequest = bagRequest,
@@ -48,19 +53,22 @@ class BagReplicatorWorkerService(
       )
     } yield ()
 
-  private def getExternalIdentifier(bagRequest: BagRequest): Future[Either[Throwable, ExternalIdentifier]] =
+  private def getExternalIdentifier(
+    bagRequest: BagRequest): Future[Either[Throwable, ExternalIdentifier]] =
     either {
       unpackedBagService.getBagIdentifier(bagRequest.bagLocation.objectLocation)
     }
 
-  private def getBagRoot(bagRequest: BagRequest): Future[Either[Throwable, ObjectLocation]] =
+  private def getBagRoot(
+    bagRequest: BagRequest): Future[Either[Throwable, ObjectLocation]] =
     either {
       unpackedBagService.getBagRoot(bagRequest.bagLocation.objectLocation)
     }
 
   private def buildDstBagLocation(
     bagRequest: BagRequest,
-    maybeExternalIdentifier: Either[Throwable, ExternalIdentifier]): Either[Throwable, BagLocation] =
+    maybeExternalIdentifier: Either[Throwable, ExternalIdentifier])
+    : Either[Throwable, BagLocation] =
     maybeExternalIdentifier.map { externalIdentifier =>
       BagLocation(
         storageNamespace = replicatorDestinationConfig.namespace,
@@ -70,13 +78,17 @@ class BagReplicatorWorkerService(
       )
     }
 
-  private def copyBag(maybeBagRoot: Either[Throwable, ObjectLocation], maybeDstLocation: Either[Throwable, BagLocation]): Future[Either[Throwable, Unit]] =
+  private def copyBag(maybeBagRoot: Either[Throwable, ObjectLocation],
+                      maybeDstLocation: Either[Throwable, BagLocation])
+    : Future[Either[Throwable, Unit]] =
     (maybeBagRoot, maybeDstLocation) match {
       case (Right(srcLocation), Right(dstLocation)) =>
-        s3PrefixCopier.copyObjects(
-          srcLocationPrefix = srcLocation,
-          dstLocationPrefix = dstLocation.objectLocation
-        ).map { Right(_) }
+        s3PrefixCopier
+          .copyObjects(
+            srcLocationPrefix = srcLocation,
+            dstLocationPrefix = dstLocation.objectLocation
+          )
+          .map { Right(_) }
       case (Left(err), _) => Future.successful(Left(err))
       case (_, Left(err)) => Future.successful(Left(err))
     }
@@ -86,9 +98,8 @@ class BagReplicatorWorkerService(
       .map { Right(_) }
       .recover { case err: Throwable => Left(err) }
 
-  def sendOutgoingNotification(
-    dstBagRequest: Either[Throwable, BagRequest],
-    result: Either[Throwable, Unit]): Future[Unit] =
+  def sendOutgoingNotification(dstBagRequest: Either[Throwable, BagRequest],
+                               result: Either[Throwable, Unit]): Future[Unit] =
     (dstBagRequest, result) match {
       case (Right(bagRequest), Right(_)) =>
         outgoingSnsWriter
@@ -116,7 +127,8 @@ class BagReplicatorWorkerService(
           id = bagRequest.archiveRequestId,
           status = Progress.Failed,
           affectedBag = None,
-          events = List(ProgressEvent("Failed to copy bag from ingest location"))
+          events =
+            List(ProgressEvent("Failed to copy bag from ingest location"))
         )
     }
 

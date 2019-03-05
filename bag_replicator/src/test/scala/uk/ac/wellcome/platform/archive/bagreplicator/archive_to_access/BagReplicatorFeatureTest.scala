@@ -35,7 +35,8 @@ class BagReplicatorFeatureTest
                 sendNotificationToSQS(queue, bagRequest)
 
                 eventually {
-                  val result = notificationMessage[ReplicationResult](outgoingTopic)
+                  val result =
+                    notificationMessage[ReplicationResult](outgoingTopic)
                   result.archiveRequestId shouldBe bagRequest.archiveRequestId
                   result.srcBagLocation shouldBe bagRequest.bagLocation
 

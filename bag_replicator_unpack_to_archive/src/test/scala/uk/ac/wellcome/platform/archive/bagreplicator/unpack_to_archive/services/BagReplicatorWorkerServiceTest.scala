@@ -8,7 +8,10 @@ import uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive.fixtures.
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 

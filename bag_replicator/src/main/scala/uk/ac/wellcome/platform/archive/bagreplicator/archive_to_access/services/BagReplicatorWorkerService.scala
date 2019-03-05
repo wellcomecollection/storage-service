@@ -6,7 +6,10 @@ import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.models.{BagRequest, ReplicationResult}
+import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
+  ReplicationResult
+}
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.typesafe.Runnable
 

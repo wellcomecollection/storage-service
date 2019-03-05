@@ -8,7 +8,10 @@ import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtu
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
@@ -20,7 +23,7 @@ class BagReplicatorWorkerServiceTest
     with BagReplicatorFixtures
     with BagRequestGenerators
     with ProgressUpdateAssertions
-      with WorkerServiceFixture {
+    with WorkerServiceFixture {
 
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { bucket =>
@@ -35,7 +38,8 @@ class BagReplicatorWorkerServiceTest
               val future = service.processMessage(bagRequest)
 
               whenReady(future) { _ =>
-                val result = notificationMessage[ReplicationResult](outgoingTopic)
+                val result =
+                  notificationMessage[ReplicationResult](outgoingTopic)
                 result.archiveRequestId shouldBe bagRequest.archiveRequestId
                 result.srcBagLocation shouldBe bagRequest.bagLocation
 
