@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import java.time.{Duration, Instant}
+import java.time.Instant
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
@@ -51,27 +51,23 @@ class VerifyDigestFilesService(
     bagLocation: BagLocation,
     digestFiles: Seq[BagDigestFile]
   )(implicit materializer: Materializer): Future[BagVerification] = {
-    val verificationStart = Instant.now
-
+    val bagVerification = BagVerification(startTime = Instant.now)
     Source[BagDigestFile](
       digestFiles.toList
     ).mapAsync(10) { digestFile: BagDigestFile =>
         Future(verifyIndividualFile(bagLocation, digestFile = digestFile))
       }
-      .runWith(Sink.fold(BagVerification(
-        duration = Duration.between(verificationStart, Instant.now))) {
-        (memo, item) =>
-          item match {
-            case Left(failedVerification) =>
-              memo.copy(
-                failedVerifications =
-                  memo.failedVerifications :+ failedVerification)
-            case Right(digestFile) =>
-              memo.copy(
-                successfulVerifications =
-                  memo.successfulVerifications :+ digestFile)
-          }
+      .runWith(Sink.fold(bagVerification) { (memo, item) =>
+        item match {
+          case Left(failedVerification) =>
+            memo.copy(failedVerifications =
+              memo.failedVerifications :+ failedVerification)
+          case Right(digestFile) =>
+            memo.copy(successfulVerifications =
+              memo.successfulVerifications :+ digestFile)
+        }
       })
+      .map(bagVerification => bagVerification.complete)
   }
 
   private def verifyIndividualFile(
