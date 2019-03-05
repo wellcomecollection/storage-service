@@ -36,7 +36,6 @@ trait WorkerServiceFixture extends NotificationStreamFixture with S3 with SNS {
               notificationStream = notificationStream,
               bagStorageService = bagStorageService,
               bagReplicatorConfig = BagReplicatorConfig(
-                parallelism = 1,
                 destination = ReplicatorDestinationConfig(
                   namespace = dstBucket.name,
                   rootPath = Some("destinations/")

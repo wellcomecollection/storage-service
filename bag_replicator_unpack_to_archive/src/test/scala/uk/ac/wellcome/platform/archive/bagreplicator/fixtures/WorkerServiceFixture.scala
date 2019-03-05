@@ -33,7 +33,6 @@ trait WorkerServiceFixture extends NotificationStreamFixture with RandomThings w
             notificationStream = notificationStream,
             bagStorageService = bagStorageService,
             bagReplicatorConfig = BagReplicatorConfig(
-              parallelism = 1,
               destination = destination
             ),
             progressSnsWriter = progressSnsWriter,
