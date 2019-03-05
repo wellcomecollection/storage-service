@@ -1,12 +1,12 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
+package uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.bagreplicator.config.{BagReplicatorConfig, ReplicatorDestinationConfig}
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService, UnpackedBagService}
+import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.config.{BagReplicatorConfig, ReplicatorDestinationConfig}
+import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.services.{BagReplicatorWorkerService, BagStorageService, UnpackedBagService}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3

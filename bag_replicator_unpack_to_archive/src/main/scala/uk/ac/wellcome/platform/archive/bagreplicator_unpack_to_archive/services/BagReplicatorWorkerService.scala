@@ -1,10 +1,10 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.services
+package uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.services
 
 import akka.Done
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
-import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
+import uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.config.BagReplicatorConfig
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.progress.models._

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.config
+package uk.ac.wellcome.platform.archive.bagreplicator_unpack_to_archive.config
 
 import com.typesafe.config.Config
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
