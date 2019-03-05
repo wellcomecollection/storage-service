@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.common.models.{
   UnpackBagRequest
 }
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
-import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.dynamo._
 
@@ -52,10 +51,7 @@ class ProgressStarterTest
                     p.id,
                     storageSpace = StorageSpace(p.space.underlying),
                     archiveCompleteCallbackUrl = p.callback.map(_.uri),
-                    zippedBagLocation = ObjectLocation(
-                      progress.sourceLocation.location.namespace,
-                      progress.sourceLocation.location.key
-                    )
+                    zippedBagLocation = progress.sourceLocation.location
                   )
                 )
 

@@ -1,7 +1,11 @@
-package uk.ac.wellcome.platform.archive.common.models.bagit
+package uk.ac.wellcome.platform.archive.archivist.models
 
 import java.nio.file.Paths
 
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagItemPath,
+  BagLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 case class BagItemLocation(

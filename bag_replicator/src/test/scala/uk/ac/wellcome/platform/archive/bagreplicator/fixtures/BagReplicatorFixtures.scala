@@ -6,14 +6,10 @@ import com.amazonaws.services.s3.model.S3ObjectSummary
 import org.scalatest.Assertion
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  RandomThings
-}
-import uk.ac.wellcome.platform.archive.common.models._
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -26,21 +22,6 @@ trait BagReplicatorFixtures
     with Messaging
     with Akka
     with BagLocationFixtures {
-
-  def withBagNotification[R](
-    queue: Queue,
-    storageBucket: Bucket,
-    archiveRequestId: UUID = randomUUID
-  )(testWith: TestWith[BagLocation, R]): R =
-    withBag(storageBucket) { bagLocation =>
-      val replicationRequest = BagRequest(
-        requestId = archiveRequestId,
-        bagLocation = bagLocation
-      )
-
-      sendNotificationToSQS(queue, replicationRequest)
-      testWith(bagLocation)
-    }
 
   def verifyBagCopied(src: BagLocation, dst: BagLocation): Assertion = {
     val sourceItems = getObjectSummaries(src)

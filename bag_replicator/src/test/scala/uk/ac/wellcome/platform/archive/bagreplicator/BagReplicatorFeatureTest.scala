@@ -7,17 +7,18 @@ import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
   BagReplicatorFixtures,
   WorkerServiceFixture
 }
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  ReplicationResult
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
+import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.models.ReplicationResult
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
 class BagReplicatorFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
+    with BagLocationFixtures
     with BagReplicatorFixtures
+    with BagRequestGenerators
     with ProgressUpdateAssertions
     with WorkerServiceFixture {
 
@@ -31,12 +32,10 @@ class BagReplicatorFeatureTest
               progressTopic = progressTopic,
               outgoingTopic = outgoingTopic) { service =>
               withBag(bucket) { srcBagLocation =>
-                val replicationRequest = BagRequest(
-                  requestId = randomUUID,
-                  bagLocation = srcBagLocation
-                )
 
-                sendNotificationToSQS(queue, replicationRequest)
+                val bagRequest = createBagRequestWith(srcBagLocation)
+
+                sendNotificationToSQS(queue, bagRequest)
 
                 eventually {
                   val outgoingMessages =
@@ -48,8 +47,9 @@ class BagReplicatorFeatureTest
 
                   results should have size 1
                   val result = results.head
-                  result.archiveRequestId shouldBe replicationRequest.requestId
-                  result.srcBagLocation shouldBe replicationRequest.bagLocation
+
+                  result.archiveRequestId shouldBe bagRequest.requestId
+                  result.srcBagLocation shouldBe bagRequest.bagLocation
 
                   val dstBagLocation = result.dstBagLocation
 
@@ -59,7 +59,7 @@ class BagReplicatorFeatureTest
                   )
 
                   assertTopicReceivesProgressEventUpdate(
-                    replicationRequest.requestId,
+                    bagRequest.requestId,
                     progressTopic) { events =>
                     events should have size 1
                     events.head.description shouldBe "Bag replicated successfully"
