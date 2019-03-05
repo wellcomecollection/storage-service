@@ -3,10 +3,18 @@ package uk.ac.wellcome.platform.archive.bagunpacker.storage
 import java.io.{BufferedInputStream, InputStream}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveInputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.archivers.{
+  ArchiveEntry,
+  ArchiveInputStream,
+  ArchiveStreamFactory
+}
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.io.input.CloseShieldInputStream
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.{OperationFailure, OperationResult, OperationSuccess}
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.{
+  OperationFailure,
+  OperationResult,
+  OperationSuccess
+}
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,8 +26,7 @@ object Unpacker extends Logging {
     inputStream: InputStream
   )(init: T)(
     f: (T, InputStream, ArchiveEntry) => T
-  )(implicit ec: ExecutionContext):
-  Future[OperationResult[T]] = Future {
+  )(implicit ec: ExecutionContext): Future[OperationResult[T]] = Future {
 
     val archiveReader =
       new ArchiveReader[T](inputStream)
@@ -45,15 +52,15 @@ object Unpacker extends Logging {
   private class ArchiveReader[T](inputStream: InputStream) {
 
     def accumulate(
-              t: T,
-              f: (T, InputStream, ArchiveEntry) => T,
-            ): StreamStep[T] = {
+      t: T,
+      f: (T, InputStream, ArchiveEntry) => T,
+    ): StreamStep[T] = {
 
       archiveInputStream match {
         case Failure(e) => StreamError(t, e)
         case Success(
-          archiveInputStream: ArchiveInputStream
-        ) => {
+            archiveInputStream: ArchiveInputStream
+            ) => {
           archiveInputStream.getNextEntry match {
             case null => {
               Try {
@@ -61,7 +68,7 @@ object Unpacker extends Logging {
                 inputStream.close()
               } match {
                 case Success(_) => StreamEnd(t)
-                case Failure(e) => StreamError(t,e)
+                case Failure(e) => StreamError(t, e)
               }
             }
 
@@ -79,7 +86,7 @@ object Unpacker extends Logging {
                 f(t, closeShieldInputStream, entry)
               } match {
                 case Success(r) => StreamContinues(r)
-                case Failure(e) => StreamError(t,e)
+                case Failure(e) => StreamError(t, e)
               }
             }
           }

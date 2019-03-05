@@ -5,7 +5,10 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagReplicatorWorkerService,
+  BagStorageService
+}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import uk.ac.wellcome.storage.typesafe.S3Builder

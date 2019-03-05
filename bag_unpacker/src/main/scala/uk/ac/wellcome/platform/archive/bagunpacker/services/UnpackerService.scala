@@ -15,13 +15,12 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
 class UnpackerService(implicit s3Client: AmazonS3, ec: ExecutionContext) {
 
   def unpack(
-              srcLocation: ObjectLocation,
-              dstLocation: ObjectLocation
-            ): Future[OperationResult[UnpackSummary]] = {
+    srcLocation: ObjectLocation,
+    dstLocation: ObjectLocation
+  ): Future[OperationResult[UnpackSummary]] = {
 
     val unpackSummary = UnpackSummary(startTime = Instant.now)
 
@@ -31,11 +30,10 @@ class UnpackerService(implicit s3Client: AmazonS3, ec: ExecutionContext) {
         (summary: UnpackSummary,
          inputStream: InputStream,
          archiveEntry: ArchiveEntry) =>
-
           val metadata = new ObjectMetadata()
           val archiveEntrySize = archiveEntry.getSize
 
-          if(archiveEntrySize == ArchiveEntry.SIZE_UNKNOWN) {
+          if (archiveEntrySize == ArchiveEntry.SIZE_UNKNOWN) {
             throw new RuntimeException(
               s"Unknown entry size for ${archiveEntry.getName}!"
             )
@@ -44,14 +42,16 @@ class UnpackerService(implicit s3Client: AmazonS3, ec: ExecutionContext) {
           metadata.setContentLength(archiveEntry.getSize)
 
           val request =
-            new PutObjectRequest(dstLocation.namespace,
-              Paths.get(
-                dstLocation.key,
-                archiveEntry.getName
-              ).toString,
+            new PutObjectRequest(
+              dstLocation.namespace,
+              Paths
+                .get(
+                  dstLocation.key,
+                  archiveEntry.getName
+                )
+                .toString,
               inputStream,
-              metadata
-            )
+              metadata)
 
           s3Client.putObject(request)
 
@@ -65,5 +65,3 @@ class UnpackerService(implicit s3Client: AmazonS3, ec: ExecutionContext) {
     futureSummary
   }
 }
-
-

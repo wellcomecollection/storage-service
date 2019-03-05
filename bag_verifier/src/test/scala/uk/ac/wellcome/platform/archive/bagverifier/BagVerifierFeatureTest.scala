@@ -29,7 +29,6 @@ class BagVerifierFeatureTest
             withWorkerService(progressTopic, outgoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
                 withBag(bucket) { bagLocation =>
-
                   val bagRequest = createBagRequestWith(bagLocation)
 
                   sendNotificationToSQS(queue, bagRequest)
@@ -69,7 +68,6 @@ class BagVerifierFeatureTest
                   bucket,
                   createDataManifest = dataManifestWithWrongChecksum) {
                   bagLocation =>
-
                     val bagRequest = createBagRequestWith(bagLocation)
 
                     sendNotificationToSQS(queue, bagRequest)

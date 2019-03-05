@@ -5,10 +5,10 @@ sealed trait OperationResult[T] {
 }
 
 case class OperationSuccess[T](
-                             summary: T
-                           ) extends OperationResult[T]
+  summary: T
+) extends OperationResult[T]
 
 case class OperationFailure[T](
-                             summary: T,
-                             e: Throwable
-                           ) extends OperationResult[T]
+  summary: T,
+  e: Throwable
+) extends OperationResult[T]

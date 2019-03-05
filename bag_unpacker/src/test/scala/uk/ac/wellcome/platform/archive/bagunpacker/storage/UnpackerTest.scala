@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class UnpackerTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with CompressFixture
@@ -31,7 +31,9 @@ class UnpackerTest
 
     val tmp = System.getProperty("java.io.tmpdir")
 
-    val fold = (entries: Set[ArchiveEntry], inputStream: InputStream, entry: ArchiveEntry) => {
+    val fold = (entries: Set[ArchiveEntry],
+                inputStream: InputStream,
+                entry: ArchiveEntry) => {
       val os = new FileOutputStream(
         new File(tmp, entry.getName)
       )
@@ -40,7 +42,6 @@ class UnpackerTest
 
       entries + entry
     }
-
 
     val unpack =
       Unpacker.unpack(
@@ -57,9 +58,7 @@ class UnpackerTest
         .toMap
 
       val actualFiles = unpacked.summary
-        .map(entry =>
-          entry.getName -> new File(tmp, entry.getName)
-        )
+        .map(entry => entry.getName -> new File(tmp, entry.getName))
         .toMap
 
       expectedFiles.foreach {

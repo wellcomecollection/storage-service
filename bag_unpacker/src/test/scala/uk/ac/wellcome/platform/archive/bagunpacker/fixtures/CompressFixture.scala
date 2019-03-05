@@ -3,8 +3,15 @@ package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 import java.io.{File, _}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveOutputStream, ArchiveStreamFactory}
-import org.apache.commons.compress.compressors.{CompressorOutputStream, CompressorStreamFactory}
+import org.apache.commons.compress.archivers.{
+  ArchiveEntry,
+  ArchiveOutputStream,
+  ArchiveStreamFactory
+}
+import org.apache.commons.compress.compressors.{
+  CompressorOutputStream,
+  CompressorStreamFactory
+}
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
@@ -12,19 +19,14 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-trait CompressFixture
-  extends RandomThings
-    with S3
-    with Logging {
+trait CompressFixture extends RandomThings with S3 with Logging {
 
   val defaultFileCount = 10
 
   def withArchive[R](
-                      bucket: Bucket,
-                      fileCount: Int = defaultFileCount,
-  )(
-    testWith: TestWith[TestArchive, R]) = {
-
+    bucket: Bucket,
+    fileCount: Int = defaultFileCount,
+  )(testWith: TestWith[TestArchive, R]) = {
 
     val (archiveFile, files, expectedEntries) =
       createArchive(
@@ -38,7 +40,8 @@ trait CompressFixture
     s3Client.putObject(bucket.name, srcKey, archiveFile)
 
     val dstLocation = ObjectLocation(
-      bucket.name, srcKey
+      bucket.name,
+      srcKey
     )
 
     println(
@@ -49,7 +52,6 @@ trait CompressFixture
       TestArchive(archiveFile, files, expectedEntries, dstLocation)
     )
   }
-
 
   def createArchive(
     archiverName: String,
@@ -74,12 +76,13 @@ trait CompressFixture
     val randomFiles =
       randomFilesInDirs(
         fileCount,
-        fileCount/4
+        fileCount / 4
       )
 
     val entries =
       randomFiles.map { randomFile =>
-        println(s"Archiving ${randomFile.getAbsolutePath} in ${file.getAbsolutePath}")
+        println(
+          s"Archiving ${randomFile.getAbsolutePath} in ${file.getAbsolutePath}")
         archive.addFile(
           randomFile,
           relativeToTmpDir(randomFile)
@@ -92,9 +95,10 @@ trait CompressFixture
     (file, randomFiles, entries)
   }
 
-  def relativeToTmpDir(file: File) = (new File(tmpDir).toURI)
-    .relativize(file.toURI)
-    .getPath
+  def relativeToTmpDir(file: File) =
+    (new File(tmpDir).toURI)
+      .relativize(file.toURI)
+      .getPath
 
   class Archive(
     archiverName: String,
@@ -189,8 +193,8 @@ trait CompressFixture
 }
 
 case class TestArchive(
-                        archiveFile: File,
-                        containedFiles: List[File],
-                        archiveEntries: Set[ArchiveEntry],
-                        location: ObjectLocation
-                      )
+  archiveFile: File,
+  containedFiles: List[File],
+  archiveEntries: Set[ArchiveEntry],
+  location: ObjectLocation
+)

@@ -9,9 +9,19 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{Messaging, NotificationStreamFixture}
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorkerService, OperationNotifierService, UnpackerService}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, RandomThings}
-import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  BagUnpackerWorkerService,
+  OperationNotifierService,
+  UnpackerService
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  RandomThings
+}
+import uk.ac.wellcome.platform.archive.common.models.{
+  StorageSpace,
+  UnpackBagRequest
+}
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -51,7 +61,6 @@ trait WorkerServiceFixture
       withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
         withNotificationStream[UnpackBagRequest, R](queue) {
           notificationStream =>
-
             val ec = ExecutionContext.Implicits.global
 
             val notificationService =
@@ -61,8 +70,7 @@ trait WorkerServiceFixture
                 progressSnsWriter
               )
 
-            val bagUnpackerConfig = BagUnpackerConfig(
-              dstBucket.name)
+            val bagUnpackerConfig = BagUnpackerConfig(dstBucket.name)
 
             val unpackerService =
               new UnpackerService()(s3Client, ec)

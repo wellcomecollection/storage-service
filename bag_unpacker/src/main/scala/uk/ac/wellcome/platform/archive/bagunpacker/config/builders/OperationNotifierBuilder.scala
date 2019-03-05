@@ -6,18 +6,16 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.OperationNotifierSer
 
 object OperationNotifierBuilder {
   def build(config: Config, operationName: String): OperationNotifierService = {
-      new OperationNotifierService(
-        operationName,
-        outgoingSnsWriter =
-          SNSBuilder.buildSNSWriter(
-            config,
-            namespace = "outgoing"
-          ),
-        progressSnsWriter =
-          SNSBuilder.buildSNSWriter(
-            config,
-            namespace = "progress"
-          )
+    new OperationNotifierService(
+      operationName,
+      outgoingSnsWriter = SNSBuilder.buildSNSWriter(
+        config,
+        namespace = "outgoing"
+      ),
+      progressSnsWriter = SNSBuilder.buildSNSWriter(
+        config,
+        namespace = "progress"
       )
+    )
   }
 }

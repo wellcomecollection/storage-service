@@ -6,21 +6,28 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.{OperationFailure, OperationResult, OperationSuccess}
-import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.{
+  OperationFailure,
+  OperationResult,
+  OperationSuccess
+}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Progress,
+  ProgressEvent,
+  ProgressStatusUpdate,
+  ProgressUpdate
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class OperationNotifierService(
-                                operationName: String,
-                                outgoingSnsWriter: SNSWriter,
-                                progressSnsWriter: SNSWriter
-                              ) extends Logging {
+  operationName: String,
+  outgoingSnsWriter: SNSWriter,
+  progressSnsWriter: SNSWriter
+) extends Logging {
 
-  def send[R, T <: OperationResult[R], O](
-                                           requestId: UUID,
-                                           result: T)(
-                                           outgoing: R => O)(implicit ec: ExecutionContext, encoder: Encoder[O]) = {
+  def send[R, T <: OperationResult[R], O](requestId: UUID, result: T)(
+    outgoing: R => O)(implicit ec: ExecutionContext, encoder: Encoder[O]) = {
 
     val outgoingPublication: Future[Unit] = result match {
       case OperationSuccess(summary) =>
@@ -30,7 +37,7 @@ class OperationNotifierService(
     }
 
     val progressPublication: Future[Unit] =
-      sendProgress[R,T](requestId, result)
+      sendProgress[R, T](requestId, result)
         .map(_ => ())
 
     for {
@@ -42,8 +49,7 @@ class OperationNotifierService(
   def sendOutgoing[O](outgoing: O)(implicit encoder: Encoder[O]) =
     outgoingSnsWriter.writeMessage(
       outgoing,
-      subject =
-        s"Sent by ${this.getClass.getSimpleName}"
+      subject = s"Sent by ${this.getClass.getSimpleName}"
     )
 
   def sendProgress[R, T <: OperationResult[R]](requestId: UUID, result: T) = {

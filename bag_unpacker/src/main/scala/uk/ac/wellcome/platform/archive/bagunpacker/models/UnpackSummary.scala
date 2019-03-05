@@ -2,13 +2,12 @@ package uk.ac.wellcome.platform.archive.bagunpacker.models
 
 import java.time.{Duration, Instant}
 
-
 case class UnpackSummary(
-                         fileCount: Int = 0,
-                         bytesUnpacked: Long = 0L,
-                         startTime: Instant,
-                         endTime: Option[Instant] = None
-                       ) extends Timed {
+  fileCount: Int = 0,
+  bytesUnpacked: Long = 0L,
+  startTime: Instant,
+  endTime: Option[Instant] = None
+) extends Timed {
   def complete: UnpackSummary =
     this.copy(endTime = Some(Instant.now()))
 
@@ -16,12 +15,10 @@ case class UnpackSummary(
     f"""|
         |
         |
-     """
-      .stripMargin
+     """.stripMargin
       .replaceAll("\n", " ")
   }
 }
-
 
 trait Timed {
   val startTime: Instant

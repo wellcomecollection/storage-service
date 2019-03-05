@@ -28,7 +28,7 @@ trait RandomThings {
       val depth = Random.nextInt(maxDepth)
 
       (1 to depth).foldLeft("") { (memo, _) =>
-        Paths.get(memo,randomAlphanumeric()).toString
+        Paths.get(memo, randomAlphanumeric()).toString
       }
     }.toList
   }
@@ -44,12 +44,11 @@ trait RandomThings {
     str.updated(spaceIndex, ' ')
   }
 
-  def randomFilesInDirs(
-                   fileCount: Int = 10,
-                   dirs: Int = 4,
-                   maxDepth: Int = 4,
-                   minSize: Int = 265,
-                   maxSize: Int = 1024) = {
+  def randomFilesInDirs(fileCount: Int = 10,
+                        dirs: Int = 4,
+                        maxDepth: Int = 4,
+                        minSize: Int = 265,
+                        maxSize: Int = 1024) = {
 
     def createFile(name: String) = {
       val fileSize =
@@ -69,10 +68,12 @@ trait RandomThings {
       val path = paths(index)
 
       createFile(
-        Paths.get(
-          path,
-          s"${randomAlphanumeric()}.test"
-        ).toString
+        Paths
+          .get(
+            path,
+            s"${randomAlphanumeric()}.test"
+          )
+          .toString
       )
     }.toList
   }
@@ -94,7 +95,7 @@ trait RandomThings {
 
     val fileOutputStream = new FileOutputStream(file)
 
-    val bytes = if(useBytes) {
+    val bytes = if (useBytes) {
       randomBytes(size)
     } else {
       randomAlphanumeric(size).getBytes

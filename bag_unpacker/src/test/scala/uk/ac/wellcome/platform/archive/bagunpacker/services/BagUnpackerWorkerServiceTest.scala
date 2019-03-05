@@ -3,10 +3,16 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{CompressFixture, WorkerServiceFixture}
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
+  CompressFixture,
+  WorkerServiceFixture
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
 class BagUnpackerWorkerServiceTest
@@ -23,7 +29,6 @@ class BagUnpackerWorkerServiceTest
     withApp {
       case (srcBucket, queue, progressTopic, outgoingTopic) =>
         withArchive(srcBucket) { testArchive =>
-
           val requestId = randomUUID
 
           withBagNotification(
@@ -32,7 +37,6 @@ class BagUnpackerWorkerServiceTest
             requestId,
             testArchive
           ) { unpackBagRequest =>
-
             eventually {
 
               val expectedNotification = BagRequest(

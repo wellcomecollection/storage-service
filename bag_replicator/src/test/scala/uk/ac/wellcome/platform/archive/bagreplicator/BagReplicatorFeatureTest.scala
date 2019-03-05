@@ -32,7 +32,6 @@ class BagReplicatorFeatureTest
               progressTopic = progressTopic,
               outgoingTopic = outgoingTopic) { service =>
               withBag(bucket) { srcBagLocation =>
-
                 val bagRequest = createBagRequestWith(srcBagLocation)
 
                 sendNotificationToSQS(queue, bagRequest)

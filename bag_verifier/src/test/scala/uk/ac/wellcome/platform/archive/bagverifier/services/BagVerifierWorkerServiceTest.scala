@@ -30,7 +30,6 @@ class BagVerifierWorkerServiceTest
         withWorkerService(progressTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket) { bagLocation =>
-
               val bagRequest = createBagRequestWith(bagLocation)
 
               val future = service.processMessage(bagRequest)
@@ -63,7 +62,6 @@ class BagVerifierWorkerServiceTest
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
               bagLocation =>
-
                 val bagRequest = createBagRequestWith(bagLocation)
 
                 val future = service.processMessage(bagRequest)
@@ -100,7 +98,6 @@ class BagVerifierWorkerServiceTest
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
               bagLocation =>
-
                 val bagRequest = createBagRequestWith(bagLocation)
 
                 val future = service.processMessage(bagRequest)
@@ -132,7 +129,6 @@ class BagVerifierWorkerServiceTest
       withWorkerService(progressTopic, Topic("no-such-outgoing")) { service =>
         withLocalS3Bucket { bucket =>
           withBag(bucket) { bagLocation =>
-
             val bagRequest = createBagRequestWith(bagLocation)
 
             val future = service.processMessage(bagRequest)

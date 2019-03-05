@@ -29,13 +29,10 @@ class BagReplicatorWorkerService(
   def processMessage(bagRequest: BagRequest): Future[Unit] =
     for {
 
-      result <-
-        bagStorageService.duplicateBag(
-          sourceBagLocation =
-              bagRequest.bagLocation,
-          destinationConfig =
-              bagReplicatorConfig.destination
-        )
+      result <- bagStorageService.duplicateBag(
+        sourceBagLocation = bagRequest.bagLocation,
+        destinationConfig = bagReplicatorConfig.destination
+      )
 
       _ <- sendProgressUpdate(
         bagRequest = bagRequest,

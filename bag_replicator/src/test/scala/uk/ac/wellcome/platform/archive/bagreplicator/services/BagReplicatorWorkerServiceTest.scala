@@ -35,7 +35,6 @@ class BagReplicatorWorkerServiceTest
             progressTopic = progressTopic,
             outgoingTopic = outgoingTopic) { service =>
             withBag(bucket) { srcBagLocation =>
-
               val bagRequest = createBagRequestWith(srcBagLocation)
 
               val future = service.processMessage(bagRequest)
@@ -81,7 +80,6 @@ class BagReplicatorWorkerServiceTest
         withWorkerService(
           progressTopic = progressTopic,
           outgoingTopic = outgoingTopic) { service =>
-
           val srcBagLocation = BagLocation(
             storageNamespace = "does-not-exist",
             storagePrefix = Some("does/not/"),

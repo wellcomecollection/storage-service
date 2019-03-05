@@ -5,20 +5,27 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.BagLocationBuilder
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.{BagUnpackerConfig, OperationResult}
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.{
+  BagUnpackerConfig,
+  OperationResult
+}
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.models.{BagRequest, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
+  UnpackBagRequest
+}
 import uk.ac.wellcome.typesafe.Runnable
 import uk.ac.wellcome.json.JsonUtil._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagUnpackerWorkerService(
-                                bagUnpackerConfig: BagUnpackerConfig,
-                                stream: NotificationStream[UnpackBagRequest],
-                                operationNotifier: OperationNotifierService,
-                                unpackerService: UnpackerService
-)(implicit ec: ExecutionContext) extends Logging
+  bagUnpackerConfig: BagUnpackerConfig,
+  stream: NotificationStream[UnpackBagRequest],
+  operationNotifier: OperationNotifierService,
+  unpackerService: UnpackerService
+)(implicit ec: ExecutionContext)
+    extends Logging
     with Runnable {
 
   def run(): Future[Done] =
@@ -45,13 +52,14 @@ class BagUnpackerWorkerService(
           OperationResult[UnpackSummary],
           BagRequest
         ](
-        unpackBagRequest.requestId,
-        unpackResult
-      ) { _ => BagRequest(
           unpackBagRequest.requestId,
-          bagLocation
-        )
-      }
+          unpackResult
+        ) { _ =>
+          BagRequest(
+            unpackBagRequest.requestId,
+            bagLocation
+          )
+        }
 
     } yield ()
   }
