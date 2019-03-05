@@ -6,7 +6,7 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.platform.archive.bagreplicator.config.{BagReplicatorConfig, ReplicatorDestinationConfig}
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicatorWorkerService, BagStorageService, UnpackedBagService}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
@@ -35,8 +35,10 @@ trait WorkerServiceFixture extends NotificationStreamFixture with RandomThings w
             bagReplicatorConfig = BagReplicatorConfig(
               destination = destination
             ),
+            unpackedBagService = new UnpackedBagService(s3Client),
             progressSnsWriter = progressSnsWriter,
-            outgoingSnsWriter = outgoingSnsWriter
+            outgoingSnsWriter = outgoingSnsWriter,
+            s3PrefixCopier = S3PrefixCopier(s3Client)
           )
 
           service.run()

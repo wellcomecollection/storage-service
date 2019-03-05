@@ -5,12 +5,11 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagreplicator.config.BagReplicatorConfig
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  ReplicationResult
-}
+import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.progress.models._
+import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,6 +17,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class BagReplicatorWorkerService(
   notificationStream: NotificationStream[BagRequest],
   bagStorageService: BagStorageService,
+  unpackedBagService: UnpackedBagService,
+  s3PrefixCopier: S3PrefixCopier,
   bagReplicatorConfig: BagReplicatorConfig,
   progressSnsWriter: SNSWriter,
   outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
@@ -28,56 +29,95 @@ class BagReplicatorWorkerService(
 
   def processMessage(bagRequest: BagRequest): Future[Unit] =
     for {
-      result: Either[Throwable, BagLocation] <- bagStorageService.duplicateBag(
-        sourceBagLocation = bagRequest.bagLocation,
-        destinationConfig = bagReplicatorConfig.destination
-      )
+      externalIdentifier <- getExternalIdentifier(bagRequest)
+      bagRoot <- getBagRoot(bagRequest)
+      dstBagLocation = buildDstBagLocation(bagRequest, externalIdentifier)
+      result <- copyBag(bagRoot, dstBagLocation)
+      dstBagRequest: Either[Throwable, BagRequest] = dstBagLocation.map { bagLocation =>
+        BagRequest(
+          archiveRequestId = bagRequest.archiveRequestId,
+          bagLocation = bagLocation
+        )
+      }
       _ <- sendProgressUpdate(
         bagRequest = bagRequest,
         result = result
       )
       _ <- sendOutgoingNotification(
-        bagRequest = bagRequest,
+        dstBagRequest = dstBagRequest,
         result = result
       )
     } yield ()
 
-  def sendOutgoingNotification(
+  private def getExternalIdentifier(bagRequest: BagRequest): Future[Either[Throwable, ExternalIdentifier]] =
+    either {
+      unpackedBagService.getBagIdentifier(bagRequest.bagLocation.objectLocation)
+    }
+
+  private def getBagRoot(bagRequest: BagRequest): Future[Either[Throwable, ObjectLocation]] =
+    either {
+      unpackedBagService.getBagRoot(bagRequest.bagLocation.objectLocation)
+    }
+
+  private def buildDstBagLocation(
     bagRequest: BagRequest,
-    result: Either[Throwable, BagLocation]): Future[Unit] =
-    result match {
-      case Left(_) => Future.successful(())
-      case Right(dstBagLocation) =>
-        val result = ReplicationResult(
-          archiveRequestId = bagRequest.archiveRequestId,
-          srcBagLocation = bagRequest.bagLocation,
-          dstBagLocation = dstBagLocation
-        )
+    maybeExternalIdentifier: Either[Throwable, ExternalIdentifier]): Either[Throwable, BagLocation] =
+    maybeExternalIdentifier.map { externalIdentifier =>
+      BagLocation(
+        storageNamespace = bagReplicatorConfig.destination.namespace,
+        storagePrefix = bagReplicatorConfig.destination.rootPath,
+        storageSpace = bagRequest.bagLocation.storageSpace,
+        bagPath = BagPath(externalIdentifier.underlying)
+      )
+    }
+
+  private def copyBag(maybeBagRoot: Either[Throwable, ObjectLocation], maybeDstLocation: Either[Throwable, BagLocation]): Future[Either[Throwable, Unit]] =
+    (maybeBagRoot, maybeDstLocation) match {
+      case (Right(srcLocation), Right(dstLocation)) =>
+        s3PrefixCopier.copyObjects(
+          srcLocationPrefix = srcLocation,
+          dstLocationPrefix = dstLocation.objectLocation
+        ).map { Right(_) }
+      case (Left(err), _) => Future.successful(Left(err))
+      case (_, Left(err)) => Future.successful(Left(err))
+    }
+
+  def either[T](future: Future[T]): Future[Either[Throwable, T]] =
+    future
+      .map { Right(_) }
+      .recover { case err: Throwable => Left(err) }
+
+  def sendOutgoingNotification(
+    dstBagRequest: Either[Throwable, BagRequest],
+    result: Either[Throwable, Unit]): Future[Unit] =
+    (dstBagRequest, result) match {
+      case (Right(bagRequest), Right(_)) =>
         outgoingSnsWriter
           .writeMessage(
-            result,
+            bagRequest,
             subject = s"Sent by ${this.getClass.getSimpleName}"
           )
           .map { _ =>
             ()
           }
+      case _ => Future.successful(())
     }
 
   def sendProgressUpdate(
     bagRequest: BagRequest,
-    result: Either[Throwable, BagLocation]): Future[PublishAttempt] = {
+    result: Either[Throwable, Unit]): Future[PublishAttempt] = {
     val event: ProgressUpdate = result match {
       case Right(_) =>
         ProgressUpdate.event(
           id = bagRequest.archiveRequestId,
-          description = "Bag replicated successfully"
+          description = "Bag successfully copied from ingest location"
         )
       case Left(_) =>
         ProgressStatusUpdate(
           id = bagRequest.archiveRequestId,
           status = Progress.Failed,
           affectedBag = None,
-          events = List(ProgressEvent("Failed to replicate bag"))
+          events = List(ProgressEvent("Failed to copy bag from ingest location"))
         )
     }
 
