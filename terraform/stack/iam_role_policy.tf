@@ -119,6 +119,23 @@ resource "aws_iam_role_policy" "bag_verifier_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
+# bag_unpacker
+
+resource "aws_iam_role_policy" "bag_unpacker_task_read_ingests_s3" {
+  role   = "${module.bag_unpacker.task_role_name}"
+  policy = "${data.aws_iam_policy_document.ingests_read.json}"
+}
+
+resource "aws_iam_role_policy" "bag_unpacker_task_readwrite_ingests_drop_s3" {
+  role   = "${module.bag_unpacker.task_role_name}"
+  policy = "${data.aws_iam_policy_document.storage_ingests_drop_read_write.json}"
+}
+
+resource "aws_iam_role_policy" "bag_unpacker_metrics" {
+  role   = "${module.bag_unpacker.task_role_name}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+}
+
 # notifier
 
 resource "aws_iam_role_policy" "notifier_metrics" {
