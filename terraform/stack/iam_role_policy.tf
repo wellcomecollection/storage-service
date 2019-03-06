@@ -1,22 +1,22 @@
-# bags aka registrar-async
+# bag_register
 
-resource "aws_iam_role_policy" "bags_archive_get" {
-  role   = "${module.bags.task_role_name}"
+resource "aws_iam_role_policy" "bag_register_archive_get" {
+  role   = "${module.bag_register.task_role_name}"
   policy = "${data.aws_iam_policy_document.storage_archive_read.json}"
 }
 
-resource "aws_iam_role_policy" "bags_access_get" {
-  role   = "${module.bags.task_role_name}"
+resource "aws_iam_role_policy" "bag_register_access_get" {
+  role   = "${module.bag_register.task_role_name}"
   policy = "${data.aws_iam_policy_document.storage_access_read.json}"
 }
 
-resource "aws_iam_role_policy" "bags_vhs_write" {
-  role   = "${module.bags.task_role_name}"
+resource "aws_iam_role_policy" "bag_register_vhs_write" {
+  role   = "${module.bag_register.task_role_name}"
   policy = "${var.vhs_archive_manifest_full_access_policy_json}"
 }
 
-resource "aws_iam_role_policy" "bags_metrics" {
-  role   = "${module.bags.task_role_name}"
+resource "aws_iam_role_policy" "bag_register_metrics" {
+  role   = "${module.bag_register.task_role_name}"
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 

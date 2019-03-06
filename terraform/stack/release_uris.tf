@@ -6,12 +6,12 @@ module "images" {
 
   services = [
     "archivist",
-    "bags",
     "bags_api",
     "ingests",
     "ingests_api",
     "notifier",
     "bagger",
+    "bag_register",
     "bag_replicator",
     "bag_verifier",
     "bag_unpacker",
@@ -20,7 +20,7 @@ module "images" {
 
 locals {
   archivist_image      = "${module.images.services["archivist"]}"
-  bags_image           = "${module.images.services["bags"]}"
+  bag_register_image   = "${module.images.services["bag_register"]}"
   bags_api_image       = "${module.images.services["bags_api"]}"
   ingests_image        = "${module.images.services["ingests"]}"
   ingests_api_image    = "${module.images.services["ingests_api"]}"

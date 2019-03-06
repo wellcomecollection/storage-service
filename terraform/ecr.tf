@@ -4,12 +4,6 @@ module "ecr_repository_archivist" {
   namespace = "uk.ac.wellcome"
 }
 
-module "ecr_repository_bags" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "bags"
-  namespace = "uk.ac.wellcome"
-}
-
 module "ecr_repository_bags_api" {
   source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
   id        = "bags_api"
@@ -61,5 +55,11 @@ module "ecr_repository_bagger" {
 module "ecr_repository_callback_stub_server" {
   source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
   id        = "callback_stub_server"
+  namespace = "uk.ac.wellcome"
+}
+
+module "ecr_repository_bag_register" {
+  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
+  id        = "bags"
   namespace = "uk.ac.wellcome"
 }
