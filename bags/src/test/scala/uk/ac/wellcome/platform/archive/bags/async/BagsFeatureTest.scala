@@ -63,7 +63,7 @@ class BagsFeatureTest
                     storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
                     assertTopicReceivesProgressStatusUpdate(
-                      requestId = replicationResult.archiveRequestId,
+                      requestId = replicationResult.requestId,
                       progressTopic = progressTopic,
                       status = Progress.Completed,
                       expectedBag = Some(bagId)) { events =>
@@ -109,7 +109,7 @@ class BagsFeatureTest
 
                     eventually {
                       assertTopicReceivesProgressStatusUpdate(
-                        requestId = replicationResult.archiveRequestId,
+                        requestId = replicationResult.requestId,
                         progressTopic = progressTopic,
                         status = Progress.Failed,
                         expectedBag = Some(bagId)) { events =>

@@ -24,6 +24,8 @@ class StorageManifestServiceTest
     with BagRequestGenerators
     with S3 {
 
+  implicit val _s3Client = s3Client
+
   val service = new StorageManifestService()
 
   it("returns a StorageManifest if reading a bag location succeeds") {

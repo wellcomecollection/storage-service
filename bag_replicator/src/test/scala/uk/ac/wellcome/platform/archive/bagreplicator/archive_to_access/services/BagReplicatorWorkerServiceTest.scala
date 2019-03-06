@@ -40,7 +40,7 @@ class BagReplicatorWorkerServiceTest
               whenReady(future) { _ =>
                 val result =
                   notificationMessage[ReplicationResult](outgoingTopic)
-                result.archiveRequestId shouldBe bagRequest.archiveRequestId
+                result.requestId shouldBe bagRequest.requestId
                 result.srcBagLocation shouldBe bagRequest.bagLocation
 
                 val dstBagLocation = result.dstBagLocation
@@ -51,7 +51,7 @@ class BagReplicatorWorkerServiceTest
                 )
 
                 assertTopicReceivesProgressEventUpdate(
-                  bagRequest.archiveRequestId,
+                  bagRequest.requestId,
                   progressTopic) { events =>
                   events should have size 1
                   events.head.description shouldBe "Bag replicated successfully"
@@ -85,7 +85,7 @@ class BagReplicatorWorkerServiceTest
             assertSnsReceivesNothing(outgoingTopic)
 
             assertTopicReceivesProgressStatusUpdate(
-              bagRequest.archiveRequestId,
+              bagRequest.requestId,
               progressTopic = progressTopic,
               status = Progress.Failed) { events =>
               events should have size 1

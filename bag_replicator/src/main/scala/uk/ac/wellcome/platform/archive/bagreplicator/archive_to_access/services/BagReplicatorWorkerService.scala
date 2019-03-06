@@ -28,18 +28,22 @@ class BagReplicatorWorkerService(
 
   def processMessage(bagRequest: BagRequest): Future[Unit] =
     for {
-      result: Either[Throwable, BagLocation] <- bagStorageService.duplicateBag(
+
+      result <- bagStorageService.duplicateBag(
         sourceBagLocation = bagRequest.bagLocation,
         destinationConfig = replicatorDestinationConfig
       )
+
       _ <- sendProgressUpdate(
         bagRequest = bagRequest,
         result = result
       )
+
       _ <- sendOutgoingNotification(
         bagRequest = bagRequest,
         result = result
       )
+
     } yield ()
 
   def sendOutgoingNotification(
@@ -49,7 +53,7 @@ class BagReplicatorWorkerService(
       case Left(_) => Future.successful(())
       case Right(dstBagLocation) =>
         val result = ReplicationResult(
-          archiveRequestId = bagRequest.archiveRequestId,
+          requestId = bagRequest.requestId,
           srcBagLocation = bagRequest.bagLocation,
           dstBagLocation = dstBagLocation
         )
@@ -69,12 +73,12 @@ class BagReplicatorWorkerService(
     val event: ProgressUpdate = result match {
       case Right(_) =>
         ProgressUpdate.event(
-          id = bagRequest.archiveRequestId,
+          id = bagRequest.requestId,
           description = "Bag replicated successfully"
         )
       case Left(_) =>
         ProgressStatusUpdate(
-          id = bagRequest.archiveRequestId,
+          id = bagRequest.requestId,
           status = Progress.Failed,
           affectedBag = None,
           events = List(ProgressEvent("Failed to replicate bag"))

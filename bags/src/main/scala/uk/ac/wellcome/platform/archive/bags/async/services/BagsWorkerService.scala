@@ -38,7 +38,7 @@ class BagsWorkerService(
 
   def processMessage(replicationResult: ReplicationResult): Future[Unit] = {
     val bagRequest = BagRequest(
-      archiveRequestId = replicationResult.archiveRequestId,
+      requestId = replicationResult.requestId,
       bagLocation = replicationResult.dstBagLocation
     )
 
@@ -46,7 +46,7 @@ class BagsWorkerService(
       tryStorageManifest: Try[StorageManifest] <- createManifest(bagRequest)
       tryUpdateVHSResult: Try[Unit] <- updateStorageManifest(tryStorageManifest)
       _ <- sendProgressUpdate(
-        archiveRequestId = replicationResult.archiveRequestId,
+        requestId = replicationResult.requestId,
         tryStorageManifest = tryStorageManifest,
         tryUpdateVHSResult = tryUpdateVHSResult
       )
@@ -76,21 +76,21 @@ class BagsWorkerService(
     }
 
   private def sendProgressUpdate(
-    archiveRequestId: UUID,
+    requestId: UUID,
     tryStorageManifest: Try[StorageManifest],
     tryUpdateVHSResult: Try[Unit]): Future[PublishAttempt] = {
     val event = (tryStorageManifest, tryUpdateVHSResult) match {
       case (Success(storageManifest), Success(_)) =>
         ProgressStatusUpdate(
-          id = archiveRequestId,
+          id = requestId,
           status = Progress.Completed,
           affectedBag = Some(storageManifest.id),
           events = List(ProgressEvent("Bag registered successfully"))
         )
       case (Success(storageManifest), Failure(err)) => {
-        warn(s"Failed to register bag $archiveRequestId: ${err.getMessage}")
+        warn(s"Failed to register bag $requestId: ${err.getMessage}")
         ProgressStatusUpdate(
-          id = archiveRequestId,
+          id = requestId,
           status = Progress.Failed,
           affectedBag = Some(storageManifest.id),
           events = List(ProgressEvent("Failed to register bag"))
@@ -98,9 +98,9 @@ class BagsWorkerService(
       }
       case (Failure(err), _) => {
         warn(
-          s"Failed to create storage manifest for $archiveRequestId: ${err.getMessage}")
+          s"Failed to create storage manifest for $requestId: ${err.getMessage}")
         ProgressStatusUpdate(
-          id = archiveRequestId,
+          id = requestId,
           status = Progress.Failed,
           affectedBag = None,
           events = List(ProgressEvent("Failed to create storage manifest"))

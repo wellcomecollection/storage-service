@@ -46,7 +46,7 @@ class BagReplicatorFeatureTest
 
                   eventually {
                     val result = notificationMessage[BagRequest](outgoingTopic)
-                    result.archiveRequestId shouldBe bagRequest.archiveRequestId
+                    result.requestId shouldBe bagRequest.requestId
 
                     val dstBagLocation = result.bagLocation
 
@@ -63,7 +63,7 @@ class BagReplicatorFeatureTest
                     )
 
                     assertTopicReceivesProgressEventUpdate(
-                      bagRequest.archiveRequestId,
+                      bagRequest.requestId,
                       progressTopic) { events =>
                       events should have size 1
                       events.head.description shouldBe "Bag successfully copied from ingest location"

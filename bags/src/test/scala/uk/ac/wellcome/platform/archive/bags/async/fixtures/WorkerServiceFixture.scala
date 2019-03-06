@@ -51,7 +51,7 @@ trait WorkerServiceFixture
   def createReplicationResultWith(
     accessBagLocation: BagLocation): ReplicationResult =
     ReplicationResult(
-      archiveRequestId = randomUUID,
+      requestId = randomUUID,
       srcBagLocation = accessBagLocation.copy(storagePrefix = Some("archive")),
       dstBagLocation = accessBagLocation
     )

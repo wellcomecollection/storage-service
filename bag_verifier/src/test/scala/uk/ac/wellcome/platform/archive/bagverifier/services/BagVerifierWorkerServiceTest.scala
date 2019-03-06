@@ -38,7 +38,7 @@ class BagVerifierWorkerServiceTest
                 assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
 
                 assertTopicReceivesProgressEventUpdate(
-                  requestId = bagRequest.archiveRequestId,
+                  requestId = bagRequest.requestId,
                   progressTopic = progressTopic
                 ) { events =>
                   events.map {
@@ -70,7 +70,7 @@ class BagVerifierWorkerServiceTest
                   assertSnsReceivesNothing(outgoingTopic)
 
                   assertTopicReceivesProgressStatusUpdate(
-                    requestId = bagRequest.archiveRequestId,
+                    requestId = bagRequest.requestId,
                     progressTopic = progressTopic,
                     status = Progress.Failed
                   ) { events =>
@@ -106,7 +106,7 @@ class BagVerifierWorkerServiceTest
                   assertSnsReceivesNothing(outgoingTopic)
 
                   assertTopicReceivesProgressStatusUpdate(
-                    requestId = bagRequest.archiveRequestId,
+                    requestId = bagRequest.requestId,
                     progressTopic = progressTopic,
                     status = Progress.Failed
                   ) { events =>
@@ -135,7 +135,7 @@ class BagVerifierWorkerServiceTest
 
             whenReady(future.failed) { _ =>
               assertTopicReceivesProgressEventUpdate(
-                requestId = bagRequest.archiveRequestId,
+                requestId = bagRequest.requestId,
                 progressTopic = progressTopic
               ) { events =>
                 events.map {

@@ -45,7 +45,7 @@ class ArchivistFeatureTest
 
               assertSnsReceivesOnly(
                 BagRequest(
-                  archiveRequestId = request.id,
+                  requestId = request.id,
                   bagLocation = BagLocation(
                     storageNamespace = storageBucket.name,
                     storagePrefix = Some("archive"),
@@ -158,7 +158,7 @@ class ArchivistFeatureTest
                   assertSnsReceives(
                     Set(
                       BagRequest(
-                        archiveRequestId = validRequest1.id,
+                        requestId = validRequest1.id,
                         bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
@@ -168,7 +168,7 @@ class ArchivistFeatureTest
                         )
                       ),
                       BagRequest(
-                        archiveRequestId = validRequest2.id,
+                        requestId = validRequest2.id,
                         bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
@@ -249,7 +249,7 @@ class ArchivistFeatureTest
               assertSnsReceives(
                 Set(
                   BagRequest(
-                    archiveRequestId = validRequest1.id,
+                    requestId = validRequest1.id,
                     bagLocation = BagLocation(
                       storageNamespace = storageBucket.name,
                       storagePrefix = Some("archive"),
@@ -258,7 +258,7 @@ class ArchivistFeatureTest
                     )
                   ),
                   BagRequest(
-                    archiveRequestId = validRequest2.id,
+                    requestId = validRequest2.id,
                     bagLocation = BagLocation(
                       storageNamespace = storageBucket.name,
                       storagePrefix = Some("archive"),
@@ -324,7 +324,7 @@ class ArchivistFeatureTest
                       assertSnsReceives(
                         Set(
                           BagRequest(
-                            archiveRequestId = validRequest1.id,
+                            requestId = validRequest1.id,
                             bagLocation = BagLocation(
                               storageNamespace = storageBucket.name,
                               storagePrefix = Some("archive"),
@@ -334,7 +334,7 @@ class ArchivistFeatureTest
                             )
                           ),
                           BagRequest(
-                            archiveRequestId = validRequest2.id,
+                            requestId = validRequest2.id,
                             bagLocation = BagLocation(
                               storageNamespace = storageBucket.name,
                               storagePrefix = Some("archive"),
@@ -401,7 +401,7 @@ class ArchivistFeatureTest
                   assertSnsReceives(
                     Set(
                       BagRequest(
-                        archiveRequestId = validRequest1.id,
+                        requestId = validRequest1.id,
                         bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),
@@ -411,7 +411,7 @@ class ArchivistFeatureTest
                         )
                       ),
                       BagRequest(
-                        archiveRequestId = validRequest2.id,
+                        requestId = validRequest2.id,
                         bagLocation = BagLocation(
                           storageNamespace = storageBucket.name,
                           storagePrefix = Some("archive"),

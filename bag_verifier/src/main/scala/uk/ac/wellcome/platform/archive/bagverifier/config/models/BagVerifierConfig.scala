@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagverifier.config
+package uk.ac.wellcome.platform.archive.bagverifier.config.models
 
 import com.typesafe.config.Config
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._

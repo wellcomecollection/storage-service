@@ -37,12 +37,12 @@ class NotificationService(
 
         if (bagVerification.verificationSucceeded) {
           ProgressNotice(
-            id = bagRequest.archiveRequestId,
+            id = bagRequest.requestId,
             message = "Successfully verified bag contents"
           )
         } else {
           ProgressNotice(
-            id = bagRequest.archiveRequestId,
+            id = bagRequest.requestId,
             status = Progress.Failed,
             message = "Problem verifying bag:",
             "File checksum did not match manifest"
@@ -58,7 +58,7 @@ class NotificationService(
         )
 
         ProgressNotice(
-          id = bagRequest.archiveRequestId,
+          id = bagRequest.requestId,
           status = Progress.Failed,
           message = "Problem verifying bag:",
           "Verification could not be performed"
