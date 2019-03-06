@@ -16,8 +16,15 @@ class OperationNotifier(
   progressSnsWriter: SNSWriter
 ) extends Logging {
 
-  def send[R, O](requestId: UUID, result: OperationResult[R])(
-    outgoing: R => O)(implicit ec: ExecutionContext, encoder: Encoder[O]) = {
+  def send[R, O](
+                  requestId: UUID,
+                  result: OperationResult[R]
+                )(
+                  outgoing: R => O
+  )(implicit
+    ec: ExecutionContext,
+    enc: Encoder[O]
+  ) = {
 
     val outgoingPublication: Future[Unit] = result match {
       case OperationSuccess(summary) =>
@@ -38,14 +45,14 @@ class OperationNotifier(
     } yield ()
   }
 
-  def sendOutgoing[O](outgoing: O)(
+  private def sendOutgoing[O](outgoing: O)(
     implicit encoder: Encoder[O]) =
     outgoingSnsWriter.writeMessage(
       outgoing,
       subject = s"Sent by ${this.getClass.getSimpleName}"
     )
 
-  def sendProgress[R](
+  private def sendProgress[R](
     requestId: UUID,
     result: OperationResult[R]
   ) = {
