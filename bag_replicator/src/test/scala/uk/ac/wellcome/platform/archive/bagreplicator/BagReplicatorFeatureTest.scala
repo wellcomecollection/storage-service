@@ -68,7 +68,7 @@ class BagReplicatorFeatureTest
                       bagRequest.requestId,
                       progressTopic) { events =>
                       events should have size 1
-                      events.head.description shouldBe "Bag successfully copied from ingest location"
+                      events.head.description shouldBe "Copy bag from ingest bucket succeeded"
                     }
                   }
                 }
