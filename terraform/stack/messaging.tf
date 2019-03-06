@@ -1,22 +1,5 @@
 locals {
   progress_topic = "${module.ingests_topic.arn}"
-
-  archivist_input_queue         = "${module.archivist_queue.url}"
-  archivist_outgoing_topic_arn  = "${module.bag_replicator_topic.arn}"
-  archivist_outgoing_topic_name = "${module.bag_replicator_topic.name}"
-
-  bag_replicator_input_queue    = "${module.bag_replicator_queue.url}"
-  bag_replicator_outgoing_topic = "${module.bags_topic.arn}"
-
-  bag_verifier_input_queue    = "${module.bag_verifier_queue.url}"
-  bag_verifier_outgoing_topic = "${module.null_topic.arn}"
-
-  notifier_input_queue = "${module.notifier_queue.url}"
-
-  ingests_input_queue    = "${module.ingests_queue.url}"
-  ingests_outgoing_topic = "${module.notifier_topic.arn}"
-
-  bags_input_queue = "${module.bags_queue.url}"
 }
 
 # Ingests topic.  Every app needs to be able to write to this, because they
@@ -37,10 +20,10 @@ module "ingests_topic" {
   ]
 }
 
-module "ingests_queue" {
+module "ingests_input_queue" {
   source = "../modules/queue"
 
-  name = "${var.namespace}_ingests"
+  name = "${var.namespace}_ingests_input"
 
   topic_names = ["${module.ingests_topic.name}"]
 
@@ -61,10 +44,10 @@ module "ingest_requests_topic" {
   role_names = ["${module.api.ingests_role_name}"]
 }
 
-module "archivist_queue" {
+module "archivist_input_queue" {
   source = "../modules/queue"
 
-  name = "${var.namespace}_archivist"
+  name = "${var.namespace}_archivist_input"
 
   topic_names = [
     "${module.ingest_requests_topic.name}",
@@ -83,7 +66,7 @@ module "archivist_queue" {
 
 # Messaging - bags aka registrar-async
 
-module "bags_topic" {
+module "bag_replicator_output_topic" {
   source = "../modules/topic"
 
   name = "${var.namespace}_bags"
@@ -93,12 +76,12 @@ module "bags_topic" {
   ]
 }
 
-module "bags_queue" {
+module "bags_input_queue" {
   source = "../modules/queue"
 
-  name = "${var.namespace}_bags"
+  name = "${var.namespace}_bags_input"
 
-  topic_names = ["${module.bags_topic.name}"]
+  topic_names = ["${module.bag_replicator_output_topic.name}"]
 
   role_names = ["${module.bags.task_role_name}"]
 
@@ -108,19 +91,19 @@ module "bags_queue" {
 
 # Messaging - notifier
 
-module "notifier_topic" {
+module "ingests_output_topic" {
   source = "../modules/topic"
 
-  name       = "${var.namespace}_notifier"
+  name       = "${var.namespace}_ingests_output"
   role_names = ["${module.ingests.task_role_name}"]
 }
 
-module "notifier_queue" {
+module "notifier_input_queue" {
   source = "../modules/queue"
 
   name = "${var.namespace}_notifier"
 
-  topic_names = ["${module.notifier_topic.name}"]
+  topic_names = ["${module.ingests_output_topic.name}"]
 
   role_names = ["${module.notifier.task_role_name}"]
 
@@ -159,22 +142,22 @@ module "bagging_complete_topic" {
 
 # Messaging - bag_replicator
 
-module "bag_replicator_topic" {
+module "archivist_output_topic" {
   source = "../modules/topic"
 
-  name = "${var.namespace}_bag_replicator"
+  name = "${var.namespace}_archivist_output"
 
   role_names = [
     "${module.archivist.task_role_name}",
   ]
 }
 
-module "bag_replicator_queue" {
+module "bag_replicator_input_queue" {
   source = "../modules/queue"
 
-  name = "${var.namespace}_bag_replicator"
+  name = "${var.namespace}_bag_replicator_input"
 
-  topic_names = ["${local.archivist_outgoing_topic_name}"]
+  topic_names = ["${module.archivist_output_topic.name}"]
 
   role_names = ["${module.bag_replicator.task_role_name}"]
 
@@ -193,12 +176,12 @@ module "bag_replicator_queue" {
 
 ## Messaging - bag_verifier
 
-module "bag_verifier_queue" {
+module "bag_verifier_input_queue" {
   source = "../modules/queue"
 
-  name = "${var.namespace}_bag_verifier"
+  name = "${var.namespace}_bag_verifier_input"
 
-  topic_names = ["${local.archivist_outgoing_topic_name}"]
+  topic_names = ["${module.archivist_output_topic.name}"]
 
   role_names = ["${module.bag_verifier.task_role_name}"]
 
