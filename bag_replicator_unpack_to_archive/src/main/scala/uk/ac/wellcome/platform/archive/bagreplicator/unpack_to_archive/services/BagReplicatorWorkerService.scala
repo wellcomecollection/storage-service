@@ -19,12 +19,12 @@ import uk.ac.wellcome.typesafe.Runnable
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagReplicatorWorkerService(
-                                  notificationStream: NotificationStream[BagRequest],
-                                  unpackedBagService: BagLocator,
-                                  s3PrefixCopier: S3PrefixCopier,
-                                  replicatorDestinationConfig: ReplicatorDestinationConfig,
-                                  progressSnsWriter: SNSWriter,
-                                  outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
+  notificationStream: NotificationStream[BagRequest],
+  unpackedBagService: BagLocator,
+  s3PrefixCopier: S3PrefixCopier,
+  replicatorDestinationConfig: ReplicatorDestinationConfig,
+  progressSnsWriter: SNSWriter,
+  outgoingSnsWriter: SNSWriter)(implicit ec: ExecutionContext)
     extends Runnable {
 
   def run(): Future[Done] =
