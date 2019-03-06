@@ -31,7 +31,6 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
         (summary: UnpackSummary,
          inputStream: InputStream,
          archiveEntry: ArchiveEntry) =>
-
           val metadata = new ObjectMetadata()
           val archiveEntrySize = archiveEntry.getSize
 

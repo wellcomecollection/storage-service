@@ -23,10 +23,9 @@ class BagRegisterWorker(
     stream.run(processMessage)
 
   def processMessage(
-                      request: BagRequest
-                    )(implicit
-                      enc: Encoder[BagRequest]
-  ): Future[Unit] = {
+    request: BagRequest
+  )(implicit
+    enc: Encoder[BagRequest]): Future[Unit] = {
     for {
       result <- register.update(
         request.bagLocation

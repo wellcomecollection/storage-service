@@ -9,7 +9,10 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  BagInfoGenerators
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models._
@@ -17,7 +20,7 @@ import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagRegisterWorkerTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with BagIdGenerators
@@ -29,13 +32,13 @@ class BagRegisterWorkerTest
   it("sends a successful ProgressUpdate if it registers a Bag successfully") {
     withWorkerService() {
       case (
-        service: BagRegisterWorker,
-        table: Table,
-        bucket: Bucket,
-        progressTopic: Topic,
-        _: Topic,
-        queuePair: QueuePair
-      ) => {
+          service: BagRegisterWorker,
+          table: Table,
+          bucket: Bucket,
+          progressTopic: Topic,
+          _: Topic,
+          queuePair: QueuePair
+          ) => {
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
@@ -81,17 +84,16 @@ class BagRegisterWorkerTest
   }
 
   it("sends a failed ProgressUpdate if updating the VHS fails") {
-    withWorkerService(userBucket =
-      Some(Bucket("does_not_exist"))) {
+    withWorkerService(userBucket = Some(Bucket("does_not_exist"))) {
 
       case (
-        service: BagRegisterWorker,
-        _: Table,
-        bucket: Bucket,
-        progressTopic: Topic,
-        _: Topic,
-        _: QueuePair
-      ) => {
+          service: BagRegisterWorker,
+          _: Table,
+          bucket: Bucket,
+          progressTopic: Topic,
+          _: Topic,
+          _: QueuePair
+          ) => {
 
         val bagInfo = createBagInfo
 

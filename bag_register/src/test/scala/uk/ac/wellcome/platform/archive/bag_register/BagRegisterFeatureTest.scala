@@ -9,7 +9,10 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
 import uk.ac.wellcome.platform.archive.bag_register.services.BagRegisterWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  BagInfoGenerators
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models._
@@ -17,7 +20,7 @@ import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagRegisterFeatureTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with BagIdGenerators
     with BagInfoGenerators
@@ -28,20 +31,19 @@ class BagRegisterFeatureTest
   it("sends an update if it registers a bag") {
     withWorkerService() {
       case (
-        _: BagRegisterWorker,
-        table: Table,
-        bucket: Bucket,
-        progressTopic: Topic,
-        _: Topic,
-        queuePair: QueuePair
-        ) => {
+          _: BagRegisterWorker,
+          table: Table,
+          bucket: Bucket,
+          progressTopic: Topic,
+          _: Topic,
+          queuePair: QueuePair
+          ) => {
 
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
         val storagePrefix = "storagePrefix"
 
         withBag(bucket, bagInfo, storagePrefix) { location =>
-
           val bagId = BagId(
             space = location.storageSpace,
             externalIdentifier = bagInfo.externalIdentifier
@@ -86,43 +88,41 @@ class BagRegisterFeatureTest
   it("sends a failed update and discards the work on error") {
     withWorkerService(userBucket = Some(Bucket("does_not_exist"))) {
       case (
-        _: BagRegisterWorker,
-        _: Table,
-        bucket: Bucket,
-        progressTopic: Topic,
-        _: Topic,
-        queuePair: QueuePair
-        ) => {
+          _: BagRegisterWorker,
+          _: Table,
+          bucket: Bucket,
+          progressTopic: Topic,
+          _: Topic,
+          queuePair: QueuePair
+          ) => {
 
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) {
-          accessBagLocation =>
-            val replicationResult =
-              createBagRequestWith(accessBagLocation)
+        withBag(bucket, bagInfo = bagInfo) { accessBagLocation =>
+          val replicationResult =
+            createBagRequestWith(accessBagLocation)
 
-            sendNotificationToSQS(queuePair.queue, replicationResult)
+          sendNotificationToSQS(queuePair.queue, replicationResult)
 
-            eventually {
-              assertTopicReceivesProgressStatusUpdate(
-                requestId = replicationResult.requestId,
-                progressTopic = progressTopic,
-                status = Progress.Failed,
-                expectedBag =
-                  Some(
-                    BagId(
-                      space = accessBagLocation.storageSpace,
-                      externalIdentifier = bagInfo.externalIdentifier
-                    )
-                  )
-              ) { events =>
-                events.size should be >= 1
-                events.head.description shouldBe "Register failed"
-              }
+          eventually {
+            assertTopicReceivesProgressStatusUpdate(
+              requestId = replicationResult.requestId,
+              progressTopic = progressTopic,
+              status = Progress.Failed,
+              expectedBag = Some(
+                BagId(
+                  space = accessBagLocation.storageSpace,
+                  externalIdentifier = bagInfo.externalIdentifier
+                )
+              )
+            ) { events =>
+              events.size should be >= 1
+              events.head.description shouldBe "Register failed"
             }
+          }
 
-            assertQueueEmpty(queuePair.queue)
-            assertQueueEmpty(queuePair.dlq)
+          assertQueueEmpty(queuePair.queue)
+          assertQueueEmpty(queuePair.dlq)
         }
       }
     }
