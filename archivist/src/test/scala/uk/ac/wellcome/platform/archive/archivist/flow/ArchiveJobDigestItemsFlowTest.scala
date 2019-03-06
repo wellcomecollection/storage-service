@@ -15,7 +15,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.platform.archive.common.generators.IngestBagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models._
-import uk.ac.wellcome.platform.archive.common.models.error.InvalidBagManifestError
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.collection.JavaConverters._

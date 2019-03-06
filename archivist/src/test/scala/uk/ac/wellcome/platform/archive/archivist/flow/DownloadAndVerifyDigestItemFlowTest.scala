@@ -9,9 +9,11 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FunSpec, Inside}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.archivist.generators.ArchiveJobGenerators
-import uk.ac.wellcome.platform.archive.archivist.models.errors.ChecksumNotMatchedOnDownloadError
+import uk.ac.wellcome.platform.archive.archivist.models.errors.{
+  ChecksumNotMatchedOnDownloadError,
+  DownloadError
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.ZipBagItFixture
-import uk.ac.wellcome.platform.archive.common.models.error.DownloadError
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.Future

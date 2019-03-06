@@ -24,11 +24,11 @@ import uk.ac.wellcome.platform.archive.archivist.models.TypeAliases.{
 import uk.ac.wellcome.platform.archive.archivist.models.errors.{
   ArchiveJobError,
   BagNotFoundError,
-  ChecksumNotMatchedOnUploadError
+  ChecksumNotMatchedOnUploadError,
+  InvalidBagManifestError
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.FileEntry
 import uk.ac.wellcome.platform.archive.common.generators.IngestBagRequestGenerators
-import uk.ac.wellcome.platform.archive.common.models.error.InvalidBagManifestError
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagLocation,
