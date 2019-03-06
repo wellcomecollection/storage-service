@@ -311,7 +311,7 @@ module "bagger" {
     # DDS credentials
     DDS_ASSET_PREFIX = "${var.bagger_dds_asset_prefix}"
 
-    ARCHIVE_FORMAT = "zip"
+    ARCHIVE_FORMAT = "gztar"
   }
 
   env_vars_length = 17

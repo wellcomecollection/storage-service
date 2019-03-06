@@ -38,6 +38,13 @@ module "ingests_input_queue" {
 
 # Messaging - archivist
 
+module "null_topic" {
+  source = "../modules/topic"
+
+  name       = "${var.namespace}_null"
+  role_names = ["${module.api.ingests_role_name}"]
+}
+
 module "ingest_requests_topic" {
   source = "../modules/topic"
 
@@ -51,7 +58,7 @@ module "archivist_input_queue" {
   name = "${var.namespace}_archivist_input"
 
   topic_names = [
-    "${module.ingest_requests_topic.name}",
+    "${module.null_topic.name}",
   ]
 
   role_names = [
