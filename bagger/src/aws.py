@@ -61,6 +61,12 @@ def log_processing_error(message):
     obj.put(Body=json.dumps(message, indent=4))
 
 
+def log_warning(message):
+    s3_path = "__warnings/{0}.json".format(message["identifier"])
+    obj = get_s3().Object(settings.DROP_BUCKET_NAME_ERRORS, s3_path)
+    obj.put(Body=json.dumps(message, indent=4))
+
+
 def send_bag_instruction(message):
     sqs = get_boto_session().resource("sqs")
     queue = None

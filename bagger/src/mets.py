@@ -107,6 +107,7 @@ the AMD to start at _0001
         refs = root.findall(".//mets:div[@ADMID='{0}']".format(old_id), namespaces)
         tech_md_filename = get_tech_md_filename(tech_md)
         if len(refs) == 0 and is_ignorable_file(tech_md_filename):
+            logging.debug("ignoring file {0}".format(tech_md_filename))
             amd_sec.remove(tech_md)
             continue
 
@@ -122,29 +123,25 @@ the AMD to start at _0001
             "preservica_id": tech_md_preservica_id,
             "refs_count": len(refs),
             "tech_md": tech_md,
-            "phys_file": phys_file
+            "phys_file": phys_file,
+            "warning": None
         })
         counter = counter + 1
 
     # Now go through tech_md_files, providing new renumbered IDs
-    tech_md_map = {}
     for tech_md_file in tech_md_files:
-        tech_md_map[tech_md_file["new_id"]] = tech_md_file
         tech_md_file["tech_md"].set("ID", tech_md_file["new_id"])
         if tech_md_file.get("phys_file", None) is not None:
             tech_md_file["phys_file"].set("ADMID", tech_md_file["new_id"])
         else:
-            warnings = tech_md_map.get("__warnings", [])
-            message = "Expected 1 AMD ref for {0} (old) {1} (new), got {2}, filename: {3}".format(
+            tech_md_file["warning"] = "Expected 1 AMD ref for {0} (old) {1} (new), got {2}, filename: {3}".format(
                 tech_md_file["old_id"],
                 tech_md_file["new_id"],
                 tech_md_file["refs_count"],
                 tech_md_file["filename"]
             )
-            warnings.append(message)
-            tech_md_map["__warnings"] = warnings
 
-    return tech_md_map
+    return tech_md_files
     # if len(refs) != 1:
     #     message = "Expected 1 AMD ref for {0}, got {1}, filename: {2}".format(
     #         old_id, len(refs), tech_md_filename
