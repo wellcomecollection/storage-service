@@ -55,9 +55,9 @@ trait ProgressUpdateAssertions extends SNS with Inside with Logging {
     }
     progressUpdates.size should be > 0
 
-    val (success, failure) = progressUpdates
+    val (success, _) = progressUpdates
       .map { progressUpdate =>
-        debug(s"Received ProgressUpdate: $progressUpdate")
+        println(s"Received ProgressUpdate: $progressUpdate")
         Try(inside(progressUpdate) {
           case ProgressEventUpdate(id, events) =>
             id shouldBe requestId

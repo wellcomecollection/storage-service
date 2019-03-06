@@ -85,8 +85,16 @@ lazy val ingests_api = setupProject(project, "ingests_api",
   externalDependencies = ExternalDependencies.circeOpticsDependencies
 )
 
-lazy val bag_replicator = setupProject(project, "bag_replicator",
+lazy val bag_replicator_common = setupProject(project, "bag_replicator_common",
   localDependencies = Seq(common)
+)
+
+lazy val bag_replicator = setupProject(project, "bag_replicator",
+  localDependencies = Seq(bag_replicator_common)
+)
+
+lazy val bag_replicator_unpack_to_archive = setupProject(project, "bag_replicator_unpack_to_archive",
+  localDependencies = Seq(bag_replicator_common)
 )
 
 lazy val bag_verifier = setupProject(project, "bag_verifier",
