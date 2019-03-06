@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagunpacker.services
+package uk.ac.wellcome.platform.archive.common.operation
 
 import java.util.UUID
 
@@ -6,27 +6,17 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.{
-  OperationFailure,
-  OperationResult,
-  OperationSuccess
-}
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  Progress,
-  ProgressEvent,
-  ProgressStatusUpdate,
-  ProgressUpdate
-}
+import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class OperationNotifierService(
+class OperationNotifier(
   operationName: String,
   outgoingSnsWriter: SNSWriter,
   progressSnsWriter: SNSWriter
 ) extends Logging {
 
-  def send[R, T <: OperationResult[R], O](requestId: UUID, result: T)(
+  def send[R, O](requestId: UUID, result: OperationResult[R])(
     outgoing: R => O)(implicit ec: ExecutionContext, encoder: Encoder[O]) = {
 
     val outgoingPublication: Future[Unit] = result match {
@@ -34,10 +24,12 @@ class OperationNotifierService(
         sendOutgoing(outgoing(summary)).map(_ => ())
       case OperationFailure(_, _) =>
         Future.successful(())
+      case OperationCompleted(summary) =>
+        sendOutgoing(outgoing(summary)).map(_ => ())
     }
 
     val progressPublication: Future[Unit] =
-      sendProgress[R, T](requestId, result)
+      sendProgress[R](requestId, result)
         .map(_ => ())
 
     for {
@@ -46,14 +38,34 @@ class OperationNotifierService(
     } yield ()
   }
 
-  def sendOutgoing[O](outgoing: O)(implicit encoder: Encoder[O]) =
+  def sendOutgoing[O](outgoing: O)(
+    implicit encoder: Encoder[O]) =
     outgoingSnsWriter.writeMessage(
       outgoing,
       subject = s"Sent by ${this.getClass.getSimpleName}"
     )
 
-  def sendProgress[R, T <: OperationResult[R]](requestId: UUID, result: T) = {
+  def sendProgress[R](
+    requestId: UUID,
+    result: OperationResult[R]
+  ) = {
     val update = result match {
+      case OperationCompleted(summary) => {
+        info(
+          s"Completed: $requestId: ${summary.toString}"
+        )
+
+        ProgressStatusUpdate(
+          id = requestId,
+          status = Progress.Completed,
+          affectedBag = None,
+          events = List(
+            ProgressEvent(
+              s"${operationName.capitalize} succeeded (completed)"
+            )
+          )
+        )
+      }
       case OperationSuccess(summary) => {
         info(
           s"Success: $requestId: ${summary.toString}"
@@ -61,7 +73,8 @@ class OperationNotifierService(
 
         ProgressUpdate.event(
           id = requestId,
-          description = s"${operationName.capitalize} succeeded"
+          description =
+            s"${operationName.capitalize} succeeded"
         )
       }
       case OperationFailure(summary, e) => {
@@ -75,7 +88,9 @@ class OperationNotifierService(
           status = Progress.Failed,
           affectedBag = None,
           events = List(
-            ProgressEvent(s"${operationName.capitalize} failed")
+            ProgressEvent(
+              s"${operationName.capitalize} failed"
+            )
           )
         )
       }

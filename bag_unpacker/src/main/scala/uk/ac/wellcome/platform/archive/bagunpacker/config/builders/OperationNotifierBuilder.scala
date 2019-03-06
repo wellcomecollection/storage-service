@@ -2,11 +2,11 @@ package uk.ac.wellcome.platform.archive.bagunpacker.config.builders
 
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
-import uk.ac.wellcome.platform.archive.bagunpacker.services.OperationNotifierService
+import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 
 object OperationNotifierBuilder {
-  def build(config: Config, operationName: String): OperationNotifierService = {
-    new OperationNotifierService(
+  def build(config: Config, operationName: String): OperationNotifier = {
+    new OperationNotifier(
       operationName,
       outgoingSnsWriter = SNSBuilder.buildSNSWriter(
         config,

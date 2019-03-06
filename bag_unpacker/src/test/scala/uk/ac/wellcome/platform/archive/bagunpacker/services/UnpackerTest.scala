@@ -11,14 +11,14 @@ import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class UnpackerServiceTest
+class UnpackerTest
     extends FunSpec
     with Matchers
     with ScalaFutures
     with CompressFixture
     with S3 {
 
-  it("unpacks that bag!") {
+  it("unpacks a bag") {
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
         withArchive(srcBucket) { testArchive =>
@@ -27,7 +27,7 @@ class UnpackerServiceTest
           val dstLocation =
             ObjectLocation(dstBucket.name, dstKey)
 
-          val unpackService = new UnpackerService()
+          val unpackService = new Unpacker()
 
           val unpacking = unpackService
             .unpack(
@@ -39,7 +39,8 @@ class UnpackerServiceTest
             val summary = unpacked.summary
             val dstKeys = listKeysInBucket(dstBucket)
             val expectedBytes =
-              testArchive.containedFiles.foldLeft(0L)((n, file) => {
+              testArchive.containedFiles
+                .foldLeft(0L)((n, file) => {
                 n + file.length()
               })
 

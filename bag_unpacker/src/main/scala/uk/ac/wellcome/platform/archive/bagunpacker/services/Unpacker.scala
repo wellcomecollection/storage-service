@@ -7,15 +7,15 @@ import java.time.Instant
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest}
 import org.apache.commons.compress.archivers.ArchiveEntry
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.OperationResult
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.storage.Unpacker
+import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
+import uk.ac.wellcome.platform.archive.common.operation.OperationResult
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class UnpackerService(implicit s3Client: AmazonS3, ec: ExecutionContext) {
+class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
 
   def unpack(
     srcLocation: ObjectLocation,
@@ -26,7 +26,7 @@ class UnpackerService(implicit s3Client: AmazonS3, ec: ExecutionContext) {
 
     val futureSummary = for {
       packageInputStream <- srcLocation.toInputStream
-      result <- Unpacker.unpack(packageInputStream)(unpackSummary) {
+      result <- Archive.unpack(packageInputStream)(unpackSummary) {
         (summary: UnpackSummary,
          inputStream: InputStream,
          archiveEntry: ArchiveEntry) =>

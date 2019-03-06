@@ -9,19 +9,10 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{Messaging, NotificationStreamFixture}
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  BagUnpackerWorkerService,
-  OperationNotifierService,
-  UnpackerService
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  RandomThings
-}
-import uk.ac.wellcome.platform.archive.common.models.{
-  StorageSpace,
-  UnpackBagRequest
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, Unpacker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -56,7 +47,7 @@ trait WorkerServiceFixture
     progressTopic: Topic,
     outgoingTopic: Topic,
     dstBucket: Bucket
-  )(testWith: TestWith[BagUnpackerWorkerService, R]): R =
+  )(testWith: TestWith[BagUnpackerWorker, R]): R =
     withSNSWriter(progressTopic) { progressSnsWriter =>
       withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
         withNotificationStream[UnpackBagRequest, R](queue) {
@@ -64,7 +55,7 @@ trait WorkerServiceFixture
             val ec = ExecutionContext.Implicits.global
 
             val notificationService =
-              new OperationNotifierService(
+              new OperationNotifier(
                 "unpacker",
                 outgoingSnsWriter,
                 progressSnsWriter
@@ -73,9 +64,9 @@ trait WorkerServiceFixture
             val bagUnpackerConfig = BagUnpackerConfig(dstBucket.name)
 
             val unpackerService =
-              new UnpackerService()(s3Client, ec)
+              new Unpacker()(s3Client, ec)
 
-            val bagUnpacker = new BagUnpackerWorkerService(
+            val bagUnpacker = new BagUnpackerWorker(
               bagUnpackerConfig,
               notificationStream,
               notificationService,

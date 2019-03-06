@@ -3,24 +3,16 @@ package uk.ac.wellcome.platform.archive.bagunpacker.storage
 import java.io.{BufferedInputStream, InputStream}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{
-  ArchiveEntry,
-  ArchiveInputStream,
-  ArchiveStreamFactory
-}
+import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveInputStream, ArchiveStreamFactory}
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.io.input.CloseShieldInputStream
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.{
-  OperationFailure,
-  OperationResult,
-  OperationSuccess
-}
+import uk.ac.wellcome.platform.archive.common.operation.{OperationFailure, OperationResult, OperationSuccess}
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-object Unpacker extends Logging {
+object Archive extends Logging {
 
   def unpack[T](
     inputStream: InputStream

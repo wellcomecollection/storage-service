@@ -6,13 +6,13 @@ import org.apache.commons.compress.archivers.ArchiveEntry
 import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.OperationResult
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.operation.OperationResult
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class UnpackerTest
+class ArchiveTest
     extends FunSpec
     with Matchers
     with ScalaFutures
@@ -44,7 +44,7 @@ class UnpackerTest
     }
 
     val unpack =
-      Unpacker.unpack(
+      Archive.unpack(
         inputStream
       )(
         Set.empty[ArchiveEntry]
