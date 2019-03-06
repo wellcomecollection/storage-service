@@ -20,7 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class BagReplicatorWorkerService(
   notificationStream: NotificationStream[BagRequest],
-  unpackedBagService: UnpackedBagService,
+  bagLocator: BagLocator,
   s3PrefixCopier: S3PrefixCopier,
   replicatorDestinationConfig: ReplicatorDestinationConfig,
   progressSnsWriter: SNSWriter,
@@ -56,13 +56,13 @@ class BagReplicatorWorkerService(
   private def getExternalIdentifier(
     bagRequest: BagRequest): Future[Either[Throwable, ExternalIdentifier]] =
     either {
-      unpackedBagService.getBagIdentifier(bagRequest.bagLocation.objectLocation)
+      bagLocator.getBagIdentifier(bagRequest.bagLocation.objectLocation)
     }
 
   private def getBagRoot(
     bagRequest: BagRequest): Future[Either[Throwable, ObjectLocation]] =
     either {
-      unpackedBagService.getBagRoot(bagRequest.bagLocation.objectLocation)
+      bagLocator.getBagRoot(bagRequest.bagLocation.objectLocation)
     }
 
   private def buildDstBagLocation(
