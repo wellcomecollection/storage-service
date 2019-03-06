@@ -22,7 +22,8 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
     dstLocation: ObjectLocation
   ): Future[OperationResult[UnpackSummary]] = {
 
-    val unpackSummary = UnpackSummary(startTime = Instant.now)
+    val unpackSummary =
+      UnpackSummary(startTime = Instant.now)
 
     val futureSummary = for {
       packageInputStream <- srcLocation.toInputStream
@@ -30,6 +31,7 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
         (summary: UnpackSummary,
          inputStream: InputStream,
          archiveEntry: ArchiveEntry) =>
+
           val metadata = new ObjectMetadata()
           val archiveEntrySize = archiveEntry.getSize
 
@@ -51,7 +53,8 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
                 )
                 .toString,
               inputStream,
-              metadata)
+              metadata
+            )
 
           s3Client.putObject(request)
 

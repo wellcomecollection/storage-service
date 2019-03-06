@@ -6,12 +6,8 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  Progress,
-  ProgressEvent,
-  ProgressStatusUpdate,
-  ProgressUpdate
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
+import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -23,7 +19,8 @@ class OperationNotifier(
 
   def send[R, O](
     requestId: UUID,
-    result: OperationResult[R]
+    result: OperationResult[R],
+    bagId: Option[BagId] = None
   )(
     outgoing: R => O
   )(implicit
@@ -40,7 +37,7 @@ class OperationNotifier(
     }
 
     val progressPublication: Future[Unit] =
-      sendProgress[R](requestId, result)
+      sendProgress[R](requestId, result, bagId)
         .map(_ => ())
 
     for {
@@ -57,7 +54,8 @@ class OperationNotifier(
 
   private def sendProgress[R](
     requestId: UUID,
-    result: OperationResult[R]
+    result: OperationResult[R],
+    bagId: Option[BagId]
   ) = {
     val update = result match {
       case OperationCompleted(summary) => {
@@ -66,7 +64,7 @@ class OperationNotifier(
         ProgressStatusUpdate(
           id = requestId,
           status = Progress.Completed,
-          affectedBag = None,
+          affectedBag = bagId,
           events = List(
             ProgressEvent(
               s"${operationName.capitalize} succeeded (completed)"
@@ -74,6 +72,7 @@ class OperationNotifier(
           )
         )
       }
+
       case OperationSuccess(summary) => {
         info(s"Success: $requestId: ${summary.toString}")
 
@@ -82,6 +81,7 @@ class OperationNotifier(
           description = s"${operationName.capitalize} succeeded"
         )
       }
+
       case OperationFailure(summary, e) => {
         error(
           s"Failure: $requestId: ${summary.toString}",
@@ -91,7 +91,7 @@ class OperationNotifier(
         ProgressStatusUpdate(
           id = requestId,
           status = Progress.Failed,
-          affectedBag = None,
+          affectedBag = bagId,
           events = List(
             ProgressEvent(
               s"${operationName.capitalize} failed"
