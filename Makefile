@@ -14,7 +14,6 @@ SBT_APPS = notifier \
            bags \
            bags_api \
            bag_replicator \
-           bag_replicator_unpack_to_archive \
            bag_verifier \
            bag_unpacker
 

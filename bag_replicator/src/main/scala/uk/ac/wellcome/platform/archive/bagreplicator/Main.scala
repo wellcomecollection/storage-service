@@ -1,11 +1,11 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive
+package uk.ac.wellcome.platform.archive.bagreplicator
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive.services.{
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagReplicatorWorkerService,
   UnpackedBagService
 }

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive.services
+package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import akka.Done
 import uk.ac.wellcome.json.JsonUtil._

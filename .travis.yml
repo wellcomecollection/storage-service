@@ -15,7 +15,6 @@ jobs:
     - env: SBT_PROJECT=bags
     - env: SBT_PROJECT=bags_api
     - env: SBT_PROJECT=bag_replicator
-    - env: SBT_PROJECT=bag_replicator_unpack_to_archive
     - env: SBT_PROJECT=bag_verifier
     - env: SBT_PROJECT=bag_unpacker
     - env: SBT_PROJECT=notifier
@@ -38,7 +37,6 @@ cache:
     - bags/target
     - bags_api/target
     - bag_replicator/target
-    - bag_replicator_unpack_to_archive/target
     - bag_unpacker/target
     - bag_verifier/target
     - common/target
