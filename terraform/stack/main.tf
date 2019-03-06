@@ -142,7 +142,7 @@ module "bag_unpacker" {
 
   env_vars = {
     queue_url               = "${module.bag_unpacker_queue.url}"
-    destination_bucket_name = "${var.access_bucket_name}"
+    destination_bucket_name = "${var.ingest_bucket_name}"
     progress_topic_arn      = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bag_unpacker_output_topic.arn}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-unpacker"
