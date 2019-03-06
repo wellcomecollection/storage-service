@@ -87,9 +87,9 @@ resource "aws_iam_role_policy" "ingests_api_metrics" {
 
 # bag_replicator
 
-resource "aws_iam_role_policy" "bag_replicator_task_read_s3" {
+resource "aws_iam_role_policy" "bag_replicator_task_read_ingests_s3" {
   role   = "${module.bag_replicator.task_role_name}"
-  policy = "${data.aws_iam_policy_document.storage_archive_read.json}"
+  policy = "${data.aws_iam_policy_document.ingests_read.json}"
 }
 
 resource "aws_iam_role_policy" "bag_replicator_task_store_s3" {
