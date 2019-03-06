@@ -38,7 +38,7 @@ trait WorkerServiceFixture
   def withBagNotification[R](
     queue: Queue,
     storageBucket: Bucket,
-    archiveRequestId: UUID,
+    requestId: UUID,
     testArchive: TestArchive
   )(testWith: TestWith[UnpackBagRequest, R]): R = {
     val unpackBagRequest = UnpackBagRequest(

@@ -53,7 +53,7 @@ class BagReplicatorWorkerService(
       case Left(_) => Future.successful(())
       case Right(dstBagLocation) =>
         val result = ReplicationResult(
-          archiveRequestId = bagRequest.requestId,
+          requestId = bagRequest.requestId,
           srcBagLocation = bagRequest.bagLocation,
           dstBagLocation = dstBagLocation
         )

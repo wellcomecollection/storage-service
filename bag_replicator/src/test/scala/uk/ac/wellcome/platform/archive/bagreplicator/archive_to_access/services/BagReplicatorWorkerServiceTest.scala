@@ -40,7 +40,7 @@ class BagReplicatorWorkerServiceTest
               whenReady(future) { _ =>
                 val result =
                   notificationMessage[ReplicationResult](outgoingTopic)
-                result.archiveRequestId shouldBe bagRequest.requestId
+                result.requestId shouldBe bagRequest.requestId
                 result.srcBagLocation shouldBe bagRequest.bagLocation
 
                 val dstBagLocation = result.dstBagLocation

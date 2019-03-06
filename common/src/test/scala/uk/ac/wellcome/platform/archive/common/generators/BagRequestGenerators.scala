@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 trait BagRequestGenerators extends RandomThings {
   def createBagRequestWith(bagLocation: BagLocation): BagRequest =
     BagRequest(
-      archiveRequestId = randomUUID,
+      requestId = randomUUID,
       bagLocation = bagLocation
     )
 }

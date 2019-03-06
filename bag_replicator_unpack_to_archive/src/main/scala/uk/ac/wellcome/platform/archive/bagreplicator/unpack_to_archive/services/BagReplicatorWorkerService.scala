@@ -39,7 +39,7 @@ class BagReplicatorWorkerService(
       dstBagRequest: Either[Throwable, BagRequest] = dstBagLocation.map {
         bagLocation =>
           BagRequest(
-            archiveRequestId = bagRequest.archiveRequestId,
+            requestId = bagRequest.requestId,
             bagLocation = bagLocation
           )
       }
@@ -119,12 +119,12 @@ class BagReplicatorWorkerService(
     val event: ProgressUpdate = result match {
       case Right(_) =>
         ProgressUpdate.event(
-          id = bagRequest.archiveRequestId,
+          id = bagRequest.requestId,
           description = "Bag successfully copied from ingest location"
         )
       case Left(_) =>
         ProgressStatusUpdate(
-          id = bagRequest.archiveRequestId,
+          id = bagRequest.requestId,
           status = Progress.Failed,
           affectedBag = None,
           events =
