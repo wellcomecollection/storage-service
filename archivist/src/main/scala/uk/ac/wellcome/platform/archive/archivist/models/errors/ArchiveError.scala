@@ -52,3 +52,16 @@ case class ArchiveJobError(t: ArchiveJob,
 case class ArchiveItemJobError(t: ArchiveJob,
                                errors: List[ArchiveError[ArchiveItemJob]])
     extends ArchiveError[ArchiveJob]
+
+case class DownloadError[T](exception: Throwable,
+                            location: ObjectLocation,
+                            t: T)
+    extends ArchiveError[T] {
+  override def toString =
+    s"There was an exception while downloading object $location: ${exception.getMessage}"
+}
+
+case class InvalidBagManifestError[T](t: T, manifestName: String, line: String)
+    extends ArchiveError[T] {
+  override def toString = s"Invalid bag manifest $manifestName: $line"
+}
