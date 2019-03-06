@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive.services
+package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import java.io.InputStream
 
@@ -14,7 +14,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class UnpackedBagService(s3Client: AmazonS3)(implicit ec: ExecutionContext) {
+class BagLocator(s3Client: AmazonS3)(implicit ec: ExecutionContext) {
   val s3BagFile = new S3BagFile(s3Client)
 
   implicit val _ = s3Client

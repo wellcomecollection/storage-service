@@ -61,9 +61,7 @@ class OperationNotifier(
   ) = {
     val update = result match {
       case OperationCompleted(summary) => {
-        info(
-          s"Completed: $requestId: ${summary.toString}"
-        )
+        info(s"Completed: $requestId: ${summary.toString}")
 
         ProgressStatusUpdate(
           id = requestId,
@@ -77,9 +75,7 @@ class OperationNotifier(
         )
       }
       case OperationSuccess(summary) => {
-        info(
-          s"Success: $requestId: ${summary.toString}"
-        )
+        info(s"Success: $requestId: ${summary.toString}")
 
         ProgressUpdate.event(
           id = requestId,

@@ -1,10 +1,12 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive
+package uk.ac.wellcome.platform.archive.bagreplicator
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive.fixtures.WorkerServiceFixture
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
+  BagReplicatorFixtures,
+  WorkerServiceFixture
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
@@ -66,7 +68,7 @@ class BagReplicatorFeatureTest
                       bagRequest.requestId,
                       progressTopic) { events =>
                       events should have size 1
-                      events.head.description shouldBe "Bag successfully copied from ingest location"
+                      events.head.description shouldBe "Copy bag from ingest bucket succeeded"
                     }
                   }
                 }

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive.fixtures
+package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
@@ -6,9 +6,9 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive.services.{
-  BagReplicatorWorkerService,
-  UnpackedBagService
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagLocator,
+  BagReplicatorWorkerService
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
@@ -36,7 +36,7 @@ trait WorkerServiceFixture
           val service = new BagReplicatorWorkerService(
             notificationStream = notificationStream,
             replicatorDestinationConfig = destination,
-            unpackedBagService = new UnpackedBagService(s3Client),
+            bagLocator = new BagLocator(s3Client),
             progressSnsWriter = progressSnsWriter,
             outgoingSnsWriter = outgoingSnsWriter,
             s3PrefixCopier = S3PrefixCopier(s3Client)
