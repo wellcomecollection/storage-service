@@ -64,7 +64,7 @@ def process_alto(root, bag_details, alto, skip_file_download):
     alto_file_group = root.find("./mets:fileSec/mets:fileGrp[@USE='ALTO']", namespaces)
 
     if alto_file_group is None:
-        logging.debug("No ALTO for " + b_number)
+        logging.debug("No ALTO for %s", b_number)
         return
 
     source_bucket = None
@@ -112,7 +112,7 @@ def get_flattened_destination(file_element, keys, folder, bag_details):
     keys.add(file_name)  # let this raise error if duplicate
     desired_relative_location = "{0}/{1}".format(folder, file_name)
     locator.set(expand("xlink", "href"), desired_relative_location)
-    logging.debug("updated path in METS to " + desired_relative_location)
+    logging.debug("updated path in METS to %s", desired_relative_location)
     # the local temp assembly area
     destination = os.path.join(bag_details["directory"], folder, file_name)
     bag_assembly.ensure_directory(destination)
@@ -120,7 +120,7 @@ def get_flattened_destination(file_element, keys, folder, bag_details):
 
 
 def process_assets(root, bag_details, assets, skip_file_download):
-    logging.debug("Collecting assets for " + bag_details["b_number"])
+    logging.debug("Collecting assets for %s", bag_details["b_number"])
 
     chunk_size = 1024 * 1024
 
@@ -139,15 +139,15 @@ def process_assets(root, bag_details, assets, skip_file_download):
         checksum = file_element.get("CHECKSUM")
         file_element.attrib.pop("CHECKSUM")  # don't need it now
         pres_uuid = tech_md["uuid"]
-        logging.debug("Need to determine where to get {0} from.".format(pres_uuid))
+        logging.debug("Need to determine where to get %s from.", pres_uuid)
 
         if skip_file_download:
-            logging.debug("Skipping processing file {0}".format(pres_uuid))
+            logging.debug("Skipping processing file %s", pres_uuid)
             continue
 
         image_info = dlcs.get_image(pres_uuid)
         origin = image_info.get("origin", None)
-        logging.debug("DLCS reports origin " + str(origin))
+        logging.debug("DLCS reports origin %s", origin)
         # if the origin is wellcomelibrary.org, the object is LIKELY to be in the DLCS's
         # storage bucket. So we should try that first, then fall back to the wellcomelibrary
         # origin (using the creds) if for whatever reason it isn't in the DLCS bucket.
@@ -158,9 +158,8 @@ def process_assets(root, bag_details, assets, skip_file_download):
             source_bucket = aws.get_s3().Bucket(bucket_name)
             bucket_key = origin_info["bucket_key"]
             logging.debug(
-                "Downloading object from bucket {0}/{1} to {2}".format(
-                    bucket_name, bucket_key, destination
-                )
+                "Downloading object from bucket %s/%s to %s",
+                bucket_name, bucket_key, destination
             )
             try:
                 source_bucket.download_file(bucket_key, destination)
@@ -169,9 +168,8 @@ def process_assets(root, bag_details, assets, skip_file_download):
                 alt_key = origin_info["alt_key"]
                 if ce.response["Error"]["Code"] == "NoSuchKey" and alt_key is not None:
                     logging.debug(
-                        "key {0} not found, trying alternate key: {1}".format(
-                            bucket_key, alt_key
-                        )
+                        "key %s not found, trying alternate key: %s",
+                        bucket_key, alt_key
                     )
                     source_bucket.download_file(alt_key, destination)
                     asset_downloaded = True
@@ -199,5 +197,5 @@ def process_assets(root, bag_details, assets, skip_file_download):
         message = "Unable to find asset {0}".format(pres_uuid)
         assert asset_downloaded, message
 
-        logging.debug("TODO: doing checksums on " + destination)
-        logging.debug("validate " + checksum)
+        logging.debug("TODO: doing checksums on %s", destination)
+        logging.debug("validate %s", checksum)

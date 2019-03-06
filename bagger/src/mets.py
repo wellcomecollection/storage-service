@@ -60,7 +60,7 @@ def get_file_pointer_link(struct_div):
         link = link + ".xml"
         struct_div[0].set(xlink_href, link)
 
-    logging.debug("obtained link from pointer: " + link)
+    logging.debug("obtained link from pointer: %s", link)
     return link
 
 
@@ -166,16 +166,16 @@ def get_physical_file_maps(root):
 
     tech_file_infos = {}
     amds = root.find("./mets:amdSec[@ID='AMD']", namespaces)
-    logging.debug("{0} tech mds to process".format(len(amds)))
+    logging.debug("%d tech mds to process", len(amds))
     for tech_md in amds:
         adm_id = tech_md.get("ID")
         premis_object = tech_md.find(".//premis:object", namespaces)
         if premis_object is None:
-            logging.debug("No premis:object element for " + adm_id)
+            logging.debug("No premis:object element for %s", adm_id)
 
         else:
             adm_id = tech_md.get("ID")
-            logging.debug("adding " + adm_id + " to map")
+            logging.debug("adding %s to map")
             uuid_el = premis_object.find(
                 "./premis:objectIdentifier[premis:objectIdentifierType='uuid']",
                 namespaces,
