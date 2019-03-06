@@ -41,7 +41,7 @@ def bag_from_identifier(identifier, skip_file_download):
     root = tree.getroot()
     title = mets.get_title(root)
 
-    logging.info("-> started bagging {0}: {1}".format(b_number, title))
+    logging.info("-> started bagging %s: %s", b_number, title)
     logging.debug(
         "We will transform xml that involves Preservica, and the tessella namespace"
     )
@@ -55,8 +55,8 @@ def bag_from_identifier(identifier, skip_file_download):
     struct_type = struct_div.get("TYPE")
     struct_label = struct_div.get("LABEL")
 
-    logging.debug("Found structDiv with TYPE " + struct_type)
-    logging.debug("LABEL: " + struct_label)
+    logging.debug("Found structDiv with TYPE %s", struct_type)
+    logging.debug("LABEL: %s", struct_label)
 
     root_mets_file = os.path.join(bag_details["directory"], "{0}.xml".format(b_number))
 
@@ -78,7 +78,7 @@ def bag_from_identifier(identifier, skip_file_download):
             assert int(order) > 0, "ORDER {0} <= 0".format(order)  # can it be 0?
             assert len(div) == 1, "one and only one child element"
             file_pointer_href = mets.get_file_pointer_link(div)
-            logging.debug("link to manifestation file: " + file_pointer_href)
+            logging.debug("link to manifestation file: %s", file_pointer_href)
             manifestation_relative_paths.append((file_pointer_href, order))
 
         # TODO - we have stored the order, we could validate that the manifestation files match this order
@@ -89,18 +89,18 @@ def bag_from_identifier(identifier, skip_file_download):
         # then go through the linked files _0001 etc
         for rel_path in manifestation_relative_paths:
             full_path = bag_details["mets_partial_path"] + rel_path[0]
-            logging.debug("loading manifestation " + full_path)
-            logging.debug("ORDER: {0}".format(rel_path[1]))
+            logging.debug("loading manifestation %s", full_path)
+            logging.debug("ORDER: %s", rel_path[1])
             mf_tree = load_xml(full_path)
             mf_root = mf_tree.getroot()
             manif_struct_div = mets.get_logical_struct_div(mf_root)
             link_to_anchor = mets.get_file_pointer_link(manif_struct_div)
-            logging.debug("{0} should be link back to anchor".format(link_to_anchor))
+            logging.debug("%s should be link back to anchor", link_to_anchor)
             process_manifestation(mf_root, bag_details, skip_file_download, id_map)
             # not os separator, this is in the METS; always /
             parts = rel_path[0].split("/")
             manifestation_file = os.path.join(bag_details["directory"], *parts)
-            logging.debug("writing manifestation to bag: " + manifestation_file)
+            logging.debug("writing manifestation to bag: %s", manifestation_file)
             mf_tree.write(manifestation_file, encoding="utf-8", xml_declaration=True)
             aws.save_mets_to_side(b_number, manifestation_file)
 
@@ -115,7 +115,7 @@ def bag_from_identifier(identifier, skip_file_download):
     aws.save_id_map(b_number, id_map)
 
     if skip_file_download:
-        logging.info("Finished {0} without bagging".format(b_number))
+        logging.info("Finished %s without bagging", b_number)
 
         bag_assembly.cleanup(b_number)
 

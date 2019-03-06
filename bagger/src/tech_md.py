@@ -53,7 +53,7 @@ def remodel_file_technical_metadata(root, id_map):
                 add_premis_significant_prop(premis_file, premis_name, value)
             except KeyError:
                 if name in mappings.IGNORED_PROPERTIES:
-                    logging.debug("Ignoring property name {0}".format(name))
+                    logging.debug("Ignoring property name %s", name)
                 else:
                     message = "Unknown file property: {0}".format(name)
                     raise ValueError(message)

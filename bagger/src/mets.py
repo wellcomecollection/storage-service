@@ -111,7 +111,7 @@ the AMD to start at _0001
         refs = root.findall(".//mets:div[@ADMID='{0}']".format(old_id), namespaces)
         tech_md_filename = get_tech_md_filename(tech_md)
         if len(refs) == 0 and is_ignorable_file(tech_md_filename):
-            logging.debug("ignoring file {0}".format(tech_md_filename))
+            logging.debug("ignoring file %s", tech_md_filename)
             amd_sec.remove(tech_md)
             continue
 
