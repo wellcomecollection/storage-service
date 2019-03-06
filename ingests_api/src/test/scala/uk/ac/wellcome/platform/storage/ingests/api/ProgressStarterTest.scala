@@ -32,28 +32,12 @@ class ProgressStarterTest
     withLocalSnsTopic { archivistTopic =>
       withLocalSnsTopic { unpackerTopic =>
         withProgressTrackerTable { table =>
-          withProgressStarter(table, archivistTopic, unpackerTopic) {
+          withProgressStarter(table, archivistTopic) {
             progressStarter =>
               whenReady(progressStarter.initialise(progress)) { p =>
                 p shouldBe progress
 
                 assertTableOnlyHasItem(progress, table)
-
-                // Archivist
-                val archivistRequests =
-                  listMessagesReceivedFromSNS(
-                    archivistTopic
-                  ).map(messageInfo =>
-                    fromJson[IngestBagRequest](messageInfo.message).get)
-
-                archivistRequests shouldBe List(
-                  IngestBagRequest(
-                    p.id,
-                    storageSpace = StorageSpace(p.space.underlying),
-                    archiveCompleteCallbackUrl = p.callback.map(_.uri),
-                    zippedBagLocation = progress.sourceLocation.location
-                  )
-                )
 
                 // Unpacker
                 val unpackerRequests =
@@ -77,34 +61,29 @@ class ProgressStarterTest
   }
 
   it("returns a failed future if saving to DynamoDB fails") {
-    withLocalSnsTopic { archivistTopic =>
       withLocalSnsTopic { unpackerTopic =>
         val fakeTable = Table("does-not-exist", index = "does-not-exist")
 
         withProgressStarter(
           fakeTable,
-          archivistTopic,
           unpackerTopic
         ) { progressStarter =>
           val future = progressStarter.initialise(progress)
 
           whenReady(future.failed) { _ =>
-            assertSnsReceivesNothing(archivistTopic)
             assertSnsReceivesNothing(unpackerTopic)
           }
         }
       }
-    }
+
   }
 
   it("returns a failed future if publishing to SNS fails") {
     withProgressTrackerTable { table =>
-      val fakeArchivistTopic = Topic("does-not-exist")
       val fakeUnpackerTopic = Topic("does-not-exist")
 
       withProgressStarter(
         table,
-        fakeArchivistTopic,
         fakeUnpackerTopic
       ) { progressStarter =>
         val future = progressStarter.initialise(progress)
@@ -118,23 +97,20 @@ class ProgressStarterTest
 
   private def withProgressStarter[R](
     table: Table,
-    archivistTopic: Topic,
     unpackerTopic: Topic
   )(
     testWith: TestWith[ProgressStarter, R]
   ): R =
-    withSNSWriter(archivistTopic) { archivistSnsWriter =>
       withSNSWriter(unpackerTopic) { unpackerSnsWriter =>
         withProgressTracker(table) { progressTracker =>
           val progressStarter = new ProgressStarter(
             progressTracker = progressTracker,
-            archivistSnsWriter = archivistSnsWriter,
             unpackerSnsWriter = unpackerSnsWriter
           )
 
           testWith(progressStarter)
         }
       }
-    }
+
 
 }
