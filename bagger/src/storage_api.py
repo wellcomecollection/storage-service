@@ -67,7 +67,7 @@ def get_ingest_for_identifier(bnumber):
 def ingest(bnumber):
     global ingest_template
     body = deepcopy(ingest_template)
-    body["sourceLocation"]["path"] = bnumber + ".zip"
+    body["sourceLocation"]["path"] = bnumber + ".tar.gz"
     url = settings.STORAGE_API_INGESTS
     scope = get_ingest_scope()
     return get_oauthed_json(url, scope, method="POST", data=json.dumps(body))
