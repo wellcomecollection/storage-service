@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bags.async.services
+package uk.ac.wellcome.platform.archive.bag_register.services
 
 import java.util.UUID
 
@@ -46,7 +46,7 @@ class BagsWorkerService(
       tryStorageManifest: Try[StorageManifest] <- createManifest(bagRequest)
       tryUpdateVHSResult: Try[Unit] <- updateStorageManifest(tryStorageManifest)
       _ <- sendProgressUpdate(
-        requestId = replicationResult.requestId,
+        archiveRequestId = replicationResult.requestId,
         tryStorageManifest = tryStorageManifest,
         tryUpdateVHSResult = tryUpdateVHSResult
       )
@@ -76,21 +76,21 @@ class BagsWorkerService(
     }
 
   private def sendProgressUpdate(
-    requestId: UUID,
+    archiveRequestId: UUID,
     tryStorageManifest: Try[StorageManifest],
     tryUpdateVHSResult: Try[Unit]): Future[PublishAttempt] = {
     val event = (tryStorageManifest, tryUpdateVHSResult) match {
       case (Success(storageManifest), Success(_)) =>
         ProgressStatusUpdate(
-          id = requestId,
+          id = archiveRequestId,
           status = Progress.Completed,
           affectedBag = Some(storageManifest.id),
           events = List(ProgressEvent("Bag registered successfully"))
         )
       case (Success(storageManifest), Failure(err)) => {
-        warn(s"Failed to register bag $requestId: ${err.getMessage}")
+        warn(s"Failed to register bag $archiveRequestId: ${err.getMessage}")
         ProgressStatusUpdate(
-          id = requestId,
+          id = archiveRequestId,
           status = Progress.Failed,
           affectedBag = Some(storageManifest.id),
           events = List(ProgressEvent("Failed to register bag"))
@@ -98,9 +98,9 @@ class BagsWorkerService(
       }
       case (Failure(err), _) => {
         warn(
-          s"Failed to create storage manifest for $requestId: ${err.getMessage}")
+          s"Failed to create storage manifest for $archiveRequestId: ${err.getMessage}")
         ProgressStatusUpdate(
-          id = requestId,
+          id = archiveRequestId,
           status = Progress.Failed,
           affectedBag = None,
           events = List(ProgressEvent("Failed to create storage manifest"))

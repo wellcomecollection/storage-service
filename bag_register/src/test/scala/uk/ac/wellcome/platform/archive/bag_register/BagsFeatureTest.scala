@@ -1,11 +1,11 @@
-package uk.ac.wellcome.platform.archive.bags.async
+package uk.ac.wellcome.platform.archive.bag_register
 
 import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
-import uk.ac.wellcome.platform.archive.bags.async.fixtures.WorkerServiceFixture
+import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,

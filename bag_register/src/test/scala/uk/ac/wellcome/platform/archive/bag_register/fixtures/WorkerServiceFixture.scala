@@ -1,11 +1,11 @@
-package uk.ac.wellcome.platform.archive.bags.async.fixtures
+package uk.ac.wellcome.platform.archive.bag_register.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.bags.async.services.BagsWorkerService
+import uk.ac.wellcome.platform.archive.bag_register.services.BagsWorkerService
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   RandomThings,
   StorageManifestVHSFixture
