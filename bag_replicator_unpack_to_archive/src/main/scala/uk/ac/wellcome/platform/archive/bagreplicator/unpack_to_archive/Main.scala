@@ -7,7 +7,7 @@ import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.unpack_to_archive.services.{
   BagReplicatorWorkerService,
-  UnpackedBagService
+  BagLocator
 }
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
@@ -29,7 +29,7 @@ object Main extends WellcomeTypesafeApp {
     new BagReplicatorWorkerService(
       notificationStream =
         NotificationStreamBuilder.buildStream[BagRequest](config),
-      unpackedBagService = new UnpackedBagService(s3Client),
+      unpackedBagService = new BagLocator(s3Client),
       s3PrefixCopier = S3PrefixCopier(s3Client),
       replicatorDestinationConfig =
         ReplicatorDestinationConfig.buildDestinationConfig(config),
