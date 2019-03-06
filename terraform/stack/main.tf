@@ -259,7 +259,7 @@ module "api" {
     context_url                     = "${var.api_url}/context.json"
     app_base_url                    = "${var.api_url}/storage/v1/ingests"
     archivist_topic_arn             = "${module.ingest_requests_topic.arn}"
-    unpacker_topic_arn              = "${module.bag_unpacker_topic.arn}"
+    unpacker_topic_arn              = "${module.bag_unpacker_input_topic.arn}"
     archive_progress_table_name     = "${var.ingests_table_name}"
     archive_bag_progress_index_name = "${var.ingests_table_progress_index_name}"
     JAVA_OPTS                       = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-ingests-api"
@@ -270,7 +270,7 @@ module "api" {
   static_content_bucket_name     = "${var.static_content_bucket_name}"
   interservice_security_group_id = "${aws_security_group.interservice.id}"
   alarm_topic_arn                = "${var.alarm_topic_arn}"
-  bag_unpacker_topic_arn         = "${module.bag_unpacker_topic.arn}"
+  bag_unpacker_topic_arn         = "${module.bag_unpacker_input_topic.arn}"
 }
 
 # Migration services

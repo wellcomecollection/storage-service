@@ -146,10 +146,10 @@ module "archivist_output_topic" {
 
 ## Messaging - bag_unpacker
 
-module "bag_unpacker_topic" {
+module "bag_unpacker_input_topic" {
   source = "../modules/topic"
 
-  name = "${var.namespace}_bag_unpacker"
+  name = "${var.namespace}_bag_unpacker_input"
 
   role_names = [
     "${module.bag_unpacker.task_role_name}",
@@ -159,9 +159,9 @@ module "bag_unpacker_topic" {
 module "bag_unpacker_queue" {
   source = "../modules/queue"
 
-  name = "${var.namespace}_bag_unpacker"
+  name = "${var.namespace}_bag_unpacker_input"
 
-  topic_names = ["${module.bag_unpacker_topic.name}"]
+  topic_names = ["${module.bag_unpacker_input_topic.name}"]
 
   role_names = ["${module.bag_unpacker.task_role_name}"]
 
@@ -173,20 +173,6 @@ module "bag_unpacker_queue" {
 
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
-
-# Services using the null topic are sending their
-# output nowhere in particular (a bit like /dev/null)
-
-module "null_topic" {
-  source = "../modules/topic"
-
-  name = "${var.namespace}_null_topic"
-
-  role_names = [
-    "${module.bag_verifier.task_role_name}",
-    "${module.bag_unpacker.task_role_name}",
-  ]
 }
 
 module "bag_unpacker_output_topic" {
