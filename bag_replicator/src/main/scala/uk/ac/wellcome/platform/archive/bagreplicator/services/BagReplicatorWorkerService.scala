@@ -46,10 +46,13 @@ class BagReplicatorWorkerService(
       externalIdentifier <- getExternalIdentifier(bagRequest)
       bagRoot <- getBagRoot(bagRequest)
       dstBagLocation = buildDstBagLocation(bagRequest, externalIdentifier)
-      copyResult: Either[Throwable, BagLocation] <- copyBag(bagRoot, dstBagLocation)
+      copyResult: Either[Throwable, BagLocation] <- copyBag(
+        bagRoot,
+        dstBagLocation)
       operationResult: OperationResult[BagLocation] = copyResult match {
         case Right(bagLocation) => OperationSuccess(bagLocation)
-        case Left(throwable) => OperationFailure(bagRequest.bagLocation, throwable)
+        case Left(throwable) =>
+          OperationFailure(bagRequest.bagLocation, throwable)
       }
       _ <- operationNotifier.send(
         requestId = bagRequest.requestId,
@@ -97,7 +100,9 @@ class BagReplicatorWorkerService(
             srcLocationPrefix = srcLocation,
             dstLocationPrefix = dstLocation.objectLocation
           )
-          .map { _ => Right(dstLocation) }
+          .map { _ =>
+            Right(dstLocation)
+          }
       case (Left(err), _) => Future.successful(Left(err))
       case (_, Left(err)) => Future.successful(Left(err))
     }
