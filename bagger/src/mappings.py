@@ -38,12 +38,9 @@ SIGNIFICANT_PROPERTIES = {
 
 # Do not transform any of these file properties.
 # If a file property is encountered that isn't in either list, an error will be raised.
-IGNORED_PROPERTIES = set([
-    "Creation Date",
-    "Number of Images",
-    "Bits Per Sample",
-    "Samples Per Pixel",
-])
+IGNORED_PROPERTIES = set(
+    ["Creation Date", "Number of Images", "Bits Per Sample", "Samples Per Pixel"]
+)
 
 IGNORED_TECHMD_FILENAMES = set(["thumbs.db"])
 

@@ -159,7 +159,9 @@ def process_assets(root, bag_details, assets, skip_file_download):
             bucket_key = origin_info["bucket_key"]
             logging.debug(
                 "Downloading object from bucket %s/%s to %s",
-                bucket_name, bucket_key, destination
+                bucket_name,
+                bucket_key,
+                destination,
             )
             try:
                 source_bucket.download_file(bucket_key, destination)
@@ -169,7 +171,8 @@ def process_assets(root, bag_details, assets, skip_file_download):
                 if ce.response["Error"]["Code"] == "NoSuchKey" and alt_key is not None:
                     logging.debug(
                         "key %s not found, trying alternate key: %s",
-                        bucket_key, alt_key
+                        bucket_key,
+                        alt_key,
                     )
                     source_bucket.download_file(alt_key, destination)
                     asset_downloaded = True
