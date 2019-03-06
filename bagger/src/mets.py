@@ -4,9 +4,13 @@ import mappings
 
 # Borrowed from Dds.Dashboard, LogicalStructDiv impl
 
-collection_types = ["MultipleManifestation", "Periodical", "PeriodicalVolume"]
+collection_types = set([
+    "MultipleManifestation",
+    "Periodical",
+    "PeriodicalVolume",
+])
 
-manifestation_types = [
+manifestation_types = set([
     "Monograph",
     "Archive",
     "Artwork",
@@ -19,7 +23,7 @@ manifestation_types = [
     "MultipleVolumeMultipleCopy",
     "Audio",
     "Map",
-]
+])
 
 
 def is_collection(struct_type):
@@ -95,7 +99,7 @@ the AMD to start at _0001
     amd_sec.remove(amd_sec[0])
 
     counter = 1
-    ignore = ["RIGHTS", "DIGIPROV"]
+    ignore = set(["RIGHTS", "DIGIPROV"])
     for tech_md in amd_sec:
         old_id = tech_md.get("ID")
         if old_id in ignore:
