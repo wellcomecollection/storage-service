@@ -19,7 +19,7 @@ import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-class BagsWorkerServiceTest
+class BagRegisterWorkerTest
     extends FunSpec
     with Matchers
     with ScalaFutures

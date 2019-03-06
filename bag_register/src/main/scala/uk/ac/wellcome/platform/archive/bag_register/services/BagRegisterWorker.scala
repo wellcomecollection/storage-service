@@ -1,0 +1,35 @@
+package uk.ac.wellcome.platform.archive.bag_register.services
+
+import akka.Done
+import grizzled.slf4j.Logging
+import uk.ac.wellcome.messaging.sqs.NotificationStream
+import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
+import uk.ac.wellcome.typesafe.Runnable
+
+import scala.concurrent.{ExecutionContext, Future}
+
+class BagRegisterWorker(
+  stream: NotificationStream[BagRequest],
+  notifier: OperationNotifier,
+  register: Register
+)(implicit ec: ExecutionContext)
+    extends Logging
+    with Runnable {
+
+  def run(): Future[Done] =
+    stream.run(processMessage)
+
+  def processMessage(request: BagRequest): Future[Unit] = {
+    for {
+      result <- register.update(
+        request.bagLocation
+      )
+
+      _ <- notifier.send(
+        request.requestId,
+        result
+      )
+    } yield ()
+  }
+}

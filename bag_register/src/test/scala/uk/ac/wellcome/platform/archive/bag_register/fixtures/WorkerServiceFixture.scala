@@ -5,7 +5,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.bag_register.services.BagsWorkerService
+import uk.ac.wellcome.platform.archive.bag_register.services.BagRegisterWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   RandomThings,
   StorageManifestVHSFixture
@@ -28,13 +28,13 @@ trait WorkerServiceFixture
     bucket: Bucket,
     topic: Topic,
     queue: Queue = Queue("bags_queue", "arn::bags_queue"))(
-    testWith: TestWith[BagsWorkerService, R]): R =
+    testWith: TestWith[BagRegisterWorker, R]): R =
     withNotificationStream[ReplicationResult, R](queue) { notificationStream =>
       withStorageManifestVHS(table, bucket) { storageManifestVHS =>
         withSNSWriter(topic) { progressSnsWriter =>
           val storageManifestService = new StorageManifestService()
 
-          val service = new BagsWorkerService(
+          val service = new BagRegisterWorker(
             notificationStream = notificationStream,
             storageManifestService = storageManifestService,
             storageManifestVHS = storageManifestVHS,
