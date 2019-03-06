@@ -141,10 +141,10 @@ module "bag_verifier" {
   service_name = "${var.namespace}-bag-verifier"
 
   env_vars = {
-    queue_url               = "${module.bag_verifier_input_queue.url}"
-    progress_topic_arn      = "${local.progress_topic}"
-    outgoing_topic_arn      = "${module.bag_verifier_output_topic.arn}"
-    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-verifier"
+    queue_url          = "${module.bag_verifier_input_queue.url}"
+    progress_topic_arn = "${local.progress_topic}"
+    outgoing_topic_arn = "${module.bag_verifier_output_topic.arn}"
+    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-verifier"
   }
 
   env_vars_length = 4
