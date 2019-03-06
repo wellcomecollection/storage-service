@@ -181,8 +181,19 @@ data "aws_iam_policy_document" "storage_access_readwrite" {
 data "aws_iam_policy_document" "ingests_read" {
   statement {
     actions = [
-      "s3:GetObject*",
       "s3:ListBucket",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.workflow_bucket_name}",
+      "${var.s3_bagger_drop_arn}",
+      "arn:aws:s3:::${var.ingest_drop_bucket_name}",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:GetObject*",
     ]
 
     resources = [
@@ -196,8 +207,17 @@ data "aws_iam_policy_document" "ingests_read" {
 data "aws_iam_policy_document" "storage_ingests_drop_read_write" {
   statement {
     actions = [
-      "s3:GetObject*",
       "s3:ListBucket",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.ingest_drop_bucket_name}",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:GetObject*",
       "s3:PutObject*",
     ]
 
