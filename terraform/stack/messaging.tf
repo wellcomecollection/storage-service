@@ -66,16 +66,6 @@ module "archivist_input_queue" {
 
 # Messaging - bags aka registrar-async
 
-module "bag_replicator_output_topic" {
-  source = "../modules/topic"
-
-  name = "${var.namespace}_bags"
-
-  role_names = [
-    "${module.bag_replicator.task_role_name}",
-  ]
-}
-
 module "bags_input_queue" {
   source = "../modules/queue"
 
@@ -152,48 +142,7 @@ module "archivist_output_topic" {
   ]
 }
 
-module "bag_replicator_input_queue" {
-  source = "../modules/queue"
-
-  name = "${var.namespace}_bag_replicator_input"
-
-  topic_names = ["${module.archivist_output_topic.name}"]
-
-  role_names = ["${module.bag_replicator.task_role_name}"]
-
-  # Because these operations take a long time (potentially copying thousands
-  # of S3 objects for a single message), we keep a high visibility timeout to
-  # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = "${60 * 60 * 5}"
-
-  max_receive_count = 1
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
-
 # Services in test
-
-## Messaging - bag_verifier
-
-module "bag_verifier_input_queue" {
-  source = "../modules/queue"
-
-  name = "${var.namespace}_bag_verifier_input"
-
-  topic_names = ["${module.archivist_output_topic.name}"]
-
-  role_names = ["${module.bag_verifier.task_role_name}"]
-
-  # We keep a high visibility timeout to
-  # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = "${60 * 60 * 5}"
-
-  max_receive_count = 1
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
 
 ## Messaging - bag_unpacker
 
@@ -268,6 +217,55 @@ module "bag_verifier_output_queue" {
   topic_names = ["${module.bag_verifier_output_topic.name}"]
 
   role_names = []
+
+  # We keep a high visibility timeout to
+  # avoid messages appearing to time out and fail.
+  visibility_timeout_seconds = "${60 * 60 * 5}"
+
+  max_receive_count = 1
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+}
+
+module "bag_replicator_input_queue" {
+  source = "../modules/queue"
+
+  name = "${var.namespace}_bag_replicator_input"
+
+  topic_names = ["${module.bag_unpacker_output_topic.name}"]
+
+  role_names = ["${module.bag_replicator.task_role_name}"]
+
+  # Because these operations take a long time (potentially copying thousands
+  # of S3 objects for a single message), we keep a high visibility timeout to
+  # avoid messages appearing to time out and fail.
+  visibility_timeout_seconds = "${60 * 60 * 5}"
+
+  max_receive_count = 1
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+}
+
+module "bag_replicator_output_topic" {
+  source = "../modules/topic"
+
+  name = "${var.namespace}_bag_replicator_output"
+
+  role_names = [
+    "${module.bag_replicator.task_role_name}",
+  ]
+}
+
+module "bag_verifier_input_queue" {
+  source = "../modules/queue"
+
+  name = "${var.namespace}_bag_verifier_input"
+
+  topic_names = ["${module.bag_replicator_output_topic.name}"]
+
+  role_names = ["${module.bag_verifier.task_role_name}"]
 
   # We keep a high visibility timeout to
   # avoid messages appearing to time out and fail.
