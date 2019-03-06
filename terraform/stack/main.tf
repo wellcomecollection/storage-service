@@ -142,13 +142,12 @@ module "bag_verifier" {
 
   env_vars = {
     queue_url               = "${module.bag_verifier_input_queue.url}"
-    destination_bucket_name = "${var.access_bucket_name}"
     progress_topic_arn      = "${local.progress_topic}"
     outgoing_topic_arn      = "${module.bag_verifier_output_topic.arn}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bag-verifier"
   }
 
-  env_vars_length = 5
+  env_vars_length = 4
 
   container_image = "${local.bag_verifier_image}"
 }
