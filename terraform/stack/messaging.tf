@@ -15,6 +15,7 @@ module "ingests_topic" {
     "${module.bags.task_role_name}",
     "${module.bag_replicator.task_role_name}",
     "${module.bag_verifier.task_role_name}",
+    "${module.bag_unpacker.task_role_name}",
     "${module.ingests.task_role_name}",
     "${module.notifier.task_role_name}",
   ]
