@@ -6,7 +6,12 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
+import uk.ac.wellcome.platform.archive.common.progress.models.{
+  Progress,
+  ProgressEvent,
+  ProgressStatusUpdate,
+  ProgressUpdate
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -17,14 +22,13 @@ class OperationNotifier(
 ) extends Logging {
 
   def send[R, O](
-                  requestId: UUID,
-                  result: OperationResult[R]
-                )(
-                  outgoing: R => O
+    requestId: UUID,
+    result: OperationResult[R]
+  )(
+    outgoing: R => O
   )(implicit
     ec: ExecutionContext,
-    enc: Encoder[O]
-  ) = {
+    enc: Encoder[O]) = {
 
     val outgoingPublication: Future[Unit] = result match {
       case OperationSuccess(summary) =>
@@ -45,8 +49,7 @@ class OperationNotifier(
     } yield ()
   }
 
-  private def sendOutgoing[O](outgoing: O)(
-    implicit encoder: Encoder[O]) =
+  private def sendOutgoing[O](outgoing: O)(implicit encoder: Encoder[O]) =
     outgoingSnsWriter.writeMessage(
       outgoing,
       subject = s"Sent by ${this.getClass.getSimpleName}"
@@ -80,8 +83,7 @@ class OperationNotifier(
 
         ProgressUpdate.event(
           id = requestId,
-          description =
-            s"${operationName.capitalize} succeeded"
+          description = s"${operationName.capitalize} succeeded"
         )
       }
       case OperationFailure(summary, e) => {

@@ -13,7 +13,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class OperationNotifierTest
-  extends FunSpec
+    extends FunSpec
     with RandomThings
     with ScalaFutures
     with ProgressUpdateAssertions
@@ -22,8 +22,8 @@ class OperationNotifierTest
     with SNS {
 
   case class TestSummary(
-                        description: String
-                        ) {
+    description: String
+  ) {
     override def toString: String = this.description
   }
 
@@ -33,7 +33,6 @@ class OperationNotifierTest
         withSNSWriter(progressTopic) { progressSnsWriter =>
           withLocalSnsTopic { outgoingTopic =>
             withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-
               val requestId = UUID.randomUUID()
 
               val operationName = randomAlphanumeric()
@@ -53,7 +52,8 @@ class OperationNotifierTest
                 )
 
               val operation = OperationFailure(
-                summary, throwable
+                summary,
+                throwable
               )
 
               val sendingOperationNotice =
@@ -68,7 +68,6 @@ class OperationNotifierTest
                     progressTopic = progressTopic,
                     status = Progress.Failed
                   ) { events =>
-
                     val description = events.map {
                       _.description
                     }.head
@@ -94,7 +93,6 @@ class OperationNotifierTest
         withSNSWriter(progressTopic) { progressSnsWriter =>
           withLocalSnsTopic { outgoingTopic =>
             withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-
               val requestId = UUID.randomUUID()
 
               val operationName = randomAlphanumeric()
@@ -119,7 +117,8 @@ class OperationNotifierTest
               whenReady(sendingOperationNotice) { _ =>
                 eventually {
 
-                  assertTopicReceivesProgressEventUpdate(requestId,
+                  assertTopicReceivesProgressEventUpdate(
+                    requestId,
                     progressTopic) { events =>
                     events should have size 1
                     events.head.description shouldBe s"${operationName.capitalize} succeeded"
@@ -136,12 +135,12 @@ class OperationNotifierTest
   }
 
   describe("with a completed operation") {
-    it("sends a completed status update to progressTopic and a message to outgoingTopic") {
+    it(
+      "sends a completed status update to progressTopic and a message to outgoingTopic") {
       withLocalSnsTopic { progressTopic =>
         withSNSWriter(progressTopic) { progressSnsWriter =>
           withLocalSnsTopic { outgoingTopic =>
             withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-
               val requestId = UUID.randomUUID()
 
               val operationName = randomAlphanumeric()
@@ -170,7 +169,6 @@ class OperationNotifierTest
                     progressTopic = progressTopic,
                     status = Progress.Completed
                   ) { events =>
-
                     val description = events.map {
                       _.description
                     }.head

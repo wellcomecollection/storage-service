@@ -41,8 +41,8 @@ class UnpackerTest
             val expectedBytes =
               testArchive.containedFiles
                 .foldLeft(0L)((n, file) => {
-                n + file.length()
-              })
+                  n + file.length()
+                })
 
             println(s"Unpacked bytes: ${summary.bytesUnpacked}")
             println(s"Expected bytes: ${expectedBytes}")
