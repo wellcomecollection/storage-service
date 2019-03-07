@@ -78,6 +78,7 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
             destination.key,
             archiveEntry.getName
           )
+          .normalize()
           .toString,
         inputStream,
         metadata
