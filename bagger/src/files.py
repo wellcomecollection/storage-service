@@ -50,12 +50,11 @@ def download_s3_object(b_number, source_bucket, source, destination):
             except ClientError as err:
                 logging.debug("Unsuccessful downloading %s, %r", alt_source, err)
             else:
-                return
+                return True
 
         # If we've tried all the possibilities and none of them worked,
         # we haven't found the METS file.  Give up!
-        message = "Unable to find source for {0}: {1}".format(b_number, source)
-        raise RuntimeError(message)
+        return False
 
 
 def process_alto(root, bag_details, alto, skip_file_download):
@@ -72,6 +71,8 @@ def process_alto(root, bag_details, alto, skip_file_download):
 
     if not settings.READ_METS_FROM_FILESHARE:
         source_bucket = aws.get_s3().Bucket(settings.METS_BUCKET_NAME)
+
+    missing_altos = []
 
     for file_element in alto_file_group:
         current_location, destination = get_flattened_destination(
@@ -96,12 +97,25 @@ def process_alto(root, bag_details, alto, skip_file_download):
         else:
             source = bag_details["mets_partial_path"] + current_location
             logging.debug("Downloading S3 ALTO from %s to %s", source, destination)
-            download_s3_object(
+            downloaded = download_s3_object(
                 b_number=b_number,
                 source_bucket=source_bucket,
                 source=source,
                 destination=destination,
             )
+            if not downloaded:
+                message = "Unable to find source for {0}: {1}".format(b_number, source)
+                logging.debug(message)
+                missing_altos.append(source)
+
+        missing_count = len(missing_altos)
+        if missing_count > 0:
+            message = {
+                "identifier": b_number,
+                "summary": "{0} has {1} missing ALTO files.".format(b_number, missing_count),
+                "data": missing_altos
+            }
+            aws.log_warning("missing_altos", message)
 
 
 def get_flattened_destination(file_element, keys, folder, bag_details):
@@ -210,7 +224,7 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
         if len(missing_from_preservica) > 0:
             message["missing_from_preservica"] = missing_from_preservica
 
-        aws.log_warning(message)
+        aws.log_warning("amd_mismatch", message)
 
 
 def try_to_download_asset(preservica_uuid, destination):
