@@ -10,11 +10,11 @@ import uk.ac.wellcome.typesafe.Runnable
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagReplicatorWorker(
-                           stream: NotificationStream[BagRequest],
-                           notifier: OperationNotifier,
-                           replicator: BagReplicator
-                         )(implicit ec: ExecutionContext)
-  extends Runnable {
+  stream: NotificationStream[BagRequest],
+  notifier: OperationNotifier,
+  replicator: BagReplicator
+)(implicit ec: ExecutionContext)
+    extends Runnable {
 
   def run(): Future[Done] = stream.run(processMessage)
 
@@ -29,8 +29,7 @@ class BagReplicatorWorker(
       ) { summary =>
         BagRequest(
           requestId = bagRequest.requestId,
-          bagLocation = summary
-            .destination
+          bagLocation = summary.destination
             .getOrElse(
               throw new RuntimeException(
                 "No destination provided by replication!"

@@ -6,7 +6,11 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagLocator, BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagLocator,
+  BagReplicator,
+  BagReplicatorWorker
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
@@ -21,11 +25,10 @@ trait WorkerServiceFixture
     with RandomThings
     with S3
     with SNS {
-  def withWorkerService[R](queue: Queue =
-                            Queue(
-                              "default_q",
-                              "arn::default_q"
-                            ),
+  def withWorkerService[R](queue: Queue = Queue(
+                             "default_q",
+                             "arn::default_q"
+                           ),
                            progressTopic: Topic,
                            outgoingTopic: Topic,
                            destination: ReplicatorDestinationConfig =
@@ -35,7 +38,6 @@ trait WorkerServiceFixture
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
       withSNSWriter(progressTopic) { progressSnsWriter =>
         withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-
           val operationName = "replicating"
 
           val service = new BagReplicatorWorker(
