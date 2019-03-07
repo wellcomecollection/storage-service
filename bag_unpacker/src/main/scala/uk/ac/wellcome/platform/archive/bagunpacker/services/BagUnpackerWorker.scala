@@ -27,8 +27,8 @@ class BagUnpackerWorker(
 
   def run(): Future[Done] = stream.run(processMessage)
 
-  private def processMessage(request: UnpackBagRequest)(
-    implicit enc: Encoder[BagRequest]) = {
+  def processMessage(request: UnpackBagRequest)(
+    implicit enc: Encoder[BagRequest]): Future[Unit] = {
     val location = BagLocationBuilder.build(request, config)
 
     for {
