@@ -95,10 +95,13 @@ trait CompressFixture extends RandomThings with S3 with Logging {
     (file, randomFiles, entries)
   }
 
-  def relativeToTmpDir(file: File) =
-    (new File(tmpDir).toURI)
+  def relativeToTmpDir(file: File) = {
+    val path = (new File(tmpDir).toURI)
       .relativize(file.toURI)
       .getPath
+
+    s"./$path"
+  }
 
   class Archive(
     archiverName: String,
