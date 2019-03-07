@@ -21,11 +21,7 @@ class ArchiveTest
 
   it("should unpack a tar.gz file") {
     val (archiveFile, files, expectedEntries) =
-      createArchive(
-        archiverName = "tar",
-        compressorName = "gz",
-        fileCount = 10
-      )
+      createTgzArchiveWithRandomFiles()
 
     val inputStream = new FileInputStream(archiveFile)
 

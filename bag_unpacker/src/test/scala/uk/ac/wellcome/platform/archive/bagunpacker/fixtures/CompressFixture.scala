@@ -25,47 +25,60 @@ trait CompressFixture extends RandomThings with S3 with Logging {
 
   def withArchive[R](
     bucket: Bucket,
-    fileCount: Int = defaultFileCount,
-  )(testWith: TestWith[TestArchive, R]) = {
-
-    val (archiveFile, files, expectedEntries) =
-      createArchive(
-        archiverName = "tar",
-        compressorName = "gz",
-        fileCount
-      )
+    archiveFile: File
+  )(testWith: TestWith[ObjectLocation, R]) = {
 
     val srcKey = archiveFile.getName
-
     s3Client.putObject(bucket.name, srcKey, archiveFile)
 
     val dstLocation = ObjectLocation(
       bucket.name,
       srcKey
     )
-
-    println(
-      s"Put ${archiveFile.getAbsolutePath} to s3://${bucket.name}/${srcKey}"
-    )
-
-    testWith(
-      TestArchive(archiveFile, files, expectedEntries, dstLocation)
-    )
+    testWith(dstLocation)
   }
 
-  def createArchive(
+  def createTgzArchiveWithRandomFiles(fileCount: Int = 10) =
+    createTgzArchiveWithFiles(
+      randomFilesInDirs(
+        fileCount,
+        fileCount / 4
+      )
+    )
+
+  def createTgzArchiveWithFiles(files: List[File]) =
+    createArchiveWith(
+      "tar",
+      "gz",
+      files
+    )
+
+  def createArchiveWithRandomFiles(
     archiverName: String,
     compressorName: String,
-    fileCount: Int = 100
-  ) = {
+    fileCount: Int = 10
+  ) =
+    createArchiveWith(
+      archiverName,
+      compressorName,
+      randomFilesInDirs(
+        fileCount,
+        fileCount / 4
+      )
+    )
 
-    val file = File.createTempFile(
+  def createArchiveWith(
+    archiverName: String,
+    compressorName: String,
+    files: List[File]
+  ) = {
+    val archiveFile = File.createTempFile(
       randomUUID.toString,
       ".test"
     )
 
     val fileOutputStream =
-      new FileOutputStream(file)
+      new FileOutputStream(archiveFile)
 
     val archive = new Archive(
       archiverName,
@@ -73,26 +86,19 @@ trait CompressFixture extends RandomThings with S3 with Logging {
       fileOutputStream
     )
 
-    val randomFiles =
-      randomFilesInDirs(
-        fileCount,
-        fileCount / 4
+    val entries = files.map { file =>
+      val entryName = relativeToTmpDir(file)
+      println(s"Archiving ${file.getAbsolutePath} in ${entryName}")
+      archive.addFile(
+        file,
+        entryName
       )
-
-    val entries =
-      randomFiles.map { randomFile =>
-        println(
-          s"Archiving ${randomFile.getAbsolutePath} in ${file.getAbsolutePath}")
-        archive.addFile(
-          randomFile,
-          relativeToTmpDir(randomFile)
-        )
-      } toSet
+    } toSet
 
     archive.finish()
     fileOutputStream.close()
 
-    (file, randomFiles, entries)
+    (archiveFile, files, entries)
   }
 
   def relativeToTmpDir(file: File) = {
