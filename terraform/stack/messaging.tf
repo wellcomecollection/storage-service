@@ -127,7 +127,6 @@ module "bag_unpacker_output_topic" {
   ]
 }
 
-
 # bag_replicator
 
 module "bag_replicator_input_queue" {
@@ -180,7 +179,6 @@ module "bag_verifier_input_queue" {
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
-
 
 module "bag_verifier_output_topic" {
   source = "../modules/topic"

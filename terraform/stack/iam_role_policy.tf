@@ -32,7 +32,6 @@ resource "aws_iam_role_policy" "bags_api_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
-
 # ingests
 
 resource "aws_iam_role_policy" "ingests_archive_progress_table" {
