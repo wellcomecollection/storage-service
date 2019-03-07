@@ -42,20 +42,21 @@ def remodel_file_technical_metadata(root, id_map):
         id_map[uuid] = file_name
 
         file_properties = tessella_file.findall("tessella:FileProperty", namespaces)
-        to_copy = mappings.SIGNIFICANT_PROPERTIES.keys()
         for file_property in file_properties:
             name = file_property.find(
                 "tessella:FilePropertyName", namespaces
             ).text.strip()
-            if name in to_copy:
-                value = file_property.find("tessella:Value", namespaces).text.strip()
+
+            try:
                 premis_name = mappings.SIGNIFICANT_PROPERTIES[name]
+                value = file_property.find("tessella:Value", namespaces).text.strip()
                 add_premis_significant_prop(premis_file, premis_name, value)
-            elif name in mappings.IGNORED_PROPERTIES:
-                logging.debug("Ignoring property name {0}".format(name))
-            else:
-                message = "Unknown file property: {0}".format(name)
-                raise ValueError(message)
+            except KeyError:
+                if name in mappings.IGNORED_PROPERTIES:
+                    logging.debug("Ignoring property name %s", name)
+                else:
+                    message = "Unknown file property: {0}".format(name)
+                    raise ValueError(message)
 
         characteristics = make_child(premis_file, "premis", "objectCharacteristics")
         composition_level = make_child(characteristics, "premis", "compositionLevel")

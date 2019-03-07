@@ -4,22 +4,24 @@ import mappings
 
 # Borrowed from Dds.Dashboard, LogicalStructDiv impl
 
-collection_types = ["MultipleManifestation", "Periodical", "PeriodicalVolume"]
+collection_types = set(["MultipleManifestation", "Periodical", "PeriodicalVolume"])
 
-manifestation_types = [
-    "Monograph",
-    "Archive",
-    "Artwork",
-    "Manuscript",
-    "PeriodicalIssue",
-    "Video",
-    "Transcript",
-    "MultipleVolume",
-    "MultipleCopy",
-    "MultipleVolumeMultipleCopy",
-    "Audio",
-    "Map",
-]
+manifestation_types = set(
+    [
+        "Monograph",
+        "Archive",
+        "Artwork",
+        "Manuscript",
+        "PeriodicalIssue",
+        "Video",
+        "Transcript",
+        "MultipleVolume",
+        "MultipleCopy",
+        "MultipleVolumeMultipleCopy",
+        "Audio",
+        "Map",
+    ]
+)
 
 
 def is_collection(struct_type):
@@ -56,7 +58,7 @@ def get_file_pointer_link(struct_div):
         link = link + ".xml"
         struct_div[0].set(xlink_href, link)
 
-    logging.debug("obtained link from pointer: " + link)
+    logging.debug("obtained link from pointer: %s")
     return link
 
 
@@ -95,7 +97,7 @@ the AMD to start at _0001
     amd_sec.remove(amd_sec[0])
 
     counter = 1
-    ignore = ["RIGHTS", "DIGIPROV"]
+    ignore = set(["RIGHTS", "DIGIPROV"])
     tech_md_files = []
     for tech_md in amd_sec:
         old_id = tech_md.get("ID")
@@ -107,7 +109,7 @@ the AMD to start at _0001
         refs = root.findall(".//mets:div[@ADMID='{0}']".format(old_id), namespaces)
         tech_md_filename = get_tech_md_filename(tech_md)
         if len(refs) == 0 and is_ignorable_file(tech_md_filename):
-            logging.debug("ignoring file {0}".format(tech_md_filename))
+            logging.debug("ignoring file %s", tech_md_filename)
             amd_sec.remove(tech_md)
             continue
 
@@ -207,16 +209,16 @@ def get_physical_file_maps(root):
 
     tech_file_infos = {}
     amds = root.find("./mets:amdSec[@ID='AMD']", namespaces)
-    logging.debug("{0} tech mds to process".format(len(amds)))
+    logging.debug("%d tech mds to process", len(amds))
     for tech_md in amds:
         adm_id = tech_md.get("ID")
         premis_object = tech_md.find(".//premis:object", namespaces)
         if premis_object is None:
-            logging.debug("No premis:object element for " + adm_id)
+            logging.debug("No premis:object element for %s", adm_id)
 
         else:
             adm_id = tech_md.get("ID")
-            logging.debug("adding " + adm_id + " to map")
+            logging.debug("adding %s to map", adm_id)
             uuid_el = premis_object.find(
                 "./premis:objectIdentifier[premis:objectIdentifierType='uuid']",
                 namespaces,
