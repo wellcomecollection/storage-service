@@ -57,7 +57,7 @@ module "notifier_input_queue" {
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
-# Messaging - bagger
+# bagger
 
 module "bagger_topic" {
   source = "../modules/topic"
@@ -159,7 +159,7 @@ module "bag_replicator_output_topic" {
   ]
 }
 
-# Messaging - bag_verifier
+# bag_verifier
 
 module "bag_verifier_input_queue" {
   source = "../modules/queue"

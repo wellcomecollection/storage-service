@@ -21,6 +21,8 @@ module "stack-stewart" {
   ssh_key_name = "${local.key_name}"
   infra_bucket = "${aws_s3_bucket.infra.id}"
 
+  desired_ec2_instances = 1
+
   lambda_error_alarm_arn = "${local.lambda_error_alarm_arn}"
   dlq_alarm_arn          = "${local.dlq_alarm_arn}"
 
