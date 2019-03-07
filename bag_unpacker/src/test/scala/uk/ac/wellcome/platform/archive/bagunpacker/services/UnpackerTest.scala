@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import java.io.FileInputStream
+import java.nio.file.Paths
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
@@ -73,7 +74,10 @@ class UnpackerTest
             testArchive.containedFiles.map { file =>
               val fis = new FileInputStream(file)
               val content = IOUtils.toByteArray(fis)
-              val name = relativeToTmpDir(file)
+              val name = Paths
+                .get(relativeToTmpDir(file))
+                .normalize()
+                .toString
 
               val actualFile = actualFileMap.get(name)
 
