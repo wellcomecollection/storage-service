@@ -109,13 +109,14 @@ module "bag_register" {
   env_vars = {
     queue_url          = "${module.bag_register_input_queue.url}"
     archive_bucket     = "${var.archive_bucket_name}"
+    ongoing_topic_arn  = "${module.bag_register_output_topic.arn}"
     progress_topic_arn = "${local.progress_topic}"
     vhs_bucket_name    = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name     = "${var.vhs_archive_manifest_table_name}"
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-bags"
   }
 
-  env_vars_length = 6
+  env_vars_length = 7
 
   container_image = "${local.bag_register_image}"
 }

@@ -197,11 +197,34 @@ module "bag_verifier_output_topic" {
 module "bag_register_input_queue" {
   source = "../modules/queue"
 
-  name = "${var.namespace}_bags_input"
+  name = "${var.namespace}_bag_register_input"
 
   topic_names = ["${module.bag_verifier_output_topic.name}"]
 
   role_names = ["${module.bag_register.task_role_name}"]
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+}
+
+module "bag_register_output_topic" {
+  source = "../modules/topic"
+
+  name = "${var.namespace}_bag_register_output"
+
+  role_names = [
+    "${module.bag_register.task_role_name}",
+  ]
+}
+
+module "bag_register_output_queue" {
+  source = "../modules/queue"
+
+  name = "${var.namespace}_bag_register_output"
+
+  topic_names = ["${module.bag_register_output_topic.name}"]
+
+  role_names = []
 
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
