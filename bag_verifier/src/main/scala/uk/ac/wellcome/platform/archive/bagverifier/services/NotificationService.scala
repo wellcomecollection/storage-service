@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
-import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerification
+import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.progress.models.{
   Progress,
@@ -23,7 +23,7 @@ class NotificationService(
 
   def sendProgressNotification(
     bagRequest: BagRequest,
-    tryBagVerification: Try[BagVerification]
+    tryBagVerification: Try[VerificationSummary]
   ): Future[PublishAttempt] = {
 
     val progressNotice: ProgressNotice = tryBagVerification match {
@@ -35,7 +35,7 @@ class NotificationService(
           )
         )
 
-        if (bagVerification.verificationSucceeded) {
+        if (bagVerification.succeeded) {
           ProgressNotice(
             id = bagRequest.requestId,
             message = "Successfully verified bag contents"
@@ -72,9 +72,9 @@ class NotificationService(
 
   def sendOutgoingNotification(
     bagRequest: BagRequest,
-    tryBagVerification: Try[BagVerification]): Future[Unit] =
+    tryBagVerification: Try[VerificationSummary]): Future[Unit] =
     tryBagVerification match {
-      case Success(bagVerification) if bagVerification.verificationSucceeded =>
+      case Success(bagVerification) if bagVerification.succeeded =>
         outgoingSnsWriter
           .writeMessage(
             bagRequest,
@@ -88,8 +88,8 @@ class NotificationService(
 
   private def summarizeVerification(
     bagRequest: BagRequest,
-    bagVerification: BagVerification): String = {
-    val verificationStatus = if (bagVerification.verificationSucceeded) {
+    bagVerification: VerificationSummary): String = {
+    val verificationStatus = if (bagVerification.succeeded) {
       "successful"
     } else {
       "failed"

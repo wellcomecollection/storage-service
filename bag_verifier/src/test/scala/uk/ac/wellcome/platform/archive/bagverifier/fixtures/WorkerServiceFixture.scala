@@ -7,12 +7,9 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifierWorkerService,
-  NotificationService,
-  VerifyDigestFilesService
-}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -27,26 +24,30 @@ trait WorkerServiceFixture
     progressTopic: Topic,
     outgoingTopic: Topic,
     queue: Queue = Queue("fixture", arn = "arn::fixture"))(
-    testWith: TestWith[BagVerifierWorkerService, R]): R =
-    withNotificationStream[BagRequest, R](queue) { notificationStream =>
-      withMaterializer { implicit materializer =>
+    testWith: TestWith[BagVerifierWorker, R]): R =
+    withNotificationStream[BagRequest, R](queue) { stream =>
+      withMaterializer { implicit mat =>
         withSNSWriter(progressTopic) { progressSnsWriter =>
           withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-            val verifyDigestFilesService = new VerifyDigestFilesService(
+
+            val verifier = new BagVerifier(
               storageManifestService = new StorageManifestService(),
               s3Client = s3Client,
               algorithm = MessageDigestAlgorithms.SHA_256
             )
 
-            val notificationService = new NotificationService(
-              progressSnsWriter,
-              outgoingSnsWriter
+            val operationName = "verification"
+
+            val notifier = new OperationNotifier(
+              operationName,
+              outgoingSnsWriter,
+              progressSnsWriter
             )
 
-            val service = new BagVerifierWorkerService(
-              notificationStream,
-              verifyDigestFilesService,
-              notificationService
+            val service = new BagVerifierWorker(
+              stream,
+              verifier,
+              notifier
             )
 
             service.run()

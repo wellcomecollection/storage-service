@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
-class BagVerifierWorkerServiceTest
+class BagVerifierWorkerTest
     extends FunSpec
     with Matchers
     with ScalaFutures
@@ -44,7 +44,7 @@ class BagVerifierWorkerServiceTest
                   events.map {
                     _.description
                   } shouldBe List(
-                    "Successfully verified bag contents"
+                    "Verification succeeded"
                   )
                 }
               }
@@ -78,7 +78,7 @@ class BagVerifierWorkerServiceTest
                       _.description
                     }.head
                     description should startWith(
-                      "Problem verifying bag: File checksum did not match manifest")
+                      "Verification failed")
                   }
                 }
             }
@@ -114,7 +114,7 @@ class BagVerifierWorkerServiceTest
                       _.description
                     }.head
                     description should startWith(
-                      "Problem verifying bag: Verification could not be performed")
+                      "Verification failed")
                   }
                 }
             }
@@ -140,7 +140,7 @@ class BagVerifierWorkerServiceTest
               ) { events =>
                 events.map {
                   _.description
-                } shouldBe List("Successfully verified bag contents")
+                } shouldBe List("Verification succeeded")
               }
             }
           }

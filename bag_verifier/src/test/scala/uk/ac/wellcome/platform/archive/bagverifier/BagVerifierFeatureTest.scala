@@ -42,7 +42,7 @@ class BagVerifierFeatureTest
                     ) { events =>
                       events.map {
                         _.description
-                      } shouldBe List("Successfully verified bag contents")
+                      } shouldBe List("Verification succeeded")
                     }
 
                     assertQueueEmpty(queue)
@@ -84,7 +84,7 @@ class BagVerifierFeatureTest
                           _.description
                         }.head
                         description should startWith(
-                          "Problem verifying bag: File checksum did not match manifest")
+                          "Verification failed")
                       }
 
                       assertQueueEmpty(queue)
