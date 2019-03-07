@@ -50,7 +50,7 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
             summary
           }
       }
-    } yield result.copy(summary = result.summary.complete)
+    } yield result.withSummary(summary = result.summary.complete)
 
     futureSummaryResult
       .recover {
