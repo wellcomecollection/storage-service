@@ -49,12 +49,11 @@ def download_s3_object(b_number, source_bucket, source, destination):
             except ClientError as err:
                 logging.debug("Unsuccessful downloading %s, %r", alt_source, err)
             else:
-                return
+                return True
 
         # If we've tried all the possibilities and none of them worked,
         # we haven't found the METS file.  Give up!
-        message = "Unable to find source for {0}: {1}".format(b_number, source)
-        raise RuntimeError(message)
+        return False
 
 
 def process_alto(root, bag_details, alto, skip_file_download):
@@ -71,6 +70,8 @@ def process_alto(root, bag_details, alto, skip_file_download):
 
     if not settings.READ_METS_FROM_FILESHARE:
         source_bucket = aws.get_s3().Bucket(settings.METS_BUCKET_NAME)
+
+    missing_altos = []
 
     for file_element in alto_file_group:
         current_location, destination = get_flattened_destination(
@@ -95,12 +96,27 @@ def process_alto(root, bag_details, alto, skip_file_download):
         else:
             source = bag_details["mets_partial_path"] + current_location
             logging.debug("Downloading S3 ALTO from %s to %s", source, destination)
-            download_s3_object(
+            downloaded = download_s3_object(
                 b_number=b_number,
                 source_bucket=source_bucket,
                 source=source,
                 destination=destination,
             )
+            if not downloaded:
+                message = "Unable to find source for {0}: {1}".format(b_number, source)
+                logging.debug(message)
+                missing_altos.append(source)
+
+        missing_count = len(missing_altos)
+        if missing_count > 0:
+            message = {
+                "identifier": b_number,
+                "summary": "{0} has {1} missing ALTO files.".format(
+                    b_number, missing_count
+                ),
+                "data": missing_altos,
+            }
+            aws.log_warning("missing_altos", message)
 
 
 def get_flattened_destination(file_element, keys, folder, bag_details):
@@ -119,85 +135,180 @@ def get_flattened_destination(file_element, keys, folder, bag_details):
     return current_location, destination
 
 
-def process_assets(root, bag_details, assets, skip_file_download):
+def process_assets(root, bag_details, assets, tech_md_files, skip_file_download):
     logging.debug("Collecting assets for " + bag_details["b_number"])
-
-    chunk_size = 1024 * 1024
-
     asset_file_group = root.find(
         "./mets:fileSec/mets:fileGrp[@USE='OBJECTS']", namespaces
     )
+
+    # TODO - keep track of the asset IDs that we fetch.
+    # Compare with the tech_md_files passed.
+    # if there is a mismatch, download the techMD files
+    # log to the warnings bucket
+    # write to status table
+
+    structmap_uuids_downloaded = []
+
     for file_element in asset_file_group:
-        current_location, destination = get_flattened_destination(
+        _current_location, destination = get_flattened_destination(
             file_element, OBJECT_KEYS, "objects", bag_details
         )
         # current_location is not used for objects - they're not where
         # the METS says they are! They are in Preservica instead.
         # but, when bagged, they _will_ be where the METS says they are.
+
+        # These assets only know about the structmap-asserted assets.
+        # If there are tech_md defined assets that aren't in the structmap,
+        # they won't be here but will be in tech_md_files
         summary = assets[file_element.get("ID")]
-        tech_md = summary["tech_md"]
+        tech_md_for_structmap_asset = summary["tech_md"]
         checksum = file_element.get("CHECKSUM")
         file_element.attrib.pop("CHECKSUM")  # don't need it now
-        pres_uuid = tech_md["uuid"]
-        logging.debug("Need to determine where to get {0} from.".format(pres_uuid))
+        preservica_uuid = tech_md_for_structmap_asset["uuid"]
+        logging.debug(
+            "Need to determine where to get {0} from.".format(preservica_uuid)
+        )
 
         if skip_file_download:
-            logging.debug("Skipping processing file {0}".format(pres_uuid))
+            logging.debug("Skipping processing file {0}".format(preservica_uuid))
             continue
 
-        image_info = dlcs.get_image(pres_uuid)
-        origin = image_info.get("origin", None)
-        logging.debug("DLCS reports origin " + str(origin))
-        # if the origin is wellcomelibrary.org, the object is LIKELY to be in the DLCS's
-        # storage bucket. So we should try that first, then fall back to the wellcomelibrary
-        # origin (using the creds) if for whatever reason it isn't in the DLCS bucket.
-        origin_info = storage.analyse_origin(origin, pres_uuid)
-        bucket_name = origin_info["bucket_name"]
-        asset_downloaded = False
-        if bucket_name is not None:
-            source_bucket = aws.get_s3().Bucket(bucket_name)
-            bucket_key = origin_info["bucket_key"]
-            logging.debug(
-                "Downloading object from bucket {0}/{1} to {2}".format(
-                    bucket_name, bucket_key, destination
-                )
-            )
-            try:
-                source_bucket.download_file(bucket_key, destination)
-                asset_downloaded = True
-            except ClientError as ce:
-                alt_key = origin_info["alt_key"]
-                if ce.response["Error"]["Code"] == "NoSuchKey" and alt_key is not None:
-                    logging.debug(
-                        "key {0} not found, trying alternate key: {1}".format(
-                            bucket_key, alt_key
-                        )
-                    )
-                    source_bucket.download_file(alt_key, destination)
-                    asset_downloaded = True
-                    # allow error to throw
+        fetch_attempt = try_to_download_asset(preservica_uuid, destination)
+        if fetch_attempt["succeeded"]:
+            structmap_uuids_downloaded.append(preservica_uuid)
+            # ? Make sure what just got matches what the METS file says
+            logging.debug("TODO: doing checksums on " + destination)
+            logging.debug("validate " + checksum)
+        else:
+            # If we can't get hold of an asset mentioned in the structmap,
+            # it's definitely an error that needs attention
+            raise RuntimeError(fetch_attempt["message"])
 
-        web_url = origin_info["web_url"]
-        if not asset_downloaded and web_url is not None:
-            # This will probably fail, if the DLCS hasn't got it.
-            # But it is the only way of getting restricted files out.
-            user, password = settings.DDS_API_KEY, settings.DDS_API_SECRET
+    # Now see if there are files we didn't collect in that set of downloads
+    # These are files mentioned in tech_md but not in the structmap
+    # These are not considered errors, but they definitely need attention
+    # TODO - see how many errors we get this way and decide whether a missing
+    # techMd-only file (can't obtain from anywhere) is still an error
+
+    tech_md_mismatch_warnings = []
+    missing_from_preservica = []
+    for tech_md_file in tech_md_files:
+        preservica_uuid = tech_md_file["preservica_id"]
+        if preservica_uuid not in structmap_uuids_downloaded:
+            # double sanity check - we should have picked this up in the techMd restructure
+            assert tech_md_file.get("warning", None) is not None
+            logging.debug(tech_md_file["warning"])
+            tech_md_mismatch_warnings.append(tech_md_file["warning"])
+            # we've recorded the warning, now try to get the file
+            folder = "objects"
+            filename = tech_md_file["filename"]
+            destination = os.path.join(bag_details["directory"], folder, filename)
+            bag_assembly.ensure_directory(destination)
+            fetch_attempt = try_to_download_asset(preservica_uuid, destination)
+            if fetch_attempt["succeeded"]:
+                logging.debug(
+                    "successfully fetched {0} - {1}".format(preservica_uuid, filename)
+                )
+            else:
+                missing_from_preservica.append(
+                    {"preservica_uuid": preservica_uuid, "filename": filename}
+                )
+                logging.debug(
+                    "Unable to fetch {0} - {1}".format(preservica_uuid, filename)
+                )
+
+    mismatch_count = len(tech_md_mismatch_warnings)
+    if mismatch_count > 0:
+        b_number = bag_details["b_number"]
+        message = {
+            "identifier": b_number,
+            "summary": "{0} has {1} AMD/techMD mismatches.".format(
+                b_number, mismatch_count
+            ),
+            "data": tech_md_mismatch_warnings,
+        }
+        if len(missing_from_preservica) > 0:
+            message["missing_from_preservica"] = missing_from_preservica
+
+        aws.log_warning("amd_mismatch", message)
+
+
+def try_to_download_asset(preservica_uuid, destination):
+    # The DLCS might return an empty image here, if it doesn't have it
+    image_info = dlcs.get_image(preservica_uuid)
+    # ... which won't have an origin
+    origin = image_info.get("origin", None)
+    logging.debug("DLCS reports origin " + str(origin))
+
+    # if the origin is wellcomelibrary.org, the object is LIKELY to be in the DLCS's
+    # storage bucket. So we should try that first, then fall back to the wellcomelibrary
+    # origin (using the creds) if for whatever reason it isn't in the DLCS bucket.
+    origin_info = storage.analyse_origin(origin, preservica_uuid)
+    bucket_name = origin_info["bucket_name"]
+    asset_downloaded = False
+    if bucket_name is not None:
+        source_bucket = aws.get_s3().Bucket(bucket_name)
+        bucket_key = origin_info["bucket_key"]
+        logging.debug(
+            "Downloading object from bucket {0}/{1} to {2}".format(
+                bucket_name, bucket_key, destination
+            )
+        )
+        try:
+            source_bucket.download_file(bucket_key, destination)
+            asset_downloaded = True
+        except ClientError as ce:
+            alt_key = origin_info["alt_key"]
+            if ce.response["Error"]["Code"] == "NoSuchKey" and alt_key is not None:
+                logging.debug(
+                    "key {0} not found, trying alternate key: {1}".format(
+                        bucket_key, alt_key
+                    )
+                )
+                source_bucket.download_file(alt_key, destination)
+                asset_downloaded = True
+                # allow error to throw
+
+    web_url = origin_info["web_url"]
+    if not asset_downloaded and web_url is not None:
+        asset_downloaded = fetch_from_wlorg(web_url, destination, 3)
+
+    # TODO: this message could give a more detailed error report
+    if asset_downloaded:
+        return {"succeeded": True}
+    else:
+        return {
+            "succeeded": False,
+            "message": "Unable to find asset {0}".format(preservica_uuid),
+        }
+
+
+def fetch_from_wlorg(web_url, destination, retry_attempts):
+    # This will probably fail, if the DLCS hasn't got it.
+    # But it is the only way of getting restricted files out.
+    user, password = settings.DDS_API_KEY, settings.DDS_API_SECRET
+    message = "Try to fetch this from Preservica directly, via DDS, at {0}".format(
+        web_url
+    )
+    logging.debug(message)
+    chunk_size = 1024 * 1024
+    download_err = None
+    for _ in range(retry_attempts):
+        try:
             # This is horribly slow, why?
-            message = "Try to fetch this from Preservica directly, via DDS, at {0}".format(
-                origin_info["web_url"]
-            )
-            logging.debug(message)
-            resp = requests.get(
-                origin_info["web_url"], auth=(user, password), stream=True
-            )
+            logging.info(message)  # remove me!
+            resp = requests.get(web_url, auth=(user, password), stream=True)
             if resp.status_code == 200:
                 with open(destination, "wb") as f:
                     for chunk in resp.iter_content(chunk_size):
                         f.write(chunk)
-                asset_downloaded = True
-
-        message = "Unable to find asset {0}".format(pres_uuid)
-        assert asset_downloaded, message
-
-        logging.debug("TODO: doing checksums on " + destination)
-        logging.debug("validate " + checksum)
+                return True
+            else:
+                logging.debug(
+                    "Recieved HTTP {0} for {1}".format(resp.status_code, web_url)
+                )
+                return False
+        except Exception as err:
+            download_err = err
+            pass
+    raise download_err

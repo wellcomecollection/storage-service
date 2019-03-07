@@ -42,6 +42,7 @@ def save_mets_to_side(b_number, local_tmp_file):
     client.upload_file(local_tmp_file, settings.DROP_BUCKET_NAME_METS_ONLY, key)
 
 
+# This is used to drive the accelerated DLCS migration
 def save_id_map(b_number, id_map):
     s3_path = "_idmaps/{0}.json".format(b_number)
     obj = get_s3().Object(settings.DROP_BUCKET_NAME_METS_ONLY, s3_path)
@@ -56,6 +57,12 @@ def save_migration_report(migration_report):
 
 def log_processing_error(message):
     s3_path = "{0}.json".format(message["identifier"])
+    obj = get_s3().Object(settings.DROP_BUCKET_NAME_ERRORS, s3_path)
+    obj.put(Body=json.dumps(message, indent=4))
+
+
+def log_warning(key_part, message):
+    s3_path = "__warnings/{0}/{1}.json".format(key_part, message["identifier"])
     obj = get_s3().Object(settings.DROP_BUCKET_NAME_ERRORS, s3_path)
     obj.put(Body=json.dumps(message, indent=4))
 

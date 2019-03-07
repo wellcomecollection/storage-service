@@ -135,11 +135,11 @@ def bag_from_identifier(identifier, skip_file_download):
 
 
 def process_manifestation(root, bag_details, skip_file_download, id_map):
-    mets.remove_deliverable_unit(root)
+    tech_md_files = mets.restructure_tech_md(root)
     tech_md.remodel_file_technical_metadata(root, id_map)
     mets.remodel_file_section(root)
     assets, alto = mets.get_physical_file_maps(root)
-    files.process_assets(root, bag_details, assets, skip_file_download)
+    files.process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
     files.process_alto(root, bag_details, alto, skip_file_download)
 
 
