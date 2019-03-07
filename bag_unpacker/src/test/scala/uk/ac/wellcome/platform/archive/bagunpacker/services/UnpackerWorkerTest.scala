@@ -9,12 +9,17 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   WorkerServiceFixture
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
+  StorageSpace,
+  UnpackBagRequest
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagLocation,
   BagPath
 }
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
 class UnpackerWorkerTest
     extends FunSpec
@@ -28,7 +33,7 @@ class UnpackerWorkerTest
 
   it("receives and processes a notification") {
     withApp {
-      case (srcBucket, queue, progressTopic, outgoingTopic) =>
+      case (_, srcBucket, queue, progressTopic, outgoingTopic) =>
         val (archiveFile, filesInArchive, entries) =
           createTgzArchiveWithRandomFiles()
         withArchive(srcBucket, archiveFile) { archiveLocation =>
@@ -68,6 +73,31 @@ class UnpackerWorkerTest
                 )
               }
             }
+          }
+        }
+    }
+  }
+
+  it("sends a failed Progress update if it cannot read the bag") {
+    withApp {
+      case (service, _, _, progressTopic, outgoingTopic) =>
+        val unpackBagRequest = UnpackBagRequest(
+          requestId = randomUUID,
+          sourceLocation = createObjectLocation,
+          storageSpace = StorageSpace(randomAlphanumeric())
+        )
+
+        val future = service.processMessage(unpackBagRequest)
+
+        whenReady(future) { _ =>
+          assertSnsReceivesNothing(outgoingTopic)
+
+          assertTopicReceivesProgressStatusUpdate(
+            requestId = unpackBagRequest.requestId,
+            progressTopic = progressTopic,
+            status = Progress.Failed
+          ) { events =>
+            events.map { _.description } shouldBe List("Unpacker failed")
           }
         }
     }
