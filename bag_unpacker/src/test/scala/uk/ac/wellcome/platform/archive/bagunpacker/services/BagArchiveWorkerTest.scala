@@ -19,6 +19,7 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagPath
 }
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
 class BagArchiveWorkerTest
     extends FunSpec
@@ -91,15 +92,12 @@ class BagArchiveWorkerTest
         whenReady(future) { _ =>
           assertSnsReceivesNothing(outgoingTopic)
 
-          assertTopicReceivesProgressEventUpdate(
+          assertTopicReceivesProgressStatusUpdate(
             requestId = unpackBagRequest.requestId,
-            progressTopic = progressTopic
+            progressTopic = progressTopic,
+            status = Progress.Failed
           ) { events =>
-            events.map {
-              _.description
-            } shouldBe List(
-              "Unpacker succeeded"
-            )
+            events.map { _.description } shouldBe List("Unpacker failed")
           }
         }
     }
