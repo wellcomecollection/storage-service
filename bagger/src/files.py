@@ -10,7 +10,6 @@ import settings
 import bag_assembly
 import dlcs
 import storage
-import aws
 from xml_help import expand, namespaces
 
 # keep track of these to ensure no collisions in Multiple Manifestations
@@ -293,6 +292,7 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
     )
     logging.debug(message)
     chunk_size = 1024 * 1024
+    download_err = None
     for _ in range(retry_attempts):
         try:
             # This is horribly slow, why?
@@ -309,5 +309,6 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
                 )
                 return False
         except Exception as err:
+            download_err = err
             pass
-    raise err
+    raise download_err
