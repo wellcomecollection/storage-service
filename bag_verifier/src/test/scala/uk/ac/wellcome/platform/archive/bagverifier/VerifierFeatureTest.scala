@@ -83,8 +83,7 @@ class VerifierFeatureTest
                         val description = events.map {
                           _.description
                         }.head
-                        description should startWith(
-                          "Verification failed")
+                        description should startWith("Verification failed")
                       }
 
                       assertSnsReceivesNothing(outgoingTopic)

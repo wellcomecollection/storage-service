@@ -12,9 +12,9 @@ import uk.ac.wellcome.json.JsonUtil._
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagVerifierWorker(
-                         stream: NotificationStream[BagRequest],
-                         verifier: Verifier,
-                         notifier: OperationNotifier
+  stream: NotificationStream[BagRequest],
+  verifier: Verifier,
+  notifier: OperationNotifier
 )(implicit ec: ExecutionContext)
     extends Runnable
     with Logging {
@@ -36,7 +36,9 @@ class BagVerifierWorker(
       _ <- notifier.send(
         bagRequest.requestId,
         verification
-      ) { _ => bagRequest }
+      ) { _ =>
+        bagRequest
+      }
 
     } yield ()
 

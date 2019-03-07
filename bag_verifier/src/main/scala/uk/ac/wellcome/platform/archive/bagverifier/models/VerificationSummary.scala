@@ -9,12 +9,13 @@ case class VerificationSummary(
   successfulVerifications: Seq[BagDigestFile] = List.empty,
   failedVerifications: Seq[FailedVerification] = List.empty,
   startTime: Instant = Instant.now(),
-  endTime: Option[Instant] = None) extends Timed {
+  endTime: Option[Instant] = None)
+    extends Timed {
   def succeeded: Boolean = failedVerifications.isEmpty
   def complete: VerificationSummary = this.copy(endTime = Some(Instant.now()))
 }
 
 case class FailedVerification(
-                               digestFile: BagDigestFile,
-                               reason: Throwable
-                             )
+  digestFile: BagDigestFile,
+  reason: Throwable
+)

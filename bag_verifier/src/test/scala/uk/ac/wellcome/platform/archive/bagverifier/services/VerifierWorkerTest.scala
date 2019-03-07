@@ -79,8 +79,7 @@ class VerifierWorkerTest
                     val description = events.map {
                       _.description
                     }.head
-                    description should startWith(
-                      "Verification failed")
+                    description should startWith("Verification failed")
                   }
                 }
             }
@@ -117,8 +116,7 @@ class VerifierWorkerTest
                       val description = events.map {
                         _.description
                       }.head
-                      description should startWith(
-                        "Verification failed")
+                      description should startWith("Verification failed")
                     }
                   }
                 }

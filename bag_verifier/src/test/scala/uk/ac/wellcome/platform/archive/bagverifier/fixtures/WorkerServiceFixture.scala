@@ -7,7 +7,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
-import uk.ac.wellcome.platform.archive.bagverifier.services.{Verifier, BagVerifierWorker}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifierWorker,
+  Verifier
+}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
@@ -29,7 +32,6 @@ trait WorkerServiceFixture
       withMaterializer { implicit mat =>
         withSNSWriter(progressTopic) { progressSnsWriter =>
           withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-
             val verifier = new Verifier(
               storageManifestService = new StorageManifestService(),
               s3Client = s3Client,

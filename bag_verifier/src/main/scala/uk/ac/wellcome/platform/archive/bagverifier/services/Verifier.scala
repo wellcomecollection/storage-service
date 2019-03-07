@@ -6,10 +6,20 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagverifier.models.{FailedVerification, VerificationSummary}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  FailedVerification,
+  VerificationSummary
+}
 import uk.ac.wellcome.platform.archive.common.models.FileManifest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagLocation}
-import uk.ac.wellcome.platform.archive.common.operation.{OperationFailure, OperationResult, OperationSuccess}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagLocation
+}
+import uk.ac.wellcome.platform.archive.common.operation.{
+  OperationFailure,
+  OperationResult,
+  OperationSuccess
+}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 
@@ -17,14 +27,14 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class Verifier(
-                   storageManifestService: StorageManifestService,
-                   s3Client: AmazonS3,
-                   algorithm: String
-                 )(implicit ec: ExecutionContext, mat: Materializer)
-  extends Logging {
+  storageManifestService: StorageManifestService,
+  s3Client: AmazonS3,
+  algorithm: String
+)(implicit ec: ExecutionContext, mat: Materializer)
+    extends Logging {
   def verify(
-                         bagLocation: BagLocation
-                       ): Future[OperationResult[VerificationSummary]] = {
+    bagLocation: BagLocation
+  ): Future[OperationResult[VerificationSummary]] = {
     val verificationInit = VerificationSummary(startTime = Instant.now)
 
     val verification = for {
@@ -43,9 +53,11 @@ class Verifier(
 
     verification.map {
       case summary if summary.succeeded => OperationSuccess(summary)
-      case failed => OperationFailure(
-        failed, new RuntimeException("Verification failed")
-      )
+      case failed =>
+        OperationFailure(
+          failed,
+          new RuntimeException("Verification failed")
+        )
     } recover {
       case e: Throwable => OperationFailure(verificationInit, e)
     }
@@ -59,15 +71,15 @@ class Verifier(
     }
 
   private def verifyFiles(
-                           bagLocation: BagLocation,
-                           digestFiles: Seq[BagDigestFile],
-                           bagVerification: VerificationSummary
-                         )(implicit mat: Materializer): Future[VerificationSummary] = {
+    bagLocation: BagLocation,
+    digestFiles: Seq[BagDigestFile],
+    bagVerification: VerificationSummary
+  )(implicit mat: Materializer): Future[VerificationSummary] = {
     Source[BagDigestFile](
       digestFiles.toList
     ).mapAsync(10) { digestFile: BagDigestFile =>
-      Future(verifyIndividualFile(bagLocation, digestFile = digestFile))
-    }
+        Future(verifyIndividualFile(bagLocation, digestFile = digestFile))
+      }
       .runWith(Sink.fold(bagVerification) { (memo, item) =>
         item match {
           case Left(failedVerification) =>
@@ -82,8 +94,8 @@ class Verifier(
   }
 
   private def verifyIndividualFile(
-                                    bagLocation: BagLocation,
-                                    digestFile: BagDigestFile): Either[FailedVerification, BagDigestFile] = {
+    bagLocation: BagLocation,
+    digestFile: BagDigestFile): Either[FailedVerification, BagDigestFile] = {
     val objectLocation = digestFile.path.toObjectLocation(bagLocation)
     for {
       inputStream <- Try {
@@ -107,9 +119,9 @@ class Verifier(
   }
 
   private def getResult(
-                         digestFile: BagDigestFile,
-                         actualChecksum: String
-                       ): Either[FailedVerification, BagDigestFile] =
+    digestFile: BagDigestFile,
+    actualChecksum: String
+  ): Either[FailedVerification, BagDigestFile] =
     if (digestFile.checksum == actualChecksum) {
       Right(digestFile)
     } else {
