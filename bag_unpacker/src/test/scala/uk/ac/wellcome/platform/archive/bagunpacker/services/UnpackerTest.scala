@@ -51,9 +51,10 @@ class UnpackerTest
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
         val (archiveFile, filesInArchive, _) =
-          createTgzArchiveWithFiles(randomFilesWithNames(
-            List("./testA", "/testB", "/./testC", "//testD")
-          ))
+          createTgzArchiveWithFiles(
+            randomFilesWithNames(
+              List("./testA", "/testB", "/./testC", "//testD")
+            ))
         withArchive(srcBucket, archiveFile) { testArchive =>
           val dstKey = "unpacked"
           val summaryResult = new Unpacker()
@@ -74,7 +75,10 @@ class UnpackerTest
     }
   }
 
-  private def assertBucketContentsMatchFiles(bucket: Bucket, keyStripPrefix: String, expectedFiles: List[File]): List[Any] = {
+  private def assertBucketContentsMatchFiles(
+    bucket: Bucket,
+    keyStripPrefix: String,
+    expectedFiles: List[File]): List[Any] = {
     val keys = listKeysInBucket(bucket)
     val locations = keys.map(ObjectLocation(bucket.name, _))
     val bucketFileMap = objectToContentMap(locations, keyStripPrefix)
@@ -98,7 +102,9 @@ class UnpackerTest
     }
   }
 
-  private def objectToContentMap(objectLocations: List[ObjectLocation], stripKeyPrefix: String): Map[String, Array[Byte]] = {
+  private def objectToContentMap(
+    objectLocations: List[ObjectLocation],
+    stripKeyPrefix: String): Map[String, Array[Byte]] = {
     objectLocations.map { objectLocation: ObjectLocation =>
       val s3Object =
         s3Client.getObject(objectLocation.namespace, objectLocation.key)

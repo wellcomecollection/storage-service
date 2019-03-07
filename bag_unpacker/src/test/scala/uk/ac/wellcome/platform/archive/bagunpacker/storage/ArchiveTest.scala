@@ -20,7 +20,8 @@ class ArchiveTest
     with RandomThings {
 
   it("should unpack a tar.gz file") {
-    val (archiveFile, files, expectedEntries) = createTgzArchiveWithRandomFiles()
+    val (archiveFile, files, expectedEntries) =
+      createTgzArchiveWithRandomFiles()
 
     val inputStream = new FileInputStream(archiveFile)
 

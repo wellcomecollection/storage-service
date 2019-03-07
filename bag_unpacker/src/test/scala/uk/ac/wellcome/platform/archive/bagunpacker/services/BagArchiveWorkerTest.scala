@@ -3,10 +3,17 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{CompressFixture, TestArchive, WorkerServiceFixture}
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
+  CompressFixture,
+  TestArchive,
+  WorkerServiceFixture
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
 class BagArchiveWorkerTest
@@ -22,7 +29,8 @@ class BagArchiveWorkerTest
   it("receives and processes a notification") {
     withApp {
       case (srcBucket, queue, progressTopic, outgoingTopic) =>
-        val (archiveFile, filesInArchive, entries) = createTgzArchiveWithRandomFiles()
+        val (archiveFile, filesInArchive, entries) =
+          createTgzArchiveWithRandomFiles()
         withArchive(srcBucket, archiveFile) { archiveLocation =>
           val requestId = randomUUID
 

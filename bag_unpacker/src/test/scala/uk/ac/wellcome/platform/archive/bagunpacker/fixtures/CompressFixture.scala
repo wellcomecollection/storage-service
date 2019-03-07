@@ -24,9 +24,9 @@ trait CompressFixture extends RandomThings with S3 with Logging {
   val defaultFileCount = 10
 
   def withArchive[R](
-                      bucket: Bucket,
-                      archiveFile: File
-                    )(testWith: TestWith[ObjectLocation, R]) = {
+    bucket: Bucket,
+    archiveFile: File
+  )(testWith: TestWith[ObjectLocation, R]) = {
 
     val srcKey = archiveFile.getName
     s3Client.putObject(bucket.name, srcKey, archiveFile)
@@ -38,7 +38,7 @@ trait CompressFixture extends RandomThings with S3 with Logging {
     testWith(dstLocation)
   }
 
-  def createTgzArchiveWithRandomFiles(fileCount: Int = 10)=
+  def createTgzArchiveWithRandomFiles(fileCount: Int = 10) =
     createTgzArchiveWithFiles(
       randomFilesInDirs(
         fileCount,
@@ -46,7 +46,7 @@ trait CompressFixture extends RandomThings with S3 with Logging {
       )
     )
 
-  def createTgzArchiveWithFiles(files: List[File])=
+  def createTgzArchiveWithFiles(files: List[File]) =
     createArchiveWith(
       "tar",
       "gz",
@@ -54,10 +54,10 @@ trait CompressFixture extends RandomThings with S3 with Logging {
     )
 
   def createArchiveWithRandomFiles(
-                                    archiverName: String,
-                                    compressorName: String,
-                                    fileCount: Int = 10
-                                  ) =
+    archiverName: String,
+    compressorName: String,
+    fileCount: Int = 10
+  ) =
     createArchiveWith(
       archiverName,
       compressorName,
@@ -90,10 +90,10 @@ trait CompressFixture extends RandomThings with S3 with Logging {
       val entryName = relativeToTmpDir(file)
       println(s"Archiving ${file.getAbsolutePath} in ${entryName}")
       archive.addFile(
-          file,
-          entryName
-        )
-      } toSet
+        file,
+        entryName
+      )
+    } toSet
 
     archive.finish()
     fileOutputStream.close()
