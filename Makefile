@@ -11,8 +11,8 @@ SBT_APPS = notifier \
            archivist \
            ingests \
            ingests_api \
-           bags \
            bags_api \
+           bag_register \
            bag_replicator \
            bag_verifier \
            bag_unpacker

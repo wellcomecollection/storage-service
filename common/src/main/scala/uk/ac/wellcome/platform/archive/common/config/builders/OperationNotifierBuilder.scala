@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagunpacker.config.builders
+package uk.ac.wellcome.platform.archive.common.config.builders
 
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder

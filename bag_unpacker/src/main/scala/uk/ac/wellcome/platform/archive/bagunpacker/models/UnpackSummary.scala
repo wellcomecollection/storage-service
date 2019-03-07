@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.models
 
-import java.time.{Duration, Instant}
+import java.time.Instant
+
+import uk.ac.wellcome.platform.archive.common.operation.Timed
 
 case class UnpackSummary(
   fileCount: Int = 0,
@@ -17,14 +19,5 @@ case class UnpackSummary(
         |
      """.stripMargin
       .replaceAll("\n", " ")
-  }
-}
-
-trait Timed {
-  val startTime: Instant
-  val endTime: Option[Instant]
-
-  def duration = {
-    endTime.map(Duration.between(startTime, _))
   }
 }

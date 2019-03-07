@@ -30,9 +30,9 @@ module "archivist" {
   container_image = "${local.archivist_image}"
 }
 
-# bags aka registrar-async
+# bag_register
 
-module "bags" {
+module "bag_register" {
   source = "../modules/service/worker"
 
   service_egress_security_group_id = "${aws_security_group.service_egress.id}"
@@ -311,7 +311,7 @@ module "bagger" {
     # DDS credentials
     DDS_ASSET_PREFIX = "${var.bagger_dds_asset_prefix}"
 
-    ARCHIVE_FORMAT = "zip"
+    ARCHIVE_FORMAT = "gztar"
   }
 
   env_vars_length = 17

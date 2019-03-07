@@ -12,7 +12,7 @@ module "ingests_topic" {
 
   role_names = [
     "${module.archivist.task_role_name}",
-    "${module.bags.task_role_name}",
+    "${module.bag_register.task_role_name}",
     "${module.bag_replicator.task_role_name}",
     "${module.bag_verifier.task_role_name}",
     "${module.bag_unpacker.task_role_name}",
@@ -38,6 +38,13 @@ module "ingests_input_queue" {
 
 # Messaging - archivist
 
+module "null_topic" {
+  source = "../modules/topic"
+
+  name       = "${var.namespace}_null"
+  role_names = ["${module.api.ingests_role_name}"]
+}
+
 module "ingest_requests_topic" {
   source = "../modules/topic"
 
@@ -51,7 +58,7 @@ module "archivist_input_queue" {
   name = "${var.namespace}_archivist_input"
 
   topic_names = [
-    "${module.ingest_requests_topic.name}",
+    "${module.null_topic.name}",
   ]
 
   role_names = [
@@ -74,7 +81,7 @@ module "bags_input_queue" {
 
   topic_names = ["${module.bag_replicator_output_topic.name}"]
 
-  role_names = ["${module.bags.task_role_name}"]
+  role_names = ["${module.bag_register.task_role_name}"]
 
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"

@@ -19,14 +19,12 @@ trait BagLocationFixtures
     with BagInfoGenerators
     with BagIt
     with StorageSpaceGenerators {
-  // TODO
-  // def createBagLocationWith()
 
   def withBag[R](
     bucket: Bucket,
-    dataFileCount: Int = 1,
     bagInfo: BagInfo = createBagInfo,
-    storagePrefix: String = "archive",
+    storagePrefix: String = "storagePrefix",
+    dataFileCount: Int = 1,
     storageSpace: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
       createValidDataManifest,

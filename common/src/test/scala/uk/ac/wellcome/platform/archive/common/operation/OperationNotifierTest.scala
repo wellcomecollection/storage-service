@@ -28,7 +28,7 @@ class OperationNotifierTest
   }
 
   describe("with a failed operation") {
-    it("only sends a failed status to progressTopic") {
+    it("only sends a failed progress update") {
       withLocalSnsTopic { progressTopic =>
         withSNSWriter(progressTopic) { progressSnsWriter =>
           withLocalSnsTopic { outgoingTopic =>
@@ -88,7 +88,7 @@ class OperationNotifierTest
   }
 
   describe("with a successful operation") {
-    it("sends an event update to progressTopic and a message to outgoingTopic") {
+    it("sends an event progress update and an outgoing message") {
       withLocalSnsTopic { progressTopic =>
         withSNSWriter(progressTopic) { progressSnsWriter =>
           withLocalSnsTopic { outgoingTopic =>
@@ -135,8 +135,7 @@ class OperationNotifierTest
   }
 
   describe("with a completed operation") {
-    it(
-      "sends a completed status update to progressTopic and a message to outgoingTopic") {
+    it("sends a completed progress update and an outgoing message") {
       withLocalSnsTopic { progressTopic =>
         withSNSWriter(progressTopic) { progressSnsWriter =>
           withLocalSnsTopic { outgoingTopic =>
