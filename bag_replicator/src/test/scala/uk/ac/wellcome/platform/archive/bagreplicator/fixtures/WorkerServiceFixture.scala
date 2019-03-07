@@ -8,10 +8,12 @@ import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagLocator,
-  BagReplicatorWorkerService
+  BagReplicator,
+  BagReplicatorWorker
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
@@ -23,23 +25,33 @@ trait WorkerServiceFixture
     with RandomThings
     with S3
     with SNS {
-  def withWorkerService[R](queue: Queue = Queue("default_q", "arn::default_q"),
+  def withWorkerService[R](queue: Queue = Queue(
+                             "default_q",
+                             "arn::default_q"
+                           ),
                            progressTopic: Topic,
                            outgoingTopic: Topic,
                            destination: ReplicatorDestinationConfig =
                              createReplicatorDestinationConfigWith(
                                Bucket(randomAlphanumeric())))(
-    testWith: TestWith[BagReplicatorWorkerService, R]): R =
+    testWith: TestWith[BagReplicatorWorker, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
       withSNSWriter(progressTopic) { progressSnsWriter =>
         withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-          val service = new BagReplicatorWorkerService(
-            notificationStream = notificationStream,
-            replicatorDestinationConfig = destination,
-            bagLocator = new BagLocator(s3Client),
-            progressSnsWriter = progressSnsWriter,
-            outgoingSnsWriter = outgoingSnsWriter,
-            s3PrefixCopier = S3PrefixCopier(s3Client)
+          val operationName = "replicating"
+
+          val service = new BagReplicatorWorker(
+            stream = notificationStream,
+            notifier = new OperationNotifier(
+              operationName,
+              outgoingSnsWriter,
+              progressSnsWriter
+            ),
+            replicator = new BagReplicator(
+              bagLocator = new BagLocator(s3Client),
+              config = destination,
+              s3PrefixCopier = S3PrefixCopier(s3Client)
+            )
           )
 
           service.run()
