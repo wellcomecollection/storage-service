@@ -21,14 +21,13 @@ import scala.concurrent.{ExecutionContext, Future}
 class IngestsApi(
   dynamoClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig,
-  archivistSnsWriter: SNSWriter,
   unpackerSnsWriter: SNSWriter,
   httpMetrics: HttpMetrics,
   httpServerConfig: HTTPServerConfig,
   contextURL: URL
 )(implicit val actorSystem: ActorSystem,
-  materializer: ActorMaterializer,
-  executionContext: ExecutionContext)
+  mat: ActorMaterializer,
+  ec: ExecutionContext)
     extends Runnable {
   val progressTracker = new ProgressTracker(
     dynamoDbClient = dynamoClient,
@@ -39,7 +38,6 @@ class IngestsApi(
     progressTracker = progressTracker,
     progressStarter = new ProgressStarter(
       progressTracker = progressTracker,
-      archivistSnsWriter = archivistSnsWriter,
       unpackerSnsWriter = unpackerSnsWriter
     ),
     httpServerConfig = httpServerConfig,
