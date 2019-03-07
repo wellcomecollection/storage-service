@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class BagVerifier(
+class Verifier(
                    storageManifestService: StorageManifestService,
                    s3Client: AmazonS3,
                    algorithm: String

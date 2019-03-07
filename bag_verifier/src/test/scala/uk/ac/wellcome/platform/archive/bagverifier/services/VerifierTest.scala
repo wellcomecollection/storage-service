@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.operation.{OperationFailure, Opera
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
-class BagVerifierTest
+class VerifierTest
     extends FunSpec
     with Matchers
     with ScalaFutures
@@ -32,7 +32,7 @@ class BagVerifierTest
           withMaterializer { mat =>
             implicit val _mat = mat
 
-            val service = new BagVerifier(
+            val service = new Verifier(
               storageManifestService = new StorageManifestService(),
               s3Client = s3Client,
               algorithm = MessageDigestAlgorithms.SHA_256
@@ -65,7 +65,7 @@ class BagVerifierTest
           withMaterializer { mat =>
             implicit val _mat = mat
 
-            val service = new BagVerifier(
+            val service = new Verifier(
               storageManifestService = new StorageManifestService(),
               s3Client = s3Client,
               algorithm = MessageDigestAlgorithms.SHA_256
@@ -102,7 +102,7 @@ class BagVerifierTest
           withMaterializer { mat =>
             implicit val _mat = mat
 
-            val service = new BagVerifier(
+            val service = new Verifier(
               storageManifestService = new StorageManifestService(),
               s3Client = s3Client,
               algorithm = MessageDigestAlgorithms.SHA_256
@@ -143,7 +143,7 @@ class BagVerifierTest
           withMaterializer { mat =>
             implicit val _mat = mat
 
-            val service = new BagVerifier(
+            val service = new Verifier(
               storageManifestService = new StorageManifestService(),
               s3Client = s3Client,
               algorithm = MessageDigestAlgorithms.SHA_256
@@ -181,7 +181,7 @@ class BagVerifierTest
             withMaterializer { mat =>
               implicit val _mat = mat
 
-              val service = new BagVerifier(
+              val service = new Verifier(
                 storageManifestService = new StorageManifestService(),
                 s3Client = s3Client,
                 algorithm = MessageDigestAlgorithms.SHA_256
@@ -215,7 +215,7 @@ class BagVerifierTest
             withMaterializer { mat =>
               implicit val _mat = mat
 
-              val service = new BagVerifier(
+              val service = new Verifier(
                 storageManifestService = new StorageManifestService(),
                 s3Client = s3Client,
                 algorithm = MessageDigestAlgorithms.SHA_256

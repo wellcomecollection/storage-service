@@ -7,7 +7,7 @@ import com.typesafe.config.Config
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{Verifier, BagVerifierWorker}
 import uk.ac.wellcome.platform.archive.common.config.builders.OperationNotifierBuilder
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
@@ -32,7 +32,7 @@ object Main extends WellcomeTypesafeApp {
       NotificationStreamBuilder
         .buildStream[BagRequest](config)
 
-    val verifier = new BagVerifier(
+    val verifier = new Verifier(
       storageManifestService = new StorageManifestService(),
       s3Client = s3Client,
       algorithm = MessageDigestAlgorithms.SHA_256

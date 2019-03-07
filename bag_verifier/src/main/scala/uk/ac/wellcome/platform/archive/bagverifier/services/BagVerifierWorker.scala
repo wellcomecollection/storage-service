@@ -13,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class BagVerifierWorker(
                          stream: NotificationStream[BagRequest],
-                         verifier: BagVerifier,
+                         verifier: Verifier,
                          notifier: OperationNotifier
 )(implicit ec: ExecutionContext)
     extends Runnable

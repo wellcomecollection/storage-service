@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
-class BagVerifierWorkerTest
+class VerifierWorkerTest
     extends FunSpec
     with Matchers
     with ScalaFutures
