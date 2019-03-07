@@ -36,7 +36,7 @@ class BagVerifierWorker(
       _ <- notifier.send(
         bagRequest.requestId,
         verification
-      ) { _ => bagRequest.bagLocation }
+      ) { _ => bagRequest }
 
     } yield ()
 

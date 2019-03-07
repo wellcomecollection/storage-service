@@ -25,6 +25,8 @@ class BagVerifier(
   def verify(
                          bagLocation: BagLocation
                        ): Future[OperationResult[VerificationSummary]] = {
+    val verificationInit = VerificationSummary(startTime = Instant.now)
+
     val verification = for {
       fileManifest <- getManifest("file manifest") {
         storageManifestService.createFileManifest(bagLocation)
@@ -35,14 +37,17 @@ class BagVerifier(
       }
 
       digestFiles = fileManifest.files ++ tagManifest.files
-      result <- verifyFiles(bagLocation, digestFiles)
+
+      result <- verifyFiles(bagLocation, digestFiles, verificationInit)
     } yield result
 
     verification.map {
       case summary if summary.succeeded => OperationSuccess(summary)
       case failed => OperationFailure(
-        failed, new RuntimeException("Verification failed!")
+        failed, new RuntimeException("Verification failed")
       )
+    } recover {
+      case e: Throwable => OperationFailure(verificationInit, e)
     }
   }
 
@@ -55,9 +60,9 @@ class BagVerifier(
 
   private def verifyFiles(
                            bagLocation: BagLocation,
-                           digestFiles: Seq[BagDigestFile]
+                           digestFiles: Seq[BagDigestFile],
+                           bagVerification: VerificationSummary
                          )(implicit mat: Materializer): Future[VerificationSummary] = {
-    val bagVerification = VerificationSummary(startTime = Instant.now)
     Source[BagDigestFile](
       digestFiles.toList
     ).mapAsync(10) { digestFile: BagDigestFile =>
@@ -103,7 +108,8 @@ class BagVerifier(
 
   private def getResult(
                          digestFile: BagDigestFile,
-                         actualChecksum: String): Either[FailedVerification, BagDigestFile] =
+                         actualChecksum: String
+                       ): Either[FailedVerification, BagDigestFile] =
     if (digestFile.checksum == actualChecksum) {
       Right(digestFile)
     } else {

@@ -35,17 +35,19 @@ class BagVerifierWorkerTest
               val future = service.processMessage(bagRequest)
 
               whenReady(future) { _ =>
-                assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
+                eventually {
+                  assertTopicReceivesProgressEventUpdate(
+                    requestId = bagRequest.requestId,
+                    progressTopic = progressTopic
+                  ) { events =>
+                    events.map {
+                      _.description
+                    } shouldBe List(
+                      "Verification succeeded"
+                    )
+                  }
 
-                assertTopicReceivesProgressEventUpdate(
-                  requestId = bagRequest.requestId,
-                  progressTopic = progressTopic
-                ) { events =>
-                  events.map {
-                    _.description
-                  } shouldBe List(
-                    "Verification succeeded"
-                  )
+                  assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
                 }
               }
             }
@@ -103,18 +105,21 @@ class BagVerifierWorkerTest
                 val future = service.processMessage(bagRequest)
 
                 whenReady(future) { _ =>
-                  assertSnsReceivesNothing(outgoingTopic)
+                  eventually {
 
-                  assertTopicReceivesProgressStatusUpdate(
-                    requestId = bagRequest.requestId,
-                    progressTopic = progressTopic,
-                    status = Progress.Failed
-                  ) { events =>
-                    val description = events.map {
-                      _.description
-                    }.head
-                    description should startWith(
-                      "Verification failed")
+                    assertSnsReceivesNothing(outgoingTopic)
+
+                    assertTopicReceivesProgressStatusUpdate(
+                      requestId = bagRequest.requestId,
+                      progressTopic = progressTopic,
+                      status = Progress.Failed
+                    ) { events =>
+                      val description = events.map {
+                        _.description
+                      }.head
+                      description should startWith(
+                        "Verification failed")
+                    }
                   }
                 }
             }

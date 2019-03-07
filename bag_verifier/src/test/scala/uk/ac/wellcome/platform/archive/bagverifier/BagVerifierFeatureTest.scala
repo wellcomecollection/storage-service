@@ -34,7 +34,7 @@ class BagVerifierFeatureTest
                   sendNotificationToSQS(queue, bagRequest)
 
                   eventually {
-                    assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
+                    listMessagesReceivedFromSNS(outgoingTopic)
 
                     assertTopicReceivesProgressEventUpdate(
                       requestId = bagRequest.requestId,
@@ -44,6 +44,8 @@ class BagVerifierFeatureTest
                         _.description
                       } shouldBe List("Verification succeeded")
                     }
+
+                    assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
 
                     assertQueueEmpty(queue)
                     assertQueueEmpty(dlq)
@@ -73,8 +75,6 @@ class BagVerifierFeatureTest
                     sendNotificationToSQS(queue, bagRequest)
 
                     eventually {
-                      assertSnsReceivesNothing(outgoingTopic)
-
                       assertTopicReceivesProgressStatusUpdate(
                         requestId = bagRequest.requestId,
                         progressTopic = progressTopic,
@@ -86,6 +86,8 @@ class BagVerifierFeatureTest
                         description should startWith(
                           "Verification failed")
                       }
+
+                      assertSnsReceivesNothing(outgoingTopic)
 
                       assertQueueEmpty(queue)
                       assertQueueEmpty(dlq)

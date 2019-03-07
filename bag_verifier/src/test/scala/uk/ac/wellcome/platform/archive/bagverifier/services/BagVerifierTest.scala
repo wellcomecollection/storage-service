@@ -4,6 +4,7 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
+import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
 import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
 import uk.ac.wellcome.platform.archive.common.operation.{OperationFailure, OperationSuccess}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
@@ -38,9 +39,12 @@ class BagVerifierTest
             )
 
             val future = service.verify(bagLocation)
+
             whenReady(future) { result =>
               result shouldBe a[OperationSuccess[_]]
+
               val summary = result.summary
+
               summary.successfulVerifications should have size expectedDataFileCount
               summary.failedVerifications shouldBe Seq.empty
             }
@@ -185,7 +189,11 @@ class BagVerifierTest
 
               val future = service.verify(bagLocation)
 
-              whenReady(future.failed) { err =>
+              whenReady(future) { result =>
+                result shouldBe a[OperationFailure[_]]
+                val err = result
+                  .asInstanceOf[OperationFailure[VerificationSummary]].e
+
                 err shouldBe a[RuntimeException]
                 err.getMessage should startWith("Error getting file manifest")
               }
@@ -215,7 +223,11 @@ class BagVerifierTest
 
               val future = service.verify(bagLocation)
 
-              whenReady(future.failed) { err =>
+              whenReady(future) { result =>
+                result shouldBe a[OperationFailure[_]]
+                val err = result
+                  .asInstanceOf[OperationFailure[VerificationSummary]].e
+
                 err shouldBe a[RuntimeException]
                 err.getMessage should startWith("Error getting tag manifest")
               }
