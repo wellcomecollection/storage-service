@@ -7,7 +7,7 @@ import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagLocator,
-  BagReplicatorWorkerService
+  BagReplicatorWorker
 }
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
@@ -26,7 +26,7 @@ object Main extends WellcomeTypesafeApp {
 
     val s3Client = S3Builder.buildS3Client(config)
 
-    new BagReplicatorWorkerService(
+    new BagReplicatorWorker(
       notificationStream =
         NotificationStreamBuilder.buildStream[BagRequest](config),
       bagLocator = new BagLocator(s3Client),

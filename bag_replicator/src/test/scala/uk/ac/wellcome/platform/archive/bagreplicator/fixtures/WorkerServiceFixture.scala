@@ -8,7 +8,7 @@ import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagLocator,
-  BagReplicatorWorkerService
+  BagReplicatorWorker
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
@@ -29,11 +29,11 @@ trait WorkerServiceFixture
                            destination: ReplicatorDestinationConfig =
                              createReplicatorDestinationConfigWith(
                                Bucket(randomAlphanumeric())))(
-    testWith: TestWith[BagReplicatorWorkerService, R]): R =
+    testWith: TestWith[BagReplicatorWorker, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
       withSNSWriter(progressTopic) { progressSnsWriter =>
         withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-          val service = new BagReplicatorWorkerService(
+          val service = new BagReplicatorWorker(
             notificationStream = notificationStream,
             replicatorDestinationConfig = destination,
             bagLocator = new BagLocator(s3Client),

@@ -25,9 +25,9 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
     val unpackSummary =
       UnpackSummary(startTime = Instant.now)
 
-    val futureSummary = for {
+    val futureSummaryResult = for {
       packageInputStream <- srcLocation.toInputStream
-      result <- Archive.unpack(packageInputStream)(unpackSummary) {
+      result: OperationResult[UnpackSummary] <- Archive.unpack(packageInputStream)(unpackSummary) {
         (summary: UnpackSummary,
          inputStream: InputStream,
          archiveEntry: ArchiveEntry) =>
@@ -45,11 +45,10 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
           } else {
             summary
           }
-
       }
-    } yield result
+    } yield result.copy(summary = result.summary.complete)
 
-    futureSummary
+    futureSummaryResult
   }
 
   private def putObject(

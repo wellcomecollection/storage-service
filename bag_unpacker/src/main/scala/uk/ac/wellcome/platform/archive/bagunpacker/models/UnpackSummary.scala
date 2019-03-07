@@ -12,11 +12,10 @@ case class UnpackSummary(
 ) extends Timed {
   def complete: UnpackSummary =
     this.copy(endTime = Some(Instant.now()))
-
-  override def toString() = {
-    f"""|
-        |
-        |
+  override def toString(): String = {
+    f"""|$fileCount files
+        |$bytesUnpacked bytes
+        |unpacked in ${duration.getOrElse("<not-completed>")}
      """.stripMargin
       .replaceAll("\n", " ")
   }

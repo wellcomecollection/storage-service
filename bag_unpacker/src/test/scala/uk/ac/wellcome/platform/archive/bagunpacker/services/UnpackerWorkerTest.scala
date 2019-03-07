@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
 }
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 
-class BagArchiveWorkerTest
+class UnpackerWorkerTest
     extends FunSpec
     with Matchers
     with ScalaFutures

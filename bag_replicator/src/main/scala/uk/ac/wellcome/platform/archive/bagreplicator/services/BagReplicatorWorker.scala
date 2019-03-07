@@ -23,7 +23,7 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class BagReplicatorWorkerService(
+class BagReplicatorWorker(
   notificationStream: NotificationStream[BagRequest],
   bagLocator: BagLocator,
   s3PrefixCopier: S3PrefixCopier,
