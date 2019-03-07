@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.operation
 
-abstract class OperationResult[T]{
+abstract class OperationResult[T] {
   val summary: T
   def copy(summary: T): OperationResult[T]
 }

@@ -17,10 +17,10 @@ import uk.ac.wellcome.typesafe.Runnable
 import scala.concurrent.{ExecutionContext, Future}
 
 class UnpackerWorker(
-                      config: UnpackerConfig,
-                      stream: NotificationStream[UnpackBagRequest],
-                      notifier: OperationNotifier,
-                      unpacker: Unpacker
+  config: UnpackerConfig,
+  stream: NotificationStream[UnpackBagRequest],
+  notifier: OperationNotifier,
+  unpacker: Unpacker
 )(implicit ec: ExecutionContext)
     extends Logging
     with Runnable {

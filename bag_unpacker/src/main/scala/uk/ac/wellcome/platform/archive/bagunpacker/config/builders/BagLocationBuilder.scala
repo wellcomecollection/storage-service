@@ -9,8 +9,8 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
 
 object BagLocationBuilder {
   def build(
-             unpackBagRequest: UnpackBagRequest,
-             unpackerConfig: UnpackerConfig
+    unpackBagRequest: UnpackBagRequest,
+    unpackerConfig: UnpackerConfig
   ) = {
 
     BagLocation(

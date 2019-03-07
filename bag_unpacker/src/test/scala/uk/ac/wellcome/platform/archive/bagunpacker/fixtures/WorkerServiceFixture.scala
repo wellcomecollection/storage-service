@@ -10,8 +10,8 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{Messaging, NotificationStreamFixture}
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  UnpackerWorker,
-  Unpacker
+  Unpacker,
+  UnpackerWorker
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
