@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.operation
 
-abstract class OperationResult[T] {
+sealed trait OperationResult[T] {
   val summary: T
   def withSummary(summary: T): OperationResult[T]
 }
