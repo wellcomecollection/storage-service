@@ -17,7 +17,7 @@ module "stack-colbert" {
   desired_bags_api_count    = 1
   desired_ingests_api_count = 1
 
-  desired_ec2_instances = 1
+  desired_ec2_instances = 4
 
   vpc_id   = "${local.vpc_id}"
   vpc_cidr = "${local.vpc_cidr}"
