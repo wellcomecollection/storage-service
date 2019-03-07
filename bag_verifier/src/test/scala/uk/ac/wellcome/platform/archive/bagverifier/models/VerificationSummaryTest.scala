@@ -9,19 +9,19 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagItemPath
 }
 
-class BagVerificationTest extends FunSpec with Matchers with RandomThings {
+class VerificationSummaryTest extends FunSpec with Matchers with RandomThings {
   it("reports a verification with no failures as successful") {
-    val result = BagVerification(
+    val result = VerificationSummary(
       successfulVerifications =
         Seq(createBagDigestFile, createBagDigestFile, createBagDigestFile),
       failedVerifications = List.empty
     )
 
-    result.verificationSucceeded shouldBe true
+    result.succeeded shouldBe true
   }
 
   it("reports a verification with some problems as unsuccessful") {
-    val result = BagVerification(
+    val result = VerificationSummary(
       successfulVerifications = Seq(createBagDigestFile, createBagDigestFile),
       failedVerifications = List(
         FailedVerification(
@@ -31,11 +31,11 @@ class BagVerificationTest extends FunSpec with Matchers with RandomThings {
       )
     )
 
-    result.verificationSucceeded shouldBe false
+    result.succeeded shouldBe false
   }
 
   it("calculates duration once completed") {
-    val result = BagVerification(
+    val result = VerificationSummary(
       startTime = Instant.now.minus(Duration.ofSeconds(1))
     )
     val completed = result.complete
@@ -44,7 +44,7 @@ class BagVerificationTest extends FunSpec with Matchers with RandomThings {
   }
 
   it("calculates duration as None when verification is not completed") {
-    val result = BagVerification(
+    val result = VerificationSummary(
       startTime = Instant.now
     )
     result.duration shouldBe None

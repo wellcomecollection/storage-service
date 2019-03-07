@@ -7,13 +7,18 @@ import akka.stream.scaladsl.{Sink, Source}
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  BagVerification,
-  FailedVerification
+  FailedVerification,
+  VerificationSummary
 }
 import uk.ac.wellcome.platform.archive.common.models.FileManifest
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagDigestFile,
   BagLocation
+}
+import uk.ac.wellcome.platform.archive.common.operation.{
+  OperationFailure,
+  OperationResult,
+  OperationSuccess
 }
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
@@ -21,13 +26,18 @@ import uk.ac.wellcome.platform.archive.common.storage.ChecksumVerifier
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class VerifyDigestFilesService(
+class Verifier(
   storageManifestService: StorageManifestService,
   s3Client: AmazonS3,
-  algorithm: String)(implicit ec: ExecutionContext, materializer: Materializer)
+  algorithm: String
+)(implicit ec: ExecutionContext, mat: Materializer)
     extends Logging {
-  def verifyBagLocation(bagLocation: BagLocation): Future[BagVerification] =
-    for {
+  def verify(
+    bagLocation: BagLocation
+  ): Future[OperationResult[VerificationSummary]] = {
+    val verificationInit = VerificationSummary(startTime = Instant.now)
+
+    val verification = for {
       fileManifest <- getManifest("file manifest") {
         storageManifestService.createFileManifest(bagLocation)
       }
@@ -37,8 +47,21 @@ class VerifyDigestFilesService(
       }
 
       digestFiles = fileManifest.files ++ tagManifest.files
-      result <- verifyFiles(bagLocation, digestFiles)
+
+      result <- verifyFiles(bagLocation, digestFiles, verificationInit)
     } yield result
+
+    verification.map {
+      case summary if summary.succeeded => OperationSuccess(summary)
+      case failed =>
+        OperationFailure(
+          failed,
+          new RuntimeException("Verification failed")
+        )
+    } recover {
+      case e: Throwable => OperationFailure(verificationInit, e)
+    }
+  }
 
   private def getManifest(name: String)(
     result: Future[FileManifest]): Future[FileManifest] =
@@ -49,9 +72,9 @@ class VerifyDigestFilesService(
 
   private def verifyFiles(
     bagLocation: BagLocation,
-    digestFiles: Seq[BagDigestFile]
-  )(implicit materializer: Materializer): Future[BagVerification] = {
-    val bagVerification = BagVerification(startTime = Instant.now)
+    digestFiles: Seq[BagDigestFile],
+    bagVerification: VerificationSummary
+  )(implicit mat: Materializer): Future[VerificationSummary] = {
     Source[BagDigestFile](
       digestFiles.toList
     ).mapAsync(10) { digestFile: BagDigestFile =>
@@ -97,7 +120,8 @@ class VerifyDigestFilesService(
 
   private def getResult(
     digestFile: BagDigestFile,
-    actualChecksum: String): Either[FailedVerification, BagDigestFile] =
+    actualChecksum: String
+  ): Either[FailedVerification, BagDigestFile] =
     if (digestFile.checksum == actualChecksum) {
       Right(digestFile)
     } else {

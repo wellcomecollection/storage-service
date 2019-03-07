@@ -6,12 +6,12 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
+import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifierWorkerService,
-  NotificationService,
-  VerifyDigestFilesService
+  BagVerifierWorker,
+  Verifier
 }
+import uk.ac.wellcome.platform.archive.common.config.builders.OperationNotifierBuilder
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -31,37 +31,21 @@ object Main extends WellcomeTypesafeApp {
     implicit val materializer: Materializer =
       AkkaBuilder.buildActorMaterializer()
 
-    val progressSnsWriter =
-      SNSBuilder.buildSNSWriter(
-        config,
-        namespace = "progress"
-      )
-
-    val outgoingSnsWriter =
-      SNSBuilder.buildSNSWriter(
-        config,
-        namespace = "outgoing"
-      )
-
-    val notificationStream =
+    val stream =
       NotificationStreamBuilder
         .buildStream[BagRequest](config)
 
-    val verifyDigestFilesService = new VerifyDigestFilesService(
+    val verifier = new Verifier(
       storageManifestService = new StorageManifestService(),
       s3Client = s3Client,
       algorithm = MessageDigestAlgorithms.SHA_256
     )
 
-    val notificationService = new NotificationService(
-      progressSnsWriter,
-      outgoingSnsWriter
-    )
+    val operationName = "verification"
 
-    new BagVerifierWorkerService(
-      notificationStream,
-      verifyDigestFilesService,
-      notificationService
-    )
+    val notifier = OperationNotifierBuilder
+      .build(config, operationName)
+
+    new BagVerifierWorker(stream, verifier, notifier)
   }
 }

@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
-class BagVerifierWorkerServiceTest
+class VerifierWorkerTest
     extends FunSpec
     with Matchers
     with ScalaFutures
@@ -35,17 +35,19 @@ class BagVerifierWorkerServiceTest
               val future = service.processMessage(bagRequest)
 
               whenReady(future) { _ =>
-                assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
+                eventually {
+                  assertTopicReceivesProgressEventUpdate(
+                    requestId = bagRequest.requestId,
+                    progressTopic = progressTopic
+                  ) { events =>
+                    events.map {
+                      _.description
+                    } shouldBe List(
+                      "Verification succeeded"
+                    )
+                  }
 
-                assertTopicReceivesProgressEventUpdate(
-                  requestId = bagRequest.requestId,
-                  progressTopic = progressTopic
-                ) { events =>
-                  events.map {
-                    _.description
-                  } shouldBe List(
-                    "Successfully verified bag contents"
-                  )
+                  assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
                 }
               }
             }
@@ -77,8 +79,7 @@ class BagVerifierWorkerServiceTest
                     val description = events.map {
                       _.description
                     }.head
-                    description should startWith(
-                      "Problem verifying bag: File checksum did not match manifest")
+                    description should startWith("Verification failed")
                   }
                 }
             }
@@ -103,18 +104,20 @@ class BagVerifierWorkerServiceTest
                 val future = service.processMessage(bagRequest)
 
                 whenReady(future) { _ =>
-                  assertSnsReceivesNothing(outgoingTopic)
+                  eventually {
 
-                  assertTopicReceivesProgressStatusUpdate(
-                    requestId = bagRequest.requestId,
-                    progressTopic = progressTopic,
-                    status = Progress.Failed
-                  ) { events =>
-                    val description = events.map {
-                      _.description
-                    }.head
-                    description should startWith(
-                      "Problem verifying bag: Verification could not be performed")
+                    assertSnsReceivesNothing(outgoingTopic)
+
+                    assertTopicReceivesProgressStatusUpdate(
+                      requestId = bagRequest.requestId,
+                      progressTopic = progressTopic,
+                      status = Progress.Failed
+                    ) { events =>
+                      val description = events.map {
+                        _.description
+                      }.head
+                      description should startWith("Verification failed")
+                    }
                   }
                 }
             }
@@ -140,7 +143,7 @@ class BagVerifierWorkerServiceTest
               ) { events =>
                 events.map {
                   _.description
-                } shouldBe List("Successfully verified bag contents")
+                } shouldBe List("Verification succeeded")
               }
             }
           }
