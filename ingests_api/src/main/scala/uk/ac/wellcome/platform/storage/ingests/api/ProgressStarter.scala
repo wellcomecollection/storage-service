@@ -2,11 +2,7 @@ package uk.ac.wellcome.platform.storage.ingests.api
 
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.common.models.{
-  IngestBagRequest,
-  StorageSpace,
-  UnpackBagRequest
-}
+import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackBagRequest}
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 import uk.ac.wellcome.platform.archive.common.progress.monitor.ProgressTracker
 
@@ -18,11 +14,12 @@ class ProgressStarter(
 )(implicit ec: ExecutionContext) {
   def initialise(progress: Progress): Future[Progress] =
     for {
+      initProgress <- progressTracker.initialise(progress)
       _ <- unpackerSnsWriter.writeMessage(
         toUnpackRequest(progress),
         "progress-http-request-created"
       )
-    } yield progress
+    } yield initProgress
 
   private def toUnpackRequest(
     progress: Progress

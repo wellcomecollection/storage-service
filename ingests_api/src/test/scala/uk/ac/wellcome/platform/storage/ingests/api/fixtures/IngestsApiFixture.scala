@@ -53,7 +53,6 @@ trait IngestsApiFixture
             val ingestsApi = new IngestsApi(
               dynamoClient = dynamoDbClient,
               dynamoConfig = createDynamoConfigWith(table),
-              archivistSnsWriter = archivistSnsWriter,
               unpackerSnsWriter = unpackerSnsWriter,
               httpMetrics = httpMetrics,
               httpServerConfig = httpServerConfig,

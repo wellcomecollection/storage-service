@@ -288,19 +288,6 @@ class IngestsApiFeatureTest
                     )
                 }
 
-                // Archivist
-                val archivistRequests =
-                  listMessagesReceivedFromSNS(archivistTopic).map(messageInfo =>
-                    fromJson[IngestBagRequest](messageInfo.message).get)
-
-                archivistRequests shouldBe List(
-                  IngestBagRequest(
-                    id,
-                    storageSpace = StorageSpace(spaceName),
-                    archiveCompleteCallbackUrl = Some(testCallbackUri),
-                    zippedBagLocation = ObjectLocation("bucket", "key.txt")
-                  ))
-
                 // Unpacker
                 val unpackerRequests =
                   listMessagesReceivedFromSNS(unpackerTopic).map(messageInfo =>
