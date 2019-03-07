@@ -302,23 +302,13 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
                 with open(destination, "wb") as f:
                     for chunk in resp.iter_content(chunk_size):
                         f.write(chunk)
-<<<<<<< HEAD
                 return True
             else:
                 logging.debug(
-                    "Recieved HTTP {0} for {1}".format(resp.status_code, web_url)
+                    "Received HTTP %s for %s", resp.status_code, web_url
                 )
                 return False
         except Exception as err:
             download_err = err
             pass
     raise download_err
-=======
-                asset_downloaded = True
-
-        message = "Unable to find asset {0}".format(pres_uuid)
-        assert asset_downloaded, message
-
-        logging.debug("TODO: doing checksums on %s", destination)
-        logging.debug("validate %s", checksum)
->>>>>>> 1def8d4... lazy logging so we spend less on string interpolation
