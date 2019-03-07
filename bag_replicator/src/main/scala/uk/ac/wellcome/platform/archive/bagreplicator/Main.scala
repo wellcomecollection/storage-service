@@ -3,12 +3,10 @@ package uk.ac.wellcome.platform.archive.bagreplicator
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
+import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagLocator,
-  BagReplicatorWorkerService
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagLocator, BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.config.builders.OperationNotifierBuilder
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -26,17 +24,21 @@ object Main extends WellcomeTypesafeApp {
 
     val s3Client = S3Builder.buildS3Client(config)
 
-    new BagReplicatorWorkerService(
-      notificationStream =
-        NotificationStreamBuilder.buildStream[BagRequest](config),
-      bagLocator = new BagLocator(s3Client),
-      s3PrefixCopier = S3PrefixCopier(s3Client),
-      replicatorDestinationConfig =
-        ReplicatorDestinationConfig.buildDestinationConfig(config),
-      progressSnsWriter =
-        SNSBuilder.buildSNSWriter(config, namespace = "progress"),
-      outgoingSnsWriter =
-        SNSBuilder.buildSNSWriter(config, namespace = "outgoing")
+    val operationName = "replicating"
+
+    new BagReplicatorWorker(
+      stream = NotificationStreamBuilder
+        .buildStream[BagRequest](config),
+
+      notifier = OperationNotifierBuilder
+        .build(config, operationName),
+
+      replicator = new BagReplicator(
+        bagLocator = new BagLocator(s3Client),
+        config = ReplicatorDestinationConfig
+          .buildDestinationConfig(config),
+        s3PrefixCopier = S3PrefixCopier(s3Client)
+      )
     )
   }
 }
