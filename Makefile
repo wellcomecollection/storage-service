@@ -8,7 +8,6 @@ PROJECT_ID = storage
 STACK_ROOT 	= .
 
 SBT_APPS = notifier \
-           archivist \
            ingests \
            ingests_api \
            bags_api \

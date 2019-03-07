@@ -5,7 +5,6 @@ module "images" {
   project = "storage"
 
   services = [
-    "archivist",
     "bags_api",
     "ingests",
     "ingests_api",
@@ -19,7 +18,6 @@ module "images" {
 }
 
 locals {
-  archivist_image      = "${module.images.services["archivist"]}"
   bag_register_image   = "${module.images.services["bag_register"]}"
   bags_api_image       = "${module.images.services["bags_api"]}"
   ingests_image        = "${module.images.services["ingests"]}"

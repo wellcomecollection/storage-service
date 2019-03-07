@@ -43,7 +43,6 @@ variable "nginx_image" {}
 # Configuration
 
 variable "archive_bucket_name" {}
-variable "archivist_queue_parallelism" {}
 variable "access_bucket_name" {}
 variable "vhs_archive_manifest_bucket_name" {}
 variable "vhs_archive_manifest_table_name" {}
@@ -94,10 +93,6 @@ variable "s3_bagger_errors_name" {}
 
 # Task counts
 
-variable "desired_archivist_count" {
-  default = 2
-}
-
 variable "desired_bagger_count" {
   default = 4
 }
@@ -110,6 +105,6 @@ variable "desired_ingests_api_count" {
   default = 3
 }
 
-variable "desired_archivist_ec2_instances" {
+variable "desired_ec2_instances" {
   default = 2
 }

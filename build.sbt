@@ -52,10 +52,6 @@ lazy val display = setupProject(project, "display",
   localDependencies = Seq(common)
 )
 
-lazy val archivist = setupProject(project, "archivist",
-  localDependencies = Seq(common)
-)
-
 lazy val notifier = setupProject(project, "notifier",
   localDependencies = Seq(common, display),
   externalDependencies = ExternalDependencies.wiremockDependencies

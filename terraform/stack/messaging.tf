@@ -11,7 +11,6 @@ module "ingests_topic" {
   name = "${var.namespace}_ingests"
 
   role_names = [
-    "${module.archivist.task_role_name}",
     "${module.bag_register.task_role_name}",
     "${module.bag_replicator.task_role_name}",
     "${module.bag_verifier.task_role_name}",
@@ -31,57 +30,6 @@ module "ingests_input_queue" {
   role_names = [
     "${module.ingests.task_role_name}",
   ]
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
-
-# Messaging - archivist
-
-module "null_topic" {
-  source = "../modules/topic"
-
-  name       = "${var.namespace}_null"
-  role_names = ["${module.api.ingests_role_name}"]
-}
-
-module "ingest_requests_topic" {
-  source = "../modules/topic"
-
-  name       = "${var.namespace}_ingest_requests"
-  role_names = ["${module.api.ingests_role_name}"]
-}
-
-module "archivist_input_queue" {
-  source = "../modules/queue"
-
-  name = "${var.namespace}_archivist_input"
-
-  topic_names = [
-    "${module.null_topic.name}",
-  ]
-
-  role_names = [
-    "${module.archivist.task_role_name}",
-  ]
-
-  visibility_timeout_seconds = 3600
-  max_receive_count          = 1
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
-
-# Messaging - bags aka registrar-async
-
-module "bags_input_queue" {
-  source = "../modules/queue"
-
-  name = "${var.namespace}_bags_input"
-
-  topic_names = ["${module.bag_replicator_output_topic.name}"]
-
-  role_names = ["${module.bag_register.task_role_name}"]
 
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
@@ -138,21 +86,7 @@ module "bagging_complete_topic" {
   role_names = ["${module.bagger.task_role_name}"]
 }
 
-# Messaging - bag_replicator
-
-module "archivist_output_topic" {
-  source = "../modules/topic"
-
-  name = "${var.namespace}_archivist_output"
-
-  role_names = [
-    "${module.archivist.task_role_name}",
-  ]
-}
-
-# Services in test
-
-## Messaging - bag_unpacker
+# Messaging - bag_unpacker
 
 module "bag_unpacker_input_topic" {
   source = "../modules/topic"
@@ -193,34 +127,7 @@ module "bag_unpacker_output_topic" {
   ]
 }
 
-module "bag_verifier_output_topic" {
-  source = "../modules/topic"
-
-  name = "${var.namespace}_bag_verifier_output"
-
-  role_names = [
-    "${module.bag_verifier.task_role_name}",
-  ]
-}
-
-module "bag_verifier_output_queue" {
-  source = "../modules/queue"
-
-  name = "${var.namespace}_bag_verifier_output"
-
-  topic_names = ["${module.bag_verifier_output_topic.name}"]
-
-  role_names = []
-
-  # We keep a high visibility timeout to
-  # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = "${60 * 60 * 5}"
-
-  max_receive_count = 1
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
+# bag_replicator
 
 module "bag_replicator_input_queue" {
   source = "../modules/queue"
@@ -252,6 +159,8 @@ module "bag_replicator_output_topic" {
   ]
 }
 
+# Messaging - bag_verifier
+
 module "bag_verifier_input_queue" {
   source = "../modules/queue"
 
@@ -266,6 +175,54 @@ module "bag_verifier_input_queue" {
   visibility_timeout_seconds = "${60 * 60 * 5}"
 
   max_receive_count = 1
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+}
+
+module "bag_verifier_output_topic" {
+  source = "../modules/topic"
+
+  name = "${var.namespace}_bag_verifier_output"
+
+  role_names = [
+    "${module.bag_verifier.task_role_name}",
+  ]
+}
+
+# bag_register
+
+module "bag_register_input_queue" {
+  source = "../modules/queue"
+
+  name = "${var.namespace}_bag_register_input"
+
+  topic_names = ["${module.bag_verifier_output_topic.name}"]
+
+  role_names = ["${module.bag_register.task_role_name}"]
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+}
+
+module "bag_register_output_topic" {
+  source = "../modules/topic"
+
+  name = "${var.namespace}_bag_register_output"
+
+  role_names = [
+    "${module.bag_register.task_role_name}",
+  ]
+}
+
+module "bag_register_output_queue" {
+  source = "../modules/queue"
+
+  name = "${var.namespace}_bag_register_output"
+
+  topic_names = ["${module.bag_register_output_topic.name}"]
+
+  role_names = []
 
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
