@@ -25,32 +25,33 @@ class ProgressStarterTest
   val progress = createProgress
 
   it("saves a Progress to DynamoDB and send a notification to SNS") {
-    withLocalSnsTopic { archivistTopic =>
       withLocalSnsTopic { unpackerTopic =>
         withProgressTrackerTable { table =>
-          withProgressStarter(table, archivistTopic) {
+          withProgressStarter(table, unpackerTopic) {
             progressStarter =>
               whenReady(progressStarter.initialise(progress)) { p =>
                 p shouldBe progress
 
                 assertTableOnlyHasItem(progress, table)
 
-                // Unpacker
-                val unpackerRequests =
-                  listMessagesReceivedFromSNS(
-                    unpackerTopic
-                  ).map(messageInfo =>
-                    fromJson[UnpackBagRequest](messageInfo.message).get)
+                eventually {
+                  // Unpacker
+                  val unpackerRequests =
+                    listMessagesReceivedFromSNS(
+                      unpackerTopic
+                    ).map(messageInfo =>
+                      fromJson[UnpackBagRequest](messageInfo.message).get)
 
-                unpackerRequests shouldBe List(
-                  UnpackBagRequest(
-                    requestId = progress.id,
-                    sourceLocation = progress.sourceLocation.location,
-                    storageSpace = StorageSpace(progress.space.underlying)
+                  unpackerRequests shouldBe List(
+                    UnpackBagRequest(
+                      requestId = progress.id,
+                      sourceLocation = progress.sourceLocation.location,
+                      storageSpace = StorageSpace(progress.space.underlying)
+                    )
                   )
-                )
+                }
               }
-          }
+
         }
       }
     }
