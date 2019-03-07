@@ -165,9 +165,7 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
         checksum = file_element.get("CHECKSUM")
         file_element.attrib.pop("CHECKSUM")  # don't need it now
         preservica_uuid = tech_md_for_structmap_asset["uuid"]
-        logging.debug(
-            "Need to determine where to get %s from.", preservica_uuid
-        )
+        logging.debug("Need to determine where to get %s from.", preservica_uuid)
 
         if skip_file_download:
             logging.debug("Skipping processing file %s", preservica_uuid)
@@ -206,16 +204,12 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
             bag_assembly.ensure_directory(destination)
             fetch_attempt = try_to_download_asset(preservica_uuid, destination)
             if fetch_attempt["succeeded"]:
-                logging.debug(
-                    "successfully fetched %s - %s", preservica_uuid, filename
-                )
+                logging.debug("successfully fetched %s - %s", preservica_uuid, filename)
             else:
                 missing_from_preservica.append(
                     {"preservica_uuid": preservica_uuid, "filename": filename}
                 )
-                logging.debug(
-                    "Unable to fetch %s - %s", preservica_uuid, filename
-                )
+                logging.debug("Unable to fetch %s - %s", preservica_uuid, filename)
 
     mismatch_count = len(tech_md_mismatch_warnings)
     if mismatch_count > 0:
@@ -304,9 +298,7 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
                         f.write(chunk)
                 return True
             else:
-                logging.debug(
-                    "Received HTTP %s for %s", resp.status_code, web_url
-                )
+                logging.debug("Received HTTP %s for %s", resp.status_code, web_url)
                 return False
         except Exception as err:
             download_err = err

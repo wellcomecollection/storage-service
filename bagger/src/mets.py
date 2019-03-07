@@ -4,26 +4,24 @@ import mappings
 
 # Borrowed from Dds.Dashboard, LogicalStructDiv impl
 
-collection_types = set([
-    "MultipleManifestation",
-    "Periodical",
-    "PeriodicalVolume",
-])
+collection_types = set(["MultipleManifestation", "Periodical", "PeriodicalVolume"])
 
-manifestation_types = set([
-    "Monograph",
-    "Archive",
-    "Artwork",
-    "Manuscript",
-    "PeriodicalIssue",
-    "Video",
-    "Transcript",
-    "MultipleVolume",
-    "MultipleCopy",
-    "MultipleVolumeMultipleCopy",
-    "Audio",
-    "Map",
-])
+manifestation_types = set(
+    [
+        "Monograph",
+        "Archive",
+        "Artwork",
+        "Manuscript",
+        "PeriodicalIssue",
+        "Video",
+        "Transcript",
+        "MultipleVolume",
+        "MultipleCopy",
+        "MultipleVolumeMultipleCopy",
+        "Audio",
+        "Map",
+    ]
+)
 
 
 def is_collection(struct_type):
