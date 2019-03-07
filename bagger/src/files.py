@@ -195,7 +195,7 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
         if preservica_uuid not in structmap_uuids_downloaded:
             # double sanity check - we should have picked this up in the techMd restructure
             assert tech_md_file.get("warning", None) is not None
-            logging.info(tech_md_file["warning"])
+            logging.debug(tech_md_file["warning"])
             tech_md_mismatch_warnings.append(tech_md_file["warning"])
             # we've recorded the warning, now try to get the file
             folder = "objects"
@@ -204,13 +204,13 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
             bag_assembly.ensure_directory(destination)
             fetch_attempt = try_to_download_asset(preservica_uuid, destination)
             if fetch_attempt["succeeded"]:
-                logging.info("successfully fetched {0} - {1}".format(preservica_uuid, filename))
+                logging.debug("successfully fetched {0} - {1}".format(preservica_uuid, filename))
             else:
                 missing_from_preservica.append({
                     "preservica_uuid": preservica_uuid,
                     "filename": filename
                 })
-                logging.info("Unable to fetch {0} - {1}".format(preservica_uuid, filename))
+                logging.debug("Unable to fetch {0} - {1}".format(preservica_uuid, filename))
 
     
     mismatch_count = len(tech_md_mismatch_warnings)
