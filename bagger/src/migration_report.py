@@ -109,7 +109,7 @@ def update_batch(batch, item):
 
     # ingest status
     ingest_status = item.get("ingest_status", None)
-    if ingest_status == "-" or ingest_status == "no-ingest":
+    if ingest_status in {"-", "no-ingest"}:
         ingest_status = None
 
     ingest_start = item.get("ingest_start", None)

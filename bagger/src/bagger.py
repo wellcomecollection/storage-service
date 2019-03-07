@@ -179,6 +179,7 @@ def dispatch(bag_details):
 
     logging.debug(
         "uploaded %s %s s3://%s:%s",
+        bag_details["zip_file_path"],
         bag_details["zip_file_name"],
         upload_location["bucket"],
         upload_location["key"],
