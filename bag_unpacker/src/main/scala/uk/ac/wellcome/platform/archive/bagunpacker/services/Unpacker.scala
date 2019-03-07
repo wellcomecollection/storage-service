@@ -18,9 +18,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
 
   def unpack(
-              srcLocation: ObjectLocation,
-              dstLocation: ObjectLocation
-            ): Future[OperationResult[UnpackSummary]] = {
+    srcLocation: ObjectLocation,
+    dstLocation: ObjectLocation
+  ): Future[OperationResult[UnpackSummary]] = {
 
     val unpackSummary =
       UnpackSummary(startTime = Instant.now)
@@ -31,7 +31,6 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
         (summary: UnpackSummary,
          inputStream: InputStream,
          archiveEntry: ArchiveEntry) =>
-
           if (!archiveEntry.isDirectory) {
             val archiveEntrySize = putObject(
               inputStream,
@@ -54,10 +53,10 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
   }
 
   private def putObject(
-                         inputStream: InputStream,
-                         archiveEntry: ArchiveEntry,
-                         destination: ObjectLocation
-                       ) = {
+    inputStream: InputStream,
+    archiveEntry: ArchiveEntry,
+    destination: ObjectLocation
+  ) = {
 
     val metadata = new ObjectMetadata()
     val archiveEntrySize = archiveEntry.getSize

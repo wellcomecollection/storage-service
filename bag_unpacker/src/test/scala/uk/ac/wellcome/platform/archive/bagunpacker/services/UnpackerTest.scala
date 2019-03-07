@@ -74,9 +74,11 @@ class UnpackerTest
             testArchive.containedFiles.map { file =>
               val fis = new FileInputStream(file)
               val content = IOUtils.toByteArray(fis)
-              val name = Paths.get(relativeToTmpDir(file))
-                .normalize().toString
-              
+              val name = Paths
+                .get(relativeToTmpDir(file))
+                .normalize()
+                .toString
+
               val actualFile = actualFileMap.get(name)
 
               actualFile shouldBe defined
