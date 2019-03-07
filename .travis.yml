@@ -9,7 +9,6 @@ jobs:
     - env: SBT_PROJECT=ingests_common
 
     - stage: services
-      env: SBT_PROJECT=archivist
     - env: SBT_PROJECT=ingests
     - env: SBT_PROJECT=ingests_api
     - env: SBT_PROJECT=bags_api
@@ -33,7 +32,6 @@ cache:
     - project/target
     - target
 
-    - archivist/target
     - bags_api/target
     - bag_replicator/target
     - bag_register/target

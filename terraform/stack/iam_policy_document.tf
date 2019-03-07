@@ -127,10 +127,10 @@ data "aws_iam_policy_document" "storage_archive_read" {
     ]
 
     resources = [
-      # Allow archivist to read bagger drop bucket
+      # Allow service to read bagger drop bucket
       "arn:aws:s3:::${var.ingest_drop_bucket_name}/*",
 
-      # Allow archivist to read our archive bucket
+      # Allow service to read our archive bucket
       "arn:aws:s3:::${var.archive_bucket_name}",
 
       "arn:aws:s3:::${var.archive_bucket_name}/*",

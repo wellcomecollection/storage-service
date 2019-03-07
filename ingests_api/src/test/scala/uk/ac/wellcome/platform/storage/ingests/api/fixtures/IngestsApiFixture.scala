@@ -38,10 +38,8 @@ trait IngestsApiFixture
 
   private def withApp[R](
     table: Table,
-    archivistTopic: Topic,
     unpackerTopic: Topic,
     metricsSender: MetricsSender)(testWith: TestWith[IngestsApi, R]): R =
-    withSNSWriter(archivistTopic) { archivistSnsWriter =>
       withSNSWriter(unpackerTopic) { unpackerSnsWriter =>
         withActorSystem { implicit actorSystem =>
           withMaterializer(actorSystem) { implicit materializer =>
@@ -65,39 +63,34 @@ trait IngestsApiFixture
           }
         }
       }
-    }
+
 
   def withBrokenApp[R](
-    testWith: TestWith[(Table, Topic, Topic, MetricsSender, String), R]): R = {
-    withLocalSnsTopic { archivistTopic =>
+    testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R = {
       withLocalSnsTopic { unpackerTopic =>
         val table = Table("does-not-exist", index = "does-not-exist")
         withMockMetricSender { metricsSender =>
-          withApp(table, archivistTopic, unpackerTopic, metricsSender) { _ =>
+          withApp(table, unpackerTopic, metricsSender) { _ =>
             testWith(
               (
                 table,
-                archivistTopic,
                 unpackerTopic,
                 metricsSender,
                 httpServerConfig.externalBaseURL))
           }
         }
       }
-    }
   }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(Table, Topic, Topic, MetricsSender, String), R]): R = {
-    withLocalSnsTopic { archivistTopic =>
+    testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R = {
       withLocalSnsTopic { unpackerTopic =>
         withProgressTrackerTable { table =>
           withMockMetricSender { metricsSender =>
-            withApp(table, archivistTopic, unpackerTopic, metricsSender) { _ =>
+            withApp(table, unpackerTopic, metricsSender) { _ =>
               testWith(
                 (
                   table,
-                  archivistTopic,
                   unpackerTopic,
                   metricsSender,
                   httpServerConfig.externalBaseURL))
@@ -106,5 +99,4 @@ trait IngestsApiFixture
         }
       }
     }
-  }
 }

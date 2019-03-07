@@ -1,35 +1,3 @@
-# archivist
-
-module "archivist" {
-  source = "../modules/service/worker+nvm"
-
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
-  cluster_name                     = "${aws_ecs_cluster.cluster.name}"
-  cluster_id                       = "${aws_ecs_cluster.cluster.id}"
-  namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
-  subnets                          = "${var.private_subnets}"
-  service_name                     = "${var.namespace}-archivist"
-
-  max_capacity       = "${var.desired_archivist_count}"
-  desired_task_count = "${var.desired_archivist_count}"
-
-  env_vars = {
-    queue_url              = "${module.archivist_input_queue.url}"
-    queue_parallelism      = "${var.archivist_queue_parallelism}"
-    archive_bucket         = "${var.archive_bucket_name}"
-    next_service_topic_arn = "${module.archivist_output_topic.arn}"
-    progress_topic_arn     = "${local.progress_topic}"
-    JAVA_OPTS              = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${var.namespace}-archivist"
-  }
-
-  env_vars_length = 6
-
-  cpu    = "1900"
-  memory = "14000"
-
-  container_image = "${local.archivist_image}"
-}
-
 # bag_register
 
 module "bag_register" {
@@ -54,7 +22,7 @@ module "bag_register" {
 
   env_vars_length = 6
 
-  container_image = "${local.bags_image}"
+  container_image = "${local.bag_register_image}"
 }
 
 # bag_unpacker
@@ -257,7 +225,6 @@ module "api" {
   ingests_env_vars = {
     context_url                     = "${var.api_url}/context.json"
     app_base_url                    = "${var.api_url}/storage/v1/ingests"
-    archivist_topic_arn             = "${module.ingest_requests_topic.arn}"
     unpacker_topic_arn              = "${module.bag_unpacker_input_topic.arn}"
     archive_progress_table_name     = "${var.ingests_table_name}"
     archive_bag_progress_index_name = "${var.ingests_table_progress_index_name}"

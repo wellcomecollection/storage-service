@@ -20,34 +20,7 @@ resource "aws_iam_role_policy" "bag_register_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
-# archivist
-
-resource "aws_iam_role_policy" "archivist_task_store_s3" {
-  role   = "${module.archivist.task_role_name}"
-  policy = "${data.aws_iam_policy_document.storage_archive_readwrite.json}"
-}
-
-resource "aws_iam_role_policy" "archivist_task_get_s3" {
-  role   = "${module.archivist.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_read.json}"
-}
-
-resource "aws_iam_role_policy" "archivist_task_get_s3_bagger" {
-  role   = "${module.archivist.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_read.json}"
-}
-
-resource "aws_iam_role_policy" "archivist_task_get_s3_workflow" {
-  role   = "${module.archivist.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_read.json}"
-}
-
-resource "aws_iam_role_policy" "archivist_metrics" {
-  role   = "${module.archivist.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
-}
-
-# api.bags aka registrar-http
+# bags_api
 
 resource "aws_iam_role_policy" "bags_vhs" {
   role   = "${module.api.bags_role_name}"
@@ -59,14 +32,8 @@ resource "aws_iam_role_policy" "bags_api_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
-# api.ingests aka progress-http
 
-resource "aws_iam_role_policy" "ingests_api_archive_progress_table" {
-  role   = "${module.api.ingests_role_name}"
-  policy = "${data.aws_iam_policy_document.archive_progress_table_read_write_policy.json}"
-}
-
-# ingests aka progress-async
+# ingests
 
 resource "aws_iam_role_policy" "ingests_archive_progress_table" {
   role   = "${module.ingests.task_role_name}"
@@ -78,11 +45,16 @@ resource "aws_iam_role_policy" "ingests_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
-# ingests_api aka progress-http
+# ingests_api
 
 resource "aws_iam_role_policy" "ingests_api_metrics" {
   role   = "${module.api.ingests_role_name}"
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+}
+
+resource "aws_iam_role_policy" "ingests_api_archive_progress_table" {
+  role   = "${module.api.ingests_role_name}"
+  policy = "${data.aws_iam_policy_document.archive_progress_table_read_write_policy.json}"
 }
 
 # bag_replicator
