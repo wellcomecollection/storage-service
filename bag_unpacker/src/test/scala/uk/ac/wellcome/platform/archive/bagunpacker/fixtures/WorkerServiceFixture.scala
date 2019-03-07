@@ -90,8 +90,7 @@ trait WorkerServiceFixture
     }
 
   def withApp[R](
-    testWith: TestWith[(UnpackerWorker, Bucket, Queue, Topic, Topic), R])
-    : R =
+    testWith: TestWith[(UnpackerWorker, Bucket, Queue, Topic, Topic), R]): R =
     withLocalSqsQueue { queue =>
       withLocalSnsTopic { progressTopic =>
         withLocalSnsTopic { outgoingTopic =>
