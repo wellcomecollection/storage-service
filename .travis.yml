@@ -9,7 +9,7 @@ jobs:
     - env: SBT_PROJECT=ingests_common
 
     - stage: services
-    - env: SBT_PROJECT=ingests
+      env: SBT_PROJECT=ingests
     - env: SBT_PROJECT=ingests_api
     - env: SBT_PROJECT=bags_api
     - env: SBT_PROJECT=bag_register
