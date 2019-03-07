@@ -35,21 +35,6 @@ module "ingests_input_queue" {
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
-# bag_register
-
-module "bag_register_input_queue" {
-  source = "../modules/queue"
-
-  name = "${var.namespace}_bags_input"
-
-  topic_names = ["${module.bag_verifier_output_topic.name}"]
-
-  role_names = ["${module.bag_register.task_role_name}"]
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
-
 # Messaging - notifier
 
 module "ingests_output_topic" {
@@ -142,56 +127,6 @@ module "bag_unpacker_output_topic" {
   ]
 }
 
-# Messaging - bag_verifier
-
-module "bag_verifier_input_queue" {
-  source = "../modules/queue"
-
-  name = "${var.namespace}_bag_verifier_input"
-
-  topic_names = ["${module.bag_unpacker_output_topic.name}"]
-
-  role_names = ["${module.bag_verifier.task_role_name}"]
-
-  # We keep a high visibility timeout to
-  # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = "${60 * 60 * 5}"
-
-  max_receive_count = 1
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
-
-
-module "bag_verifier_output_topic" {
-  source = "../modules/topic"
-
-  name = "${var.namespace}_bag_verifier_output"
-
-  role_names = [
-    "${module.bag_verifier.task_role_name}",
-  ]
-}
-
-module "bag_verifier_output_queue" {
-  source = "../modules/queue"
-
-  name = "${var.namespace}_bag_verifier_output"
-
-  topic_names = ["${module.bag_verifier_output_topic.name}"]
-
-  role_names = []
-
-  # We keep a high visibility timeout to
-  # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = "${60 * 60 * 5}"
-
-  max_receive_count = 1
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
 
 # bag_replicator
 
@@ -223,4 +158,51 @@ module "bag_replicator_output_topic" {
   role_names = [
     "${module.bag_replicator.task_role_name}",
   ]
+}
+
+# Messaging - bag_verifier
+
+module "bag_verifier_input_queue" {
+  source = "../modules/queue"
+
+  name = "${var.namespace}_bag_verifier_input"
+
+  topic_names = ["${module.bag_replicator_output_topic.name}"]
+
+  role_names = ["${module.bag_verifier.task_role_name}"]
+
+  # We keep a high visibility timeout to
+  # avoid messages appearing to time out and fail.
+  visibility_timeout_seconds = "${60 * 60 * 5}"
+
+  max_receive_count = 1
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+}
+
+
+module "bag_verifier_output_topic" {
+  source = "../modules/topic"
+
+  name = "${var.namespace}_bag_verifier_output"
+
+  role_names = [
+    "${module.bag_verifier.task_role_name}",
+  ]
+}
+
+# bag_register
+
+module "bag_register_input_queue" {
+  source = "../modules/queue"
+
+  name = "${var.namespace}_bags_input"
+
+  topic_names = ["${module.bag_verifier_output_topic.name}"]
+
+  role_names = ["${module.bag_register.task_role_name}"]
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
