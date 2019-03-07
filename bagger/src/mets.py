@@ -116,16 +116,18 @@ the AMD to start at _0001
         phys_file = None
         if len(refs) == 1:
             phys_file = refs[0]
-        tech_md_files.append({
-            "old_id": old_id,
-            "new_id": new_id,
-            "filename": tech_md_filename,
-            "preservica_id": tech_md_preservica_id,
-            "refs_count": len(refs),
-            "tech_md": tech_md,
-            "phys_file": phys_file,
-            "warning": None
-        })
+        tech_md_files.append(
+            {
+                "old_id": old_id,
+                "new_id": new_id,
+                "filename": tech_md_filename,
+                "preservica_id": tech_md_preservica_id,
+                "refs_count": len(refs),
+                "tech_md": tech_md,
+                "phys_file": phys_file,
+                "warning": None,
+            }
+        )
         counter = counter + 1
 
     # Now go through tech_md_files, providing new renumbered IDs
@@ -134,11 +136,13 @@ the AMD to start at _0001
         if tech_md_file.get("phys_file", None) is not None:
             tech_md_file["phys_file"].set("ADMID", tech_md_file["new_id"])
         else:
-            tech_md_file["warning"] = "Expected 1 AMD ref for {0} (old) {1} (new), got {2}, filename: {3}".format(
+            tech_md_file[
+                "warning"
+            ] = "Expected 1 AMD ref for {0} (old) {1} (new), got {2}, filename: {3}".format(
                 tech_md_file["old_id"],
                 tech_md_file["new_id"],
                 tech_md_file["refs_count"],
-                tech_md_file["filename"]
+                tech_md_file["filename"],
             )
 
     return tech_md_files
@@ -166,9 +170,7 @@ def get_tech_md_preservica_id(tech_md):
     id_els = tech_md.findall(
         "./mets:mdWrap/mets:xmlData/tessella:File/tessella:ID", namespaces
     )
-    assert len(id_els) == 1, "More than one ID in {0}".format(
-        tech_md.get("ID")
-    )
+    assert len(id_els) == 1, "More than one ID in {0}".format(tech_md.get("ID"))
     return id_els[0].text
 
 

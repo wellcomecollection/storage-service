@@ -112,8 +112,10 @@ def process_alto(root, bag_details, alto, skip_file_download):
         if missing_count > 0:
             message = {
                 "identifier": b_number,
-                "summary": "{0} has {1} missing ALTO files.".format(b_number, missing_count),
-                "data": missing_altos
+                "summary": "{0} has {1} missing ALTO files.".format(
+                    b_number, missing_count
+                ),
+                "data": missing_altos,
             }
             aws.log_warning("missing_altos", message)
 
@@ -164,7 +166,9 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
         checksum = file_element.get("CHECKSUM")
         file_element.attrib.pop("CHECKSUM")  # don't need it now
         preservica_uuid = tech_md_for_structmap_asset["uuid"]
-        logging.debug("Need to determine where to get {0} from.".format(preservica_uuid))
+        logging.debug(
+            "Need to determine where to get {0} from.".format(preservica_uuid)
+        )
 
         if skip_file_download:
             logging.debug("Skipping processing file {0}".format(preservica_uuid))
@@ -181,11 +185,10 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
             # it's definitely an error that needs attention
             raise RuntimeError(fetch_attempt["message"])
 
-
     # Now see if there are files we didn't collect in that set of downloads
     # These are files mentioned in tech_md but not in the structmap
     # These are not considered errors, but they definitely need attention
-    # TODO - see how many errors we get this way and decide whether a missing 
+    # TODO - see how many errors we get this way and decide whether a missing
     # techMd-only file (can't obtain from anywhere) is still an error
 
     tech_md_mismatch_warnings = []
@@ -204,23 +207,27 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
             bag_assembly.ensure_directory(destination)
             fetch_attempt = try_to_download_asset(preservica_uuid, destination)
             if fetch_attempt["succeeded"]:
-                logging.debug("successfully fetched {0} - {1}".format(preservica_uuid, filename))
+                logging.debug(
+                    "successfully fetched {0} - {1}".format(preservica_uuid, filename)
+                )
             else:
-                missing_from_preservica.append({
-                    "preservica_uuid": preservica_uuid,
-                    "filename": filename
-                })
-                logging.debug("Unable to fetch {0} - {1}".format(preservica_uuid, filename))
+                missing_from_preservica.append(
+                    {"preservica_uuid": preservica_uuid, "filename": filename}
+                )
+                logging.debug(
+                    "Unable to fetch {0} - {1}".format(preservica_uuid, filename)
+                )
 
-    
     mismatch_count = len(tech_md_mismatch_warnings)
     if mismatch_count > 0:
         b_number = bag_details["b_number"]
         message = {
             "identifier": b_number,
-            "summary": "{0} has {1} AMD/techMD mismatches.".format(b_number, mismatch_count),
-            "data": tech_md_mismatch_warnings
-        }      
+            "summary": "{0} has {1} AMD/techMD mismatches.".format(
+                b_number, mismatch_count
+            ),
+            "data": tech_md_mismatch_warnings,
+        }
         if len(missing_from_preservica) > 0:
             message["missing_from_preservica"] = missing_from_preservica
 
@@ -269,13 +276,11 @@ def try_to_download_asset(preservica_uuid, destination):
 
     # TODO: this message could give a more detailed error report
     if asset_downloaded:
-        return {
-            "succeeded": True
-        }
+        return {"succeeded": True}
     else:
         return {
             "succeeded": False,
-            "message": "Unable to find asset {0}".format(preservica_uuid)
+            "message": "Unable to find asset {0}".format(preservica_uuid),
         }
 
 
@@ -283,13 +288,15 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
     # This will probably fail, if the DLCS hasn't got it.
     # But it is the only way of getting restricted files out.
     user, password = settings.DDS_API_KEY, settings.DDS_API_SECRET
-    message = "Try to fetch this from Preservica directly, via DDS, at {0}".format(web_url)
+    message = "Try to fetch this from Preservica directly, via DDS, at {0}".format(
+        web_url
+    )
     logging.debug(message)
     chunk_size = 1024 * 1024
     for _ in range(retry_attempts):
         try:
             # This is horribly slow, why?
-            logging.info(message) # remove me!
+            logging.info(message)  # remove me!
             resp = requests.get(web_url, auth=(user, password), stream=True)
             if resp.status_code == 200:
                 with open(destination, "wb") as f:
@@ -297,8 +304,10 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
                         f.write(chunk)
                 return True
             else:
-                logging.debug("Recieved HTTP {0} for {1}".format(resp.status_code, web_url))
-                return False           
+                logging.debug(
+                    "Recieved HTTP {0} for {1}".format(resp.status_code, web_url)
+                )
+                return False
         except Exception as err:
             pass
     raise err

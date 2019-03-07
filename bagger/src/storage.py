@@ -17,7 +17,9 @@ def analyse_origin(origin, preservica_uuid):
         # The DLCS doesn't know about this image. It might still be in the
         # Preservica bucket, so we can try that. Otherwise, the migrator will
         # have to try to get it from wl.org.
-        origin_info["web_url"] = "{0}{1}".format(settings.DDS_ASSET_PREFIX, preservica_uuid)
+        origin_info["web_url"] = "{0}{1}".format(
+            settings.DDS_ASSET_PREFIX, preservica_uuid
+        )
         origin_info["bucket_name"] = settings.CURRENT_PRESERVATION_BUCKET
         origin_info["bucket_key"] = preservica_uuid
         return origin_info
