@@ -18,9 +18,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
 
   def unpack(
-    srcLocation: ObjectLocation,
-    dstLocation: ObjectLocation
-  ): Future[OperationResult[UnpackSummary]] = {
+              srcLocation: ObjectLocation,
+              dstLocation: ObjectLocation
+            ): Future[OperationResult[UnpackSummary]] = {
 
     val unpackSummary =
       UnpackSummary(startTime = Instant.now)
@@ -31,39 +31,60 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
         (summary: UnpackSummary,
          inputStream: InputStream,
          archiveEntry: ArchiveEntry) =>
-          val metadata = new ObjectMetadata()
-          val archiveEntrySize = archiveEntry.getSize
 
-          if (archiveEntrySize == ArchiveEntry.SIZE_UNKNOWN) {
-            throw new RuntimeException(
-              s"Unknown entry size for ${archiveEntry.getName}!"
+          if (!archiveEntry.isDirectory) {
+            val archiveEntrySize = putObject(
+              inputStream,
+              archiveEntry,
+              dstLocation
             )
+
+            summary.copy(
+              fileCount = summary.fileCount + 1,
+              bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
+            )
+          } else {
+            summary
           }
 
-          metadata.setContentLength(archiveEntry.getSize)
-
-          val request =
-            new PutObjectRequest(
-              dstLocation.namespace,
-              Paths
-                .get(
-                  dstLocation.key,
-                  archiveEntry.getName
-                )
-                .toString,
-              inputStream,
-              metadata
-            )
-
-          s3Client.putObject(request)
-
-          summary.copy(
-            fileCount = summary.fileCount + 1,
-            bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
-          )
       }
     } yield result
 
     futureSummary
+  }
+
+  private def putObject(
+                         inputStream: InputStream,
+                         archiveEntry: ArchiveEntry,
+                         destination: ObjectLocation
+                       ) = {
+
+    val metadata = new ObjectMetadata()
+    val archiveEntrySize = archiveEntry.getSize
+
+    if (archiveEntrySize == ArchiveEntry.SIZE_UNKNOWN) {
+      throw new RuntimeException(
+        s"Unknown entry size for ${archiveEntry.getName}!"
+      )
+    }
+
+    metadata.setContentLength(archiveEntrySize)
+
+    val request =
+      new PutObjectRequest(
+        destination.namespace,
+        Paths
+          .get(
+            destination.key,
+            archiveEntry.getName
+          )
+          .toString,
+        inputStream,
+        metadata
+      )
+
+    s3Client.putObject(request)
+
+    archiveEntrySize
   }
 }
