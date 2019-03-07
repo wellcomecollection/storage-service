@@ -30,7 +30,8 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
 
     val futureSummaryResult = for {
       packageInputStream <- srcLocation.toInputStream
-      result: OperationResult[UnpackSummary] <- Archive.unpack(packageInputStream)(unpackSummary) {
+      result: OperationResult[UnpackSummary] <- Archive.unpack(
+        packageInputStream)(unpackSummary) {
         (summary: UnpackSummary,
          inputStream: InputStream,
          archiveEntry: ArchiveEntry) =>
