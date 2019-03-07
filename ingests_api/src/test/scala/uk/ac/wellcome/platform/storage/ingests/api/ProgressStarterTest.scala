@@ -8,7 +8,10 @@ import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
-import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.models.{
+  StorageSpace,
+  UnpackBagRequest
+}
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
@@ -25,32 +28,31 @@ class ProgressStarterTest
   val progress = createProgress
 
   it("saves a Progress to DynamoDB and send a notification to SNS") {
-      withLocalSnsTopic { unpackerTopic =>
-        withProgressTrackerTable { table =>
-          withProgressStarter(table, unpackerTopic) {
-            progressStarter =>
-              whenReady(progressStarter.initialise(progress)) { p =>
-                p shouldBe progress
+    withLocalSnsTopic { unpackerTopic =>
+      withProgressTrackerTable { table =>
+        withProgressStarter(table, unpackerTopic) { progressStarter =>
+          whenReady(progressStarter.initialise(progress)) { p =>
+            p shouldBe progress
 
-                assertTableOnlyHasItem(progress, table)
+            assertTableOnlyHasItem(progress, table)
 
-                eventually {
-                  // Unpacker
-                  val unpackerRequests =
-                    listMessagesReceivedFromSNS(
-                      unpackerTopic
-                    ).map(messageInfo =>
-                      fromJson[UnpackBagRequest](messageInfo.message).get)
+            eventually {
+              // Unpacker
+              val unpackerRequests =
+                listMessagesReceivedFromSNS(
+                  unpackerTopic
+                ).map(messageInfo =>
+                  fromJson[UnpackBagRequest](messageInfo.message).get)
 
-                  unpackerRequests shouldBe List(
-                    UnpackBagRequest(
-                      requestId = progress.id,
-                      sourceLocation = progress.sourceLocation.location,
-                      storageSpace = StorageSpace(progress.space.underlying)
-                    )
-                  )
-                }
-              }
+              unpackerRequests shouldBe List(
+                UnpackBagRequest(
+                  requestId = progress.id,
+                  sourceLocation = progress.sourceLocation.location,
+                  storageSpace = StorageSpace(progress.space.underlying)
+                )
+              )
+            }
+          }
 
         }
       }
@@ -58,20 +60,20 @@ class ProgressStarterTest
   }
 
   it("returns a failed future if saving to DynamoDB fails") {
-      withLocalSnsTopic { unpackerTopic =>
-        val fakeTable = Table("does-not-exist", index = "does-not-exist")
+    withLocalSnsTopic { unpackerTopic =>
+      val fakeTable = Table("does-not-exist", index = "does-not-exist")
 
-        withProgressStarter(
-          fakeTable,
-          unpackerTopic
-        ) { progressStarter =>
-          val future = progressStarter.initialise(progress)
+      withProgressStarter(
+        fakeTable,
+        unpackerTopic
+      ) { progressStarter =>
+        val future = progressStarter.initialise(progress)
 
-          whenReady(future.failed) { _ =>
-            assertSnsReceivesNothing(unpackerTopic)
-          }
+        whenReady(future.failed) { _ =>
+          assertSnsReceivesNothing(unpackerTopic)
         }
       }
+    }
 
   }
 
@@ -98,16 +100,15 @@ class ProgressStarterTest
   )(
     testWith: TestWith[ProgressStarter, R]
   ): R =
-      withSNSWriter(unpackerTopic) { unpackerSnsWriter =>
-        withProgressTracker(table) { progressTracker =>
-          val progressStarter = new ProgressStarter(
-            progressTracker = progressTracker,
-            unpackerSnsWriter = unpackerSnsWriter
-          )
+    withSNSWriter(unpackerTopic) { unpackerSnsWriter =>
+      withProgressTracker(table) { progressTracker =>
+        val progressStarter = new ProgressStarter(
+          progressTracker = progressTracker,
+          unpackerSnsWriter = unpackerSnsWriter
+        )
 
-          testWith(progressStarter)
-        }
+        testWith(progressStarter)
       }
-
+    }
 
 }
