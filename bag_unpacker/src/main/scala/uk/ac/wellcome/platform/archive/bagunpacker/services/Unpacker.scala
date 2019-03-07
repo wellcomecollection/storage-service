@@ -72,13 +72,7 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
     val request =
       new PutObjectRequest(
         destination.namespace,
-        Paths
-          .get(
-            destination.key,
-            archiveEntry.getName
-          )
-          .normalize()
-          .toString,
+        normalizeKey(destination.key, archiveEntry.getName),
         inputStream,
         metadata
       )
@@ -86,5 +80,12 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
     s3Client.putObject(request)
 
     archiveEntrySize
+  }
+
+  private def normalizeKey(prefix: String, key: String) = {
+    Paths
+      .get(prefix, key)
+      .normalize()
+      .toString
   }
 }

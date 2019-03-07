@@ -80,6 +80,26 @@ trait RandomThings {
 
   val tmpDir = System.getProperty("java.io.tmpdir")
 
+  def randomFilesWithNames(fileNames: List[String],
+                           maxDepth: Int = 4,
+                           minSize: Int = 265,
+                           maxSize: Int = 1024) = {
+    def createFile(name: String) = {
+      val fileSize =
+        Random.nextInt(maxSize - minSize) + minSize
+
+      randomFile(
+        size = fileSize,
+        path = name,
+        useBytes = true
+      )
+    }
+
+    fileNames.map { fileName =>
+      createFile(fileName)
+    }
+  }
+
   def randomFile(
     size: Int = 256,
     path: String = s"${randomUUID.toString}.test",

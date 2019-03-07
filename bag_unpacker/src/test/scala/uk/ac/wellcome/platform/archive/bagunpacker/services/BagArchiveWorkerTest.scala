@@ -5,6 +5,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   CompressFixture,
+  TestArchive,
   WorkerServiceFixture
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
@@ -28,14 +29,16 @@ class BagArchiveWorkerTest
   it("receives and processes a notification") {
     withApp {
       case (srcBucket, queue, progressTopic, outgoingTopic) =>
-        withArchive(srcBucket) { testArchive =>
+        val (archiveFile, filesInArchive, entries) =
+          createTgzArchiveWithRandomFiles()
+        withArchive(srcBucket, archiveFile) { archiveLocation =>
           val requestId = randomUUID
 
           withBagNotification(
             queue,
             srcBucket,
             requestId,
-            testArchive
+            TestArchive(archiveFile, filesInArchive, entries, archiveLocation)
           ) { unpackBagRequest =>
             eventually {
 

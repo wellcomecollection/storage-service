@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
-import java.io.FileInputStream
+import java.io.{File, FileInputStream}
 import java.nio.file.Paths
 
 import org.apache.commons.io.IOUtils
@@ -9,6 +9,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -19,77 +20,114 @@ class UnpackerTest
     with CompressFixture
     with S3 {
 
-  it("unpacks a bag") {
+  it("unpacks a tgz archive") {
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
-        withArchive(srcBucket) { testArchive =>
-          val fileCount = defaultFileCount
+        val (archiveFile, filesInArchive, _) = createTgzArchiveWithRandomFiles()
+        withArchive(srcBucket, archiveFile) { testArchive =>
           val dstKey = "unpacked"
           val dstLocation =
             ObjectLocation(dstBucket.name, dstKey)
 
-          val unpackService = new Unpacker()
-
-          val unpacking = unpackService
+          val summaryResult = new Unpacker()
             .unpack(
-              testArchive.location,
+              testArchive,
               dstLocation
             )
 
-          whenReady(unpacking) { unpacked =>
+          whenReady(summaryResult) { unpacked =>
             val summary = unpacked.summary
-            val dstKeys = listKeysInBucket(dstBucket)
-            val expectedBytes =
-              testArchive.containedFiles
-                .foldLeft(0L)((n, file) => {
-                  n + file.length()
-                })
+            summary.fileCount shouldBe filesInArchive.size
+            summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
 
-            println(s"Unpacked bytes: ${summary.bytesUnpacked}")
-            println(s"Expected bytes: ${expectedBytes}")
-
-            summary.fileCount shouldBe fileCount
-            summary.bytesUnpacked shouldBe expectedBytes
-
-            val actualFileMap = dstKeys.map { key =>
-              val s3Object = s3Client
-                .getObject(dstBucket.name, key)
-
-              val content = IOUtils
-                .toByteArray(s3Object.getObjectContent)
-
-              val name = key
-                .replaceFirst(
-                  s"$dstKey/",
-                  ""
-                )
-
-              println(s"Found $key in ${dstBucket.name}")
-
-              name -> content
-            }.toMap
-
-            actualFileMap.size shouldBe testArchive.containedFiles.length
-
-            testArchive.containedFiles.map { file =>
-              val fis = new FileInputStream(file)
-              val content = IOUtils.toByteArray(fis)
-              val name = Paths
-                .get(relativeToTmpDir(file))
-                .normalize()
-                .toString
-
-              val actualFile = actualFileMap.get(name)
-
-              actualFile shouldBe defined
-              val actualBytes = actualFile.get
-
-              actualBytes.length shouldBe content.length
-              actualBytes shouldEqual content
-            }
+            assertBucketContentsMatchFiles(dstBucket, dstKey, filesInArchive)
           }
         }
       }
     }
+  }
+
+  it("normalizes file entries such as './' when unpacking") {
+    withLocalS3Bucket { srcBucket =>
+      withLocalS3Bucket { dstBucket =>
+        val (archiveFile, filesInArchive, _) =
+          createTgzArchiveWithFiles(
+            randomFilesWithNames(
+              List("./testA", "/testB", "/./testC", "//testD")
+            ))
+        withArchive(srcBucket, archiveFile) { testArchive =>
+          val dstKey = "unpacked"
+          val summaryResult = new Unpacker()
+            .unpack(
+              testArchive,
+              ObjectLocation(dstBucket.name, dstKey)
+            )
+
+          whenReady(summaryResult) { unpacked =>
+            val summary = unpacked.summary
+            summary.fileCount shouldBe filesInArchive.size
+            summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
+
+            assertBucketContentsMatchFiles(dstBucket, dstKey, filesInArchive)
+          }
+        }
+      }
+    }
+  }
+
+  private def assertBucketContentsMatchFiles(
+    bucket: Bucket,
+    keyStripPrefix: String,
+    expectedFiles: List[File]): List[Any] = {
+    val keys = listKeysInBucket(bucket)
+    val locations = keys.map(ObjectLocation(bucket.name, _))
+    val bucketFileMap = objectToContentMap(locations, keyStripPrefix)
+
+    bucketFileMap.size shouldBe expectedFiles.length
+
+    expectedFiles.map { actualArchiveFile =>
+      val fis = new FileInputStream(actualArchiveFile)
+      val content = IOUtils.toByteArray(fis)
+      val archiveFileName = Paths
+        .get(relativeToTmpDir(actualArchiveFile))
+        .normalize()
+        .toString
+
+      val dstFile = bucketFileMap.get(archiveFileName)
+      dstFile shouldBe defined
+
+      val actualBytes = dstFile.get
+      actualBytes.length shouldBe content.length
+      actualBytes shouldEqual content
+    }
+  }
+
+  private def objectToContentMap(
+    objectLocations: List[ObjectLocation],
+    stripKeyPrefix: String): Map[String, Array[Byte]] = {
+    objectLocations.map { objectLocation: ObjectLocation =>
+      val s3Object =
+        s3Client.getObject(objectLocation.namespace, objectLocation.key)
+
+      val content = IOUtils
+        .toByteArray(s3Object.getObjectContent)
+
+      val name = objectLocation.key
+        .replaceFirst(
+          s"$stripKeyPrefix/",
+          ""
+        )
+
+      println(s"Found $key in $objectLocation")
+
+      name -> content
+    }.toMap
+  }
+
+  private def totalBytes(files: List[File]) = {
+    files
+      .foldLeft(0L)((n, file) => {
+        n + file.length()
+      })
   }
 }
