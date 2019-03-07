@@ -216,11 +216,11 @@ def get_physical_file_maps(root):
         adm_id = tech_md.get("ID")
         premis_object = tech_md.find(".//premis:object", namespaces)
         if premis_object is None:
-            logging.debug("No premis:object element for %s")
+            logging.debug("No premis:object element for %s", adm_id)
 
         else:
             adm_id = tech_md.get("ID")
-            logging.debug("adding %s to map")
+            logging.debug("adding %s to map", adm_id)
             uuid_el = premis_object.find(
                 "./premis:objectIdentifier[premis:objectIdentifierType='uuid']",
                 namespaces,
