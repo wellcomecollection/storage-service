@@ -19,8 +19,7 @@ case class VerificationSummary(
         | :
         |${successfulVerifications.size} succeeded /
         |${failedVerifications.size} failed
-        |"""
-      .stripMargin
+        |""".stripMargin
       .replaceAll("\n", " ")
   }
 }

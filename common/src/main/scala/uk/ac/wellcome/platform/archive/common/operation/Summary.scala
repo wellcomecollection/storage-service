@@ -3,8 +3,7 @@ package uk.ac.wellcome.platform.archive.common.operation
 trait Summary extends Timed {
   override def toString: String = {
     f"""|completed in $describeDuration
-        |"""
-      .stripMargin
+        |""".stripMargin
       .replaceAll("\n", " ")
   }
 
