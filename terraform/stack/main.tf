@@ -28,6 +28,9 @@ module "bag_unpacker" {
 
   env_vars_length = 6
 
+  cpu    = 1024
+  memory = 2048
+
   container_image = "${local.bag_unpacker_image}"
 }
 
@@ -92,6 +95,9 @@ module "bag_verifier" {
   }
 
   env_vars_length = 5
+
+  cpu    = 1024
+  memory = 2048
 
   container_image = "${local.bag_verifier_image}"
 }
@@ -305,10 +311,10 @@ module "bagger" {
   cpu    = "1900"
   memory = "14000"
 
-  min_capacity = "${var.desired_bagger_count - 1}"
+  min_capacity = "0"
   max_capacity = "${var.desired_bagger_count}"
 
-  desired_task_count = "${var.desired_bagger_count - 1}"
+  desired_task_count = "${var.desired_bagger_count}"
 
   container_image = "${local.bagger_image}"
 }
