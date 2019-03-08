@@ -15,16 +15,16 @@ case class VerificationSummary(
   def complete: VerificationSummary = this.copy(endTime = Some(Instant.now()))
 
   override def toString: String = {
-    val status = if(succeeded)
-      "successful"
-    else
-      "failed"
+    val status =
+      if (succeeded)
+        "successful"
+      else
+        "failed"
     f"""|$status
         |(${successfulVerifications.size} succeeded /
         |${failedVerifications.size} failed)
         |bag verification in $formatDuration
-        |"""
-      .stripMargin
+        |""".stripMargin
       .replaceAll("\n", " ")
   }
 }
