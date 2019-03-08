@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
-class BagVerifierFeatureTest
+class VerifierFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
@@ -34,7 +34,7 @@ class BagVerifierFeatureTest
                   sendNotificationToSQS(queue, bagRequest)
 
                   eventually {
-                    assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
+                    listMessagesReceivedFromSNS(outgoingTopic)
 
                     assertTopicReceivesProgressEventUpdate(
                       requestId = bagRequest.requestId,
@@ -42,8 +42,10 @@ class BagVerifierFeatureTest
                     ) { events =>
                       events.map {
                         _.description
-                      } shouldBe List("Successfully verified bag contents")
+                      } shouldBe List("Verification succeeded")
                     }
+
+                    assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
 
                     assertQueueEmpty(queue)
                     assertQueueEmpty(dlq)
@@ -73,8 +75,6 @@ class BagVerifierFeatureTest
                     sendNotificationToSQS(queue, bagRequest)
 
                     eventually {
-                      assertSnsReceivesNothing(outgoingTopic)
-
                       assertTopicReceivesProgressStatusUpdate(
                         requestId = bagRequest.requestId,
                         progressTopic = progressTopic,
@@ -83,9 +83,10 @@ class BagVerifierFeatureTest
                         val description = events.map {
                           _.description
                         }.head
-                        description should startWith(
-                          "Problem verifying bag: File checksum did not match manifest")
+                        description should startWith("Verification failed")
                       }
+
+                      assertSnsReceivesNothing(outgoingTopic)
 
                       assertQueueEmpty(queue)
                       assertQueueEmpty(dlq)

@@ -57,7 +57,7 @@ class BagReplicatorWorkerTest
                     bagRequest.requestId,
                     progressTopic) { events =>
                     events should have size 1
-                    events.head.description shouldBe "Copy bag from ingest bucket succeeded"
+                    events.head.description shouldBe "Replicating succeeded"
                   }
                 }
               }
@@ -93,7 +93,7 @@ class BagReplicatorWorkerTest
               progressTopic = progressTopic,
               status = Progress.Failed) { events =>
               events should have size 1
-              events.head.description shouldBe "Copy bag from ingest bucket failed"
+              events.head.description shouldBe "Replicating failed"
             }
           }
         }

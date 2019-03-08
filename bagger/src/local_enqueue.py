@@ -46,7 +46,7 @@ def main():
 
         for b_number in bnumber_generator(to_process):
             counter = counter + 1
-            logging.debug("processing " + b_number)
+            logging.debug("processing %s", b_number)
             message = {
                 "identifier": b_number,
                 "bagger_batch_id": batch_id,

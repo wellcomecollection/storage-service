@@ -63,7 +63,7 @@ def process_alto(root, bag_details, alto, skip_file_download):
     alto_file_group = root.find("./mets:fileSec/mets:fileGrp[@USE='ALTO']", namespaces)
 
     if alto_file_group is None:
-        logging.debug("No ALTO for " + b_number)
+        logging.debug("No ALTO for %s", b_number)
         return
 
     source_bucket = None
@@ -128,7 +128,7 @@ def get_flattened_destination(file_element, keys, folder, bag_details):
     keys.add(file_name)  # let this raise error if duplicate
     desired_relative_location = "{0}/{1}".format(folder, file_name)
     locator.set(expand("xlink", "href"), desired_relative_location)
-    logging.debug("updated path in METS to " + desired_relative_location)
+    logging.debug("updated path in METS to %s", desired_relative_location)
     # the local temp assembly area
     destination = os.path.join(bag_details["directory"], folder, file_name)
     bag_assembly.ensure_directory(destination)
@@ -136,7 +136,7 @@ def get_flattened_destination(file_element, keys, folder, bag_details):
 
 
 def process_assets(root, bag_details, assets, tech_md_files, skip_file_download):
-    logging.debug("Collecting assets for " + bag_details["b_number"])
+    logging.debug("Collecting assets for %s", bag_details["b_number"])
     asset_file_group = root.find(
         "./mets:fileSec/mets:fileGrp[@USE='OBJECTS']", namespaces
     )
@@ -165,20 +165,18 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
         checksum = file_element.get("CHECKSUM")
         file_element.attrib.pop("CHECKSUM")  # don't need it now
         preservica_uuid = tech_md_for_structmap_asset["uuid"]
-        logging.debug(
-            "Need to determine where to get {0} from.".format(preservica_uuid)
-        )
+        logging.debug("Need to determine where to get %s from.", preservica_uuid)
 
         if skip_file_download:
-            logging.debug("Skipping processing file {0}".format(preservica_uuid))
+            logging.debug("Skipping processing file %s", preservica_uuid)
             continue
 
         fetch_attempt = try_to_download_asset(preservica_uuid, destination)
         if fetch_attempt["succeeded"]:
             structmap_uuids_downloaded.append(preservica_uuid)
             # ? Make sure what just got matches what the METS file says
-            logging.debug("TODO: doing checksums on " + destination)
-            logging.debug("validate " + checksum)
+            logging.debug("TODO: doing checksums on %s", destination)
+            logging.debug("validate %s", checksum)
         else:
             # If we can't get hold of an asset mentioned in the structmap,
             # it's definitely an error that needs attention
@@ -206,16 +204,12 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
             bag_assembly.ensure_directory(destination)
             fetch_attempt = try_to_download_asset(preservica_uuid, destination)
             if fetch_attempt["succeeded"]:
-                logging.debug(
-                    "successfully fetched {0} - {1}".format(preservica_uuid, filename)
-                )
+                logging.debug("successfully fetched %s - %s", preservica_uuid, filename)
             else:
                 missing_from_preservica.append(
                     {"preservica_uuid": preservica_uuid, "filename": filename}
                 )
-                logging.debug(
-                    "Unable to fetch {0} - {1}".format(preservica_uuid, filename)
-                )
+                logging.debug("Unable to fetch %s - %s", preservica_uuid, filename)
 
     mismatch_count = len(tech_md_mismatch_warnings)
     if mismatch_count > 0:
@@ -238,7 +232,7 @@ def try_to_download_asset(preservica_uuid, destination):
     image_info = dlcs.get_image(preservica_uuid)
     # ... which won't have an origin
     origin = image_info.get("origin", None)
-    logging.debug("DLCS reports origin " + str(origin))
+    logging.debug("DLCS reports origin %s", origin)
 
     # if the origin is wellcomelibrary.org, the object is LIKELY to be in the DLCS's
     # storage bucket. So we should try that first, then fall back to the wellcomelibrary
@@ -304,9 +298,7 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
                         f.write(chunk)
                 return True
             else:
-                logging.debug(
-                    "Recieved HTTP {0} for {1}".format(resp.status_code, web_url)
-                )
+                logging.debug("Received HTTP %s for %s", resp.status_code, web_url)
                 return False
         except Exception as err:
             download_err = err
