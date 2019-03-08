@@ -3,10 +3,10 @@ package uk.ac.wellcome.platform.archive.bagunpacker
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerConfig
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  BagUnpackerWorker,
-  Unpacker
+  Unpacker,
+  UnpackerWorker
 }
 import uk.ac.wellcome.platform.archive.common.config.builders.OperationNotifierBuilder
 import uk.ac.wellcome.platform.archive.common.models.UnpackBagRequest
@@ -24,8 +24,8 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val ec = actorSystem.dispatcher
 
-    new BagUnpackerWorker(
-      config = BagUnpackerConfig(config),
+    new UnpackerWorker(
+      config = UnpackerConfig(config),
       stream = NotificationStreamBuilder
         .buildStream[UnpackBagRequest](config),
       notifier = OperationNotifierBuilder.build(

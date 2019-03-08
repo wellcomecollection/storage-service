@@ -8,10 +8,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{Messaging, NotificationStreamFixture}
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerConfig
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  BagUnpackerWorker,
-  Unpacker
+  Unpacker,
+  UnpackerWorker
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
@@ -56,7 +56,7 @@ trait WorkerServiceFixture
     progressTopic: Topic,
     outgoingTopic: Topic,
     dstBucket: Bucket
-  )(testWith: TestWith[BagUnpackerWorker, R]): R =
+  )(testWith: TestWith[UnpackerWorker, R]): R =
     withSNSWriter(progressTopic) { progressSnsWriter =>
       withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
         withNotificationStream[UnpackBagRequest, R](queue) {
@@ -70,12 +70,12 @@ trait WorkerServiceFixture
                 progressSnsWriter
               )
 
-            val bagUnpackerConfig = BagUnpackerConfig(dstBucket.name)
+            val bagUnpackerConfig = UnpackerConfig(dstBucket.name)
 
             val unpackerService =
               new Unpacker()(s3Client, ec)
 
-            val bagUnpacker = new BagUnpackerWorker(
+            val bagUnpacker = new UnpackerWorker(
               bagUnpackerConfig,
               notificationStream,
               notificationService,
@@ -90,8 +90,7 @@ trait WorkerServiceFixture
     }
 
   def withApp[R](
-    testWith: TestWith[(BagUnpackerWorker, Bucket, Queue, Topic, Topic), R])
-    : R =
+    testWith: TestWith[(UnpackerWorker, Bucket, Queue, Topic, Topic), R]): R =
     withLocalSqsQueue { queue =>
       withLocalSnsTopic { progressTopic =>
         withLocalSnsTopic { outgoingTopic =>

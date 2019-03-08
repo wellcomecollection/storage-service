@@ -64,7 +64,7 @@ class OperationNotifier(
   ) = {
     val update = result match {
       case OperationCompleted(summary) => {
-        info(s"Completed: $requestId: ${summary.toString}")
+        info(s"Completed - $requestId : ${summary.toString}")
 
         ProgressStatusUpdate(
           id = requestId,
@@ -79,7 +79,7 @@ class OperationNotifier(
       }
 
       case OperationSuccess(summary) => {
-        info(s"Success: $requestId: ${summary.toString}")
+        info(s"Success - $requestId: ${summary.toString}")
 
         ProgressUpdate.event(
           id = requestId,
@@ -88,10 +88,7 @@ class OperationNotifier(
       }
 
       case OperationFailure(summary, e) => {
-        error(
-          s"Failure: $requestId: ${summary.toString}",
-          e
-        )
+        error(s"Failure - $requestId : ${summary.toString}", e)
 
         ProgressStatusUpdate(
           id = requestId,
@@ -105,7 +102,6 @@ class OperationNotifier(
         )
       }
     }
-
     progressSnsWriter.writeMessage[ProgressUpdate](
       update,
       subject = s"Sent by ${this.getClass.getSimpleName}"
