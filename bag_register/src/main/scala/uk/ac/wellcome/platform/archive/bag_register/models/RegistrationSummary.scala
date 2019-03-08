@@ -16,4 +16,10 @@ case class RegistrationSummary(
       endTime = Some(Instant.now())
     )
   }
+  override def toString(): String = {
+    f"""|${bagId.getOrElse("<unknown-bag>")}
+        |registered in $formatDuration
+       """.stripMargin
+      .replaceAll("\n", " ")
+  }
 }

@@ -15,7 +15,7 @@ case class UnpackSummary(
   override def toString(): String = {
     f"""|$fileCount files
         |$bytesUnpacked bytes
-        |unpacked in $describeDuration
+        |unpacked in $formatDuration
      """.stripMargin
       .replaceAll("\n", " ")
   }

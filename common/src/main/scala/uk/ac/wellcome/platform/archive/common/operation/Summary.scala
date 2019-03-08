@@ -2,12 +2,12 @@ package uk.ac.wellcome.platform.archive.common.operation
 
 trait Summary extends Timed {
   override def toString: String = {
-    f"""|completed in $describeDuration
+    f"""|completed in $formatDuration
         |"""
       .stripMargin
       .replaceAll("\n", " ")
   }
 
-  def describeDuration: String =
+  def formatDuration: String =
     duration.getOrElse("<not-completed>").toString
 }

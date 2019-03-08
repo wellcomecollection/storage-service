@@ -17,7 +17,12 @@ case class ReplicationSummary(
     )
   }
   override def toString(): String = {
-    f"""|replicated in $describeDuration}
+    val destinationCompletePath = destination match {
+      case None => "<no-destination>"
+      case Some(theDestination) => theDestination.completePath
+    }
+    f"""|${source.completePath} -> $destinationCompletePath
+        |replicated in $formatDuration
        """.stripMargin
       .replaceAll("\n", " ")
   }
