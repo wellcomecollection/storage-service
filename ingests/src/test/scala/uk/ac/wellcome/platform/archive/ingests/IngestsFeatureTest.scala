@@ -27,8 +27,7 @@ class IngestsFeatureTest
                 status = Completed,
                 maybeBag = someBagId)
 
-            sendNotificationToSQS[IngestUpdate](
-              queue, ingestStatusUpdate)
+            sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
             eventually {
               val actualMessage =

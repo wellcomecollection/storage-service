@@ -9,7 +9,10 @@ import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
-import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.models.{
+  StorageSpace,
+  UnpackBagRequest
+}
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
 import scala.concurrent.ExecutionContext.Implicits.global

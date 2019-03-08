@@ -21,8 +21,7 @@ trait IngestsFixture
 
     whenReady(
       ingestTracker
-        .initialise(createdIngest))(testWith(_)
-    )
+        .initialise(createdIngest))(testWith(_))
   }
 
   def withConfiguredApp[R](testWith: TestWith[(Queue, Topic, Table), R]): R = {

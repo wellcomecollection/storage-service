@@ -52,12 +52,11 @@ trait IngestGenerators extends BagIdGenerators {
   def createIngestEventUpdate: IngestEventUpdate =
     createIngestEventUpdateWith(id = UUID.randomUUID())
 
-  def createIngestStatusUpdateWith(
-                                      id: UUID = randomUUID,
-                                      status: Status = Ingest.Accepted,
-                                      maybeBag: Option[BagId] = Some(createBagId),
-                                      events: Seq[IngestEvent] = List(createIngestEvent))
-    : IngestStatusUpdate =
+  def createIngestStatusUpdateWith(id: UUID = randomUUID,
+                                   status: Status = Ingest.Accepted,
+                                   maybeBag: Option[BagId] = Some(createBagId),
+                                   events: Seq[IngestEvent] = List(
+                                     createIngestEvent)): IngestStatusUpdate =
     IngestStatusUpdate(
       id = id,
       status = status,

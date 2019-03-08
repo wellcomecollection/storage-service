@@ -10,7 +10,9 @@ case class DisplayLocation(provider: DisplayProvider,
                            path: String,
                            @JsonKey("type") ontologyType: String = "Location") {
   def toStorageLocation: StorageLocation =
-    models.StorageLocation(provider.toStorageProvider, ObjectLocation(bucket, path))
+    models.StorageLocation(
+      provider.toStorageProvider,
+      ObjectLocation(bucket, path))
 }
 object DisplayLocation {
   def apply(location: StorageLocation): DisplayLocation =

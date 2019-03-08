@@ -23,8 +23,7 @@ class CallbackNotificationService(snsWriter: SNSWriter)(
       case _ => Future.successful(())
     }
 
-  private def sendSnsMessage(callbackUri: URI,
-                             ingest: Ingest): Future[Unit] = {
+  private def sendSnsMessage(callbackUri: URI, ingest: Ingest): Future[Unit] = {
     val callbackNotification = CallbackNotification(
       id = ingest.id,
       callbackUri = callbackUri,

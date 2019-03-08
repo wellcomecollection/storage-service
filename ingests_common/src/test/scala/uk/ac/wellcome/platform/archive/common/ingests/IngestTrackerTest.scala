@@ -4,7 +4,11 @@ import java.time.Instant
 import java.util.UUID
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.{GetItemRequest, PutItemRequest, UpdateItemRequest}
+import com.amazonaws.services.dynamodbv2.model.{
+  GetItemRequest,
+  PutItemRequest,
+  UpdateItemRequest
+}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.FunSpec
@@ -118,9 +122,8 @@ class IngestTrackerTest
 
         withIngestTracker(table, dynamoDbClient = mockDynamoDbClient) {
           ingestTracker =>
-            whenReady(ingestTracker.get(randomUUID).failed) {
-              failedException =>
-                failedException shouldBe expectedException
+            whenReady(ingestTracker.get(randomUUID).failed) { failedException =>
+              failedException shouldBe expectedException
             }
         }
       }
@@ -311,30 +314,31 @@ class IngestTrackerTest
           whenReady(
             ingestTracker.initialise(
               createIngestWith(createdDate = beforeTime))) { ingestA =>
-            whenReady(ingestTracker.initialise(
-              createIngestWith(createdDate = time))) { ingestB =>
-              whenReady(ingestTracker.initialise(
-                createIngestWith(createdDate = afterTime))) { ingestC =>
-                val bagId = createBagId
+            whenReady(
+              ingestTracker.initialise(createIngestWith(createdDate = time))) {
+              ingestB =>
+                whenReady(ingestTracker.initialise(
+                  createIngestWith(createdDate = afterTime))) { ingestC =>
+                  val bagId = createBagId
 
-                val ingestAUpdate =
-                  createIngestUpdateWith(ingestA.id, bagId)
-                ingestTracker.update(ingestAUpdate)
-                val ingestBUpdate =
-                  createIngestUpdateWith(ingestB.id, bagId)
-                ingestTracker.update(ingestBUpdate)
-                val ingestCUpdate =
-                  createIngestUpdateWith(ingestC.id, bagId)
-                ingestTracker.update(ingestCUpdate)
+                  val ingestAUpdate =
+                    createIngestUpdateWith(ingestA.id, bagId)
+                  ingestTracker.update(ingestAUpdate)
+                  val ingestBUpdate =
+                    createIngestUpdateWith(ingestB.id, bagId)
+                  ingestTracker.update(ingestBUpdate)
+                  val ingestCUpdate =
+                    createIngestUpdateWith(ingestC.id, bagId)
+                  ingestTracker.update(ingestCUpdate)
 
-                val bagIngests = ingestTracker.findByBagId(bagId)
+                  val bagIngests = ingestTracker.findByBagId(bagId)
 
-                bagIngests shouldBe List(
-                  Right(BagIngest(bagId.toString, ingestC.id, afterTime)),
-                  Right(BagIngest(bagId.toString, ingestB.id, time)),
-                  Right(BagIngest(bagId.toString, ingestA.id, beforeTime))
-                )
-              }
+                  bagIngests shouldBe List(
+                    Right(BagIngest(bagId.toString, ingestC.id, afterTime)),
+                    Right(BagIngest(bagId.toString, ingestB.id, time)),
+                    Right(BagIngest(bagId.toString, ingestA.id, beforeTime))
+                  )
+                }
             }
           }
         }
@@ -370,8 +374,7 @@ class IngestTrackerTest
     }
   }
 
-  private def createIngestUpdateWith(id: UUID,
-                                          bagId: BagId): IngestUpdate =
+  private def createIngestUpdateWith(id: UUID, bagId: BagId): IngestUpdate =
     createIngestStatusUpdateWith(
       id = id,
       status = Ingest.Processing,

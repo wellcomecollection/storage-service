@@ -230,13 +230,11 @@ class IngestsApiFeatureTest
 
             val expectedLocationR = s"$baseUrl/(.+)".r
 
-            whenPostRequestReady(
-              url, entity) { response: HttpResponse =>
+            whenPostRequestReady(url, entity) { response: HttpResponse =>
               response.status shouldBe StatusCodes.Created
 
               val maybeId = response.headers.collectFirst {
-                case HttpHeader(
-                  "location", expectedLocationR(id)) => id
+                case HttpHeader("location", expectedLocationR(id)) => id
               }
 
               maybeId.isEmpty shouldBe false
@@ -699,10 +697,9 @@ class IngestsApiFeatureTest
                         response.entity
                       ).to[List[DisplayIngestMinimal]]
 
-                    whenReady(displayBagIngestFutures) {
-                      displayBagIngests =>
-                        displayBagIngests shouldBe List(
-                          DisplayIngestMinimal(bagIngest))
+                    whenReady(displayBagIngestFutures) { displayBagIngests =>
+                      displayBagIngests shouldBe List(
+                        DisplayIngestMinimal(bagIngest))
                     }
 
                     assertMetricSent(
@@ -716,8 +713,7 @@ class IngestsApiFeatureTest
       }
     }
 
-    it(
-      "returns a list of ingestes for the given bag id with : separated parts") {
+    it("returns a list of ingestes for the given bag id with : separated parts") {
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
@@ -737,15 +733,14 @@ class IngestsApiFeatureTest
                     val displayBagIngestFutures =
                       Unmarshal(response.entity).to[List[DisplayIngestMinimal]]
 
-                    whenReady(displayBagIngestFutures) {
-                      displayBagIngests =>
-                        displayBagIngests shouldBe List(
-                          DisplayIngestMinimal(bagIngest))
+                    whenReady(displayBagIngestFutures) { displayBagIngests =>
+                      displayBagIngests shouldBe List(
+                        DisplayIngestMinimal(bagIngest))
 
-                        assertMetricSent(
-                          metricsSender,
-                          result = HttpMetricResults.Success
-                        )
+                      assertMetricSent(
+                        metricsSender,
+                        result = HttpMetricResults.Success
+                      )
                     }
                 }
               }
@@ -767,7 +762,6 @@ class IngestsApiFeatureTest
                 whenReady(
                   displayBagIngestFutures
                 ) { displayBagIngests =>
-
                   displayBagIngests shouldBe List.empty
 
                   assertMetricSent(

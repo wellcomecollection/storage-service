@@ -9,8 +9,15 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, Ingest, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  BagInfoGenerators
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  Ingest,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models._

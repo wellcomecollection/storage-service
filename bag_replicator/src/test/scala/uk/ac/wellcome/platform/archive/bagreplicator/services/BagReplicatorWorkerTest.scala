@@ -3,12 +3,18 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{BagReplicatorFixtures, WorkerServiceFixture}
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
+  BagReplicatorFixtures,
+  WorkerServiceFixture
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 
 class BagReplicatorWorkerTest
@@ -47,11 +53,10 @@ class BagReplicatorWorkerTest
                     dst = dstBagLocation
                   )
 
-                  topicReceivesIngestEvent(
-                    bagRequest.requestId,
-                    ingestTopic) { events =>
-                    events should have size 1
-                    events.head.description shouldBe "Replicating succeeded"
+                  topicReceivesIngestEvent(bagRequest.requestId, ingestTopic) {
+                    events =>
+                      events should have size 1
+                      events.head.description shouldBe "Replicating succeeded"
                   }
                 }
               }

@@ -4,11 +4,21 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.common.models.bagit._
-import uk.ac.wellcome.platform.archive.common.models.{ChecksumAlgorithm, FileManifest, StorageManifest}
-import uk.ac.wellcome.platform.archive.common.parsers.{BagInfoParser, FileManifestParser}
+import uk.ac.wellcome.platform.archive.common.models.{
+  ChecksumAlgorithm,
+  FileManifest,
+  StorageManifest
+}
+import uk.ac.wellcome.platform.archive.common.parsers.{
+  BagInfoParser,
+  FileManifestParser
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -6,7 +6,11 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagLocator, BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagLocator,
+  BagReplicator,
+  BagReplicatorWorker
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.models.BagRequest

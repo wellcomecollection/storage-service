@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationCompleted, OperationFailure, OperationResult}
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+  OperationCompleted,
+  OperationFailure,
+  OperationResult
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
@@ -12,17 +16,17 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class Register(
-                storageManifestService: StorageManifestService,
-                storageManifestVHS: StorageManifestVHS
-              ) {
+  storageManifestService: StorageManifestService,
+  storageManifestVHS: StorageManifestVHS
+) {
 
   type FutureSummary =
     Future[OperationResult[RegistrationSummary]]
 
   def update(
-              location: BagLocation
-            )(implicit
-              ec: ExecutionContext): FutureSummary = {
+    location: BagLocation
+  )(implicit
+    ec: ExecutionContext): FutureSummary = {
 
     val registration = RegistrationSummary(
       startTime = Instant.now(),

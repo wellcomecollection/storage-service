@@ -9,7 +9,12 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationCompleted, OperationFailure, OperationNotifier, OperationSuccess}
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+  OperationCompleted,
+  OperationFailure,
+  OperationNotifier,
+  OperationSuccess
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -118,9 +123,7 @@ class OperationNotifierTest
               whenReady(sendingOperationNotice) { _ =>
                 eventually {
 
-                  topicReceivesIngestEvent(
-                    requestId,
-                    ingestTopic) { events =>
+                  topicReceivesIngestEvent(requestId, ingestTopic) { events =>
                     events should have size 1
                     events.head.description shouldBe s"${operationName.capitalize} succeeded"
                   }

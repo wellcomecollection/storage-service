@@ -5,7 +5,11 @@ import grizzled.slf4j.Logging
 import org.scalatest.{Assertion, Inside}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestEvent, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestEvent,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
@@ -15,8 +19,7 @@ trait IngestUpdateAssertions extends SNS with Inside with Logging {
   def topicRecievesIngestStatus[R](requestId: UUID,
                                    ingestTopic: SNS.Topic,
                                    status: Ingest.Status,
-                                   expectedBag: Option[BagId] =
-                                                   None)(
+                                   expectedBag: Option[BagId] = None)(
     assert: Seq[IngestEvent] => R): Assertion = {
     val messages = listMessagesReceivedFromSNS(ingestTopic)
     val ingestUpdates = messages.map { messageinfo =>
@@ -45,8 +48,7 @@ trait IngestUpdateAssertions extends SNS with Inside with Logging {
     success should have size 1
   }
 
-  def topicReceivesIngestEvent(requestId: UUID,
-                               ingestTopic: SNS.Topic)(
+  def topicReceivesIngestEvent(requestId: UUID, ingestTopic: SNS.Topic)(
     assert: Seq[IngestEvent] => Assertion): Assertion = {
 
     val messages = listMessagesReceivedFromSNS(ingestTopic)

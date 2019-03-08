@@ -13,8 +13,15 @@ import uk.ac.wellcome.platform.archive.common.http.models.InternalServerErrorRes
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.platform.archive.common.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.display.{DisplayIngestMinimal, RequestDisplayIngest, ResponseDisplayIngest}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagId,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.display.{
+  DisplayIngestMinimal,
+  RequestDisplayIngest,
+  ResponseDisplayIngest
+}
 
 class Router(ingestTracker: IngestTracker,
              ingestStarter: IngestStarter,

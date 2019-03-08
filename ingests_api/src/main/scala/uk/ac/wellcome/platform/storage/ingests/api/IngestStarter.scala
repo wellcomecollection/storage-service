@@ -4,13 +4,16 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
-import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.models.{
+  StorageSpace,
+  UnpackBagRequest
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class IngestStarter(
-                     ingestTracker: IngestTracker,
-                     unpackerSnsWriter: SNSWriter
+  ingestTracker: IngestTracker,
+  unpackerSnsWriter: SNSWriter
 )(implicit ec: ExecutionContext) {
   def initialise(ingest: Ingest): Future[Ingest] =
     for {
@@ -27,10 +30,8 @@ class IngestStarter(
 
     UnpackBagRequest(
       requestId = ingest.id,
-      sourceLocation = ingest
-        .sourceLocation.location,
-      storageSpace = StorageSpace(
-        ingest.space.underlying)
+      sourceLocation = ingest.sourceLocation.location,
+      storageSpace = StorageSpace(ingest.space.underlying)
     )
   }
 }

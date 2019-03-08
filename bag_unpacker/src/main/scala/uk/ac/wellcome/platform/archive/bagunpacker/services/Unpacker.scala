@@ -10,7 +10,10 @@ import uk.ac.wellcome.platform.archive.bagunpacker.S3Uploader
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationFailure, OperationResult}
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+  OperationFailure,
+  OperationResult
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,34 +36,34 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
 
       result <- Archive
         .unpack[UnpackSummary](packageInputStream)(unpackSummary) {
-        (summary: UnpackSummary,
-         inputStream: InputStream,
-         archiveEntry: ArchiveEntry) =>
-          if (!archiveEntry.isDirectory) {
+          (summary: UnpackSummary,
+           inputStream: InputStream,
+           archiveEntry: ArchiveEntry) =>
+            if (!archiveEntry.isDirectory) {
 
-            val archiveEntrySize = putObject(
-              inputStream,
-              archiveEntry,
-              dstLocation
-            )
+              val archiveEntrySize = putObject(
+                inputStream,
+                archiveEntry,
+                dstLocation
+              )
 
-            summary.copy(
-              fileCount = summary.fileCount + 1,
-              bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
-            )
+              summary.copy(
+                fileCount = summary.fileCount + 1,
+                bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
+              )
 
-          } else {
-            summary
-          }
-      }
+            } else {
+              summary
+            }
+        }
     } yield result.withSummary(summary = result.summary.complete)
-
 
     futureSummary.transform {
       case Success(summary) => Success(summary)
-      case Failure(e) => Success(
-        OperationFailure(unpackSummary.complete, e)
-      )
+      case Failure(e) =>
+        Success(
+          OperationFailure(unpackSummary.complete, e)
+        )
     }
   }
 

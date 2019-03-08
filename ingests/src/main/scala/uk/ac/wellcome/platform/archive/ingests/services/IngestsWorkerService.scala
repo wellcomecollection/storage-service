@@ -9,9 +9,9 @@ import uk.ac.wellcome.typesafe.Runnable
 import scala.concurrent.{ExecutionContext, Future}
 
 class IngestsWorkerService(
-                            notificationStream: NotificationStream[IngestUpdate],
-                            ingestTracker: IngestTracker,
-                            callbackNotificationService: CallbackNotificationService
+  notificationStream: NotificationStream[IngestUpdate],
+  ingestTracker: IngestTracker,
+  callbackNotificationService: CallbackNotificationService
 )(implicit ec: ExecutionContext)
     extends Runnable {
 

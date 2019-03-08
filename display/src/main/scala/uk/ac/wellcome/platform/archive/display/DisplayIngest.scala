@@ -71,7 +71,7 @@ case class DisplayStatus(id: String,
 case class DisplayIngestEvent(description: String,
                               createdDate: String,
                               @JsonKey("type")
-                                ontologyType: String = "IngestEvent")
+                              ontologyType: String = "IngestEvent")
 
 object ResponseDisplayIngest {
   def apply(ingest: Ingest, contextUrl: URL): ResponseDisplayIngest =

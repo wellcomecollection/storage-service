@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.archive.common.models
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagId, BagInfo}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{
+  BagDigestFile,
+  BagId,
+  BagInfo
+}
 
 case class ChecksumAlgorithm(value: String) {
   override def toString: String = value

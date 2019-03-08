@@ -6,7 +6,12 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestEvent, IngestStatusUpdate, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestEvent,
+  IngestStatusUpdate,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -98,8 +103,8 @@ class OperationNotifier(
       }
     }
 
-    ingestSnsWriter.writeMessage[IngestUpdate](update,
-      subject = s"Sent by ${this.getClass.getSimpleName}"
-    )
+    ingestSnsWriter.writeMessage[IngestUpdate](
+      update,
+      subject = s"Sent by ${this.getClass.getSimpleName}")
   }
 }

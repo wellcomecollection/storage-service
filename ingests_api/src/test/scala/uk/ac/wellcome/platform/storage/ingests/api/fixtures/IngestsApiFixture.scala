@@ -7,7 +7,10 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.{Messaging, SNS}
 import uk.ac.wellcome.monitoring.MetricsSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  HttpFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture

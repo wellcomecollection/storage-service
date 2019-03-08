@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.dynamo._
 
-import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.concurrent.{blocking, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class IngestTracker(
@@ -105,8 +105,7 @@ class IngestTracker(
         Failure(exception)
       }
       case Right(ingest) => {
-        debug(
-          s"Successfully updated Dynamo record: ${update.id}, got $ingest")
+        debug(s"Successfully updated Dynamo record: ${update.id}, got $ingest")
         Success(ingest)
       }
     }
