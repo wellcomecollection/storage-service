@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.ingests.services
 import akka.Done
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestUpdate
-import uk.ac.wellcome.platform.archive.common.ingest.monitor.IngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}

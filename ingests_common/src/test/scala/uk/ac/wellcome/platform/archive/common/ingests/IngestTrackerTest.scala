@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.ingest
+package uk.ac.wellcome.platform.archive.common.ingests
 
 import java.time.Instant
 import java.util.UUID
@@ -11,10 +11,11 @@ import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.ingest.fixtures.IngestTrackerFixture
-import uk.ac.wellcome.platform.archive.common.ingest.monitor.IdConstraintError
+import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -58,7 +59,6 @@ class IngestTrackerTest
             assertIngestCreated(ingest, table)
           }
         }
-
       }
     }
 

@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerW
 import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, RandomThings}
 import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackBagRequest}
-import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 

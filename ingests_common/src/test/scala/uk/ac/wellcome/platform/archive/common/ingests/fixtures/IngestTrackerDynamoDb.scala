@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.ingest.fixtures
+package uk.ac.wellcome.platform.archive.common.ingests.fixtures
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model._

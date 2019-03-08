@@ -14,6 +14,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationFailur
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
 
@@ -27,14 +28,16 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
     val unpackSummary =
       UnpackSummary(startTime = Instant.now)
 
-    val futureSummaryResult = for {
+    val futureSummary = for {
       packageInputStream <- srcLocation.toInputStream
-      result: OperationResult[UnpackSummary] <- Archive.unpack(
-        packageInputStream)(unpackSummary) {
+
+      result <- Archive
+        .unpack[UnpackSummary](packageInputStream)(unpackSummary) {
         (summary: UnpackSummary,
          inputStream: InputStream,
          archiveEntry: ArchiveEntry) =>
           if (!archiveEntry.isDirectory) {
+
             val archiveEntrySize = putObject(
               inputStream,
               archiveEntry,
@@ -45,17 +48,20 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
               fileCount = summary.fileCount + 1,
               bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
             )
+
           } else {
             summary
           }
       }
     } yield result.withSummary(summary = result.summary.complete)
 
-    futureSummaryResult
-      .recover {
-        case err: Throwable =>
-          OperationFailure(unpackSummary.complete, err)
-      }
+
+    futureSummary.transform {
+      case Success(summary) => Success(summary)
+      case Failure(e) => Success(
+        OperationFailure(unpackSummary.complete, e)
+      )
+    }
   }
 
   private def putObject(

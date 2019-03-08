@@ -3,18 +3,10 @@ package uk.ac.wellcome.platform.archive.bagunpacker.storage
 import java.io.{BufferedInputStream, InputStream}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{
-  ArchiveEntry,
-  ArchiveInputStream,
-  ArchiveStreamFactory
-}
+import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveInputStream, ArchiveStreamFactory}
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.io.input.CloseShieldInputStream
-import uk.ac.wellcome.platform.archive.common.operation.{
-  OperationFailure,
-  OperationResult,
-  OperationSuccess
-}
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationFailure, OperationResult, OperationSuccess}
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,10 +15,10 @@ import scala.util.{Failure, Success, Try}
 object Archive extends Logging {
 
   def unpack[T](
-    inputStream: InputStream
-  )(init: T)(
-    f: (T, InputStream, ArchiveEntry) => T
-  )(implicit ec: ExecutionContext): Future[OperationResult[T]] = Future {
+                 inputStream: InputStream
+               )(init: T)(
+                 f: (T, InputStream, ArchiveEntry) => T
+               )(implicit ec: ExecutionContext): Future[OperationResult[T]] = Future {
 
     val archiveReader =
       new ArchiveReader[T](inputStream)
@@ -52,15 +44,15 @@ object Archive extends Logging {
   private class ArchiveReader[T](inputStream: InputStream) {
 
     def accumulate(
-      t: T,
-      f: (T, InputStream, ArchiveEntry) => T,
-    ): StreamStep[T] = {
+                    t: T,
+                    f: (T, InputStream, ArchiveEntry) => T,
+                  ): StreamStep[T] = {
 
       archiveInputStream match {
         case Failure(e) => StreamError(t, e)
         case Success(
-            archiveInputStream: ArchiveInputStream
-            ) => {
+        archiveInputStream: ArchiveInputStream
+        ) => {
           archiveInputStream.getNextEntry match {
             case null => {
               Try {
@@ -122,6 +114,9 @@ object Archive extends Logging {
   }
 
   private case class StreamError[T](t: T, e: Throwable) extends StreamStep[T]
+
   private case class StreamEnd[T](t: T) extends StreamStep[T]
+
   private case class StreamContinues[T](t: T) extends StreamStep[T]
+
 }

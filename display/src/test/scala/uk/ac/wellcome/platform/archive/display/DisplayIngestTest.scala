@@ -43,22 +43,22 @@ class DisplayIngestTest
       List(IngestEvent(eventDescription, Instant.parse(eventDate)))
     )
 
-    val ingest = ResponseDisplayIngest(ingest, contextUrl)
+    val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
 
-    ingest.id shouldBe id
-    ingest.sourceLocation shouldBe DisplayLocation(
+    displayIngest.id shouldBe id
+    displayIngest.sourceLocation shouldBe DisplayLocation(
       StandardDisplayProvider,
       bucket = "bukkit",
       path = "key.txt")
-    ingest.callback shouldBe Some(
-      DisplayCallback(callbackUrl, Some(ingest.callback.get.status.get)))
-    ingest.space shouldBe DisplayStorageSpace(spaceId)
-    ingest.status shouldBe DisplayStatus("processing")
-    ingest.bag shouldBe Some(
+    displayIngest.callback shouldBe Some(
+      DisplayCallback(callbackUrl, Some(displayIngest.callback.get.status.get)))
+    displayIngest.space shouldBe DisplayStorageSpace(spaceId)
+    displayIngest.status shouldBe DisplayStatus("processing")
+    displayIngest.bag shouldBe Some(
       IngestDisplayBag(s"${bagId.space}/${bagId.externalIdentifier}"))
-    ingest.createdDate shouldBe createdDate
-    ingest.lastModifiedDate shouldBe modifiedDate
-    ingest.events shouldBe List(
+    displayIngest.createdDate shouldBe createdDate
+    displayIngest.lastModifiedDate shouldBe modifiedDate
+    displayIngest.events shouldBe List(
       DisplayIngestEvent(eventDescription, eventDate))
   }
 

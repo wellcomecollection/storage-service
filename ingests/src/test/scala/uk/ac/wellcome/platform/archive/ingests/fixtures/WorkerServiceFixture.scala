@@ -5,8 +5,8 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.NotificationStreamFixture
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestUpdate
-import uk.ac.wellcome.platform.archive.common.ingest.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.ingests.services.IngestsWorkerService
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 

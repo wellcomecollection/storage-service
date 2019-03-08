@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 
 class IngestTest

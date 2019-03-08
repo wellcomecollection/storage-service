@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.ingest.monitor
+package uk.ac.wellcome.platform.archive.common.ingests.monitor
 
 import java.util.UUID
 

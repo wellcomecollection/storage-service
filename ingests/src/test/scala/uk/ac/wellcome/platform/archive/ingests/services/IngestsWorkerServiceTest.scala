@@ -1,22 +1,14 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
-import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException
 import com.amazonaws.services.sns.model.AmazonSNSException
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Completed, Processing}
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
-  Completed,
-  Processing
-}
-import uk.ac.wellcome.platform.archive.common.ingest.monitor.IdConstraintError
-import uk.ac.wellcome.platform.archive.ingests.fixtures.{
-  IngestsFixture,
-  WorkerServiceFixture
-}
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
+import uk.ac.wellcome.platform.archive.ingests.fixtures.{IngestsFixture, WorkerServiceFixture}
 
 class IngestsWorkerServiceTest
     extends FunSpec

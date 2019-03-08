@@ -1,15 +1,16 @@
-package uk.ac.wellcome.platform.archive.common.ingest.fixtures
+package uk.ac.wellcome.platform.archive.common.ingests.fixtures
 
 import java.util.UUID
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.ingest.monitor.IngestTracker
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
+import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

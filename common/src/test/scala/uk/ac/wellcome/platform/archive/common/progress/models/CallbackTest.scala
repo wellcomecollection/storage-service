@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 import java.net.URI
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.ingests.models.Callback
 
 class CallbackTest extends FunSpec with Matchers {
   val callbackUri = new URI("http://www.wellcomecollection.org/callback/ok")

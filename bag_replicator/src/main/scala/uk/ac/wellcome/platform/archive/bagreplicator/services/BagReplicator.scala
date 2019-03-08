@@ -4,16 +4,8 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagLocation,
-  BagPath,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.operation.{
-  OperationFailure,
-  OperationResult,
-  OperationSuccess
-}
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationFailure, OperationResult, OperationSuccess}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath, ExternalIdentifier}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 
