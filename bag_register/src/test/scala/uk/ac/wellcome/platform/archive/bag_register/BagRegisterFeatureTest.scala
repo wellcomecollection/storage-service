@@ -67,7 +67,7 @@ class BagRegisterFeatureTest
 
             storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-            topicRecievesIngestStatus(
+            topicReceivesIngestStatus(
               requestId = bagRequest.requestId,
               ingestTopic = ingestTopic,
               status = Ingest.Completed,
@@ -103,7 +103,7 @@ class BagRegisterFeatureTest
           sendNotificationToSQS(queuePair.queue, replicationResult)
 
           eventually {
-            topicRecievesIngestStatus(
+            topicReceivesIngestStatus(
               requestId = replicationResult.requestId,
               ingestTopic = ingestTopic,
               status = Ingest.Failed,
