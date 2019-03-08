@@ -16,4 +16,9 @@ case class ReplicationSummary(
       endTime = Some(Instant.now())
     )
   }
+  override def toString(): String = {
+      f"""|replicated in ${duration.getOrElse("<not-completed>")}
+       """.stripMargin
+          .replaceAll("\n", " ")
+    }
 }

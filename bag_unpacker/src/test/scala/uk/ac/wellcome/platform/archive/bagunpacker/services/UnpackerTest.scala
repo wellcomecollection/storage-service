@@ -157,7 +157,7 @@ class UnpackerTest
           ""
         )
 
-      println(s"Found $key in $objectLocation")
+      debug(s"Found $key in $objectLocation")
 
       name -> content
     }.toMap
