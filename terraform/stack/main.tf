@@ -31,6 +31,9 @@ module "bag_unpacker" {
   cpu    = 1024
   memory = 2048
 
+  min_capacity = "0"
+  max_capacity = "10"
+
   container_image = "${local.bag_unpacker_image}"
 }
 
@@ -63,6 +66,9 @@ module "bag_replicator" {
   }
 
   env_vars_length = 6
+
+  min_capacity = "0"
+  max_capacity = "10"
 
   container_image = "${local.bag_replicator_image}"
 }
@@ -99,6 +105,9 @@ module "bag_verifier" {
   cpu    = 1024
   memory = 2048
 
+  min_capacity = "0"
+  max_capacity = "10"
+
   container_image = "${local.bag_verifier_image}"
 }
 
@@ -127,6 +136,9 @@ module "bag_register" {
   }
 
   env_vars_length = 8
+
+  min_capacity = "0"
+  max_capacity = "10"
 
   container_image = "${local.bag_register_image}"
 }
@@ -186,6 +198,9 @@ module "ingests" {
   }
 
   env_vars_length = 5
+
+  min_capacity = "0"
+  max_capacity = "10"
 
   container_image = "${local.ingests_image}"
 }
@@ -311,10 +326,9 @@ module "bagger" {
   cpu    = "1900"
   memory = "14000"
 
-  min_capacity = "0"
-  max_capacity = "${var.desired_bagger_count}"
-
+  min_capacity       = "0"
   desired_task_count = "${var.desired_bagger_count}"
+  max_capacity       = "${var.desired_bagger_count}"
 
   container_image = "${local.bagger_image}"
 }

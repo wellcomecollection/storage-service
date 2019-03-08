@@ -113,6 +113,14 @@ module "bag_unpacker_queue" {
 
   max_receive_count = 1
 
+  queue_high_actions = [
+    "${module.bag_unpacker.scale_up_arn}",
+  ]
+
+  queue_low_actions = [
+    "${module.bag_unpacker.scale_down_arn}",
+  ]
+
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
@@ -145,6 +153,14 @@ module "bag_replicator_input_queue" {
 
   max_receive_count = 1
 
+  queue_high_actions = [
+    "${module.bag_replicator.scale_up_arn}",
+  ]
+
+  queue_low_actions = [
+    "${module.bag_replicator.scale_down_arn}",
+  ]
+
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
@@ -176,6 +192,14 @@ module "bag_verifier_input_queue" {
 
   max_receive_count = 1
 
+  queue_high_actions = [
+    "${module.bag_verifier.scale_up_arn}",
+  ]
+
+  queue_low_actions = [
+    "${module.bag_verifier.scale_down_arn}",
+  ]
+
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
@@ -200,6 +224,14 @@ module "bag_register_input_queue" {
   topic_names = ["${module.bag_verifier_output_topic.name}"]
 
   role_names = ["${module.bag_register.task_role_name}"]
+
+  queue_high_actions = [
+    "${module.bag_register.scale_up_arn}",
+  ]
+
+  queue_low_actions = [
+    "${module.bag_register.scale_down_arn}",
+  ]
 
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
