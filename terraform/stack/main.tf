@@ -305,7 +305,7 @@ module "bagger" {
   cpu    = "1900"
   memory = "14000"
 
-  min_capacity = "${var.desired_bagger_count}"
+  min_capacity = "${var.desired_bagger_count / 2}"
   max_capacity = "${var.desired_bagger_count}"
 
   desired_task_count = "${var.desired_bagger_count}"
