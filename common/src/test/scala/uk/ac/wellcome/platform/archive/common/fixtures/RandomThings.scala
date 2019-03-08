@@ -100,7 +100,8 @@ trait RandomThings {
     }
   }
 
-  def writeToOutputStream(path: String = s"${randomUUID.toString}.test")(writeTo: FileOutputStream => Unit): File = {
+  def writeToOutputStream(path: String = s"${randomUUID.toString}.test")(
+    writeTo: FileOutputStream => Unit): File = {
     val absolutePath = Paths.get(tmpDir, path)
 
     val file = absolutePath.toFile
