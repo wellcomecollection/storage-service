@@ -24,16 +24,6 @@ resource "aws_iam_role_policy" "read_from_q" {
   policy = "${module.queue.read_policy}"
 }
 
-variable "queue_high_actions" {
-  default = []
-  type    = "list"
-}
-
-variable "queue_low_actions" {
-  default = []
-  type    = "list"
-}
-
 resource "aws_cloudwatch_metric_alarm" "queue_high" {
   alarm_name          = "${local.queue_name}_high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
