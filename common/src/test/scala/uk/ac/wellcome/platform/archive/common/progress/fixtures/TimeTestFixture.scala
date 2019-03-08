@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.progress.fixtures
+package uk.ac.wellcome.platform.archive.common.ingest.fixtures
 
 import java.time.{Duration, Instant}
 

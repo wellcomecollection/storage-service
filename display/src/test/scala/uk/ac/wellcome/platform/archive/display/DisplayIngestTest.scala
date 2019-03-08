@@ -7,8 +7,8 @@ import java.util.UUID
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.progress.models._
+import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.ObjectLocation
 
 class DisplayIngestTest
@@ -27,9 +27,9 @@ class DisplayIngestTest
   private val contextUrl = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
-  it("creates a DisplayIngest from Progress") {
+  it("creates a DisplayIngest from Ingest") {
     val bagId = createBagId
-    val progress: Ingest = Ingest(
+    val ingest: Ingest = Ingest(
       id,
       StorageLocation(
         StandardStorageProvider,
@@ -40,10 +40,10 @@ class DisplayIngestTest
       Some(bagId),
       Instant.parse(createdDate),
       Instant.parse(modifiedDate),
-      List(ProgressEvent(eventDescription, Instant.parse(eventDate)))
+      List(IngestEvent(eventDescription, Instant.parse(eventDate)))
     )
 
-    val ingest = ResponseDisplayIngest(progress, contextUrl)
+    val ingest = ResponseDisplayIngest(ingest, contextUrl)
 
     ingest.id shouldBe id
     ingest.sourceLocation shouldBe DisplayLocation(
@@ -59,14 +59,14 @@ class DisplayIngestTest
     ingest.createdDate shouldBe createdDate
     ingest.lastModifiedDate shouldBe modifiedDate
     ingest.events shouldBe List(
-      DisplayProgressEvent(eventDescription, eventDate))
+      DisplayIngestEvent(eventDescription, eventDate))
   }
 
-  it("transforms itself into a progress") {
+  it("transforms itself into a ingest") {
     val displayProvider = InfrequentAccessDisplayProvider
     val bucket = "ingest-bucket"
     val path = "bag.zip"
-    val progressCreateRequest = RequestDisplayIngest(
+    val ingestCreateRequest = RequestDisplayIngest(
       DisplayLocation(displayProvider, bucket, path),
       Some(
         DisplayCallback("http://www.wellcomecollection.org/callback/ok", None)),
@@ -74,17 +74,17 @@ class DisplayIngestTest
       DisplayStorageSpace("space-id")
     )
 
-    val progress = progressCreateRequest.toProgress
+    val ingest = ingestCreateRequest.toIngest
 
-    progress.id shouldBe a[UUID]
-    progress.sourceLocation shouldBe StorageLocation(
+    ingest.id shouldBe a[UUID]
+    ingest.sourceLocation shouldBe StorageLocation(
       InfrequentAccessStorageProvider,
       ObjectLocation(bucket, path))
-    progress.callback shouldBe Some(
-      Callback(URI.create(progressCreateRequest.callback.get.url)))
-    progress.status shouldBe Ingest.Accepted
-    assertRecent(progress.createdDate)
-    assertRecent(progress.lastModifiedDate)
-    progress.events shouldBe List.empty
+    ingest.callback shouldBe Some(
+      Callback(URI.create(ingestCreateRequest.callback.get.url)))
+    ingest.status shouldBe Ingest.Accepted
+    assertRecent(ingest.createdDate)
+    assertRecent(ingest.lastModifiedDate)
+    ingest.events shouldBe List.empty
   }
 }

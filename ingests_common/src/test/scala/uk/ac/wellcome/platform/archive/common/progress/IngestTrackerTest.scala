@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.progress
+package uk.ac.wellcome.platform.archive.common.ingest
 
 import java.time.Instant
 import java.util.UUID
@@ -10,12 +10,11 @@ import org.mockito.Mockito.when
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
-import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
+import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
-import uk.ac.wellcome.platform.archive.common.progress.models._
-import uk.ac.wellcome.platform.archive.common.progress.monitor.IdConstraintError
+import uk.ac.wellcome.platform.archive.common.ingest.fixtures.IngestTrackerFixture
+import uk.ac.wellcome.platform.archive.common.ingest.monitor.IdConstraintError
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,57 +25,55 @@ class IngestTrackerTest
     extends FunSpec
     with LocalDynamoDb
     with MockitoSugar
-    with ProgressTrackerFixture
-    with ProgressGenerators
+    with IngestTrackerFixture
+    with IngestGenerators
     with ScalaFutures {
 
-  import uk.ac.wellcome.storage.dynamo._
-
   describe("create") {
-    it("creates a progress monitor") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
-          val futureProgress = progressTracker.initialise(createProgress)
+    it("creates an ingest") {
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
+          val futureIngest = ingestTracker.initialise(createIngest)
 
-          whenReady(futureProgress) { progress =>
-            assertTableOnlyHasItem(progress, table)
+          whenReady(futureIngest) { ingest =>
+            assertTableOnlyHasItem(ingest, table)
           }
         }
       }
     }
 
-    it("only allows the creation of one progress monitor for a given id") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
-          val progress = createProgress
+    it("creates only one ingest for a given id") {
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
+          val ingest = createIngest
 
-          val monitors = List(progress, progress)
+          val monitors = List(ingest, ingest)
 
-          val result = Future.sequence(monitors.map(progressTracker.initialise))
+          val result = Future.sequence(monitors.map(ingestTracker.initialise))
           whenReady(result.failed) { failedException =>
             failedException shouldBe a[IdConstraintError]
             failedException.getMessage should include(
-              s"There is already a progress tracker with id:${progress.id}")
+              s"There is already a ingest tracker with id:${ingest.id}")
 
-            assertProgressCreated(progress, table)
+            assertIngestCreated(ingest, table)
           }
         }
 
       }
     }
 
-    it("throws if put to dynamo fails during creation") {
-      withProgressTrackerTable { table =>
+    it("fails if create a record if creation fails") {
+      withIngestTrackerTable { table =>
         val mockDynamoDbClient = mock[AmazonDynamoDB]
         val expectedException = new RuntimeException("root cause")
         when(mockDynamoDbClient.putItem(any[PutItemRequest]))
           .thenThrow(expectedException)
 
-        withProgressTracker(table, dynamoDbClient = mockDynamoDbClient) {
-          progressTracker =>
-            val progress = createProgress
+        withIngestTracker(table, dynamoDbClient = mockDynamoDbClient) {
+          ingestTracker =>
+            val ingest = createIngest
 
-            val result = progressTracker.initialise(progress)
+            val result = ingestTracker.initialise(ingest)
             whenReady(result.failed) { failedException =>
               failedException shouldBe a[RuntimeException]
               failedException shouldBe expectedException
@@ -87,25 +84,25 @@ class IngestTrackerTest
   }
 
   describe("read") {
-    it("retrieves progress by id") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
-          whenReady(progressTracker.initialise(createProgress)) { progress =>
-            assertTableOnlyHasItem[Ingest](progress, table)
+    it("retrieves ingest by id") {
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
+          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
+            assertTableOnlyHasItem[Ingest](ingest, table)
 
-            whenReady(progressTracker.get(progress.id)) { result =>
+            whenReady(ingestTracker.get(ingest.id)) { result =>
               result shouldBe a[Some[_]]
-              result.get shouldBe progress
+              result.get shouldBe ingest
             }
           }
         }
       }
     }
 
-    it("returns None when no progress monitor matches id") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
-          whenReady(progressTracker.get(randomUUID)) { result =>
+    it("returns None when no ingest matches id") {
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
+          whenReady(ingestTracker.get(randomUUID)) { result =>
             result shouldBe None
           }
         }
@@ -113,15 +110,15 @@ class IngestTrackerTest
     }
 
     it("throws when it encounters an error") {
-      withProgressTrackerTable { table =>
+      withIngestTrackerTable { table =>
         val mockDynamoDbClient = mock[AmazonDynamoDB]
         val expectedException = new RuntimeException("root cause")
         when(mockDynamoDbClient.getItem(any[GetItemRequest]))
           .thenThrow(expectedException)
 
-        withProgressTracker(table, dynamoDbClient = mockDynamoDbClient) {
-          progressTracker =>
-            whenReady(progressTracker.get(randomUUID).failed) {
+        withIngestTracker(table, dynamoDbClient = mockDynamoDbClient) {
+          ingestTracker =>
+            whenReady(ingestTracker.get(randomUUID).failed) {
               failedException =>
                 failedException shouldBe expectedException
             }
@@ -131,52 +128,52 @@ class IngestTrackerTest
   }
 
   describe("update") {
-    it("sets the bag id to a progress monitor with none") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
-          whenReady(progressTracker.initialise(createProgress)) { progress =>
+    it("sets the bag id to a ingest with none") {
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
+          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
             val bagId = createBagId
 
-            val progressUpdate = ProgressStatusUpdate(
-              progress.id,
+            val ingestUpdate = IngestStatusUpdate(
+              ingest.id,
               Ingest.Processing,
               Some(bagId)
             )
 
-            progressTracker.update(progressUpdate)
+            ingestTracker.update(ingestUpdate)
 
-            val storedProgress =
-              getExistingTableItem[Ingest](progress.id.toString, table)
+            val storedIngest =
+              getExistingTableItem[Ingest](ingest.id.toString, table)
 
-            assertRecent(storedProgress.createdDate)
-            assertRecent(storedProgress.lastModifiedDate)
-            storedProgress.events.map(_.description) should contain theSameElementsAs progressUpdate.events
+            assertRecent(storedIngest.createdDate)
+            assertRecent(storedIngest.lastModifiedDate)
+            storedIngest.events.map(_.description) should contain theSameElementsAs ingestUpdate.events
               .map(_.description)
-            storedProgress.events.foreach(event =>
+            storedIngest.events.foreach(event =>
               assertRecent(event.createdDate))
 
-            storedProgress.bag shouldBe progressUpdate.affectedBag
+            storedIngest.bag shouldBe ingestUpdate.affectedBag
           }
         }
       }
     }
 
     it("adds a single event to a monitor with no events") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
-          whenReady(progressTracker.initialise(createProgress)) { progress =>
-            val progressUpdate = ProgressEventUpdate(
-              progress.id,
-              List(createProgressEvent)
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
+          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
+            val ingestUpdate = IngestEventUpdate(
+              ingest.id,
+              List(createIngestEvent)
             )
 
-            progressTracker.update(progressUpdate)
+            ingestTracker.update(ingestUpdate)
 
-            assertProgressCreated(progress, table)
+            assertIngestCreated(ingest, table)
 
-            assertProgressRecordedRecentEvents(
-              progressUpdate.id,
-              progressUpdate.events.map(_.description),
+            assertIngestRecordedRecentEvents(
+              ingestUpdate.id,
+              ingestUpdate.events.map(_.description),
               table)
           }
         }
@@ -184,27 +181,27 @@ class IngestTrackerTest
     }
 
     it("adds a status update to a monitor with no events") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
-          whenReady(progressTracker.initialise(createProgress)) { progress =>
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
+          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
             val someBagId = Some(createBagId)
-            val progressUpdate = ProgressStatusUpdate(
-              progress.id,
+            val ingestUpdate = IngestStatusUpdate(
+              ingest.id,
               Ingest.Completed,
               affectedBag = someBagId,
-              List(createProgressEvent)
+              List(createIngestEvent)
             )
 
-            progressTracker.update(progressUpdate)
+            ingestTracker.update(ingestUpdate)
 
-            val actualProgress = assertProgressCreated(progress, table)
+            val actualIngest = assertIngestCreated(ingest, table)
 
-            actualProgress.status shouldBe Ingest.Completed
-            actualProgress.bag shouldBe someBagId
+            actualIngest.status shouldBe Ingest.Completed
+            actualIngest.bag shouldBe someBagId
 
-            assertProgressRecordedRecentEvents(
-              progressUpdate.id,
-              progressUpdate.events.map(_.description),
+            assertIngestRecordedRecentEvents(
+              ingestUpdate.id,
+              ingestUpdate.events.map(_.description),
               table)
           }
         }
@@ -212,25 +209,25 @@ class IngestTrackerTest
     }
 
     it("adds a callback status update to a monitor with no events") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
-          whenReady(progressTracker.initialise(createProgress)) { progress =>
-            val progressUpdate = ProgressCallbackStatusUpdate(
-              id = progress.id,
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
+          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
+            val ingestUpdate = IngestCallbackStatusUpdate(
+              id = ingest.id,
               callbackStatus = Callback.Succeeded,
-              events = List(createProgressEvent)
+              events = List(createIngestEvent)
             )
 
-            progressTracker.update(progressUpdate)
+            ingestTracker.update(ingestUpdate)
 
-            val actualProgress = assertProgressCreated(progress, table)
+            val actualIngest = assertIngestCreated(ingest, table)
 
-            actualProgress.callback shouldBe defined
-            actualProgress.callback.get.status shouldBe Callback.Succeeded
+            actualIngest.callback shouldBe defined
+            actualIngest.callback.get.status shouldBe Callback.Succeeded
 
-            assertProgressRecordedRecentEvents(
-              progressUpdate.id,
-              progressUpdate.events.map(_.description),
+            assertIngestRecordedRecentEvents(
+              ingestUpdate.id,
+              ingestUpdate.events.map(_.description),
               table)
           }
         }
@@ -238,21 +235,21 @@ class IngestTrackerTest
     }
 
     it("adds an update with multiple events") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
-          whenReady(progressTracker.initialise(createProgress)) { progress =>
-            val progressUpdate = ProgressEventUpdate(
-              progress.id,
-              List(createProgressEvent, createProgressEvent)
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
+          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
+            val ingestUpdate = IngestEventUpdate(
+              ingest.id,
+              List(createIngestEvent, createIngestEvent)
             )
 
-            progressTracker.update(progressUpdate)
+            ingestTracker.update(ingestUpdate)
 
-            assertProgressCreated(progress, table)
+            assertIngestCreated(ingest, table)
 
-            assertProgressRecordedRecentEvents(
-              progressUpdate.id,
-              progressUpdate.events.map(_.description),
+            assertIngestRecordedRecentEvents(
+              ingestUpdate.id,
+              ingestUpdate.events.map(_.description),
               table)
           }
         }
@@ -260,20 +257,20 @@ class IngestTrackerTest
     }
 
     it("adds multiple events to a monitor") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
-          whenReady(progressTracker.initialise(createProgress)) { progress =>
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
+          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
             val updates = List(
-              createProgressEventUpdateWith(progress.id),
-              createProgressEventUpdateWith(progress.id)
+              createIngestEventUpdateWith(ingest.id),
+              createIngestEventUpdateWith(ingest.id)
             )
 
-            updates.foreach(progressTracker.update(_))
+            updates.foreach(ingestTracker.update(_))
 
-            assertProgressCreated(progress, table)
+            assertIngestCreated(ingest, table)
 
-            assertProgressRecordedRecentEvents(
-              progress.id,
+            assertIngestRecordedRecentEvents(
+              ingest.id,
               updates.flatMap(_.events.map(_.description)),
               table)
           }
@@ -282,18 +279,18 @@ class IngestTrackerTest
     }
 
     it("throws if put to dynamo fails when adding an event") {
-      withProgressTrackerTable { table =>
+      withIngestTrackerTable { table =>
         val mockDynamoDbClient = mock[AmazonDynamoDB]
 
         val expectedException = new RuntimeException("root cause")
         when(mockDynamoDbClient.updateItem(any[UpdateItemRequest]))
           .thenThrow(expectedException)
 
-        withProgressTracker(table, dynamoDbClient = mockDynamoDbClient) {
-          progressTracker =>
-            val update = createProgressEventUpdate
+        withIngestTracker(table, dynamoDbClient = mockDynamoDbClient) {
+          ingestTracker =>
+            val update = createIngestEventUpdate
 
-            val result = Try(progressTracker.update(update))
+            val result = Try(ingestTracker.update(update))
 
             val failedException = result.failed.get
             failedException shouldBe a[RuntimeException]
@@ -303,39 +300,39 @@ class IngestTrackerTest
     }
   }
 
-  describe("find progress by BagId") {
+  describe("find ingest by BagId") {
     it(
-      "query for multiple progresses for a same bag are returned in order of createdDate") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
+      "query for multiple Ingests for a same bag are returned in order of createdDate") {
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
           val beforeTime = Instant.parse("2018-12-01T11:50:00.00Z")
           val time = Instant.parse("2018-12-01T12:00:00.00Z")
           val afterTime = Instant.parse("2018-12-01T12:10:00.00Z")
           whenReady(
-            progressTracker.initialise(
-              createProgressWith(createdDate = beforeTime))) { progressA =>
-            whenReady(progressTracker.initialise(
-              createProgressWith(createdDate = time))) { progressB =>
-              whenReady(progressTracker.initialise(
-                createProgressWith(createdDate = afterTime))) { progressC =>
+            ingestTracker.initialise(
+              createIngestWith(createdDate = beforeTime))) { ingestA =>
+            whenReady(ingestTracker.initialise(
+              createIngestWith(createdDate = time))) { ingestB =>
+              whenReady(ingestTracker.initialise(
+                createIngestWith(createdDate = afterTime))) { ingestC =>
                 val bagId = createBagId
 
-                val progressAUpdate =
-                  createProgressBagUpdateWith(progressA.id, bagId)
-                progressTracker.update(progressAUpdate)
-                val progressBUpdate =
-                  createProgressBagUpdateWith(progressB.id, bagId)
-                progressTracker.update(progressBUpdate)
-                val progressCUpdate =
-                  createProgressBagUpdateWith(progressC.id, bagId)
-                progressTracker.update(progressCUpdate)
+                val ingestAUpdate =
+                  createIngestUpdateWith(ingestA.id, bagId)
+                ingestTracker.update(ingestAUpdate)
+                val ingestBUpdate =
+                  createIngestUpdateWith(ingestB.id, bagId)
+                ingestTracker.update(ingestBUpdate)
+                val ingestCUpdate =
+                  createIngestUpdateWith(ingestC.id, bagId)
+                ingestTracker.update(ingestCUpdate)
 
-                val bagProgresses = progressTracker.findByBagId(bagId)
+                val bagIngests = ingestTracker.findByBagId(bagId)
 
-                bagProgresses shouldBe List(
-                  Right(BagIngest(bagId.toString, progressC.id, afterTime)),
-                  Right(BagIngest(bagId.toString, progressB.id, time)),
-                  Right(BagIngest(bagId.toString, progressA.id, beforeTime))
+                bagIngests shouldBe List(
+                  Right(BagIngest(bagId.toString, ingestC.id, afterTime)),
+                  Right(BagIngest(bagId.toString, ingestB.id, time)),
+                  Right(BagIngest(bagId.toString, ingestA.id, beforeTime))
                 )
               }
             }
@@ -344,38 +341,38 @@ class IngestTrackerTest
       }
     }
 
-    it("only returns the most recent 30 progress entries") {
-      withProgressTrackerTable { table =>
-        withProgressTracker(table) { progressTracker =>
+    it("only returns the most recent 30 ingest entries") {
+      withIngestTrackerTable { table =>
+        withIngestTracker(table) { ingestTracker =>
           val start = Instant.parse("2018-12-01T12:00:00.00Z")
-          val eventualProgresses: Seq[Future[Ingest]] =
+          val eventualIngests: Seq[Future[Ingest]] =
             for (i <- 0 to 33)
               yield
-                progressTracker.initialise(
-                  createProgressWith(createdDate = start.plusSeconds(i)))
+                ingestTracker.initialise(
+                  createIngestWith(createdDate = start.plusSeconds(i)))
 
           val bagId = createBagId
 
-          eventualProgresses.map(eventualProgress =>
-            eventualProgress.map { progress =>
-              val progressUpdate =
-                createProgressBagUpdateWith(progress.id, bagId)
-              progressTracker.update(progressUpdate)
+          eventualIngests.map(eventualIngest =>
+            eventualIngest.map { ingest =>
+              val ingestUpdate =
+                createIngestUpdateWith(ingest.id, bagId)
+              ingestTracker.update(ingestUpdate)
           })
 
           eventually {
-            val bagProgresses = progressTracker.findByBagId(bagId)
+            val bagIngests = ingestTracker.findByBagId(bagId)
 
-            bagProgresses should have size 30
+            bagIngests should have size 30
           }
         }
       }
     }
   }
 
-  private def createProgressBagUpdateWith(id: UUID,
-                                          bagId: BagId): ProgressUpdate =
-    createProgressStatusUpdateWith(
+  private def createIngestUpdateWith(id: UUID,
+                                          bagId: BagId): IngestUpdate =
+    createIngestStatusUpdateWith(
       id = id,
       status = Ingest.Processing,
       maybeBag = Some(bagId)

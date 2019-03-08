@@ -26,7 +26,7 @@ output "ingests_table_arn" {
   value = "${aws_dynamodb_table.ingests.arn}"
 }
 
-output "ingests_table_progress_index_name" {
+output "ingests_table_ingest_index_name" {
   value = "${local.gsi_name}"
 }
 

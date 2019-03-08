@@ -11,9 +11,9 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
   RandomThings
 }
-import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
+import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
+import uk.ac.wellcome.platform.archive.common.ingest.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.{LocalDynamoDb, S3}
@@ -25,8 +25,8 @@ trait IngestsApiFixture
     with RandomThings
     with LocalDynamoDb
     with ScalaFutures
-    with ProgressTrackerFixture
-    with ProgressGenerators
+    with IngestTrackerFixture
+    with IngestGenerators
     with SNS
     with HttpFixtures
     with Messaging {
@@ -84,7 +84,7 @@ trait IngestsApiFixture
   def withConfiguredApp[R](
     testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R = {
     withLocalSnsTopic { unpackerTopic =>
-      withProgressTrackerTable { table =>
+      withIngestTrackerTable { table =>
         withMockMetricSender { metricsSender =>
           withApp(table, unpackerTopic, metricsSender) { _ =>
             testWith(

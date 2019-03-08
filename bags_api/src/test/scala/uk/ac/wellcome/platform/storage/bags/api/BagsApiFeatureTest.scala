@@ -166,7 +166,7 @@ class BagsApiFeatureTest
       }
     }
 
-    it("returns a 404 NotFound if no progress monitor matches id") {
+    it("returns a 404 NotFound if no ingest monitor matches id") {
       withConfiguredApp {
         case (_, metricsSender, baseUrl) =>
           val bagId = createBagId

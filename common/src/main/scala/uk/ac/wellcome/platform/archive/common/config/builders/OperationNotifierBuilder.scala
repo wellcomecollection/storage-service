@@ -12,9 +12,9 @@ object OperationNotifierBuilder {
         config,
         namespace = "outgoing"
       ),
-      progressSnsWriter = SNSBuilder.buildSNSWriter(
+      ingestSnsWriter = SNSBuilder.buildSNSWriter(
         config,
-        namespace = "progress"
+        namespace = "ingest"
       )
     )
   }

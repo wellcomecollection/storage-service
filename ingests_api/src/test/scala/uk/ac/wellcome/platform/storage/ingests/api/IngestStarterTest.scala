@@ -7,34 +7,34 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
+import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.models.{
   StorageSpace,
   UnpackBagRequest
 }
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
+import uk.ac.wellcome.platform.archive.common.ingest.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class IngestStarterTest
     extends FunSpec
-    with ProgressTrackerFixture
+    with IngestTrackerFixture
     with SNS
-    with ProgressGenerators
+    with IngestGenerators
     with ScalaFutures
     with Matchers {
 
-  val progress = createProgress
+  val ingest = createIngest
 
-  it("saves a Progress to DynamoDB and send a notification to SNS") {
+  it("saves an Ingest and sends a notification") {
     withLocalSnsTopic { unpackerTopic =>
-      withProgressTrackerTable { table =>
-        withProgressStarter(table, unpackerTopic) { progressStarter =>
-          whenReady(progressStarter.initialise(progress)) { p =>
-            p shouldBe progress
+      withIngestTrackerTable { table =>
+        withIngestStarter(table, unpackerTopic) { ingestStarter =>
+          whenReady(ingestStarter.initialise(ingest)) { p =>
+            p shouldBe ingest
 
-            assertTableOnlyHasItem(progress, table)
+            assertTableOnlyHasItem(ingest, table)
 
             eventually {
               // Unpacker
@@ -46,9 +46,9 @@ class IngestStarterTest
 
               unpackerRequests shouldBe List(
                 UnpackBagRequest(
-                  requestId = progress.id,
-                  sourceLocation = progress.sourceLocation.location,
-                  storageSpace = StorageSpace(progress.space.underlying)
+                  requestId = ingest.id,
+                  sourceLocation = ingest.sourceLocation.location,
+                  storageSpace = StorageSpace(ingest.space.underlying)
                 )
               )
             }
@@ -63,11 +63,11 @@ class IngestStarterTest
     withLocalSnsTopic { unpackerTopic =>
       val fakeTable = Table("does-not-exist", index = "does-not-exist")
 
-      withProgressStarter(
+      withIngestStarter(
         fakeTable,
         unpackerTopic
-      ) { progressStarter =>
-        val future = progressStarter.initialise(progress)
+      ) { ingestStarter =>
+        val future = ingestStarter.initialise(ingest)
 
         whenReady(future.failed) { _ =>
           assertSnsReceivesNothing(unpackerTopic)
@@ -78,36 +78,36 @@ class IngestStarterTest
   }
 
   it("returns a failed future if publishing to SNS fails") {
-    withProgressTrackerTable { table =>
+    withIngestTrackerTable { table =>
       val fakeUnpackerTopic = Topic("does-not-exist")
 
-      withProgressStarter(
+      withIngestStarter(
         table,
         fakeUnpackerTopic
-      ) { progressStarter =>
-        val future = progressStarter.initialise(progress)
+      ) { ingestStarter =>
+        val future = ingestStarter.initialise(ingest)
 
         whenReady(future.failed) { _ =>
-          assertTableOnlyHasItem(progress, table)
+          assertTableOnlyHasItem(ingest, table)
         }
       }
     }
   }
 
-  private def withProgressStarter[R](
+  private def withIngestStarter[R](
     table: Table,
     unpackerTopic: Topic
   )(
-    testWith: TestWith[ProgressStarter, R]
+    testWith: TestWith[IngestStarter, R]
   ): R =
     withSNSWriter(unpackerTopic) { unpackerSnsWriter =>
-      withProgressTracker(table) { progressTracker =>
-        val progressStarter = new ProgressStarter(
-          progressTracker = progressTracker,
+      withIngestTracker(table) { ingestTracker =>
+        val ingestStarter = new IngestStarter(
+          ingestTracker = ingestTracker,
           unpackerSnsWriter = unpackerSnsWriter
         )
 
-        testWith(progressStarter)
+        testWith(ingestStarter)
       }
     }
 

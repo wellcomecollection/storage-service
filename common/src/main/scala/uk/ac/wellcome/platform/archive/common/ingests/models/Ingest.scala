@@ -13,7 +13,7 @@ case class Ingest(id: UUID,
                   bag: Option[BagId],
                   createdDate: Instant,
                   lastModifiedDate: Instant,
-                  events: Seq[ProgressEvent])
+                  events: Seq[IngestEvent])
 
 case object Ingest {
   def apply(id: UUID,
@@ -23,7 +23,7 @@ case object Ingest {
             status: Ingest.Status = Ingest.Accepted,
             bag: Option[BagId] = None,
             createdDate: Instant = Instant.now(),
-            events: Seq[ProgressEvent] = Seq.empty): Ingest = {
+            events: Seq[IngestEvent] = Seq.empty): Ingest = {
     Ingest(
       id,
       sourceLocation,

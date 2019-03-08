@@ -41,7 +41,7 @@ trait WorkerFixture
 
     withLocalDynamoDbTable { table =>
       withLocalS3Bucket { bucket =>
-        withLocalSnsTopic { progressTopic =>
+        withLocalSnsTopic { ingestTopic =>
           withLocalSnsTopic { outgoingTopic =>
             withLocalSqsQueueAndDlq { queuePair =>
               withNotificationStream[BagRequest, R](queuePair.queue) { stream =>
@@ -59,7 +59,7 @@ trait WorkerFixture
 
                 withStorageManifestVHS(testTable, testBucket) {
                   storageManifestVHS =>
-                    withSNSWriter(progressTopic) { progressSnsWriter =>
+                    withSNSWriter(ingestTopic) { ingestSnsWriter =>
                       withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
                         val storageManifestService =
                           new StorageManifestService()
@@ -74,7 +74,7 @@ trait WorkerFixture
                         val notifier = new OperationNotifier(
                           operationName,
                           outgoingSnsWriter,
-                          progressSnsWriter
+                          ingestSnsWriter
                         )
 
                         val service =
@@ -87,7 +87,7 @@ trait WorkerFixture
                             service,
                             table,
                             bucket,
-                            progressTopic,
+                            ingestTopic,
                             outgoingTopic,
                             queuePair)
                         )

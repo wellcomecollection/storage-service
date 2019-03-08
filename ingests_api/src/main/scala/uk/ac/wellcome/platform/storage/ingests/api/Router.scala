@@ -13,11 +13,11 @@ import uk.ac.wellcome.platform.archive.common.http.models.InternalServerErrorRes
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.progress.monitor.ProgressTracker
+import uk.ac.wellcome.platform.archive.common.ingest.monitor.IngestTracker
 import uk.ac.wellcome.platform.archive.display.{DisplayIngestMinimal, RequestDisplayIngest, ResponseDisplayIngest}
 
-class Router(progressTracker: ProgressTracker,
-             progressStarter: ProgressStarter,
+class Router(ingestTracker: IngestTracker,
+             ingestStarter: IngestStarter,
              httpServerConfig: HTTPServerConfig,
              contextURL: URL)
     extends Logging {
@@ -32,20 +32,20 @@ class Router(progressTracker: ProgressTracker,
     pathPrefix("progress") {
       post {
         entity(as[RequestDisplayIngest]) { requestDisplayIngest =>
-          onSuccess(progressStarter.initialise(requestDisplayIngest.toProgress)) {
-            progress =>
-              respondWithHeaders(List(createLocationHeader(progress))) {
-                complete(Created -> ResponseDisplayIngest(progress, contextURL))
+          onSuccess(ingestStarter.initialise(requestDisplayIngest.toIngest)) {
+            ingest =>
+              respondWithHeaders(List(createLocationHeader(ingest))) {
+                complete(Created -> ResponseDisplayIngest(ingest, contextURL))
               }
           }
         }
       } ~ path(JavaUUID) { id: UUID =>
         get {
-          onSuccess(progressTracker.get(id)) {
-            case Some(progress) =>
-              complete(ResponseDisplayIngest(progress, contextURL))
+          onSuccess(ingestTracker.get(id)) {
+            case Some(ingest) =>
+              complete(ResponseDisplayIngest(ingest, contextURL))
             case None =>
-              complete(NotFound -> "Progress monitor not found!")
+              complete(NotFound -> "Ingest not found!")
           }
         }
       } ~ path("find-by-bag-id" / Segment) { combinedId: String =>
@@ -55,23 +55,23 @@ class Router(progressTracker: ProgressTracker,
           val parts = combinedId.split(':')
           val bagId =
             BagId(StorageSpace(parts.head), ExternalIdentifier(parts.last))
-          findProgress(bagId)
+          findIngest(bagId)
         }
       } ~ path("find-by-bag-id" / Segment / Segment) { (space, id) =>
         // Route used by DLCS to find ingests for a bag, not part of the public/documented API.  Either remove
         // if no longer needed after migration or enhance and document as part of the API.
         get {
           val bagId = BagId(StorageSpace(space), ExternalIdentifier(id))
-          findProgress(bagId)
+          findIngest(bagId)
         }
       }
     }
 
-  private def findProgress(bagId: BagId) = {
-    val results = progressTracker.findByBagId(bagId)
+  private def findIngest(bagId: BagId) = {
+    val results = ingestTracker.findByBagId(bagId)
     if (results.nonEmpty && results.forall(_.isRight)) {
       complete(OK -> results.collect {
-        case Right(bagProgress) => DisplayIngestMinimal(bagProgress)
+        case Right(ingest) => DisplayIngestMinimal(ingest)
       })
     } else if (results.isEmpty) {
       complete(NotFound -> List[DisplayIngestMinimal]())
@@ -86,6 +86,6 @@ class Router(progressTracker: ProgressTracker,
     }
   }
 
-  private def createLocationHeader(progress: Ingest) =
-    Location(s"${httpServerConfig.externalBaseURL}/${progress.id}")
+  private def createLocationHeader(ingest: Ingest) =
+    Location(s"${httpServerConfig.externalBaseURL}/${ingest.id}")
 }

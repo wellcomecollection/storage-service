@@ -8,28 +8,28 @@ import uk.ac.wellcome.platform.archive.common.ingests.models
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Status
-import uk.ac.wellcome.platform.archive.common.progress.models._
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.ObjectLocation
 
-trait ProgressGenerators extends BagIdGenerators {
+trait IngestGenerators extends BagIdGenerators {
 
   val storageLocation = StorageLocation(
     StandardStorageProvider,
     ObjectLocation(randomAlphanumeric(), randomAlphanumeric()))
 
-  def createProgress: Ingest = createProgressWith()
+  def createIngest: Ingest = createIngestWith()
 
   val testCallbackUri =
     new URI("http://www.wellcomecollection.org/callback/ok")
 
-  def createProgressWith(id: UUID = randomUUID,
-                         sourceLocation: StorageLocation = storageLocation,
-                         callback: Option[Callback] = Some(createCallback()),
-                         space: Namespace = createSpace,
-                         status: Status = Ingest.Accepted,
-                         maybeBag: Option[BagId] = None,
-                         createdDate: Instant = Instant.now,
-                         events: List[ProgressEvent] = List.empty): Ingest =
+  def createIngestWith(id: UUID = randomUUID,
+                       sourceLocation: StorageLocation = storageLocation,
+                       callback: Option[Callback] = Some(createCallback()),
+                       space: Namespace = createSpace,
+                       status: Status = Ingest.Accepted,
+                       maybeBag: Option[BagId] = None,
+                       createdDate: Instant = Instant.now,
+                       events: List[IngestEvent] = List.empty): Ingest =
     models.Ingest(
       id = id,
       sourceLocation = sourceLocation,
@@ -40,25 +40,25 @@ trait ProgressGenerators extends BagIdGenerators {
       createdDate = createdDate,
       events = events)
 
-  def createProgressEvent: ProgressEvent =
-    ProgressEvent(randomAlphanumeric(15))
+  def createIngestEvent: IngestEvent =
+    IngestEvent(randomAlphanumeric(15))
 
-  def createProgressEventUpdateWith(id: UUID): ProgressEventUpdate =
-    ProgressEventUpdate(
+  def createIngestEventUpdateWith(id: UUID): IngestEventUpdate =
+    IngestEventUpdate(
       id = id,
-      events = List(createProgressEvent)
+      events = List(createIngestEvent)
     )
 
-  def createProgressEventUpdate: ProgressEventUpdate =
-    createProgressEventUpdateWith(id = UUID.randomUUID())
+  def createIngestEventUpdate: IngestEventUpdate =
+    createIngestEventUpdateWith(id = UUID.randomUUID())
 
-  def createProgressStatusUpdateWith(
+  def createIngestStatusUpdateWith(
                                       id: UUID = randomUUID,
                                       status: Status = Ingest.Accepted,
                                       maybeBag: Option[BagId] = Some(createBagId),
-                                      events: Seq[ProgressEvent] = List(createProgressEvent))
-    : ProgressStatusUpdate =
-    ProgressStatusUpdate(
+                                      events: Seq[IngestEvent] = List(createIngestEvent))
+    : IngestStatusUpdate =
+    IngestStatusUpdate(
       id = id,
       status = status,
       affectedBag = maybeBag,

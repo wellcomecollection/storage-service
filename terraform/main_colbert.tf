@@ -51,8 +51,8 @@ module "stack-colbert" {
   bagger_dlcs_source_bucket          = "${local.bagger_dlcs_source_bucket}"
   bagger_current_preservation_bucket = "${local.bagger_current_preservation_bucket}"
   bagger_dds_asset_prefix            = "${local.bagger_dds_asset_prefix}"
-  bagger_progress_table              = "${local.bagger_progress_table_stage}"
-  bagger_progress_table_arn          = "${local.bagger_progress_table_stage_arn}"
+  bagger_ingest_table              = "${local.bagger_ingest_table_stage}"
+  bagger_ingest_table_arn          = "${local.bagger_ingest_table_stage_arn}"
 
   s3_bagger_drop_arn           = "${module.critical-staging.s3_bagger_drop_arn}"
   s3_bagger_errors_arn         = "${module.critical-staging.s3_bagger_errors_arn}"
@@ -70,7 +70,7 @@ module "stack-colbert" {
   ingests_table_name = "${module.critical-staging.ingests_table_name}"
   ingests_table_arn  = "${module.critical-staging.ingests_table_arn}"
 
-  ingests_table_progress_index_name = "${module.critical-staging.ingests_table_progress_index_name}"
+  ingests_table_ingest_index_name = "${module.critical-staging.ingests_table_ingest_index_name}"
 
   ingest_bucket_name = "${module.critical-staging.ingest_drop_bucket_name}"
 

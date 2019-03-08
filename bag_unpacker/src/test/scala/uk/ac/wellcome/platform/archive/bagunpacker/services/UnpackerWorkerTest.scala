@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.models.{BagRequest, StorageSpace, UnpackBagRequest}
 import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
-import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 
 class UnpackerWorkerTest
     extends FunSpec
@@ -18,11 +18,11 @@ class UnpackerWorkerTest
     with WorkerServiceFixture
     with IntegrationPatience
     with CompressFixture
-    with ProgressUpdateAssertions {
+    with IngestUpdateAssertions {
 
   it("receives and processes a notification") {
     withApp {
-      case (_, srcBucket, queue, progressTopic, outgoingTopic) =>
+      case (_, srcBucket, queue, ingestTopic, outgoingTopic) =>
         val (archiveFile, filesInArchive, entries) =
           createTgzArchiveWithRandomFiles()
         withArchive(srcBucket, archiveFile) { archiveLocation =>
@@ -51,9 +51,9 @@ class UnpackerWorkerTest
                 outgoingTopic
               )
 
-              assertTopicReceivesProgressEventUpdate(
+              topicReceivesIngestEvent(
                 requestId = unpackBagRequest.requestId,
-                progressTopic = progressTopic
+                ingestTopic = ingestTopic
               ) { events =>
                 events.map {
                   _.description
@@ -67,9 +67,9 @@ class UnpackerWorkerTest
     }
   }
 
-  it("sends a failed Progress update if it cannot read the bag") {
+  it("sends a failed Ingest update if it cannot read the bag") {
     withApp {
-      case (service, _, _, progressTopic, outgoingTopic) =>
+      case (service, _, _, ingestTopic, outgoingTopic) =>
         val unpackBagRequest = UnpackBagRequest(
           requestId = randomUUID,
           sourceLocation = createObjectLocation,
@@ -81,9 +81,9 @@ class UnpackerWorkerTest
         whenReady(future) { _ =>
           assertSnsReceivesNothing(outgoingTopic)
 
-          assertTopicReceivesProgressStatusUpdate(
+          topicRecievesIngestStatus(
             requestId = unpackBagRequest.requestId,
-            progressTopic = progressTopic,
+            ingestTopic = ingestTopic,
             status = Ingest.Failed
           ) { events =>
             events.map { _.description } shouldBe List("Unpacker failed")

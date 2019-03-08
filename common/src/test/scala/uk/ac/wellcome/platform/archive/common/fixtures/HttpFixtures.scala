@@ -113,9 +113,9 @@ trait HttpFixtures extends Akka with ScalaFutures { this: Matchers =>
     response.status shouldBe statusCode
     response.entity.contentType shouldBe ContentTypes.`application/json`
 
-    val progressFuture = Unmarshal(response.entity).to[UserErrorResponse]
+    val ingestFuture = Unmarshal(response.entity).to[UserErrorResponse]
 
-    whenReady(progressFuture) { actualError =>
+    whenReady(ingestFuture) { actualError =>
       actualError shouldBe UserErrorResponse(
         context = contextURL.toString,
         httpStatus = statusCode.intValue,
@@ -130,10 +130,10 @@ trait HttpFixtures extends Akka with ScalaFutures { this: Matchers =>
     response.status shouldBe StatusCodes.InternalServerError
     response.entity.contentType shouldBe ContentTypes.`application/json`
 
-    val progressFuture = Unmarshal(response.entity)
+    val ingestFuture = Unmarshal(response.entity)
       .to[InternalServerErrorResponse]
 
-    whenReady(progressFuture) { actualError =>
+    whenReady(ingestFuture) { actualError =>
       actualError shouldBe InternalServerErrorResponse(
         context = contextURL.toString,
         httpStatus = StatusCodes.InternalServerError.intValue,

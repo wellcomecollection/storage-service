@@ -5,13 +5,13 @@ import com.amazonaws.services.sns.model.AmazonSNSException
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
+import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
   Completed,
   Processing
 }
-import uk.ac.wellcome.platform.archive.common.progress.monitor.IdConstraintError
+import uk.ac.wellcome.platform.archive.common.ingest.monitor.IdConstraintError
 import uk.ac.wellcome.platform.archive.ingests.fixtures.{
   IngestsFixture,
   WorkerServiceFixture
@@ -20,45 +20,45 @@ import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
 class IngestsWorkerServiceTest
     extends FunSpec
-    with ProgressGenerators
+    with IngestGenerators
     with IngestsFixture
     with WorkerServiceFixture {
-  it("updates the status of an existing Progress to Completed") {
+  it("updates an existing ingest to Completed") {
     withLocalSqsQueue { queue =>
-      withProgressTrackerTable { table =>
+      withIngestTrackerTable { table =>
         withLocalSnsTopic { topic =>
           withWorkerService(queue, table, topic) { service =>
-            withProgressTracker(table) { monitor =>
-              withProgress(monitor) { progress =>
-                val progressStatusUpdate =
-                  createProgressStatusUpdateWith(
-                    id = progress.id,
+            withIngestTracker(table) { monitor =>
+              withIngest(monitor) { ingest =>
+                val ingestStatusUpdate =
+                  createIngestStatusUpdateWith(
+                    id = ingest.id,
                     status = Completed
                   )
 
-                val future = service.processMessage(progressStatusUpdate)
+                val future = service.processMessage(ingestStatusUpdate)
 
-                val expectedProgress = progress.copy(
+                val expectedIngest = ingest.copy(
                   status = Completed,
-                  events = progressStatusUpdate.events,
-                  bag = progressStatusUpdate.affectedBag
+                  events = ingestStatusUpdate.events,
+                  bag = ingestStatusUpdate.affectedBag
                 )
 
                 val callbackNotification = CallbackNotification(
-                  id = progress.id,
-                  callbackUri = progress.callback.get.uri,
-                  payload = expectedProgress
+                  id = ingest.id,
+                  callbackUri = ingest.callback.get.uri,
+                  payload = expectedIngest
                 )
 
                 whenReady(future) { _ =>
                   assertSnsReceivesOnly(callbackNotification, topic = topic)
 
-                  assertProgressCreated(expectedProgress, table)
+                  assertIngestCreated(expectedIngest, table)
 
-                  assertProgressRecordedRecentEvents(
-                    id = progressStatusUpdate.id,
+                  assertIngestRecordedRecentEvents(
+                    id = ingestStatusUpdate.id,
                     expectedEventDescriptions =
-                      progressStatusUpdate.events.map {
+                      ingestStatusUpdate.events.map {
                         _.description
                       },
                     table = table
@@ -73,44 +73,44 @@ class IngestsWorkerServiceTest
     }
   }
 
-  it("adds multiple events to a Progress") {
+  it("adds multiple events to an ingest") {
     withLocalSqsQueue { queue =>
-      withProgressTrackerTable { table =>
+      withIngestTrackerTable { table =>
         withLocalSnsTopic { topic =>
           withWorkerService(queue, table, topic) { service =>
-            withProgressTracker(table) { monitor =>
-              withProgress(monitor) { progress =>
-                val progressStatusUpdate1 =
-                  createProgressStatusUpdateWith(
-                    id = progress.id,
+            withIngestTracker(table) { monitor =>
+              withIngest(monitor) { ingest =>
+                val ingestStatusUpdate1 =
+                  createIngestStatusUpdateWith(
+                    id = ingest.id,
                     status = Processing
                   )
 
-                val progressStatusUpdate2 =
-                  createProgressStatusUpdateWith(
-                    id = progress.id,
+                val ingestStatusUpdate2 =
+                  createIngestStatusUpdateWith(
+                    id = ingest.id,
                     status = Processing,
-                    maybeBag = progressStatusUpdate1.affectedBag
+                    maybeBag = ingestStatusUpdate1.affectedBag
                   )
 
-                val expectedProgress = progress.copy(
+                val expectedIngest = ingest.copy(
                   status = Completed,
-                  events = progressStatusUpdate1.events ++ progressStatusUpdate2.events,
-                  bag = progressStatusUpdate1.affectedBag
+                  events = ingestStatusUpdate1.events ++ ingestStatusUpdate2.events,
+                  bag = ingestStatusUpdate1.affectedBag
                 )
 
-                val future1 = service.processMessage(progressStatusUpdate1)
+                val future1 = service.processMessage(ingestStatusUpdate1)
                 whenReady(future1) { _ =>
-                  val future2 = service.processMessage(progressStatusUpdate2)
+                  val future2 = service.processMessage(ingestStatusUpdate2)
                   whenReady(future2) { _ =>
-                    assertProgressCreated(expectedProgress, table)
+                    assertIngestCreated(expectedIngest, table)
 
                     val expectedEventDescriptions =
-                      (progressStatusUpdate1.events ++ progressStatusUpdate2.events)
+                      (ingestStatusUpdate1.events ++ ingestStatusUpdate2.events)
                         .map { _.description }
 
-                    assertProgressRecordedRecentEvents(
-                      id = progressStatusUpdate1.id,
+                    assertIngestRecordedRecentEvents(
+                      id = ingestStatusUpdate1.id,
                       expectedEventDescriptions = expectedEventDescriptions,
                       table = table
                     )
@@ -124,18 +124,17 @@ class IngestsWorkerServiceTest
     }
   }
 
-  it(
-    "returns a failed Future if the Progress is not already stored in the table") {
+  it("fails if the ingest is not in the table") {
     withLocalSqsQueue { queue =>
-      withProgressTrackerTable { table =>
+      withIngestTrackerTable { table =>
         withLocalSnsTopic { topic =>
           withWorkerService(queue, table, topic) { service =>
-            val progressStatusUpdate =
-              createProgressStatusUpdateWith(
+            val ingestStatusUpdate =
+              createIngestStatusUpdateWith(
                 status = Completed
               )
 
-            val future = service.processMessage(progressStatusUpdate)
+            val future = service.processMessage(ingestStatusUpdate)
 
             whenReady(future.failed) { err =>
               err shouldBe a[IdConstraintError]
@@ -147,43 +146,19 @@ class IngestsWorkerServiceTest
     }
   }
 
-  // For some reason it doesn't hold the exception in the Future, but fails immediately.
-  // Investigating why is more effort than I want to spend right now.
-  ignore("returns a failed future if updating the table fails") {
+  it("fails if publishing to SNS fails") {
     withLocalSqsQueue { queue =>
-      withLocalSnsTopic { topic =>
-        withWorkerService(
-          queue,
-          Table("does-not-exist", "does-not-exist"),
-          topic) { service =>
-          val progressStatusUpdate =
-            createProgressStatusUpdateWith(
-              status = Completed
-            )
-
-          val future = service.processMessage(progressStatusUpdate)
-
-          whenReady(future.failed) { err =>
-            err shouldBe a[ResourceNotFoundException]
-          }
-        }
-      }
-    }
-  }
-
-  it("returns a failed future if publishing to SNS fails") {
-    withLocalSqsQueue { queue =>
-      withProgressTrackerTable { table =>
+      withIngestTrackerTable { table =>
         withWorkerService(queue, table, Topic("does-not-exist")) { service =>
-          withProgressTracker(table) { monitor =>
-            withProgress(monitor) { progress =>
-              val progressStatusUpdate =
-                createProgressStatusUpdateWith(
-                  id = progress.id,
+          withIngestTracker(table) { monitor =>
+            withIngest(monitor) { ingest =>
+              val ingestStatusUpdate =
+                createIngestStatusUpdateWith(
+                  id = ingest.id,
                   status = Completed
                 )
 
-              val future = service.processMessage(progressStatusUpdate)
+              val future = service.processMessage(ingestStatusUpdate)
 
               whenReady(future.failed) { err =>
                 err shouldBe a[AmazonSNSException]

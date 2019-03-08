@@ -2,17 +2,17 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.util.UUID
 
-case class ProgressNotice(
+case class IngestNotice(
   id: UUID,
   message: String,
   status: Option[Ingest.Status]
 ) {
   def toUpdate() = {
-    val event = ProgressEvent(message)
+    val event = IngestEvent(message)
 
     status match {
       case Some(status) =>
-        ProgressStatusUpdate(
+        IngestStatusUpdate(
           id = id,
           status = status,
           affectedBag = None,
@@ -20,7 +20,7 @@ case class ProgressNotice(
         )
 
       case None =>
-        ProgressEventUpdate(
+        IngestEventUpdate(
           id = id,
           events = List(event)
         )
@@ -28,9 +28,9 @@ case class ProgressNotice(
   }
 }
 
-object ProgressNotice {
-  def apply(id: UUID, message: String*): ProgressNotice = {
-    ProgressNotice(
+object IngestNotice {
+  def apply(id: UUID, message: String*): IngestNotice = {
+    IngestNotice(
       id,
       message.mkString(" "),
       None
@@ -39,8 +39,8 @@ object ProgressNotice {
 
   def apply(id: UUID,
             status: Ingest.Status,
-            message: String*): ProgressNotice = {
-    ProgressNotice(
+            message: String*): IngestNotice = {
+    IngestNotice(
       id,
       message.mkString(" "),
       Some(status)

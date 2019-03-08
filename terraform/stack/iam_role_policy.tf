@@ -34,9 +34,9 @@ resource "aws_iam_role_policy" "bags_api_metrics" {
 
 # ingests
 
-resource "aws_iam_role_policy" "ingests_archive_progress_table" {
+resource "aws_iam_role_policy" "ingests_archive_ingest_table" {
   role   = "${module.ingests.task_role_name}"
-  policy = "${data.aws_iam_policy_document.archive_progress_table_read_write_policy.json}"
+  policy = "${data.aws_iam_policy_document.archive_ingest_table_read_write_policy.json}"
 }
 
 resource "aws_iam_role_policy" "ingests_metrics" {
@@ -51,9 +51,9 @@ resource "aws_iam_role_policy" "ingests_api_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
-resource "aws_iam_role_policy" "ingests_api_archive_progress_table" {
+resource "aws_iam_role_policy" "ingests_api_archive_ingest_table" {
   role   = "${module.api.ingests_role_name}"
-  policy = "${data.aws_iam_policy_document.archive_progress_table_read_write_policy.json}"
+  policy = "${data.aws_iam_policy_document.archive_ingest_table_read_write_policy.json}"
 }
 
 # bag_replicator
@@ -116,9 +116,9 @@ resource "aws_iam_role_policy" "notifier_metrics" {
 
 # bagger
 
-resource "aws_iam_role_policy" "bagger_progress_table_readwrite" {
+resource "aws_iam_role_policy" "bagger_ingest_table_readwrite" {
   role   = "${module.bagger.task_role_name}"
-  policy = "${data.aws_iam_policy_document.bagger_progress_table_readwrite.json}"
+  policy = "${data.aws_iam_policy_document.bagger_ingest_table_readwrite.json}"
 }
 
 resource "aws_iam_role_policy" "bagger_task_queue_discovery" {

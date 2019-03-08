@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 
 class VerifierFeatureTest
     extends FunSpec
@@ -17,16 +17,16 @@ class VerifierFeatureTest
     with BagLocationFixtures
     with BagRequestGenerators
     with IntegrationPatience
-    with ProgressUpdateAssertions
+    with IngestUpdateAssertions
     with WorkerServiceFixture {
 
   it(
-    "updates the progress monitor and sends an outgoing notification if verification succeeds") {
-    withLocalSnsTopic { progressTopic =>
+    "updates the ingest monitor and sends an outgoing notification if verification succeeds") {
+    withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
         withLocalSqsQueueAndDlq {
           case QueuePair(queue, dlq) =>
-            withWorkerService(progressTopic, outgoingTopic, queue) { _ =>
+            withWorkerService(ingestTopic, outgoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
                 withBag(bucket) { bagLocation =>
                   val bagRequest = createBagRequestWith(bagLocation)
@@ -36,9 +36,9 @@ class VerifierFeatureTest
                   eventually {
                     listMessagesReceivedFromSNS(outgoingTopic)
 
-                    assertTopicReceivesProgressEventUpdate(
+                    topicReceivesIngestEvent(
                       requestId = bagRequest.requestId,
-                      progressTopic = progressTopic
+                      ingestTopic = ingestTopic
                     ) { events =>
                       events.map {
                         _.description
@@ -60,11 +60,11 @@ class VerifierFeatureTest
 
   it(
     "deletes the SQS message if the bag can be verified but has incorrect checksums") {
-    withLocalSnsTopic { progressTopic =>
+    withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
         withLocalSqsQueueAndDlq {
           case QueuePair(queue, dlq) =>
-            withWorkerService(progressTopic, outgoingTopic, queue) { _ =>
+            withWorkerService(ingestTopic, outgoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
                 withBag(
                   bucket,
@@ -75,9 +75,9 @@ class VerifierFeatureTest
                     sendNotificationToSQS(queue, bagRequest)
 
                     eventually {
-                      assertTopicReceivesProgressStatusUpdate(
+                      topicRecievesIngestStatus(
                         requestId = bagRequest.requestId,
-                        progressTopic = progressTopic,
+                        ingestTopic = ingestTopic,
                         status = Ingest.Failed
                       ) { events =>
                         val description = events.map {

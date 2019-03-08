@@ -4,20 +4,20 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.HttpResponse
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.ingests.models.ProgressCallbackStatusUpdate
-import uk.ac.wellcome.platform.archive.common.progress.models.Callback.{Failed, Succeeded}
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestCallbackStatusUpdate
+import uk.ac.wellcome.platform.archive.common.ingests.models.Callback.{Failed, Succeeded}
 
 import scala.util.{Failure, Success, Try}
 
 object PrepareNotificationService extends Logging {
   def prepare(id: UUID,
-              httpResponse: Try[HttpResponse]): ProgressCallbackStatusUpdate =
+              httpResponse: Try[HttpResponse]): IngestCallbackStatusUpdate =
     httpResponse match {
       case Success(HttpResponse(status, _, _, _)) =>
         if (status.isSuccess()) {
           debug(s"Callback fulfilled for: $id")
 
-          ProgressCallbackStatusUpdate(
+          IngestCallbackStatusUpdate(
             id = id,
             callbackStatus = Succeeded,
             description = "Callback fulfilled."
@@ -25,7 +25,7 @@ object PrepareNotificationService extends Logging {
         } else {
           debug(s"Callback failed for: $id, got $status!")
 
-          ProgressCallbackStatusUpdate(
+          IngestCallbackStatusUpdate(
             id = id,
             callbackStatus = Failed,
             description = s"Callback failed for: $id, got $status!"
@@ -34,7 +34,7 @@ object PrepareNotificationService extends Logging {
       case Failure(e) =>
         error(s"Callback failed for: $id", e)
 
-        ProgressCallbackStatusUpdate(
+        IngestCallbackStatusUpdate(
           id = id,
           callbackStatus = Failed,
           description = s"Callback failed for: $id (${e.getMessage})"
