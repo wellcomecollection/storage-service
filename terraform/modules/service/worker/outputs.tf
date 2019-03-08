@@ -11,5 +11,5 @@ output "scale_up_arn" {
 }
 
 output "scale_down_arn" {
-  value = "${module.service.scale_up_arn}"
+  value = "${module.service.scale_down_arn}"
 }
