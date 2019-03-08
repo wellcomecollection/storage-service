@@ -18,7 +18,7 @@ case class ReplicationSummary(
   }
   override def toString(): String = {
     val destinationCompletePath = destination match {
-      case None => "<no-destination>"
+      case None                 => "<no-destination>"
       case Some(theDestination) => theDestination.completePath
     }
     f"""|${source.completePath} -> $destinationCompletePath
