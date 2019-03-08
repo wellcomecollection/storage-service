@@ -17,8 +17,8 @@ case class ReplicationSummary(
     )
   }
   override def toString(): String = {
-      f"""|replicated in ${duration.getOrElse("<not-completed>")}
+    f"""|replicated in ${duration.getOrElse("<not-completed>")}
        """.stripMargin
-          .replaceAll("\n", " ")
-    }
+      .replaceAll("\n", " ")
+  }
 }
