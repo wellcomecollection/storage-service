@@ -5,9 +5,8 @@ import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.ObjectMetadata
-import com.amazonaws.services.s3.transfer.{TransferManagerBuilder, Upload}
 import org.apache.commons.compress.archivers.ArchiveEntry
+import uk.ac.wellcome.platform.archive.bagunpacker.S3Uploader
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
@@ -21,9 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
 
-  private val transferManager = TransferManagerBuilder.standard
-    .withS3Client(s3Client)
-    .build
+  private val s3Uploader = new S3Uploader()
 
   def unpack(
     srcLocation: ObjectLocation,
@@ -81,17 +78,11 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
       )
     }
 
-    val metadata = new ObjectMetadata()
-    metadata.setContentLength(archiveEntrySize)
-
-    val upload: Upload = transferManager.upload(
-      uploadLocation.namespace,
-      uploadLocation.key,
-      inputStream,
-      metadata
+    s3Uploader.putObject(
+      inputStream = inputStream,
+      streamLength = archiveEntrySize,
+      uploadLocation = uploadLocation
     )
-
-    upload.waitForUploadResult()
 
     archiveEntrySize
   }
