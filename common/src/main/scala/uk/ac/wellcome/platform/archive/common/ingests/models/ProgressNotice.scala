@@ -1,11 +1,11 @@
-package uk.ac.wellcome.platform.archive.common.progress.models
+package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.util.UUID
 
 case class ProgressNotice(
   id: UUID,
   message: String,
-  status: Option[Progress.Status]
+  status: Option[Ingest.Status]
 ) {
   def toUpdate() = {
     val event = ProgressEvent(message)
@@ -38,7 +38,7 @@ object ProgressNotice {
   }
 
   def apply(id: UUID,
-            status: Progress.Status,
+            status: Ingest.Status,
             message: String*): ProgressNotice = {
     ProgressNotice(
       id,

@@ -4,6 +4,8 @@ import java.net.{URI, URL}
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
+import uk.ac.wellcome.platform.archive.common.ingests.models
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.models._
 
@@ -16,14 +18,14 @@ case class RequestDisplayIngest(sourceLocation: DisplayLocation,
                                 @JsonKey("type")
                                 ontologyType: String = "Ingest")
     extends DisplayIngest {
-  def toProgress: Progress = {
-    Progress(
+  def toProgress: Ingest = {
+    models.Ingest(
       id = UUID.randomUUID,
       sourceLocation = sourceLocation.toStorageLocation,
       callback = Callback(
         callback.map(displayCallback => URI.create(displayCallback.url))),
       space = Namespace(space.id),
-      status = Progress.Accepted
+      status = Ingest.Accepted
     )
   }
 }
@@ -72,7 +74,7 @@ case class DisplayProgressEvent(description: String,
                                 ontologyType: String = "ProgressEvent")
 
 object ResponseDisplayIngest {
-  def apply(progress: Progress, contextUrl: URL): ResponseDisplayIngest =
+  def apply(progress: Ingest, contextUrl: URL): ResponseDisplayIngest =
     ResponseDisplayIngest(
       context = contextUrl.toString,
       id = progress.id,
@@ -101,7 +103,7 @@ object DisplayIngestMinimal {
 }
 
 object DisplayStatus {
-  def apply(progressStatus: Progress.Status): DisplayStatus =
+  def apply(progressStatus: Ingest.Status): DisplayStatus =
     DisplayStatus(progressStatus.toString)
 
   def apply(callbackStatus: Callback.CallbackStatus): DisplayStatus =

@@ -17,7 +17,7 @@ import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ProgressStarterTest
+class IngestStarterTest
     extends FunSpec
     with ProgressTrackerFixture
     with SNS

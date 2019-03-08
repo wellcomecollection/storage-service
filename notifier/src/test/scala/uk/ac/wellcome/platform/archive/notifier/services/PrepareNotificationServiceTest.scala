@@ -6,8 +6,8 @@ import akka.http.scaladsl.model.HttpResponse
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
+import uk.ac.wellcome.platform.archive.common.ingests.models.Callback
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.progress.models.Callback
 
 import scala.util.{Failure, Success, Try}
 

@@ -9,10 +9,8 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagIdGenerators,
-  BagInfoGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, Ingest, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.progress.models._
@@ -72,7 +70,7 @@ class BagRegisterWorkerTest
               assertTopicReceivesProgressStatusUpdate(
                 requestId = bagRequest.requestId,
                 progressTopic = progressTopic,
-                status = Progress.Completed,
+                status = Ingest.Completed,
                 expectedBag = Some(bagId)) { events =>
                 events.size should be >= 1
                 events.head.description shouldBe "Register succeeded (completed)"
@@ -113,7 +111,7 @@ class BagRegisterWorkerTest
               assertTopicReceivesProgressStatusUpdate(
                 requestId = bagRequest.requestId,
                 progressTopic = progressTopic,
-                status = Progress.Failed,
+                status = Ingest.Failed,
                 expectedBag = Some(bagId)) { events =>
                 events.size should be >= 1
                 events.head.description shouldBe "Register failed"

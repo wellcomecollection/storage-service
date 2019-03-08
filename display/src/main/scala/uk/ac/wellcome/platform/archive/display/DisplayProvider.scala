@@ -2,11 +2,8 @@ package uk.ac.wellcome.platform.archive.display
 
 import io.circe.CursorOp.DownField
 import io.circe.{Decoder, DecodingFailure, Encoder, Json}
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  InfrequentAccessStorageProvider,
-  StandardStorageProvider,
-  StorageProvider
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StandardStorageProvider, StorageProvider}
+import uk.ac.wellcome.platform.archive.common.progress.models.{InfrequentAccessStorageProvider, StandardStorageProvider}
 
 sealed trait DisplayProvider {
   val id: String

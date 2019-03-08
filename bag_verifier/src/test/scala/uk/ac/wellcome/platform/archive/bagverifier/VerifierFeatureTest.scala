@@ -7,8 +7,8 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
 class VerifierFeatureTest
     extends FunSpec
@@ -78,7 +78,7 @@ class VerifierFeatureTest
                       assertTopicReceivesProgressStatusUpdate(
                         requestId = bagRequest.requestId,
                         progressTopic = progressTopic,
-                        status = Progress.Failed
+                        status = Ingest.Failed
                       ) { events =>
                         val description = events.map {
                           _.description

@@ -4,11 +4,9 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Completed
-import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
-import uk.ac.wellcome.platform.archive.ingests.fixtures.{
-  IngestsFixture => ProgressFixture
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
+import uk.ac.wellcome.platform.archive.common.ingests.models.ProgressUpdate
+import uk.ac.wellcome.platform.archive.ingests.fixtures.{IngestsFixture => ProgressFixture}
 
 class IngestsFeatureTest
     extends FunSpec

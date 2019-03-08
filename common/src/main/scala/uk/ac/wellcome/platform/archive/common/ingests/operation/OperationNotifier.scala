@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.operation
+package uk.ac.wellcome.platform.archive.common.ingests.operation
 
 import java.util.UUID
 
@@ -6,13 +6,8 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  Progress,
-  ProgressEvent,
-  ProgressStatusUpdate,
-  ProgressUpdate
-}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -68,7 +63,7 @@ class OperationNotifier(
 
         ProgressStatusUpdate(
           id = requestId,
-          status = Progress.Completed,
+          status = Ingest.Completed,
           affectedBag = bagId,
           events = List(
             ProgressEvent(
@@ -92,7 +87,7 @@ class OperationNotifier(
 
         ProgressStatusUpdate(
           id = requestId,
-          status = Progress.Failed,
+          status = Ingest.Failed,
           affectedBag = bagId,
           events = List(
             ProgressEvent(

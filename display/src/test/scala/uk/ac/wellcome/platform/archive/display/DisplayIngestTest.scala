@@ -6,6 +6,7 @@ import java.util.UUID
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.ObjectLocation
@@ -28,14 +29,14 @@ class DisplayIngestTest
 
   it("creates a DisplayIngest from Progress") {
     val bagId = createBagId
-    val progress: Progress = Progress(
+    val progress: Ingest = Ingest(
       id,
       StorageLocation(
         StandardStorageProvider,
         ObjectLocation("bukkit", "key.txt")),
       Namespace(spaceId),
       Some(Callback(new URI(callbackUrl))),
-      Progress.Processing,
+      Ingest.Processing,
       Some(bagId),
       Instant.parse(createdDate),
       Instant.parse(modifiedDate),
@@ -81,7 +82,7 @@ class DisplayIngestTest
       ObjectLocation(bucket, path))
     progress.callback shouldBe Some(
       Callback(URI.create(progressCreateRequest.callback.get.url)))
-    progress.status shouldBe Progress.Accepted
+    progress.status shouldBe Ingest.Accepted
     assertRecent(progress.createdDate)
     assertRecent(progress.lastModifiedDate)
     progress.events shouldBe List.empty

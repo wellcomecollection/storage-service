@@ -3,19 +3,13 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
-  BagReplicatorFixtures,
-  WorkerServiceFixture
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{BagReplicatorFixtures, WorkerServiceFixture}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagLocation,
-  BagPath
-}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
 class BagReplicatorWorkerTest
     extends FunSpec
@@ -91,7 +85,7 @@ class BagReplicatorWorkerTest
             assertTopicReceivesProgressStatusUpdate(
               bagRequest.requestId,
               progressTopic = progressTopic,
-              status = Progress.Failed) { events =>
+              status = Ingest.Failed) { events =>
               events should have size 1
               events.head.description shouldBe "Replicating failed"
             }

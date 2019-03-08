@@ -8,11 +8,12 @@ import com.gu.scanamo._
 import com.gu.scanamo.error.ConditionNotMet
 import com.gu.scanamo.syntax._
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.dynamo._
 
-import scala.concurrent.{blocking, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.{Failure, Success, Try}
 
 class ProgressTracker(
@@ -26,11 +27,11 @@ class ProgressTracker(
     dynamoConfig = dynamoConfig
   )
 
-  def get(id: UUID): Future[Option[Progress]] =
-    versionedDao.getRecord[Progress](id.toString)
+  def get(id: UUID): Future[Option[Ingest]] =
+    versionedDao.getRecord[Ingest](id.toString)
 
-  def initialise(progress: Progress): Future[Progress] = {
-    val progressTable = Table[Progress](dynamoConfig.table)
+  def initialise(progress: Ingest): Future[Ingest] = {
+    val progressTable = Table[Ingest](dynamoConfig.table)
     debug(s"initializing archive progress tracker with $progress")
 
     val ops = progressTable
@@ -55,7 +56,7 @@ class ProgressTracker(
     }
   }
 
-  def update(update: ProgressUpdate): Try[Progress] = {
+  def update(update: ProgressUpdate): Try[Ingest] = {
     debug(s"Updating record:${update.id} with:$update")
 
     val eventsUpdate = appendAll('events -> update.events.toList)
@@ -83,7 +84,7 @@ class ProgressTracker(
           'callback \ 'status -> callbackStatusUpdate.callbackStatus)
     }
 
-    val progressTable = Table[Progress](dynamoConfig.table)
+    val progressTable = Table[Ingest](dynamoConfig.table)
     val ops = progressTable
       .given(attributeExists('id))
       .update('id -> update.id, mergedUpdate)

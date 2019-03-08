@@ -5,11 +5,9 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  Callback,
-  Progress
-}
+import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 import uk.ac.wellcome.platform.archive.ingests.fixtures.CallbackNotificationServiceFixture
 
 class CallbackNotificationServiceTest
@@ -20,8 +18,8 @@ class CallbackNotificationServiceTest
 
   val sendsCallbackStatus = Table(
     ("progress-status", "callback-status"),
-    (Progress.Failed, Callback.Pending),
-    (Progress.Completed, Callback.Pending)
+    (Ingest.Failed, Callback.Pending),
+    (Ingest.Completed, Callback.Pending)
   )
 
   it(
@@ -55,16 +53,16 @@ class CallbackNotificationServiceTest
 
   val doesNotSendCallbackStatus = Table(
     ("progress-status", "callback-status"),
-    (Progress.Accepted, Callback.Pending),
-    (Progress.Accepted, Callback.Succeeded),
-    (Progress.Accepted, Callback.Failed),
-    (Progress.Processing, Callback.Pending),
-    (Progress.Processing, Callback.Succeeded),
-    (Progress.Processing, Callback.Failed),
-    (Progress.Failed, Callback.Succeeded),
-    (Progress.Failed, Callback.Failed),
-    (Progress.Completed, Callback.Succeeded),
-    (Progress.Completed, Callback.Failed)
+    (Ingest.Accepted, Callback.Pending),
+    (Ingest.Accepted, Callback.Succeeded),
+    (Ingest.Accepted, Callback.Failed),
+    (Ingest.Processing, Callback.Pending),
+    (Ingest.Processing, Callback.Succeeded),
+    (Ingest.Processing, Callback.Failed),
+    (Ingest.Failed, Callback.Succeeded),
+    (Ingest.Failed, Callback.Failed),
+    (Ingest.Completed, Callback.Succeeded),
+    (Ingest.Completed, Callback.Failed)
   )
 
   it("doesn't send a notification if the callback has already been sent") {

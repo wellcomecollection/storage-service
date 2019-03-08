@@ -10,18 +10,11 @@ import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.http.models.InternalServerErrorResponse
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagId,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.progress.monitor.ProgressTracker
-import uk.ac.wellcome.platform.archive.display.{
-  DisplayIngestMinimal,
-  RequestDisplayIngest,
-  ResponseDisplayIngest
-}
+import uk.ac.wellcome.platform.archive.display.{DisplayIngestMinimal, RequestDisplayIngest, ResponseDisplayIngest}
 
 class Router(progressTracker: ProgressTracker,
              progressStarter: ProgressStarter,
@@ -93,6 +86,6 @@ class Router(progressTracker: ProgressTracker,
     }
   }
 
-  private def createLocationHeader(progress: Progress) =
+  private def createLocationHeader(progress: Ingest) =
     Location(s"${httpServerConfig.externalBaseURL}/${progress.id}")
 }

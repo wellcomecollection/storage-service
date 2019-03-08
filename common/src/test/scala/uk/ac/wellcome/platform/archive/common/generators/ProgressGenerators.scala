@@ -4,8 +4,10 @@ import java.net.URI
 import java.time.Instant
 import java.util.UUID
 
+import uk.ac.wellcome.platform.archive.common.ingests.models
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Status
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Status
 import uk.ac.wellcome.platform.archive.common.progress.models._
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -15,7 +17,7 @@ trait ProgressGenerators extends BagIdGenerators {
     StandardStorageProvider,
     ObjectLocation(randomAlphanumeric(), randomAlphanumeric()))
 
-  def createProgress: Progress = createProgressWith()
+  def createProgress: Ingest = createProgressWith()
 
   val testCallbackUri =
     new URI("http://www.wellcomecollection.org/callback/ok")
@@ -24,11 +26,11 @@ trait ProgressGenerators extends BagIdGenerators {
                          sourceLocation: StorageLocation = storageLocation,
                          callback: Option[Callback] = Some(createCallback()),
                          space: Namespace = createSpace,
-                         status: Status = Progress.Accepted,
+                         status: Status = Ingest.Accepted,
                          maybeBag: Option[BagId] = None,
                          createdDate: Instant = Instant.now,
-                         events: List[ProgressEvent] = List.empty): Progress =
-    Progress(
+                         events: List[ProgressEvent] = List.empty): Ingest =
+    models.Ingest(
       id = id,
       sourceLocation = sourceLocation,
       callback = callback,
@@ -51,10 +53,10 @@ trait ProgressGenerators extends BagIdGenerators {
     createProgressEventUpdateWith(id = UUID.randomUUID())
 
   def createProgressStatusUpdateWith(
-    id: UUID = randomUUID,
-    status: Status = Progress.Accepted,
-    maybeBag: Option[BagId] = Some(createBagId),
-    events: Seq[ProgressEvent] = List(createProgressEvent))
+                                      id: UUID = randomUUID,
+                                      status: Status = Ingest.Accepted,
+                                      maybeBag: Option[BagId] = Some(createBagId),
+                                      events: Seq[ProgressEvent] = List(createProgressEvent))
     : ProgressStatusUpdate =
     ProgressStatusUpdate(
       id = id,

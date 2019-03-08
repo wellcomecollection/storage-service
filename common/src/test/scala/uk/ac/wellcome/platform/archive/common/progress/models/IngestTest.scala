@@ -3,9 +3,10 @@ package uk.ac.wellcome.platform.archive.common.progress.models
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.TimeTestFixture
 
-class ProgressTest
+class IngestTest
     extends FunSpec
     with Matchers
     with TimeTestFixture
@@ -14,7 +15,7 @@ class ProgressTest
 
   it("can be created") {
     val progress = createProgress
-    progress.status shouldBe Progress.Accepted
+    progress.status shouldBe Ingest.Accepted
     assertRecent(progress.createdDate)
     progress.lastModifiedDate shouldBe progress.createdDate
     progress.events shouldBe List.empty
@@ -24,10 +25,10 @@ class ProgressTest
 
   private val progressStatus = Table(
     ("string-status", "parsed-status"),
-    ("accepted", Progress.Accepted),
-    ("processing", Progress.Processing),
-    ("succeeded", Progress.Completed),
-    ("failed", Progress.Failed),
+    ("accepted", Ingest.Accepted),
+    ("processing", Ingest.Processing),
+    ("succeeded", Ingest.Completed),
+    ("failed", Ingest.Failed),
   )
 
   it("converts all callback status values to strings") {

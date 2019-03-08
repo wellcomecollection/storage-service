@@ -14,6 +14,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
 import uk.ac.wellcome.platform.archive.common.progress.models._
@@ -270,15 +271,15 @@ class IngestsApiFeatureTest
                     actualCallbackStatus shouldBe "processing"
                     actualSpaceId shouldBe spaceName
 
-                    assertTableOnlyHasItem[Progress](
-                      Progress(
+                    assertTableOnlyHasItem[Ingest](
+                      Ingest(
                         id,
                         StorageLocation(
                           StandardStorageProvider,
                           ObjectLocation(bucketName, s3key)),
                         Namespace(spaceName),
                         Some(Callback(testCallbackUri, Callback.Pending)),
-                        Progress.Accepted,
+                        Ingest.Accepted,
                         None,
                         Instant.parse(actualCreatedDate),
                         Instant.parse(actualLastModifiedDate),

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.progress.models
+package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.util.UUID
 
@@ -14,7 +14,7 @@ object ProgressUpdate {
   def failed[T](id: UUID, error: ArchiveError[T]) =
     ProgressStatusUpdate(
       id,
-      Progress.Failed,
+      Ingest.Failed,
       None,
       List(ProgressEvent(error.toString))
     )
@@ -28,7 +28,7 @@ case class ProgressEventUpdate(id: UUID, events: Seq[ProgressEvent])
     extends ProgressUpdate
 
 case class ProgressStatusUpdate(id: UUID,
-                                status: Progress.Status,
+                                status: Ingest.Status,
                                 affectedBag: Option[BagId],
                                 events: Seq[ProgressEvent] = List.empty)
     extends ProgressUpdate

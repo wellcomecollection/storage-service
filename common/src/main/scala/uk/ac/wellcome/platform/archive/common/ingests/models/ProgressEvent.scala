@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.progress.models
+package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.time.Instant
 

@@ -3,23 +3,12 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
-  CompressFixture,
-  TestArchive,
-  WorkerServiceFixture
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{CompressFixture, TestArchive, WorkerServiceFixture}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  StorageSpace,
-  UnpackBagRequest
-}
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagLocation,
-  BagPath
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.models.{BagRequest, StorageSpace, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
 class UnpackerWorkerTest
     extends FunSpec
@@ -95,7 +84,7 @@ class UnpackerWorkerTest
           assertTopicReceivesProgressStatusUpdate(
             requestId = unpackBagRequest.requestId,
             progressTopic = progressTopic,
-            status = Progress.Failed
+            status = Ingest.Failed
           ) { events =>
             events.map { _.description } shouldBe List("Unpacker failed")
           }

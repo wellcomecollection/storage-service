@@ -4,17 +4,14 @@ import java.time.Instant
 import java.util.UUID
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.{
-  GetItemRequest,
-  PutItemRequest,
-  UpdateItemRequest
-}
+import com.amazonaws.services.dynamodbv2.model.{GetItemRequest, PutItemRequest, UpdateItemRequest}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
 import uk.ac.wellcome.platform.archive.common.progress.models._
@@ -25,7 +22,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
 
-class ProgressTrackerTest
+class IngestTrackerTest
     extends FunSpec
     with LocalDynamoDb
     with MockitoSugar
@@ -94,7 +91,7 @@ class ProgressTrackerTest
       withProgressTrackerTable { table =>
         withProgressTracker(table) { progressTracker =>
           whenReady(progressTracker.initialise(createProgress)) { progress =>
-            assertTableOnlyHasItem[Progress](progress, table)
+            assertTableOnlyHasItem[Ingest](progress, table)
 
             whenReady(progressTracker.get(progress.id)) { result =>
               result shouldBe a[Some[_]]
@@ -142,14 +139,14 @@ class ProgressTrackerTest
 
             val progressUpdate = ProgressStatusUpdate(
               progress.id,
-              Progress.Processing,
+              Ingest.Processing,
               Some(bagId)
             )
 
             progressTracker.update(progressUpdate)
 
             val storedProgress =
-              getExistingTableItem[Progress](progress.id.toString, table)
+              getExistingTableItem[Ingest](progress.id.toString, table)
 
             assertRecent(storedProgress.createdDate)
             assertRecent(storedProgress.lastModifiedDate)
@@ -193,7 +190,7 @@ class ProgressTrackerTest
             val someBagId = Some(createBagId)
             val progressUpdate = ProgressStatusUpdate(
               progress.id,
-              Progress.Completed,
+              Ingest.Completed,
               affectedBag = someBagId,
               List(createProgressEvent)
             )
@@ -202,7 +199,7 @@ class ProgressTrackerTest
 
             val actualProgress = assertProgressCreated(progress, table)
 
-            actualProgress.status shouldBe Progress.Completed
+            actualProgress.status shouldBe Ingest.Completed
             actualProgress.bag shouldBe someBagId
 
             assertProgressRecordedRecentEvents(
@@ -351,7 +348,7 @@ class ProgressTrackerTest
       withProgressTrackerTable { table =>
         withProgressTracker(table) { progressTracker =>
           val start = Instant.parse("2018-12-01T12:00:00.00Z")
-          val eventualProgresses: Seq[Future[Progress]] =
+          val eventualProgresses: Seq[Future[Ingest]] =
             for (i <- 0 to 33)
               yield
                 progressTracker.initialise(
@@ -380,7 +377,7 @@ class ProgressTrackerTest
                                           bagId: BagId): ProgressUpdate =
     createProgressStatusUpdateWith(
       id = id,
-      status = Progress.Processing,
+      status = Ingest.Processing,
       maybeBag = Some(bagId)
     )
 }

@@ -7,8 +7,8 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -66,7 +66,7 @@ class OperationNotifierTest
                   assertTopicReceivesProgressStatusUpdate(
                     requestId = requestId,
                     progressTopic = progressTopic,
-                    status = Progress.Failed
+                    status = Ingest.Failed
                   ) { events =>
                     val description = events.map {
                       _.description
@@ -166,7 +166,7 @@ class OperationNotifierTest
                   assertTopicReceivesProgressStatusUpdate(
                     requestId = requestId,
                     progressTopic = progressTopic,
-                    status = Progress.Completed
+                    status = Ingest.Completed
                   ) { events =>
                     val description = events.map {
                       _.description

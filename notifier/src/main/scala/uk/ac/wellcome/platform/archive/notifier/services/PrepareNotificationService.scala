@@ -4,11 +4,8 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.HttpResponse
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.progress.models.Callback.{
-  Failed,
-  Succeeded
-}
-import uk.ac.wellcome.platform.archive.common.progress.models.ProgressCallbackStatusUpdate
+import uk.ac.wellcome.platform.archive.common.ingests.models.ProgressCallbackStatusUpdate
+import uk.ac.wellcome.platform.archive.common.progress.models.Callback.{Failed, Succeeded}
 
 import scala.util.{Failure, Success, Try}
 

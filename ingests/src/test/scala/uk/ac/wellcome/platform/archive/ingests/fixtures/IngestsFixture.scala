@@ -4,7 +4,7 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.progress.monitor.ProgressTracker
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.{LocalDynamoDb, S3}
@@ -16,7 +16,7 @@ trait IngestsFixture
     with ScalaFutures {
 
   def withProgress[R](progressTracker: ProgressTracker)(
-    testWith: TestWith[Progress, R]): R = {
+    testWith: TestWith[Ingest, R]): R = {
     val createdProgress = createProgress
 
     whenReady(progressTracker.initialise(createdProgress)) { storedProgress =>

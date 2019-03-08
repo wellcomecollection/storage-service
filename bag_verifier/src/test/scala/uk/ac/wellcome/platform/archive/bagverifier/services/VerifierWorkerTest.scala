@@ -5,13 +5,10 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.WorkerServiceFixture
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  FileEntry
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 
 class VerifierWorkerTest
     extends FunSpec
@@ -74,7 +71,7 @@ class VerifierWorkerTest
                   assertTopicReceivesProgressStatusUpdate(
                     requestId = bagRequest.requestId,
                     progressTopic = progressTopic,
-                    status = Progress.Failed
+                    status = Ingest.Failed
                   ) { events =>
                     val description = events.map {
                       _.description
@@ -111,7 +108,7 @@ class VerifierWorkerTest
                     assertTopicReceivesProgressStatusUpdate(
                       requestId = bagRequest.requestId,
                       progressTopic = progressTopic,
-                      status = Progress.Failed
+                      status = Ingest.Failed
                     ) { events =>
                       val description = events.map {
                         _.description
