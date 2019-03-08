@@ -5,7 +5,7 @@ import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest}
+import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObjectResult}
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
@@ -63,9 +63,7 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
     inputStream: InputStream,
     archiveEntry: ArchiveEntry,
     destination: ObjectLocation
-  ) = {
-
-    val metadata = new ObjectMetadata()
+  ): Long = {
     val archiveEntrySize = archiveEntry.getSize
 
     if (archiveEntrySize == ArchiveEntry.SIZE_UNKNOWN) {
@@ -74,19 +72,33 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
       )
     }
 
+    val uploadLocation = destination.copy(
+      key = normalizeKey(destination.key, archiveEntry.getName)
+    )
+
+    singlePartUpload(
+      archiveEntrySize = archiveEntrySize,
+      uploadLocation = uploadLocation,
+      inputStream = inputStream
+    )
+
+    archiveEntrySize
+  }
+
+  private def singlePartUpload(archiveEntrySize: Long, uploadLocation: ObjectLocation, inputStream: InputStream): PutObjectResult = {
+    val metadata = new ObjectMetadata()
+
     metadata.setContentLength(archiveEntrySize)
 
     val request =
       new PutObjectRequest(
-        destination.namespace,
-        normalizeKey(destination.key, archiveEntry.getName),
+        uploadLocation.namespace,
+        uploadLocation.key,
         inputStream,
         metadata
       )
 
     s3Client.putObject(request)
-
-    archiveEntrySize
   }
 
   private def normalizeKey(prefix: String, key: String) = {
