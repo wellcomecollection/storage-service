@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 import java.io.{File, FileInputStream}
 import java.nio.file.Paths
 
-import com.amazonaws.services.s3.model.ListMultipartUploadsRequest
 import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
@@ -16,7 +15,6 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class UnpackerTest
@@ -82,55 +80,6 @@ class UnpackerTest
 
             assertBucketContentsMatchFiles(dstBucket, dstKey, filesInArchive)
           }
-        }
-      }
-    }
-  }
-
-  it("switches to MultipartUpload for files >100MB") {
-    // The upper limit for a single S3 Upload is 5242880 bytes.  If you try
-    // to upload more than that, you get an error:
-    //
-    //    Your proposed upload exceeds the maximum allowed size
-    //
-    // The Docker image we use to mimic S3 doesn't seem to emit this error, so
-    // instead we query S3 for evidence of Multipart uploads.
-    //
-    val bigFile = writeToOutputStream() { outputStream =>
-      (1 to 1000).foreach { _ =>
-        outputStream.write(randomBytes(1000))
-      }
-    }
-
-    withLocalS3Bucket { srcBucket =>
-      withLocalS3Bucket { dstBucket =>
-        val (archiveFile, filesInArchive, _) = createTgzArchiveWithFiles(
-          files = List(bigFile)
-        )
-
-        withArchive(srcBucket, archiveFile) { testArchive =>
-          val dstKey = "unpacked"
-          val summaryResult = unpacker
-            .unpack(
-              testArchive,
-              ObjectLocation(dstBucket.name, dstKey)
-            )
-
-          val multipartUploadListing = s3Client.listMultipartUploads(
-            new ListMultipartUploadsRequest(dstBucket.name)
-          ).getMultipartUploads.asScala.toList
-
-          multipartUploadListing.isEmpty shouldBe false
-
-          whenReady(summaryResult) { unpacked =>
-            unpacked shouldBe a[OperationSuccess[_]]
-
-            val summary = unpacked.summary
-            summary.fileCount shouldBe filesInArchive.size
-            summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
-
-            assertBucketContentsMatchFiles(dstBucket, dstKey, filesInArchive)
-         }
         }
       }
     }
