@@ -5,7 +5,8 @@ import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest}
+import com.amazonaws.services.s3.model.ObjectMetadata
+import com.amazonaws.services.s3.transfer.{TransferManagerBuilder, Upload}
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
@@ -19,6 +20,10 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.concurrent.{ExecutionContext, Future}
 
 class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
+
+  private val transferManager = TransferManagerBuilder.standard
+    .withS3Client(s3Client)
+    .build
 
   def unpack(
     srcLocation: ObjectLocation,
@@ -63,9 +68,11 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
     inputStream: InputStream,
     archiveEntry: ArchiveEntry,
     destination: ObjectLocation
-  ) = {
+  ): Long = {
+    val uploadLocation = destination.copy(
+      key = normalizeKey(destination.key, archiveEntry.getName)
+    )
 
-    val metadata = new ObjectMetadata()
     val archiveEntrySize = archiveEntry.getSize
 
     if (archiveEntrySize == ArchiveEntry.SIZE_UNKNOWN) {
@@ -74,25 +81,24 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
       )
     }
 
+    val metadata = new ObjectMetadata()
     metadata.setContentLength(archiveEntrySize)
 
-    val request =
-      new PutObjectRequest(
-        destination.namespace,
-        normalizeKey(destination.key, archiveEntry.getName),
-        inputStream,
-        metadata
-      )
+    val upload: Upload = transferManager.upload(
+      uploadLocation.namespace,
+      uploadLocation.key,
+      inputStream,
+      metadata
+    )
 
-    s3Client.putObject(request)
+    upload.waitForUploadResult()
 
     archiveEntrySize
   }
 
-  private def normalizeKey(prefix: String, key: String) = {
+  private def normalizeKey(prefix: String, key: String) =
     Paths
       .get(prefix, key)
       .normalize()
       .toString
-  }
 }

@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
-import java.io.FileOutputStream
+import java.io.{File, FileOutputStream}
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.UUID
@@ -100,12 +100,8 @@ trait RandomThings {
     }
   }
 
-  def randomFile(
-    size: Int = 256,
-    path: String = s"${randomUUID.toString}.test",
-    useBytes: Boolean = false
-  ) = {
-
+  def writeToOutputStream(path: String = s"${randomUUID.toString}.test")(
+    writeTo: FileOutputStream => Unit): File = {
     val absolutePath = Paths.get(tmpDir, path)
 
     val file = absolutePath.toFile
@@ -114,18 +110,26 @@ trait RandomThings {
     parentDir.mkdirs()
 
     val fileOutputStream = new FileOutputStream(file)
-
-    val bytes = if (useBytes) {
-      randomBytes(size)
-    } else {
-      randomAlphanumeric(size).getBytes
-    }
-
-    fileOutputStream.write(bytes)
+    writeTo(fileOutputStream)
     fileOutputStream.close()
 
     file
   }
+
+  def randomFile(
+    size: Int = 256,
+    path: String = s"${randomUUID.toString}.test",
+    useBytes: Boolean = false
+  ) =
+    writeToOutputStream(path) { fileOutputStream =>
+      val bytes = if (useBytes) {
+        randomBytes(size)
+      } else {
+        randomAlphanumeric(size).getBytes
+      }
+
+      fileOutputStream.write(bytes)
+    }
 
   def randomUUID = UUID.randomUUID()
 
