@@ -88,7 +88,7 @@ trait CompressFixture extends RandomThings with S3 with Logging {
 
     val entries = files.map { file =>
       val entryName = relativeToTmpDir(file)
-      println(s"Archiving ${file.getAbsolutePath} in ${entryName}")
+      debug(s"Archiving ${file.getAbsolutePath} in ${entryName}")
       archive.addFile(
         file,
         entryName
