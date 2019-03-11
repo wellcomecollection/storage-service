@@ -17,7 +17,8 @@ class UnpackerWorker(
   config: UnpackerConfig,
   stream: NotificationStream[UnpackBagRequest],
   notifier: OperationNotifier,
-  unpacker: Unpacker
+  unpacker: Unpacker,
+  operationReporter: OperationReporter
 )(implicit ec: ExecutionContext)
     extends Logging
     with Runnable {
@@ -34,7 +35,7 @@ class UnpackerWorker(
         location.objectLocation
       )
 
-      _ <- OperationReporter.report(request.requestId, result)
+      _ <- operationReporter.report(request.requestId, result)
 
       _ <- notifier
         .send(request.requestId, result) { _ =>

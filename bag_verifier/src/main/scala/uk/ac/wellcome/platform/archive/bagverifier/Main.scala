@@ -44,7 +44,7 @@ object Main extends WellcomeTypesafeApp {
     val operationName = "verification"
 
     val notifier = OperationBuilder
-      .build(config, operationName)
+      .buildOperationNotifier(config, operationName)
 
     new BagVerifierWorker(stream, verifier, notifier)
   }

@@ -41,7 +41,7 @@ object Main extends WellcomeTypesafeApp {
     val operationName = "register"
 
     val notifier = OperationBuilder
-      .build(config, operationName)
+      .buildOperationNotifier(config, operationName)
 
     val register = new Register(
       storageManifestService,

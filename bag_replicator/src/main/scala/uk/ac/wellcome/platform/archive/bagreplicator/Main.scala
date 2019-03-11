@@ -34,7 +34,7 @@ object Main extends WellcomeTypesafeApp {
       stream = NotificationStreamBuilder
         .buildStream[BagRequest](config),
       notifier = OperationBuilder
-        .build(config, operationName),
+        .buildOperationNotifier(config, operationName),
       replicator = new BagReplicator(
         bagLocator = new BagLocator(s3Client),
         config = ReplicatorDestinationConfig

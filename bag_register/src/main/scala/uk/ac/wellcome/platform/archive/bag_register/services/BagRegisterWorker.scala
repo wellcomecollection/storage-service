@@ -14,6 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class BagRegisterWorker(
   stream: NotificationStream[BagRequest],
   notifier: OperationNotifier,
+  operationReporter: OperationReporter,
   register: Register
 )(implicit ec: ExecutionContext)
     extends Logging
@@ -31,7 +32,7 @@ class BagRegisterWorker(
         request.bagLocation
       )
 
-      _ <- OperationReporter.report(request.requestId, result)
+      _ <- operationReporter.report(request.requestId, result)
 
       _ <- notifier.send(
         request.requestId,

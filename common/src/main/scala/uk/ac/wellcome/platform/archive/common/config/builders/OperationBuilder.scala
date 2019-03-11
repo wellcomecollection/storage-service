@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.common.config.builders
 
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
-import uk.ac.wellcome.platform.archive.common.operation.{IngestNotifier, OperationNotifier, OutgoingNotifier}
+import uk.ac.wellcome.monitoring.typesafe.MetricsSenderBuilder
+import uk.ac.wellcome.platform.archive.common.operation.{IngestNotifier, OperationNotifier, OperationReporter, OutgoingNotifier}
+
+import scala.concurrent.ExecutionContext
 
 object OperationBuilder {
 
@@ -24,7 +27,7 @@ object OperationBuilder {
       )
     )
 
-  def build(config: Config, operationName: String): OperationNotifier =
+  def buildOperationNotifier(config: Config, operationName: String): OperationNotifier =
     new OperationNotifier(
       outgoing = buildOutgoingNotifier(
         config, operationName, namespace = "outgoing"
@@ -32,5 +35,10 @@ object OperationBuilder {
       ingests = buildIngestNotifier(
         config, operationName, namespace = "progress"
       )
+    )
+
+  def buildOperationReporter(config: Config)(implicit ec: ExecutionContext): OperationReporter =
+    new OperationReporter(
+      metricsSender = MetricsSenderBuilder.buildMetricsSender(config)
     )
 }
