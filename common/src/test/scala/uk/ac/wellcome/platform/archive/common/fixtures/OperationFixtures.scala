@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.platform.archive.common.operation._
 import uk.ac.wellcome.platform.archive.common.operation.{IngestUpdater, OperationNotifier, DiagnosticReporter, OutgoingPublisher}
 
 trait OperationFixtures extends SNS with MetricsSenderFixtures {
