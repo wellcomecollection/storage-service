@@ -4,6 +4,7 @@ import java.util.UUID
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.monitoring.MetricsSender
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationCompleted, OperationFailure, OperationResult, OperationSuccess}
 
 import scala.concurrent.{ExecutionContext, Future}
 

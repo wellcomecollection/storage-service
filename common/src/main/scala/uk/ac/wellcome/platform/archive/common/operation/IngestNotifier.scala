@@ -4,8 +4,9 @@ import java.util.UUID
 
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestEvent, IngestStatusUpdate, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationCompleted, OperationFailure, OperationResult, OperationSuccess}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
 
 import scala.concurrent.Future
 
@@ -21,37 +22,37 @@ class IngestNotifier(
   ): Future[PublishAttempt] = {
     val update = result match {
       case OperationCompleted(_) =>
-        ProgressStatusUpdate(
+        IngestStatusUpdate(
           id = requestId,
-          status = Progress.Completed,
+          status = Ingest.Completed,
           affectedBag = bagId,
           events = List(
-            ProgressEvent(
+            IngestEvent(
               s"${operationName.capitalize} succeeded (completed)"
             )
           )
         )
 
       case OperationSuccess(_) =>
-        ProgressUpdate.event(
+        IngestUpdate.event(
           id = requestId,
           description = s"${operationName.capitalize} succeeded"
         )
 
       case OperationFailure(_, _) =>
-        ProgressStatusUpdate(
+        IngestStatusUpdate(
           id = requestId,
-          status = Progress.Failed,
+          status = Ingest.Failed,
           affectedBag = bagId,
           events = List(
-            ProgressEvent(
+            IngestEvent(
               s"${operationName.capitalize} failed"
             )
           )
         )
     }
 
-    snsWriter.writeMessage[ProgressUpdate](
+    snsWriter.writeMessage[IngestUpdate](
       update,
       subject = s"Sent by ${this.getClass.getSimpleName}"
     )

@@ -4,6 +4,7 @@ import java.util.UUID
 
 import grizzled.slf4j.Logging
 import io.circe.Encoder
+import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationResult
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -28,7 +28,7 @@ class OperationNotifierTest
   }
 
   describe("with a failed operation") {
-    it("only sends a failed progress update") {
+    it("only sends a failed ingest update") {
       withLocalSnsTopic { ingestTopic =>
         withLocalSnsTopic { outgoingTopic =>
           val requestId = UUID.randomUUID()
@@ -87,45 +87,46 @@ class OperationNotifierTest
   describe("with a successful operation") {
     it("sends an event ingest update and an outgoing message") {
       withLocalSnsTopic { ingestTopic =>
-          withLocalSnsTopic { outgoingTopic =>
-              val requestId = UUID.randomUUID()
+        withLocalSnsTopic { outgoingTopic =>
+          val requestId = UUID.randomUUID()
 
-              val operationName = randomAlphanumeric()
-              withOperationNotifier(
-                operationName,
-                ingestTopic = ingestTopic,
-                outgoingTopic = outgoingTopic
-              ) { operationNotifier =>
+          val operationName = randomAlphanumeric()
+          withOperationNotifier(
+            operationName,
+            ingestTopic = ingestTopic,
+            outgoingTopic = outgoingTopic
+          ) { operationNotifier =>
 
-                val summary = TestSummary(
-                  randomAlphanumeric()
-                )
+            val summary = TestSummary(
+              randomAlphanumeric()
+            )
 
-                val operation = OperationSuccess(
-                  summary
-                )
+            val operation = OperationSuccess(
+              summary
+            )
 
-                val sendingOperationNotice =
-                  operationNotifier
-                    .send(requestId, operation)(identity)
+            val sendingOperationNotice =
+              operationNotifier
+                .send(requestId, operation)(identity)
 
-                whenReady(sendingOperationNotice) { _ =>
-                  eventually {
+            whenReady(sendingOperationNotice) { _ =>
+              eventually {
 
-                    topicReceivesIngestEvent(
-                      requestId,
-                      ingestTopic) { events =>
-                      events should have size 1
-                      events.head.description shouldBe s"${operationName.capitalize} succeeded"
-                    }
-
-                    assertSnsReceivesOnly(summary, outgoingTopic)
-                  }
+                topicReceivesIngestEvent(
+                  requestId,
+                  ingestTopic) { events =>
+                  events should have size 1
+                  events.head.description shouldBe s"${operationName.capitalize} succeeded"
                 }
+
+                assertSnsReceivesOnly(summary, outgoingTopic)
               }
             }
+          }
         }
       }
+    }
+  }
 
   describe("with a completed operation") {
     it("sends a completed ingest update and an outgoing message") {

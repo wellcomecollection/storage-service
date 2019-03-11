@@ -4,6 +4,7 @@ import java.util.UUID
 
 import io.circe.Encoder
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationCompleted, OperationFailure, OperationResult, OperationSuccess}
 
 import scala.concurrent.{ExecutionContext, Future}
 
