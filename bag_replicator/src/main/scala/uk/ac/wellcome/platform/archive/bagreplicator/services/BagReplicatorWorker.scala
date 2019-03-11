@@ -4,7 +4,7 @@ import akka.Done
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
+import uk.ac.wellcome.platform.archive.common.operation.{OperationNotifier, OperationReporter}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,17 +18,20 @@ class BagReplicatorWorker(
 
   def run(): Future[Done] = stream.run(processMessage)
 
-  def processMessage(bagRequest: BagRequest): Future[Unit] =
+  def processMessage(request: BagRequest): Future[Unit] =
     for {
-      summary <- replicator.replicate(
-        bagRequest.bagLocation
+      result <- replicator.replicate(
+        request.bagLocation
       )
+
+      _ <- OperationReporter.report(request.requestId, result)
+
       _ <- notifier.send(
-        requestId = bagRequest.requestId,
-        result = summary
+        requestId = request.requestId,
+        result = result
       ) { summary =>
         BagRequest(
-          requestId = bagRequest.requestId,
+          requestId = request.requestId,
           bagLocation = summary.destination
             .getOrElse(
               throw new RuntimeException(

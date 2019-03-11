@@ -5,7 +5,7 @@ import grizzled.slf4j.Logging
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
+import uk.ac.wellcome.platform.archive.common.operation.{OperationNotifier, OperationReporter}
 import uk.ac.wellcome.typesafe.Runnable
 import uk.ac.wellcome.json.JsonUtil._
 
@@ -32,6 +32,8 @@ class BagVerifierWorker(
         .verify(
           bagRequest.bagLocation
         )
+
+      _ <- OperationReporter.report(request.requestId, result)
 
       _ <- notifier.send(
         bagRequest.requestId,

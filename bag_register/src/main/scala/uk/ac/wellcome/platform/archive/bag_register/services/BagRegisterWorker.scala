@@ -6,7 +6,7 @@ import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
+import uk.ac.wellcome.platform.archive.common.operation.{OperationNotifier, OperationReporter}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -30,6 +30,8 @@ class BagRegisterWorker(
       result <- register.update(
         request.bagLocation
       )
+
+      _ <- OperationReporter.report(request.requestId, result)
 
       _ <- notifier.send(
         request.requestId,
