@@ -71,7 +71,7 @@ class VerifierWorkerTest
                 whenReady(future) { _ =>
                   assertSnsReceivesNothing(outgoingTopic)
 
-                  topicRecievesIngestStatus(
+                  topicReceivesIngestStatus(
                     requestId = bagRequest.requestId,
                     ingestTopic = ingestTopic,
                     status = Ingest.Failed
@@ -108,7 +108,7 @@ class VerifierWorkerTest
 
                     assertSnsReceivesNothing(outgoingTopic)
 
-                    topicRecievesIngestStatus(
+                    topicReceivesIngestStatus(
                       requestId = bagRequest.requestId,
                       ingestTopic = ingestTopic,
                       status = Ingest.Failed

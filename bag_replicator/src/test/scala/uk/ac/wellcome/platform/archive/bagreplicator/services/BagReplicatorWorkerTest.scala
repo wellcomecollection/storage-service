@@ -87,7 +87,7 @@ class BagReplicatorWorkerTest
           whenReady(future) { _ =>
             assertSnsReceivesNothing(outgoingTopic)
 
-            topicRecievesIngestStatus(
+            topicReceivesIngestStatus(
               bagRequest.requestId,
               ingestTopic = ingestTopic,
               status = Ingest.Failed) { events =>

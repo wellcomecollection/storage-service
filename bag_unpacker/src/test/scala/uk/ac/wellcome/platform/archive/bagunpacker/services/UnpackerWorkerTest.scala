@@ -92,7 +92,7 @@ class UnpackerWorkerTest
         whenReady(future) { _ =>
           assertSnsReceivesNothing(outgoingTopic)
 
-          topicRecievesIngestStatus(
+          topicReceivesIngestStatus(
             requestId = unpackBagRequest.requestId,
             ingestTopic = ingestTopic,
             status = Ingest.Failed

@@ -167,7 +167,7 @@ class OperationNotifierTest
 
               whenReady(sendingOperationNotice) { _ =>
                 eventually {
-                  topicRecievesIngestStatus(
+                  topicReceivesIngestStatus(
                     requestId = requestId,
                     ingestTopic = ingestTopic,
                     status = Ingest.Completed
