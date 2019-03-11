@@ -9,11 +9,8 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class OperationNotifier(
-  outgoing: OutgoingNotifier,
-  ingests: IngestNotifier
-) extends Logging {
-
+class OperationNotifier(outgoing: OutgoingPublisher,
+                        ingestUpdater: IngestUpdater) extends Logging {
   def send[R, O](
     requestId: UUID,
     result: OperationResult[R],
@@ -24,7 +21,7 @@ class OperationNotifier(
     ec: ExecutionContext,
     enc: Encoder[O]): Future[Unit] =
     for {
-      _ <- ingests.send(requestId, result, bagId)
+      _ <- ingestUpdater.send(requestId, result, bagId)
       _ <- outgoing.send(requestId, result)(outgoingTransform)
     } yield ()
 }

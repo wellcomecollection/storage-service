@@ -20,7 +20,7 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 
 import scala.concurrent.Future
 
-class IngestNotifier(
+class IngestUpdater(
   operationName: String,
   snsWriter: SNSWriter
 ) {

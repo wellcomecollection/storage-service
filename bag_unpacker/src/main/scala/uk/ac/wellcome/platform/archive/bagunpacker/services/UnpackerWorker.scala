@@ -7,14 +7,11 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  UnpackBagRequest
-}
 import uk.ac.wellcome.platform.archive.common.operation.{
   OperationNotifier,
-  OperationReporter
+  DiagnosticReporter
 }
+import uk.ac.wellcome.platform.archive.common.models.{BagRequest, UnpackBagRequest}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,7 +20,7 @@ class UnpackerWorker(
   config: UnpackerConfig,
   stream: NotificationStream[UnpackBagRequest],
   notifier: OperationNotifier,
-  reporter: OperationReporter,
+  reporter: DiagnosticReporter,
   unpacker: Unpacker,
 )(implicit ec: ExecutionContext)
     extends Logging

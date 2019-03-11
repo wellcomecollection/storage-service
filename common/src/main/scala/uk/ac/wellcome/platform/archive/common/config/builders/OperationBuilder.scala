@@ -4,19 +4,14 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsSenderBuilder
-import uk.ac.wellcome.platform.archive.common.operation.{
-  IngestNotifier,
-  OperationNotifier,
-  OperationReporter,
-  OutgoingNotifier
-}
+import uk.ac.wellcome.platform.archive.common.operation.{DiagnosticReporter, IngestUpdater, OperationNotifier, OutgoingPublisher}
 
 object OperationBuilder {
 
   def buildIngestNotifier(config: Config,
                           operationName: String,
-                          namespace: String = ""): IngestNotifier =
-    new IngestNotifier(
+                          namespace: String = ""): IngestUpdater =
+    new IngestUpdater(
       operationName = operationName,
       snsWriter = SNSBuilder.buildSNSWriter(
         config = config,
@@ -26,8 +21,8 @@ object OperationBuilder {
 
   def buildOutgoingNotifier(config: Config,
                             operationName: String,
-                            namespace: String = ""): OutgoingNotifier =
-    new OutgoingNotifier(
+                            namespace: String = ""): OutgoingPublisher =
+    new OutgoingPublisher(
       operationName = operationName,
       snsWriter = SNSBuilder.buildSNSWriter(
         config = config,
@@ -43,16 +38,14 @@ object OperationBuilder {
         operationName,
         namespace = "outgoing"
       ),
-      ingests = buildIngestNotifier(
-        config,
-        operationName,
-        namespace = "progress"
+      ingestUpdater = buildIngestNotifier(
+        config, operationName, namespace = "progress"
       )
     )
 
   def buildOperationReporter(config: Config)(
-    implicit actorSystem: ActorSystem): OperationReporter =
-    new OperationReporter(
+    implicit actorSystem: ActorSystem): DiagnosticReporter =
+    new DiagnosticReporter(
       metricsSender = MetricsSenderBuilder.buildMetricsSender(config)
     )
 }

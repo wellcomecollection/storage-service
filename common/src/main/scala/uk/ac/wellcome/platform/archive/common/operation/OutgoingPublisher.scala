@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.operation.{
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class OutgoingNotifier(
+class OutgoingPublisher(
   operationName: String,
   snsWriter: SNSWriter
 ) {

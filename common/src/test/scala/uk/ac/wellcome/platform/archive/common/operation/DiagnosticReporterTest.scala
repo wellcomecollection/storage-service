@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.operation.{
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class OperationReporterTest
+class DiagnosticReporterTest
     extends FunSpec
     with Matchers
     with RandomThings
@@ -24,7 +24,7 @@ class OperationReporterTest
   it("sends a success metric") {
     withMetricsSender { metricsSender =>
       println(metricsSender)
-      val reporter = new OperationReporter(metricsSender)
+      val reporter = new DiagnosticReporter(metricsSender)
 
       val future = reporter.report(
         requestId = randomUUID,
@@ -40,7 +40,7 @@ class OperationReporterTest
 
   it("sends a failure metric") {
     withMetricsSender { metricsSender =>
-      val reporter = new OperationReporter(metricsSender)
+      val reporter = new DiagnosticReporter(metricsSender)
 
       val future = reporter.report(
         requestId = randomUUID,
@@ -59,7 +59,7 @@ class OperationReporterTest
 
   it("sends a completed metric") {
     withMetricsSender { metricsSender =>
-      val reporter = new OperationReporter(metricsSender)
+      val reporter = new DiagnosticReporter(metricsSender)
 
       val future = reporter.report(
         requestId = randomUUID,

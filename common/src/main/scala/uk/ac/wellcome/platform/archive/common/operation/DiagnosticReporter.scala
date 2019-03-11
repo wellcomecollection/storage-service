@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.operation.{
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class OperationReporter(metricsSender: MetricsSender) extends Logging {
+class DiagnosticReporter(metricsSender: MetricsSender) extends Logging {
   def report[R](requestId: UUID, result: OperationResult[R])(
     implicit ec: ExecutionContext): Future[Unit] = {
     val future = result match {
