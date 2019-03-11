@@ -34,7 +34,7 @@ class BagReplicatorWorkerTest
         withLocalSnsTopic { progressTopic =>
           withLocalSnsTopic { outgoingTopic =>
             withWorkerService(
-              progressTopic = progressTopic,
+              ingestTopic = progressTopic,
               outgoingTopic = outgoingTopic,
               destination = destination) { service =>
               withBag(ingestsBucket) { srcBagLocation =>
@@ -72,7 +72,7 @@ class BagReplicatorWorkerTest
     withLocalSnsTopic { progressTopic =>
       withLocalSnsTopic { outgoingTopic =>
         withWorkerService(
-          progressTopic = progressTopic,
+          ingestTopic = progressTopic,
           outgoingTopic = outgoingTopic) { service =>
           val srcBagLocation = BagLocation(
             storageNamespace = "does-not-exist",

@@ -36,7 +36,7 @@ class BagReplicatorFeatureTest
             withLocalSnsTopic { outgoingTopic =>
               withWorkerService(
                 queue,
-                progressTopic = progressTopic,
+                ingestTopic = progressTopic,
                 outgoingTopic = outgoingTopic,
                 destination = destination) { _ =>
                 val bagInfo = createBagInfo

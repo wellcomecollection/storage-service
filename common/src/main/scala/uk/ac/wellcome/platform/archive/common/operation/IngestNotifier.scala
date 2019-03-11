@@ -2,11 +2,12 @@ package uk.ac.wellcome.platform.archive.common.operation
 
 import java.util.UUID
 
-import uk.ac.wellcome.messaging.sns.SNSWriter
+import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.progress.models.{Progress, ProgressEvent, ProgressStatusUpdate, ProgressUpdate}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class IngestNotifier(
   operationName: String,
@@ -17,7 +18,7 @@ class IngestNotifier(
     requestId: UUID,
     result: OperationResult[R],
     bagId: Option[BagId] = None
-  )(implicit ec: ExecutionContext): Future[Unit] = {
+  ): Future[PublishAttempt] = {
     val update = result match {
       case OperationCompleted(_) =>
         ProgressStatusUpdate(

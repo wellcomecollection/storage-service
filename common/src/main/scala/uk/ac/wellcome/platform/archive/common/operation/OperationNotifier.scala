@@ -9,8 +9,8 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import scala.concurrent.{ExecutionContext, Future}
 
 class OperationNotifier(
-                         outgoing: OutgoingNotifier,
-                         ingests: IngestNotifier
+  outgoing: OutgoingNotifier,
+  ingests: IngestNotifier
 ) extends Logging {
 
   def send[R, O](

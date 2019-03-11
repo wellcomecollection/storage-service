@@ -6,13 +6,10 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifierWorker,
-  Verifier
-}
+import uk.ac.wellcome.messaging.fixtures.NotificationStreamFixture
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorker, Verifier}
+import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -20,42 +17,35 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture
     extends NotificationStreamFixture
-    with SNS
     with S3
-    with Akka {
+    with Akka
+    with OperationFixtures {
   def withWorkerService[R](
-    progressTopic: Topic,
+    ingestTopic: Topic,
     outgoingTopic: Topic,
     queue: Queue = Queue("fixture", arn = "arn::fixture"))(
     testWith: TestWith[BagVerifierWorker, R]): R =
     withNotificationStream[BagRequest, R](queue) { stream =>
       withMaterializer { implicit mat =>
-        withSNSWriter(progressTopic) { progressSnsWriter =>
-          withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-            val verifier = new Verifier(
-              storageManifestService = new StorageManifestService(),
-              s3Client = s3Client,
-              algorithm = MessageDigestAlgorithms.SHA_256
-            )
+        val verifier = new Verifier(
+          storageManifestService = new StorageManifestService(),
+          s3Client = s3Client,
+          algorithm = MessageDigestAlgorithms.SHA_256
+        )
 
-            val operationName = "verification"
+        withOperationNotifier(
+          "verification",
+          ingestTopic = ingestTopic,
+          outgoingTopic = outgoingTopic) { notifier =>
+          val service = new BagVerifierWorker(
+            stream,
+            verifier,
+            notifier
+          )
 
-            val notifier = new OperationNotifier(
-              operationName,
-              outgoingSnsWriter,
-              progressSnsWriter
-            )
+          service.run()
 
-            val service = new BagVerifierWorker(
-              stream,
-              verifier,
-              notifier
-            )
-
-            service.run()
-
-            testWith(service)
-          }
+          testWith(service)
         }
       }
     }
