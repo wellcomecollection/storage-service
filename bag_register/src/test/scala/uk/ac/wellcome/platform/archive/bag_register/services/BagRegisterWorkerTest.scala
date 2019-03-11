@@ -13,9 +13,14 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   BagInfoGenerators
 }
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  Ingest,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models._
+import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -26,16 +31,16 @@ class BagRegisterWorkerTest
     with BagIdGenerators
     with BagInfoGenerators
     with BagLocationFixtures
-    with ProgressUpdateAssertions
+    with IngestUpdateAssertions
     with WorkerFixture {
 
-  it("sends a successful ProgressUpdate if it registers a Bag successfully") {
+  it("sends a successful IngestUpdate upon registration") {
     withWorkerService() {
       case (
           service: BagRegisterWorker,
           table: Table,
           bucket: Bucket,
-          progressTopic: Topic,
+          ingestTopic: Topic,
           _: Topic,
           queuePair: QueuePair
           ) => {
@@ -69,10 +74,10 @@ class BagRegisterWorkerTest
 
               storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-              assertTopicReceivesProgressStatusUpdate(
+              topicReceivesIngestStatus(
                 requestId = bagRequest.requestId,
-                progressTopic = progressTopic,
-                status = Progress.Completed,
+                ingestTopic = ingestTopic,
+                status = Ingest.Completed,
                 expectedBag = Some(bagId)) { events =>
                 events.size should be >= 1
                 events.head.description shouldBe "Register succeeded (completed)"
@@ -83,14 +88,14 @@ class BagRegisterWorkerTest
     }
   }
 
-  it("sends a failed ProgressUpdate if updating the VHS fails") {
+  it("sends a failed IngestUpdate if storing fails") {
     withWorkerService(userBucket = Some(Bucket("does_not_exist"))) {
 
       case (
           service: BagRegisterWorker,
           _: Table,
           bucket: Bucket,
-          progressTopic: Topic,
+          ingestTopic: Topic,
           _: Topic,
           _: QueuePair
           ) => {
@@ -110,10 +115,10 @@ class BagRegisterWorkerTest
             val future = service.processMessage(bagRequest)
 
             whenReady(future) { _ =>
-              assertTopicReceivesProgressStatusUpdate(
+              topicReceivesIngestStatus(
                 requestId = bagRequest.requestId,
-                progressTopic = progressTopic,
-                status = Progress.Failed,
+                ingestTopic = ingestTopic,
+                status = Ingest.Failed,
                 expectedBag = Some(bagId)) { events =>
                 events.size should be >= 1
                 events.head.description shouldBe "Register failed"

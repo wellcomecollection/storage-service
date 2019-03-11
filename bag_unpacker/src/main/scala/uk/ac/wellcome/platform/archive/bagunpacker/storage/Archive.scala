@@ -10,7 +10,7 @@ import org.apache.commons.compress.archivers.{
 }
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.io.input.CloseShieldInputStream
-import uk.ac.wellcome.platform.archive.common.operation.{
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{
   OperationFailure,
   OperationResult,
   OperationSuccess
@@ -122,6 +122,9 @@ object Archive extends Logging {
   }
 
   private case class StreamError[T](t: T, e: Throwable) extends StreamStep[T]
+
   private case class StreamEnd[T](t: T) extends StreamStep[T]
+
   private case class StreamContinues[T](t: T) extends StreamStep[T]
+
 }

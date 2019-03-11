@@ -13,9 +13,9 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   RandomThings,
   StorageManifestVHSFixture
 }
+import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -41,7 +41,7 @@ trait WorkerFixture
 
     withLocalDynamoDbTable { table =>
       withLocalS3Bucket { bucket =>
-        withLocalSnsTopic { progressTopic =>
+        withLocalSnsTopic { ingestTopic =>
           withLocalSnsTopic { outgoingTopic =>
             withLocalSqsQueueAndDlq { queuePair =>
               withNotificationStream[BagRequest, R](queuePair.queue) { stream =>
@@ -59,7 +59,7 @@ trait WorkerFixture
 
                 withStorageManifestVHS(testTable, testBucket) {
                   storageManifestVHS =>
-                    withSNSWriter(progressTopic) { progressSnsWriter =>
+                    withSNSWriter(ingestTopic) { ingestSnsWriter =>
                       withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
                         val storageManifestService =
                           new StorageManifestService()
@@ -74,7 +74,7 @@ trait WorkerFixture
                         val notifier = new OperationNotifier(
                           operationName,
                           outgoingSnsWriter,
-                          progressSnsWriter
+                          ingestSnsWriter
                         )
 
                         val service =
@@ -87,7 +87,7 @@ trait WorkerFixture
                             service,
                             table,
                             bucket,
-                            progressTopic,
+                            ingestTopic,
                             outgoingTopic,
                             queuePair)
                         )

@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "archive_progress_table_read_write_policy" {
+data "aws_iam_policy_document" "archive_ingest_table_read_write_policy" {
   statement {
     actions = [
       "dynamodb:UpdateItem",
@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "archive_progress_table_read_write_policy" {
 
 # Bagger
 
-data "aws_iam_policy_document" "bagger_progress_table_readwrite" {
+data "aws_iam_policy_document" "bagger_ingest_table_readwrite" {
   statement {
     actions = [
       "dynamodb:UpdateItem",
@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "bagger_progress_table_readwrite" {
     ]
 
     resources = [
-      "${var.bagger_progress_table_arn}",
+      "${var.bagger_ingest_table_arn}",
     ]
   }
 
@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "bagger_progress_table_readwrite" {
     ]
 
     resources = [
-      "${var.bagger_progress_table_arn}/index/*",
+      "${var.bagger_ingest_table_arn}/index/*",
     ]
   }
 }

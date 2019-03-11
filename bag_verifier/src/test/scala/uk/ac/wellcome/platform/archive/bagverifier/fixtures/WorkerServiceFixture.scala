@@ -11,8 +11,8 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifierWorker,
   Verifier
 }
+import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -24,13 +24,13 @@ trait WorkerServiceFixture
     with S3
     with Akka {
   def withWorkerService[R](
-    progressTopic: Topic,
+    ingestTopic: Topic,
     outgoingTopic: Topic,
     queue: Queue = Queue("fixture", arn = "arn::fixture"))(
     testWith: TestWith[BagVerifierWorker, R]): R =
     withNotificationStream[BagRequest, R](queue) { stream =>
       withMaterializer { implicit mat =>
-        withSNSWriter(progressTopic) { progressSnsWriter =>
+        withSNSWriter(ingestTopic) { ingestSnsWriter =>
           withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
             val verifier = new Verifier(
               storageManifestService = new StorageManifestService(),
@@ -43,7 +43,7 @@ trait WorkerServiceFixture
             val notifier = new OperationNotifier(
               operationName,
               outgoingSnsWriter,
-              progressSnsWriter
+              ingestSnsWriter
             )
 
             val service = new BagVerifierWorker(

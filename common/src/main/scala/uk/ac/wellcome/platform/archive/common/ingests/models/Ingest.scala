@@ -1,30 +1,30 @@
-package uk.ac.wellcome.platform.archive.common.progress.models
+package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.time.Instant
 import java.util.UUID
 
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 
-case class Progress(id: UUID,
-                    sourceLocation: StorageLocation,
-                    space: Namespace,
-                    callback: Option[Callback],
-                    status: Progress.Status,
-                    bag: Option[BagId],
-                    createdDate: Instant,
-                    lastModifiedDate: Instant,
-                    events: Seq[ProgressEvent])
+case class Ingest(id: UUID,
+                  sourceLocation: StorageLocation,
+                  space: Namespace,
+                  callback: Option[Callback],
+                  status: Ingest.Status,
+                  bag: Option[BagId],
+                  createdDate: Instant,
+                  lastModifiedDate: Instant,
+                  events: Seq[IngestEvent])
 
-case object Progress {
+case object Ingest {
   def apply(id: UUID,
             sourceLocation: StorageLocation,
             space: Namespace,
             callback: Option[Callback] = None,
-            status: Progress.Status = Progress.Accepted,
+            status: Ingest.Status = Ingest.Accepted,
             bag: Option[BagId] = None,
             createdDate: Instant = Instant.now(),
-            events: Seq[ProgressEvent] = Seq.empty): Progress = {
-    Progress(
+            events: Seq[IngestEvent] = Seq.empty): Ingest = {
+    Ingest(
       id,
       sourceLocation,
       space,

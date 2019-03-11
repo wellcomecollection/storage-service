@@ -14,9 +14,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.models._
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.ProgressTrackerFixture
-import uk.ac.wellcome.platform.archive.common.progress.models._
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import uk.ac.wellcome.storage.ObjectLocation
@@ -26,7 +27,7 @@ class IngestsApiFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with ProgressTrackerFixture
+    with IngestTrackerFixture
     with IngestsApiFixture
     with RandomThings
     with Inside
@@ -35,12 +36,12 @@ class IngestsApiFeatureTest
 
   val contextUrl = "http://api.wellcomecollection.org/storage/v1/context.json"
   describe("GET /progress/:id") {
-    it("returns a progress tracker when available") {
+    it("returns a ingest tracker when available") {
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materializer =>
-            withProgressTracker(table) { progressTracker =>
-              val progress = createProgress
+            withIngestTracker(table) { ingestTracker =>
+              val ingest = createIngest
 
               val expectedSourceLocationJson =
                 s"""{
@@ -48,14 +49,14 @@ class IngestsApiFeatureTest
                     "id": "${StandardDisplayProvider.id}",
                     "type": "Provider"
                   },
-                  "bucket": "${progress.sourceLocation.location.namespace}",
-                  "path": "${progress.sourceLocation.location.key}",
+                  "bucket": "${ingest.sourceLocation.location.namespace}",
+                  "path": "${ingest.sourceLocation.location.key}",
                   "type": "Location"
                 }""".stripMargin
 
               val expectedCallbackJson =
                 s"""{
-                  "url": "${progress.callback.get.uri}",
+                  "url": "${ingest.callback.get.uri}",
                   "status": {
                     "id": "processing",
                     "type": "Status"
@@ -69,7 +70,7 @@ class IngestsApiFeatureTest
               }""".stripMargin
 
               val expectedSpaceJson = s"""{
-                "id": "${progress.space.underlying}",
+                "id": "${ingest.space.underlying}",
                 "type": "Space"
               }""".stripMargin
 
@@ -78,8 +79,8 @@ class IngestsApiFeatureTest
                 "type": "Status"
               }""".stripMargin
 
-              whenReady(progressTracker.initialise(progress)) { _ =>
-                whenGetRequestReady(s"$baseUrl/progress/${progress.id}") {
+              whenReady(ingestTracker.initialise(ingest)) { _ =>
+                whenGetRequestReady(s"$baseUrl/progress/${ingest.id}") {
                   result =>
                     result.status shouldBe StatusCodes.OK
 
@@ -90,7 +91,7 @@ class IngestsApiFeatureTest
                         .get shouldBe "http://api.wellcomecollection.org/storage/v1/context.json"
                       root.id.string
                         .getOption(json)
-                        .get shouldBe progress.id.toString
+                        .get shouldBe ingest.id.toString
 
                       assertJsonStringsAreEqual(
                         root.sourceLocation.json.getOption(json).get.noSpaces,
@@ -138,10 +139,10 @@ class IngestsApiFeatureTest
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
-            withProgressTracker(table) { progressTracker =>
-              val progress = createProgressWith(callback = None)
-              whenReady(progressTracker.initialise(progress)) { _ =>
-                whenGetRequestReady(s"$baseUrl/progress/${progress.id}") {
+            withIngestTracker(table) { ingestTracker =>
+              val ingest = createIngestWith(callback = None)
+              whenReady(ingestTracker.initialise(ingest)) { _ =>
+                whenGetRequestReady(s"$baseUrl/progress/${ingest.id}") {
                   result =>
                     result.status shouldBe StatusCodes.OK
                     withStringEntity(result.entity) { jsonString =>
@@ -159,7 +160,7 @@ class IngestsApiFeatureTest
       }
     }
 
-    it("returns a 404 NotFound if no progress tracker matches id") {
+    it("returns a 404 NotFound if no ingest tracker matches id") {
       withConfiguredApp {
         case (_, _, metricsSender, baseUrl) =>
           whenGetRequestReady(s"$baseUrl/progress/$randomUUID") { response =>
@@ -190,15 +191,16 @@ class IngestsApiFeatureTest
   }
 
   describe("POST /progress") {
-    it("creates a progress tracker") {
+    it("creates an ingest") {
       withConfiguredApp {
         case (table, unpackerTopic, metricsSender, baseUrl) =>
-          withMaterializer { implicit materializer =>
+          withMaterializer { implicit mat =>
             val url = s"$baseUrl/progress"
 
             val bucketName = "bucket"
             val s3key = "key.txt"
             val spaceName = "somespace"
+
             val entity = HttpEntity(
               ContentTypes.`application/json`,
               s"""|{
@@ -238,11 +240,11 @@ class IngestsApiFeatureTest
               maybeId.isEmpty shouldBe false
               val id = UUID.fromString(maybeId.get)
 
-              val progressFuture =
+              val ingestFuture =
                 Unmarshal(response.entity).to[ResponseDisplayIngest]
 
-              whenReady(progressFuture) { actualProgress =>
-                inside(actualProgress) {
+              whenReady(ingestFuture) { actualIngest =>
+                inside(actualIngest) {
                   case ResponseDisplayIngest(
                       actualContextUrl,
                       actualId,
@@ -270,15 +272,15 @@ class IngestsApiFeatureTest
                     actualCallbackStatus shouldBe "processing"
                     actualSpaceId shouldBe spaceName
 
-                    assertTableOnlyHasItem[Progress](
-                      Progress(
+                    assertTableOnlyHasItem[Ingest](
+                      Ingest(
                         id,
                         StorageLocation(
                           StandardStorageProvider,
                           ObjectLocation(bucketName, s3key)),
                         Namespace(spaceName),
                         Some(Callback(testCallbackUri, Callback.Pending)),
-                        Progress.Accepted,
+                        Ingest.Accepted,
                         None,
                         Instant.parse(actualCreatedDate),
                         Instant.parse(actualLastModifiedDate),
@@ -674,13 +676,13 @@ class IngestsApiFeatureTest
   }
 
   describe("GET /progress/find-by-bag-id/:bag-id") {
-    it("returns a list of progresses for the given bag id") {
+    it("returns a list of ingestes for the given bag id") {
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
-            withProgressTracker(table) { progressTracker =>
-              val progress = createProgress
-              whenReady(progressTracker.initialise(progress)) { _ =>
+            withIngestTracker(table) { ingestTracker =>
+              val ingest = createIngest
+              whenReady(ingestTracker.initialise(ingest)) { _ =>
                 val bagId = createBagId
                 val bagIngest =
                   BagIngest(bagId.toString, randomUUID, Instant.now)
@@ -690,13 +692,14 @@ class IngestsApiFeatureTest
                   response =>
                     response.status shouldBe StatusCodes.OK
                     response.entity.contentType shouldBe ContentTypes.`application/json`
-                    val displayBagProgressFutures =
-                      Unmarshal(response.entity).to[List[DisplayIngestMinimal]]
+                    val displayBagIngestFutures =
+                      Unmarshal(
+                        response.entity
+                      ).to[List[DisplayIngestMinimal]]
 
-                    whenReady(displayBagProgressFutures) {
-                      displayBagProgresses =>
-                        displayBagProgresses shouldBe List(
-                          DisplayIngestMinimal(bagIngest))
+                    whenReady(displayBagIngestFutures) { displayBagIngests =>
+                      displayBagIngests shouldBe List(
+                        DisplayIngestMinimal(bagIngest))
                     }
 
                     assertMetricSent(
@@ -710,14 +713,13 @@ class IngestsApiFeatureTest
       }
     }
 
-    it(
-      "returns a list of progresses for the given bag id with : separated parts") {
+    it("returns a list of ingestes for the given bag id with : separated parts") {
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
-            withProgressTracker(table) { progressTracker =>
-              val progress = createProgress
-              whenReady(progressTracker.initialise(progress)) { _ =>
+            withIngestTracker(table) { ingestTracker =>
+              val ingest = createIngest
+              whenReady(ingestTracker.initialise(ingest)) { _ =>
                 val bagId = createBagId
                 val bagIngest =
                   BagIngest(bagId.toString, randomUUID, Instant.now)
@@ -728,18 +730,17 @@ class IngestsApiFeatureTest
                   response =>
                     response.status shouldBe StatusCodes.OK
                     response.entity.contentType shouldBe ContentTypes.`application/json`
-                    val displayBagProgressFutures =
+                    val displayBagIngestFutures =
                       Unmarshal(response.entity).to[List[DisplayIngestMinimal]]
 
-                    whenReady(displayBagProgressFutures) {
-                      displayBagProgresses =>
-                        displayBagProgresses shouldBe List(
-                          DisplayIngestMinimal(bagIngest))
+                    whenReady(displayBagIngestFutures) { displayBagIngests =>
+                      displayBagIngests shouldBe List(
+                        DisplayIngestMinimal(bagIngest))
 
-                        assertMetricSent(
-                          metricsSender,
-                          result = HttpMetricResults.Success
-                        )
+                      assertMetricSent(
+                        metricsSender,
+                        result = HttpMetricResults.Success
+                      )
                     }
                 }
               }
@@ -748,7 +749,7 @@ class IngestsApiFeatureTest
       }
     }
 
-    it("returns 'Not Found' if there are no progresses for the given bag id") {
+    it("returns 'Not Found' if there are no ingestes for the given bag id") {
       withConfiguredApp {
         case (_, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
@@ -756,15 +757,18 @@ class IngestsApiFeatureTest
               response =>
                 response.status shouldBe StatusCodes.NotFound
                 response.entity.contentType shouldBe ContentTypes.`application/json`
-                val displayBagProgressFutures =
+                val displayBagIngestFutures =
                   Unmarshal(response.entity).to[List[DisplayIngestMinimal]]
-                whenReady(displayBagProgressFutures) { displayBagProgresses =>
-                  displayBagProgresses shouldBe List.empty
+                whenReady(
+                  displayBagIngestFutures
+                ) { displayBagIngests =>
+                  displayBagIngests shouldBe List.empty
 
                   assertMetricSent(
                     metricsSender,
                     result = HttpMetricResults.UserError
                   )
+
                 }
             }
           }

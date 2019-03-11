@@ -4,8 +4,10 @@ import java.net.{URI, URL}
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
+import uk.ac.wellcome.platform.archive.common.ingests.models
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.progress.models._
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 sealed trait DisplayIngest
 
@@ -16,14 +18,14 @@ case class RequestDisplayIngest(sourceLocation: DisplayLocation,
                                 @JsonKey("type")
                                 ontologyType: String = "Ingest")
     extends DisplayIngest {
-  def toProgress: Progress = {
-    Progress(
+  def toIngest: Ingest = {
+    models.Ingest(
       id = UUID.randomUUID,
       sourceLocation = sourceLocation.toStorageLocation,
       callback = Callback(
         callback.map(displayCallback => URI.create(displayCallback.url))),
       space = Namespace(space.id),
-      status = Progress.Accepted
+      status = Ingest.Accepted
     )
   }
 }
@@ -37,7 +39,7 @@ case class ResponseDisplayIngest(@JsonKey("@context")
                                  space: DisplayStorageSpace,
                                  status: DisplayStatus,
                                  bag: Option[IngestDisplayBag] = None,
-                                 events: Seq[DisplayProgressEvent] = Seq.empty,
+                                 events: Seq[DisplayIngestEvent] = Seq.empty,
                                  createdDate: String,
                                  lastModifiedDate: String,
                                  @JsonKey("type")
@@ -66,33 +68,33 @@ case class DisplayStatus(id: String,
                          @JsonKey("type")
                          ontologyType: String = "Status")
 
-case class DisplayProgressEvent(description: String,
-                                createdDate: String,
-                                @JsonKey("type")
-                                ontologyType: String = "ProgressEvent")
+case class DisplayIngestEvent(description: String,
+                              createdDate: String,
+                              @JsonKey("type")
+                              ontologyType: String = "IngestEvent")
 
 object ResponseDisplayIngest {
-  def apply(progress: Progress, contextUrl: URL): ResponseDisplayIngest =
+  def apply(ingest: Ingest, contextUrl: URL): ResponseDisplayIngest =
     ResponseDisplayIngest(
       context = contextUrl.toString,
-      id = progress.id,
-      sourceLocation = DisplayLocation(progress.sourceLocation),
-      callback = progress.callback.map(DisplayCallback(_)),
-      space = DisplayStorageSpace(progress.space.toString),
+      id = ingest.id,
+      sourceLocation = DisplayLocation(ingest.sourceLocation),
+      callback = ingest.callback.map(DisplayCallback(_)),
+      space = DisplayStorageSpace(ingest.space.toString),
       ingestType = CreateDisplayIngestType,
-      bag = progress.bag.map(IngestDisplayBag(_)),
-      status = DisplayStatus(progress.status),
-      events = progress.events.map(DisplayProgressEvent(_)),
-      createdDate = progress.createdDate.toString,
-      lastModifiedDate = progress.lastModifiedDate.toString
+      bag = ingest.bag.map(IngestDisplayBag(_)),
+      status = DisplayStatus(ingest.status),
+      events = ingest.events.map(DisplayIngestEvent(_)),
+      createdDate = ingest.createdDate.toString,
+      lastModifiedDate = ingest.lastModifiedDate.toString
     )
 }
 
-object DisplayProgressEvent {
-  def apply(progressEvent: ProgressEvent): DisplayProgressEvent =
-    DisplayProgressEvent(
-      progressEvent.description,
-      progressEvent.createdDate.toString)
+object DisplayIngestEvent {
+  def apply(ingestEvent: IngestEvent): DisplayIngestEvent =
+    DisplayIngestEvent(
+      ingestEvent.description,
+      ingestEvent.createdDate.toString)
 }
 
 object DisplayIngestMinimal {
@@ -101,8 +103,8 @@ object DisplayIngestMinimal {
 }
 
 object DisplayStatus {
-  def apply(progressStatus: Progress.Status): DisplayStatus =
-    DisplayStatus(progressStatus.toString)
+  def apply(ingestStatus: Ingest.Status): DisplayStatus =
+    DisplayStatus(ingestStatus.toString)
 
   def apply(callbackStatus: Callback.CallbackStatus): DisplayStatus =
     DisplayStatus(callbackStatus.toString)

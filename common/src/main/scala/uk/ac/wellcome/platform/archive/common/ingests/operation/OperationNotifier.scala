@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.operation
+package uk.ac.wellcome.platform.archive.common.ingests.operation
 
 import java.util.UUID
 
@@ -6,20 +6,20 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.progress.models.{
-  Progress,
-  ProgressEvent,
-  ProgressStatusUpdate,
-  ProgressUpdate
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestEvent,
+  IngestStatusUpdate,
+  IngestUpdate
 }
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class OperationNotifier(
   operationName: String,
   outgoingSnsWriter: SNSWriter,
-  progressSnsWriter: SNSWriter
+  ingestSnsWriter: SNSWriter
 ) extends Logging {
 
   def send[R, O](
@@ -41,12 +41,12 @@ class OperationNotifier(
         sendOutgoing(outgoing(summary)).map(_ => ())
     }
 
-    val progressPublication: Future[Unit] =
-      sendProgress[R](requestId, result, bagId)
+    val ingestPublication: Future[Unit] =
+      sendIngest[R](requestId, result, bagId)
         .map(_ => ())
 
     for {
-      _ <- progressPublication
+      _ <- ingestPublication
       _ <- outgoingPublication
     } yield ()
   }
@@ -57,7 +57,7 @@ class OperationNotifier(
       subject = s"Sent by ${this.getClass.getSimpleName}"
     )
 
-  private def sendProgress[R](
+  private def sendIngest[R](
     requestId: UUID,
     result: OperationResult[R],
     bagId: Option[BagId]
@@ -66,12 +66,12 @@ class OperationNotifier(
       case OperationCompleted(summary) => {
         info(s"Completed - $requestId : ${summary.toString}")
 
-        ProgressStatusUpdate(
+        IngestStatusUpdate(
           id = requestId,
-          status = Progress.Completed,
+          status = Ingest.Completed,
           affectedBag = bagId,
           events = List(
-            ProgressEvent(
+            IngestEvent(
               s"${operationName.capitalize} succeeded (completed)"
             )
           )
@@ -81,7 +81,7 @@ class OperationNotifier(
       case OperationSuccess(summary) => {
         info(s"Success - $requestId: ${summary.toString}")
 
-        ProgressUpdate.event(
+        IngestUpdate.event(
           id = requestId,
           description = s"${operationName.capitalize} succeeded"
         )
@@ -90,21 +90,21 @@ class OperationNotifier(
       case OperationFailure(summary, e) => {
         error(s"Failure - $requestId : ${summary.toString}", e)
 
-        ProgressStatusUpdate(
+        IngestStatusUpdate(
           id = requestId,
-          status = Progress.Failed,
+          status = Ingest.Failed,
           affectedBag = bagId,
           events = List(
-            ProgressEvent(
+            IngestEvent(
               s"${operationName.capitalize} failed"
             )
           )
         )
       }
     }
-    progressSnsWriter.writeMessage[ProgressUpdate](
+
+    ingestSnsWriter.writeMessage[IngestUpdate](
       update,
-      subject = s"Sent by ${this.getClass.getSimpleName}"
-    )
+      subject = s"Sent by ${this.getClass.getSimpleName}")
   }
 }

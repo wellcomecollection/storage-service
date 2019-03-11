@@ -12,8 +12,8 @@ import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagReplicatorWorker
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
@@ -29,14 +29,14 @@ trait WorkerServiceFixture
                              "default_q",
                              "arn::default_q"
                            ),
-                           progressTopic: Topic,
+                           ingestTopic: Topic,
                            outgoingTopic: Topic,
                            destination: ReplicatorDestinationConfig =
                              createReplicatorDestinationConfigWith(
                                Bucket(randomAlphanumeric())))(
     testWith: TestWith[BagReplicatorWorker, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
-      withSNSWriter(progressTopic) { progressSnsWriter =>
+      withSNSWriter(ingestTopic) { ingestSnsWriter =>
         withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
           val operationName = "replicating"
 
@@ -45,7 +45,7 @@ trait WorkerServiceFixture
             notifier = new OperationNotifier(
               operationName,
               outgoingSnsWriter,
-              progressSnsWriter
+              ingestSnsWriter
             ),
             replicator = new BagReplicator(
               bagLocator = new BagLocator(s3Client),

@@ -15,14 +15,14 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.generators.ProgressGenerators
-import uk.ac.wellcome.platform.archive.common.models._
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.progress.models.{
+import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
+import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Callback,
-  ProgressCallbackStatusUpdate,
-  ProgressUpdate
+  IngestCallbackStatusUpdate,
+  IngestUpdate
 }
+import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.archive.notifier.fixtures.{
   LocalWireMockFixture,
@@ -38,14 +38,14 @@ class NotifierFeatureTest
     with WorkerServiceFixture
     with Inside
     with RandomThings
-    with ProgressGenerators
+    with IngestGenerators
     with TimeTestFixture {
 
   implicit val system: ActorSystem = ActorSystem("test")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   describe("Making callbacks") {
-    it("makes a POST request when it receives a Progress with a callback") {
+    it("makes a POST request when it receives an Ingest with a callback") {
       withLocalWireMockClient { wireMock =>
         withNotifier {
           case (queue, _) =>
@@ -54,14 +54,14 @@ class NotifierFeatureTest
             val callbackUri =
               new URI(s"http://$callbackHost:$callbackPort/callback/$requestId")
 
-            val progress = createProgressWith(
+            val ingest = createIngestWith(
               id = requestId,
               callback = Some(createCallbackWith(uri = callbackUri))
             )
 
             sendNotificationToSQS(
               queue,
-              CallbackNotification(requestId, callbackUri, progress)
+              CallbackNotification(requestId, callbackUri, ingest)
             )
 
             eventually {
@@ -70,24 +70,24 @@ class NotifierFeatureTest
                 postRequestedFor(urlPathEqualTo(callbackUri.getPath))
                   .withRequestBody(equalToJson(toJson(ResponseDisplayIngest(
                     "http://localhost/context.json",
-                    progress.id,
+                    ingest.id,
                     DisplayLocation(
                       StandardDisplayProvider,
-                      progress.sourceLocation.location.namespace,
-                      progress.sourceLocation.location.key),
-                    progress.callback.map(DisplayCallback(_)),
+                      ingest.sourceLocation.location.namespace,
+                      ingest.sourceLocation.location.key),
+                    ingest.callback.map(DisplayCallback(_)),
                     CreateDisplayIngestType,
-                    DisplayStorageSpace(progress.space.underlying),
-                    DisplayStatus(progress.status.toString),
-                    progress.bag.map(bagId =>
+                    DisplayStorageSpace(ingest.space.underlying),
+                    DisplayStatus(ingest.status.toString),
+                    ingest.bag.map(bagId =>
                       IngestDisplayBag(
                         s"${bagId.space}/${bagId.externalIdentifier}")),
-                    progress.events.map(event =>
-                      DisplayProgressEvent(
+                    ingest.events.map(event =>
+                      DisplayIngestEvent(
                         event.description,
                         event.createdDate.toString)),
-                    progress.createdDate.toString,
-                    progress.lastModifiedDate.toString
+                    ingest.createdDate.toString,
+                    ingest.lastModifiedDate.toString
                   )).get))
               )
             }
@@ -107,7 +107,7 @@ class NotifierFeatureTest
       HttpStatus.SC_NO_CONTENT
     )
   describe("Updating status") {
-    it("sends a ProgressUpdate when it receives a successful callback") {
+    it("sends an IngestUpdate when it receives a successful callback") {
       forAll(successfulStatuscodes) { statusResponse: Int =>
         withLocalWireMockClient { wireMock =>
           withNotifier {
@@ -124,14 +124,14 @@ class NotifierFeatureTest
                   .willReturn(aResponse().withStatus(statusResponse))
               )
 
-              val progress = createProgressWith(
+              val ingest = createIngestWith(
                 id = requestId,
                 callback = Some(createCallbackWith(uri = callbackUri))
               )
 
               sendNotificationToSQS[CallbackNotification](
                 queue,
-                CallbackNotification(requestId, callbackUri, progress)
+                CallbackNotification(requestId, callbackUri, ingest)
               )
 
               eventually {
@@ -140,36 +140,36 @@ class NotifierFeatureTest
                   postRequestedFor(urlPathEqualTo(callbackUri.getPath))
                     .withRequestBody(equalToJson(toJson(ResponseDisplayIngest(
                       "http://localhost/context.json",
-                      progress.id,
+                      ingest.id,
                       DisplayLocation(
                         StandardDisplayProvider,
-                        progress.sourceLocation.location.namespace,
-                        progress.sourceLocation.location.key),
-                      progress.callback.map(DisplayCallback(_)),
+                        ingest.sourceLocation.location.namespace,
+                        ingest.sourceLocation.location.key),
+                      ingest.callback.map(DisplayCallback(_)),
                       CreateDisplayIngestType,
-                      DisplayStorageSpace(progress.space.underlying),
-                      DisplayStatus(progress.status.toString),
-                      progress.bag.map(bagId =>
+                      DisplayStorageSpace(ingest.space.underlying),
+                      DisplayStatus(ingest.status.toString),
+                      ingest.bag.map(bagId =>
                         IngestDisplayBag(
                           s"${bagId.space}/${bagId.externalIdentifier}")),
-                      progress.events.map(event =>
-                        DisplayProgressEvent(
+                      ingest.events.map(event =>
+                        DisplayIngestEvent(
                           event.description,
                           event.createdDate.toString)),
-                      progress.createdDate.toString,
-                      progress.lastModifiedDate.toString
+                      ingest.createdDate.toString,
+                      ingest.lastModifiedDate.toString
                     )).get))
                 )
 
-                inside(notificationMessage[ProgressUpdate](topic)) {
-                  case ProgressCallbackStatusUpdate(
+                inside(notificationMessage[IngestUpdate](topic)) {
+                  case IngestCallbackStatusUpdate(
                       id,
                       callbackStatus,
-                      List(progressEvent)) =>
-                    id shouldBe progress.id
-                    progressEvent.description shouldBe "Callback fulfilled."
+                      List(ingestEvent)) =>
+                    id shouldBe ingest.id
+                    ingestEvent.description shouldBe "Callback fulfilled."
                     callbackStatus shouldBe Callback.Succeeded
-                    assertRecent(progressEvent.createdDate)
+                    assertRecent(ingestEvent.createdDate)
                 }
               }
           }
@@ -178,7 +178,7 @@ class NotifierFeatureTest
     }
 
     it(
-      "sends a ProgressUpdate when it receives Progress with a callback it cannot fulfill") {
+      "sends an IngestUpdate when it receives an Ingest with a callback it cannot fulfill") {
       withNotifier {
         case (queue, topic) =>
           val requestId = randomUUID
@@ -187,26 +187,26 @@ class NotifierFeatureTest
             s"http://$callbackHost:$callbackPort/callback/$requestId"
           )
 
-          val progress = createProgressWith(
+          val ingest = createIngestWith(
             id = requestId,
             callback = Some(createCallbackWith(uri = callbackUri))
           )
 
           sendNotificationToSQS[CallbackNotification](
             queue,
-            CallbackNotification(requestId, callbackUri, progress)
+            CallbackNotification(requestId, callbackUri, ingest)
           )
 
           eventually {
-            inside(notificationMessage[ProgressUpdate](topic)) {
-              case ProgressCallbackStatusUpdate(
+            inside(notificationMessage[IngestUpdate](topic)) {
+              case IngestCallbackStatusUpdate(
                   id,
                   callbackStatus,
-                  List(progressEvent)) =>
-                id shouldBe progress.id
-                progressEvent.description shouldBe s"Callback failed for: ${progress.id}, got 404 Not Found!"
+                  List(ingestEvent)) =>
+                id shouldBe ingest.id
+                ingestEvent.description shouldBe s"Callback failed for: ${ingest.id}, got 404 Not Found!"
                 callbackStatus shouldBe Callback.Failed
-                assertRecent(progressEvent.createdDate)
+                assertRecent(ingestEvent.createdDate)
             }
           }
       }

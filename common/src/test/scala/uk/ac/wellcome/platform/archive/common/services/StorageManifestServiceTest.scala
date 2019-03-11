@@ -7,11 +7,12 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   FileEntry
 }
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
-import uk.ac.wellcome.platform.archive.common.models.{bagit, ChecksumAlgorithm}
-import uk.ac.wellcome.platform.archive.common.progress.models.{
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
+import uk.ac.wellcome.platform.archive.common.models.{bagit, ChecksumAlgorithm}
+import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global

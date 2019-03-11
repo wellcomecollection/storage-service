@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
 }
-import uk.ac.wellcome.platform.archive.common.operation.{
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{
   OperationFailure,
   OperationSuccess
 }

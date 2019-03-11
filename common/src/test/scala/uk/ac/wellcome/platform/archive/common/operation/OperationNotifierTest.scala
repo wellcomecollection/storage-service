@@ -6,9 +6,15 @@ import org.scalatest.FunSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
+import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+  OperationCompleted,
+  OperationFailure,
+  OperationNotifier,
+  OperationSuccess
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -16,7 +22,7 @@ class OperationNotifierTest
     extends FunSpec
     with RandomThings
     with ScalaFutures
-    with ProgressUpdateAssertions
+    with IngestUpdateAssertions
     with Eventually
     with IntegrationPatience
     with SNS {
@@ -28,9 +34,9 @@ class OperationNotifierTest
   }
 
   describe("with a failed operation") {
-    it("only sends a failed progress update") {
-      withLocalSnsTopic { progressTopic =>
-        withSNSWriter(progressTopic) { progressSnsWriter =>
+    it("only sends a failed ingest update") {
+      withLocalSnsTopic { ingestTopic =>
+        withSNSWriter(ingestTopic) { ingestSnsWriter =>
           withLocalSnsTopic { outgoingTopic =>
             withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
               val requestId = UUID.randomUUID()
@@ -39,7 +45,7 @@ class OperationNotifierTest
               val operationNotifier = new OperationNotifier(
                 operationName,
                 outgoingSnsWriter,
-                progressSnsWriter
+                ingestSnsWriter
               )
 
               val summary = TestSummary(
@@ -63,10 +69,10 @@ class OperationNotifierTest
               whenReady(sendingOperationNotice) { _ =>
                 eventually {
 
-                  assertTopicReceivesProgressStatusUpdate(
+                  topicReceivesIngestStatus(
                     requestId = requestId,
-                    progressTopic = progressTopic,
-                    status = Progress.Failed
+                    ingestTopic = ingestTopic,
+                    status = Ingest.Failed
                   ) { events =>
                     val description = events.map {
                       _.description
@@ -88,9 +94,9 @@ class OperationNotifierTest
   }
 
   describe("with a successful operation") {
-    it("sends an event progress update and an outgoing message") {
-      withLocalSnsTopic { progressTopic =>
-        withSNSWriter(progressTopic) { progressSnsWriter =>
+    it("sends an event ingest update and an outgoing message") {
+      withLocalSnsTopic { ingestTopic =>
+        withSNSWriter(ingestTopic) { ingestSnsWriter =>
           withLocalSnsTopic { outgoingTopic =>
             withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
               val requestId = UUID.randomUUID()
@@ -99,7 +105,7 @@ class OperationNotifierTest
               val operationNotifier = new OperationNotifier(
                 operationName,
                 outgoingSnsWriter,
-                progressSnsWriter
+                ingestSnsWriter
               )
 
               val summary = TestSummary(
@@ -117,9 +123,7 @@ class OperationNotifierTest
               whenReady(sendingOperationNotice) { _ =>
                 eventually {
 
-                  assertTopicReceivesProgressEventUpdate(
-                    requestId,
-                    progressTopic) { events =>
+                  topicReceivesIngestEvent(requestId, ingestTopic) { events =>
                     events should have size 1
                     events.head.description shouldBe s"${operationName.capitalize} succeeded"
                   }
@@ -135,9 +139,9 @@ class OperationNotifierTest
   }
 
   describe("with a completed operation") {
-    it("sends a completed progress update and an outgoing message") {
-      withLocalSnsTopic { progressTopic =>
-        withSNSWriter(progressTopic) { progressSnsWriter =>
+    it("sends a completed ingest update and an outgoing message") {
+      withLocalSnsTopic { ingestTopic =>
+        withSNSWriter(ingestTopic) { ingestSnsWriter =>
           withLocalSnsTopic { outgoingTopic =>
             withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
               val requestId = UUID.randomUUID()
@@ -146,7 +150,7 @@ class OperationNotifierTest
               val operationNotifier = new OperationNotifier(
                 operationName,
                 outgoingSnsWriter,
-                progressSnsWriter
+                ingestSnsWriter
               )
 
               val summary = TestSummary(
@@ -163,10 +167,10 @@ class OperationNotifierTest
 
               whenReady(sendingOperationNotice) { _ =>
                 eventually {
-                  assertTopicReceivesProgressStatusUpdate(
+                  topicReceivesIngestStatus(
                     requestId = requestId,
-                    progressTopic = progressTopic,
-                    status = Progress.Completed
+                    ingestTopic = ingestTopic,
+                    status = Ingest.Completed
                   ) { events =>
                     val description = events.map {
                       _.description

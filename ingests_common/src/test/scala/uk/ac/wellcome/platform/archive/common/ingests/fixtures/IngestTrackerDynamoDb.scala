@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.progress.fixtures
+package uk.ac.wellcome.platform.archive.common.ingests.fixtures
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model._
@@ -10,8 +10,8 @@ import uk.ac.wellcome.fixtures.TestWith
 
 import scala.util.Random
 
-trait LocalProgressTrackerDynamoDb extends LocalDynamoDb {
-  private def createProgressTrackerTable(
+trait IngestTrackerDynamoDb extends LocalDynamoDb {
+  private def createIngestTrackerTable(
     dynamoDbClient: AmazonDynamoDB): Table = {
     val tableName = Random.alphanumeric.take(10).mkString
     val tableIndex = Random.alphanumeric.take(10).mkString
@@ -65,8 +65,8 @@ trait LocalProgressTrackerDynamoDb extends LocalDynamoDb {
     table
   }
 
-  def withProgressTrackerTable[R](testWith: TestWith[Table, R]): R =
-    withSpecifiedLocalDynamoDbTable(createProgressTrackerTable) { table =>
+  def withIngestTrackerTable[R](testWith: TestWith[Table, R]): R =
+    withSpecifiedLocalDynamoDbTable(createIngestTrackerTable) { table =>
       testWith(table)
     }
 }
