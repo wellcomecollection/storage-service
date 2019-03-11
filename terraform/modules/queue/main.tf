@@ -35,7 +35,7 @@ resource "aws_cloudwatch_metric_alarm" "queue_high" {
 
   namespace   = "AWS/SQS"
   metric_name = "ApproximateNumberOfMessagesVisible"
-  period      = "300"
+  period      = "60"
 
   statistic = "Sum"
 
@@ -70,7 +70,7 @@ resource "aws_cloudwatch_metric_alarm" "queue_low" {
     metric {
       metric_name = "ApproximateNumberOfMessagesVisible"
       namespace   = "AWS/SQS"
-      period      = "300"
+      period      = "60"
       stat        = "Sum"
 
       dimensions = {
@@ -85,7 +85,7 @@ resource "aws_cloudwatch_metric_alarm" "queue_low" {
     metric {
       metric_name = "ApproximateNumberOfMessagesNotVisible"
       namespace   = "AWS/SQS"
-      period      = "300"
+      period      = "60"
       stat        = "Sum"
 
       dimensions = {
