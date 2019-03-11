@@ -6,8 +6,8 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.operation.{
-  OperationNotifier,
-  DiagnosticReporter
+  DiagnosticReporter,
+  OperationNotifier
 }
 import uk.ac.wellcome.typesafe.Runnable
 import uk.ac.wellcome.json.JsonUtil._

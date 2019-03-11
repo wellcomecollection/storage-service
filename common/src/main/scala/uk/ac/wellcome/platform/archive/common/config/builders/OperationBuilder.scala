@@ -4,7 +4,12 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsSenderBuilder
-import uk.ac.wellcome.platform.archive.common.operation.{DiagnosticReporter, IngestUpdater, OperationNotifier, OutgoingPublisher}
+import uk.ac.wellcome.platform.archive.common.operation.{
+  DiagnosticReporter,
+  IngestUpdater,
+  OperationNotifier,
+  OutgoingPublisher
+}
 
 object OperationBuilder {
 
@@ -39,7 +44,9 @@ object OperationBuilder {
         namespace = "outgoing"
       ),
       ingestUpdater = buildIngestNotifier(
-        config, operationName, namespace = "progress"
+        config,
+        operationName,
+        namespace = "progress"
       )
     )
 
