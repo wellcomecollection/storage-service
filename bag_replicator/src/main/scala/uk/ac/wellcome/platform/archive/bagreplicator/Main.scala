@@ -5,7 +5,11 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagLocator, BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagLocator,
+  BagReplicator,
+  BagReplicatorWorker
+}
 import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.s3.S3PrefixCopier

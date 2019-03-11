@@ -4,8 +4,18 @@ import java.util.UUID
 
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestEvent, IngestStatusUpdate, IngestUpdate}
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationCompleted, OperationFailure, OperationResult, OperationSuccess}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestEvent,
+  IngestStatusUpdate,
+  IngestUpdate
+}
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+  OperationCompleted,
+  OperationFailure,
+  OperationResult,
+  OperationSuccess
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 
 import scala.concurrent.Future

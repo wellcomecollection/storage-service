@@ -9,9 +9,19 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{Messaging, NotificationStreamFixture}
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerWorker}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, OperationFixtures, RandomThings}
-import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  Unpacker,
+  UnpackerWorker
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  OperationFixtures,
+  RandomThings
+}
+import uk.ac.wellcome.platform.archive.common.models.{
+  StorageSpace,
+  UnpackBagRequest
+}
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -48,33 +58,32 @@ trait WorkerServiceFixture
     outgoingTopic: Topic,
     dstBucket: Bucket
   )(testWith: TestWith[UnpackerWorker, R]): R =
-    withNotificationStream[UnpackBagRequest, R](queue) {
-      notificationStream =>
-        val ec = ExecutionContext.Implicits.global
+    withNotificationStream[UnpackBagRequest, R](queue) { notificationStream =>
+      val ec = ExecutionContext.Implicits.global
 
-        withOperationNotifier(
-          "unpacker",
-          ingestTopic = ingestTopic,
-          outgoingTopic = outgoingTopic) { notifier =>
-          val bagUnpackerConfig = UnpackerConfig(dstBucket.name)
+      withOperationNotifier(
+        "unpacker",
+        ingestTopic = ingestTopic,
+        outgoingTopic = outgoingTopic) { notifier =>
+        val bagUnpackerConfig = UnpackerConfig(dstBucket.name)
 
-          withOperationReporter() { reporter =>
-            val unpackerService =
-              new Unpacker()(s3Client, ec)
+        withOperationReporter() { reporter =>
+          val unpackerService =
+            new Unpacker()(s3Client, ec)
 
-            val bagUnpacker = new UnpackerWorker(
-              bagUnpackerConfig,
-              notificationStream,
-              notifier,
-              reporter,
-              unpackerService
-            )(ec)
+          val bagUnpacker = new UnpackerWorker(
+            bagUnpackerConfig,
+            notificationStream,
+            notifier,
+            reporter,
+            unpackerService
+          )(ec)
 
-            bagUnpacker.run()
+          bagUnpacker.run()
 
-            testWith(bagUnpacker)
-          }
+          testWith(bagUnpacker)
         }
+      }
     }
 
   def withApp[R](

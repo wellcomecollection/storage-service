@@ -6,16 +6,19 @@ import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.operation.{OperationNotifier, OperationReporter}
+import uk.ac.wellcome.platform.archive.common.operation.{
+  OperationNotifier,
+  OperationReporter
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagRegisterWorker(
-                         stream: NotificationStream[BagRequest],
-                         notifier: OperationNotifier,
-                         reporter: OperationReporter,
-                         register: Register
+  stream: NotificationStream[BagRequest],
+  notifier: OperationNotifier,
+  reporter: OperationReporter,
+  register: Register
 )(implicit ec: ExecutionContext)
     extends Logging
     with Runnable {

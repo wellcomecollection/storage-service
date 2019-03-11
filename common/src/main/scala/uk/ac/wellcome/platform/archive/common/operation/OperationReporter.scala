@@ -4,12 +4,18 @@ import java.util.UUID
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.monitoring.MetricsSender
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationCompleted, OperationFailure, OperationResult, OperationSuccess}
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+  OperationCompleted,
+  OperationFailure,
+  OperationResult,
+  OperationSuccess
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class OperationReporter(metricsSender: MetricsSender) extends Logging {
-  def report[R](requestId: UUID, result: OperationResult[R])(implicit ec: ExecutionContext): Future[Unit] = {
+  def report[R](requestId: UUID, result: OperationResult[R])(
+    implicit ec: ExecutionContext): Future[Unit] = {
     val future = result match {
       case OperationCompleted(summary) =>
         info(s"Completed - $requestId : ${summary.toString}")
@@ -24,6 +30,8 @@ class OperationReporter(metricsSender: MetricsSender) extends Logging {
         metricsSender.incrementCount(metricName = "OperationFailure")
     }
 
-    future.map { _ => () }
+    future.map { _ =>
+      ()
+    }
   }
 }

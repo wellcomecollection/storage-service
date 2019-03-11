@@ -5,8 +5,15 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.NotificationStreamFixture
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
-import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
-import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings, StorageManifestVHSFixture}
+import uk.ac.wellcome.platform.archive.bag_register.services.{
+  BagRegisterWorker,
+  Register
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  OperationFixtures,
+  RandomThings,
+  StorageManifestVHSFixture
+}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
@@ -22,15 +29,15 @@ trait WorkerFixture
     with StorageManifestVHSFixture {
 
   def withWorkerService[R](
-                            userTable: Option[Table] = None,
-                            userBucket: Option[Bucket] = None
-                          )(testWith: TestWith[(BagRegisterWorker,
-    Table,
-    Bucket,
-    Topic,
-    Topic,
-    QueuePair),
-    R]): R = {
+    userTable: Option[Table] = None,
+    userBucket: Option[Bucket] = None
+  )(testWith: TestWith[(BagRegisterWorker,
+                        Table,
+                        Bucket,
+                        Topic,
+                        Topic,
+                        QueuePair),
+                       R]): R = {
 
     withLocalDynamoDbTable { table =>
       withLocalS3Bucket { bucket =>
@@ -66,7 +73,11 @@ trait WorkerFixture
                       outgoingTopic = outgoingTopic) { notifier =>
                       withOperationReporter() { reporter =>
                         val service =
-                          new BagRegisterWorker(stream, notifier, reporter, register)
+                          new BagRegisterWorker(
+                            stream,
+                            notifier,
+                            reporter,
+                            register)
 
                         service.run()
 
@@ -89,7 +100,6 @@ trait WorkerFixture
       }
     }
   }
-
 
   def createBagRequestWith(
     location: BagLocation

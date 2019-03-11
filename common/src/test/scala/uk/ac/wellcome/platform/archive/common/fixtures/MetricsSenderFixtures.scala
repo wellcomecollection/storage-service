@@ -4,7 +4,7 @@ import akka.stream.QueueOfferResult.QueueClosed
 import org.mockito.Matchers.anyString
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
-import uk.ac.wellcome.fixtures.{Fixture, fixture}
+import uk.ac.wellcome.fixtures.{fixture, Fixture}
 import uk.ac.wellcome.monitoring.MetricsSender
 
 import scala.concurrent.Future

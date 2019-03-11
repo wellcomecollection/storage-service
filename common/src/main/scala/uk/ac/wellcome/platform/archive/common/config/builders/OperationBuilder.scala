@@ -4,11 +4,18 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsSenderBuilder
-import uk.ac.wellcome.platform.archive.common.operation.{IngestNotifier, OperationNotifier, OperationReporter, OutgoingNotifier}
+import uk.ac.wellcome.platform.archive.common.operation.{
+  IngestNotifier,
+  OperationNotifier,
+  OperationReporter,
+  OutgoingNotifier
+}
 
 object OperationBuilder {
 
-  def buildIngestNotifier(config: Config, operationName: String, namespace: String = ""): IngestNotifier =
+  def buildIngestNotifier(config: Config,
+                          operationName: String,
+                          namespace: String = ""): IngestNotifier =
     new IngestNotifier(
       operationName = operationName,
       snsWriter = SNSBuilder.buildSNSWriter(
@@ -17,7 +24,9 @@ object OperationBuilder {
       )
     )
 
-  def buildOutgoingNotifier(config: Config, operationName: String, namespace: String = ""): OutgoingNotifier =
+  def buildOutgoingNotifier(config: Config,
+                            operationName: String,
+                            namespace: String = ""): OutgoingNotifier =
     new OutgoingNotifier(
       operationName = operationName,
       snsWriter = SNSBuilder.buildSNSWriter(
@@ -26,17 +35,23 @@ object OperationBuilder {
       )
     )
 
-  def buildOperationNotifier(config: Config, operationName: String): OperationNotifier =
+  def buildOperationNotifier(config: Config,
+                             operationName: String): OperationNotifier =
     new OperationNotifier(
       outgoing = buildOutgoingNotifier(
-        config, operationName, namespace = "outgoing"
+        config,
+        operationName,
+        namespace = "outgoing"
       ),
       ingests = buildIngestNotifier(
-        config, operationName, namespace = "progress"
+        config,
+        operationName,
+        namespace = "progress"
       )
     )
 
-  def buildOperationReporter(config: Config)(implicit actorSystem: ActorSystem): OperationReporter =
+  def buildOperationReporter(config: Config)(
+    implicit actorSystem: ActorSystem): OperationReporter =
     new OperationReporter(
       metricsSender = MetricsSenderBuilder.buildMetricsSender(config)
     )

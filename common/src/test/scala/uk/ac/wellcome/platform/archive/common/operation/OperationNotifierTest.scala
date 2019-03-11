@@ -5,10 +5,17 @@ import java.util.UUID
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  OperationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationCompleted, OperationFailure, OperationSuccess}
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+  OperationCompleted,
+  OperationFailure,
+  OperationSuccess
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -96,7 +103,6 @@ class OperationNotifierTest
             ingestTopic = ingestTopic,
             outgoingTopic = outgoingTopic
           ) { operationNotifier =>
-
             val summary = TestSummary(
               randomAlphanumeric()
             )
@@ -112,9 +118,7 @@ class OperationNotifierTest
             whenReady(sendingOperationNotice) { _ =>
               eventually {
 
-                topicReceivesIngestEvent(
-                  requestId,
-                  ingestTopic) { events =>
+                topicReceivesIngestEvent(requestId, ingestTopic) { events =>
                   events should have size 1
                   events.head.description shouldBe s"${operationName.capitalize} succeeded"
                 }
@@ -140,7 +144,6 @@ class OperationNotifierTest
             ingestTopic = ingestTopic,
             outgoingTopic = outgoingTopic
           ) { operationNotifier =>
-
             val summary = TestSummary(
               randomAlphanumeric()
             )
