@@ -12,10 +12,10 @@ import uk.ac.wellcome.typesafe.Runnable
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagRegisterWorker(
-  stream: NotificationStream[BagRequest],
-  notifier: OperationNotifier,
-  operationReporter: OperationReporter,
-  register: Register
+                         stream: NotificationStream[BagRequest],
+                         notifier: OperationNotifier,
+                         reporter: OperationReporter,
+                         register: Register
 )(implicit ec: ExecutionContext)
     extends Logging
     with Runnable {
@@ -32,7 +32,7 @@ class BagRegisterWorker(
         request.bagLocation
       )
 
-      _ <- operationReporter.report(request.requestId, result)
+      _ <- reporter.report(request.requestId, result)
 
       _ <- notifier.send(
         request.requestId,

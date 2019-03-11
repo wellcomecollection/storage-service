@@ -22,15 +22,15 @@ trait WorkerFixture
     with StorageManifestVHSFixture {
 
   def withWorkerService[R](
-    userTable: Option[Table] = None,
-    userBucket: Option[Bucket] = None
-  )(testWith: TestWith[(BagRegisterWorker,
-                        Table,
-                        Bucket,
-                        Topic,
-                        Topic,
-                        QueuePair),
-                       R]): R = {
+                            userTable: Option[Table] = None,
+                            userBucket: Option[Bucket] = None
+                          )(testWith: TestWith[(BagRegisterWorker,
+    Table,
+    Bucket,
+    Topic,
+    Topic,
+    QueuePair),
+    R]): R = {
 
     withLocalDynamoDbTable { table =>
       withLocalS3Bucket { bucket =>
@@ -64,30 +64,32 @@ trait WorkerFixture
                       "register",
                       ingestTopic = ingestTopic,
                       outgoingTopic = outgoingTopic) { notifier =>
-                      val service =
-                        new BagRegisterWorker(stream, notifier, register)
+                      withOperationReporter() { reporter =>
+                        val service =
+                          new BagRegisterWorker(stream, notifier, reporter, register)
 
-                      service.run()
+                        service.run()
 
-                      testWith(
-                        (
-                          service,
-                          table,
-                          bucket,
-                          ingestTopic,
-                          outgoingTopic,
-                          queuePair)
-                      )
+                        testWith(
+                          (
+                            service,
+                            table,
+                            bucket,
+                            ingestTopic,
+                            outgoingTopic,
+                            queuePair)
+                        )
+                      }
                     }
                 }
               }
             }
-
           }
         }
       }
     }
   }
+
 
   def createBagRequestWith(
     location: BagLocation

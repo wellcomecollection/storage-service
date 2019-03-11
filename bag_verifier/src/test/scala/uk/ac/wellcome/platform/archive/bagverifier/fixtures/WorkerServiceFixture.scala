@@ -37,15 +37,18 @@ trait WorkerServiceFixture
           "verification",
           ingestTopic = ingestTopic,
           outgoingTopic = outgoingTopic) { notifier =>
-          val service = new BagVerifierWorker(
-            stream,
-            verifier,
-            notifier
-          )
+          withOperationReporter() { reporter =>
+            val service = new BagVerifierWorker(
+              stream,
+              notifier,
+              reporter,
+              verifier
+            )
 
-          service.run()
+            service.run()
 
-          testWith(service)
+            testWith(service)
+          }
         }
       }
     }

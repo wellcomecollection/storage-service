@@ -36,19 +36,22 @@ trait WorkerServiceFixture
         ingestTopic = ingestTopic,
         outgoingTopic = outgoingTopic
       ) { notifier =>
-        val service = new BagReplicatorWorker(
-          stream = notificationStream,
-          notifier = notifier,
-          replicator = new BagReplicator(
-            bagLocator = new BagLocator(s3Client),
-            config = destination,
-            s3PrefixCopier = S3PrefixCopier(s3Client)
+        withOperationReporter() { reporter =>
+          val service = new BagReplicatorWorker(
+            stream = notificationStream,
+            notifier = notifier,
+            reporter = reporter,
+            replicator = new BagReplicator(
+              bagLocator = new BagLocator(s3Client),
+              config = destination,
+              s3PrefixCopier = S3PrefixCopier(s3Client)
+            )
           )
-        )
 
-        service.run()
+          service.run()
 
-        testWith(service)
+          testWith(service)
+        }
       }
     }
 

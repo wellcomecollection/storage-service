@@ -12,11 +12,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagVerifierWorker(
-  stream: NotificationStream[BagRequest],
-  verifier: Verifier,
-  notifier: OperationNotifier,
-  operationReporter: OperationReporter
-)(implicit ec: ExecutionContext)
+                         stream: NotificationStream[BagRequest],
+                         notifier: OperationNotifier,
+                         reporter: OperationReporter,
+                         verifier: Verifier)(implicit ec: ExecutionContext)
     extends Runnable
     with Logging {
 
@@ -25,22 +24,22 @@ class BagVerifierWorker(
   def run(): Future[Done] =
     stream.run(processMessage)
 
-  def processMessage(bagRequest: BagRequest): Future[Unit] = {
-    info(s"Received request $bagRequest")
+  def processMessage(request: BagRequest): Future[Unit] = {
+    info(s"Received request $request")
 
     val result = for {
       verification <- verifier
         .verify(
-          bagRequest.bagLocation
+          request.bagLocation
         )
 
-      _ <- operationReporter.report(request.requestId, result)
+      _ <- reporter.report(request.requestId, verification)
 
       _ <- notifier.send(
-        bagRequest.requestId,
+        request.requestId,
         verification
       ) { _ =>
-        bagRequest
+        request
       }
 
     } yield ()

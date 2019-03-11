@@ -32,6 +32,7 @@ object Main extends WellcomeTypesafeApp {
         config,
         "unpacking"
       ),
+      reporter = OperationBuilder.buildOperationReporter(config),
       unpacker = new Unpacker()
     )
   }

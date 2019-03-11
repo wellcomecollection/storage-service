@@ -58,19 +58,22 @@ trait WorkerServiceFixture
           outgoingTopic = outgoingTopic) { notifier =>
           val bagUnpackerConfig = UnpackerConfig(dstBucket.name)
 
-          val unpackerService =
-            new Unpacker()(s3Client, ec)
+          withOperationReporter() { reporter =>
+            val unpackerService =
+              new Unpacker()(s3Client, ec)
 
-          val bagUnpacker = new UnpackerWorker(
-            bagUnpackerConfig,
-            notificationStream,
-            notifier,
-            unpackerService
-          )(ec)
+            val bagUnpacker = new UnpackerWorker(
+              bagUnpackerConfig,
+              notificationStream,
+              notifier,
+              reporter,
+              unpackerService
+            )(ec)
 
-          bagUnpacker.run()
+            bagUnpacker.run()
 
-          testWith(bagUnpacker)
+            testWith(bagUnpacker)
+          }
         }
     }
 

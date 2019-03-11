@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.platform.archive.common.operation.{IngestNotifier, OperationNotifier, OutgoingNotifier}
+import uk.ac.wellcome.platform.archive.common.operation.{IngestNotifier, OperationNotifier, OperationReporter, OutgoingNotifier}
 
-trait OperationFixtures extends SNS {
+trait OperationFixtures extends SNS with MetricsSenderFixtures {
   def withIngestNotifier[R](operationName: String, topic: Topic)(testWith: TestWith[IngestNotifier, R]): R =
     withSNSWriter(topic) { snsWriter =>
       val ingestNotifier = new IngestNotifier(operationName, snsWriter)
@@ -27,5 +27,12 @@ trait OperationFixtures extends SNS {
 
         testWith(operationNotifier)
       }
+    }
+
+  def withOperationReporter[R]()(testWith: TestWith[OperationReporter, R]): R =
+    withMetricsSender { metricsSender =>
+      val reporter = new OperationReporter(metricsSender)
+
+      testWith(reporter)
     }
 }

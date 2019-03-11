@@ -10,10 +10,10 @@ import uk.ac.wellcome.typesafe.Runnable
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagReplicatorWorker(
-  stream: NotificationStream[BagRequest],
-  notifier: OperationNotifier,
-  replicator: BagReplicator,
-  operationReporter: OperationReporter
+                           stream: NotificationStream[BagRequest],
+                           notifier: OperationNotifier,
+                           reporter: OperationReporter,
+                           replicator: BagReplicator
 )(implicit ec: ExecutionContext)
     extends Runnable {
 
@@ -25,7 +25,7 @@ class BagReplicatorWorker(
         request.bagLocation
       )
 
-      _ <- operationReporter.report(request.requestId, result)
+      _ <- reporter.report(request.requestId, result)
 
       _ <- notifier.send(
         requestId = request.requestId,

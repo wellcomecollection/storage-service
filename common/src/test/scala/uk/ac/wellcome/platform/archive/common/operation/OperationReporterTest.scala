@@ -1,26 +1,19 @@
 package uk.ac.wellcome.platform.archive.common.operation
 
-import akka.stream.QueueOfferResult.QueueClosed
-import org.mockito.Matchers.anyString
-import org.mockito.Mockito.{times, verify, when}
-import org.mockito.invocation.InvocationOnMock
+import org.mockito.Mockito.{times, verify}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.fixtures._
-import uk.ac.wellcome.monitoring.MetricsSender
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.fixtures.{MetricsSenderFixtures, RandomThings}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
-class OperationReporterTest extends FunSpec with Matchers with RandomThings with ScalaFutures with MockitoSugar {
+class OperationReporterTest extends FunSpec with Matchers with RandomThings with ScalaFutures with MetricsSenderFixtures {
   it("sends a success metric") {
     withMetricsSender { metricsSender =>
       println(metricsSender)
-      val operationReporter = new OperationReporter(metricsSender)
+      val reporter = new OperationReporter(metricsSender)
 
-      val future = operationReporter.report(
+      val future = reporter.report(
         requestId = randomUUID,
         result = OperationSuccess(summary = "A good thing happened")
       )
@@ -34,9 +27,9 @@ class OperationReporterTest extends FunSpec with Matchers with RandomThings with
 
   it("sends a failure metric") {
     withMetricsSender { metricsSender =>
-      val operationReporter = new OperationReporter(metricsSender)
+      val reporter = new OperationReporter(metricsSender)
 
-      val future = operationReporter.report(
+      val future = reporter.report(
         requestId = randomUUID,
         result = OperationFailure(
           summary = "A sad thing occurred",
@@ -53,9 +46,9 @@ class OperationReporterTest extends FunSpec with Matchers with RandomThings with
 
   it("sends a completed metric") {
     withMetricsSender { metricsSender =>
-      val operationReporter = new OperationReporter(metricsSender)
+      val reporter = new OperationReporter(metricsSender)
 
-      val future = operationReporter.report(
+      val future = reporter.report(
         requestId = randomUUID,
         result = OperationCompleted(summary = "We completed the thing")
       )
@@ -66,19 +59,4 @@ class OperationReporterTest extends FunSpec with Matchers with RandomThings with
       }
     }
   }
-
-  private def withMetricsSender[R]: Fixture[MetricsSender, R] =
-    fixture[MetricsSender, R](
-      create = {
-        val metricsSender = mock[MetricsSender]
-        when(
-          metricsSender.incrementCount(anyString())
-        ).thenAnswer(
-          (invocation: InvocationOnMock) => {
-            Future.successful(QueueClosed)
-          }
-        )
-        metricsSender
-      }
-    )
 }
