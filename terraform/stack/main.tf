@@ -20,7 +20,7 @@ module "bag_unpacker" {
   env_vars = {
     queue_url               = "${module.bag_unpacker_queue.url}"
     destination_bucket_name = "${var.ingest_bucket_name}"
-    progress_topic_arn      = "${module.ingests_topic.arn}"
+    ingest_topic_arn        = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bag_unpacker_output_topic.arn}"
     metrics_namespace       = "${local.bag_unpacker_service_name}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_unpacker_service_name}"
@@ -59,7 +59,7 @@ module "bag_replicator" {
   env_vars = {
     queue_url               = "${module.bag_replicator_input_queue.url}"
     destination_bucket_name = "${var.access_bucket_name}"
-    progress_topic_arn      = "${local.progress_topic}"
+    ingest_topic_arn        = "${local.ingest_topic}"
     outgoing_topic_arn      = "${module.bag_replicator_output_topic.arn}"
     metrics_namespace       = "${local.bag_replicator_service_name}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
@@ -94,7 +94,7 @@ module "bag_verifier" {
 
   env_vars = {
     queue_url          = "${module.bag_verifier_input_queue.url}"
-    progress_topic_arn = "${local.progress_topic}"
+    ingest_topic_arn   = "${local.ingest_topic}"
     outgoing_topic_arn = "${module.bag_verifier_output_topic.arn}"
     metrics_namespace  = "${local.bag_verifier_service_name}"
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_service_name}"
@@ -125,14 +125,14 @@ module "bag_register" {
   service_name                     = "${var.namespace}-bags"
 
   env_vars = {
-    queue_url          = "${module.bag_register_input_queue.url}"
-    archive_bucket     = "${var.archive_bucket_name}"
-    ongoing_topic_arn  = "${module.bag_register_output_topic.arn}"
-    progress_topic_arn = "${local.progress_topic}"
-    vhs_bucket_name    = "${var.vhs_archive_manifest_bucket_name}"
-    vhs_table_name     = "${var.vhs_archive_manifest_table_name}"
-    metrics_namespace  = "${local.bag_register_service_name}"
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_register_service_name}"
+    queue_url         = "${module.bag_register_input_queue.url}"
+    archive_bucket    = "${var.archive_bucket_name}"
+    ongoing_topic_arn = "${module.bag_register_output_topic.arn}"
+    ingest_topic_arn  = "${local.ingest_topic}"
+    vhs_bucket_name   = "${var.vhs_archive_manifest_bucket_name}"
+    vhs_table_name    = "${var.vhs_archive_manifest_table_name}"
+    metrics_namespace = "${local.bag_register_service_name}"
+    JAVA_OPTS         = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_register_service_name}"
   }
 
   env_vars_length = 8
@@ -165,7 +165,7 @@ module "notifier" {
   env_vars = {
     context_url        = "https://api.wellcomecollection.org/storage/v1/context.json"
     notifier_queue_url = "${module.notifier_input_queue.url}"
-    progress_topic_arn = "${local.progress_topic}"
+    ingest_topic_arn   = "${local.ingest_topic}"
     metrics_namespace  = "${local.notifier_service_name}"
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.notifier_service_name}"
   }
@@ -175,7 +175,7 @@ module "notifier" {
   container_image = "${local.notifier_image}"
 }
 
-# ingests aka progress-async
+# ingests aka ingest-async
 
 module "ingests" {
   source = "../modules/service/worker"
@@ -190,11 +190,11 @@ module "ingests" {
   service_name = "${var.namespace}-ingests"
 
   env_vars = {
-    queue_url                   = "${module.ingests_input_queue.url}"
-    topic_arn                   = "${module.ingests_output_topic.arn}"
-    archive_progress_table_name = "${var.ingests_table_name}"
-    metrics_namespace           = "${local.ingests_service_name}"
-    JAVA_OPTS                   = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
+    queue_url                 = "${module.ingests_input_queue.url}"
+    topic_arn                 = "${module.ingests_output_topic.arn}"
+    archive_ingest_table_name = "${var.ingests_table_name}"
+    metrics_namespace         = "${local.ingests_service_name}"
+    JAVA_OPTS                 = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
   }
 
   env_vars_length = 5
@@ -252,13 +252,13 @@ module "api" {
   ingests_container_image = "${local.ingests_api_image}"
   ingests_container_port  = "9001"
   ingests_env_vars = {
-    context_url                     = "${var.api_url}/context.json"
-    app_base_url                    = "${var.api_url}/storage/v1/ingests"
-    unpacker_topic_arn              = "${module.bag_unpacker_input_topic.arn}"
-    archive_progress_table_name     = "${var.ingests_table_name}"
-    archive_bag_progress_index_name = "${var.ingests_table_progress_index_name}"
-    metrics_namespace               = "${local.ingests_service_name}"
-    JAVA_OPTS                       = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
+    context_url                   = "${var.api_url}/context.json"
+    app_base_url                  = "${var.api_url}/storage/v1/ingests"
+    unpacker_topic_arn            = "${module.bag_unpacker_input_topic.arn}"
+    archive_ingest_table_name     = "${var.ingests_table_name}"
+    archive_bag_ingest_index_name = "${var.ingests_table_ingest_index_name}"
+    metrics_namespace             = "${local.ingests_service_name}"
+    JAVA_OPTS                     = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
   }
   ingests_env_vars_length        = 7
   ingests_nginx_container_image  = "${var.nginx_image}"
@@ -296,7 +296,7 @@ module "bagger" {
     BAGGING_COMPLETE_TOPIC_ARN  = "${module.bagging_complete_topic.arn}"
 
     // This value is hard coded as it is not provisioned via terraform
-    DYNAMO_TABLE = "${var.bagger_progress_table}"
+    DYNAMO_TABLE = "${var.bagger_ingest_table}"
 
     AWS_DEFAULT_REGION = "${var.aws_region}"
 

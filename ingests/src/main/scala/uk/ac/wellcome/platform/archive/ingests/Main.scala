@@ -4,8 +4,8 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
-import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
-import uk.ac.wellcome.platform.archive.common.progress.monitor.ProgressTracker
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestUpdate
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.platform.archive.ingests.services.{
   CallbackNotificationService,
   IngestsWorkerService
@@ -22,7 +22,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
 
-    val progressTracker = new ProgressTracker(
+    val ingestTracker = new IngestTracker(
       dynamoDbClient = DynamoBuilder.buildDynamoClient(config),
       dynamoConfig = DynamoBuilder.buildDynamoConfig(config)
     )
@@ -33,8 +33,8 @@ object Main extends WellcomeTypesafeApp {
 
     new IngestsWorkerService(
       notificationStream =
-        NotificationStreamBuilder.buildStream[ProgressUpdate](config),
-      progressTracker = progressTracker,
+        NotificationStreamBuilder.buildStream[IngestUpdate](config),
+      ingestTracker = ingestTracker,
       callbackNotificationService = callbackNotificationService
     )
   }

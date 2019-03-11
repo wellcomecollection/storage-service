@@ -12,6 +12,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerWorker}
 import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, OperationFixtures, RandomThings}
 import uk.ac.wellcome.platform.archive.common.models.{StorageSpace, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -80,12 +81,12 @@ trait WorkerServiceFixture
   def withApp[R](
     testWith: TestWith[(UnpackerWorker, Bucket, Queue, Topic, Topic), R]): R =
     withLocalSqsQueue { queue =>
-      withLocalSnsTopic { progressTopic =>
+      withLocalSnsTopic { ingestTopic =>
         withLocalSnsTopic { outgoingTopic =>
           withLocalS3Bucket { sourceBucket =>
             withBagUnpacker(
               queue,
-              progressTopic,
+              ingestTopic,
               outgoingTopic,
               sourceBucket
             )({ service =>
@@ -94,7 +95,7 @@ trait WorkerServiceFixture
                   service,
                   sourceBucket,
                   queue,
-                  progressTopic,
+                  ingestTopic,
                   outgoingTopic
                 )
               )

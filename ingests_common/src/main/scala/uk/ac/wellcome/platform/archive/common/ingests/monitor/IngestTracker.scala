@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.progress.monitor
+package uk.ac.wellcome.platform.archive.common.ingests.monitor
 
 import java.util.UUID
 
@@ -8,14 +8,15 @@ import com.gu.scanamo._
 import com.gu.scanamo.error.ConditionNotMet
 import com.gu.scanamo.syntax._
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.progress.models._
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.dynamo._
 
 import scala.concurrent.{blocking, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class ProgressTracker(
+class IngestTracker(
   dynamoDbClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig
 )(implicit ec: ExecutionContext)
@@ -26,44 +27,44 @@ class ProgressTracker(
     dynamoConfig = dynamoConfig
   )
 
-  def get(id: UUID): Future[Option[Progress]] =
-    versionedDao.getRecord[Progress](id.toString)
+  def get(id: UUID): Future[Option[Ingest]] =
+    versionedDao.getRecord[Ingest](id.toString)
 
-  def initialise(progress: Progress): Future[Progress] = {
-    val progressTable = Table[Progress](dynamoConfig.table)
-    debug(s"initializing archive progress tracker with $progress")
+  def initialise(ingest: Ingest): Future[Ingest] = {
+    val ingestTable = Table[Ingest](dynamoConfig.table)
+    debug(s"initializing archive ingest tracker with $ingest")
 
-    val ops = progressTable
+    val ops = ingestTable
       .given(not(attributeExists('id)))
-      .put(progress)
+      .put(ingest)
 
     Future {
       blocking(Scanamo.exec(dynamoDbClient)(ops)) match {
         case Left(e: ConditionalCheckFailedException) =>
           throw IdConstraintError(
-            s"There is already a progress tracker with id:${progress.id}",
+            s"There is already a ingest tracker with id:${ingest.id}",
             e)
         case Left(scanamoError) =>
           val exception = new RuntimeException(
-            s"Failed to create progress ${scanamoError.toString}")
-          warn(s"Failed to update Dynamo record: ${progress.id}", exception)
+            s"Failed to create ingest ${scanamoError.toString}")
+          warn(s"Failed to update Dynamo record: ${ingest.id}", exception)
           throw exception
         case Right(a) =>
-          debug(s"Successfully updated Dynamo record: ${progress.id} $a")
+          debug(s"Successfully updated Dynamo record: ${ingest.id} $a")
       }
-      progress
+      ingest
     }
   }
 
-  def update(update: ProgressUpdate): Try[Progress] = {
+  def update(update: IngestUpdate): Try[Ingest] = {
     debug(s"Updating record:${update.id} with:$update")
 
     val eventsUpdate = appendAll('events -> update.events.toList)
 
     val mergedUpdate = update match {
-      case _: ProgressEventUpdate =>
+      case _: IngestEventUpdate =>
         eventsUpdate
-      case statusUpdate: ProgressStatusUpdate =>
+      case statusUpdate: IngestStatusUpdate =>
         val bagUpdate = statusUpdate.affectedBag
           .map(
             bag =>
@@ -78,13 +79,13 @@ class ProgressTracker(
         ) ++ bagUpdate)
           .reduce(_ and _)
 
-      case callbackStatusUpdate: ProgressCallbackStatusUpdate =>
+      case callbackStatusUpdate: IngestCallbackStatusUpdate =>
         eventsUpdate and set(
           'callback \ 'status -> callbackStatusUpdate.callbackStatus)
     }
 
-    val progressTable = Table[Progress](dynamoConfig.table)
-    val ops = progressTable
+    val ingestTable = Table[Ingest](dynamoConfig.table)
+    val ops = ingestTable
       .given(attributeExists('id))
       .update('id -> update.id, mergedUpdate)
 
@@ -92,7 +93,7 @@ class ProgressTracker(
       case Left(ConditionNotMet(e: ConditionalCheckFailedException)) => {
         val idConstraintError =
           IdConstraintError(
-            s"Progress does not exist for id:${update.id}",
+            s"Ingest does not exist for id:${update.id}",
             e
           )
 
@@ -103,15 +104,14 @@ class ProgressTracker(
         warn(s"Failed to update Dynamo record: ${update.id}", exception)
         Failure(exception)
       }
-      case Right(progress) => {
-        debug(
-          s"Successfully updated Dynamo record: ${update.id}, got $progress")
-        Success(progress)
+      case Right(ingest) => {
+        debug(s"Successfully updated Dynamo record: ${update.id}, got $ingest")
+        Success(ingest)
       }
     }
   }
 
-  /** Find stored progress given a bagId, uses the secondary index to link a bag to the ingest(s)
+  /** Find stored ingest given a bagId, uses the secondary index to link a bag to the ingest(s)
     * that created it.
     *
     * This is intended to meet a particular use case for DLCS during migration and not as part of the

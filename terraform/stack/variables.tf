@@ -57,8 +57,8 @@ variable "bagger_dlcs_entry" {}
 variable "bagger_dlcs_customer_id" {}
 variable "bagger_dlcs_space" {}
 variable "bagger_dds_asset_prefix" {}
-variable "bagger_progress_table" {}
-variable "bagger_progress_table_arn" {}
+variable "bagger_ingest_table" {}
+variable "bagger_ingest_table_arn" {}
 variable "ingest_drop_bucket_name" {}
 
 variable "cognito_storage_api_identifier" {}
@@ -77,7 +77,7 @@ variable "bag_paths" {
 
 variable "ingests_table_name" {}
 variable "ingests_table_arn" {}
-variable "ingests_table_progress_index_name" {}
+variable "ingests_table_ingest_index_name" {}
 
 variable "workflow_bucket_name" {}
 

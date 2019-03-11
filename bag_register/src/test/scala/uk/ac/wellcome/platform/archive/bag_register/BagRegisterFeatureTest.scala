@@ -13,9 +13,14 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   BagInfoGenerators
 }
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  Ingest,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models._
+import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -25,7 +30,7 @@ class BagRegisterFeatureTest
     with BagIdGenerators
     with BagInfoGenerators
     with BagLocationFixtures
-    with ProgressUpdateAssertions
+    with IngestUpdateAssertions
     with WorkerFixture {
 
   it("sends an update if it registers a bag") {
@@ -34,7 +39,7 @@ class BagRegisterFeatureTest
           _: BagRegisterWorker,
           table: Table,
           bucket: Bucket,
-          progressTopic: Topic,
+          ingestTopic: Topic,
           _: Topic,
           queuePair: QueuePair
           ) => {
@@ -69,10 +74,10 @@ class BagRegisterFeatureTest
 
             storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-            assertTopicReceivesProgressStatusUpdate(
+            topicReceivesIngestStatus(
               requestId = bagRequest.requestId,
-              progressTopic = progressTopic,
-              status = Progress.Completed,
+              ingestTopic = ingestTopic,
+              status = Ingest.Completed,
               expectedBag = Some(bagId)) { events =>
               events.size should be >= 1
               events.head.description shouldBe "Register succeeded (completed)"
@@ -91,7 +96,7 @@ class BagRegisterFeatureTest
           _: BagRegisterWorker,
           _: Table,
           bucket: Bucket,
-          progressTopic: Topic,
+          ingestTopic: Topic,
           _: Topic,
           queuePair: QueuePair
           ) => {
@@ -105,10 +110,10 @@ class BagRegisterFeatureTest
           sendNotificationToSQS(queuePair.queue, replicationResult)
 
           eventually {
-            assertTopicReceivesProgressStatusUpdate(
+            topicReceivesIngestStatus(
               requestId = replicationResult.requestId,
-              progressTopic = progressTopic,
-              status = Progress.Failed,
+              ingestTopic = ingestTopic,
+              status = Ingest.Failed,
               expectedBag = Some(
                 BagId(
                   space = accessBagLocation.storageSpace,

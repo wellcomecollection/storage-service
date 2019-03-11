@@ -3,12 +3,12 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.operation.{
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{
   OperationCompleted,
   OperationFailure,
   OperationResult
 }
+import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 

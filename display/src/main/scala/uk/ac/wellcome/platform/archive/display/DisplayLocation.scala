@@ -1,7 +1,8 @@
 package uk.ac.wellcome.platform.archive.display
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.progress.models.StorageLocation
+import uk.ac.wellcome.platform.archive.common.ingests.models
+import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
 import uk.ac.wellcome.storage.ObjectLocation
 
 case class DisplayLocation(provider: DisplayProvider,
@@ -9,7 +10,9 @@ case class DisplayLocation(provider: DisplayProvider,
                            path: String,
                            @JsonKey("type") ontologyType: String = "Location") {
   def toStorageLocation: StorageLocation =
-    StorageLocation(provider.toStorageProvider, ObjectLocation(bucket, path))
+    models.StorageLocation(
+      provider.toStorageProvider,
+      ObjectLocation(bucket, path))
 }
 object DisplayLocation {
   def apply(location: StorageLocation): DisplayLocation =

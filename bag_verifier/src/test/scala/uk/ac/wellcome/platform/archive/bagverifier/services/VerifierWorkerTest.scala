@@ -10,8 +10,8 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   FileEntry
 }
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
-import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 
 class VerifierWorkerTest
     extends FunSpec
@@ -19,15 +19,15 @@ class VerifierWorkerTest
     with ScalaFutures
     with BagLocationFixtures
     with BagRequestGenerators
-    with ProgressUpdateAssertions
+    with IngestUpdateAssertions
     with IntegrationPatience
     with WorkerServiceFixture {
 
   it(
-    "updates the progress monitor and sends an outgoing notification if verification succeeds") {
-    withLocalSnsTopic { progressTopic =>
+    "updates the ingest monitor and sends an outgoing notification if verification succeeds") {
+    withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
-        withWorkerService(progressTopic, outgoingTopic) { service =>
+        withWorkerService(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket) { bagLocation =>
               val bagRequest = createBagRequestWith(bagLocation)
@@ -36,9 +36,9 @@ class VerifierWorkerTest
 
               whenReady(future) { _ =>
                 eventually {
-                  assertTopicReceivesProgressEventUpdate(
+                  topicReceivesIngestEvent(
                     requestId = bagRequest.requestId,
-                    progressTopic = progressTopic
+                    ingestTopic = ingestTopic
                   ) { events =>
                     events.map {
                       _.description
@@ -57,10 +57,10 @@ class VerifierWorkerTest
     }
   }
 
-  it("only updates the progress monitor if verification fails") {
-    withLocalSnsTopic { progressTopic =>
+  it("only updates the ingest monitor if verification fails") {
+    withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
-        withWorkerService(progressTopic, outgoingTopic) { service =>
+        withWorkerService(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
               bagLocation =>
@@ -71,10 +71,10 @@ class VerifierWorkerTest
                 whenReady(future) { _ =>
                   assertSnsReceivesNothing(outgoingTopic)
 
-                  assertTopicReceivesProgressStatusUpdate(
+                  topicReceivesIngestStatus(
                     requestId = bagRequest.requestId,
-                    progressTopic = progressTopic,
-                    status = Progress.Failed
+                    ingestTopic = ingestTopic,
+                    status = Ingest.Failed
                   ) { events =>
                     val description = events.map {
                       _.description
@@ -89,13 +89,13 @@ class VerifierWorkerTest
     }
   }
 
-  it("only updates the progress monitor if it cannot perform the verification") {
+  it("only updates the ingest monitor if it cannot perform the verification") {
     def dontCreateTheDataManifest(
       dataFiles: List[(String, String)]): Option[FileEntry] = None
 
-    withLocalSnsTopic { progressTopic =>
+    withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
-        withWorkerService(progressTopic, outgoingTopic) { service =>
+        withWorkerService(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
               bagLocation =>
@@ -108,10 +108,10 @@ class VerifierWorkerTest
 
                     assertSnsReceivesNothing(outgoingTopic)
 
-                    assertTopicReceivesProgressStatusUpdate(
+                    topicReceivesIngestStatus(
                       requestId = bagRequest.requestId,
-                      progressTopic = progressTopic,
-                      status = Progress.Failed
+                      ingestTopic = ingestTopic,
+                      status = Ingest.Failed
                     ) { events =>
                       val description = events.map {
                         _.description
@@ -127,9 +127,9 @@ class VerifierWorkerTest
     }
   }
 
-  it("sends a progress update before it sends an outgoing message") {
-    withLocalSnsTopic { progressTopic =>
-      withWorkerService(progressTopic, Topic("no-such-outgoing")) { service =>
+  it("sends a ingest update before it sends an outgoing message") {
+    withLocalSnsTopic { ingestTopic =>
+      withWorkerService(ingestTopic, Topic("no-such-outgoing")) { service =>
         withLocalS3Bucket { bucket =>
           withBag(bucket) { bagLocation =>
             val bagRequest = createBagRequestWith(bagLocation)
@@ -137,9 +137,9 @@ class VerifierWorkerTest
             val future = service.processMessage(bagRequest)
 
             whenReady(future.failed) { _ =>
-              assertTopicReceivesProgressEventUpdate(
+              topicReceivesIngestEvent(
                 requestId = bagRequest.requestId,
-                progressTopic = progressTopic
+                ingestTopic = ingestTopic
               ) { events =>
                 events.map {
                   _.description

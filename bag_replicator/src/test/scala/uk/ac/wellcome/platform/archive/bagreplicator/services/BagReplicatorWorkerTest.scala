@@ -9,13 +9,13 @@ import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagLocation,
   BagPath
 }
-import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
+import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 
 class BagReplicatorWorkerTest
     extends FunSpec
@@ -24,17 +24,17 @@ class BagReplicatorWorkerTest
     with BagLocationFixtures
     with BagReplicatorFixtures
     with BagRequestGenerators
-    with ProgressUpdateAssertions
+    with IngestUpdateAssertions
     with WorkerServiceFixture {
 
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { ingestsBucket =>
       withLocalS3Bucket { archiveBucket =>
         val destination = createReplicatorDestinationConfigWith(archiveBucket)
-        withLocalSnsTopic { progressTopic =>
+        withLocalSnsTopic { ingestTopic =>
           withLocalSnsTopic { outgoingTopic =>
             withWorkerService(
-              ingestTopic = progressTopic,
+              ingestTopic = ingestTopic,
               outgoingTopic = outgoingTopic,
               destination = destination) { service =>
               withBag(ingestsBucket) { srcBagLocation =>
@@ -53,11 +53,10 @@ class BagReplicatorWorkerTest
                     dst = dstBagLocation
                   )
 
-                  assertTopicReceivesProgressEventUpdate(
-                    bagRequest.requestId,
-                    progressTopic) { events =>
-                    events should have size 1
-                    events.head.description shouldBe "Replicating succeeded"
+                  topicReceivesIngestEvent(bagRequest.requestId, ingestTopic) {
+                    events =>
+                      events should have size 1
+                      events.head.description shouldBe "Replicating succeeded"
                   }
                 }
               }
@@ -68,11 +67,11 @@ class BagReplicatorWorkerTest
     }
   }
 
-  it("sends a failed ProgressUpdate if the bag fails to replicate") {
-    withLocalSnsTopic { progressTopic =>
+  it("sends a failed IngestUpdate if replication fails") {
+    withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
         withWorkerService(
-          ingestTopic = progressTopic,
+          ingestTopic = ingestTopic,
           outgoingTopic = outgoingTopic) { service =>
           val srcBagLocation = BagLocation(
             storageNamespace = "does-not-exist",
@@ -88,10 +87,10 @@ class BagReplicatorWorkerTest
           whenReady(future) { _ =>
             assertSnsReceivesNothing(outgoingTopic)
 
-            assertTopicReceivesProgressStatusUpdate(
+            topicReceivesIngestStatus(
               bagRequest.requestId,
-              progressTopic = progressTopic,
-              status = Progress.Failed) { events =>
+              ingestTopic = ingestTopic,
+              status = Ingest.Failed) { events =>
               events should have size 1
               events.head.description shouldBe "Replicating failed"
             }

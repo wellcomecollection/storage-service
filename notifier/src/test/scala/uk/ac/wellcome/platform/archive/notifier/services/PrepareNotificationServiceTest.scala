@@ -6,8 +6,8 @@ import akka.http.scaladsl.model.HttpResponse
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.platform.archive.common.progress.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.progress.models.Callback
+import uk.ac.wellcome.platform.archive.common.ingests.models.Callback
+import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 
 import scala.util.{Failure, Success, Try}
 
@@ -33,7 +33,7 @@ class PrepareNotificationServiceTest
       208,
       226
     )
-  it("returns a successful ProgressUpdate when a callback succeeds") {
+  it("returns a successful IngestUpdate when a callback succeeds") {
     forAll(successfulStatuscodes) { responseStatus: Int =>
       assertPreparedNotificationIsCorrect(
         httpResponse = Success(HttpResponse(responseStatus)),
@@ -50,7 +50,7 @@ class PrepareNotificationServiceTest
       (400, s"Callback failed for: $id, got 400 Bad Request!")
     )
   it(
-    "returns a failed ProgressUpdate when a callback returns with a failed status code") {
+    "returns a failed IngestUpdate when a callback returns with a failed status code") {
     forAll(failedStatusCodes) {
       (responseStatus: Int, expectedDescription: String) =>
         assertPreparedNotificationIsCorrect(
@@ -61,7 +61,7 @@ class PrepareNotificationServiceTest
     }
   }
 
-  it("returns a failed ProgressUpdate when a callback fails") {
+  it("returns a failed IngestUpdate when a callback fails") {
     val exception = new RuntimeException("Callback exception!")
     assertPreparedNotificationIsCorrect(
       httpResponse = Failure(exception),

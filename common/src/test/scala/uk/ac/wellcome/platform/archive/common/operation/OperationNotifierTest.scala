@@ -4,10 +4,11 @@ import java.util.UUID
 
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
-import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings}
-import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationCompleted, OperationFailure, OperationSuccess}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -15,7 +16,7 @@ class OperationNotifierTest
     extends FunSpec
     with RandomThings
     with ScalaFutures
-    with ProgressUpdateAssertions
+    with IngestUpdateAssertions
     with Eventually
     with IntegrationPatience
     with OperationFixtures {
@@ -60,10 +61,10 @@ class OperationNotifierTest
             whenReady(sendingOperationNotice) { _ =>
               eventually {
 
-                assertTopicReceivesProgressStatusUpdate(
+                topicReceivesIngestStatus(
                   requestId = requestId,
-                  progressTopic = ingestTopic,
-                  status = Progress.Failed
+                  ingestTopic = ingestTopic,
+                  status = Ingest.Failed
                 ) { events =>
                   val description = events.map {
                     _.description
@@ -84,51 +85,50 @@ class OperationNotifierTest
   }
 
   describe("with a successful operation") {
-    it("sends an event progress update and an outgoing message") {
+    it("sends an event ingest update and an outgoing message") {
       withLocalSnsTopic { ingestTopic =>
-        withLocalSnsTopic { outgoingTopic =>
-          val requestId = UUID.randomUUID()
+          withLocalSnsTopic { outgoingTopic =>
+              val requestId = UUID.randomUUID()
 
-          val operationName = randomAlphanumeric()
-          withOperationNotifier(
-            operationName,
-            ingestTopic = ingestTopic,
-            outgoingTopic = outgoingTopic
-          ) { operationNotifier =>
+              val operationName = randomAlphanumeric()
+              withOperationNotifier(
+                operationName,
+                ingestTopic = ingestTopic,
+                outgoingTopic = outgoingTopic
+              ) { operationNotifier =>
 
-            val summary = TestSummary(
-              randomAlphanumeric()
-            )
+                val summary = TestSummary(
+                  randomAlphanumeric()
+                )
 
-            val operation = OperationSuccess(
-              summary
-            )
+                val operation = OperationSuccess(
+                  summary
+                )
 
-            val sendingOperationNotice =
-              operationNotifier
-                .send(requestId, operation)(identity)
+                val sendingOperationNotice =
+                  operationNotifier
+                    .send(requestId, operation)(identity)
 
-            whenReady(sendingOperationNotice) { _ =>
-              eventually {
+                whenReady(sendingOperationNotice) { _ =>
+                  eventually {
 
-                assertTopicReceivesProgressEventUpdate(
-                  requestId,
-                  ingestTopic) { events =>
-                  events should have size 1
-                  events.head.description shouldBe s"${operationName.capitalize} succeeded"
+                    topicReceivesIngestEvent(
+                      requestId,
+                      ingestTopic) { events =>
+                      events should have size 1
+                      events.head.description shouldBe s"${operationName.capitalize} succeeded"
+                    }
+
+                    assertSnsReceivesOnly(summary, outgoingTopic)
+                  }
                 }
-
-                assertSnsReceivesOnly(summary, outgoingTopic)
               }
             }
-          }
         }
       }
-    }
-  }
 
   describe("with a completed operation") {
-    it("sends a completed progress update and an outgoing message") {
+    it("sends a completed ingest update and an outgoing message") {
       withLocalSnsTopic { ingestTopic =>
         withLocalSnsTopic { outgoingTopic =>
           val requestId = UUID.randomUUID()
@@ -154,10 +154,10 @@ class OperationNotifierTest
 
             whenReady(sendingOperationNotice) { _ =>
               eventually {
-                assertTopicReceivesProgressStatusUpdate(
+                topicReceivesIngestStatus(
                   requestId = requestId,
-                  progressTopic = ingestTopic,
-                  status = Progress.Completed
+                  ingestTopic = ingestTopic,
+                  status = Ingest.Completed
                 ) { events =>
                   val description = events.map {
                     _.description

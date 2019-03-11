@@ -13,11 +13,13 @@ import uk.ac.wellcome.platform.archive.common.parsers.{
   BagInfoParser,
   FileManifestParser
 }
-import uk.ac.wellcome.platform.archive.common.progress.models.{
+import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
+import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
-import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class StorageManifestService(

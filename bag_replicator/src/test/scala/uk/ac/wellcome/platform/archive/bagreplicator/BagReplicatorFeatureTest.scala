@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
   BagLocation,
   BagPath
 }
-import uk.ac.wellcome.platform.archive.common.progress.ProgressUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 
 class BagReplicatorFeatureTest
     extends FunSpec
@@ -23,7 +23,7 @@ class BagReplicatorFeatureTest
     with BagLocationFixtures
     with BagReplicatorFixtures
     with BagRequestGenerators
-    with ProgressUpdateAssertions
+    with IngestUpdateAssertions
     with WorkerServiceFixture {
 
   it("replicates a bag successfully and updates both topics") {
@@ -32,11 +32,11 @@ class BagReplicatorFeatureTest
         val destination = createReplicatorDestinationConfigWith(archiveBucket)
 
         withLocalSqsQueue { queue =>
-          withLocalSnsTopic { progressTopic =>
+          withLocalSnsTopic { ingestTopic =>
             withLocalSnsTopic { outgoingTopic =>
               withWorkerService(
                 queue,
-                ingestTopic = progressTopic,
+                ingestTopic = ingestTopic,
                 outgoingTopic = outgoingTopic,
                 destination = destination) { _ =>
                 val bagInfo = createBagInfo
@@ -64,11 +64,10 @@ class BagReplicatorFeatureTest
                       dst = dstBagLocation
                     )
 
-                    assertTopicReceivesProgressEventUpdate(
-                      bagRequest.requestId,
-                      progressTopic) { events =>
-                      events should have size 1
-                      events.head.description shouldBe "Replicating succeeded"
+                    topicReceivesIngestEvent(bagRequest.requestId, ingestTopic) {
+                      events =>
+                        events should have size 1
+                        events.head.description shouldBe "Replicating succeeded"
                     }
                   }
                 }

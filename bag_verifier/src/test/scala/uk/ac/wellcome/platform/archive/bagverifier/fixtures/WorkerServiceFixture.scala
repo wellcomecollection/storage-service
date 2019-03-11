@@ -4,9 +4,9 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.fixtures.NotificationStreamFixture
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.NotificationStreamFixture
 import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorker, Verifier}
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.models.BagRequest

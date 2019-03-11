@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinatio
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagLocator, BagReplicator, BagReplicatorWorker}
 import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.operation.OperationNotifier
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import uk.ac.wellcome.storage.s3.S3PrefixCopier

@@ -1,9 +1,9 @@
 locals {
-  progress_topic = "${module.ingests_topic.arn}"
+  ingest_topic = "${module.ingests_topic.arn}"
 }
 
 # Ingests topic.  Every app needs to be able to write to this, because they
-# use it to send progress updates for the ingests API.
+# use it to send ingest updates for the ingests API.
 
 module "ingests_topic" {
   source = "../modules/topic"

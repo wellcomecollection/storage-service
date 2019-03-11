@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.operation
+package uk.ac.wellcome.platform.archive.common.ingests.operation
 
 sealed trait OperationResult[T] {
   val summary: T

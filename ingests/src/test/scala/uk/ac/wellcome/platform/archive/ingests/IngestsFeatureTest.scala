@@ -4,51 +4,49 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.progress.models.Progress.Completed
-import uk.ac.wellcome.platform.archive.common.progress.models.ProgressUpdate
-import uk.ac.wellcome.platform.archive.ingests.fixtures.{
-  IngestsFixture => ProgressFixture
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestUpdate
+import uk.ac.wellcome.platform.archive.ingests.fixtures._
 
 class IngestsFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with ProgressFixture
+    with IngestsFixture
     with IntegrationPatience {
 
-  it("updates an existing progress status to Completed") {
+  it("updates an existing ingest status to Completed") {
     withConfiguredApp {
       case (queue, topic, table) => {
-        withProgressTracker(table) { monitor =>
-          withProgress(monitor) { progress =>
+        withIngestTracker(table) { monitor =>
+          withIngest(monitor) { ingest =>
             val someBagId = Some(createBagId)
-            val progressStatusUpdate =
-              createProgressStatusUpdateWith(
-                id = progress.id,
+            val ingestStatusUpdate =
+              createIngestStatusUpdateWith(
+                id = ingest.id,
                 status = Completed,
                 maybeBag = someBagId)
 
-            sendNotificationToSQS[ProgressUpdate](queue, progressStatusUpdate)
+            sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
             eventually {
               val actualMessage =
                 notificationMessage[CallbackNotification](topic)
-              actualMessage.id shouldBe progress.id
-              actualMessage.callbackUri shouldBe progress.callback.get.uri
+              actualMessage.id shouldBe ingest.id
+              actualMessage.callbackUri shouldBe ingest.callback.get.uri
 
-              val expectedProgress = progress.copy(
+              val expectedIngest = ingest.copy(
                 status = Completed,
-                events = progressStatusUpdate.events,
+                events = ingestStatusUpdate.events,
                 bag = someBagId
               )
-              actualMessage.payload shouldBe expectedProgress
+              actualMessage.payload shouldBe expectedIngest
 
-              assertProgressCreated(progress, table)
+              assertIngestCreated(ingest, table)
 
-              assertProgressRecordedRecentEvents(
-                progressStatusUpdate.id,
-                progressStatusUpdate.events.map(_.description),
+              assertIngestRecordedRecentEvents(
+                ingestStatusUpdate.id,
+                ingestStatusUpdate.events.map(_.description),
                 table
               )
             }
