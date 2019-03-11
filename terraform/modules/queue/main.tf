@@ -28,14 +28,14 @@ resource "aws_cloudwatch_metric_alarm" "queue_high" {
   alarm_name          = "${local.queue_name}_high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
-  threshold           = "100"
+  threshold           = "1"
   alarm_description   = "Queue high"
 
   alarm_actions = ["${var.queue_high_actions}"]
 
   namespace   = "AWS/SQS"
   metric_name = "ApproximateNumberOfMessagesVisible"
-  period      = "60"
+  period      = "300"
 
   statistic = "Sum"
 
@@ -70,7 +70,7 @@ resource "aws_cloudwatch_metric_alarm" "queue_low" {
     metric {
       metric_name = "ApproximateNumberOfMessagesVisible"
       namespace   = "AWS/SQS"
-      period      = "60"
+      period      = "300"
       stat        = "Sum"
 
       dimensions = {
@@ -85,7 +85,7 @@ resource "aws_cloudwatch_metric_alarm" "queue_low" {
     metric {
       metric_name = "ApproximateNumberOfMessagesNotVisible"
       namespace   = "AWS/SQS"
-      period      = "60"
+      period      = "300"
       stat        = "Sum"
 
       dimensions = {
