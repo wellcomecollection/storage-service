@@ -75,7 +75,7 @@ class VerifierFeatureTest
                     sendNotificationToSQS(queue, bagRequest)
 
                     eventually {
-                      topicRecievesIngestStatus(
+                      topicReceivesIngestStatus(
                         requestId = bagRequest.requestId,
                         ingestTopic = ingestTopic,
                         status = Ingest.Failed
