@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import scala.util.Try
 
 trait IngestUpdateAssertions extends SNS with Inside with Logging {
-  def topicRecievesIngestStatus[R](requestId: UUID,
+  def topicReceivesIngestStatus[R](requestId: UUID,
                                    ingestTopic: SNS.Topic,
                                    status: Ingest.Status,
                                    expectedBag: Option[BagId] = None)(
