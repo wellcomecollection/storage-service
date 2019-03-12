@@ -4,20 +4,27 @@ import java.util.UUID
 
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
-import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings}
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, OperationGenerators}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  OperationFixtures,
+  RandomThings
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  OperationGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 
-class IngestUpdaterTest extends FunSpec
-  with RandomThings
-  with ScalaFutures
-  with IngestUpdateAssertions
-  with Eventually
-  with IntegrationPatience
-  with OperationFixtures
-  with OperationGenerators
-  with BagIdGenerators {
+class IngestUpdaterTest
+    extends FunSpec
+    with RandomThings
+    with ScalaFutures
+    with IngestUpdateAssertions
+    with Eventually
+    with IntegrationPatience
+    with OperationFixtures
+    with OperationGenerators
+    with BagIdGenerators {
 
   val operationName: String = randomAlphanumeric()
 
@@ -27,7 +34,8 @@ class IngestUpdaterTest extends FunSpec
         val requestId = UUID.randomUUID()
         val summary = createTestSummary()
 
-        val sendingOperationNotice = ingestUpdater.send(requestId, createOperationSuccessWith(summary))
+        val sendingOperationNotice =
+          ingestUpdater.send(requestId, createOperationSuccessWith(summary))
 
         whenReady(sendingOperationNotice) { _ =>
           eventually {
@@ -49,11 +57,18 @@ class IngestUpdaterTest extends FunSpec
         val summary = createTestSummary()
 
         val bagId = createBagId
-        val sendingOperationNotice = ingestUpdater.send(requestId, createOperationCompletedWith(summary), Some(bagId))
+        val sendingOperationNotice = ingestUpdater.send(
+          requestId,
+          createOperationCompletedWith(summary),
+          Some(bagId))
 
         whenReady(sendingOperationNotice) { _ =>
           eventually {
-            topicReceivesIngestStatus(requestId, ingestTopic, Ingest.Completed, Some(bagId)) { events =>
+            topicReceivesIngestStatus(
+              requestId,
+              ingestTopic,
+              Ingest.Completed,
+              Some(bagId)) { events =>
               events should have size 1
               events.head.description shouldBe s"${operationName.capitalize} succeeded (completed)"
             }
@@ -70,11 +85,18 @@ class IngestUpdaterTest extends FunSpec
         val summary = createTestSummary()
 
         val bagId = createBagId
-        val sendingOperationNotice = ingestUpdater.send(requestId, createOperationFailureWith(summary), Some(bagId))
+        val sendingOperationNotice = ingestUpdater.send(
+          requestId,
+          createOperationFailureWith(summary),
+          Some(bagId))
 
         whenReady(sendingOperationNotice) { _ =>
           eventually {
-            topicReceivesIngestStatus(requestId, ingestTopic, Ingest.Failed, Some(bagId)) { events =>
+            topicReceivesIngestStatus(
+              requestId,
+              ingestTopic,
+              Ingest.Failed,
+              Some(bagId)) { events =>
               events should have size 1
               events.head.description shouldBe s"${operationName.capitalize} failed"
             }
@@ -84,5 +106,3 @@ class IngestUpdaterTest extends FunSpec
     }
   }
 }
-
-

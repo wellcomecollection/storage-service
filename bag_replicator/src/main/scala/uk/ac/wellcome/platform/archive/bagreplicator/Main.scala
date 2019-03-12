@@ -33,12 +33,9 @@ object Main extends WellcomeTypesafeApp {
     new BagReplicatorWorker(
       stream = NotificationStreamBuilder
         .buildStream[BagRequest](config),
-      ingestUpdater =
-        OperationBuilder.buildIngestUpdater(config, operationName),
-      outgoing =
-        OperationBuilder.buildOutgoingPublisher(config, operationName),
-      reporter =
-        OperationBuilder.buildOperationReporter(config),
+      ingestUpdater = OperationBuilder.buildIngestUpdater(config, operationName),
+      outgoing = OperationBuilder.buildOutgoingPublisher(config, operationName),
+      reporter = OperationBuilder.buildOperationReporter(config),
       replicator = new BagReplicator(
         bagLocator = new BagLocator(s3Client),
         config = ReplicatorDestinationConfig

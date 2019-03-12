@@ -66,30 +66,32 @@ trait WorkerFixture
                       storageManifestService,
                       storageManifestVHS
                     )
-                    withIngestUpdater("register", ingestTopic) { ingestNotifier =>
-                      withOutgoingPublisher("register", outgoingTopic) { outgoingNotifier =>
-                        withOperationReporter() { reporter =>
-                          val service =
-                            new BagRegisterWorker(
-                              stream,
-                              ingestNotifier,
-                              outgoingNotifier,
-                              reporter,
-                              register)
+                    withIngestUpdater("register", ingestTopic) {
+                      ingestNotifier =>
+                        withOutgoingPublisher("register", outgoingTopic) {
+                          outgoingNotifier =>
+                            withOperationReporter() { reporter =>
+                              val service =
+                                new BagRegisterWorker(
+                                  stream,
+                                  ingestNotifier,
+                                  outgoingNotifier,
+                                  reporter,
+                                  register)
 
-                          service.run()
+                              service.run()
 
-                          testWith(
-                            (
-                              service,
-                              table,
-                              bucket,
-                              ingestTopic,
-                              outgoingTopic,
-                              queuePair)
-                          )
+                              testWith(
+                                (
+                                  service,
+                                  table,
+                                  bucket,
+                                  ingestTopic,
+                                  outgoingTopic,
+                                  queuePair)
+                              )
+                            }
                         }
-                      }
                     }
                 }
               }

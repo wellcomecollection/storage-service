@@ -4,12 +4,15 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsSenderBuilder
-import uk.ac.wellcome.platform.archive.common.operation.{DiagnosticReporter, IngestUpdater, OutgoingPublisher}
+import uk.ac.wellcome.platform.archive.common.operation.{
+  DiagnosticReporter,
+  IngestUpdater,
+  OutgoingPublisher
+}
 
 object OperationBuilder {
 
-  def buildIngestUpdater(config: Config,
-                         operationName: String): IngestUpdater =
+  def buildIngestUpdater(config: Config, operationName: String): IngestUpdater =
     new IngestUpdater(
       operationName = operationName,
       snsWriter = SNSBuilder.buildSNSWriter(

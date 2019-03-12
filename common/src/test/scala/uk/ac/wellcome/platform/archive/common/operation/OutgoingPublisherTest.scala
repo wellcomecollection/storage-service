@@ -5,20 +5,24 @@ import java.util.UUID
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  OperationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.platform.archive.common.generators.OperationGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class OutgoingPublisherTest extends FunSpec
-  with RandomThings
-  with ScalaFutures
-  with IngestUpdateAssertions
-  with Eventually
-  with IntegrationPatience
-  with OperationFixtures
-  with OperationGenerators {
+class OutgoingPublisherTest
+    extends FunSpec
+    with RandomThings
+    with ScalaFutures
+    with IngestUpdateAssertions
+    with Eventually
+    with IntegrationPatience
+    with OperationFixtures
+    with OperationGenerators {
 
   val operationName: String = randomAlphanumeric()
 
@@ -28,7 +32,9 @@ class OutgoingPublisherTest extends FunSpec
         val requestId = UUID.randomUUID()
         val summary = createTestSummary()
 
-        val sendingOperationNotice = outgoingPublisher.send(requestId, createOperationSuccessWith(summary))(identity)
+        val sendingOperationNotice = outgoingPublisher.send(
+          requestId,
+          createOperationSuccessWith(summary))(identity)
 
         whenReady(sendingOperationNotice) { _ =>
           assertSnsReceivesOnly(summary, topic)
@@ -44,7 +50,9 @@ class OutgoingPublisherTest extends FunSpec
         val requestId = UUID.randomUUID()
         val summary = createTestSummary()
 
-        val sendingOperationNotice = outgoingPublisher.send(requestId, createOperationCompletedWith(summary))(identity)
+        val sendingOperationNotice = outgoingPublisher.send(
+          requestId,
+          createOperationCompletedWith(summary))(identity)
 
         whenReady(sendingOperationNotice) { _ =>
           assertSnsReceivesOnly(summary, topic)
@@ -60,7 +68,9 @@ class OutgoingPublisherTest extends FunSpec
         val requestId = UUID.randomUUID()
         val summary = createTestSummary()
 
-        val sendingOperationNotice = outgoingPublisher.send(requestId, createOperationFailureWith(summary))(identity)
+        val sendingOperationNotice = outgoingPublisher.send(
+          requestId,
+          createOperationFailureWith(summary))(identity)
 
         whenReady(sendingOperationNotice) { _ =>
           assertSnsReceivesNothing(topic)

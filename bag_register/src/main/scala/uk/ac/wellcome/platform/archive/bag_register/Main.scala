@@ -4,10 +4,19 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
-import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.bag_register.services.{
+  BagRegisterWorker,
+  Register
+}
 import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
-import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder.{buildIngestUpdater, buildOutgoingPublisher}
-import uk.ac.wellcome.platform.archive.common.models.{BagRequest, StorageManifest}
+import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder.{
+  buildIngestUpdater,
+  buildOutgoingPublisher
+}
+import uk.ac.wellcome.platform.archive.common.models.{
+  BagRequest,
+  StorageManifest
+}
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.storage.typesafe.{S3Builder, VHSBuilder}
@@ -36,7 +45,8 @@ object Main extends WellcomeTypesafeApp {
     val operationName = "register"
 
     val ingestUpdater = buildIngestUpdater(
-      config, operationName
+      config,
+      operationName
     )
 
     val reporter = OperationBuilder

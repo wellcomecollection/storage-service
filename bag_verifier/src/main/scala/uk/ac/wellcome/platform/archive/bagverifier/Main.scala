@@ -52,6 +52,11 @@ object Main extends WellcomeTypesafeApp {
     val reporter = OperationBuilder
       .buildOperationReporter(config)
 
-    new BagVerifierWorker(stream, ingestUpdater, outgoingPublisher, reporter, verifier)
+    new BagVerifierWorker(
+      stream,
+      ingestUpdater,
+      outgoingPublisher,
+      reporter,
+      verifier)
   }
 }

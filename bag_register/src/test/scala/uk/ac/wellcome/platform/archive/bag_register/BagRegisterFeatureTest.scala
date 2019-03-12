@@ -10,8 +10,8 @@ import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
 import uk.ac.wellcome.platform.archive.bag_register.services.BagRegisterWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
-  OperationGenerators,
-  BagInfoGenerators
+  BagInfoGenerators,
+  OperationGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,

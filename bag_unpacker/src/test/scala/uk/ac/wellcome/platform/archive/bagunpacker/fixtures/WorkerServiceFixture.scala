@@ -37,11 +37,11 @@ trait WorkerServiceFixture
     with OperationFixtures {
 
   def withBagNotification[R](
-                              queue: Queue,
-                              storageBucket: Bucket,
-                              requestId: UUID,
-                              testArchive: TestArchive
-                            )(testWith: TestWith[UnpackBagRequest, R]): R = {
+    queue: Queue,
+    storageBucket: Bucket,
+    requestId: UUID,
+    testArchive: TestArchive
+  )(testWith: TestWith[UnpackBagRequest, R]): R = {
     val unpackBagRequest = UnpackBagRequest(
       requestId = randomUUID,
       sourceLocation = testArchive.location,
@@ -53,11 +53,11 @@ trait WorkerServiceFixture
   }
 
   def withBagUnpackerWorker[R](
-                          queue: Queue,
-                          ingestTopic: Topic,
-                          outgoingTopic: Topic,
-                          dstBucket: Bucket
-                        )(testWith: TestWith[UnpackerWorker, R]): R =
+    queue: Queue,
+    ingestTopic: Topic,
+    outgoingTopic: Topic,
+    dstBucket: Bucket
+  )(testWith: TestWith[UnpackerWorker, R]): R =
     withNotificationStream[UnpackBagRequest, R](queue) { notificationStream =>
       val ec = ExecutionContext.Implicits.global
       withIngestUpdater("unpacker", ingestTopic) { ingestUpdater =>
