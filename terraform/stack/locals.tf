@@ -1,9 +1,9 @@
 locals {
-  bags_api_service_name       = "${var.namespace}-bags-api"
-  ingests_service_name        = "${var.namespace}-ingests"
-  ingests_api_service_name    = "${var.namespace}-ingests-api"
-  notifier_service_name       = "${var.namespace}-notifier"
-  bagger_service_name         = "${var.namespace}-bagger"
+  bags_api_service_name    = "${var.namespace}-bags-api"
+  ingests_service_name     = "${var.namespace}-ingests"
+  ingests_api_service_name = "${var.namespace}-ingests-api"
+  notifier_service_name    = "${var.namespace}-notifier"
+  bagger_service_name      = "${var.namespace}-bagger"
 
   bag_replicator_service_name = "${var.namespace}-bag-replicator"
   bag_register_service_name   = "${var.namespace}-bag_register"
