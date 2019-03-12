@@ -1,7 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.models.bagit
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
 class BagLocationTest extends FunSpec with Matchers {

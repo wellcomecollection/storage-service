@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.common.bagit
 import java.io.FileNotFoundException
 
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagInfoLocator
 
 import scala.util.Success
 

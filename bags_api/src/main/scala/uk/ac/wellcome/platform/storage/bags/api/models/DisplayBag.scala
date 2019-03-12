@@ -3,11 +3,8 @@ package uk.ac.wellcome.platform.storage.bags.api.models
 import java.net.URL
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.display.{
-  DisplayLocation,
-  DisplayStorageSpace
-}
-import uk.ac.wellcome.platform.archive.common.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import uk.ac.wellcome.platform.archive.display.{DisplayLocation, DisplayStorageSpace}
 
 case class DisplayBag(
   @JsonKey("@context")

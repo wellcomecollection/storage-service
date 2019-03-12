@@ -4,9 +4,9 @@ import java.net.{URI, URL}
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 sealed trait DisplayIngest

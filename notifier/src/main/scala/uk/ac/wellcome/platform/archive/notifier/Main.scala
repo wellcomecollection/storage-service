@@ -5,11 +5,8 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
 import uk.ac.wellcome.platform.archive.common.config.builders.HTTPServerBuilder
-import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.notifier.services.{
-  CallbackUrlService,
-  NotifierWorkerService
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
+import uk.ac.wellcome.platform.archive.notifier.services.{CallbackUrlService, NotifierWorkerService}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 

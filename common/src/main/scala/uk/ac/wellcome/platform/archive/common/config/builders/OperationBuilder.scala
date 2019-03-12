@@ -4,12 +4,8 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsSenderBuilder
-import uk.ac.wellcome.platform.archive.common.operation.{
-  DiagnosticReporter,
-  IngestUpdater,
-  OperationNotifier,
-  OutgoingPublisher
-}
+import uk.ac.wellcome.platform.archive.common.ingests.services.{IngestNotifier, IngestUpdater}
+import uk.ac.wellcome.platform.archive.common.operation.services.{DiagnosticReporter, OutgoingPublisher}
 
 object OperationBuilder {
 
@@ -36,8 +32,8 @@ object OperationBuilder {
     )
 
   def buildOperationNotifier(config: Config,
-                             operationName: String): OperationNotifier =
-    new OperationNotifier(
+                             operationName: String): IngestNotifier =
+    new IngestNotifier(
       outgoing = buildOutgoingNotifier(
         config,
         operationName,

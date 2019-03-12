@@ -6,12 +6,9 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Route
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagId,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBag
 
 import scala.concurrent.ExecutionContext

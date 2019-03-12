@@ -8,7 +8,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationResult
+import uk.ac.wellcome.platform.archive.common.operation.services.OperationResult
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

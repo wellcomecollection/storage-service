@@ -9,19 +9,10 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{Messaging, NotificationStreamFixture}
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  Unpacker,
-  UnpackerWorker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  OperationFixtures,
-  RandomThings
-}
-import uk.ac.wellcome.platform.archive.common.models.{
-  StorageSpace,
-  UnpackBagRequest
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.ingests.models.UnpackBagRequest
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 

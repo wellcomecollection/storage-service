@@ -4,18 +4,16 @@ import akka.Done
 import grizzled.slf4j.Logging
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.messaging.sqs.NotificationStream
-import uk.ac.wellcome.platform.archive.common.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.operation.{
-  DiagnosticReporter,
-  OperationNotifier
-}
 import uk.ac.wellcome.typesafe.Runnable
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.ingests.services.IngestNotifier
+import uk.ac.wellcome.platform.archive.common.operation.services.DiagnosticReporter
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagVerifierWorker(stream: NotificationStream[BagRequest],
-                        notifier: OperationNotifier,
+                        notifier: IngestNotifier,
                         reporter: DiagnosticReporter,
                         verifier: Verifier)(implicit ec: ExecutionContext)
     extends Runnable

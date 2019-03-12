@@ -7,7 +7,7 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagIt
-import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
+import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.notifier.services.NotifierWorkerService
 
 import scala.concurrent.ExecutionContext.Implicits.global

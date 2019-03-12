@@ -1,11 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.config.builders
 
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
-import uk.ac.wellcome.platform.archive.common.models.UnpackBagRequest
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagLocation,
-  BagPath
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.ingests.models.UnpackBagRequest
 
 object BagLocationBuilder {
   def build(

@@ -2,17 +2,12 @@ package uk.ac.wellcome.platform.archive.common.services
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  FileEntry
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
-import uk.ac.wellcome.platform.archive.common.models.{bagit, ChecksumAlgorithm}
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -73,7 +68,7 @@ class StorageManifestServiceTest
   describe("returns a Left upon error") {
     it("if no files are at the BagLocation") {
       withLocalS3Bucket { bucket =>
-        val bagLocation = bagit.BagLocation(
+        val bagLocation = BagLocation(
           storageNamespace = bucket.name,
           storagePrefix = Some("archive"),
           storageSpace = createStorageSpace,

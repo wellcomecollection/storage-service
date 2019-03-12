@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.common.bagit
 
 import com.amazonaws.services.s3.model.PutObjectResult
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.bagit.services.S3BagFile
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3

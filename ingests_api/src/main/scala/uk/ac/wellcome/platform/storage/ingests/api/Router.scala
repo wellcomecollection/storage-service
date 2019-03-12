@@ -8,20 +8,13 @@ import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import grizzled.slf4j.Logging
 import io.circe.Printer
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.http.models.InternalServerErrorResponse
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
-import uk.ac.wellcome.platform.archive.common.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagId,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.display.{
-  DisplayIngestMinimal,
-  RequestDisplayIngest,
-  ResponseDisplayIngest
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.display.{DisplayIngestMinimal, RequestDisplayIngest, ResponseDisplayIngest}
 
 class Router(ingestTracker: IngestTracker,
              ingestStarter: IngestStarter,

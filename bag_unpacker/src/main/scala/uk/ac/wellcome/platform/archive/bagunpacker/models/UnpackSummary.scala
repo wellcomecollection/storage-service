@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.bagunpacker.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.operation.Summary
+import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 case class UnpackSummary(
   fileCount: Int = 0,
