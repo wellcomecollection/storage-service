@@ -65,6 +65,9 @@ module "bag_replicator" {
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
   }
 
+  cpu    = 1024
+  memory = 2048
+
   env_vars_length = 6
 
   min_capacity = "0"
