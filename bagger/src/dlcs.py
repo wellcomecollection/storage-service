@@ -15,9 +15,7 @@ def get_image(image_slug, space=None):
     try:
         return response.json()
     except JSONDecodeError as err:
-        raise ValueError(
-            "Error parsing DLCS response for %s as JSON: %r" % (url, err)
-        )
+        raise ValueError("Error parsing DLCS response for %s as JSON: %r" % (url, err))
 
 
 def get_authorisation():
