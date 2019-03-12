@@ -1,14 +1,13 @@
 package uk.ac.wellcome.platform.archive.common.config.builders
 
-import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
-import uk.ac.wellcome.monitoring.typesafe.MetricsSenderBuilder
+import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  DiagnosticReporter,
-  OutgoingPublisher
-}
+import uk.ac.wellcome.platform.archive.common.operation.services.{DiagnosticReporter, OutgoingPublisher}
+
+import scala.concurrent.ExecutionContext
 
 object OperationBuilder {
 
@@ -32,8 +31,10 @@ object OperationBuilder {
     )
 
   def buildOperationReporter(config: Config)(
-    implicit actorSystem: ActorSystem): DiagnosticReporter =
+    implicit
+    materializer: ActorMaterializer,
+    ec: ExecutionContext): DiagnosticReporter =
     new DiagnosticReporter(
-      metricsSender = MetricsSenderBuilder.buildMetricsSender(config)
+      metricsSender = MetricsBuilder.buildMetricsSender(config)
     )
 }

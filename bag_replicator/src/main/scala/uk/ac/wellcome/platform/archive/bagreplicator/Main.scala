@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator
 
 import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
@@ -22,9 +23,10 @@ import scala.concurrent.ExecutionContextExecutor
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
-
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
+    implicit val materializer: ActorMaterializer =
+      AkkaBuilder.buildActorMaterializer()
 
     val s3Client = S3Builder.buildS3Client(config)
 

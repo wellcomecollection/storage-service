@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.monitoring.typesafe.MetricsSenderBuilder
+import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders._
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
@@ -18,11 +18,12 @@ import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
-    implicit val materializer: ActorMaterializer =
-      AkkaBuilder.buildActorMaterializer()
+    implicit val actorSystem: ActorSystem =
+      AkkaBuilder.buildActorSystem()
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
+    implicit val materializer: ActorMaterializer =
+      AkkaBuilder.buildActorMaterializer()
 
     val vhs = new StorageManifestVHS(
       underlying = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
@@ -30,7 +31,7 @@ object Main extends WellcomeTypesafeApp {
 
     val httpMetrics = new HttpMetrics(
       name = "BagsApi",
-      metricsSender = MetricsSenderBuilder.buildMetricsSender(config)
+      metricsSender = MetricsBuilder.buildMetricsSender(config)
     )
 
     new BagsApi(

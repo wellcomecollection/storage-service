@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bag_register
 
 import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
@@ -30,9 +31,10 @@ object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
       AkkaBuilder.buildActorSystem()
-
     implicit val ec: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
+    implicit val materializer: ActorMaterializer =
+      AkkaBuilder.buildActorMaterializer()
 
     implicit val s3Client = S3Builder.buildS3Client(config)
 

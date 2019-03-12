@@ -60,7 +60,7 @@ trait BagsApiFixture
     withLocalS3Bucket { bucket =>
       withLocalDynamoDbTable { table =>
         withStorageManifestVHS(table, bucket) { vhs =>
-          withMockMetricSender { metricsSender =>
+          withMockMetricsSender { metricsSender =>
             withApp(metricsSender, vhs) { _ =>
               testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
             }
@@ -74,7 +74,7 @@ trait BagsApiFixture
     val bucket = Bucket("does-not-exist")
     val table = Table("does-not-exist", index = "does-not-exist")
     withStorageManifestVHS(table, bucket) { vhs =>
-      withMockMetricSender { metricsSender =>
+      withMockMetricsSender { metricsSender =>
         withApp(metricsSender, vhs) { _ =>
           testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
         }

@@ -28,8 +28,8 @@ module "bag_unpacker" {
 
   env_vars_length = 6
 
-  cpu    = 1024
-  memory = 2048
+  cpu    = 2048
+  memory = 4096
 
   min_capacity = "0"
   max_capacity = "10"
@@ -64,6 +64,9 @@ module "bag_replicator" {
     metrics_namespace       = "${local.bag_replicator_service_name}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
   }
+
+  cpu    = 1024
+  memory = 2048
 
   env_vars_length = 6
 
