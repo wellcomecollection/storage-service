@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.HttpMethods.{GET, POST}
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.Sink
-import akka.stream.{ActorMaterializer, Materializer, QueueOfferResult}
+import akka.stream.{ActorMaterializer, Materializer}
 import io.circe.Decoder
 import org.mockito.Mockito.{atLeastOnce, verify}
 import org.scalatest.{Assertion, Matchers}
@@ -99,7 +99,7 @@ trait HttpFixtures extends Akka with ScalaFutures { this: Matchers =>
 
   def assertMetricSent(
     metricsSender: MetricsSender,
-    result: HttpMetricResults.Value): Future[QueueOfferResult] =
+    result: HttpMetricResults.Value): Future[Unit] =
     verify(metricsSender, atLeastOnce())
       .incrementCount(metricName = s"${metricsName}_HttpResponse_$result")
 
