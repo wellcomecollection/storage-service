@@ -11,4 +11,3 @@ trait BagLocationGenerators extends RandomThings with StorageSpaceGenerators {
       storageSpace = createStorageSpace,
       bagPath = randomBagPath)
 }
-
