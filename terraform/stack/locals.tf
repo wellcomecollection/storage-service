@@ -6,7 +6,7 @@ locals {
   bagger_service_name      = "${var.namespace}-bagger"
 
   bag_replicator_service_name = "${var.namespace}-bag-replicator"
-  bag_register_service_name   = "${var.namespace}-bag_register"
+  bag_register_service_name   = "${var.namespace}-bag-register"
   bag_verifier_service_name   = "${var.namespace}-bag-verifier"
   bag_unpacker_service_name   = "${var.namespace}-bag-unpacker"
 
