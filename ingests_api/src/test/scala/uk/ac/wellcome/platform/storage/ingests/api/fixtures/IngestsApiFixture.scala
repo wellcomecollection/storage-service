@@ -68,7 +68,7 @@ trait IngestsApiFixture
     testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R = {
     withLocalSnsTopic { unpackerTopic =>
       val table = Table("does-not-exist", index = "does-not-exist")
-      withMockMetricSender { metricsSender =>
+      withMockMetricsSender { metricsSender =>
         withApp(table, unpackerTopic, metricsSender) { _ =>
           testWith(
             (
@@ -85,7 +85,7 @@ trait IngestsApiFixture
     testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R = {
     withLocalSnsTopic { unpackerTopic =>
       withIngestTrackerTable { table =>
-        withMockMetricSender { metricsSender =>
+        withMockMetricsSender { metricsSender =>
           withApp(table, unpackerTopic, metricsSender) { _ =>
             testWith(
               (
