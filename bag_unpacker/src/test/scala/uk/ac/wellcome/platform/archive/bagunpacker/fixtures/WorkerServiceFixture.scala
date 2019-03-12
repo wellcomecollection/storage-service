@@ -37,11 +37,11 @@ trait WorkerServiceFixture
     with OperationFixtures {
 
   def withBagNotification[R](
-    queue: Queue,
-    storageBucket: Bucket,
-    requestId: UUID,
-    testArchive: TestArchive
-  )(testWith: TestWith[UnpackBagRequest, R]): R = {
+                              queue: Queue,
+                              storageBucket: Bucket,
+                              requestId: UUID,
+                              testArchive: TestArchive
+                            )(testWith: TestWith[UnpackBagRequest, R]): R = {
     val unpackBagRequest = UnpackBagRequest(
       requestId = randomUUID,
       sourceLocation = testArchive.location,
@@ -52,36 +52,31 @@ trait WorkerServiceFixture
     testWith(unpackBagRequest)
   }
 
-  def withBagUnpacker[R](
-    queue: Queue,
-    ingestTopic: Topic,
-    outgoingTopic: Topic,
-    dstBucket: Bucket
-  )(testWith: TestWith[UnpackerWorker, R]): R =
+  def withBagUnpackerWorker[R](
+                          queue: Queue,
+                          ingestTopic: Topic,
+                          outgoingTopic: Topic,
+                          dstBucket: Bucket
+                        )(testWith: TestWith[UnpackerWorker, R]): R =
     withNotificationStream[UnpackBagRequest, R](queue) { notificationStream =>
       val ec = ExecutionContext.Implicits.global
+      withIngestUpdater("unpacker", ingestTopic) { ingestUpdater =>
+        withOutgoingPublisher("unpacker", outgoingTopic) { outgoingPublisher =>
+          withOperationReporter() { reporter =>
+            val bagUnpackerConfig = UnpackerConfig(dstBucket.name)
+            val bagUnpacker = new UnpackerWorker(
+              bagUnpackerConfig,
+              notificationStream,
+              ingestUpdater,
+              outgoingPublisher,
+              reporter,
+              new Unpacker()(s3Client, ec)
+            )(ec)
 
-      withOperationNotifier(
-        "unpacker",
-        ingestTopic = ingestTopic,
-        outgoingTopic = outgoingTopic) { notifier =>
-        val bagUnpackerConfig = UnpackerConfig(dstBucket.name)
+            bagUnpacker.run()
 
-        withOperationReporter() { reporter =>
-          val unpackerService =
-            new Unpacker()(s3Client, ec)
-
-          val bagUnpacker = new UnpackerWorker(
-            bagUnpackerConfig,
-            notificationStream,
-            notifier,
-            reporter,
-            unpackerService
-          )(ec)
-
-          bagUnpacker.run()
-
-          testWith(bagUnpacker)
+            testWith(bagUnpacker)
+          }
         }
       }
     }
@@ -92,7 +87,7 @@ trait WorkerServiceFixture
       withLocalSnsTopic { ingestTopic =>
         withLocalSnsTopic { outgoingTopic =>
           withLocalS3Bucket { sourceBucket =>
-            withBagUnpacker(
+            withBagUnpackerWorker(
               queue,
               ingestTopic,
               outgoingTopic,

@@ -33,7 +33,7 @@ class BagReplicatorWorkerTest
         val destination = createReplicatorDestinationConfigWith(archiveBucket)
         withLocalSnsTopic { ingestTopic =>
           withLocalSnsTopic { outgoingTopic =>
-            withWorkerService(
+            withBagReplicatorWorker(
               ingestTopic = ingestTopic,
               outgoingTopic = outgoingTopic,
               destination = destination) { service =>
@@ -70,7 +70,7 @@ class BagReplicatorWorkerTest
   it("sends a failed IngestUpdate if replication fails") {
     withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
-        withWorkerService(
+        withBagReplicatorWorker(
           ingestTopic = ingestTopic,
           outgoingTopic = outgoingTopic) { service =>
           val srcBagLocation = BagLocation(

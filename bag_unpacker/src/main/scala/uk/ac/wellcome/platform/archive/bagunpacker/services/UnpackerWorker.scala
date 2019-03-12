@@ -7,14 +7,8 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
-import uk.ac.wellcome.platform.archive.common.operation.{
-  DiagnosticReporter,
-  OperationNotifier
-}
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  UnpackBagRequest
-}
+import uk.ac.wellcome.platform.archive.common.models.{BagRequest, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.operation.{DiagnosticReporter, IngestUpdater, OutgoingPublisher}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,7 +16,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class UnpackerWorker(
   config: UnpackerConfig,
   stream: NotificationStream[UnpackBagRequest],
-  notifier: OperationNotifier,
+  ingestUpdater: IngestUpdater,
+  outgoing: OutgoingPublisher,
   reporter: DiagnosticReporter,
   unpacker: Unpacker,
 )(implicit ec: ExecutionContext)
@@ -43,10 +38,8 @@ class UnpackerWorker(
 
       _ <- reporter.report(request.requestId, result)
 
-      _ <- notifier
-        .send(request.requestId, result) { _ =>
-          BagRequest(request.requestId, location)
-        }
+      _ <- ingestUpdater.send(request.requestId, result)
+      _ <- outgoing.send(request.requestId, result)(_ =>  BagRequest(request.requestId, location))
 
     } yield ()
   }

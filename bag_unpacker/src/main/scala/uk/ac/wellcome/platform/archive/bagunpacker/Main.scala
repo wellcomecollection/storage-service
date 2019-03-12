@@ -4,10 +4,7 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  Unpacker,
-  UnpackerWorker
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerWorker}
 import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
 import uk.ac.wellcome.platform.archive.common.models.UnpackBagRequest
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -26,12 +23,9 @@ object Main extends WellcomeTypesafeApp {
 
     new UnpackerWorker(
       config = UnpackerConfig(config),
-      stream = NotificationStreamBuilder
-        .buildStream[UnpackBagRequest](config),
-      notifier = OperationBuilder.buildOperationNotifier(
-        config,
-        "unpacking"
-      ),
+      stream = NotificationStreamBuilder.buildStream[UnpackBagRequest](config),
+      ingestUpdater = OperationBuilder.buildIngestUpdater(config, "unpacking"),
+      outgoing = OperationBuilder.buildOutgoingPublisher(config, "unpacking"),
       reporter = OperationBuilder.buildOperationReporter(config),
       unpacker = new Unpacker()
     )

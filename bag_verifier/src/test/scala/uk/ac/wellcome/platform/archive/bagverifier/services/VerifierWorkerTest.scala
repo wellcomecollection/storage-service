@@ -27,7 +27,7 @@ class VerifierWorkerTest
     "updates the ingest monitor and sends an outgoing notification if verification succeeds") {
     withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
-        withWorkerService(ingestTopic, outgoingTopic) { service =>
+        withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket) { bagLocation =>
               val bagRequest = createBagRequestWith(bagLocation)
@@ -60,7 +60,7 @@ class VerifierWorkerTest
   it("only updates the ingest monitor if verification fails") {
     withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
-        withWorkerService(ingestTopic, outgoingTopic) { service =>
+        withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
               bagLocation =>
@@ -95,7 +95,7 @@ class VerifierWorkerTest
 
     withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
-        withWorkerService(ingestTopic, outgoingTopic) { service =>
+        withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
               bagLocation =>
@@ -129,7 +129,7 @@ class VerifierWorkerTest
 
   it("sends a ingest update before it sends an outgoing message") {
     withLocalSnsTopic { ingestTopic =>
-      withWorkerService(ingestTopic, Topic("no-such-outgoing")) { service =>
+      withBagVerifierWorker(ingestTopic, Topic("no-such-outgoing")) { service =>
         withLocalS3Bucket { bucket =>
           withBag(bucket) { bagLocation =>
             val bagRequest = createBagRequestWith(bagLocation)
