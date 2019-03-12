@@ -5,16 +5,17 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagPath
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.UnpackBagRequest
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerWorkerConfig
 
 object BagLocationBuilder {
   def build(
     unpackBagRequest: UnpackBagRequest,
-    unpackerConfig: UnpackerConfig
-  ) = {
+    unpackerWorkerConfig: UnpackerWorkerConfig
+  ): BagLocation = {
 
     BagLocation(
-      storageNamespace = unpackerConfig.dstNamespace,
-      storagePrefix = unpackerConfig.maybeDstPrefix,
+      storageNamespace = unpackerWorkerConfig.dstNamespace,
+      storagePrefix = unpackerWorkerConfig.maybeDstPrefix,
       storageSpace = unpackBagRequest.storageSpace,
       bagPath = BagPath(unpackBagRequest.requestId.toString)
     )

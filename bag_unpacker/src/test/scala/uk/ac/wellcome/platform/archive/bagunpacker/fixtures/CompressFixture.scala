@@ -3,15 +3,8 @@ package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 import java.io.{File, _}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{
-  ArchiveEntry,
-  ArchiveOutputStream,
-  ArchiveStreamFactory
-}
-import org.apache.commons.compress.compressors.{
-  CompressorOutputStream,
-  CompressorStreamFactory
-}
+import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveOutputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.compressors.{CompressorOutputStream, CompressorStreamFactory}
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
@@ -38,11 +31,17 @@ trait CompressFixture extends RandomThings with S3 with Logging {
     testWith(dstLocation)
   }
 
-  def createTgzArchiveWithRandomFiles(fileCount: Int = 10) =
+  def createTgzArchiveWithRandomFiles(fileCount: Int = 10,
+                                      maxDepth: Int = 4,
+                                      minSize: Int = 265,
+                                      maxSize: Int = 1024) =
     createTgzArchiveWithFiles(
       randomFilesInDirs(
-        fileCount,
-        fileCount / 4
+        fileCount = fileCount,
+        dirs = fileCount / 4,
+        maxDepth = maxDepth,
+        minSize = minSize,
+        maxSize = maxSize
       )
     )
 

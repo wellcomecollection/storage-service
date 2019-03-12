@@ -5,10 +5,7 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqs.NotificationStream
-import uk.ac.wellcome.platform.archive.bagunpacker.config.{
-  BagLocationBuilder,
-  UnpackerConfig
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.config.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   BagRequest,
   UnpackBagRequest
@@ -18,12 +15,13 @@ import uk.ac.wellcome.platform.archive.common.operation.services.{
   DiagnosticReporter,
   OutgoingPublisher
 }
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerWorkerConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 import uk.ac.wellcome.typesafe.Runnable
 
 class UnpackerWorker(
-  config: UnpackerConfig,
+  config: UnpackerWorkerConfig,
   stream: NotificationStream[UnpackBagRequest],
   ingestUpdater: IngestUpdater,
   outgoing: OutgoingPublisher,

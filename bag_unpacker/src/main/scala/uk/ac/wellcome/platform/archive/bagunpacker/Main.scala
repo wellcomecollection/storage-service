@@ -6,10 +6,8 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.UnpackerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  Unpacker,
-  UnpackerWorker
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerWorkerConfig
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerWorker}
 import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
 import uk.ac.wellcome.platform.archive.common.ingests.models.UnpackBagRequest
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -31,12 +29,12 @@ object Main extends WellcomeTypesafeApp {
       S3Builder.buildS3Client(config)
 
     new UnpackerWorker(
-      config = UnpackerConfig(config),
+      config = UnpackerWorkerConfig(config),
       stream = NotificationStreamBuilder.buildStream[UnpackBagRequest](config),
       ingestUpdater = OperationBuilder.buildIngestUpdater(config, "unpacking"),
       outgoing = OperationBuilder.buildOutgoingPublisher(config, "unpacking"),
       reporter = OperationBuilder.buildOperationReporter(config),
-      unpacker = new Unpacker()
+      unpacker = new Unpacker(UnpackerConfig(config))
     )
   }
 }

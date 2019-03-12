@@ -4,15 +4,18 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 case class UnpackerConfig(
-  dstNamespace: String,
-  maybeDstPrefix: Option[String] = None
+  bufferSize: Int = UnpackerConfig.DEFAULT_BUFFER_SIZE,
 )
 
 object UnpackerConfig {
-  def apply(config: Config): UnpackerConfig = {
-    val namespace = config.required[String]("destination.namespace")
-    val prefix = config.get[String]("destination.prefix")
+  val DEFAULT_BUFFER_SIZE = 8192
 
-    UnpackerConfig(namespace, prefix)
+  def apply(config: Config): UnpackerConfig = {
+    val bufferSizeString = config.get[String]("unpacker.buffer.size")
+    val bufferSize = bufferSizeString match {
+      case Some(str) => Integer.parseInt(str)
+      case None => DEFAULT_BUFFER_SIZE
+    }
+    UnpackerConfig(bufferSize)
   }
 }

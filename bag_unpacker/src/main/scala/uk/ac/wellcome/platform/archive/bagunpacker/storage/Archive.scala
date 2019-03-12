@@ -21,15 +21,17 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 object Archive extends Logging {
+  private val DEFAULT_BUFFER_SIZE = 8192
 
   def unpack[T](
-    inputStream: InputStream
+    inputStream: InputStream,
+    bufferSize: Int = DEFAULT_BUFFER_SIZE
   )(init: T)(
     f: (T, InputStream, ArchiveEntry) => T
   )(implicit ec: ExecutionContext): Future[OperationResult[T]] = Future {
 
     val archiveReader =
-      new ArchiveReader[T](inputStream)
+      new ArchiveReader[T](inputStream, bufferSize)
 
     @tailrec
     def foldStream(stream: InputStream)(t: T)(
@@ -49,7 +51,7 @@ object Archive extends Logging {
     foldStream(inputStream)(init)(f)
   }
 
-  private class ArchiveReader[T](inputStream: InputStream) {
+  private class ArchiveReader[T](inputStream: InputStream, bufferSize: Int) {
 
     def accumulate(
       t: T,
@@ -96,11 +98,11 @@ object Archive extends Logging {
 
     val archiveInputStream: Try[ArchiveInputStream] = for {
       compressorInputStream <- uncompress(
-        new BufferedInputStream(inputStream)
+        new BufferedInputStream(inputStream, bufferSize)
       )
 
       archiveInputStream <- extract(
-        new BufferedInputStream(compressorInputStream)
+        new BufferedInputStream(compressorInputStream, bufferSize)
       )
 
     } yield archiveInputStream

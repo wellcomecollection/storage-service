@@ -37,12 +37,10 @@ class UnpackerFeatureTest
         val (archiveFile, filesInArchive, entries) =
           createTgzArchiveWithRandomFiles()
         withArchive(srcBucket, archiveFile) { archiveLocation =>
-          val requestId = randomUUID
-
           withBagNotification(
             queue,
             srcBucket,
-            requestId,
+            randomUUID,
             TestArchive(archiveFile, filesInArchive, entries, archiveLocation)
           ) { unpackBagRequest =>
             eventually {
