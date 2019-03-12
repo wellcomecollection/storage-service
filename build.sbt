@@ -48,36 +48,8 @@ lazy val common = setupProject(project, "common",
   externalDependencies = StorageDependencies.commonDependencies
 )
 
-lazy val display = setupProject(project, "display",
-  localDependencies = Seq(common)
-)
-
-lazy val notifier = setupProject(project, "notifier",
-  localDependencies = Seq(common, display),
-  externalDependencies = ExternalDependencies.wiremockDependencies
-)
-
 lazy val bag_register = setupProject(project, "bag_register",
   localDependencies = Seq(common),
-  externalDependencies = ExternalDependencies.circeOpticsDependencies
-)
-
-lazy val bags_api = setupProject(project, "bags_api",
-  localDependencies = Seq(common, display),
-  externalDependencies = ExternalDependencies.circeOpticsDependencies
-)
-
-lazy val ingests_common = setupProject(project, "ingests_common",
-  localDependencies = Seq(common)
-)
-
-lazy val ingests = setupProject(project, "ingests",
-  localDependencies = Seq(ingests_common),
-  externalDependencies = ExternalDependencies.wiremockDependencies
-)
-
-lazy val ingests_api = setupProject(project, "ingests_api",
-  localDependencies = Seq(ingests_common, display),
   externalDependencies = ExternalDependencies.circeOpticsDependencies
 )
 
@@ -92,4 +64,32 @@ lazy val bag_verifier = setupProject(project, "bag_verifier",
 lazy val bag_unpacker = setupProject(project, "bag_unpacker",
   localDependencies = Seq(common),
   externalDependencies = ExternalDependencies.commonsCompressDependencies ++ ExternalDependencies.commonsIODependencies
+)
+
+lazy val ingests_common = setupProject(project, "ingests_common",
+  localDependencies = Seq(common)
+)
+
+lazy val ingests = setupProject(project, "ingests",
+  localDependencies = Seq(ingests_common),
+  externalDependencies = ExternalDependencies.wiremockDependencies
+)
+
+lazy val display = setupProject(project, "display",
+  localDependencies = Seq(common)
+)
+
+lazy val notifier = setupProject(project, "notifier",
+  localDependencies = Seq(common, display),
+  externalDependencies = ExternalDependencies.wiremockDependencies
+)
+
+lazy val ingests_api = setupProject(project, "api/ingests",
+  localDependencies = Seq(ingests_common, display),
+  externalDependencies = ExternalDependencies.circeOpticsDependencies
+)
+
+lazy val bags_api = setupProject(project, "api/bags",
+  localDependencies = Seq(common, display),
+  externalDependencies = ExternalDependencies.circeOpticsDependencies
 )
