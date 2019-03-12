@@ -1,9 +1,4 @@
-locals {
-  ingest_topic = "${module.ingests_topic.arn}"
-}
-
-# Ingests topic.  Every app needs to be able to write to this, because they
-# use it to send ingest updates for the ingests API.
+# ingests
 
 module "ingests_topic" {
   source = "../modules/topic"
@@ -35,14 +30,14 @@ module "ingests_input_queue" {
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
-# Messaging - notifier
-
 module "ingests_output_topic" {
   source = "../modules/topic"
 
   name       = "${var.namespace}_ingests_output"
   role_names = ["${module.ingests.task_role_name}"]
 }
+
+# notifier
 
 module "notifier_input_queue" {
   source = "../modules/queue"
@@ -86,7 +81,7 @@ module "bagging_complete_topic" {
   role_names = ["${module.bagger.task_role_name}"]
 }
 
-# Messaging - bag_unpacker
+# bag_unpacker
 
 module "bag_unpacker_input_topic" {
   source = "../modules/topic"
