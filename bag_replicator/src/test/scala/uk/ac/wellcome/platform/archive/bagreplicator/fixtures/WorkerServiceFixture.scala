@@ -27,37 +27,37 @@ trait WorkerServiceFixture
     with RandomThings
     with S3
     with OperationFixtures {
-  def withWorkerService[R](queue: Queue = Queue(
-                             "default_q",
-                             "arn::default_q"
-                           ),
-                           ingestTopic: Topic,
-                           outgoingTopic: Topic,
-                           destination: ReplicatorDestinationConfig =
-                             createReplicatorDestinationConfigWith(
-                               Bucket(randomAlphanumeric())))(
+  def withBagReplicatorWorker[R](queue: Queue = Queue(
+                                   "default_q",
+                                   "arn::default_q"
+                                 ),
+                                 ingestTopic: Topic,
+                                 outgoingTopic: Topic,
+                                 destination: ReplicatorDestinationConfig =
+                                   createReplicatorDestinationConfigWith(
+                                     Bucket(randomAlphanumeric())))(
     testWith: TestWith[BagReplicatorWorker, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
-      withOperationNotifier(
-        "replicating",
-        ingestTopic = ingestTopic,
-        outgoingTopic = outgoingTopic
-      ) { notifier =>
-        withOperationReporter() { reporter =>
-          val service = new BagReplicatorWorker(
-            stream = notificationStream,
-            notifier = notifier,
-            reporter = reporter,
-            replicator = new BagReplicator(
-              bagLocator = new BagLocator(s3Client),
-              config = destination,
-              s3PrefixCopier = S3PrefixCopier(s3Client)
-            )
-          )
+      withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
+        withOutgoingPublisher("replicating", outgoingTopic) {
+          outgoingPublisher =>
+            withOperationReporter() { reporter =>
+              val service = new BagReplicatorWorker(
+                stream = notificationStream,
+                ingestUpdater = ingestUpdater,
+                outgoing = outgoingPublisher,
+                reporter = reporter,
+                replicator = new BagReplicator(
+                  bagLocator = new BagLocator(s3Client),
+                  config = destination,
+                  s3PrefixCopier = S3PrefixCopier(s3Client)
+                )
+              )
 
-          service.run()
+              service.run()
 
-          testWith(service)
+              testWith(service)
+            }
         }
       }
     }

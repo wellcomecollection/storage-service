@@ -26,12 +26,9 @@ object Main extends WellcomeTypesafeApp {
 
     new UnpackerWorker(
       config = UnpackerConfig(config),
-      stream = NotificationStreamBuilder
-        .buildStream[UnpackBagRequest](config),
-      notifier = OperationBuilder.buildOperationNotifier(
-        config,
-        "unpacking"
-      ),
+      stream = NotificationStreamBuilder.buildStream[UnpackBagRequest](config),
+      ingestUpdater = OperationBuilder.buildIngestUpdater(config, "unpacking"),
+      outgoing = OperationBuilder.buildOutgoingPublisher(config, "unpacking"),
       reporter = OperationBuilder.buildOperationReporter(config),
       unpacker = new Unpacker()
     )

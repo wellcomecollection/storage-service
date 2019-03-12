@@ -10,8 +10,8 @@ import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
 import uk.ac.wellcome.platform.archive.bag_register.services.BagRegisterWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
-  BagIdGenerators,
-  BagInfoGenerators
+  BagInfoGenerators,
+  OperationGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
@@ -27,14 +27,14 @@ import uk.ac.wellcome.storage.fixtures.S3.Bucket
 class BagRegisterFeatureTest
     extends FunSpec
     with Matchers
-    with BagIdGenerators
+    with OperationGenerators
     with BagInfoGenerators
     with BagLocationFixtures
     with IngestUpdateAssertions
     with WorkerFixture {
 
   it("sends an update if it registers a bag") {
-    withWorkerService() {
+    withBagRegisterWorker() {
       case (
           _: BagRegisterWorker,
           table: Table,
@@ -91,7 +91,7 @@ class BagRegisterFeatureTest
   }
 
   it("sends a failed update and discards the work on error") {
-    withWorkerService(userBucket = Some(Bucket("does_not_exist"))) {
+    withBagRegisterWorker(userBucket = Some(Bucket("does_not_exist"))) {
       case (
           _: BagRegisterWorker,
           _: Table,
