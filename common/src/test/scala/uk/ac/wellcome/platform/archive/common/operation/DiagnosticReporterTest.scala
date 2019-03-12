@@ -3,15 +3,9 @@ package uk.ac.wellcome.platform.archive.common.operation
 import org.mockito.Mockito.{times, verify}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MetricsSenderFixtures,
-  RandomThings
-}
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{
-  OperationCompleted,
-  OperationFailure,
-  OperationSuccess
-}
+import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
+import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.ingests.operation.{OperationCompleted, OperationFailure, OperationSuccess}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -20,10 +14,9 @@ class DiagnosticReporterTest
     with Matchers
     with RandomThings
     with ScalaFutures
-    with MetricsSenderFixtures {
+    with MetricsSenderFixture {
   it("sends a success metric") {
-    withMetricsSender { metricsSender =>
-      println(metricsSender)
+    withMockMetricsSender { metricsSender =>
       val reporter = new DiagnosticReporter(metricsSender)
 
       val future = reporter.report(
@@ -39,7 +32,7 @@ class DiagnosticReporterTest
   }
 
   it("sends a failure metric") {
-    withMetricsSender { metricsSender =>
+    withMockMetricsSender { metricsSender =>
       val reporter = new DiagnosticReporter(metricsSender)
 
       val future = reporter.report(
@@ -58,7 +51,7 @@ class DiagnosticReporterTest
   }
 
   it("sends a completed metric") {
-    withMetricsSender { metricsSender =>
+    withMockMetricsSender { metricsSender =>
       val reporter = new DiagnosticReporter(metricsSender)
 
       val future = reporter.report(
