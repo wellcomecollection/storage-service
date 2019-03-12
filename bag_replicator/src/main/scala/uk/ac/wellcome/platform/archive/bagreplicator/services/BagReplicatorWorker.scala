@@ -30,7 +30,8 @@ class BagReplicatorWorker(
       )
       _ <- reporter.report(request.requestId, result)
       _ <- ingestUpdater.send(request.requestId, result)
-      _ <- outgoing.sendIfSuccessful(result,
+      _ <- outgoing.sendIfSuccessful(
+        result,
         BagRequest(
           requestId = request.requestId,
           bagLocation = result.summary.destination
