@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.http
 
 import akka.http.scaladsl.model.{HttpResponse, StatusCode}
-import akka.stream.QueueOfferResult
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.monitoring.MetricsSender
 
@@ -14,10 +13,10 @@ object HttpMetricResults extends Enumeration {
 
 class HttpMetrics(name: String, metricsSender: MetricsSender) extends Logging {
 
-  def sendMetric(resp: HttpResponse): Future[QueueOfferResult] =
+  def sendMetric(resp: HttpResponse): Future[Unit] =
     sendMetricForStatus(resp.status)
 
-  def sendMetricForStatus(status: StatusCode): Future[QueueOfferResult] = {
+  def sendMetricForStatus(status: StatusCode): Future[Unit] = {
     val httpMetric = if (status.isSuccess()) {
       HttpMetricResults.Success
     } else if (status.isFailure() && status.intValue() < 500) {
@@ -25,7 +24,7 @@ class HttpMetrics(name: String, metricsSender: MetricsSender) extends Logging {
     } else if (status.isFailure()) {
       HttpMetricResults.ServerError
     } else {
-      warn(s"Sending unexpected response code: ${status}")
+      warn(s"Sending unexpected response code: $status")
       HttpMetricResults.Unrecognised
     }
 
