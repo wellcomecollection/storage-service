@@ -267,4 +267,7 @@ def get_physical_file_maps(root):
 
 def get_title(mets_root):
     title_el = mets_root.findall(".//mods:title", namespaces)
-    return title_el[0].text
+    try:
+        return title_el[0].text
+    except IndexError:
+        raise ValueError("Did not find any `.//mods:title` in METS")

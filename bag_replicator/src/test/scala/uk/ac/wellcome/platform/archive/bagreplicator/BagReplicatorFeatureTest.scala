@@ -28,7 +28,7 @@ class BagReplicatorFeatureTest
         withLocalSqsQueue { queue =>
           withLocalSnsTopic { ingestTopic =>
             withLocalSnsTopic { outgoingTopic =>
-              withWorkerService(
+              withBagReplicatorWorker(
                 queue,
                 ingestTopic = ingestTopic,
                 outgoingTopic = outgoingTopic,

@@ -6,17 +6,18 @@ import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
-import uk.ac.wellcome.platform.archive.common.ingests.services.IngestNotifier
-import uk.ac.wellcome.platform.archive.common.operation.services.DiagnosticReporter
+import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
+import uk.ac.wellcome.platform.archive.common.operation.services.{DiagnosticReporter, OutgoingPublisher}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagRegisterWorker(
-                         stream: NotificationStream[BagRequest],
-                         notifier: IngestNotifier,
-                         reporter: DiagnosticReporter,
-                         register: Register
+  stream: NotificationStream[BagRequest],
+  ingestUpdater: IngestUpdater,
+  outgoing: OutgoingPublisher,
+  reporter: DiagnosticReporter,
+  register: Register
 )(implicit ec: ExecutionContext)
     extends Logging
     with Runnable {
@@ -29,17 +30,10 @@ class BagRegisterWorker(
   )(implicit
     enc: Encoder[BagRequest]): Future[Unit] = {
     for {
-      result <- register.update(
-        request.bagLocation
-      )
-
+      result <- register.update(request.bagLocation)
       _ <- reporter.report(request.requestId, result)
-
-      _ <- notifier.send(
-        request.requestId,
-        result,
-        result.summary.bagId
-      )(_ => request)
+      _ <- ingestUpdater.send(request.requestId, result, result.summary.bagId)
+      _ <- outgoing.send(request.requestId, result)(_ => request)
     } yield ()
   }
 }

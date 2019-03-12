@@ -26,7 +26,7 @@ class VerifierFeatureTest
       withLocalSnsTopic { outgoingTopic =>
         withLocalSqsQueueAndDlq {
           case QueuePair(queue, dlq) =>
-            withWorkerService(ingestTopic, outgoingTopic, queue) { _ =>
+            withBagVerifierWorker(ingestTopic, outgoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
                 withBag(bucket) { bagLocation =>
                   val bagRequest = createBagRequestWith(bagLocation)
@@ -64,7 +64,7 @@ class VerifierFeatureTest
       withLocalSnsTopic { outgoingTopic =>
         withLocalSqsQueueAndDlq {
           case QueuePair(queue, dlq) =>
-            withWorkerService(ingestTopic, outgoingTopic, queue) { _ =>
+            withBagVerifierWorker(ingestTopic, outgoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
                 withBag(
                   bucket,

@@ -20,10 +20,10 @@ trait WorkerServiceFixture
     with S3
     with Akka
     with OperationFixtures {
-  def withWorkerService[R](
-    ingestTopic: Topic,
-    outgoingTopic: Topic,
-    queue: Queue = Queue("fixture", arn = "arn::fixture"))(
+  def withBagVerifierWorker[R](ingestTopic: Topic,
+                               outgoingTopic: Topic,
+                               queue: Queue =
+                                 Queue("fixture", arn = "arn::fixture"))(
     testWith: TestWith[BagVerifierWorker, R]): R =
     withNotificationStream[BagRequest, R](queue) { stream =>
       withMaterializer { implicit mat =>
@@ -32,22 +32,22 @@ trait WorkerServiceFixture
           s3Client = s3Client,
           algorithm = MessageDigestAlgorithms.SHA_256
         )
+        withIngestUpdater("verification", ingestTopic) { ingestUpdater =>
+          withOutgoingPublisher("verification", outgoingTopic) {
+            outgoingPublisher =>
+              withOperationReporter() { reporter =>
+                val service = new BagVerifierWorker(
+                  stream = stream,
+                  ingestUpdater = ingestUpdater,
+                  outgoing = outgoingPublisher,
+                  reporter = reporter,
+                  verifier = verifier
+                )
 
-        withOperationNotifier(
-          "verification",
-          ingestTopic = ingestTopic,
-          outgoingTopic = outgoingTopic) { notifier =>
-          withOperationReporter() { reporter =>
-            val service = new BagVerifierWorker(
-              stream,
-              notifier,
-              reporter,
-              verifier
-            )
+                service.run()
 
-            service.run()
-
-            testWith(service)
+                testWith(service)
+              }
           }
         }
       }

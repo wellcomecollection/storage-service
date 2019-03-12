@@ -1,13 +1,14 @@
 locals {
-  bag_register_service_name   = "${var.namespace}-bags"
-  bags_api_service_name       = "${var.namespace}-bags-api"
-  ingests_service_name        = "${var.namespace}-ingests"
-  ingests_api_service_name    = "${var.namespace}-ingests-api"
-  notifier_service_name       = "${var.namespace}-notifier"
-  bagger_service_name         = "${var.namespace}-bagger"
-  bag_replicator_service_name = "${var.namespace}-bag-replicator"
-  bag_verifier_service_name   = "${var.namespace}-bag-verifier"
+  bags_api_service_name    = "${var.namespace}-bags-api"
+  ingests_service_name     = "${var.namespace}-ingests"
+  ingests_api_service_name = "${var.namespace}-ingests-api"
+  notifier_service_name    = "${var.namespace}-notifier"
+  bagger_service_name      = "${var.namespace}-bagger"
+
   bag_unpacker_service_name   = "${var.namespace}-bag-unpacker"
+  bag_replicator_service_name = "${var.namespace}-bag-replicator"
+  bag_register_service_name   = "${var.namespace}-bag-register"
+  bag_verifier_service_name   = "${var.namespace}-bag-verifier"
 
   bag_register_image   = "${module.images.services["bag_register"]}"
   bags_api_image       = "${module.images.services["bags_api"]}"

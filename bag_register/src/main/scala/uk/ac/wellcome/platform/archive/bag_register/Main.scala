@@ -6,6 +6,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
 import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
 import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
+import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder.{buildIngestUpdater, buildOutgoingPublisher}
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestService, StorageManifestVHS}
@@ -34,8 +35,10 @@ object Main extends WellcomeTypesafeApp {
 
     val operationName = "register"
 
-    val notifier = OperationBuilder
-      .buildOperationNotifier(config, operationName)
+    val ingestUpdater = buildIngestUpdater(
+      config,
+      operationName
+    )
 
     val reporter = OperationBuilder
       .buildOperationReporter(config)
@@ -45,12 +48,18 @@ object Main extends WellcomeTypesafeApp {
       storageManifestVHS
     )
 
+    val outgoing = buildOutgoingPublisher(
+      config,
+      operationName
+    )
+
     val stream = NotificationStreamBuilder
       .buildStream[BagRequest](config)
 
     new BagRegisterWorker(
       stream,
-      notifier,
+      ingestUpdater,
+      outgoing,
       reporter,
       register
     )

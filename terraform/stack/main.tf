@@ -59,7 +59,7 @@ module "bag_replicator" {
   env_vars = {
     queue_url               = "${module.bag_replicator_input_queue.url}"
     destination_bucket_name = "${var.access_bucket_name}"
-    ingest_topic_arn        = "${local.ingest_topic}"
+    ingest_topic_arn        = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bag_replicator_output_topic.arn}"
     metrics_namespace       = "${local.bag_replicator_service_name}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
@@ -94,7 +94,7 @@ module "bag_verifier" {
 
   env_vars = {
     queue_url          = "${module.bag_verifier_input_queue.url}"
-    ingest_topic_arn   = "${local.ingest_topic}"
+    ingest_topic_arn   = "${module.ingests_topic.arn}"
     outgoing_topic_arn = "${module.bag_verifier_output_topic.arn}"
     metrics_namespace  = "${local.bag_verifier_service_name}"
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_service_name}"
@@ -128,7 +128,7 @@ module "bag_register" {
     queue_url         = "${module.bag_register_input_queue.url}"
     archive_bucket    = "${var.archive_bucket_name}"
     ongoing_topic_arn = "${module.bag_register_output_topic.arn}"
-    ingest_topic_arn  = "${local.ingest_topic}"
+    ingest_topic_arn  = "${module.ingests_topic.arn}"
     vhs_bucket_name   = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name    = "${var.vhs_archive_manifest_table_name}"
     metrics_namespace = "${local.bag_register_service_name}"
@@ -165,7 +165,7 @@ module "notifier" {
   env_vars = {
     context_url        = "https://api.wellcomecollection.org/storage/v1/context.json"
     notifier_queue_url = "${module.notifier_input_queue.url}"
-    ingest_topic_arn   = "${local.ingest_topic}"
+    ingest_topic_arn   = "${module.ingests_topic.arn}"
     metrics_namespace  = "${local.notifier_service_name}"
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.notifier_service_name}"
   }
@@ -175,7 +175,7 @@ module "notifier" {
   container_image = "${local.notifier_image}"
 }
 
-# ingests aka ingest-async
+# ingests
 
 module "ingests" {
   source = "../modules/service/worker"

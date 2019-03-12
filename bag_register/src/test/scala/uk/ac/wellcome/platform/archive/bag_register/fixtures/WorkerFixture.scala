@@ -21,7 +21,7 @@ trait WorkerFixture
     with OperationFixtures
     with StorageManifestVHSFixture {
 
-  def withWorkerService[R](
+  def withBagRegisterWorker[R](
     userTable: Option[Table] = None,
     userBucket: Option[Bucket] = None
   )(testWith: TestWith[(BagRegisterWorker,
@@ -59,31 +59,32 @@ trait WorkerFixture
                       storageManifestService,
                       storageManifestVHS
                     )
+                    withIngestUpdater("register", ingestTopic) {
+                      ingestNotifier =>
+                        withOutgoingPublisher("register", outgoingTopic) {
+                          outgoingNotifier =>
+                            withOperationReporter() { reporter =>
+                              val service =
+                                new BagRegisterWorker(
+                                  stream,
+                                  ingestNotifier,
+                                  outgoingNotifier,
+                                  reporter,
+                                  register)
 
-                    withOperationNotifier(
-                      "register",
-                      ingestTopic = ingestTopic,
-                      outgoingTopic = outgoingTopic) { notifier =>
-                      withOperationReporter() { reporter =>
-                        val service =
-                          new BagRegisterWorker(
-                            stream,
-                            notifier,
-                            reporter,
-                            register)
+                              service.run()
 
-                        service.run()
-
-                        testWith(
-                          (
-                            service,
-                            table,
-                            bucket,
-                            ingestTopic,
-                            outgoingTopic,
-                            queuePair)
-                        )
-                      }
+                              testWith(
+                                (
+                                  service,
+                                  table,
+                                  bucket,
+                                  ingestTopic,
+                                  outgoingTopic,
+                                  queuePair)
+                              )
+                            }
+                        }
                     }
                 }
               }
