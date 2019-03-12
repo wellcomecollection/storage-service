@@ -11,7 +11,6 @@ import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   BagInfoGenerators,
-  OperationGenerators,
   StorageManifestGenerators
 }
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
