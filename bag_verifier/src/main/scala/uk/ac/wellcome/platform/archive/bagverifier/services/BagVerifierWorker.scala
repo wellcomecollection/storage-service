@@ -6,7 +6,10 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.{DiagnosticReporter, OutgoingPublisher}
+import uk.ac.wellcome.platform.archive.common.operation.services.{
+  DiagnosticReporter,
+  OutgoingPublisher
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}

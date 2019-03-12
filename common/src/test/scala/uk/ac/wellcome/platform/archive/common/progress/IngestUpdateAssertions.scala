@@ -6,7 +6,11 @@ import org.scalatest.{Assertion, Inside}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestEvent, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestEvent,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 import scala.util.Try

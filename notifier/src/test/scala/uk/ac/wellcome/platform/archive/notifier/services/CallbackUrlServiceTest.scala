@@ -9,7 +9,10 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{CallbackUrlServiceFixture, LocalWireMockFixture}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{
+  CallbackUrlServiceFixture,
+  LocalWireMockFixture
+}
 
 class CallbackUrlServiceTest
     extends FunSpec

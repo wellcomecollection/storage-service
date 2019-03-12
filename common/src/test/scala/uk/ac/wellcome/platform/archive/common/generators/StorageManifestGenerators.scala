@@ -2,10 +2,22 @@ package uk.ac.wellcome.platform.archive.common.generators
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagDigestFile, BagInfo, BagItemPath}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{StandardStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagDigestFile,
+  BagInfo,
+  BagItemPath
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  StandardStorageProvider,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.common.storage.models
-import uk.ac.wellcome.platform.archive.common.storage.models.{ChecksumAlgorithm, FileManifest, StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  ChecksumAlgorithm,
+  FileManifest,
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 trait StorageManifestGenerators

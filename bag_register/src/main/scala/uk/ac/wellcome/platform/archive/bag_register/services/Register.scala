@@ -4,8 +4,15 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
-import uk.ac.wellcome.platform.archive.common.operation.services.{OperationCompleted, OperationFailure, OperationResult}
-import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestService, StorageManifestVHS}
+import uk.ac.wellcome.platform.archive.common.operation.services.{
+  OperationCompleted,
+  OperationFailure,
+  OperationResult
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  StorageManifestService,
+  StorageManifestVHS
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}

@@ -5,8 +5,14 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
-import uk.ac.wellcome.platform.archive.common.operation.services.{OperationFailure, OperationSuccess}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  FileEntry
+}
+import uk.ac.wellcome.platform.archive.common.operation.services.{
+  OperationFailure,
+  OperationSuccess
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 

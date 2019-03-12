@@ -5,7 +5,10 @@ import org.scalatest.Assertion
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.collection.JavaConverters._

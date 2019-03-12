@@ -10,9 +10,16 @@ import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
 import uk.ac.wellcome.platform.archive.bag_register.services.BagRegisterWorker
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, OperationGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  OperationGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, Ingest, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  Ingest,
+  StorageLocation
+}
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 

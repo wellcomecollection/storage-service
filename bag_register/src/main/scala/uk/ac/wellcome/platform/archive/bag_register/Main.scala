@@ -4,12 +4,21 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
-import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.bag_register.services.{
+  BagRegisterWorker,
+  Register
+}
 import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
-import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder.{buildIngestUpdater, buildOutgoingPublisher}
+import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder.{
+  buildIngestUpdater,
+  buildOutgoingPublisher
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestService, StorageManifestVHS}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  StorageManifestService,
+  StorageManifestVHS
+}
 import uk.ac.wellcome.storage.typesafe.{S3Builder, VHSBuilder}
 import uk.ac.wellcome.storage.vhs.EmptyMetadata
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp

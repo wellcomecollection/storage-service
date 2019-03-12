@@ -4,7 +4,11 @@ import java.time.Instant
 import java.util.UUID
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.{GetItemRequest, PutItemRequest, UpdateItemRequest}
+import com.amazonaws.services.dynamodbv2.model.{
+  GetItemRequest,
+  PutItemRequest,
+  UpdateItemRequest
+}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.FunSpec

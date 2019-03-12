@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.storage.ingests.api
 
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  UnpackBagRequest
+}
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 

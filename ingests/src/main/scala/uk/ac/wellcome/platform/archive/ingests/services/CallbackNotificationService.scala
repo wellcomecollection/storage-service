@@ -4,7 +4,11 @@ import java.net.URI
 
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, CallbackNotification, Ingest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Callback,
+  CallbackNotification,
+  Ingest
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Callback.Pending
 
 import scala.concurrent.{ExecutionContext, Future}

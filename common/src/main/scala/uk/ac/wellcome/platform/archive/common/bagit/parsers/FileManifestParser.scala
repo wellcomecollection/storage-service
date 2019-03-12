@@ -2,8 +2,14 @@ package uk.ac.wellcome.platform.archive.common.bagit.parsers
 
 import java.io.InputStream
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagDigestFile, BagItemPath}
-import uk.ac.wellcome.platform.archive.common.storage.models.{ChecksumAlgorithm, FileManifest}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagDigestFile,
+  BagItemPath
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  ChecksumAlgorithm,
+  FileManifest
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex

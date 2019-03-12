@@ -7,7 +7,10 @@ import cats.data._
 import cats.implicits._
 
 import uk.ac.wellcome.platform.archive.common.bagit.models._
-import uk.ac.wellcome.platform.archive.common.bagit.models.error.{ArchiveError, InvalidBagInfo}
+import uk.ac.wellcome.platform.archive.common.bagit.models.error.{
+  ArchiveError,
+  InvalidBagInfo
+}
 
 import scala.concurrent.Future
 import scala.util.Try

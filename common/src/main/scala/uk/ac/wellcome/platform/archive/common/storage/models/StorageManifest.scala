@@ -2,7 +2,11 @@ package uk.ac.wellcome.platform.archive.common.storage.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagDigestFile, BagId, BagInfo}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagDigestFile,
+  BagId,
+  BagInfo
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
 
 case class ChecksumAlgorithm(value: String) {

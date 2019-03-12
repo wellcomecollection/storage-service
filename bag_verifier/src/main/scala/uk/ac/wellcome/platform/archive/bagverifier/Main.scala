@@ -7,7 +7,10 @@ import com.typesafe.config.Config
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorker, Verifier}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifierWorker,
+  Verifier
+}
 import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService

@@ -4,7 +4,10 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.{DiagnosticReporter, OutgoingPublisher}
+import uk.ac.wellcome.platform.archive.common.operation.services.{
+  DiagnosticReporter,
+  OutgoingPublisher
+}
 
 trait OperationFixtures extends SNS with MetricsSenderFixtures {
   def withIngestUpdater[R](operationName: String, topic: Topic)(
