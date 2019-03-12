@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier
 
 import akka.actor.ActorSystem
-import akka.stream.Materializer
+import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
@@ -26,10 +26,11 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildActorSystem()
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
+    implicit val materializer: ActorMaterializer =
+      AkkaBuilder.buildActorMaterializer()
+
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
-    implicit val materializer: Materializer =
-      AkkaBuilder.buildActorMaterializer()
 
     val stream =
       NotificationStreamBuilder
