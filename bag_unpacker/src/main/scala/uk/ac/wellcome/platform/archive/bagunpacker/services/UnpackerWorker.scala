@@ -44,11 +44,8 @@ class UnpackerWorker(
       )
 
       _ <- reporter.report(request.requestId, result)
-
       _ <- ingestUpdater.send(request.requestId, result)
-      _ <- outgoing.send(request.requestId, result)(_ =>
-        BagRequest(request.requestId, location))
-
+      _ <- outgoing.sendIfSuccessful(result, BagRequest(request.requestId, location))
     } yield ()
   }
 }

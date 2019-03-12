@@ -3,6 +3,16 @@ package uk.ac.wellcome.platform.archive.common.ingests.operation
 sealed trait OperationResult[T] {
   val summary: T
   def withSummary(summary: T): OperationResult[T]
+  def isSuccessful: Boolean ={
+    this match {
+      case OperationSuccess(_) =>
+        true
+      case OperationCompleted(_) =>
+        true
+      case OperationFailure(_, _) =>
+        false
+    }
+  }
 }
 
 case class OperationCompleted[T](
