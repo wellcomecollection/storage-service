@@ -3,8 +3,15 @@ package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 import java.io.{File, _}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveOutputStream, ArchiveStreamFactory}
-import org.apache.commons.compress.compressors.{CompressorOutputStream, CompressorStreamFactory}
+import org.apache.commons.compress.archivers.{
+  ArchiveEntry,
+  ArchiveOutputStream,
+  ArchiveStreamFactory
+}
+import org.apache.commons.compress.compressors.{
+  CompressorOutputStream,
+  CompressorStreamFactory
+}
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings

@@ -14,7 +14,7 @@ object UnpackerConfig {
     val bufferSizeString = config.get[String]("unpacker.buffer.size")
     val bufferSize = bufferSizeString match {
       case Some(str) => Integer.parseInt(str)
-      case None => DEFAULT_BUFFER_SIZE
+      case None      => DEFAULT_BUFFER_SIZE
     }
     UnpackerConfig(bufferSize)
   }
