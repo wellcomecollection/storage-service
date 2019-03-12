@@ -7,8 +7,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
-
-import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationNotifier
+import uk.ac.wellcome.platform.archive.common.operation.{
+  DiagnosticReporter,
+  OperationNotifier
+}
 import uk.ac.wellcome.platform.archive.common.models.{
   BagRequest,
   UnpackBagRequest
@@ -21,7 +23,8 @@ class UnpackerWorker(
   config: UnpackerConfig,
   stream: NotificationStream[UnpackBagRequest],
   notifier: OperationNotifier,
-  unpacker: Unpacker
+  reporter: DiagnosticReporter,
+  unpacker: Unpacker,
 )(implicit ec: ExecutionContext)
     extends Logging
     with Runnable {
@@ -37,6 +40,8 @@ class UnpackerWorker(
         request.sourceLocation,
         location.objectLocation
       )
+
+      _ <- reporter.report(request.requestId, result)
 
       _ <- notifier
         .send(request.requestId, result) { _ =>

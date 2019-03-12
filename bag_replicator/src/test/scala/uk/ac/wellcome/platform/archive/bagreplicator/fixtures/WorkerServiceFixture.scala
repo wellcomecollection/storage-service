@@ -2,17 +2,19 @@ package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.fixtures.NotificationStreamFixture
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagLocator,
   BagReplicator,
   BagReplicatorWorker
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationNotifier
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  OperationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -24,7 +26,7 @@ trait WorkerServiceFixture
     extends NotificationStreamFixture
     with RandomThings
     with S3
-    with SNS {
+    with OperationFixtures {
   def withWorkerService[R](queue: Queue = Queue(
                              "default_q",
                              "arn::default_q"
@@ -36,17 +38,16 @@ trait WorkerServiceFixture
                                Bucket(randomAlphanumeric())))(
     testWith: TestWith[BagReplicatorWorker, R]): R =
     withNotificationStream[BagRequest, R](queue) { notificationStream =>
-      withSNSWriter(ingestTopic) { ingestSnsWriter =>
-        withSNSWriter(outgoingTopic) { outgoingSnsWriter =>
-          val operationName = "replicating"
-
+      withOperationNotifier(
+        "replicating",
+        ingestTopic = ingestTopic,
+        outgoingTopic = outgoingTopic
+      ) { notifier =>
+        withOperationReporter() { reporter =>
           val service = new BagReplicatorWorker(
             stream = notificationStream,
-            notifier = new OperationNotifier(
-              operationName,
-              outgoingSnsWriter,
-              ingestSnsWriter
-            ),
+            notifier = notifier,
+            reporter = reporter,
             replicator = new BagReplicator(
               bagLocator = new BagLocator(s3Client),
               config = destination,

@@ -21,7 +21,7 @@ import uk.ac.wellcome.platform.archive.common.models.bagit.{
 }
 import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
 
-class UnpackerWorkerTest
+class UnpackerFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures

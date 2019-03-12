@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker,
   UnpackerWorker
 }
-import uk.ac.wellcome.platform.archive.common.config.builders.OperationNotifierBuilder
+import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
 import uk.ac.wellcome.platform.archive.common.models.UnpackBagRequest
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -28,10 +28,11 @@ object Main extends WellcomeTypesafeApp {
       config = UnpackerConfig(config),
       stream = NotificationStreamBuilder
         .buildStream[UnpackBagRequest](config),
-      notifier = OperationNotifierBuilder.build(
+      notifier = OperationBuilder.buildOperationNotifier(
         config,
         "unpacking"
       ),
+      reporter = OperationBuilder.buildOperationReporter(config),
       unpacker = new Unpacker()
     )
   }

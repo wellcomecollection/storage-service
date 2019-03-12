@@ -5,8 +5,11 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqs.NotificationStream
-import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationNotifier
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.operation.{
+  DiagnosticReporter,
+  OperationNotifier
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -14,6 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class BagRegisterWorker(
   stream: NotificationStream[BagRequest],
   notifier: OperationNotifier,
+  reporter: DiagnosticReporter,
   register: Register
 )(implicit ec: ExecutionContext)
     extends Logging
@@ -30,6 +34,8 @@ class BagRegisterWorker(
       result <- register.update(
         request.bagLocation
       )
+
+      _ <- reporter.report(request.requestId, result)
 
       _ <- notifier.send(
         request.requestId,

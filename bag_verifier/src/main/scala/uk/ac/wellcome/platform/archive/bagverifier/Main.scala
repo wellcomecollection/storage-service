@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifierWorker,
   Verifier
 }
-import uk.ac.wellcome.platform.archive.common.config.builders.OperationNotifierBuilder
+import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -43,9 +43,12 @@ object Main extends WellcomeTypesafeApp {
 
     val operationName = "verification"
 
-    val notifier = OperationNotifierBuilder
-      .build(config, operationName)
+    val notifier = OperationBuilder
+      .buildOperationNotifier(config, operationName)
 
-    new BagVerifierWorker(stream, verifier, notifier)
+    val reporter = OperationBuilder
+      .buildOperationReporter(config)
+
+    new BagVerifierWorker(stream, notifier, reporter, verifier)
   }
 }

@@ -5,17 +5,19 @@ import grizzled.slf4j.Logging
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.operation.{
+  DiagnosticReporter,
+  OperationNotifier
+}
 import uk.ac.wellcome.typesafe.Runnable
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.ingests.operation.OperationNotifier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class BagVerifierWorker(
-  stream: NotificationStream[BagRequest],
-  verifier: Verifier,
-  notifier: OperationNotifier
-)(implicit ec: ExecutionContext)
+class BagVerifierWorker(stream: NotificationStream[BagRequest],
+                        notifier: OperationNotifier,
+                        reporter: DiagnosticReporter,
+                        verifier: Verifier)(implicit ec: ExecutionContext)
     extends Runnable
     with Logging {
 
@@ -24,20 +26,22 @@ class BagVerifierWorker(
   def run(): Future[Done] =
     stream.run(processMessage)
 
-  def processMessage(bagRequest: BagRequest): Future[Unit] = {
-    info(s"Received request $bagRequest")
+  def processMessage(request: BagRequest): Future[Unit] = {
+    info(s"Received request $request")
 
     val result = for {
       verification <- verifier
         .verify(
-          bagRequest.bagLocation
+          request.bagLocation
         )
 
+      _ <- reporter.report(request.requestId, verification)
+
       _ <- notifier.send(
-        bagRequest.requestId,
+        request.requestId,
         verification
       ) { _ =>
-        bagRequest
+        request
       }
 
     } yield ()
