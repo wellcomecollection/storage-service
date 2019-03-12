@@ -1,5 +1,17 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
+import akka.Done
+import grizzled.slf4j.Logging
+import io.circe.Encoder
+import uk.ac.wellcome.messaging.sqs.NotificationStream
+import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.BagLocationBuilder
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
+import uk.ac.wellcome.platform.archive.common.ingests.models.{BagRequest, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
+import uk.ac.wellcome.platform.archive.common.operation.services.{DiagnosticReporter, OutgoingPublisher}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.Unpacker
+import uk.ac.wellcome.json.JsonUtil._
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class UnpackerWorker(
@@ -8,7 +20,7 @@ class UnpackerWorker(
   ingestUpdater: IngestUpdater,
   outgoing: OutgoingPublisher,
   reporter: DiagnosticReporter,
-  unpacker: Unpacker,
+  unpacker: Unpacker
 )(implicit ec: ExecutionContext)
     extends Logging
     with Runnable {

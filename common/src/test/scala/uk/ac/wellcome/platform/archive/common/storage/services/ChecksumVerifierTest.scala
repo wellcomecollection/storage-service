@@ -1,11 +1,10 @@
-package uk.ac.wellcome.platform.archive.common.storage
+package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.storage.services.ChecksumVerifier
 
 import scala.util.{Failure, Success}
 

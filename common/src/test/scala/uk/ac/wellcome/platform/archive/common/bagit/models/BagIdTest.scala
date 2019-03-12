@@ -1,11 +1,8 @@
-package uk.ac.wellcome.platform.archive.common.models
+package uk.ac.wellcome.platform.archive.common.bagit.models
+
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagId,
-  ExternalIdentifier
-}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 class BagIdTest extends FunSpec with JsonAssertions {

@@ -1,19 +1,13 @@
-package uk.ac.wellcome.platform.archive.common.operation
+package uk.ac.wellcome.platform.archive.common.ingests.services
 
 import java.util.UUID
 
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  OperationFixtures,
-  RandomThings
-}
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagIdGenerators,
-  OperationGenerators
-}
-import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, OperationGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
 class IngestUpdaterTest
     extends FunSpec

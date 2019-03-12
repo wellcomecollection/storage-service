@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.storage
+package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}

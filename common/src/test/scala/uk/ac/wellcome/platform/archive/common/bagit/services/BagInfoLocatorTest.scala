@@ -1,9 +1,8 @@
-package uk.ac.wellcome.platform.archive.common.bagit
+package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import java.io.FileNotFoundException
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagInfoLocator
 
 import scala.util.Success
 

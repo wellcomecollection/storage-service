@@ -11,6 +11,7 @@ import uk.ac.wellcome.platform.archive.common.operation.services.{
   OutgoingPublisher
 }
 import uk.ac.wellcome.typesafe.Runnable
+import uk.ac.wellcome.json.JsonUtil._
 
 import scala.concurrent.{ExecutionContext, Future}
 

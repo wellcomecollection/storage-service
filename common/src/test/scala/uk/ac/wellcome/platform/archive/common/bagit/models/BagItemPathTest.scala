@@ -1,7 +1,6 @@
-package uk.ac.wellcome.platform.archive.common.models.bagit
+package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagItemPath
 
 class BagItemPathTest extends FunSpec with Matchers {
 
