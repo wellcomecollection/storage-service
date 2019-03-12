@@ -1,3 +1,7 @@
+# -*- encoding: utf-8
+
+from json import JSONDecodeError
+
 from requests import get, auth
 import settings
 
@@ -8,7 +12,12 @@ def get_image(image_slug, space=None):
 
     url = "{0}spaces/{1}/images/{2}".format(get_customer_url(), space, image_slug)
     response = get(url, auth=get_authorisation())
-    return response.json()
+    try:
+        return response.json()
+    except JSONDecodeError as err:
+        raise ValueError(
+            "Error parsing DLCS response for %s as JSON: %r" % (url, err)
+        )
 
 
 def get_authorisation():
