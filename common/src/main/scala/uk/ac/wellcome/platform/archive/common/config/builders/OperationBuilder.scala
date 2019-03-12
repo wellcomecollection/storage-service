@@ -5,7 +5,10 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.{DiagnosticReporter, OutgoingPublisher}
+import uk.ac.wellcome.platform.archive.common.operation.services.{
+  DiagnosticReporter,
+  OutgoingPublisher
+}
 
 import scala.concurrent.ExecutionContext
 
