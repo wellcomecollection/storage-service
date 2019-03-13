@@ -49,6 +49,12 @@ def should_run_sbt_project(repo, project_name, changed_paths):
         if path.endswith(".tf"):
             continue
 
+        if path.startswith("bagger/") and os.environ.get("TASK") not in {
+            "bagger-publish",
+            "travis-format",
+        }:
+            continue
+
         if path.endswith("Makefile"):
             if os.path.dirname(project.folder) == os.path.dirname(path):
                 print("*** %s is defined by %s" % (project.name, path))
