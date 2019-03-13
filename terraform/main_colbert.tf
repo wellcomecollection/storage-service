@@ -13,10 +13,7 @@ module "stack-colbert" {
   domain_name      = "${local.staging_domain_name}"
   cert_domain_name = "${local.cert_domain_name}"
 
-  desired_bagger_count      = 12
-  desired_bags_api_count    = 1
-  desired_ingests_api_count = 1
-
+  desired_bagger_count  = 12
   desired_ec2_instances = 4
 
   vpc_id   = "${local.vpc_id}"

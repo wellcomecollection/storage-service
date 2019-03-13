@@ -13,9 +13,6 @@ variable "cluster_id" {}
 variable "namespace" {}
 variable "namespace_id" {}
 
-variable "desired_bags_api_count" {}
-variable "desired_ingests_api_count" {}
-
 variable "bags_container_image" {}
 variable "bags_container_port" {}
 

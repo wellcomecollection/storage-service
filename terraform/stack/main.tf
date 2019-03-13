@@ -224,9 +224,6 @@ module "api" {
   namespace    = "${var.namespace}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
 
-  desired_bags_api_count    = "${var.desired_bags_api_count}"
-  desired_ingests_api_count = "${var.desired_ingests_api_count}"
-
   # Auth
 
   auth_scopes = [
