@@ -23,8 +23,7 @@ case class ReplicationSummary(
     }
     f"""|src=${source.completePath}
         |dst=${destinationCompletePath}
-        |duration=$formatDuration"""
-      .stripMargin
+        |duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")
   }
 }

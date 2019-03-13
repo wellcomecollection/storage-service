@@ -4,8 +4,7 @@ import org.apache.commons.io.FileUtils
 
 trait Summary extends Timed {
   override def toString: String = {
-    f"""|duration=$formatDuration"""
-      .stripMargin
+    f"""|duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")
   }
 
