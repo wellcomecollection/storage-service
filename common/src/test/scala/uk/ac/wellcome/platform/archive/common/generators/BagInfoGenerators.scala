@@ -1,7 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
+import uk.ac.wellcome.platform.archive.common.bagit.models
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
+  ExternalDescription,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.models.bagit._
 
 trait BagInfoGenerators extends ExternalIdentifierGenerators with RandomThings {
 
@@ -10,7 +15,7 @@ trait BagInfoGenerators extends ExternalIdentifierGenerators with RandomThings {
     externalDescription: Option[ExternalDescription] = Some(
       randomExternalDescription)
   ): BagInfo =
-    BagInfo(
+    models.BagInfo(
       externalIdentifier = externalIdentifier,
       payloadOxum = randomPayloadOxum,
       baggingDate = randomLocalDate,

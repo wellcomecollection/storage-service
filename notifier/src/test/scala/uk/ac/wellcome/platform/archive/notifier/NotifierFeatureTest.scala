@@ -19,10 +19,10 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Callback,
+  CallbackNotification,
   IngestCallbackStatusUpdate,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.archive.common.models._
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.archive.notifier.fixtures.{
   LocalWireMockFixture,

@@ -14,12 +14,12 @@ import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder.{
   buildIngestUpdater,
   buildOutgoingPublisher
 }
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  StorageManifest
+import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  StorageManifestService,
+  StorageManifestVHS
 }
-import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
-import uk.ac.wellcome.platform.archive.common.storage.StorageManifestVHS
 import uk.ac.wellcome.storage.typesafe.{S3Builder, VHSBuilder}
 import uk.ac.wellcome.storage.vhs.EmptyMetadata
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp

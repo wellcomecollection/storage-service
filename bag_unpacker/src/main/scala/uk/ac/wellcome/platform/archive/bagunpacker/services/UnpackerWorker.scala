@@ -5,20 +5,22 @@ import grizzled.slf4j.Logging
 import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqs.NotificationStream
-import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.BagLocationBuilder
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
-import uk.ac.wellcome.platform.archive.common.models.{
+import uk.ac.wellcome.platform.archive.bagunpacker.config.{
+  BagLocationBuilder,
+  UnpackerConfig
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
   BagRequest,
   UnpackBagRequest
 }
-import uk.ac.wellcome.platform.archive.common.operation.{
+import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
+import uk.ac.wellcome.platform.archive.common.operation.services.{
   DiagnosticReporter,
-  IngestUpdater,
   OutgoingPublisher
 }
-import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
+import uk.ac.wellcome.typesafe.Runnable
 
 class UnpackerWorker(
   config: UnpackerConfig,
@@ -26,10 +28,10 @@ class UnpackerWorker(
   ingestUpdater: IngestUpdater,
   outgoing: OutgoingPublisher,
   reporter: DiagnosticReporter,
-  unpacker: Unpacker,
+  unpacker: Unpacker
 )(implicit ec: ExecutionContext)
-    extends Logging
-    with Runnable {
+    extends Runnable
+    with Logging {
 
   def run(): Future[Done] = stream.run(processMessage)
 

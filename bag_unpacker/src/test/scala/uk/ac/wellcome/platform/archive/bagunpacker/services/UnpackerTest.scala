@@ -7,7 +7,7 @@ import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+import uk.ac.wellcome.platform.archive.common.operation.services.{
   OperationFailure,
   OperationSuccess
 }

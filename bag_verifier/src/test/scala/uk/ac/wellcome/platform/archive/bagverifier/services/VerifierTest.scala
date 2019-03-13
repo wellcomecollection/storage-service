@@ -9,11 +9,11 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
 }
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+import uk.ac.wellcome.platform.archive.common.operation.services.{
   OperationFailure,
   OperationSuccess
 }
-import uk.ac.wellcome.platform.archive.common.services.StorageManifestService
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
 class VerifierTest

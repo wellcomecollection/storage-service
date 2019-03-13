@@ -4,9 +4,9 @@ import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
-import uk.ac.wellcome.platform.archive.common.operation.{
+import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
+import uk.ac.wellcome.platform.archive.common.operation.services.{
   DiagnosticReporter,
-  IngestUpdater,
   OutgoingPublisher
 }
 

@@ -8,18 +8,18 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   TestArchive,
   WorkerServiceFixture
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.models.{
-  BagRequest,
-  StorageSpace,
-  UnpackBagRequest
-}
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagLocation,
   BagPath
 }
-import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  BagRequest,
+  Ingest,
+  UnpackBagRequest
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 class UnpackerFeatureTest
     extends FunSpec

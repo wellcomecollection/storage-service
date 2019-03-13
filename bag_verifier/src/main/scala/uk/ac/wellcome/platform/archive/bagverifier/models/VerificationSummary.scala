@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagDigestFile
-import uk.ac.wellcome.platform.archive.common.operation.Summary
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagDigestFile
+import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 case class VerificationSummary(
   successfulVerifications: Seq[BagDigestFile] = List.empty,

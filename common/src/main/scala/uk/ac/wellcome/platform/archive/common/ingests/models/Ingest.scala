@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 import java.time.Instant
 import java.util.UUID
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 
 case class Ingest(id: UUID,
                   sourceLocation: StorageLocation,

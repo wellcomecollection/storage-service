@@ -4,12 +4,15 @@ import java.io.InputStream
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
-import uk.ac.wellcome.platform.archive.common.bagit.{BagInfoLocator, S3BagFile}
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.parsers.BagInfoParser
+import uk.ac.wellcome.platform.archive.common.bagit.parsers.BagInfoParser
+import uk.ac.wellcome.platform.archive.common.bagit.services.{
+  BagInfoLocator,
+  S3BagFile
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
