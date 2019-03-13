@@ -19,6 +19,7 @@ module "bag_unpacker" {
 
   env_vars = {
     queue_url               = "${module.bag_unpacker_queue.url}"
+    queue_parallelism       = "10"
     destination_bucket_name = "${var.ingest_bucket_name}"
     ingest_topic_arn        = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bag_unpacker_output_topic.arn}"
@@ -26,7 +27,7 @@ module "bag_unpacker" {
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_unpacker_service_name}"
   }
 
-  env_vars_length = 6
+  env_vars_length = 7
 
   cpu    = 2048
   memory = 4096

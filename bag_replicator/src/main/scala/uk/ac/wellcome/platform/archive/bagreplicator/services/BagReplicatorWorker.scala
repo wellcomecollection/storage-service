@@ -31,16 +31,17 @@ class BagReplicatorWorker(
       )
       _ <- reporter.report(request.requestId, result)
       _ <- ingestUpdater.send(request.requestId, result)
-      _ <- outgoing.send(request.requestId, result) { summary =>
+      _ <- outgoing.sendIfSuccessful(
+        result,
         BagRequest(
           requestId = request.requestId,
-          bagLocation = summary.destination
+          bagLocation = result.summary.destination
             .getOrElse(
               throw new RuntimeException(
                 "No destination provided by replication!"
               )
             )
         )
-      }
+      )
     } yield ()
 }

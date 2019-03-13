@@ -17,13 +17,19 @@ trait OperationGenerators extends RandomThings {
     randomAlphanumeric()
   )
 
-  def createOperationSuccessWith(summary: TestSummary) =
+  def createOperationSuccess() = createOperationSuccessWith()
+
+  def createOperationSuccessWith(summary: TestSummary = createTestSummary()) =
     OperationSuccess(summary)
 
-  def createOperationCompletedWith(summary: TestSummary) =
+  def createOperationCompleted() = createOperationCompletedWith()
+
+  def createOperationCompletedWith(summary: TestSummary = createTestSummary()) =
     OperationCompleted(summary)
 
-  def createOperationFailureWith(summary: TestSummary,
+  def createOperationFailure() = createOperationFailureWith()
+
+  def createOperationFailureWith(summary: TestSummary = createTestSummary(),
                                  throwable: Throwable = new RuntimeException(
                                    "error")) =
     OperationFailure(summary, throwable)

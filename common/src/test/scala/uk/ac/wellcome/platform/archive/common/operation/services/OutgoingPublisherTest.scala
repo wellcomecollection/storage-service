@@ -1,15 +1,11 @@
 package uk.ac.wellcome.platform.archive.common.operation.services
 
-import java.util.UUID
-
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
+import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  OperationFixtures,
-  RandomThings
-}
-import uk.ac.wellcome.platform.archive.common.generators.OperationGenerators
+import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.generators.{BagRequestGenerators, OperationGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,55 +18,37 @@ class OutgoingPublisherTest
     with Eventually
     with IntegrationPatience
     with OperationFixtures
-    with OperationGenerators {
+    with OperationGenerators
+    with BagRequestGenerators {
 
   val operationName: String = randomAlphanumeric()
 
-  it("publishes an outgoing message when successful") {
-    withLocalSnsTopic { topic =>
-      withOutgoingPublisher(operationName, topic) { outgoingPublisher =>
-        val requestId = UUID.randomUUID()
-        val summary = createTestSummary()
+  it("sends outgoing message if operation is successful") {
+    val successfulOperations =
+      Table("operation", createOperationSuccess(), createOperationCompleted())
+    forAll(successfulOperations) { operation =>
+      withLocalSnsTopic { topic =>
+        withOutgoingPublisher(operationName, topic) { outgoingPublisher =>
+          val outgoing = createBagRequest()
 
-        val sendingOperationNotice = outgoingPublisher.send(
-          requestId,
-          createOperationSuccessWith(summary))(identity)
+          val sendingOperationNotice =
+            outgoingPublisher.sendIfSuccessful(operation, outgoing)
 
-        whenReady(sendingOperationNotice) { _ =>
-          assertSnsReceivesOnly(summary, topic)
+          whenReady(sendingOperationNotice) { _ =>
+            assertSnsReceivesOnly(outgoing, topic)
+          }
         }
-
       }
     }
   }
 
-  it("publishes an outgoing message when completed") {
+  it("does not send outgoing if operation failed") {
     withLocalSnsTopic { topic =>
       withOutgoingPublisher(operationName, topic) { outgoingPublisher =>
-        val requestId = UUID.randomUUID()
-        val summary = createTestSummary()
+        val outgoing = createBagRequest()
 
-        val sendingOperationNotice = outgoingPublisher.send(
-          requestId,
-          createOperationCompletedWith(summary))(identity)
-
-        whenReady(sendingOperationNotice) { _ =>
-          assertSnsReceivesOnly(summary, topic)
-        }
-
-      }
-    }
-  }
-
-  it("does not publish an outgoing message when failed") {
-    withLocalSnsTopic { topic =>
-      withOutgoingPublisher(operationName, topic) { outgoingPublisher =>
-        val requestId = UUID.randomUUID()
-        val summary = createTestSummary()
-
-        val sendingOperationNotice = outgoingPublisher.send(
-          requestId,
-          createOperationFailureWith(summary))(identity)
+        val sendingOperationNotice =
+          outgoingPublisher.sendIfSuccessful(createOperationFailure(), outgoing)
 
         whenReady(sendingOperationNotice) { _ =>
           assertSnsReceivesNothing(topic)
@@ -78,5 +56,4 @@ class OutgoingPublisherTest
       }
     }
   }
-
 }

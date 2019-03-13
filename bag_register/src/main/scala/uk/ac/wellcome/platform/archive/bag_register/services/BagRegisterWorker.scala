@@ -36,7 +36,7 @@ class BagRegisterWorker(
       result <- register.update(request.bagLocation)
       _ <- reporter.report(request.requestId, result)
       _ <- ingestUpdater.send(request.requestId, result, result.summary.bagId)
-      _ <- outgoing.send(request.requestId, result)(_ => request)
+      _ <- outgoing.sendIfSuccessful(result, request)
     } yield ()
   }
 }
