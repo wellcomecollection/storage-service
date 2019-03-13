@@ -20,6 +20,8 @@ class Unpacker(config: UnpackerConfig = UnpackerConfig())(
   implicit s3Client: AmazonS3,
   ec: ExecutionContext) {
 
+  // See comments inside both of these classes -- it's important that they
+  // both have the same buffer size.
   private val s3Uploader = new S3Uploader(bufferSize = config.bufferSize)
   private val archive = new Archive(bufferSize = config.bufferSize)
 
