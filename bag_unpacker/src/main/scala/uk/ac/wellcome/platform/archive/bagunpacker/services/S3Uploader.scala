@@ -37,7 +37,7 @@ class S3Uploader(bufferSize: Int)(implicit s3Client: AmazonS3) {
     //
     // We use a BufferedInputStream to allow rewinding the stream, so we need
     // to make sure the SDK doesn't try to rewind beyond the end of the buffer.
-    // Hence we use this config option to ensure (buffer size) == (rewind limit).
+    // Hence we use this config option to ensure (buffer size) > (rewind limit).
     //
     // See also: bagunpacker.storage.Archive.
     // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/best-practices.html

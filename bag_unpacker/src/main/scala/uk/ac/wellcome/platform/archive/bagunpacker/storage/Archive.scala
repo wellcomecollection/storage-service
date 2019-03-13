@@ -98,7 +98,7 @@ class Archive(bufferSize: Int) extends Logging {
     //
     // We need to make sure that the SDK doesn't try to rewind beyond the end
     // of the buffer.  We use this config option to ensure
-    // (buffer size) == (rewind limit).
+    // (buffer size) > (rewind limit).
     //
     // See also: baguinpacker.S3Uploader.
     // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/best-practices.html

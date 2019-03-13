@@ -22,10 +22,11 @@ import scala.util.{Failure, Success}
 class Unpacker(config: UnpackerConfig)(implicit s3Client: AmazonS3,
                                        ec: ExecutionContext) {
 
-  // See comments inside both of these classes -- it's important that they
-  // both have the same buffer size.
+  // See comments inside both of these classes -- it's important that the S3Uploader's
+  // buffer is strictly smaller than the Archive, so it never tries to rewind beyond
+  // the buffer size in the Archive streams.
   private val s3Uploader = new S3Uploader(bufferSize = config.bufferSize)
-  private val archive = new Archive(bufferSize = config.bufferSize)
+  private val archive = new Archive(bufferSize = config.bufferSize + 1)
 
   def unpack(
     srcLocation: ObjectLocation,
