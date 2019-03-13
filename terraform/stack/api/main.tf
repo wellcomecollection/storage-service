@@ -14,7 +14,8 @@ module "services" {
   // This is due to the behaviour of NLBs that
   // seem to increase latency significantly if
   // number of tasks < number of AZs
-  desired_bags_api_count    = "3"
+  desired_bags_api_count = "3"
+
   desired_ingests_api_count = "3"
 
   # Bags endpoint
