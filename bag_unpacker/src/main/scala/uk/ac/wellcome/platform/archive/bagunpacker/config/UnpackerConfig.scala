@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagunpacker.config.models
+package uk.ac.wellcome.platform.archive.bagunpacker.config
 
 import com.typesafe.config.Config
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
