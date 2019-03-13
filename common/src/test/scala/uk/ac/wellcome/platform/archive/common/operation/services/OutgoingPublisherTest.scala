@@ -4,8 +4,14 @@ import org.scalatest.FunSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings}
-import uk.ac.wellcome.platform.archive.common.generators.{BagRequestGenerators, OperationGenerators}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  OperationFixtures,
+  RandomThings
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagRequestGenerators,
+  OperationGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
 import scala.concurrent.ExecutionContext.Implicits.global
