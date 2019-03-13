@@ -16,7 +16,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class Unpacker(config: UnpackerConfig = UnpackerConfig())(
+class Unpacker(config: UnpackerConfig)(
   implicit s3Client: AmazonS3,
   ec: ExecutionContext) {
 

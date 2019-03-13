@@ -11,19 +11,12 @@ import uk.ac.wellcome.messaging.fixtures.{Messaging, NotificationStreamFixture}
 import uk.ac.wellcome.platform.archive.common.ingests.models.UnpackBagRequest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerWorkerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  Unpacker,
-  UnpackerWorker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  OperationFixtures,
-  RandomThings
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, OperationFixtures, RandomThings}
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture
     extends S3
@@ -57,7 +50,6 @@ trait WorkerServiceFixture
     dstBucket: Bucket
   )(testWith: TestWith[UnpackerWorker, R]): R =
     withNotificationStream[UnpackBagRequest, R](queue) { notificationStream =>
-      val ec = ExecutionContext.Implicits.global
       withIngestUpdater("unpacker", ingestTopic) { ingestUpdater =>
         withOutgoingPublisher("unpacker", outgoingTopic) { outgoingPublisher =>
           withOperationReporter() { reporter =>
@@ -68,8 +60,10 @@ trait WorkerServiceFixture
               ingestUpdater,
               outgoingPublisher,
               reporter,
-              new Unpacker()(s3Client, ec)
-            )(ec)
+              new Unpacker(
+                config = UnpackerConfig(bufferSize = 8072)
+              )
+            )
 
             bagUnpacker.run()
 
