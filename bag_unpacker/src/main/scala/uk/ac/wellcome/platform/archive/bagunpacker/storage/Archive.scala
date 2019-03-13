@@ -96,6 +96,17 @@ object Archive extends Logging {
       }
     }
 
+    // These input streams get passed into the AWS SDK to upload into S3.
+    // If the upload fails, the SDK tries to rewind the streams to a known-good
+    // point, then retry uploading the missing bytes.
+    //
+    // We need to make sure that the SDK doesn't try to rewind beyond the end
+    // of the buffer.  We use this config option to ensure
+    // (buffer size) == (rewind limit).
+    //
+    // See also: baguinpacker.S3Uploader.
+    // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/best-practices.html
+    //
     val archiveInputStream: Try[ArchiveInputStream] = for {
       compressorInputStream <- uncompress(
         new BufferedInputStream(inputStream, bufferSize)

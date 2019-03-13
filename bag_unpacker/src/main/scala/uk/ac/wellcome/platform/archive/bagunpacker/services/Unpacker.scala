@@ -20,7 +20,7 @@ class Unpacker(config: UnpackerConfig = UnpackerConfig())(
   implicit s3Client: AmazonS3,
   ec: ExecutionContext) {
 
-  private val s3Uploader = new S3Uploader()
+  private val s3Uploader = new S3Uploader(bufferSize = config.bufferSize)
 
   def unpack(
     srcLocation: ObjectLocation,
