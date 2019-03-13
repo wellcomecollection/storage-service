@@ -36,7 +36,7 @@ class BagVerifierWorker(stream: NotificationStream[BagRequest],
 
       _ <- reporter.report(request.requestId, verification)
       _ <- ingestUpdater.send(request.requestId, verification)
-      _ <- outgoing.send(request.requestId, verification)(_ => request)
+      _ <- outgoing.sendIfSuccessful(verification, request)
     } yield ()
 
     result
