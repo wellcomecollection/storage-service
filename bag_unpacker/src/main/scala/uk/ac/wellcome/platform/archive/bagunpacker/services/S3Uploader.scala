@@ -42,8 +42,7 @@ class S3Uploader(bufferSize: Int)(implicit s3Client: AmazonS3) {
     // See also: bagunpacker.storage.Archive.
     // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/best-practices.html
     //
-    val requestClientOptions = putObjectRequest
-      .getRequestClientOptions
+    val requestClientOptions = putObjectRequest.getRequestClientOptions
 
     requestClientOptions
       .setReadLimit(bufferSize)

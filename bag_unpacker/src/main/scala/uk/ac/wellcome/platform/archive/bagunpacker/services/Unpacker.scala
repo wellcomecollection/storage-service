@@ -16,9 +16,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class Unpacker(config: UnpackerConfig)(
-  implicit s3Client: AmazonS3,
-  ec: ExecutionContext) {
+class Unpacker(config: UnpackerConfig)(implicit s3Client: AmazonS3,
+                                       ec: ExecutionContext) {
 
   // See comments inside both of these classes -- it's important that they
   // both have the same buffer size.
@@ -37,8 +36,7 @@ class Unpacker(config: UnpackerConfig)(
       packageInputStream <- srcLocation.toInputStream
 
       result <- archive
-        .unpack[UnpackSummary](packageInputStream)(
-          unpackSummary) {
+        .unpack[UnpackSummary](packageInputStream)(unpackSummary) {
           (summary: UnpackSummary,
            inputStream: InputStream,
            archiveEntry: ArchiveEntry) =>

@@ -23,8 +23,7 @@ import scala.util.{Failure, Success, Try}
 class Archive(bufferSize: Int) extends Logging {
   def unpack[T](
     inputStream: InputStream
-  )(
-    init: T)(
+  )(init: T)(
     f: (T, InputStream, ArchiveEntry) => T
   )(implicit ec: ExecutionContext): Future[OperationResult[T]] = Future {
 
