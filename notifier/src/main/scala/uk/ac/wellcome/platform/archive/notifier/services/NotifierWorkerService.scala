@@ -28,7 +28,6 @@ class NotifierWorkerService(
         callbackNotification.id,
         httpResponse)
 
-
       _ <- snsWriter.writeMessage[IngestUpdate](
         ingestUpdate,
         subject = s"Sent by ${this.getClass.getName}"
