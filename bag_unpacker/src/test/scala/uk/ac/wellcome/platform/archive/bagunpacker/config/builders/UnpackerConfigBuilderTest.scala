@@ -22,7 +22,8 @@ class UnpackerConfigBuilderTest extends FunSpec with Matchers {
   }
 
   it("throws a ConfigException if the type is wrong") {
-    val config: Config = ConfigFactory.parseString("unpacker.buffer.size=A string")
+    val config: Config =
+      ConfigFactory.parseString("unpacker.buffer.size=A string")
 
     assertThrows[ConfigException] {
       UnpackerConfigBuilder.build(config)
@@ -38,7 +39,8 @@ class UnpackerConfigBuilderTest extends FunSpec with Matchers {
   //   unpacker.buffer.size=1
   // hence this test
   it("parses a number wrapped in a String") {
-    val config: Config = ConfigFactory.parseString("unpacker.buffer.size=\"12\"")
+    val config: Config =
+      ConfigFactory.parseString("unpacker.buffer.size=\"12\"")
 
     val unpackerConfig = UnpackerConfigBuilder.build(config)
 

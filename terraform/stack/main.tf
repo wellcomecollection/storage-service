@@ -21,7 +21,7 @@ module "bag_unpacker" {
     queue_url               = "${module.bag_unpacker_queue.url}"
     queue_parallelism       = "10"
     destination_bucket_name = "${var.ingest_bucket_name}"
-    unpacker_buffer_size    = "131073" # 128 Kb
+    unpacker_buffer_size    = "131073"                                                                                                                         # 128 Kb
     ingest_topic_arn        = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bag_unpacker_output_topic.arn}"
     metrics_namespace       = "${local.bag_unpacker_service_name}"
