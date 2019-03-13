@@ -6,10 +6,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagLocation}
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 case class RegistrationSummary(
-  startTime: Instant,
-  endTime: Option[Instant] = None,
   location: BagLocation,
-  bagId: Option[BagId] = None
+  bagId: Option[BagId] = None,
+  startTime: Instant,
+  endTime: Option[Instant] = None
 ) extends Summary {
   def complete: RegistrationSummary = {
     this.copy(
@@ -17,9 +17,9 @@ case class RegistrationSummary(
     )
   }
   override def toString(): String = {
-    f"""|${bagId.getOrElse("<unknown-bag>")}
-        |registered in $formatDuration
-       """.stripMargin
-      .replaceAll("\n", " ")
+    f"""|bag=${location.completePath}
+        |id=${bagId.getOrElse("<unknown-bag>")}
+        |duration=$formatDuration""".stripMargin
+      .replaceAll("\n", ", ")
   }
 }

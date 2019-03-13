@@ -6,10 +6,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 case class ReplicationSummary(
-  startTime: Instant,
-  endTime: Option[Instant] = None,
   source: BagLocation,
   destination: Option[BagLocation] = None,
+  startTime: Instant,
+  endTime: Option[Instant] = None,
 ) extends Summary {
   def complete: ReplicationSummary = {
     this.copy(
@@ -21,9 +21,9 @@ case class ReplicationSummary(
       case None                 => "<no-destination>"
       case Some(theDestination) => theDestination.completePath
     }
-    f"""|${source.completePath} -> $destinationCompletePath
-        |replicated in $formatDuration
-       """.stripMargin
-      .replaceAll("\n", " ")
+    f"""|src=${source.completePath}
+        |dst=${destinationCompletePath}
+        |duration=$formatDuration""".stripMargin
+      .replaceAll("\n", ", ")
   }
 }
