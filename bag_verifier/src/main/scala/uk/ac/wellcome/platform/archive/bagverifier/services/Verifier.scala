@@ -35,7 +35,8 @@ class Verifier(
   def verify(
     bagLocation: BagLocation
   ): Future[OperationResult[VerificationSummary]] = {
-    val verificationInit = VerificationSummary(bagLocation=bagLocation, startTime = Instant.now)
+    val verificationInit =
+      VerificationSummary(bagLocation = bagLocation, startTime = Instant.now)
 
     val verification = for {
       fileManifest <- getManifest("file manifest") {
