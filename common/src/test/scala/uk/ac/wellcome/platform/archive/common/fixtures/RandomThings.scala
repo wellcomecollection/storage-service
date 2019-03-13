@@ -5,7 +5,7 @@ import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.UUID
 
-import uk.ac.wellcome.platform.archive.common.models.bagit._
+import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.util.Random

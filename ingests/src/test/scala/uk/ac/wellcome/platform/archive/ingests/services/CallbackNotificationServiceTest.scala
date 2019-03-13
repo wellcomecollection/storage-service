@@ -5,8 +5,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest}
-import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Callback,
+  CallbackNotification,
+  Ingest
+}
 import uk.ac.wellcome.platform.archive.ingests.fixtures.CallbackNotificationServiceFixture
 
 class CallbackNotificationServiceTest

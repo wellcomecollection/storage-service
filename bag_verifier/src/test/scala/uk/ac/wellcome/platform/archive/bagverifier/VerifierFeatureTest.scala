@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixtures.WorkerServiceFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingest.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
 class VerifierFeatureTest
     extends FunSpec

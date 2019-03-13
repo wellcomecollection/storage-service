@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.util.UUID
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagId
-import uk.ac.wellcome.platform.archive.common.models.error.ArchiveError
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
+import uk.ac.wellcome.platform.archive.common.bagit.models.error.ArchiveError
 
 sealed trait IngestUpdate {
   val id: UUID

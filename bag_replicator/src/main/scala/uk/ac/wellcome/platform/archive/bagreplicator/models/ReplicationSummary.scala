@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.archive.bagreplicator.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagLocation
-import uk.ac.wellcome.platform.archive.common.operation.Summary
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
+import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 case class ReplicationSummary(
   source: BagLocation,

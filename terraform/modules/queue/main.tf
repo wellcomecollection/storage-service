@@ -17,6 +17,14 @@ module "queue" {
   alarm_topic_arn = "${var.dlq_alarm_arn}"
 }
 
+module "scaling_alarm" {
+  source     = "git::https://github.com/wellcometrust/terraform-modules.git//autoscaling/alarms/queue?ref=v19.10.0"
+  queue_name = "${local.queue_name}"
+
+  queue_high_actions = ["${var.queue_high_actions}"]
+  queue_low_actions  = ["${var.queue_low_actions}"]
+}
+
 resource "aws_iam_role_policy" "read_from_q" {
   count = "${length(var.role_names)}"
 

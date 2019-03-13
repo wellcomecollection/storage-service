@@ -3,9 +3,11 @@ package uk.ac.wellcome.platform.archive.ingests
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestUpdate
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CallbackNotification,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.ingests.fixtures._
 
 class IngestsFeatureTest

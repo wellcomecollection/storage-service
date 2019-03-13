@@ -10,7 +10,7 @@ import org.apache.commons.compress.archivers.{
 }
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.io.input.CloseShieldInputStream
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+import uk.ac.wellcome.platform.archive.common.operation.services.{
   OperationFailure,
   OperationResult,
   OperationSuccess

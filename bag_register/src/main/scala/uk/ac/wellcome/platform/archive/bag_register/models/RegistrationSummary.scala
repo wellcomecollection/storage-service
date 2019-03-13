@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.archive.bag_register.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.{BagId, BagLocation}
-import uk.ac.wellcome.platform.archive.common.operation.Summary
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagLocation}
+import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 case class RegistrationSummary(
                                 location: BagLocation,

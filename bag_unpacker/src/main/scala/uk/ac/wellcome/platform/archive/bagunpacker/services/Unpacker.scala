@@ -6,15 +6,14 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import org.apache.commons.compress.archivers.ArchiveEntry
-import uk.ac.wellcome.platform.archive.bagunpacker.S3Uploader
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
-import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
-import uk.ac.wellcome.platform.archive.common.ingests.operation.{
+import uk.ac.wellcome.platform.archive.common.operation.services.{
   OperationFailure,
   OperationResult
 }
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
