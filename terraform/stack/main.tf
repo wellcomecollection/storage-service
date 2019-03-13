@@ -28,7 +28,7 @@ module "bag_unpacker" {
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_unpacker_service_name}"
   }
 
-  env_vars_length = 7
+  env_vars_length = 8
 
   cpu    = 2048
   memory = 4096
