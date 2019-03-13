@@ -324,8 +324,8 @@ module "bagger" {
 
   secret_env_vars_length = 4
 
-  cpu    = "1900"
-  memory = "14000"
+  cpu    = 2600
+  memory = 14000
 
   min_capacity       = "0"
   desired_task_count = "${var.desired_bagger_count}"
