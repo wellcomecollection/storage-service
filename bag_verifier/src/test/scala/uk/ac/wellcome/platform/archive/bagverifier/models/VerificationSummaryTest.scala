@@ -4,14 +4,13 @@ import java.time.{Duration, Instant}
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagDigestFile,
-  BagItemPath
-}
+import uk.ac.wellcome.platform.archive.common.generators.BagLocationGenerators
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagItemPath}
 
-class VerificationSummaryTest extends FunSpec with Matchers with RandomThings {
+class VerificationSummaryTest extends FunSpec with Matchers with RandomThings with BagLocationGenerators {
   it("reports a verification with no failures as successful") {
     val result = VerificationSummary(
+      createBagLocation(),
       successfulVerifications =
         Seq(createBagDigestFile, createBagDigestFile, createBagDigestFile),
       failedVerifications = List.empty
@@ -22,6 +21,7 @@ class VerificationSummaryTest extends FunSpec with Matchers with RandomThings {
 
   it("reports a verification with some problems as unsuccessful") {
     val result = VerificationSummary(
+      createBagLocation(),
       successfulVerifications = Seq(createBagDigestFile, createBagDigestFile),
       failedVerifications = List(
         FailedVerification(
@@ -36,6 +36,7 @@ class VerificationSummaryTest extends FunSpec with Matchers with RandomThings {
 
   it("calculates duration once completed") {
     val result = VerificationSummary(
+      createBagLocation(),
       startTime = Instant.now.minus(Duration.ofSeconds(1))
     )
     val completed = result.complete
@@ -45,6 +46,7 @@ class VerificationSummaryTest extends FunSpec with Matchers with RandomThings {
 
   it("calculates duration as None when verification is not completed") {
     val result = VerificationSummary(
+      createBagLocation(),
       startTime = Instant.now
     )
     result.duration shouldBe None

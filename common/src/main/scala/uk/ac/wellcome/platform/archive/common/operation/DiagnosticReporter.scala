@@ -18,15 +18,15 @@ class DiagnosticReporter(metricsSender: MetricsSender) extends Logging {
     implicit ec: ExecutionContext): Future[Unit] = {
     val future = result match {
       case OperationCompleted(summary) =>
-        info(s"Completed - $requestId : ${summary.toString}")
+        info(s"Completed - $requestId - ${summary.toString}")
         metricsSender.incrementCount(metricName = "OperationCompleted")
 
       case OperationSuccess(summary) =>
-        info(s"Success - $requestId: ${summary.toString}")
+        info(s"Success - $requestId - ${summary.toString}")
         metricsSender.incrementCount(metricName = "OperationSuccess")
 
       case OperationFailure(summary, e) =>
-        error(s"Failure - $requestId : ${summary.toString}", e)
+        error(s"Failure - $requestId - ${summary.toString}", e)
         metricsSender.incrementCount(metricName = "OperationFailure")
     }
 

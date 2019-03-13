@@ -2,14 +2,15 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.BagDigestFile
+import uk.ac.wellcome.platform.archive.common.models.bagit.{BagDigestFile, BagLocation}
 import uk.ac.wellcome.platform.archive.common.operation.Summary
 
 case class VerificationSummary(
-  successfulVerifications: Seq[BagDigestFile] = List.empty,
-  failedVerifications: Seq[FailedVerification] = List.empty,
-  startTime: Instant = Instant.now(),
-  endTime: Option[Instant] = None)
+                                bagLocation: BagLocation,
+                                successfulVerifications: Seq[BagDigestFile] = List.empty,
+                                failedVerifications: Seq[FailedVerification] = List.empty,
+                                startTime: Instant = Instant.now(),
+                                endTime: Option[Instant] = None)
     extends Summary {
   def succeeded: Boolean = failedVerifications.isEmpty
   def complete: VerificationSummary = this.copy(endTime = Some(Instant.now()))
@@ -20,12 +21,13 @@ case class VerificationSummary(
         "successful"
       else
         "failed"
-    f"""|$status
-        |(${successfulVerifications.size} succeeded /
-        |${failedVerifications.size} failed)
-        |bag verification in $formatDuration
-        |""".stripMargin
-      .replaceAll("\n", " ")
+    f"""|bag=${bagLocation.completePath}
+        |status=$status
+        |verified=${successfulVerifications.size}
+        |failed=${failedVerifications.size}
+        |duration=$formatDuration"""
+      .stripMargin
+      .replaceAll("\n", ", ")
   }
 }
 
