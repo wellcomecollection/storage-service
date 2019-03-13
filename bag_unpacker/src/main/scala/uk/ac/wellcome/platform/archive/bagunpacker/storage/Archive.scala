@@ -21,11 +21,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 object Archive extends Logging {
-  private val DEFAULT_BUFFER_SIZE = 8192
-
   def unpack[T](
     inputStream: InputStream,
-    bufferSize: Int = DEFAULT_BUFFER_SIZE
+    bufferSize: Int
   )(init: T)(
     f: (T, InputStream, ArchiveEntry) => T
   )(implicit ec: ExecutionContext): Future[OperationResult[T]] = Future {

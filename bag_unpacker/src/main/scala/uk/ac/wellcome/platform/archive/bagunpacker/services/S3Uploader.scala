@@ -46,7 +46,7 @@ class S3Uploader(bufferSize: Int)(implicit s3Client: AmazonS3) {
       .getRequestClientOptions
 
     requestClientOptions
-      .setReadLimit(unpackerConfig.bufferSize)
+      .setReadLimit(bufferSize)
 
     val upload: Upload = transferManager.upload(putObjectRequest)
 
