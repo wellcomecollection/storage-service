@@ -32,7 +32,8 @@ cache:
     - project/target
     - target
 
-    - bags_api/target
+    - api/bags_api/target
+    - api/ingests_api/target
     - bag_replicator/target
     - bag_register/target
     - bag_unpacker/target
@@ -40,7 +41,6 @@ cache:
     - common/target
     - display/target
     - ingests/target
-    - ingests_api/target
     - ingests_common/target
     - notifier/target
 

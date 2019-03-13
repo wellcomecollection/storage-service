@@ -2,6 +2,7 @@ ACCOUNT_ID = 975596993436
 
 include makefiles/functions.Makefile
 include makefiles/formatting.Makefile
+include api/Makefile
 
 PROJECT_ID = storage
 
@@ -9,8 +10,6 @@ STACK_ROOT 	= .
 
 SBT_APPS = notifier \
            ingests \
-           ingests_api \
-           bags_api \
            bag_register \
            bag_replicator \
            bag_verifier \
