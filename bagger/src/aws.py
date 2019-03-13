@@ -117,7 +117,7 @@ def remove_error(bnumber):
 
 
 def get_dropped_bag_info(bnumber):
-    key = "{0}.zip".format(bnumber)
+    key = "{0}.tar.gz".format(bnumber)
     bag_info = {"exists": False}
     try:
         client = get_boto_session().client("s3")
