@@ -21,6 +21,7 @@ class Unpacker(config: UnpackerConfig = UnpackerConfig())(
   ec: ExecutionContext) {
 
   private val s3Uploader = new S3Uploader(bufferSize = config.bufferSize)
+  private val archive = new Archive(bufferSize = config.bufferSize)
 
   def unpack(
     srcLocation: ObjectLocation,
@@ -33,8 +34,8 @@ class Unpacker(config: UnpackerConfig = UnpackerConfig())(
     val futureSummary = for {
       packageInputStream <- srcLocation.toInputStream
 
-      result <- Archive
-        .unpack[UnpackSummary](packageInputStream, config.bufferSize)(
+      result <- archive
+        .unpack[UnpackSummary](packageInputStream)(
           unpackSummary) {
           (summary: UnpackSummary,
            inputStream: InputStream,

@@ -20,16 +20,15 @@ import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-object Archive extends Logging {
+class Archive(bufferSize: Int) extends Logging {
   def unpack[T](
-    inputStream: InputStream,
-    bufferSize: Int
-  )(init: T)(
+    inputStream: InputStream
+  )(
+    init: T)(
     f: (T, InputStream, ArchiveEntry) => T
   )(implicit ec: ExecutionContext): Future[OperationResult[T]] = Future {
 
-    val archiveReader =
-      new ArchiveReader[T](inputStream, bufferSize)
+    val archiveReader = new ArchiveReader[T](inputStream)
 
     @tailrec
     def foldStream(stream: InputStream)(t: T)(
@@ -49,7 +48,7 @@ object Archive extends Logging {
     foldStream(inputStream)(init)(f)
   }
 
-  private class ArchiveReader[T](inputStream: InputStream, bufferSize: Int) {
+  private class ArchiveReader[T](inputStream: InputStream) {
 
     def accumulate(
       t: T,
