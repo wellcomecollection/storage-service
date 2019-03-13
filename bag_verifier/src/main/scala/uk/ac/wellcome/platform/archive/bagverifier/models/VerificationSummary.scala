@@ -2,11 +2,8 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagDigestFile,
-  BagLocation
-}
-import uk.ac.wellcome.platform.archive.common.operation.Summary
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagDigestFile, BagLocation}
+import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 case class VerificationSummary(
                                 bagLocation: BagLocation,

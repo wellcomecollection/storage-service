@@ -3,12 +3,9 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 import java.time.{Duration, Instant}
 
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagDigestFile, BagItemPath}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.BagLocationGenerators
-import uk.ac.wellcome.platform.archive.common.models.bagit.{
-  BagDigestFile,
-  BagItemPath
-}
 
 class VerificationSummaryTest extends FunSpec with Matchers with RandomThings with BagLocationGenerators {
   it("reports a verification with no failures as successful") {
