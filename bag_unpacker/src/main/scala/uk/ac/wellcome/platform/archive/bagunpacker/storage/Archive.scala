@@ -20,16 +20,14 @@ import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-object Archive extends Logging {
-
+class Archive(bufferSize: Int) extends Logging {
   def unpack[T](
     inputStream: InputStream
   )(init: T)(
     f: (T, InputStream, ArchiveEntry) => T
   )(implicit ec: ExecutionContext): Future[OperationResult[T]] = Future {
 
-    val archiveReader =
-      new ArchiveReader[T](inputStream)
+    val archiveReader = new ArchiveReader[T](inputStream)
 
     @tailrec
     def foldStream(stream: InputStream)(t: T)(
@@ -94,13 +92,24 @@ object Archive extends Logging {
       }
     }
 
+    // These input streams get passed into the AWS SDK to upload into S3.
+    // If the upload fails, the SDK tries to rewind the streams to a known-good
+    // point, then retry uploading the missing bytes.
+    //
+    // We need to make sure that the SDK doesn't try to rewind beyond the end
+    // of the buffer.  We use this config option to ensure
+    // (buffer size) > (rewind limit).
+    //
+    // See also: baguinpacker.S3Uploader.
+    // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/best-practices.html
+    //
     val archiveInputStream: Try[ArchiveInputStream] = for {
       compressorInputStream <- uncompress(
-        new BufferedInputStream(inputStream)
+        new BufferedInputStream(inputStream, bufferSize)
       )
 
       archiveInputStream <- extract(
-        new BufferedInputStream(compressorInputStream)
+        new BufferedInputStream(compressorInputStream, bufferSize)
       )
 
     } yield archiveInputStream

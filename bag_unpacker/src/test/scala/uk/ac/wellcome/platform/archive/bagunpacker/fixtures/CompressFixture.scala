@@ -38,11 +38,17 @@ trait CompressFixture extends RandomThings with S3 with Logging {
     testWith(dstLocation)
   }
 
-  def createTgzArchiveWithRandomFiles(fileCount: Int = 10) =
+  def createTgzArchiveWithRandomFiles(fileCount: Int = 10,
+                                      maxDepth: Int = 4,
+                                      minSize: Int = 265,
+                                      maxSize: Int = 1024) =
     createTgzArchiveWithFiles(
       randomFilesInDirs(
-        fileCount,
-        fileCount / 4
+        fileCount = fileCount,
+        dirs = fileCount / 4,
+        maxDepth = maxDepth,
+        minSize = minSize,
+        maxSize = maxSize
       )
     )
 
@@ -101,15 +107,15 @@ trait CompressFixture extends RandomThings with S3 with Logging {
     (archiveFile, files, entries)
   }
 
-  def relativeToTmpDir(file: File) = {
-    val path = (new File(tmpDir).toURI)
+  def relativeToTmpDir(file: File): String = {
+    val path = new File(tmpDir).toURI
       .relativize(file.toURI)
       .getPath
 
     s"./$path"
   }
 
-  class Archive(
+  private[fixtures] class Archive(
     archiverName: String,
     compressorName: String,
     outputStream: OutputStream

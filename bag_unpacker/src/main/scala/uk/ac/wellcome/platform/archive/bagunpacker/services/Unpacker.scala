@@ -6,21 +6,27 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import org.apache.commons.compress.archivers.ArchiveEntry
-import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
+import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
 import uk.ac.wellcome.platform.archive.common.operation.services.{
   OperationFailure,
   OperationResult
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
+import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
+import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
+class Unpacker(config: UnpackerConfig)(implicit s3Client: AmazonS3,
+                                       ec: ExecutionContext) {
 
-  private val s3Uploader = new S3Uploader()
+  // See comments inside both of these classes -- it's important that the S3Uploader's
+  // buffer is strictly smaller than the Archive, so it never tries to rewind beyond
+  // the buffer size in the Archive streams.
+  private val s3Uploader = new S3Uploader(bufferSize = config.bufferSize)
+  private val archive = new Archive(bufferSize = config.bufferSize + 1)
 
   def unpack(
     srcLocation: ObjectLocation,
@@ -33,7 +39,7 @@ class Unpacker(implicit s3Client: AmazonS3, ec: ExecutionContext) {
     val futureSummary = for {
       packageInputStream <- srcLocation.toInputStream
 
-      result <- Archive
+      result <- archive
         .unpack[UnpackSummary](packageInputStream)(unpackSummary) {
           (summary: UnpackSummary,
            inputStream: InputStream,

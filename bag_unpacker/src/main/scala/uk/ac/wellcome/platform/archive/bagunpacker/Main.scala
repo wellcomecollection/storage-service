@@ -2,10 +2,14 @@ package uk.ac.wellcome.platform.archive.bagunpacker
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
-import uk.ac.wellcome.platform.archive.bagunpacker.config.UnpackerConfig
+import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.{
+  UnpackerConfigBuilder,
+  UnpackerWorkerConfigBuilder
+}
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker,
   UnpackerWorker
@@ -27,16 +31,18 @@ object Main extends WellcomeTypesafeApp {
     implicit val materializer: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
-    implicit val s3Client =
+    implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
 
     new UnpackerWorker(
-      config = UnpackerConfig(config),
+      config = UnpackerWorkerConfigBuilder.build(config),
       stream = NotificationStreamBuilder.buildStream[UnpackBagRequest](config),
       ingestUpdater = OperationBuilder.buildIngestUpdater(config, "unpacking"),
       outgoing = OperationBuilder.buildOutgoingPublisher(config, "unpacking"),
       reporter = OperationBuilder.buildOperationReporter(config),
-      unpacker = new Unpacker()
+      unpacker = new Unpacker(
+        config = UnpackerConfigBuilder.build(config)
+      )
     )
   }
 }
