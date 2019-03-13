@@ -39,8 +39,10 @@ class ArchiveTest
       entries + entry
     }
 
+    val archive = new Archive(bufferSize = 8192)
+
     val unpack =
-      Archive.unpack(
+      archive.unpack(
         inputStream
       )(
         Set.empty[ArchiveEntry]
