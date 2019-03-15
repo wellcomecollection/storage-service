@@ -69,7 +69,7 @@ def process_alto(root, bag_details, alto, skip_file_download):
     source_bucket = None
 
     if not settings.READ_METS_FROM_FILESHARE:
-        source_bucket = aws.get_s3().Bucket(settings.METS_BUCKET_NAME)
+        source_bucket = aws.get_bucket(settings.METS_BUCKET_NAME)
 
     missing_altos = []
 
@@ -241,7 +241,7 @@ def try_to_download_asset(preservica_uuid, destination):
     bucket_name = origin_info["bucket_name"]
     asset_downloaded = False
     if bucket_name is not None:
-        source_bucket = aws.get_s3().Bucket(bucket_name)
+        source_bucket = aws.get_bucket(bucket_name)
         bucket_key = origin_info["bucket_key"]
         logging.debug(
             "Downloading object from bucket {0}/{1} to {2}".format(

@@ -123,3 +123,7 @@ def get_dropped_bag_info(bnumber):
         bag_info["size"] = bag_head["ContentLength"]
 
     return bag_info
+
+
+def get_bucket(bucket_name):
+    return s3_resource.Bucket(bucket_name)
