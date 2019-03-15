@@ -47,7 +47,17 @@ class S3Uploader(bufferSize: Int)(implicit s3Client: AmazonS3) {
     requestClientOptions
       .setReadLimit(bufferSize)
 
-    val upload: Upload = transferManager.upload(putObjectRequest)
+    // Match the readLimit for the multipart upload threshold
+    // As per:
+    // https://github.com/aws/aws-sdk-java/issues/427#issuecomment-162082586
+
+    transferManager.getConfiguration
+      .setMultipartUploadThreshold(
+        bufferSize.toLong
+      )
+
+    val upload: Upload = transferManager
+      .upload(putObjectRequest)
 
     upload.waitForUploadResult()
   }
