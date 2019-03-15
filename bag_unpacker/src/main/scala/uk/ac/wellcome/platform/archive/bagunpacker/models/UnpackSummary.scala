@@ -19,8 +19,9 @@ case class UnpackSummary(
     f"""|src=$srcLocation
         |dst=$dstLocation
         |files=$fileCount
-        |size=${formatBytes(bytesUnpacked)}
         |bytesSize=$bytesUnpacked
+        |size=${formatBytes(bytesUnpacked)}
+        |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")
   }

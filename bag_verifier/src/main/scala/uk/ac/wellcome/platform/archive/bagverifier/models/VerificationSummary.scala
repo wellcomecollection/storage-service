@@ -28,6 +28,7 @@ case class VerificationSummary(
         |status=$status
         |verified=${successfulVerifications.size}
         |failed=${failedVerifications.size}
+        |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")
   }

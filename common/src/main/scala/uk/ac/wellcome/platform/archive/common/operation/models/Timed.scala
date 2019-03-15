@@ -9,4 +9,7 @@ trait Timed {
   def duration = {
     endTime.map(Duration.between(startTime, _))
   }
+
+  def durationSeconds =
+    duration.getOrElse(Duration.ofSeconds(0)).getSeconds
 }

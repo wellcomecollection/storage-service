@@ -19,6 +19,7 @@ case class RegistrationSummary(
   override def toString(): String = {
     f"""|bag=${location.completePath}
         |id=${bagId.getOrElse("<unknown-bag>")}
+        |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")
   }

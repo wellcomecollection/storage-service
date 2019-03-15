@@ -22,7 +22,8 @@ case class ReplicationSummary(
       case Some(theDestination) => theDestination.completePath
     }
     f"""|src=${source.completePath}
-        |dst=${destinationCompletePath}
+        |dst=$destinationCompletePath
+        |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")
   }
