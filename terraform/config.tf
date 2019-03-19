@@ -14,18 +14,6 @@ data "aws_ssm_parameter" "bagger_working_directory" {
   name = "/storage/config/prod/bagger_working_directory"
 }
 
-data "aws_ssm_parameter" "bagger_drop_bucket_name" {
-  name = "/storage/config/prod/bagger_drop_bucket_name"
-}
-
-data "aws_ssm_parameter" "bagger_drop_bucket_name_mets_only" {
-  name = "/storage/config/prod/bagger_drop_bucket_name_mets_only"
-}
-
-data "aws_ssm_parameter" "bagger_drop_bucket_name_errors" {
-  name = "/storage/config/prod/bagger_drop_bucket_name_errors"
-}
-
 data "aws_ssm_parameter" "bagger_current_preservation_bucket" {
   name = "/storage/config/prod/bagger_current_preservation_bucket"
 }
@@ -60,9 +48,6 @@ locals {
   bagger_mets_bucket_name            = "${data.aws_ssm_parameter.bagger_mets_bucket_name.value}"
   bagger_read_mets_from_fileshare    = "${data.aws_ssm_parameter.bagger_read_mets_from_fileshare.value == "true" ? true : false}"
   bagger_working_directory           = "${data.aws_ssm_parameter.bagger_working_directory.value}"
-  bagger_drop_bucket_name            = "${data.aws_ssm_parameter.bagger_drop_bucket_name.value}"
-  bagger_drop_bucket_name_mets_only  = "${data.aws_ssm_parameter.bagger_drop_bucket_name_mets_only.value}"
-  bagger_drop_bucket_name_errors     = "${data.aws_ssm_parameter.bagger_drop_bucket_name_errors.value}"
   bagger_current_preservation_bucket = "${data.aws_ssm_parameter.bagger_current_preservation_bucket.value}"
 
   bagger_dlcs_entry         = "${data.aws_ssm_parameter.bagger_dlcs_entry.value}"

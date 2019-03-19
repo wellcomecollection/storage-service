@@ -17,9 +17,6 @@ module "critical" {
   namespace  = "${local.namespace}"
   account_id = "${local.account_id}"
 
-  service-wt-winnipeg = "${data.terraform_remote_state.infra_shared.service-wt-winnipeg}"
-  service-pl-winslow  = "${data.terraform_remote_state.infra_shared.service-pl-winslow}"
-
   archive_read_principles = [
     "${local.goobi_task_role_arn}",
     "${aws_iam_user.dds_digirati.arn}",
@@ -38,9 +35,6 @@ module "critical-staging" {
 
   namespace  = "${local.namespace}-staging"
   account_id = "${local.account_id}"
-
-  service-wt-winnipeg = "${data.terraform_remote_state.infra_shared.service-wt-winnipeg}"
-  service-pl-winslow  = "${data.terraform_remote_state.infra_shared.service-pl-winslow}"
 
   archive_read_principles = [
     "${local.goobi_task_role_arn}",

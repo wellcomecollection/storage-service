@@ -51,3 +51,6 @@ variable "domain_name" {}
 variable "cert_domain_name" {}
 
 variable "bag_unpacker_topic_arn" {}
+
+variable "desired_bags_api_count" {}
+variable "desired_ingests_api_count" {}

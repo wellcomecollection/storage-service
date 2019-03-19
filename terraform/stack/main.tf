@@ -3,8 +3,6 @@
 module "bag_unpacker" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
-
   security_group_ids = [
     "${aws_security_group.interservice.id}",
     "${aws_security_group.service_egress.id}",
@@ -14,7 +12,6 @@ module "bag_unpacker" {
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
-  vpc_id       = "${var.vpc_id}"
   service_name = "${local.bag_unpacker_service_name}"
 
   env_vars = {
@@ -44,8 +41,6 @@ module "bag_unpacker" {
 module "bag_replicator" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
-
   security_group_ids = [
     "${aws_security_group.interservice.id}",
     "${aws_security_group.service_egress.id}",
@@ -55,7 +50,6 @@ module "bag_replicator" {
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
-  vpc_id       = "${var.vpc_id}"
   service_name = "${local.bag_replicator_service_name}"
 
   env_vars = {
@@ -83,8 +77,6 @@ module "bag_replicator" {
 module "bag_verifier" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
-
   security_group_ids = [
     "${aws_security_group.interservice.id}",
     "${aws_security_group.service_egress.id}",
@@ -94,7 +86,6 @@ module "bag_verifier" {
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
-  vpc_id       = "${var.vpc_id}"
   service_name = "${local.bag_verifier_service_name}"
 
   env_vars = {
@@ -121,13 +112,11 @@ module "bag_verifier" {
 module "bag_register" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
-  cluster_name                     = "${aws_ecs_cluster.cluster.name}"
-  cluster_id                       = "${aws_ecs_cluster.cluster.id}"
-  namespace_id                     = "${aws_service_discovery_private_dns_namespace.namespace.id}"
-  subnets                          = "${var.private_subnets}"
-  vpc_id                           = "${var.vpc_id}"
-  service_name                     = "${var.namespace}-bags"
+  cluster_name = "${aws_ecs_cluster.cluster.name}"
+  cluster_id   = "${aws_ecs_cluster.cluster.id}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
+  subnets      = "${var.private_subnets}"
+  service_name = "${var.namespace}-bags"
 
   env_vars = {
     queue_url         = "${module.bag_register_input_queue.url}"
@@ -153,8 +142,6 @@ module "bag_register" {
 module "notifier" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
-
   security_group_ids = [
     "${aws_security_group.interservice.id}",
     "${aws_security_group.service_egress.id}",
@@ -164,7 +151,6 @@ module "notifier" {
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
-  vpc_id       = "${var.vpc_id}"
   service_name = "${var.namespace}-notifier"
 
   env_vars = {
@@ -185,13 +171,11 @@ module "notifier" {
 module "ingests" {
   source = "../modules/service/worker"
 
-  service_egress_security_group_id = "${aws_security_group.service_egress.id}"
-  cluster_name                     = "${aws_ecs_cluster.cluster.name}"
-  cluster_id                       = "${aws_ecs_cluster.cluster.id}"
+  cluster_name = "${aws_ecs_cluster.cluster.name}"
+  cluster_id   = "${aws_ecs_cluster.cluster.id}"
 
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
-  vpc_id       = "${var.vpc_id}"
   service_name = "${var.namespace}-ingests"
 
   env_vars = {
@@ -259,8 +243,8 @@ module "api" {
     unpacker_topic_arn            = "${module.bag_unpacker_input_topic.arn}"
     archive_ingest_table_name     = "${var.ingests_table_name}"
     archive_bag_ingest_index_name = "${var.ingests_table_ingest_index_name}"
-    metrics_namespace             = "${local.ingests_service_name}"
-    JAVA_OPTS                     = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
+    metrics_namespace             = "${local.ingests_api_service_name}"
+    JAVA_OPTS                     = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
   }
   ingests_env_vars_length        = 7
   ingests_nginx_container_image  = "${var.nginx_image}"
@@ -269,6 +253,8 @@ module "api" {
   interservice_security_group_id = "${aws_security_group.interservice.id}"
   alarm_topic_arn                = "${var.alarm_topic_arn}"
   bag_unpacker_topic_arn         = "${module.bag_unpacker_input_topic.arn}"
+  desired_bags_api_count         = "${var.desired_bags_api_count}"
+  desired_ingests_api_count      = "${var.desired_ingests_api_count}"
 }
 
 # Migration services

@@ -97,14 +97,16 @@ variable "desired_bagger_count" {
   default = 4
 }
 
+variable "desired_ec2_instances" {
+  default = 2
+}
+
+# The number of api tasks MUST be one per AZ.  This is due to the behaviour of
+# NLBs that seem to increase latency significantly if number of tasks < number of AZs.
 variable "desired_bags_api_count" {
   default = 3
 }
 
 variable "desired_ingests_api_count" {
   default = 3
-}
-
-variable "desired_ec2_instances" {
-  default = 2
 }
