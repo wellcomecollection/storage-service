@@ -20,10 +20,11 @@ class DiagnosticReporter(metricsSender: MetricsSender) extends Logging {
         metricsSender.incrementCount(metricName = "OperationSuccess")
 
       case OperationFailure(summary, e) =>
-        error(s"Failure - $requestId - ${summary.toString}", e)
+        error(
+          s"Failure - $requestId - ${e.getClass.getSimpleName} '${e.getMessage}' - ${summary.toString}",
+          e)
         metricsSender.incrementCount(metricName = "OperationFailure")
     }
-
     future.map { _ =>
       ()
     }
