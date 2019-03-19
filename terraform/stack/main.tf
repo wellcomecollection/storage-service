@@ -243,8 +243,8 @@ module "api" {
     unpacker_topic_arn            = "${module.bag_unpacker_input_topic.arn}"
     archive_ingest_table_name     = "${var.ingests_table_name}"
     archive_bag_ingest_index_name = "${var.ingests_table_ingest_index_name}"
-    metrics_namespace             = "${local.ingests_service_name}"
-    JAVA_OPTS                     = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
+    metrics_namespace             = "${local.ingests_api_service_name}"
+    JAVA_OPTS                     = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
   }
   ingests_env_vars_length        = 7
   ingests_nginx_container_image  = "${var.nginx_image}"
