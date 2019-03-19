@@ -1,10 +1,6 @@
 locals {
   namespace = "storage"
 
-  private_subnet_ids = [
-    "${data.aws_subnet.private_new.*.cidr_block}",
-  ]
-
   api_url     = "https://api.wellcomecollection.org"
   domain_name = "storage.api.wellcomecollection.org"
 

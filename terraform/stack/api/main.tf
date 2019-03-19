@@ -10,13 +10,8 @@ module "services" {
   vpc_id     = "${var.vpc_id}"
   nlb_arn    = "${module.nlb.arn}"
 
-  // The number of api tasks MUST be one per AZ
-  // This is due to the behaviour of NLBs that
-  // seem to increase latency significantly if
-  // number of tasks < number of AZs
-  desired_bags_api_count = "3"
-
-  desired_ingests_api_count = "3"
+  desired_bags_api_count    = "${var.desired_bags_api_count}"
+  desired_ingests_api_count = "${var.desired_ingests_api_count}"
 
   # Bags endpoint
 
