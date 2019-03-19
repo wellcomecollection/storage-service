@@ -6,12 +6,8 @@ import java.nio.file.Paths
 import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bagunpacker.config.models.UnpackerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  OperationFailure,
-  OperationSuccess
-}
+import uk.ac.wellcome.platform.archive.common.operation.services.{OperationFailure, OperationSuccess}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -25,8 +21,8 @@ class UnpackerTest
     with CompressFixture
     with S3 {
 
-  val unpacker = new Unpacker(
-    config = UnpackerConfig(bufferSize = 8072)
+  val unpacker = Unpacker(
+    s3Uploader = new S3Uploader()
   )
 
   it("unpacks a tgz archive") {
