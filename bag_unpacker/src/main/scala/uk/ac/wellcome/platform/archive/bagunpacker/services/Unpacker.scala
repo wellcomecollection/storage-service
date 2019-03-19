@@ -9,13 +9,17 @@ import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
-import uk.ac.wellcome.platform.archive.common.operation.services.{OperationFailure, OperationResult}
+import uk.ac.wellcome.platform.archive.common.operation.services.{
+  OperationFailure,
+  OperationResult
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3, ec: ExecutionContext) {
+case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
+                                            ec: ExecutionContext) {
 
   def unpack(
     srcLocation: ObjectLocation,
