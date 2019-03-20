@@ -33,6 +33,7 @@ class S3Uploader(implicit s3Client: AmazonS3) {
   // = 60MB ~ 100MB read limit
   // this is a generous estimate and should be sufficient,
   // also given x10 concurrent streams = 10x100MB = 1GB memory overhead which we are comfortable with.
+  // This change was tested to reproduce the error with a proxy that dropped traffic to simulate S3 network failure.
   private val MB: Int = 1024 * 1024
   private val bufferReadLimit: Int = 100 * MB
 
