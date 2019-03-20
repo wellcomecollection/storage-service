@@ -6,11 +6,9 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
-import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.{
-  UnpackerConfigBuilder,
-  UnpackerWorkerConfigBuilder
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.UnpackerWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  S3Uploader,
   Unpacker,
   UnpackerWorker
 }
@@ -40,8 +38,8 @@ object Main extends WellcomeTypesafeApp {
       ingestUpdater = OperationBuilder.buildIngestUpdater(config, "unpacking"),
       outgoing = OperationBuilder.buildOutgoingPublisher(config, "unpacking"),
       reporter = OperationBuilder.buildOperationReporter(config),
-      unpacker = new Unpacker(
-        config = UnpackerConfigBuilder.build(config)
+      unpacker = Unpacker(
+        s3Uploader = new S3Uploader()
       )
     )
   }

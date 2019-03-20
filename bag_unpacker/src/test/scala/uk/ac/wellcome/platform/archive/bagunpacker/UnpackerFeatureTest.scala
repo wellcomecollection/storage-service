@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagunpacker.services
+package uk.ac.wellcome.platform.archive.bagunpacker
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
