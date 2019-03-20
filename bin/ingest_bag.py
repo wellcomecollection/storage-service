@@ -98,7 +98,7 @@ def call_ingest_api(ingest_bucket_name, bag_path, space, ingests_endpoint, sessi
                         "status": resp.json()["status"],
                         "events": resp.json()["events"],
                         "createdDate": resp.json()["createdDate"],
-                        "lastModifiedDate": resp.json()["lastModifiedDate"]
+                        "lastModifiedDate": resp.json()["lastModifiedDate"],
                     }
                     print_result(location, trimmed_resp)
                 else:
@@ -160,7 +160,7 @@ def main():
         bag_path=bag_path,
         space=space,
         ingests_endpoint=ingests_endpoint,
-        session=api_session
+        session=api_session,
     )
 
 
