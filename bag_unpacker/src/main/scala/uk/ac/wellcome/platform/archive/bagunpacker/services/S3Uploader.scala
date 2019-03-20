@@ -17,6 +17,7 @@ class S3Uploader(implicit s3Client: AmazonS3) {
   // Set bufferReadLimit
   // To prevent 'com.amazonaws.ResetException: Failed to reset the request input stream' being thrown.
   // (see https://github.com/aws/aws-sdk-java/issues/427)
+  // (and https://github.com/wellcometrust/platform/issues/3481)
   //
   // If a transfer fails, the AWS SDK retries by rewinding the input stream to the 'mark' set in the buffer at the start.
   // The 'ReadLimit' determines how far the stream can be rewound, if it is smaller than the bytes sent before an error
@@ -30,6 +31,8 @@ class S3Uploader(implicit s3Client: AmazonS3) {
   // To prevent this exception a constant maximum size is set
   // assuming a maximum file of 600GB PUT as 10,000 multipart requests
   // = 60MB ~ 100MB read limit
+  // this is a generous estimate and should be sufficient,
+  // also given x10 concurrent streams = 10x100MB = 1GB memory overhead which we are comfortable with.
   private val MB: Int = 1024 * 1024
   private val bufferReadLimit: Int = 100 * MB
 
