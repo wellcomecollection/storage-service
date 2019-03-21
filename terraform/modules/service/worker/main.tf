@@ -22,8 +22,8 @@ module "service" {
   secret_env_vars        = {}
   secret_env_vars_length = 0
 
-  min_capacity     = "${var.min_capacity}"
-  max_capacity     = "${var.max_capacity}"
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   desired_task_count = "${var.desired_task_count}"
 
