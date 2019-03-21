@@ -6,6 +6,17 @@ resource "aws_s3_bucket" "static_content" {
 resource "aws_s3_bucket" "ingests_drop" {
   bucket = "wellcomecollection-${var.namespace}-ingests"
   acl    = "private"
+
+  # This is a temporary bucket for use as working storage/for new ingests,
+  # not a long-term storage repository.
+  lifecycle_rule = {
+    id      = "expire_objects"
+    enabled = true
+
+    expiration {
+      days = 30
+    }
+  }
 }
 
 resource "aws_s3_bucket" "access" {
