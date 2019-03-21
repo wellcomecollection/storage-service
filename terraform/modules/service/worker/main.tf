@@ -1,5 +1,5 @@
 module "service" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecs/prebuilt/scaling?ref=v19.10.0"
+  source = "git::https://github.com/wellcometrust/terraform.git//ecs/prebuilt/scaling?ref=v19.11.0"
 
   service_name    = "${var.service_name}"
   container_image = "${var.container_image}"
@@ -22,8 +22,8 @@ module "service" {
   secret_env_vars        = {}
   secret_env_vars_length = 0
 
-  min_capacity = "${var.min_capacity}"
-  max_capacity = "${var.max_capacity}"
+  min_capacity     = "${var.min_capacity}"
+  max_capacity     = "${var.max_capacity}"
 
   desired_task_count = "${var.desired_task_count}"
 
