@@ -29,7 +29,7 @@ module "bag_unpacker" {
   cpu    = 2048
   memory = 4096
 
-  min_capacity = "0"
+  min_capacity = "1"
   max_capacity = "10"
 
   container_image = "${local.bag_unpacker_image}"

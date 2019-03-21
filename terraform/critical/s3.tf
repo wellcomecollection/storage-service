@@ -6,6 +6,10 @@ resource "aws_s3_bucket" "static_content" {
 resource "aws_s3_bucket" "ingests_drop" {
   bucket = "wellcomecollection-${var.namespace}-ingests"
   acl    = "private"
+
+  expiration {
+    days = "30"
+  }
 }
 
 resource "aws_s3_bucket" "access" {
@@ -86,11 +90,19 @@ data "aws_iam_policy_document" "archive_read" {
 resource "aws_s3_bucket" "bagger_drop" {
   bucket = "wellcomecollection-${var.namespace}-bagger-drop"
   acl    = "private"
+
+  expiration {
+    days = "30"
+  }
 }
 
 resource "aws_s3_bucket" "bagger_drop_mets_only" {
   bucket = "wellcomecollection-${var.namespace}-bagger-drop-mets-only"
   acl    = "private"
+
+  expiration {
+    days = "30"
+  }
 }
 
 resource "aws_s3_bucket" "bagger_errors" {
