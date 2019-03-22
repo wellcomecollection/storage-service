@@ -1,0 +1,85 @@
+{
+  "recorded_with": "betamax/0.8.1",
+  "http_interactions": [
+    {
+      "recorded_at": "2019-03-22T15:12:27",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": ""
+        },
+        "headers": {
+          "Connection": [
+            "keep-alive"
+          ],
+          "Authorization": [
+            "<AUTH_TOKEN>"
+          ],
+          "Accept": [
+            "*/*"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ]
+        },
+        "uri": "https://api.wellcomecollection.org/storage/v1/ingests/doesnotexist",
+        "method": "GET"
+      },
+      "response": {
+        "url": "https://api.wellcomecollection.org/storage/v1/ingests/doesnotexist",
+        "body": {
+          "encoding": null,
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":405,\"description\":\"HTTP method not allowed, supported methods: POST\",\"label\":\"Method Not Allowed\",\"type\":\"Error\"}"
+        },
+        "headers": {
+          "Date": [
+            "Fri, 22 Mar 2019 15:12:27 GMT"
+          ],
+          "x-amzn-Remapped-Connection": [
+            "keep-alive"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "Content-Length": [
+            "188"
+          ],
+          "Via": [
+            "1.1 967425266468bd56bf14d0a928942c04.cloudfront.net (CloudFront)"
+          ],
+          "X-Cache": [
+            "Error from cloudfront"
+          ],
+          "X-Amz-Cf-Id": [
+            "_7K2VeCxeP5XQBo-ndHdIwhgVAnApYGdHoTuLqNK7dqcoPeRhFrRcg=="
+          ],
+          "x-amzn-Remapped-Date": [
+            "Fri, 22 Mar 2019 15:12:27 GMT"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "x-amz-apigw-id": [
+            "W8w2NEeEjoEFh7g="
+          ],
+          "x-amzn-RequestId": [
+            "e74d7c32-4cb4-11e9-a66a-e1a12ad8aac0"
+          ],
+          "Allow": [
+            "POST"
+          ],
+          "x-amzn-Remapped-Server": [
+            "nginx"
+          ]
+        },
+        "status": {
+          "message": "Method Not Allowed",
+          "code": 405
+        }
+      }
+    }
+  ]
+}

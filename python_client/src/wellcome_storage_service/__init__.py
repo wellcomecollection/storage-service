@@ -1,9 +1,28 @@
 # -*- encoding: utf-8
 
+import functools
+
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
-from .exceptions import IngestNotFound
+from .exceptions import IngestNotFound, ServerError, UserError
+
+
+def check_api_resp(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        resp = f(*args, **kwargs)
+        if resp.status_code >= 500:
+            raise ServerError("Unexpected error from storage service")
+        elif resp.status_code >= 400:
+            raise UserError(
+                "Storage service reported a user error: %s" %
+                resp.json()["description"]
+            )
+        else:
+            return resp.json()
+
+    return wrapper
 
 
 class StorageServiceClient:
@@ -26,6 +45,7 @@ class StorageServiceClient:
         )
         return StorageServiceClient(api_url=api_url, sess=sess)
 
+    @check_api_resp
     def get_ingest(self, ingest_id):
         """
         Query the state of an individual ingest.
@@ -36,4 +56,4 @@ class StorageServiceClient:
         if resp.status_code == 404:
             raise IngestNotFound("Ingests API returned 404 for ingest %s" % ingest_id)
         else:
-            return resp.json()
+            return resp

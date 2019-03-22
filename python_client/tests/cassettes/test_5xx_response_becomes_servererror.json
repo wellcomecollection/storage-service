@@ -1,0 +1,85 @@
+{
+  "recorded_with": "betamax/0.8.1",
+  "http_interactions": [
+    {
+      "recorded_at": "2019-03-22T15:12:27",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": ""
+        },
+        "headers": {
+          "Connection": [
+            "keep-alive"
+          ],
+          "Authorization": [
+            "<AUTH_TOKEN>"
+          ],
+          "Accept": [
+            "*/*"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ]
+        },
+        "uri": "https://api.wellcomecollection.org/storage/v1/ingests/trigger_server_error",
+        "method": "GET"
+      },
+      "response": {
+        "url": "https://api.wellcomecollection.org/storage/v1/ingests/trigger_server_error",
+        "body": {
+          "encoding": null,
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":500,\"label\":\"Server Error\",\"type\":\"Error\"}"
+        },
+        "headers": {
+          "Date": [
+            "Fri, 22 Mar 2019 15:12:27 GMT"
+          ],
+          "x-amzn-Remapped-Connection": [
+            "keep-alive"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "Content-Length": [
+            "117"
+          ],
+          "Via": [
+            "1.1 740280b5295c50b47179471832b5a578.cloudfront.net (CloudFront)"
+          ],
+          "X-Cache": [
+            "Error from cloudfront"
+          ],
+          "X-Amz-Cf-Id": [
+            "8JTRFzXwgxwzE_6Br0Wz_i_Zg2Yr7Y1rACuPcX1KtyWxqJOb_cfPpQ=="
+          ],
+          "x-amzn-Remapped-Date": [
+            "Fri, 22 Mar 2019 15:12:27 GMT"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "x-amz-apigw-id": [
+            "W8w2RH_HjoEFSCw="
+          ],
+          "x-amzn-RequestId": [
+            "e77ca2fc-4cb4-11e9-9b3a-efcfa9a067fe"
+          ],
+          "Allow": [
+            "POST"
+          ],
+          "x-amzn-Remapped-Server": [
+            "nginx"
+          ]
+        },
+        "status": {
+          "message": "Server Error",
+          "code": 500
+        }
+      }
+    }
+  ]
+}
