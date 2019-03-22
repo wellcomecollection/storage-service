@@ -675,7 +675,7 @@ class IngestsApiFeatureTest
   }
 
   describe("GET /progress/find-by-bag-id/:bag-id") {
-    it("returns a list of ingestes for the given bag id") {
+    it("returns a list of ingests for the given bag id") {
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
@@ -712,7 +712,7 @@ class IngestsApiFeatureTest
       }
     }
 
-    it("returns a list of ingestes for the given bag id with : separated parts") {
+    it("returns a list of ingests for the given bag id with : separated parts") {
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
@@ -748,7 +748,7 @@ class IngestsApiFeatureTest
       }
     }
 
-    it("returns 'Not Found' if there are no ingestes for the given bag id") {
+    it("returns 'Not Found' if there are no ingests for the given bag id") {
       withConfiguredApp {
         case (_, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
