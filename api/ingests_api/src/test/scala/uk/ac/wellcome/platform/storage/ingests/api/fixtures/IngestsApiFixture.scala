@@ -2,10 +2,9 @@ package uk.ac.wellcome.platform.storage.ingests.api.fixtures
 
 import java.net.URL
 
-import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.{Messaging, SNS}
+import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
@@ -16,18 +15,13 @@ import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
-import uk.ac.wellcome.storage.fixtures.{LocalDynamoDb, S3}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IngestsApiFixture
-    extends S3
-    with RandomThings
-    with LocalDynamoDb
-    with ScalaFutures
+    extends RandomThings
     with IngestTrackerFixture
     with IngestGenerators
-    with SNS
     with HttpFixtures
     with Messaging {
 
@@ -65,7 +59,7 @@ trait IngestsApiFixture
     }
 
   def withBrokenApp[R](
-    testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R = {
+    testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R =
     withLocalSnsTopic { unpackerTopic =>
       val table = Table("does-not-exist", index = "does-not-exist")
       withMockMetricsSender { metricsSender =>
@@ -79,10 +73,9 @@ trait IngestsApiFixture
         }
       }
     }
-  }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R = {
+    testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R =
     withLocalSnsTopic { unpackerTopic =>
       withIngestTrackerTable { table =>
         withMockMetricsSender { metricsSender =>
@@ -97,5 +90,4 @@ trait IngestsApiFixture
         }
       }
     }
-  }
 }
