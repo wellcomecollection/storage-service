@@ -5,3 +5,4 @@ include =
 
 [report]
 show_missing = True
+fail_under = 100

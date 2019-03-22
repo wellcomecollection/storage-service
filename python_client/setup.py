@@ -28,7 +28,9 @@ setup(
     packages=find_packages(SOURCE),
     package_dir={'': SOURCE},
     version=__version__,
-    install_requires=[],
+    install_requires=[
+        "requests_oauthlib>=1.2.0,<2",
+    ],
     description='A client for the Wellcome Storage Service',
     long_description=open(README).read(),
     author='Wellcome Trust (Digital Platform Team)',
