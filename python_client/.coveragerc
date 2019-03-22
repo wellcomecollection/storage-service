@@ -1,0 +1,7 @@
+[run]
+branch = True
+include =
+    **/.tox/*/lib/*/site-packages/wellcome_storage_service/*.py
+
+[report]
+show_missing = True
