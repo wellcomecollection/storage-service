@@ -7,8 +7,12 @@ resource "aws_s3_bucket" "ingests_drop" {
   bucket = "wellcomecollection-${var.namespace}-ingests"
   acl    = "private"
 
-  expiration {
-    days = "30"
+  lifecycle_rule {
+    expiration {
+      days = "30"
+    }
+
+    enabled = true
   }
 }
 
@@ -91,8 +95,12 @@ resource "aws_s3_bucket" "bagger_drop" {
   bucket = "wellcomecollection-${var.namespace}-bagger-drop"
   acl    = "private"
 
-  expiration {
-    days = "30"
+  lifecycle_rule {
+    expiration {
+      days = "30"
+    }
+
+    enabled = true
   }
 }
 
@@ -100,8 +108,12 @@ resource "aws_s3_bucket" "bagger_drop_mets_only" {
   bucket = "wellcomecollection-${var.namespace}-bagger-drop-mets-only"
   acl    = "private"
 
-  expiration {
-    days = "30"
+  lifecycle_rule {
+    expiration {
+      days = "30"
+    }
+
+    enabled = true
   }
 }
 
