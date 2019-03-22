@@ -14,7 +14,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
@@ -53,11 +56,12 @@ class Router(ingestTracker: IngestTracker,
             case Some(ingest) =>
               complete(ResponseDisplayIngest(ingest, contextURL))
             case None =>
-              complete(NotFound -> UserErrorResponse(
-                context = contextURL,
-                statusCode = StatusCodes.NotFound,
-                description = s"Ingest $id not found"
-              ))
+              complete(
+                NotFound -> UserErrorResponse(
+                  context = contextURL,
+                  statusCode = StatusCodes.NotFound,
+                  description = s"Ingest $id not found"
+                ))
           }
         }
       } ~ path("find-by-bag-id" / Segment) { combinedId: String =>
