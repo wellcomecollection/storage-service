@@ -65,7 +65,7 @@ module "bag_replicator" {
 
   env_vars_length = 6
 
-  min_capacity = "0"
+  min_capacity = "1"
   max_capacity = "10"
 
   container_image = "${local.bag_replicator_image}"
@@ -100,7 +100,7 @@ module "bag_verifier" {
   cpu    = 2048
   memory = 4096
 
-  min_capacity = "0"
+  min_capacity = "1"
   max_capacity = "10"
 
   container_image = "${local.bag_verifier_image}"
@@ -130,7 +130,7 @@ module "bag_register" {
 
   env_vars_length = 8
 
-  min_capacity = "0"
+  min_capacity = "1"
   max_capacity = "10"
 
   container_image = "${local.bag_register_image}"
@@ -187,7 +187,7 @@ module "ingests" {
 
   env_vars_length = 5
 
-  min_capacity = "0"
+  min_capacity = "1"
   max_capacity = "10"
 
   container_image = "${local.ingests_image}"
@@ -313,7 +313,7 @@ module "bagger" {
   cpu    = 2600
   memory = 14000
 
-  min_capacity       = "0"
+  min_capacity       = "1"
   desired_task_count = "${var.desired_bagger_count}"
   max_capacity       = "${var.desired_bagger_count}"
 
