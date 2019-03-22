@@ -160,16 +160,23 @@ class IngestsApiFeatureTest
     }
 
     it("returns a 404 NotFound if no ingest tracker matches id") {
-      withConfiguredApp {
-        case (_, _, metricsSender, baseUrl) =>
-          whenGetRequestReady(s"$baseUrl/progress/$randomUUID") { response =>
-            response.status shouldBe StatusCodes.NotFound
-            response.entity.contentType shouldBe ContentTypes.`application/json`
+      withMaterializer { implicit materializer =>
+        withConfiguredApp {
+          case (_, _, metricsSender, baseUrl) =>
+            val id = randomUUID
+            whenGetRequestReady(s"$baseUrl/progress/$id") { response =>
+              assertIsUserErrorResponse(
+                response,
+                description = s"Ingest $id not found",
+                statusCode = StatusCodes.NotFound,
+                label = "Not Found"
+              )
 
-            assertMetricSent(
-              metricsSender,
-              result = HttpMetricResults.UserError)
-          }
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.UserError)
+            }
+        }
       }
     }
 
