@@ -34,7 +34,7 @@ with betamax.Betamax.configure() as config:
 def client(request):
     ss_client = StorageServiceClient.with_oauth(
         api_url="https://api.wellcomecollection.org/storage/v1",
-        **json.load(open("oauth-credentials.json"))
+        **json.load(open("tests/oauth-credentials.json"))
     )
 
     # Store an individual cassette for each test.

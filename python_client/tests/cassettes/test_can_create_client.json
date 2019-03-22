@@ -1,66 +1,65 @@
 {
   "http_interactions": [
     {
-      "recorded_at": "2019-03-22T14:52:14",
       "response": {
         "body": {
           "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"017e60b8-9779-463f-821e-321a20f7edc4\",\"sourceLocation\":{\"provider\":{\"id\":\"aws-s3-standard\",\"type\":\"Provider\"},\"bucket\":\"temp-bagit-drop-test\",\"path\":\"b16784261.zip\",\"type\":\"Location\"},\"ingestType\":{\"id\":\"create\",\"type\":\"IngestType\"},\"space\":{\"id\":\"digitised\",\"type\":\"Space\"},\"status\":{\"id\":\"succeeded\",\"type\":\"Status\"},\"bag\":{\"id\":\"digitised/b16784261\",\"type\":\"Bag\"},\"events\":[{\"description\":\"Started work on ingest: 017e60b8-9779-463f-821e-321a20f7edc4\",\"createdDate\":\"2019-01-16T01:27:22.324180Z\",\"type\":\"IngestEvent\"},{\"description\":\"Ingest bag file downloaded successfully.\",\"createdDate\":\"2019-01-16T01:27:23.023765Z\",\"type\":\"IngestEvent\"},{\"description\":\"Bag uploaded and verified successfully\",\"createdDate\":\"2019-01-16T01:27:27.642623Z\",\"type\":\"IngestEvent\"},{\"description\":\"Bag registered successfully\",\"createdDate\":\"2019-01-16T01:27:27.983454Z\",\"type\":\"IngestEvent\"}],\"createdDate\":\"2019-01-15T13:26:46.080864Z\",\"lastModifiedDate\":\"2019-01-15T13:26:46.080864Z\",\"type\":\"Ingest\"}",
           "encoding": null
         },
+        "url": "https://api.wellcomecollection.org/storage/v1/ingests/017e60b8-9779-463f-821e-321a20f7edc4",
         "headers": {
-          "x-amzn-Remapped-Connection": [
-            "keep-alive"
-          ],
-          "Content-Length": [
-            "1056"
-          ],
-          "x-amzn-Remapped-Content-Length": [
-            "1056"
-          ],
-          "Date": [
-            "Fri, 22 Mar 2019 14:52:14 GMT"
-          ],
-          "Access-Control-Allow-Headers": [
-            "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type"
-          ],
-          "x-amzn-Remapped-Server": [
-            "nginx"
-          ],
-          "Content-Type": [
-            "application/json"
+          "Access-Control-Allow-Origin": [
+            "*"
           ],
           "Access-Control-Allow-Methods": [
             "GET, POST, OPTIONS"
           ],
-          "x-amz-apigw-id": [
-            "W8t4zGq9joEF8ig="
+          "Content-Type": [
+            "application/json"
+          ],
+          "Date": [
+            "Fri, 22 Mar 2019 15:04:44 GMT"
+          ],
+          "x-amzn-Remapped-Content-Length": [
+            "1056"
+          ],
+          "X-Amz-Cf-Id": [
+            "l4UF60q4wxATBWwfFHTCTM41y8pP7-uxXzVKsQtEMRr86pjkmgMcLQ=="
           ],
           "Access-Control-Allow-Credentials": [
             "true"
           ],
-          "Connection": [
+          "x-amzn-Remapped-Server": [
+            "nginx"
+          ],
+          "x-amzn-Remapped-Connection": [
             "keep-alive"
+          ],
+          "x-amzn-RequestId": [
+            "d3c942d8-4cb3-11e9-a6f8-912b86553ae4"
+          ],
+          "Via": [
+            "1.1 f781469e78b7a441c6f692b1629e1519.cloudfront.net (CloudFront)"
+          ],
+          "Access-Control-Allow-Headers": [
+            "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type"
           ],
           "X-Cache": [
             "Miss from cloudfront"
           ],
-          "x-amzn-RequestId": [
-            "14bea9fd-4cb2-11e9-9952-27e85e7756c6"
+          "Content-Length": [
+            "1056"
           ],
-          "Access-Control-Allow-Origin": [
-            "*"
+          "x-amz-apigw-id": [
+            "W8vt_H0oDoEFurQ="
           ],
-          "Via": [
-            "1.1 8d36edc1ce736c158ddedbd7365e2a8e.cloudfront.net (CloudFront)"
+          "Connection": [
+            "keep-alive"
           ],
           "x-amzn-Remapped-Date": [
-            "Fri, 22 Mar 2019 14:52:14 GMT"
-          ],
-          "X-Amz-Cf-Id": [
-            "WAYNZacxLtGUH6MPz27vH-YS-Eg1Li8eQn5ddpLj7Da4EW3h2OfltQ=="
+            "Fri, 22 Mar 2019 15:04:44 GMT"
           ]
         },
-        "url": "https://api.wellcomecollection.org/storage/v1/ingests/017e60b8-9779-463f-821e-321a20f7edc4",
         "status": {
           "message": "OK",
           "code": 200
@@ -75,22 +74,23 @@
           "User-Agent": [
             "python-requests/2.21.0"
           ],
-          "Accept": [
-            "*/*"
-          ],
           "Authorization": [
             "<AUTH_TOKEN>"
           ],
-          "Accept-Encoding": [
-            "gzip, deflate"
+          "Accept": [
+            "*/*"
           ],
           "Connection": [
             "keep-alive"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
           ]
         },
         "method": "GET",
         "uri": "https://api.wellcomecollection.org/storage/v1/ingests/017e60b8-9779-463f-821e-321a20f7edc4"
-      }
+      },
+      "recorded_at": "2019-03-22T15:04:44"
     }
   ],
   "recorded_with": "betamax/0.8.1"

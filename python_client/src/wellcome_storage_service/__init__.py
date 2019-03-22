@@ -3,6 +3,8 @@
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
+from .exceptions import IngestNotFound
+
 
 class StorageServiceClient:
     """
@@ -30,4 +32,8 @@ class StorageServiceClient:
         """
         ingests_api_url = self.api_url + "/ingests/%s" % ingest_id
         resp = self.sess.get(ingests_api_url)
-        return resp.json()
+
+        if resp.status_code == 404:
+            raise IngestNotFound("Ingests API returned 404 for ingest %s" % ingest_id)
+        else:
+            return resp.json()

@@ -1,0 +1,85 @@
+{
+  "http_interactions": [
+    {
+      "response": {
+        "body": {
+          "string": "\"Ingest not found!\"",
+          "encoding": null
+        },
+        "url": "https://api.wellcomecollection.org/storage/v1/ingests/1e4b384e-857b-49aa-a1cb-6c57762b0c3f",
+        "headers": {
+          "Content-Type": [
+            "application/json"
+          ],
+          "Date": [
+            "Fri, 22 Mar 2019 15:04:45 GMT"
+          ],
+          "x-amzn-Remapped-Content-Length": [
+            "19"
+          ],
+          "X-Amz-Cf-Id": [
+            "kBPDSPXPWZrls2bkYKKpVsgp7D1-rub12B_498v8W18dxlC0UYW8Rw=="
+          ],
+          "x-amzn-Remapped-Server": [
+            "nginx"
+          ],
+          "x-amzn-Remapped-Connection": [
+            "keep-alive"
+          ],
+          "x-amzn-RequestId": [
+            "d40ed6b4-4cb3-11e9-ba8e-ef4c20bf98f4"
+          ],
+          "Via": [
+            "1.1 19583e44d8ba1b736fa985d2423cf6bc.cloudfront.net (CloudFront)"
+          ],
+          "X-Cache": [
+            "Error from cloudfront"
+          ],
+          "Content-Length": [
+            "19"
+          ],
+          "x-amz-apigw-id": [
+            "W8vuEEQtDoEF6zQ="
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "x-amzn-Remapped-Date": [
+            "Fri, 22 Mar 2019 15:04:45 GMT"
+          ]
+        },
+        "status": {
+          "message": "Not Found",
+          "code": 404
+        }
+      },
+      "request": {
+        "body": {
+          "string": "",
+          "encoding": "utf-8"
+        },
+        "headers": {
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ],
+          "Authorization": [
+            "<AUTH_TOKEN>"
+          ],
+          "Accept": [
+            "*/*"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ]
+        },
+        "method": "GET",
+        "uri": "https://api.wellcomecollection.org/storage/v1/ingests/1e4b384e-857b-49aa-a1cb-6c57762b0c3f"
+      },
+      "recorded_at": "2019-03-22T15:04:45"
+    }
+  ],
+  "recorded_with": "betamax/0.8.1"
+}
