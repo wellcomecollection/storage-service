@@ -10,6 +10,11 @@ class IngestNotFound(StorageServiceException):
     pass
 
 
+class BagNotFound(StorageServiceException):
+    """Raised if you try to get a bag that doesn't exist."""
+    pass
+
+
 class ServerError(StorageServiceException):
     """Raised if we get a 5xx Server Error from the storage service."""
     pass

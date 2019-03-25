@@ -5,7 +5,7 @@ import functools
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
-from .exceptions import IngestNotFound, ServerError, UserError
+from .exceptions import BagNotFound, IngestNotFound, ServerError, UserError
 
 
 def raise_for_status(resp):
@@ -119,3 +119,18 @@ class StorageServiceClient:
         raise_for_status(resp)
 
         return resp.headers["Location"]
+
+    @check_api_resp
+    def get_bag(self, space_id, source_id):
+        """
+        Get an individual bag.
+        """
+        bags_api_url = self.api_url + "/registrar/%s/%s" % (space_id, source_id)
+        resp = self.sess.get(bags_api_url)
+
+        if resp.status_code == 404:
+            raise BagNotFound(
+                "Bags API returned 404 for bag %s/%s" % (space_id, source_id)
+            )
+        else:
+            return resp
