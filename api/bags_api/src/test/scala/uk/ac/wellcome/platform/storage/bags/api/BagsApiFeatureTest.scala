@@ -167,18 +167,25 @@ class BagsApiFeatureTest
     }
 
     it("returns a 404 NotFound if no ingest monitor matches id") {
-      withConfiguredApp {
-        case (_, metricsSender, baseUrl) =>
-          val bagId = createBagId
-          whenGetRequestReady(
-            s"$baseUrl/registrar/${bagId.space}/${bagId.externalIdentifier}") {
-            response =>
-              response.status shouldBe StatusCodes.NotFound
+      withMaterializer { implicit materializer =>
+        withConfiguredApp {
+          case (_, metricsSender, baseUrl) =>
+            val bagId = createBagId
+            whenGetRequestReady(
+              s"$baseUrl/registrar/${bagId.space}/${bagId.externalIdentifier}") {
+              response =>
+                assertIsUserErrorResponse(
+                  response,
+                  description = s"Storage manifest $bagId not found",
+                  statusCode = StatusCodes.NotFound,
+                  label = "Not Found"
+                )
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.UserError)
-          }
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.UserError)
+            }
+        }
       }
     }
 
