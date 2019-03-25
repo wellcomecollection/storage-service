@@ -46,6 +46,15 @@ class StorageServiceClient:
         return StorageServiceClient(api_url=api_url, sess=sess)
 
     @check_api_resp
+    def get_space(self, space_id):
+        """
+        Get information about a named space.
+        """
+        # This isn't implemented in the storage service yet, so we can't
+        # write a client handler for it!
+        raise NotImplementedError
+
+    @check_api_resp
     def get_ingest(self, ingest_id):
         """
         Query the state of an individual ingest.
