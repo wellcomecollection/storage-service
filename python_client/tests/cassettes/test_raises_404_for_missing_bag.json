@@ -1,0 +1,85 @@
+{
+  "recorded_with": "betamax/0.8.1",
+  "http_interactions": [
+    {
+      "response": {
+        "body": {
+          "string": "\"Storage manifest not found!\"",
+          "encoding": null
+        },
+        "headers": {
+          "X-Cache": [
+            "Error from cloudfront"
+          ],
+          "Content-Length": [
+            "29"
+          ],
+          "Via": [
+            "1.1 0932b0f7b83052f195bba4d87316beab.cloudfront.net (CloudFront)"
+          ],
+          "x-amzn-RequestId": [
+            "f4ee93ec-4fbd-11e9-bd09-5d5e4337e561"
+          ],
+          "x-amzn-Remapped-Content-Length": [
+            "29"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "x-amzn-Remapped-Server": [
+            "nginx"
+          ],
+          "x-amzn-Remapped-Connection": [
+            "keep-alive"
+          ],
+          "Date": [
+            "Tue, 26 Mar 2019 11:54:49 GMT"
+          ],
+          "X-Amz-Cf-Id": [
+            "G5lzkKsqmCBYpuF3ilueCrxRskp7fZmwYAWYKPVRak_IpJV_YG3T9g=="
+          ],
+          "x-amz-apigw-id": [
+            "XJfpYG5fDoEF6MA="
+          ],
+          "x-amzn-Remapped-Date": [
+            "Tue, 26 Mar 2019 11:54:49 GMT"
+          ],
+          "Content-Type": [
+            "application/json"
+          ]
+        },
+        "url": "https://api.wellcomecollection.org/storage/v1/bags/alex-testing/doesnotexist",
+        "status": {
+          "message": "Not Found",
+          "code": 404
+        }
+      },
+      "recorded_at": "2019-03-26T11:54:49",
+      "request": {
+        "uri": "https://api.wellcomecollection.org/storage/v1/bags/alex-testing/doesnotexist",
+        "body": {
+          "string": "",
+          "encoding": "utf-8"
+        },
+        "headers": {
+          "Authorization": [
+            "<AUTH_TOKEN>"
+          ],
+          "Accept": [
+            "*/*"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ]
+        },
+        "method": "GET"
+      }
+    }
+  ]
+}

@@ -125,7 +125,7 @@ class StorageServiceClient:
         """
         Get an individual bag.
         """
-        bags_api_url = self.api_url + "/registrar/%s/%s" % (space_id, source_id)
+        bags_api_url = self.api_url + "/bags/%s/%s" % (space_id, source_id)
         resp = self.sess.get(bags_api_url)
 
         if resp.status_code == 404:
