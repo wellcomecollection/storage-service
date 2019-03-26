@@ -79,7 +79,7 @@ module "bags" {
   auth_scopes = ["${var.auth_scopes}"]
 
   forward_port = "$${stageVariables.bags_port}"
-  forward_path = "registrar"
+  forward_path = "bags"
 }
 
 module "ingests" {
