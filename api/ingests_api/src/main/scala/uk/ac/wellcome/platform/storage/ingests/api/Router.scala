@@ -40,7 +40,7 @@ class Router(ingestTracker: IngestTracker,
   implicit val printer: Printer = Printer.noSpaces.copy(dropNullValues = true)
 
   def routes: Route =
-    pathPrefix("progress") {
+    pathPrefix("ingests") {
       post {
         entity(as[RequestDisplayIngest]) { requestDisplayIngest =>
           onSuccess(ingestStarter.initialise(requestDisplayIngest.toIngest)) {

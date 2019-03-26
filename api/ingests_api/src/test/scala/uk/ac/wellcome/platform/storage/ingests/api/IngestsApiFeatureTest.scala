@@ -34,7 +34,7 @@ class IngestsApiFeatureTest
     with JsonAssertions {
 
   val contextUrl = "http://api.wellcomecollection.org/storage/v1/context.json"
-  describe("GET /progress/:id") {
+  describe("GET /ingests/:id") {
     it("returns a ingest tracker when available") {
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
@@ -79,7 +79,7 @@ class IngestsApiFeatureTest
               }""".stripMargin
 
               whenReady(ingestTracker.initialise(ingest)) { _ =>
-                whenGetRequestReady(s"$baseUrl/progress/${ingest.id}") {
+                whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") {
                   result =>
                     result.status shouldBe StatusCodes.OK
 
@@ -141,7 +141,7 @@ class IngestsApiFeatureTest
             withIngestTracker(table) { ingestTracker =>
               val ingest = createIngestWith(callback = None)
               whenReady(ingestTracker.initialise(ingest)) { _ =>
-                whenGetRequestReady(s"$baseUrl/progress/${ingest.id}") {
+                whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") {
                   result =>
                     result.status shouldBe StatusCodes.OK
                     withStringEntity(result.entity) { jsonString =>
@@ -164,7 +164,7 @@ class IngestsApiFeatureTest
         withConfiguredApp {
           case (_, _, metricsSender, baseUrl) =>
             val id = randomUUID
-            whenGetRequestReady(s"$baseUrl/progress/$id") { response =>
+            whenGetRequestReady(s"$baseUrl/ingests/$id") { response =>
               assertIsUserErrorResponse(
                 response,
                 description = s"Ingest $id not found",
@@ -184,7 +184,7 @@ class IngestsApiFeatureTest
       withMaterializer { implicit materializer =>
         withBrokenApp {
           case (_, _, metricsSender, baseUrl) =>
-            whenGetRequestReady(s"$baseUrl/progress/$randomUUID") { response =>
+            whenGetRequestReady(s"$baseUrl/ingests/$randomUUID") { response =>
               assertIsInternalServerErrorResponse(response)
 
               assertMetricSent(
@@ -196,12 +196,12 @@ class IngestsApiFeatureTest
     }
   }
 
-  describe("POST /progress") {
+  describe("POST /ingests") {
     it("creates an ingest") {
       withConfiguredApp {
         case (table, unpackerTopic, metricsSender, baseUrl) =>
           withMaterializer { implicit mat =>
-            val url = s"$baseUrl/progress"
+            val url = s"$baseUrl/ingests"
 
             val bucketName = "bucket"
             val s3key = "key.txt"
@@ -322,7 +322,7 @@ class IngestsApiFeatureTest
         withConfiguredApp {
           case (_, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materializer =>
-              val url = s"$baseUrl/progress"
+              val url = s"$baseUrl/ingests"
 
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
@@ -360,7 +360,7 @@ class IngestsApiFeatureTest
         withConfiguredApp {
           case (_, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/progress"
+              val url = s"$baseUrl/ingests"
 
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
@@ -388,7 +388,7 @@ class IngestsApiFeatureTest
         withConfiguredApp {
           case (_, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/progress"
+              val url = s"$baseUrl/ingests"
 
               val entity = HttpEntity(
                 ContentTypes.`text/plain(UTF-8)`,
@@ -418,7 +418,7 @@ class IngestsApiFeatureTest
         withConfiguredApp {
           case (_, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/progress"
+              val url = s"$baseUrl/ingests"
 
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
@@ -453,7 +453,7 @@ class IngestsApiFeatureTest
         withConfiguredApp {
           case (_, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/progress"
+              val url = s"$baseUrl/ingests"
 
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
@@ -499,7 +499,7 @@ class IngestsApiFeatureTest
         withConfiguredApp {
           case (_, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/progress"
+              val url = s"$baseUrl/ingests"
 
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
@@ -546,7 +546,7 @@ class IngestsApiFeatureTest
         withConfiguredApp {
           case (_, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/progress"
+              val url = s"$baseUrl/ingests"
 
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
@@ -593,7 +593,7 @@ class IngestsApiFeatureTest
         withConfiguredApp {
           case (_, unpackerTopic, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/progress"
+              val url = s"$baseUrl/ingests"
 
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
@@ -668,7 +668,7 @@ class IngestsApiFeatureTest
                   |}""".stripMargin
             )
 
-            whenPostRequestReady(s"$baseUrl/progress/$randomUUID", entity) {
+            whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", entity) {
               response =>
                 assertIsInternalServerErrorResponse(response)
 
@@ -681,7 +681,7 @@ class IngestsApiFeatureTest
     }
   }
 
-  describe("GET /progress/find-by-bag-id/:bag-id") {
+  describe("GET /ingests/find-by-bag-id/:bag-id") {
     it("returns a list of ingests for the given bag id") {
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
@@ -694,7 +694,7 @@ class IngestsApiFeatureTest
                   BagIngest(bagId.toString, randomUUID, Instant.now)
                 givenTableHasItem(bagIngest, table)
 
-                whenGetRequestReady(s"$baseUrl/progress/find-by-bag-id/$bagId") {
+                whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$bagId") {
                   response =>
                     response.status shouldBe StatusCodes.OK
                     response.entity.contentType shouldBe ContentTypes.`application/json`
@@ -732,7 +732,7 @@ class IngestsApiFeatureTest
                 givenTableHasItem(bagIngest, table)
 
                 whenGetRequestReady(
-                  s"$baseUrl/progress/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}") {
+                  s"$baseUrl/ingests/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}") {
                   response =>
                     response.status shouldBe StatusCodes.OK
                     response.entity.contentType shouldBe ContentTypes.`application/json`
@@ -759,7 +759,7 @@ class IngestsApiFeatureTest
       withConfiguredApp {
         case (_, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
-            whenGetRequestReady(s"$baseUrl/progress/find-by-bag-id/$randomUUID") {
+            whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$randomUUID") {
               response =>
                 response.status shouldBe StatusCodes.NotFound
                 response.entity.contentType shouldBe ContentTypes.`application/json`

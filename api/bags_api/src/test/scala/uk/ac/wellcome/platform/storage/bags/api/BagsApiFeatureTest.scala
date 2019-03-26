@@ -41,7 +41,7 @@ class BagsApiFeatureTest
 
   import uk.ac.wellcome.json.JsonUtil._
 
-  describe("GET /registrar/:space/:id") {
+  describe("GET /bags/:space/:id") {
     it("returns a bag when available") {
       withConfiguredApp {
         case (vhs, metricsSender, baseUrl) =>
@@ -64,7 +64,7 @@ class BagsApiFeatureTest
             val future = storeSingleManifest(vhs, storageManifest)
             whenReady(future) { _ =>
               whenGetRequestReady(
-                s"$baseUrl/registrar/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
+                s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
                 response =>
                   response.status shouldBe StatusCodes.OK
                   val displayBag = getT[DisplayBag](response.entity)
@@ -145,7 +145,7 @@ class BagsApiFeatureTest
             val future = storeSingleManifest(vhs, storageManifest)
             whenReady(future) { _ =>
               whenGetRequestReady(
-                s"$baseUrl/registrar/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
+                s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
                 response =>
                   response.status shouldBe StatusCodes.OK
 
@@ -172,7 +172,7 @@ class BagsApiFeatureTest
           case (_, metricsSender, baseUrl) =>
             val bagId = createBagId
             whenGetRequestReady(
-              s"$baseUrl/registrar/${bagId.space}/${bagId.externalIdentifier}") {
+              s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
               response =>
                 assertIsUserErrorResponse(
                   response,
@@ -195,7 +195,7 @@ class BagsApiFeatureTest
           case (_, metricsSender, baseUrl) =>
             val bagId = createBagId
             whenGetRequestReady(
-              s"$baseUrl/registrar/${bagId.space}/${bagId.externalIdentifier}") {
+              s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
               response =>
                 assertIsInternalServerErrorResponse(response)
 

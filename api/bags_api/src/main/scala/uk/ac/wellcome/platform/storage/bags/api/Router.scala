@@ -26,7 +26,7 @@ class Router(vhs: StorageManifestVHS, contextURL: URL)(
     import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
     implicit val printer: Printer = Printer.noSpaces.copy(dropNullValues = true)
 
-    pathPrefix("registrar") {
+    pathPrefix("bags") {
       path(Segment / Segment) { (space, externalIdentifier) =>
         val bagId = BagId(
           space = StorageSpace(space),
