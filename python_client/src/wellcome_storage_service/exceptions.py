@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+
 class StorageServiceException(Exception):
     """Base class for all storage service exceptions."""
     pass
