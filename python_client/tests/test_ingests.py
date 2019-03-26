@@ -32,9 +32,7 @@ def test_5xx_response_becomes_servererror(client):
 
 def test_can_create_ingest(client):
     location = client.create_s3_ingest(
-        space_id="digitised",
-        s3_bucket="testing-bucket",
-        s3_key="bagit.zip"
+        space_id="digitised", s3_bucket="testing-bucket", s3_key="bagit.zip"
     )
 
     assert location.endswith("/ingests/fb1e3805-810d-4822-8eeb-e1d45a357a6b")
@@ -52,7 +50,7 @@ def test_can_create_ingest_with_callback(client):
         space_id="digitised",
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
-        callback_url="https://example.org/callback/bagit.zip"
+        callback_url="https://example.org/callback/bagit.zip",
     )
 
     resp = client.get_ingest_from_location(location)

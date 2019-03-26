@@ -16,8 +16,7 @@ def check_api_resp(f):
             raise ServerError("Unexpected error from storage service")
         elif resp.status_code >= 400:
             raise UserError(
-                "Storage service reported a user error: %s" %
-                resp.json()["description"]
+                "Storage service reported a user error: %s" % resp.json()["description"]
             )
         else:
             return resp.json()
@@ -39,9 +38,7 @@ class StorageServiceClient:
         client = BackendApplicationClient(client_id=client_id)
         sess = OAuth2Session(client=client)
         sess.fetch_token(
-            token_url=token_url,
-            client_id=client_id,
-            client_secret=client_secret
+            token_url=token_url, client_id=client_id, client_secret=client_secret
         )
         return StorageServiceClient(api_url=api_url, sess=sess)
 

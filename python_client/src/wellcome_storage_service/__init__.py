@@ -13,8 +13,7 @@ def raise_for_status(resp):
         raise ServerError("Unexpected error from storage service")
     elif resp.status_code >= 400:
         raise UserError(
-            "Storage service reported a user error: %s" %
-            resp.json()["description"]
+            "Storage service reported a user error: %s" % resp.json()["description"]
         )
 
 
@@ -42,9 +41,7 @@ class StorageServiceClient:
         client = BackendApplicationClient(client_id=client_id)
         sess = OAuth2Session(client=client)
         sess.fetch_token(
-            token_url=token_url,
-            client_id=client_id,
-            client_secret=client_secret
+            token_url=token_url, client_id=client_id, client_secret=client_secret
         )
         return StorageServiceClient(api_url=api_url, sess=sess)
 
@@ -88,30 +85,18 @@ class StorageServiceClient:
         """
         payload = {
             "type": "Ingest",
-            "ingestType": {
-                "id": "create",
-                "type": "IngestType"
-            },
-            "space": {
-                "id": space_id,
-                "type": "Space"
-            },
+            "ingestType": {"id": "create", "type": "IngestType"},
+            "space": {"id": space_id, "type": "Space"},
             "sourceLocation": {
                 "type": "Location",
-                "provider": {
-                    "type": "Provider",
-                    "id": "aws-s3-standard"
-                },
+                "provider": {"type": "Provider", "id": "aws-s3-standard"},
                 "bucket": s3_bucket,
-                "path": s3_key
-            }
+                "path": s3_key,
+            },
         }
 
         if callback_url is not None:
-            payload["callback"] = {
-                "type": "Callback",
-                "url": callback_url
-            }
+            payload["callback"] = {"type": "Callback", "url": callback_url}
 
         ingests_api_url = self.api_url + "/ingests"
         resp = self.sess.post(ingests_api_url, json=payload)
