@@ -3,6 +3,7 @@ ACCOUNT_ID = 975596993436
 include makefiles/functions.Makefile
 include makefiles/formatting.Makefile
 include api/Makefile
+include python_client/Makefile
 
 PROJECT_ID = storage
 
