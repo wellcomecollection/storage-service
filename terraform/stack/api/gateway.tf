@@ -95,7 +95,7 @@ module "ingests" {
   auth_scopes = ["${var.auth_scopes}"]
 
   forward_port = "$${stageVariables.ingests_port}"
-  forward_path = "progress"
+  forward_path = "ingests"
 }
 
 # Link
