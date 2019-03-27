@@ -49,7 +49,7 @@ class StorageServiceClient:
     def __init__(self, api_url, client_id, client_secret, token_url):
         self.api_url = api_url
         self.client_id = client_id
-        self.client_secret = client_secret,
+        self.client_secret = client_secret
         self.token_url = token_url
 
         client = BackendApplicationClient(client_id=client_id)
