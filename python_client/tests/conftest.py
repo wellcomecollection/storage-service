@@ -1,6 +1,7 @@
 # -*- encoding: utf-8
 
 import json
+import os
 
 import betamax
 from betamax.cassette import cassette
@@ -37,9 +38,18 @@ with betamax.Betamax.configure() as config:
 
 @pytest.fixture
 def client(request):
+    client_id = os.environ.get("CLIENT_ID", "test_client_id")
+    client_secret = os.environ.get("CLIENT_SECRET", "test_client_secret")
+    token_url = "https://auth.wellcomecollection.org/oauth2/token"
+
+    config.define_cassette_placeholder("<CLIENT_ID>", client_id)
+    config.define_cassette_placeholder("<CLIENT_SECRET>", client_secret)
+
     ss_client = StorageServiceClient(
         api_url="https://api.wellcomecollection.org/storage/v1",
-        **json.load(open("tests/oauth-credentials.json"))
+        client_id=client_id,
+        client_secret=client_secret,
+        token_url=token_url
     )
 
     # Store an individual cassette for each test.
