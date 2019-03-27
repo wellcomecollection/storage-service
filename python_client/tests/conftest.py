@@ -13,16 +13,21 @@ from wellcome_storage_service import StorageServiceClient
 # based on an example from the Betamax docs:
 # https://betamax.readthedocs.io/en/latest/configuring.html#filtering-sensitive-data
 def sanitize_token(interaction, current_cassette):
-    headers = interaction.data["request"]["headers"]
-
-    try:
-        token = headers["Authorization"]
-    except KeyError:
-        pass
-
+    req_headers = interaction.data["request"]["headers"]
+    token = req_headers["Authorization"]
     current_cassette.placeholders.append(
         cassette.Placeholder(placeholder="<AUTH_TOKEN>", replace=token[0])
     )
+
+    resp_body = interaction.data["response"]["body"]["string"]
+    try:
+        access_token = json.loads(resp_body)["access_token"]
+        current_cassette.placeholders.append(
+            cassette.Placeholder(placeholder="<ACCESS_TOKEN>", replace=access_token)
+        )
+    except KeyError:
+        pass
+
 
 
 with betamax.Betamax.configure() as config:
