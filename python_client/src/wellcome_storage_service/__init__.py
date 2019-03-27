@@ -34,7 +34,7 @@ def needs_token(f):
             self.sess.fetch_token(
                 token_url=self.token_url,
                 client_id=self.client_id,
-                client_secret=self.client_secret
+                client_secret=self.client_secret,
             )
         return f(self, *args, **kwargs)
 

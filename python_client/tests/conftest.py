@@ -30,7 +30,6 @@ def sanitize_token(interaction, current_cassette):
         pass
 
 
-
 with betamax.Betamax.configure() as config:
     config.cassette_library_dir = "tests/cassettes"
     config.before_record(callback=sanitize_token)
@@ -49,7 +48,7 @@ def client(request):
         api_url="https://api.wellcomecollection.org/storage/v1",
         client_id=client_id,
         client_secret=client_secret,
-        token_url=token_url
+        token_url=token_url,
     )
 
     # Store an individual cassette for each test.
