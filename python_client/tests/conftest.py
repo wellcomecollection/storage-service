@@ -37,7 +37,7 @@ with betamax.Betamax.configure() as config:
 
 @pytest.fixture
 def client(request):
-    ss_client = StorageServiceClient.with_oauth(
+    ss_client = StorageServiceClient(
         api_url="https://api.wellcomecollection.org/storage/v1",
         **json.load(open("tests/oauth-credentials.json"))
     )

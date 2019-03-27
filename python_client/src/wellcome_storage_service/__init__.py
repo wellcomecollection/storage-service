@@ -46,19 +46,14 @@ class StorageServiceClient:
     Client for the Wellcome Storage Service API.
     """
 
-    def __init__(self, api_url, sess):
+    def __init__(self, api_url, client_id, client_secret, token_url):
         self.api_url = api_url
-        self.sess = sess
+        self.client_id = client_id
+        self.client_secret = client_secret,
+        self.token_url = token_url
 
-    @classmethod
-    def with_oauth(self, api_url, client_id, token_url, client_secret):
         client = BackendApplicationClient(client_id=client_id)
-        sess = OAuth2Session(client=client)
-        c = StorageServiceClient(api_url=api_url, sess=sess)
-        c.token_url = token_url
-        c.client_id = client_id
-        c.client_secret = client_secret
-        return c
+        self.sess = OAuth2Session(client=client)
 
     @needs_token
     @check_api_resp
