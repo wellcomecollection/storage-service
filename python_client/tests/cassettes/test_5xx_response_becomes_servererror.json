@@ -105,7 +105,7 @@
       "recorded_at": "2019-03-27T14:37:33",
       "response": {
         "body": {
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":405,\"description\":\"HTTP method not allowed, supported methods: POST\",\"label\":\"Method Not Allowed\",\"type\":\"Error\"}",
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":500,\"label\":\"Server Error\",\"type\":\"Error\"}",
           "encoding": null
         },
         "headers": {
@@ -151,8 +151,8 @@
         },
         "url": "https://api.wellcomecollection.org/storage/v1/ingests/trigger_server_error",
         "status": {
-          "message": "Method Not Allowed",
-          "code": 405
+          "message": "Server Error",
+          "code": 500
         }
       },
       "request": {

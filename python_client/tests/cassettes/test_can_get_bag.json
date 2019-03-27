@@ -1,15 +1,48 @@
 {
+  "recorded_with": "betamax/0.8.1",
   "http_interactions": [
     {
-      "recorded_at": "2019-03-27T14:37:31",
       "response": {
         "body": {
           "string": "{\"access_token\":\"<ACCESS_TOKEN>\",\"expires_in\":3600,\"token_type\":\"Bearer\"}",
           "encoding": "UTF-8"
         },
         "headers": {
-          "x-amz-cognito-request-id": [
-            "3e5343ab-579f-4a37-be6f-d1c6bab708f2"
+          "X-Cache": [
+            "Miss from cloudfront"
+          ],
+          "X-Amz-Cf-Id": [
+            "Sw0vQLzvLZ2SZ3p-cs3LpXXn5FJfmL8JbvbfK4im3VJ-xMJcaD8OFA=="
+          ],
+          "Set-Cookie": [
+            "XSRF-TOKEN=f90561f9-b1fb-488a-a07f-cc640545b89b; Path=/; Secure; HttpOnly"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-XSS-Protection": [
+            "1; mode=block"
+          ],
+          "X-Application-Context": [
+            "application:prod:8443"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000 ; includeSubDomains"
+          ],
+          "Transfer-Encoding": [
+            "chunked"
+          ],
+          "Server": [
+            "Server"
+          ],
+          "Via": [
+            "1.1 37f5076aed3c638f4365df8e8944f881.cloudfront.net (CloudFront)"
+          ],
+          "Date": [
+            "Wed, 27 Mar 2019 14:41:55 GMT"
+          ],
+          "Content-Type": [
+            "application/json;charset=UTF-8"
           ],
           "Cache-Control": [
             "no-cache, no-store, max-age=0, must-revalidate"
@@ -17,50 +50,17 @@
           "Pragma": [
             "no-cache"
           ],
-          "Expires": [
-            "0"
-          ],
-          "X-XSS-Protection": [
-            "1; mode=block"
+          "x-amz-cognito-request-id": [
+            "cbbcfb79-bf17-4ed3-afc7-a6aed7b5fb55"
           ],
           "Connection": [
             "keep-alive"
           ],
-          "X-Content-Type-Options": [
-            "nosniff"
-          ],
-          "Transfer-Encoding": [
-            "chunked"
-          ],
-          "Via": [
-            "1.1 c297fc1c701a784a294131e9afa72b23.cloudfront.net (CloudFront)"
+          "Expires": [
+            "0"
           ],
           "X-Frame-Options": [
             "DENY"
-          ],
-          "Set-Cookie": [
-            "XSRF-TOKEN=63621450-e7a7-4b4a-a7f8-b8165cbc6bd4; Path=/; Secure; HttpOnly"
-          ],
-          "Content-Type": [
-            "application/json;charset=UTF-8"
-          ],
-          "Date": [
-            "Wed, 27 Mar 2019 14:37:31 GMT"
-          ],
-          "X-Amz-Cf-Id": [
-            "qWhPEXRBGmUei39GtmxITJ17px8SNaSABJ9eAYCPDWkF2kQTrN3uOg=="
-          ],
-          "Strict-Transport-Security": [
-            "max-age=31536000 ; includeSubDomains"
-          ],
-          "Server": [
-            "Server"
-          ],
-          "X-Cache": [
-            "Miss from cloudfront"
-          ],
-          "X-Application-Context": [
-            "application:prod:8443"
           ]
         },
         "url": "https://auth.wellcomecollection.org/oauth2/token",
@@ -69,118 +69,130 @@
           "code": 200
         }
       },
+      "recorded_at": "2019-03-27T14:41:55",
       "request": {
         "body": {
           "string": "grant_type=client_credentials",
           "encoding": "utf-8"
         },
         "headers": {
-          "User-Agent": [
-            "python-requests/2.21.0"
-          ],
           "Content-Length": [
             "29"
-          ],
-          "Accept": [
-            "application/json"
-          ],
-          "Connection": [
-            "keep-alive"
           ],
           "Authorization": [
             "<AUTH_TOKEN>"
           ],
-          "Content-Type": [
-            "application/x-www-form-urlencoded;charset=UTF-8"
+          "Accept": [
+            "application/json"
           ],
           "Accept-Encoding": [
             "gzip, deflate"
-          ]
-        },
-        "method": "POST",
-        "uri": "https://auth.wellcomecollection.org/oauth2/token"
-      }
-    },
-    {
-      "recorded_at": "2019-03-27T14:37:31",
-      "response": {
-        "body": {
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":404,\"description\":\"Storage manifest alex-testing/b12345 not found\",\"label\":\"Not Found\",\"type\":\"Error\"}",
-          "encoding": null
-        },
-        "headers": {
-          "X-Cache": [
-            "Error from cloudfront"
           ],
-          "Content-Length": [
-            "177"
+          "User-Agent": [
+            "python-requests/2.21.0"
           ],
-          "x-amzn-Remapped-Date": [
-            "Wed, 27 Mar 2019 14:37:31 GMT"
+          "Content-Type": [
+            "application/x-www-form-urlencoded;charset=UTF-8"
           ],
           "Connection": [
             "keep-alive"
+          ]
+        },
+        "uri": "https://auth.wellcomecollection.org/oauth2/token",
+        "method": "POST"
+      }
+    },
+    {
+      "response": {
+        "body": {
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"alex-testing/b12345\",\"space\":{\"id\":\"alex-testing\",\"type\":\"Space\"},\"info\":{\"externalIdentifier\":\"b12345\",\"payloadOxum\":\"35261.3\",\"baggingDate\":\"2013-03-27\",\"type\":\"BagInfo\"},\"manifest\":{\"checksumAlgorithm\":\"sha256\",\"files\":[{\"checksum\":\"217b51a35163c3c93de301487f4618c14255cdae6324f5af92463a40ff978094\",\"path\":\"data/bagTest/README\",\"type\":\"File\"},{\"checksum\":\"91b65277959ec273763d28ef002e83a6b3fba57c7a35436c9e5b66536333d720\",\"path\":\"data/bagTest/LICENSE\",\"type\":\"File\"},{\"checksum\":\"fafff19b504e660b6ee3261be2c747a9efb36f172efc2ff1a0496224dc15732c\",\"path\":\"data/bagTest/TRADEMARK\",\"type\":\"File\"}],\"type\":\"BagManifest\"},\"tagManifest\":{\"checksumAlgorithm\":\"sha256\",\"files\":[],\"type\":\"BagManifest\"},\"accessLocation\":{\"provider\":{\"id\":\"aws-s3-ia\",\"type\":\"Provider\"},\"bucket\":\"wellcomecollection-storage-staging-access\",\"path\":\"alex-testing/b12345\",\"type\":\"Location\"},\"archiveLocations\":[],\"createdDate\":\"2019-03-26T11:50:53.193124Z\",\"type\":\"Bag\"}",
+          "encoding": null
+        },
+        "headers": {
+          "Content-Length": [
+            "1016"
+          ],
+          "X-Cache": [
+            "Miss from cloudfront"
+          ],
+          "x-amzn-RequestId": [
+            "781d1f3f-509e-11e9-8246-9f604fc1c0b6"
+          ],
+          "x-amz-apigw-id": [
+            "XNLEJHgAjoEFruw="
           ],
           "x-amzn-Remapped-Connection": [
             "keep-alive"
           ],
+          "Access-Control-Allow-Headers": [
+            "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type"
+          ],
           "x-amzn-Remapped-Server": [
             "nginx"
           ],
-          "Via": [
-            "1.1 5888b5d9247925eeec6b1cf1ebf8aa8d.cloudfront.net (CloudFront)"
+          "x-amzn-Remapped-Content-Length": [
+            "1016"
           ],
-          "x-amzn-RequestId": [
-            "da7021df-509d-11e9-840c-edc9bbfd4196"
+          "x-amzn-Remapped-Date": [
+            "Wed, 27 Mar 2019 14:41:57 GMT"
+          ],
+          "Access-Control-Allow-Origin": [
+            "*"
+          ],
+          "Date": [
+            "Wed, 27 Mar 2019 14:41:57 GMT"
+          ],
+          "X-Amz-Cf-Id": [
+            "598g1JJTzd8Clk9HCpqXPCofxh7r6Q_462dxIMdcSEhlaa0e7qOVAA=="
+          ],
+          "Access-Control-Allow-Credentials": [
+            "true"
           ],
           "Content-Type": [
             "application/json"
           ],
-          "x-amz-apigw-id": [
-            "XNKa0HOPjoEF5_A="
+          "Access-Control-Allow-Methods": [
+            "GET, POST, OPTIONS"
           ],
-          "x-amzn-Remapped-Content-Length": [
-            "177"
+          "Via": [
+            "1.1 bad4c5c93bbbcff151219f57e6a9b2b5.cloudfront.net (CloudFront)"
           ],
-          "Date": [
-            "Wed, 27 Mar 2019 14:37:31 GMT"
-          ],
-          "X-Amz-Cf-Id": [
-            "eKfEWVdeE9yYNpgLn1y-GKqfm6P_4u-Z6VMXlG9Amg3OQabqazN2DQ=="
+          "Connection": [
+            "keep-alive"
           ]
         },
         "url": "https://api.wellcomecollection.org/storage/v1/bags/alex-testing/b12345",
         "status": {
-          "message": "Not Found",
-          "code": 404
+          "message": "OK",
+          "code": 200
         }
       },
+      "recorded_at": "2019-03-27T14:41:57",
       "request": {
         "body": {
           "string": "",
           "encoding": "utf-8"
         },
         "headers": {
-          "User-Agent": [
-            "python-requests/2.21.0"
+          "Authorization": [
+            "Bearer <ACCESS_TOKEN>"
           ],
           "Accept": [
             "*/*"
-          ],
-          "Authorization": [
-            "Bearer <ACCESS_TOKEN>"
           ],
           "Accept-Encoding": [
             "gzip, deflate"
           ],
           "Connection": [
             "keep-alive"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
           ]
         },
-        "method": "GET",
-        "uri": "https://api.wellcomecollection.org/storage/v1/bags/alex-testing/b12345"
+        "uri": "https://api.wellcomecollection.org/storage/v1/bags/alex-testing/b12345",
+        "method": "GET"
       }
     }
-  ],
-  "recorded_with": "betamax/0.8.1"
+  ]
 }

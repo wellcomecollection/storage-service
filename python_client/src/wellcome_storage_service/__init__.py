@@ -27,6 +27,20 @@ def check_api_resp(f):
     return wrapper
 
 
+def needs_token(f):
+    @functools.wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if not self.sess.token:
+            self.sess.fetch_token(
+                token_url=self.token_url,
+                client_id=self.client_id,
+                client_secret=self.client_secret
+            )
+        return f(self, *args, **kwargs)
+
+    return wrapper
+
+
 class StorageServiceClient:
     """
     Client for the Wellcome Storage Service API.
@@ -40,11 +54,13 @@ class StorageServiceClient:
     def with_oauth(self, api_url, client_id, token_url, client_secret):
         client = BackendApplicationClient(client_id=client_id)
         sess = OAuth2Session(client=client)
-        sess.fetch_token(
-            token_url=token_url, client_id=client_id, client_secret=client_secret
-        )
-        return StorageServiceClient(api_url=api_url, sess=sess)
+        c = StorageServiceClient(api_url=api_url, sess=sess)
+        c.token_url = token_url
+        c.client_id = client_id
+        c.client_secret = client_secret
+        return c
 
+    @needs_token
     @check_api_resp
     def get_space(self, space_id):
         """
@@ -54,6 +70,7 @@ class StorageServiceClient:
         # write a client handler for it!
         raise NotImplementedError
 
+    @needs_token
     @check_api_resp
     def get_ingest(self, ingest_id):
         """
@@ -67,6 +84,7 @@ class StorageServiceClient:
         else:
             return resp
 
+    @needs_token
     def get_ingest_from_location(self, ingest_url):
         """
         Given a URL of the form /ingests/{ingest_id}, query the state of
@@ -76,6 +94,7 @@ class StorageServiceClient:
         assert parts[-2] == "ingests", "Is %s an ingest URL?" % ingest_url
         return self.get_ingest(ingest_id=parts[-1])
 
+    @needs_token
     def create_s3_ingest(self, space_id, s3_bucket, s3_key, callback_url=None):
         """
         Create an ingest from an object in an S3 bucket.
@@ -105,6 +124,7 @@ class StorageServiceClient:
 
         return resp.headers["Location"]
 
+    @needs_token
     @check_api_resp
     def get_bag(self, space_id, source_id):
         """
