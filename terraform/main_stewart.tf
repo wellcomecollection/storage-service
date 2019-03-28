@@ -77,4 +77,6 @@ module "stack-stewart" {
   workflow_bucket_name = "${local.workflow_bucket_name}"
 
   ingest_drop_bucket_name = "${module.critical.ingest_drop_bucket_name}"
+
+  archivematica_ingests_bucket = "${local.archivematica_ingests_bucket}"
 }

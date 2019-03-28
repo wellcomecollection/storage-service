@@ -110,3 +110,5 @@ variable "desired_bags_api_count" {
 variable "desired_ingests_api_count" {
   default = 3
 }
+
+variable "archivematica_ingests_bucket" {}
