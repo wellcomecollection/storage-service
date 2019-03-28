@@ -17,8 +17,7 @@ case class DisplayBag(
   info: DisplayBagInfo,
   manifest: DisplayBagManifest,
   tagManifest: DisplayBagManifest,
-  accessLocation: DisplayLocation,
-  archiveLocations: List[DisplayLocation],
+  locations: List[DisplayLocation],
   createdDate: String,
   @JsonKey("type")
   ontologyType: String = "Bag"
@@ -27,14 +26,13 @@ case class DisplayBag(
 object DisplayBag {
   def apply(storageManifest: StorageManifest, contextUrl: URL): DisplayBag =
     DisplayBag(
-      contextUrl.toString,
-      storageManifest.id.toString,
-      DisplayStorageSpace(storageManifest.space.underlying),
-      DisplayBagInfo(storageManifest.info),
-      DisplayBagManifest(storageManifest.manifest),
-      DisplayBagManifest(storageManifest.tagManifest),
-      DisplayLocation(storageManifest.accessLocation),
-      storageManifest.archiveLocations.map(DisplayLocation(_)),
-      storageManifest.createdDate.toString
+      context = contextUrl.toString,
+      id = storageManifest.id.toString,
+      space = DisplayStorageSpace(storageManifest.space.underlying),
+      info = DisplayBagInfo(storageManifest.info),
+      manifest = DisplayBagManifest(storageManifest.manifest),
+      tagManifest = DisplayBagManifest(storageManifest.tagManifest),
+      locations = (storageManifest.accessLocation +: storageManifest.archiveLocations).map { DisplayLocation(_) },
+      createdDate = storageManifest.createdDate.toString
     )
 }
