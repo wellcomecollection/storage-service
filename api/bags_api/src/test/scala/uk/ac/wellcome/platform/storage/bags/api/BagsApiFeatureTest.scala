@@ -50,9 +50,8 @@ class BagsApiFeatureTest
                  |  "info": ${bagInfo(storageManifest.info)},
                  |  "manifest": ${manifest(storageManifest.manifest)},
                  |  "tagManifest": ${manifest(storageManifest.tagManifest)},
-                 |  "accessLocation": ${location(storageManifest.accessLocation)},
-                 |  "archiveLocations": [
-                 |    ${asList(storageManifest.archiveLocations, location) }
+                 |  "locations": [
+                 |    ${asList(storageManifest.accessLocation +: storageManifest.archiveLocations, location)}
                  |  ],
                  |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(storageManifest.createdDate)}",
                  |  "type": "Bag"
