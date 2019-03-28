@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, Ope
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagUnpackerFixtures
@@ -25,9 +26,8 @@ trait BagUnpackerFixtures
     with MetricsFixtures
     with OperationFixtures {
 
-  def withFakeMonitoringClient[R]()(testWith: TestWith[FakeMonitoringClient, R]): R = {
-    val client = new FakeMonitoringClient()
-    testWith(client)
+  def withFakeMonitoringClient[R]()(testWith: TestWith[FakeMonitoringClient, R])(implicit executionContext: ExecutionContext): R = {
+    testWith(new FakeMonitoringClient()(executionContext))
   }
 
   def withBagUnpackerWorker[R](
