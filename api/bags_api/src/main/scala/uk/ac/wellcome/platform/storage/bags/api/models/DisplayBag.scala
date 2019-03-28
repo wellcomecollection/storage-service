@@ -32,7 +32,7 @@ object DisplayBag {
       info = DisplayBagInfo(storageManifest.info),
       manifest = DisplayBagManifest(storageManifest.manifest),
       tagManifest = DisplayBagManifest(storageManifest.tagManifest),
-      locations = (storageManifest.accessLocation +: storageManifest.archiveLocations).map { DisplayLocation(_) },
+      locations = (storageManifest.locations).map { DisplayLocation(_) },
       createdDate = storageManifest.createdDate.toString
     )
 }

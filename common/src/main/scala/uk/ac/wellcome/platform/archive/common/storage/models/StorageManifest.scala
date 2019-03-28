@@ -23,6 +23,9 @@ case class StorageManifest(
   createdDate: Instant
 ) {
   val id = BagId(space, info.externalIdentifier)
+
+  def locations: List[StorageLocation] =
+    accessLocation +: archiveLocations
 }
 
 case class FileManifest(
