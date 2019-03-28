@@ -21,14 +21,14 @@ data "aws_iam_policy_document" "archivematica_ingests_bucket_policy" {
       "s3:Get*",
     ]
 
-     resources = [
-       "arn:aws:s3:::${local.archivematica_ingests_bucket}/*",
+    resources = [
+      "arn:aws:s3:::${local.archivematica_ingests_bucket}/*",
     ]
 
-     principals {
+    principals {
       type = "AWS"
 
-       identifiers = [
+      identifiers = [
         "${data.aws_iam_role.colbert_bag_unpacker_task_role.arn}",
         "${data.aws_iam_role.stewart_bag_unpacker_task_role.arn}",
       ]

@@ -118,8 +118,8 @@ data "aws_iam_policy_document" "archivematica_ingests_get" {
       "s3:Get*",
     ]
 
-     resources = [
-       "arn:aws:s3:::${var.archivematica_ingests_bucket}/*",
+    resources = [
+      "arn:aws:s3:::${var.archivematica_ingests_bucket}/*",
     ]
   }
 }
