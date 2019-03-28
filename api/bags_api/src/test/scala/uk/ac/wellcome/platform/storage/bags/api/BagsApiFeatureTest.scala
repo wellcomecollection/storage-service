@@ -56,13 +56,15 @@ class BagsApiFeatureTest
                  |  "locations": [
                  |    ${asList(storageManifest.locations, location)}
                  |  ],
-                 |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(storageManifest.createdDate)}",
+                 |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                   storageManifest.createdDate)}",
                  |  "type": "Bag"
                  |}
                """.stripMargin
 
             val future = storeSingleManifest(vhs, storageManifest)
-            val url = s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
+            val url =
+              s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
             whenReady(future) { _ =>
               whenGetRequestReady(url) { response =>
                 response.status shouldBe StatusCodes.OK

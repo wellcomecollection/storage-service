@@ -46,43 +46,42 @@ class BagRegisterWorkerTest
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) {
-          location =>
-            val bagRequest =
-              createBagRequestWith(location)
+        withBag(bucket, bagInfo = bagInfo) { location =>
+          val bagRequest =
+            createBagRequestWith(location)
 
-            val bagId = BagId(
-              space = location.storageSpace,
-              externalIdentifier = bagInfo.externalIdentifier
+          val bagId = BagId(
+            space = location.storageSpace,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
+
+          val future = service.processMessage(bagRequest)
+
+          whenReady(future) { _ =>
+            val storageManifest = getStorageManifest(table, id = bagId)
+
+            storageManifest.space shouldBe bagId.space
+            storageManifest.info shouldBe bagInfo
+            storageManifest.manifest.files should have size 1
+
+            storageManifest.locations shouldBe List(
+              StorageLocation(
+                provider = InfrequentAccessStorageProvider,
+                location = location.objectLocation
+              )
             )
 
-            val future = service.processMessage(bagRequest)
+            storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-            whenReady(future) { _ =>
-              val storageManifest = getStorageManifest(table, id = bagId)
-
-              storageManifest.space shouldBe bagId.space
-              storageManifest.info shouldBe bagInfo
-              storageManifest.manifest.files should have size 1
-
-              storageManifest.locations shouldBe List(
-                StorageLocation(
-                  provider = InfrequentAccessStorageProvider,
-                  location = location.objectLocation
-                )
-              )
-
-              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
-
-              topicReceivesIngestStatus(
-                requestId = bagRequest.requestId,
-                ingestTopic = ingestTopic,
-                status = Ingest.Completed,
-                expectedBag = Some(bagId)) { events =>
-                events.size should be >= 1
-                events.head.description shouldBe "Register succeeded (completed)"
-              }
+            topicReceivesIngestStatus(
+              requestId = bagRequest.requestId,
+              ingestTopic = ingestTopic,
+              status = Ingest.Completed,
+              expectedBag = Some(bagId)) { events =>
+              events.size should be >= 1
+              events.head.description shouldBe "Register succeeded (completed)"
             }
+          }
         }
       }
     }

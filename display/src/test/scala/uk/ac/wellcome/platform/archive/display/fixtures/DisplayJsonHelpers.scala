@@ -19,12 +19,25 @@ trait DisplayJsonHelpers {
     s"""
        |{
        |  "externalIdentifier": "${info.externalIdentifier}",
-       |  ${optionalField("externalDescription", stringField, info.externalDescription)}
-       |  ${optionalField("internalSenderIdentifier", stringField, info.internalSenderIdentifier)}
-       |  ${optionalField("internalSenderDescription", stringField, info.internalSenderDescription)}
-       |  ${optionalField("sourceOrganization", stringField, info.sourceOrganisation)}
+       |  ${optionalField(
+         "externalDescription",
+         stringField,
+         info.externalDescription)}
+       |  ${optionalField(
+         "internalSenderIdentifier",
+         stringField,
+         info.internalSenderIdentifier)}
+       |  ${optionalField(
+         "internalSenderDescription",
+         stringField,
+         info.internalSenderDescription)}
+       |  ${optionalField(
+         "sourceOrganization",
+         stringField,
+         info.sourceOrganisation)}
        |  "payloadOxum": "${info.payloadOxum.toString}",
-       |  "baggingDate": "${info.baggingDate.format(DateTimeFormatter.ISO_LOCAL_DATE)}",
+       |  "baggingDate": "${info.baggingDate.format(
+         DateTimeFormatter.ISO_LOCAL_DATE)}",
        |  "type": "BagInfo"
        |}
      """.stripMargin
@@ -56,7 +69,7 @@ trait DisplayJsonHelpers {
        |{
        |  "type": "BagManifest",
        |  "checksumAlgorithm": "${fm.checksumAlgorithm.value}",
-       |  "files": [ ${asList(fm.files, bagDigestFile) } ]
+       |  "files": [ ${asList(fm.files, bagDigestFile)} ]
        |}
      """.stripMargin
 
