@@ -17,3 +17,14 @@ provider "aws" {
   region  = "${var.aws_region}"
   version = "1.60.0"
 }
+
+provider "aws" {
+  alias = "workflow"
+
+  assume_role {
+    role_arn = "arn:aws:iam::299497370133:role/admin"
+  }
+
+  region  = "${var.aws_region}"
+  version = "1.60.0"
+}

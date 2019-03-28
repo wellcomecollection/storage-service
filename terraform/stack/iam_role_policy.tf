@@ -107,6 +107,54 @@ resource "aws_iam_role_policy" "bag_unpacker_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
+resource "aws_s3_bucket_policy" "archivematica_ingests_bucket_policy" {
+  bucket = "${local.archivematica_ingests_bucket}"
+  policy = "${data.aws_iam_policy_document.archivematica_ingests_bucket_policy.json}"
+
+  provider = "aws.workflow"
+}
+
+data "aws_iam_role" "bag_unpacker_task_role" {
+  name = "${module.bag_unpacker.task_role_name}"
+}
+
+data "aws_iam_policy_document" "archivematica_ingests_bucket_policy" {
+  statement {
+    actions = [
+      "s3:Get*",
+    ]
+
+     resources = [
+       "arn:aws:s3:::${local.archivematica_ingests_bucket}/*",
+    ]
+
+     principals {
+      type = "AWS"
+
+       identifiers = [
+        "${data.aws_iam_role.bag_unpacker_task_role.arn}",
+      ]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "bag_unpacker_get_archivematica_ingests" {
+  role   = "${module.bag_unpacker.task_role_name}"
+  policy = "${data.aws_iam_policy_document.archivematica_ingests_get.json}"
+}
+
+data "aws_iam_policy_document" "archivematica_ingests_get" {
+  statement {
+    actions = [
+      "s3:Get*",
+    ]
+
+     resources = [
+       "arn:aws:s3:::${local.archivematica_ingests_bucket}/*",
+    ]
+  }
+}
+
 # notifier
 
 resource "aws_iam_role_policy" "notifier_metrics" {
