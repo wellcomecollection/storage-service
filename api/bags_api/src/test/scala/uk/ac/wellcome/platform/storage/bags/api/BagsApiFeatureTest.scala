@@ -1,32 +1,21 @@
 package uk.ac.wellcome.platform.storage.bags.api
 
-import java.time.Instant
 import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.model._
 import io.circe.optics.JsonPath._
 import io.circe.parser._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{FunSpec, Inside, Matchers}
+import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   BagInfoGenerators,
   StorageManifestGenerators
 }
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
-import uk.ac.wellcome.platform.archive.display.{
-  DisplayLocation,
-  DisplayStorageSpace,
-  StandardDisplayProvider
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
-import uk.ac.wellcome.platform.storage.bags.api.models.{
-  DisplayBag,
-  DisplayBagInfo,
-  DisplayBagManifest,
-  DisplayFileDigest
-}
-import uk.ac.wellcome.storage.ObjectLocation
 
 class BagsApiFeatureTest
     extends FunSpec
@@ -36,99 +25,54 @@ class BagsApiFeatureTest
     with BagInfoGenerators
     with BagsApiFixture
     with IntegrationPatience
-    with Inside
-    with StorageManifestGenerators {
-
-  import uk.ac.wellcome.json.JsonUtil._
+    with StorageManifestGenerators
+    with DisplayJsonHelpers {
 
   describe("GET /bags/:space/:id") {
     it("returns a bag when available") {
       withConfiguredApp {
         case (vhs, metricsSender, baseUrl) =>
           withMaterializer { implicit materializer =>
-            val checksumAlgorithm = "sha256"
-            val path = "path"
-            val bucket = "bucket"
-            val archiveBucket = "archive-bucket"
-            val archivePath = "archive-path"
-            val storageManifest = createStorageManifestWith(
-              checksumAlgorithm = checksumAlgorithm,
-              accessLocation = ObjectLocation(namespace = bucket, key = path),
-              archiveLocations =
-                List(ObjectLocation(archiveBucket, archivePath))
+            val storageManifest: StorageManifest = createStorageManifestWith(
+              accessLocation = createObjectLocation,
+              archiveLocations = List(createObjectLocation)
             )
 
-            val space = storageManifest.space
-            val bagInfo = storageManifest.info
+            val expectedJson =
+              s"""
+                 |{
+                 |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+                 |  "id": "${storageManifest.id.toString}",
+                 |  "space": {
+                 |    "id": "${storageManifest.space.underlying}",
+                 |    "type": "Space"
+                 |  },
+                 |  "info": ${bagInfo(storageManifest.info)},
+                 |  "manifest": ${manifest(storageManifest.manifest)},
+                 |  "tagManifest": ${manifest(storageManifest.tagManifest)},
+                 |  "accessLocation": ${location(storageManifest.accessLocation)},
+                 |  "archiveLocations": [
+                 |    ${asList(storageManifest.archiveLocations, location) }
+                 |  ],
+                 |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(storageManifest.createdDate)}",
+                 |  "type": "Bag"
+                 |}
+               """.stripMargin
 
             val future = storeSingleManifest(vhs, storageManifest)
+            val url = s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
             whenReady(future) { _ =>
-              whenGetRequestReady(
-                s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
-                response =>
-                  response.status shouldBe StatusCodes.OK
-                  val displayBag = getT[DisplayBag](response.entity)
+              whenGetRequestReady(url) { response =>
+                response.status shouldBe StatusCodes.OK
 
-                  inside(displayBag) {
-                    case DisplayBag(
-                        actualContextUrl,
-                        actualBagId,
-                        DisplayStorageSpace(storageSpaceName, "Space"),
-                        DisplayBagInfo(
-                          externalIdentifierString,
-                          payloadOxum,
-                          baggingDate,
-                          sourceOrganization,
-                          _,
-                          _,
-                          _,
-                          "BagInfo"),
-                        DisplayBagManifest(
-                          actualDataManifestChecksumAlgorithm,
-                          Nil,
-                          "BagManifest"),
-                        DisplayBagManifest(
-                          actualTagManifestChecksumAlgorithm,
-                          List(DisplayFileDigest("a", "bag-info.txt", "File")),
-                          "BagManifest"),
-                        DisplayLocation(
-                          StandardDisplayProvider,
-                          actualBucket,
-                          actualPath,
-                          "Location"),
-                        List(
-                          DisplayLocation(
-                            StandardDisplayProvider,
-                            archiveBucket,
-                            archivePath,
-                            "Location")),
-                        createdDateString,
-                        "Bag") =>
-                      actualContextUrl shouldBe "http://api.wellcomecollection.org/storage/v1/context.json"
-                      actualBagId shouldBe s"${space.underlying}/${bagInfo.externalIdentifier.underlying}"
-                      storageSpaceName shouldBe space.underlying
-                      externalIdentifierString shouldBe bagInfo.externalIdentifier.underlying
-                      payloadOxum shouldBe s"${bagInfo.payloadOxum.payloadBytes}.${bagInfo.payloadOxum.numberOfPayloadFiles}"
-                      sourceOrganization shouldBe bagInfo.sourceOrganisation
-                        .map(_.underlying)
-                      baggingDate shouldBe bagInfo.baggingDate.format(
-                        DateTimeFormatter.ISO_LOCAL_DATE)
+                withStringEntity(response.entity) { actualJson =>
+                  assertJsonStringsAreEqual(actualJson, expectedJson)
+                }
 
-                      actualDataManifestChecksumAlgorithm shouldBe checksumAlgorithm
-                      actualTagManifestChecksumAlgorithm shouldBe checksumAlgorithm
-
-                      actualBucket shouldBe bucket
-                      actualPath shouldBe path
-
-                      archiveBucket shouldBe archiveBucket
-                      archivePath shouldBe archivePath
-
-                      Instant.parse(createdDateString) shouldBe storageManifest.createdDate
-                  }
-
-                  assertMetricSent(
-                    metricsSender,
-                    result = HttpMetricResults.Success)
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.Success
+                )
               }
             }
           }
