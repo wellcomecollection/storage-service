@@ -6,12 +6,8 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagLocator,
-  BagReplicator,
-  BagReplicatorWorker
-}
-import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagLocator, BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.config.builders.{DiagnosticReporterBuilder, IngestUpdaterBuilder, OutgoingPublisherBuilder}
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -35,9 +31,9 @@ object Main extends WellcomeTypesafeApp {
     new BagReplicatorWorker(
       stream = NotificationStreamBuilder
         .buildStream[BagRequest](config),
-      ingestUpdater = OperationBuilder.buildIngestUpdater(config, operationName),
-      outgoing = OperationBuilder.buildOutgoingPublisher(config, operationName),
-      reporter = OperationBuilder.buildOperationReporter(config),
+      ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
+      outgoing = OutgoingPublisherBuilder.build(config, operationName),
+      reporter = DiagnosticReporterBuilder.build(config),
       replicator = new BagReplicator(
         bagLocator = new BagLocator(s3Client),
         config = ReplicatorDestinationConfig

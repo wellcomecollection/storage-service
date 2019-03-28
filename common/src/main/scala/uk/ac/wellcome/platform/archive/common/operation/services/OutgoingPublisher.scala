@@ -9,14 +9,14 @@ class OutgoingPublisher(
   operationName: String,
   snsWriter: SNSWriter
 ) {
-  def sendIfSuccessful[R, O](result: OperationResult[R], outgoing: => O)(
+  def sendIfSuccessful[R, O](result: IngestStepResult[R], outgoing: => O)(
     implicit
     ec: ExecutionContext,
     enc: Encoder[O]): Future[Unit] = {
     result match {
-      case OperationSuccess(_) | OperationCompleted(_) =>
+      case IngestStepSuccess(_) | IngestCompleted(_) =>
         send(outgoing)
-      case OperationFailure(_, _) =>
+      case IngestFailed(_, _) =>
         Future.successful(())
     }
   }

@@ -15,9 +15,9 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagLocation
 }
 import uk.ac.wellcome.platform.archive.common.operation.services.{
-  OperationFailure,
-  OperationResult,
-  OperationSuccess
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSuccess
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.FileManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.{
@@ -36,7 +36,7 @@ class Verifier(
     extends Logging {
   def verify(
     bagLocation: BagLocation
-  ): Future[OperationResult[VerificationSummary]] = {
+  ): Future[IngestStepResult[VerificationSummary]] = {
     val verificationInit =
       VerificationSummary(bagLocation = bagLocation, startTime = Instant.now)
 
@@ -55,14 +55,14 @@ class Verifier(
     } yield result
 
     verification.map {
-      case summary if summary.succeeded => OperationSuccess(summary)
+      case summary if summary.succeeded => IngestStepSuccess(summary)
       case failed =>
-        OperationFailure(
+        IngestFailed(
           failed,
           new RuntimeException("Verification failed")
         )
     } recover {
-      case e: Throwable => OperationFailure(verificationInit, e)
+      case e: Throwable => IngestFailed(verificationInit, e)
     }
   }
 

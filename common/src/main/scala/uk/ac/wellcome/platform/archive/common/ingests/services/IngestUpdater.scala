@@ -16,42 +16,42 @@ import uk.ac.wellcome.platform.archive.common.operation.services._
 import scala.concurrent.Future
 
 class IngestUpdater(
-  operationName: String,
-  snsWriter: SNSWriter
+                     stepName: String,
+                     snsWriter: SNSWriter
 ) {
 
   def send[R](
-    requestId: UUID,
-    result: OperationResult[R],
-    bagId: Option[BagId] = None
+               requestId: UUID,
+               result: IngestStepResult[R],
+               bagId: Option[BagId] = None
   ): Future[PublishAttempt] = {
     val update = result match {
-      case OperationCompleted(_) =>
+      case IngestCompleted(_) =>
         IngestStatusUpdate(
           id = requestId,
           status = Ingest.Completed,
           affectedBag = bagId,
           events = List(
             IngestEvent(
-              s"${operationName.capitalize} succeeded (completed)"
+              s"${stepName.capitalize} succeeded (completed)"
             )
           )
         )
 
-      case OperationSuccess(_) =>
+      case IngestStepSuccess(_) =>
         IngestUpdate.event(
           id = requestId,
-          description = s"${operationName.capitalize} succeeded"
+          description = s"${stepName.capitalize} succeeded"
         )
 
-      case OperationFailure(_, _) =>
+      case IngestFailed(_, _) =>
         IngestStatusUpdate(
           id = requestId,
           status = Ingest.Failed,
           affectedBag = bagId,
           events = List(
             IngestEvent(
-              s"${operationName.capitalize} failed"
+              s"${stepName.capitalize} failed"
             )
           )
         )

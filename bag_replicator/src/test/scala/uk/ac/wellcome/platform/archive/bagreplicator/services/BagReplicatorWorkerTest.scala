@@ -55,7 +55,7 @@ class BagReplicatorWorkerTest
                     dst = dstBagLocation
                   )
 
-                  topicReceivesIngestEvent(bagRequest.requestId, ingestTopic) {
+                  assertTopicReceivesIngestEvent(bagRequest.requestId, ingestTopic) {
                     events =>
                       events should have size 1
                       events.head.description shouldBe "Replicating succeeded"
@@ -89,7 +89,7 @@ class BagReplicatorWorkerTest
           whenReady(future) { _ =>
             assertSnsReceivesNothing(outgoingTopic)
 
-            topicReceivesIngestStatus(
+            assertTopicReceivesIngestStatus(
               bagRequest.requestId,
               ingestTopic = ingestTopic,
               status = Ingest.Failed) { events =>

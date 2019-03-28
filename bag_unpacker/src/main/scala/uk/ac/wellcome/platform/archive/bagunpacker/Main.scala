@@ -3,44 +3,60 @@ package uk.ac.wellcome.platform.archive.bagunpacker
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
-import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.UnpackerWorkerConfigBuilder
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  S3Uploader,
-  Unpacker,
-  UnpackerWorker
-}
-import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
-import uk.ac.wellcome.platform.archive.common.ingests.models.UnpackBagRequest
-import uk.ac.wellcome.storage.typesafe.S3Builder
+import uk.ac.wellcome.messaging.typesafe.CloudwatchMonitoringClientBuilder._
+import uk.ac.wellcome.messaging.typesafe.SQSBuilder.buildSQSAsyncClient
+import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
+import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.{AlpakkaSqsWorkerConfigBuilder, UnpackerWorkerConfigBuilder}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, S3Uploader, Unpacker}
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.storage.typesafe.S3Builder._
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder._
 
 import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
-      AkkaBuilder.buildActorSystem()
-    implicit val executionContext: ExecutionContext =
-      AkkaBuilder.buildExecutionContext()
+      buildActorSystem()
+
     implicit val materializer: ActorMaterializer =
-      AkkaBuilder.buildActorMaterializer()
+      buildActorMaterializer()
+
+    implicit val executionContext: ExecutionContext =
+      buildExecutionContext()
 
     implicit val s3Client: AmazonS3 =
-      S3Builder.buildS3Client(config)
+      buildS3Client(config)
 
-    new UnpackerWorker(
-      config = UnpackerWorkerConfigBuilder.build(config),
-      stream = NotificationStreamBuilder.buildStream[UnpackBagRequest](config),
-      ingestUpdater = OperationBuilder.buildIngestUpdater(config, "unpacking"),
-      outgoing = OperationBuilder.buildOutgoingPublisher(config, "unpacking"),
-      reporter = OperationBuilder.buildOperationReporter(config),
-      unpacker = Unpacker(
-        s3Uploader = new S3Uploader()
-      )
-    )
+    implicit val monitoringClient: CloudwatchMonitoringClient =
+      buildCloudwatchMonitoringClient(config)
+
+    implicit val sqsClient: AmazonSQSAsync =
+      buildSQSAsyncClient(config)
+
+    val alpakkaSQSWorkerConfig =
+      AlpakkaSqsWorkerConfigBuilder.build(config)
+
+    val unpackerWorkerConfig =
+      UnpackerWorkerConfigBuilder.build(config)
+
+    val ingestUpdater =
+      IngestUpdaterBuilder.build(config, "unpacking")
+
+    val outgoingPublisher =
+      OutgoingPublisherBuilder.build(config, "unpacking")
+
+    val unpacker =
+      Unpacker(s3Uploader = new S3Uploader())
+
+    BagUnpackerWorker(
+      alpakkaSQSWorkerConfig,
+      unpackerWorkerConfig,
+      ingestUpdater,
+      outgoingPublisher,
+      unpacker)
   }
 }

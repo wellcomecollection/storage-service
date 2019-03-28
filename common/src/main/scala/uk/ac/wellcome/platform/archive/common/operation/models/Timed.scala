@@ -13,3 +13,4 @@ trait Timed {
   def durationSeconds =
     duration.getOrElse(Duration.ofSeconds(0)).getSeconds
 }
+

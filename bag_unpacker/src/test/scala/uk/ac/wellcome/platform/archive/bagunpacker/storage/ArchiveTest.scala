@@ -8,7 +8,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.operation.services.OperationResult
+import uk.ac.wellcome.platform.archive.common.operation.services.IngestStepResult
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -46,7 +46,7 @@ class ArchiveTest
         Set.empty[ArchiveEntry]
       )(fold)
 
-    whenReady(unpack) { unpacked: OperationResult[Set[ArchiveEntry]] =>
+    whenReady(unpack) { unpacked: IngestStepResult[Set[ArchiveEntry]] =>
       unpacked.summary.diff(expectedEntries) shouldBe Set.empty
 
       val expectedFiles = files

@@ -10,8 +10,8 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   FileEntry
 }
 import uk.ac.wellcome.platform.archive.common.operation.services.{
-  OperationFailure,
-  OperationSuccess
+  IngestFailed,
+  IngestStepSuccess
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
@@ -47,7 +47,7 @@ class VerifierTest
             val future = service.verify(bagLocation)
 
             whenReady(future) { result =>
-              result shouldBe a[OperationSuccess[_]]
+              result shouldBe a[IngestStepSuccess[_]]
 
               val summary = result.summary
 
@@ -80,7 +80,7 @@ class VerifierTest
             val future = service.verify(bagLocation)
 
             whenReady(future) { result =>
-              result shouldBe a[OperationFailure[_]]
+              result shouldBe a[IngestFailed[_]]
 
               val summary = result.summary
               summary.successfulVerifications should have size expectedDataFileCount - 1
@@ -115,7 +115,7 @@ class VerifierTest
             )
             val future = service.verify(bagLocation)
             whenReady(future) { result =>
-              result shouldBe a[OperationFailure[_]]
+              result shouldBe a[IngestFailed[_]]
 
               val summary = result.summary
 
@@ -157,7 +157,7 @@ class VerifierTest
 
             val future = service.verify(bagLocation)
             whenReady(future) { result =>
-              result shouldBe a[OperationFailure[_]]
+              result shouldBe a[IngestFailed[_]]
 
               val summary = result.summary
 
@@ -196,9 +196,9 @@ class VerifierTest
               val future = service.verify(bagLocation)
 
               whenReady(future) { result =>
-                result shouldBe a[OperationFailure[_]]
+                result shouldBe a[IngestFailed[_]]
                 val err = result
-                  .asInstanceOf[OperationFailure[VerificationSummary]]
+                  .asInstanceOf[IngestFailed[VerificationSummary]]
                   .e
 
                 err shouldBe a[RuntimeException]
@@ -231,9 +231,9 @@ class VerifierTest
               val future = service.verify(bagLocation)
 
               whenReady(future) { result =>
-                result shouldBe a[OperationFailure[_]]
+                result shouldBe a[IngestFailed[_]]
                 val err = result
-                  .asInstanceOf[OperationFailure[VerificationSummary]]
+                  .asInstanceOf[IngestFailed[VerificationSummary]]
                   .e
 
                 err shouldBe a[RuntimeException]

@@ -10,8 +10,8 @@ import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.operation.services.{
-  OperationFailure,
-  OperationResult
+  IngestFailed,
+  IngestStepResult
 }
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -21,13 +21,13 @@ import scala.util.{Failure, Success}
 case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
                                             ec: ExecutionContext) {
 
-  def unpack(
-    srcLocation: ObjectLocation,
-    dstLocation: ObjectLocation
-  ): Future[OperationResult[UnpackSummary]] = {
+  def unpack( requestId: String,
+              srcLocation: ObjectLocation,
+              dstLocation: ObjectLocation
+  ): Future[IngestStepResult[UnpackSummary]] = {
 
     val unpackSummary =
-      UnpackSummary(srcLocation, dstLocation, startTime = Instant.now)
+      UnpackSummary(requestId, srcLocation, dstLocation, startTime = Instant.now)
 
     val futureSummary = for {
       packageInputStream <- srcLocation.toInputStream
@@ -57,11 +57,10 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
     } yield result.withSummary(summary = result.summary.complete)
 
     futureSummary.transform {
-      case Success(summary) => Success(summary)
+      case Success(summary) =>
+        Success(summary)
       case Failure(e) =>
-        Success(
-          OperationFailure(unpackSummary.complete, e)
-        )
+        Success(IngestFailed(unpackSummary.complete, e))
     }
   }
 

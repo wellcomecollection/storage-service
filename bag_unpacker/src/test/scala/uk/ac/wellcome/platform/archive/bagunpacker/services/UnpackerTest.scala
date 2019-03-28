@@ -7,10 +7,8 @@ import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  OperationFailure,
-  OperationSuccess
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.operation.services.{IngestFailed, IngestStepSuccess}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -22,6 +20,7 @@ class UnpackerTest
     with Matchers
     with ScalaFutures
     with CompressFixture
+    with RandomThings
     with S3 {
 
   val unpacker = Unpacker(
@@ -39,12 +38,13 @@ class UnpackerTest
 
           val summaryResult = unpacker
             .unpack(
+              randomUUID.toString,
               testArchive,
               dstLocation
             )
 
           whenReady(summaryResult) { unpacked =>
-            unpacked shouldBe a[OperationSuccess[_]]
+            unpacked shouldBe a[IngestStepSuccess[_]]
 
             val summary = unpacked.summary
             summary.fileCount shouldBe filesInArchive.size
@@ -69,12 +69,13 @@ class UnpackerTest
           val dstKey = "unpacked"
           val summaryResult = unpacker
             .unpack(
+              randomUUID.toString,
               testArchive,
               ObjectLocation(dstBucket.name, dstKey)
             )
 
           whenReady(summaryResult) { unpacked =>
-            unpacked shouldBe a[OperationSuccess[_]]
+            unpacked shouldBe a[IngestStepSuccess[_]]
 
             val summary = unpacked.summary
             summary.fileCount shouldBe filesInArchive.size
@@ -87,30 +88,32 @@ class UnpackerTest
     }
   }
 
-  it("returns a failed OperationResult if it cannot open the input stream") {
+  it("returns an IngestFailed if it cannot open the input stream") {
     val future = unpacker
       .unpack(
+        randomUUID.toString,
         srcLocation = createObjectLocation,
         dstLocation = createObjectLocation
       )
 
     whenReady(future) { result =>
-      result shouldBe a[OperationFailure[_]]
+      result shouldBe a[IngestFailed[_]]
     }
   }
 
-  it("returns a failed OperationResult if it cannot write to the destination") {
+  it("returns an IngestFailed if it cannot write to the destination") {
     withLocalS3Bucket { srcBucket =>
       val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
       withArchive(srcBucket, archiveFile) { testArchive =>
         val future = unpacker
           .unpack(
+            randomUUID.toString,
             srcLocation = testArchive,
             dstLocation = createObjectLocation
           )
 
         whenReady(future) { unpacked =>
-          unpacked shouldBe a[OperationFailure[_]]
+          unpacked shouldBe a[IngestFailed[_]]
         }
       }
     }
