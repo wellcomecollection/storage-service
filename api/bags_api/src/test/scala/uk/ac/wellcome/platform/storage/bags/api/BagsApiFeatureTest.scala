@@ -34,8 +34,11 @@ class BagsApiFeatureTest
         case (vhs, metricsSender, baseUrl) =>
           withMaterializer { implicit materializer =>
             val storageManifest: StorageManifest = createStorageManifestWith(
-              accessLocation = createObjectLocation,
-              archiveLocations = List(createObjectLocation)
+              locations = List(
+                createObjectLocation,
+                createObjectLocation,
+                createObjectLocation
+              )
             )
 
             val expectedJson =

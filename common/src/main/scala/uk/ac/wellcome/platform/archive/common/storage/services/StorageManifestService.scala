@@ -41,16 +41,17 @@ class StorageManifestService(
       fileManifest <- createFileManifest(bagLocation)
       tagManifest <- createTagManifest(bagLocation)
     } yield
-      models.StorageManifest(
+      StorageManifest(
         space = bagLocation.storageSpace,
         info = bagInfo,
         manifest = fileManifest,
         tagManifest = tagManifest,
-        accessLocation = StorageLocation(
-          provider = InfrequentAccessStorageProvider,
-          location = bagLocation.objectLocation
+        locations = List(
+          StorageLocation(
+            provider = InfrequentAccessStorageProvider,
+            location = bagLocation.objectLocation
+          )
         ),
-        archiveLocations = List.empty,
         createdDate = Instant.now()
       )
 
