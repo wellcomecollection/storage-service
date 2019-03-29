@@ -18,7 +18,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
-import uk.ac.wellcome.platform.archive.common.storage.models
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   ChecksumAlgorithm,
   FileManifest,
