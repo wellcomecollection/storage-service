@@ -25,7 +25,9 @@ import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class BagReplicator(config: ReplicatorDestinationConfig)(implicit s3Client: AmazonS3, ec: ExecutionContext) {
+class BagReplicator(config: ReplicatorDestinationConfig)(
+  implicit s3Client: AmazonS3,
+  ec: ExecutionContext) {
   val s3PrefixCopier = S3PrefixCopier(s3Client)
   val s3BagLocator = new S3BagLocator(s3Client)
 
@@ -93,13 +95,13 @@ class BagReplicator(config: ReplicatorDestinationConfig)(implicit s3Client: Amaz
     bagPath = BagPath(id.underlying)
   )
 
-  private def getBagIdentifier(bagLocation: BagLocation): Future[ExternalIdentifier] =
+  private def getBagIdentifier(
+    bagLocation: BagLocation): Future[ExternalIdentifier] =
     for {
       bagInfoLocation <- Future.fromTry {
         s3BagLocator.locateBagInfo(bagLocation.objectLocation)
       }
-      inputStream: InputStream <- bagInfoLocation
-        .toInputStream
+      inputStream: InputStream <- bagInfoLocation.toInputStream
       bagInfo: BagInfo <- BagInfoParser.create(inputStream)
     } yield bagInfo.externalIdentifier
 

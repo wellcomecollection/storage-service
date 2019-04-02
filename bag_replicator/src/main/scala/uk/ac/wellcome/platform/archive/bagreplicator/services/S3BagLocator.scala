@@ -51,40 +51,40 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
   }
 
   def locateBagRoot(objectLocation: ObjectLocation): Try[ObjectLocation] =
-    locateBagInfo(objectLocation).map {
-      loc => loc.copy(key = loc.key.stripSuffix("/bag-info.txt"))
+    locateBagInfo(objectLocation).map { loc =>
+      loc.copy(key = loc.key.stripSuffix("/bag-info.txt"))
     }
 
   /** Find a bag directly below a given ObjectLocation. */
-  private def findBagInfoInRoot(objectLocation: ObjectLocation): Try[String] = Try {
-    val listObjectsResult = s3Client.listObjectsV2(
-      objectLocation.namespace,
-      createBagInfoPath(objectLocation.key)
-    )
+  private def findBagInfoInRoot(objectLocation: ObjectLocation): Try[String] =
+    Try {
+      val listObjectsResult = s3Client.listObjectsV2(
+        objectLocation.namespace,
+        createBagInfoPath(objectLocation.key)
+      )
 
-    val keyCount = listObjectsResult.getObjectSummaries.size()
+      val keyCount = listObjectsResult.getObjectSummaries.size()
 
-    if (keyCount == 1) {
-      createBagInfoPath(objectLocation.key)
-    } else {
-      throw new RuntimeException(s"No bag-info.txt inside $objectLocation")
+      if (keyCount == 1) {
+        createBagInfoPath(objectLocation.key)
+      } else {
+        throw new RuntimeException(s"No bag-info.txt inside $objectLocation")
+      }
     }
-  }
 
   /** Look for a subdirectory of the current location, and find a bag-info.txt
     * if there's exactly one such subdirectory.
     *
     */
-  private def findBagInfoInDirectory(objectLocation: ObjectLocation): Try[String] = Try {
+  private def findBagInfoInDirectory(
+    objectLocation: ObjectLocation): Try[String] = Try {
     val listObjectsRequest = new ListObjectsV2Request()
       .withBucketName(objectLocation.namespace)
       .withPrefix(objectLocation.key + "/")
       .withDelimiter("/")
 
     val directoriesInBag =
-      s3Client.listObjectsV2(listObjectsRequest)
-        .getCommonPrefixes
-        .asScala
+      s3Client.listObjectsV2(listObjectsRequest).getCommonPrefixes.asScala
 
     if (directoriesInBag.size == 1) {
       val directoryLocation = objectLocation.copy(

@@ -11,9 +11,11 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
   describe("locateBagInfo") {
     it("locates a bag-info.txt file in the root") {
       withLocalS3Bucket { bucket =>
-        createObjectsWith(bucket,
-          "bag123/bag-info.txt", "bag123/data/1.jpg", "bag123/data/2.jpg"
-        )
+        createObjectsWith(
+          bucket,
+          "bag123/bag-info.txt",
+          "bag123/data/1.jpg",
+          "bag123/data/2.jpg")
 
         val objectLocation = createObjectLocationWith(bucket, "bag123")
 
@@ -25,11 +27,11 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
 
     it("finds a bag-info.txt in an immediate subdirectory") {
       withLocalS3Bucket { bucket =>
-        createObjectsWith(bucket,
+        createObjectsWith(
+          bucket,
           "bag123/subdir/bag-info.txt",
           "bag123/subdir/data/1.jpg",
-          "bag123/subdir/data/2.jpg"
-        )
+          "bag123/subdir/data/2.jpg")
 
         val objectLocation = createObjectLocationWith(bucket, "bag123")
 
@@ -41,12 +43,12 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
 
     it("prefers the bag-info.txt in the root to a subdirectory") {
       withLocalS3Bucket { bucket =>
-        createObjectsWith(bucket,
+        createObjectsWith(
+          bucket,
           "bag123/bag-info.txt",
           "bag123/subdir/bag-info.txt",
           "bag123/subdir/data/1.jpg",
-          "bag123/subdir/data/2.jpg"
-        )
+          "bag123/subdir/data/2.jpg")
 
         val objectLocation = createObjectLocationWith(bucket, "bag123")
 
@@ -58,10 +60,10 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
 
     it("fails if there are multiple subdirectories") {
       withLocalS3Bucket { bucket =>
-        createObjectsWith(bucket,
+        createObjectsWith(
+          bucket,
           "bag123/subdir1/bag-info.txt",
-          "bag123/subdir2/bag-info.txt"
-        )
+          "bag123/subdir2/bag-info.txt")
 
         val objectLocation = createObjectLocationWith(bucket, "bag123")
         assertFailsToFindBagIn(objectLocation)
@@ -70,10 +72,7 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
 
     it("fails if there's a single subdirectory but without a bag-info.txt") {
       withLocalS3Bucket { bucket =>
-        createObjectsWith(bucket,
-          "bag123/subdir/1.jpg",
-          "bag123/subdir/2.jpg"
-        )
+        createObjectsWith(bucket, "bag123/subdir/1.jpg", "bag123/subdir/2.jpg")
 
         val objectLocation = createObjectLocationWith(bucket, "bag123")
         assertFailsToFindBagIn(objectLocation)
@@ -82,9 +81,7 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
 
     it("fails if the bag-info.txt is nested more than one directory deep") {
       withLocalS3Bucket { bucket =>
-        createObjectsWith(bucket,
-          "bag123/subdir/nesteddir/bag-info.txt"
-        )
+        createObjectsWith(bucket, "bag123/subdir/nesteddir/bag-info.txt")
 
         val objectLocation = createObjectLocationWith(bucket, "bag123")
         assertFailsToFindBagIn(objectLocation)
@@ -99,7 +96,8 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
     }
 
     it("fails if the bucket does not exist") {
-      val objectLocation = createObjectLocationWith(bucket = Bucket("doesnotexist"))
+      val objectLocation =
+        createObjectLocationWith(bucket = Bucket("doesnotexist"))
       assertFailsToFindBagIn(objectLocation)
     }
   }
@@ -107,23 +105,26 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
   describe("locateBagRoot") {
     it("locates a bag-info.txt file in the root") {
       withLocalS3Bucket { bucket =>
-        createObjectsWith(bucket,
-          "bag123/bag-info.txt", "bag123/data/1.jpg", "bag123/data/2.jpg"
-        )
+        createObjectsWith(
+          bucket,
+          "bag123/bag-info.txt",
+          "bag123/data/1.jpg",
+          "bag123/data/2.jpg")
 
         val objectLocation = createObjectLocationWith(bucket, "bag123")
 
-        s3BagLocator.locateBagRoot(objectLocation) shouldBe Success(objectLocation)
+        s3BagLocator.locateBagRoot(objectLocation) shouldBe Success(
+          objectLocation)
       }
     }
 
     it("finds a bag-info.txt in an immediate subdirectory") {
       withLocalS3Bucket { bucket =>
-        createObjectsWith(bucket,
+        createObjectsWith(
+          bucket,
           "bag123/subdir/bag-info.txt",
           "bag123/subdir/data/1.jpg",
-          "bag123/subdir/data/2.jpg"
-        )
+          "bag123/subdir/data/2.jpg")
 
         val objectLocation = createObjectLocationWith(bucket, "bag123")
 
@@ -146,7 +147,8 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
 
   val s3BagLocator = new S3BagLocator(s3Client)
 
-  private def assertFailsToFindBagIn(objectLocation: ObjectLocation): Assertion = {
+  private def assertFailsToFindBagIn(
+    objectLocation: ObjectLocation): Assertion = {
     val result = s3BagLocator.locateBagInfo(objectLocation)
     result.isFailure shouldBe true
     result.failed.get shouldBe a[IllegalArgumentException]
