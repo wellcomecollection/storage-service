@@ -56,7 +56,7 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     }
 
   /** Find a bag directly below a given ObjectLocation. */
-  private def findBagInfoInRoot(objectLocation: ObjectLocation): Try[String] = {
+  private def findBagInfoInRoot(objectLocation: ObjectLocation): Try[String] = Try {
     val listObjectsResult = s3Client.listObjectsV2(
       objectLocation.namespace,
       createBagInfoPath(objectLocation.key)
@@ -65,9 +65,9 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     val keyCount = listObjectsResult.getObjectSummaries.size()
 
     if (keyCount == 1) {
-      Success(createBagInfoPath(objectLocation.key))
+      createBagInfoPath(objectLocation.key)
     } else {
-      Failure(new RuntimeException(s"No bag-info.txt inside $objectLocation"))
+      throw new RuntimeException(s"No bag-info.txt inside $objectLocation")
     }
   }
 
@@ -75,7 +75,7 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     * if there's exactly one such subdirectory.
     *
     */
-  private def findBagInfoInDirectory(objectLocation: ObjectLocation): Try[String] = {
+  private def findBagInfoInDirectory(objectLocation: ObjectLocation): Try[String] = Try {
     val listObjectsRequest = new ListObjectsV2Request()
       .withBucketName(objectLocation.namespace)
       .withPrefix(objectLocation.key + "/")
@@ -91,12 +91,13 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
         key = directoriesInBag.head
       )
 
-      findBagInfoInRoot(directoryLocation)
+      findBagInfoInRoot(directoryLocation) match {
+        case Success(s) => s
+        case Failure(e) => throw e
+      }
     } else {
-      Failure(
-        new RuntimeException(
-          s"Expected exactly one directory in archive; saw <<$directoriesInBag>>"
-        )
+      throw new RuntimeException(
+        s"Expected exactly one directory in archive; saw <<$directoriesInBag>>"
       )
     }
   }

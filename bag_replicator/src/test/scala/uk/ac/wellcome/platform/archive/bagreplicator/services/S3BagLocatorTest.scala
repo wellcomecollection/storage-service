@@ -60,7 +60,19 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
       withLocalS3Bucket { bucket =>
         createObjectsWith(bucket,
           "bag123/subdir1/bag-info.txt",
-          "bag123/subdir2/bag-info.txt",
+          "bag123/subdir2/bag-info.txt"
+        )
+
+        val objectLocation = createObjectLocationWith(bucket, "bag123")
+        assertFailsToFindBagIn(objectLocation)
+      }
+    }
+
+    it("fails if there's a single subdirectory but without a bag-info.txt") {
+      withLocalS3Bucket { bucket =>
+        createObjectsWith(bucket,
+          "bag123/subdir/1.jpg",
+          "bag123/subdir/2.jpg"
         )
 
         val objectLocation = createObjectLocationWith(bucket, "bag123")
@@ -71,7 +83,7 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
     it("fails if the bag-info.txt is nested more than one directory deep") {
       withLocalS3Bucket { bucket =>
         createObjectsWith(bucket,
-          "bag123/subdir/nesteddir/bag-info.txt",
+          "bag123/subdir/nesteddir/bag-info.txt"
         )
 
         val objectLocation = createObjectLocationWith(bucket, "bag123")
@@ -84,6 +96,11 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
         val objectLocation = createObjectLocationWith(bucket, "doesnotexist")
         assertFailsToFindBagIn(objectLocation)
       }
+    }
+
+    it("fails if the bucket does not exist") {
+      val objectLocation = createObjectLocationWith(bucket = Bucket("doesnotexist"))
+      assertFailsToFindBagIn(objectLocation)
     }
   }
 
