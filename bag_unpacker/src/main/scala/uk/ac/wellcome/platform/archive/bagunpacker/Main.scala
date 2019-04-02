@@ -8,9 +8,19 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.typesafe.CloudwatchMonitoringClientBuilder._
 import uk.ac.wellcome.messaging.typesafe.SQSBuilder.buildSQSAsyncClient
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.{AlpakkaSqsWorkerConfigBuilder, UnpackerWorkerConfigBuilder}
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, S3Uploader, Unpacker}
-import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.{
+  AlpakkaSqsWorkerConfigBuilder,
+  UnpackerWorkerConfigBuilder
+}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  BagUnpackerWorker,
+  S3Uploader,
+  Unpacker
+}
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  IngestUpdaterBuilder,
+  OutgoingPublisherBuilder
+}
 import uk.ac.wellcome.storage.typesafe.S3Builder._
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder._

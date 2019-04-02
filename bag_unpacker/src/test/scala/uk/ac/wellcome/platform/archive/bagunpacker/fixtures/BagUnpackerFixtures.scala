@@ -8,8 +8,16 @@ import uk.ac.wellcome.messaging.fixtures.worker.MetricsFixtures
 import uk.ac.wellcome.messaging.fixtures.{Messaging, SQS}
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, S3Uploader, Unpacker}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  BagUnpackerWorker,
+  S3Uploader,
+  Unpacker
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  OperationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -26,7 +34,9 @@ trait BagUnpackerFixtures
     with MetricsFixtures
     with OperationFixtures {
 
-  def withFakeMonitoringClient[R]()(testWith: TestWith[FakeMonitoringClient, R])(implicit executionContext: ExecutionContext): R = {
+  def withFakeMonitoringClient[R]()(
+    testWith: TestWith[FakeMonitoringClient, R])(
+    implicit executionContext: ExecutionContext): R = {
     testWith(new FakeMonitoringClient()(executionContext))
   }
 
@@ -40,7 +50,6 @@ trait BagUnpackerFixtures
       withIngestUpdater("unpacker", ingestTopic) { ingestUpdater =>
         withOutgoingPublisher("unpacker", outgoingTopic) { ongoingPublisher =>
           withFakeMonitoringClient() { implicit monitoringClient =>
-
             implicit val _asyncSqsClient = asyncSqsClient
 
             val bagUnpackerWorker = BagUnpackerWorker(
@@ -48,7 +57,8 @@ trait BagUnpackerFixtures
               bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
               ingestUpdater = ingestUpdater,
               outgoingPublisher = ongoingPublisher,
-              unpacker = Unpacker(new S3Uploader()))
+              unpacker = Unpacker(new S3Uploader())
+            )
 
             bagUnpackerWorker.run()
 
@@ -58,9 +68,9 @@ trait BagUnpackerFixtures
       }
     }
 
-
   def withBagUnpackerApp[R](
-    testWith: TestWith[(BagUnpackerWorker, Bucket, Queue, Topic, Topic), R]): R =
+    testWith: TestWith[(BagUnpackerWorker, Bucket, Queue, Topic, Topic), R])
+    : R =
     withLocalS3Bucket { sourceBucket =>
       withLocalSqsQueue { queue =>
         withLocalSnsTopic { ingestTopic =>

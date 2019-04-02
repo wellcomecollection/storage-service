@@ -8,10 +8,9 @@ import uk.ac.wellcome.platform.archive.common.operation.services.DiagnosticRepor
 import scala.concurrent.ExecutionContext
 
 object DiagnosticReporterBuilder {
-  def build(config: Config)(
-    implicit
-    materializer: ActorMaterializer,
-    ec: ExecutionContext): DiagnosticReporter =
+  def build(config: Config)(implicit
+                            materializer: ActorMaterializer,
+                            ec: ExecutionContext): DiagnosticReporter =
     new DiagnosticReporter(
       metricsSender = MetricsBuilder.buildMetricsSender(config)
     )

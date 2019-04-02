@@ -21,13 +21,17 @@ import scala.util.{Failure, Success}
 case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
                                             ec: ExecutionContext) {
 
-  def unpack( requestId: String,
-              srcLocation: ObjectLocation,
-              dstLocation: ObjectLocation
-  ): Future[IngestStepResult[UnpackSummary]] = {
+  def unpack(
+    requestId: String,
+    srcLocation: ObjectLocation,
+    dstLocation: ObjectLocation): Future[IngestStepResult[UnpackSummary]] = {
 
     val unpackSummary =
-      UnpackSummary(requestId, srcLocation, dstLocation, startTime = Instant.now)
+      UnpackSummary(
+        requestId,
+        srcLocation,
+        dstLocation,
+        startTime = Instant.now)
 
     val futureSummary = for {
       packageInputStream <- srcLocation.toInputStream

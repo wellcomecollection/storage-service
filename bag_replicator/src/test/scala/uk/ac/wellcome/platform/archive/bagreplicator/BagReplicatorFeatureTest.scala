@@ -64,10 +64,11 @@ class BagReplicatorFeatureTest
                       dst = dstBagLocation
                     )
 
-                    assertTopicReceivesIngestEvent(bagRequest.requestId, ingestTopic) {
-                      events =>
-                        events should have size 1
-                        events.head.description shouldBe "Replicating succeeded"
+                    assertTopicReceivesIngestEvent(
+                      bagRequest.requestId,
+                      ingestTopic) { events =>
+                      events should have size 1
+                      events.head.description shouldBe "Replicating succeeded"
                     }
                   }
                 }

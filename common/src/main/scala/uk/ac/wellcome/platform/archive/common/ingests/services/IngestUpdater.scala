@@ -16,14 +16,14 @@ import uk.ac.wellcome.platform.archive.common.operation.services._
 import scala.concurrent.Future
 
 class IngestUpdater(
-                     stepName: String,
-                     snsWriter: SNSWriter
+  stepName: String,
+  snsWriter: SNSWriter
 ) {
 
   def send[R](
-               requestId: UUID,
-               result: IngestStepResult[R],
-               bagId: Option[BagId] = None
+    requestId: UUID,
+    result: IngestStepResult[R],
+    bagId: Option[BagId] = None
   ): Future[PublishAttempt] = {
     val update = result match {
       case IngestCompleted(_) =>
