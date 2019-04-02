@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{Assertion, FunSpec, Matchers}
+import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -54,17 +55,43 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
     }
   }
 
-  it("throws an IllegalArgumentException if it cannot find a bag-info.txt") {
+  it("fails if there are multiple subdirectories") {
+    withLocalS3Bucket { bucket =>
+      createObjectsWith(bucket,
+        "bag123/subdir1/bag-info.txt",
+        "bag123/subdir2/bag-info.txt",
+      )
+
+      val objectLocation = createObjectLocationWith(bucket, "bag123")
+      assertFailsToFindBagIn(objectLocation)
+    }
+  }
+
+  it("fails if the bag-info.txt is nested more than one directory deep") {
+    withLocalS3Bucket { bucket =>
+      createObjectsWith(bucket,
+        "bag123/subdir/nesteddir/bag-info.txt",
+      )
+
+      val objectLocation = createObjectLocationWith(bucket, "bag123")
+      assertFailsToFindBagIn(objectLocation)
+    }
+  }
+
+  it("fails if it cannot find a bag-info.txt") {
     withLocalS3Bucket { bucket =>
       val objectLocation = createObjectLocationWith(bucket, "doesnotexist")
-
-      val result = s3BagLocator.locateBagInfo(objectLocation)
-      result.isFailure shouldBe true
-      result.failed.get shouldBe a[IllegalArgumentException]
+      assertFailsToFindBagIn(objectLocation)
     }
   }
 
   val s3BagLocator = new S3BagLocator(s3Client)
+
+  private def assertFailsToFindBagIn(objectLocation: ObjectLocation): Assertion = {
+    val result = s3BagLocator.locateBagInfo(objectLocation)
+    result.isFailure shouldBe true
+    result.failed.get shouldBe a[IllegalArgumentException]
+  }
 
   def createObjectsWith(bucket: Bucket, keys: String*): Unit =
     keys.foreach { k =>
