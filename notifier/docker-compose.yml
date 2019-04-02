@@ -16,4 +16,4 @@ wiremock:
   ports:
     - "8080:8080"
   volumes:
-    - "./src/test/resources/wiremock:/home/wiremock"
+    - "${ROOT}/archive/notifier/src/test/resources/wiremock:/home/wiremock"
