@@ -86,7 +86,6 @@ class BagRegisterWorkerTest
         }
       }
     }
-  }
 
   it("sends a failed IngestUpdate if storing fails") {
     withBagRegisterWorker(userBucket = Some(Bucket("does_not_exist"))) {
