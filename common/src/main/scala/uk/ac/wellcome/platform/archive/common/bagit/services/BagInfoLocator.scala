@@ -10,7 +10,6 @@ import scala.util.Try
   */
 object BagInfoLocator {
   private val bagInfoFilename = "bag-info.txt"
-  private val endsWithBagInfoFilenameRegexp = (bagInfoFilename + "$").r
 
   def locateBagInfo(filenames: Iterator[String]): Try[String] = Try {
     val matching =
@@ -30,7 +29,4 @@ object BagInfoLocator {
         )
     }
   }
-
-  def bagPathFrom(bagInfoPath: String): String =
-    endsWithBagInfoFilenameRegexp.replaceFirstIn(bagInfoPath, "")
 }

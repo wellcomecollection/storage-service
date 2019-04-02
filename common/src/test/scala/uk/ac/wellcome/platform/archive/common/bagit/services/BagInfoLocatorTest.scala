@@ -40,29 +40,4 @@ class BagInfoLocatorTest extends FunSpec with Matchers {
         .mkString(", ")}"
     }
   }
-
-  describe("bagPathFrom") {
-    describe("bagPathFromBagInfoPath") {
-      it("returns an empty string if there is no enclosing bag directory") {
-        BagInfoLocator.bagPathFrom(bagInfoPath = "bag-info.txt") shouldBe ""
-      }
-
-      it("finds the bag path when in a parent directory") {
-        BagInfoLocator.bagPathFrom(bagInfoPath = "bag/bag-info.txt") shouldBe "bag/"
-      }
-
-      it("ignores bag-info.txt not at the end") {
-        BagInfoLocator.bagPathFrom(
-          bagInfoPath = "bag-info.txt/bag/bag-info.txt") shouldBe "bag-info.txt/bag/"
-      }
-
-      it("preserves preceding slashes") {
-        BagInfoLocator.bagPathFrom(bagInfoPath = "/bag/bag-info.txt") shouldBe "/bag/"
-      }
-
-      it("preserves preceding slashes even if bag-info.txt is at the root") {
-        BagInfoLocator.bagPathFrom(bagInfoPath = "/bag-info.txt") shouldBe "/"
-      }
-    }
-  }
 }

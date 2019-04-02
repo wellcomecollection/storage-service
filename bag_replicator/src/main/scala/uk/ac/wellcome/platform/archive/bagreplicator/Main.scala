@@ -32,7 +32,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val materializer: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
-    val s3Client = S3Builder.buildS3Client(config)
+    implicit val s3Client = S3Builder.buildS3Client(config)
 
     val operationName = "replicating"
 

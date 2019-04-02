@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import java.time.Instant
 
+import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
@@ -24,7 +25,9 @@ class BagReplicator(
   bagLocator: BagLocator,
   config: ReplicatorDestinationConfig,
   s3PrefixCopier: S3PrefixCopier
-) {
+)(implicit s3Client: AmazonS3) {
+  val s3BagLocator = new S3BagLocator(s3Client)
+
   def replicate(
     location: BagLocation
   )(implicit ec: ExecutionContext)
@@ -45,9 +48,9 @@ class BagReplicator(
         identifier
       )
 
-      bagRoot <- bagLocator.getBagRoot(
-        location.objectLocation
-      )
+      bagRoot <- Future.fromTry {
+        s3BagLocator.locateBagRoot(location.objectLocation)
+      }
 
       _ <- copyBag(
         bagRoot,
