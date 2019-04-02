@@ -21,6 +21,16 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3 {
     }
   }
 
+  it("throws an IllegalArgumentException if it cannot find a bag-info.txt") {
+    withLocalS3Bucket { bucket =>
+      val objectLocation = createObjectLocationWith(bucket, "/doesnotexist")
+
+      val result = s3BagLocator.locateBagInfo(objectLocation)
+      result.isFailure shouldBe true
+      result.failed.get shouldBe a[IllegalArgumentException]
+    }
+  }
+
   val s3BagLocator = new S3BagLocator(s3Client)
 
   def createObjectWith(bucket: Bucket, keys: String*): Unit =
