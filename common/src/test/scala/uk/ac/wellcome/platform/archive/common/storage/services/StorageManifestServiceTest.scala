@@ -60,11 +60,12 @@ class StorageManifestServiceTest
           )
           actualFiles should contain theSameElementsAs expectedFiles
 
-          storageManifest.accessLocation shouldBe StorageLocation(
-            provider = InfrequentAccessStorageProvider,
-            location = bagLocation.objectLocation
+          storageManifest.locations shouldBe List(
+            StorageLocation(
+              provider = InfrequentAccessStorageProvider,
+              location = bagLocation.objectLocation
+            )
           )
-          storageManifest.archiveLocations shouldBe List.empty
         }
       }
     }

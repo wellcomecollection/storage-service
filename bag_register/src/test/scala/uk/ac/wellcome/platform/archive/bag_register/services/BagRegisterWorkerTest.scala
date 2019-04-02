@@ -46,32 +46,32 @@ class BagRegisterWorkerTest
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") {
-          accessBagLocation =>
-            val bagRequest =
-              createBagRequestWith(accessBagLocation)
+        withBag(bucket, bagInfo = bagInfo) { location =>
+          val bagRequest =
+            createBagRequestWith(location)
 
-            val bagId = BagId(
-              space = accessBagLocation.storageSpace,
-              externalIdentifier = bagInfo.externalIdentifier
+          val bagId = BagId(
+            space = location.storageSpace,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
+
+          val future = service.processMessage(bagRequest)
+
+          whenReady(future) { _ =>
+            val storageManifest = getStorageManifest(table, id = bagId)
+
+            storageManifest.space shouldBe bagId.space
+            storageManifest.info shouldBe bagInfo
+            storageManifest.manifest.files should have size 1
+
+            storageManifest.locations shouldBe List(
+              StorageLocation(
+                provider = InfrequentAccessStorageProvider,
+                location = location.objectLocation
+              )
             )
 
-            val future = service.processMessage(bagRequest)
-
-            whenReady(future) { _ =>
-              val storageManifest = getStorageManifest(table, id = bagId)
-
-              storageManifest.space shouldBe bagId.space
-              storageManifest.info shouldBe bagInfo
-              storageManifest.manifest.files should have size 1
-
-              storageManifest.accessLocation shouldBe StorageLocation(
-                provider = InfrequentAccessStorageProvider,
-                location = accessBagLocation.objectLocation
-              )
-              storageManifest.archiveLocations shouldBe List.empty
-
-              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+            storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
               assertTopicReceivesIngestStatus(
                 requestId = bagRequest.requestId,
@@ -82,6 +82,7 @@ class BagRegisterWorkerTest
                 events.head.description shouldBe "Register succeeded (completed)"
               }
             }
+          }
         }
       }
     }

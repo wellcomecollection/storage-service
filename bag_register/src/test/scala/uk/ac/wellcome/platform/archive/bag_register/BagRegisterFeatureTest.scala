@@ -64,12 +64,12 @@ class BagRegisterFeatureTest
             storageManifest.info shouldBe bagInfo
             storageManifest.manifest.files should have size 1
 
-            storageManifest.accessLocation shouldBe StorageLocation(
-              provider = InfrequentAccessStorageProvider,
-              location = location.objectLocation
+            storageManifest.locations shouldBe List(
+              StorageLocation(
+                provider = InfrequentAccessStorageProvider,
+                location = location.objectLocation
+              )
             )
-
-            storageManifest.archiveLocations shouldBe List.empty
 
             storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 

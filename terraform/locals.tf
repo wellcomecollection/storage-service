@@ -41,4 +41,6 @@ locals {
   bagger_ingest_table_stage_arn = "arn:aws:dynamodb:eu-west-1:975596993436:table/storage-staging-migration-status"
 
   goobi_task_role_arn = "arn:aws:iam::299497370133:role/goobi_task_role"
+
+  archivematica_ingests_bucket = "${data.terraform_remote_state.archivematica_infra.ingests_bucket}"
 }

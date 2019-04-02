@@ -18,8 +18,7 @@ case class StorageManifest(
   info: BagInfo,
   manifest: FileManifest,
   tagManifest: FileManifest,
-  accessLocation: StorageLocation,
-  archiveLocations: List[StorageLocation],
+  locations: List[StorageLocation],
   createdDate: Instant
 ) {
   val id = BagId(space, info.externalIdentifier)
