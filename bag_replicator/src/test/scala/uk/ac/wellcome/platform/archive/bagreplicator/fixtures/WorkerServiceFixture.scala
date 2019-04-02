@@ -17,7 +17,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
-import uk.ac.wellcome.storage.s3.S3PrefixCopier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -32,7 +31,7 @@ trait WorkerServiceFixture
                                  ),
                                  ingestTopic: Topic,
                                  outgoingTopic: Topic,
-                                 destination: ReplicatorDestinationConfig =
+                                 config: ReplicatorDestinationConfig =
                                    createReplicatorDestinationConfigWith(
                                      Bucket(randomAlphanumeric())))(
     testWith: TestWith[BagReplicatorWorker, R]): R =
@@ -46,10 +45,7 @@ trait WorkerServiceFixture
                 ingestUpdater = ingestUpdater,
                 outgoing = outgoingPublisher,
                 reporter = reporter,
-                replicator = new BagReplicator(
-                  config = destination,
-                  s3PrefixCopier = S3PrefixCopier(s3Client)
-                )
+                replicator = new BagReplicator(config)
               )
 
               service.run()
