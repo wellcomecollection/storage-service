@@ -57,11 +57,11 @@ class BagReplicator(
     } yield destination
 
     copyOperation.transform {
-      case Success(location) =>
+      case Success(dstLocation) =>
         Success(
           IngestStepSuccess(
             replicationSummary
-              .copy(destination = Some(location))
+              .copy(destination = Some(dstLocation))
               .complete))
 
       case Failure(e) =>
