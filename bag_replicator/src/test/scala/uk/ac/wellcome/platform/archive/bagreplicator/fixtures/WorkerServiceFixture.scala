@@ -7,7 +7,6 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagLocator,
   BagReplicator,
   BagReplicatorWorker
 }
@@ -48,7 +47,6 @@ trait WorkerServiceFixture
                 outgoing = outgoingPublisher,
                 reporter = reporter,
                 replicator = new BagReplicator(
-                  bagLocator = new BagLocator(s3Client),
                   config = destination,
                   s3PrefixCopier = S3PrefixCopier(s3Client)
                 )

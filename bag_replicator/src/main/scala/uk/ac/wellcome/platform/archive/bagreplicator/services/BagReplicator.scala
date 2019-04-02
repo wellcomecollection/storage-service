@@ -1,20 +1,24 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
+import java.io.InputStream
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
   BagLocation,
   BagPath,
   ExternalIdentifier
 }
+import uk.ac.wellcome.platform.archive.common.bagit.parsers.BagInfoParser
 import uk.ac.wellcome.platform.archive.common.operation.services.{
   IngestFailed,
   IngestStepResult,
   IngestStepSuccess
 }
+import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 
@@ -22,7 +26,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class BagReplicator(
-  bagLocator: BagLocator,
   config: ReplicatorDestinationConfig,
   s3PrefixCopier: S3PrefixCopier
 )(implicit s3Client: AmazonS3, ec: ExecutionContext) {
@@ -37,9 +40,7 @@ class BagReplicator(
     )
 
     val copyOperation = for {
-      identifier <- bagLocator.getBagIdentifier(
-        location.objectLocation
-      )
+      identifier <- getBagIdentifier(location)
 
       destination = buildDestination(
         location,
@@ -93,5 +94,15 @@ class BagReplicator(
     storageSpace = location.storageSpace,
     bagPath = BagPath(id.underlying)
   )
+
+  private def getBagIdentifier(bagLocation: BagLocation): Future[ExternalIdentifier] =
+    for {
+      bagInfoLocation <- Future.fromTry {
+        s3BagLocator.locateBagInfo(bagLocation.objectLocation)
+      }
+      inputStream: InputStream <- bagInfoLocation
+        .toInputStream
+      bagInfo: BagInfo <- BagInfoParser.create(inputStream)
+    } yield bagInfo.externalIdentifier
 
 }

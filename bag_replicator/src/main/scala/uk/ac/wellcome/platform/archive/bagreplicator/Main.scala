@@ -7,7 +7,6 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagLocator,
   BagReplicator,
   BagReplicatorWorker
 }
@@ -43,7 +42,6 @@ object Main extends WellcomeTypesafeApp {
       outgoing = OutgoingPublisherBuilder.build(config, operationName),
       reporter = DiagnosticReporterBuilder.build(config),
       replicator = new BagReplicator(
-        bagLocator = new BagLocator(s3Client),
         config = ReplicatorDestinationConfig
           .buildDestinationConfig(config),
         s3PrefixCopier = S3PrefixCopier(s3Client)
