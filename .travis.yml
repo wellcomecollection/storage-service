@@ -18,6 +18,7 @@ jobs:
     - env: SBT_PROJECT=bag_unpacker
     - env: SBT_PROJECT=notifier
     - env: TASK=bagger-publish
+    - env: TASK=python_client-test
 
 script:
   # Wait 45 minutes for the entire build to finish.  Primarily this stops the
@@ -43,6 +44,8 @@ cache:
     - ingests/target
     - ingests_common/target
     - notifier/target
+
+    - python_client/.tox
 
 stages:
   - preflight
