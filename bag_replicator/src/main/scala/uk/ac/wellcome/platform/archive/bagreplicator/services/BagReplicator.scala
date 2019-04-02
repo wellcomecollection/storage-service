@@ -25,14 +25,12 @@ class BagReplicator(
   bagLocator: BagLocator,
   config: ReplicatorDestinationConfig,
   s3PrefixCopier: S3PrefixCopier
-)(implicit s3Client: AmazonS3) {
+)(implicit s3Client: AmazonS3, ec: ExecutionContext) {
   val s3BagLocator = new S3BagLocator(s3Client)
 
   def replicate(
     location: BagLocation
-  )(implicit ec: ExecutionContext)
-    : Future[IngestStepResult[ReplicationSummary]] = {
-
+  ): Future[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       source = location
