@@ -73,19 +73,19 @@ class BagRegisterWorkerTest
 
             storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-              assertTopicReceivesIngestStatus(
-                requestId = bagRequest.requestId,
-                ingestTopic = ingestTopic,
-                status = Ingest.Completed,
-                expectedBag = Some(bagId)) { events =>
-                events.size should be >= 1
-                events.head.description shouldBe "Register succeeded (completed)"
-              }
+            assertTopicReceivesIngestStatus(
+              requestId = bagRequest.requestId,
+              ingestTopic = ingestTopic,
+              status = Ingest.Completed,
+              expectedBag = Some(bagId)) { events =>
+              events.size should be >= 1
+              events.head.description shouldBe "Register succeeded (completed)"
             }
           }
         }
       }
     }
+  }
 
   it("sends a failed IngestUpdate if storing fails") {
     withBagRegisterWorker(userBucket = Some(Bucket("does_not_exist"))) {
