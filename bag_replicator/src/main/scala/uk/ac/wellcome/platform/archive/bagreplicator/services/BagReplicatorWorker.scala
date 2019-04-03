@@ -1,41 +1,61 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
-import akka.Done
-import uk.ac.wellcome.messaging.sqs.NotificationStream
+import akka.actor.ActorSystem
+import com.amazonaws.services.sqs.AmazonSQSAsync
+import grizzled.slf4j.Logging
+import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.worker.models.{
+  DeterministicFailure,
+  Result,
+  Successful
+}
+import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.{
-  DiagnosticReporter,
+  IngestCompleted,
+  IngestFailed,
+  IngestStepSuccess,
   OutgoingPublisher
 }
 import uk.ac.wellcome.typesafe.Runnable
 
-import uk.ac.wellcome.json.JsonUtil._
-
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagReplicatorWorker(
-  stream: NotificationStream[BagRequest],
+  alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
+  bagReplicator: BagReplicator,
   ingestUpdater: IngestUpdater,
-  outgoing: OutgoingPublisher,
-  reporter: DiagnosticReporter,
-  replicator: BagReplicator)(implicit ec: ExecutionContext)
-    extends Runnable {
+  outgoingPublisher: OutgoingPublisher
+)(implicit
+  actorSystem: ActorSystem,
+  ec: ExecutionContext,
+  mc: MonitoringClient,
+  sc: AmazonSQSAsync) extends Runnable with Logging {
+  private val worker: AlpakkaSQSWorker[BagRequest, ReplicationSummary] =
+    AlpakkaSQSWorker[BagRequest, ReplicationSummary](alpakkaSQSWorkerConfig) {
+      bagRequest: BagRequest => processMessage(bagRequest)
+    }
 
-  def run(): Future[Done] = stream.run(processMessage)
-
-  def processMessage(request: BagRequest): Future[Unit] =
+  def processMessage(bagRequest: BagRequest): Future[Result[ReplicationSummary]] =
     for {
-      result <- replicator.replicate(
-        request.bagLocation
-      )
-      _ <- reporter.report(request.requestId, result)
-      _ <- ingestUpdater.send(request.requestId, result)
-      _ <- outgoing.sendIfSuccessful(
-        result,
-        request.copy(
-          bagLocation = result.summary.destination
+      replicationResult <- bagReplicator.replicate(bagRequest.bagLocation)
+      _ <- ingestUpdater.send(bagRequest.requestId, replicationResult)
+      _ <- outgoingPublisher.sendIfSuccessful(
+        replicationResult,
+        bagRequest.copy(
+          bagLocation = replicationResult.summary.destination
         )
       )
-    } yield ()
+
+      result = replicationResult match {
+        case IngestStepSuccess(s) => Successful(Some(s))
+        case IngestCompleted(s)   => Successful(Some(s))
+        case IngestFailed(s, t)   => DeterministicFailure(t, Some(s))
+      }
+    } yield result
+
+  override def run(): Future[Any] = worker.start
 }

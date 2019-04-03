@@ -7,7 +7,7 @@ import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagReplicator,
-  NewBagReplicatorWorker
+  BagReplicatorWorker
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   OperationFixtures,
@@ -33,12 +33,12 @@ trait WorkerServiceFixture
                                  config: ReplicatorDestinationConfig =
                                    createReplicatorDestinationConfigWith(
                                      Bucket(randomAlphanumeric())))(
-    testWith: TestWith[NewBagReplicatorWorker, R]): R =
+    testWith: TestWith[BagReplicatorWorker, R]): R =
     withActorSystem { implicit actorSystem =>
       withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
         withOutgoingPublisher("replicating", outgoingTopic) { outgoingPublisher =>
           withFakeMonitoringClient { implicit monitoringClient =>
-            val service = new NewBagReplicatorWorker(
+            val service = new BagReplicatorWorker(
               alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
               bagReplicator = new BagReplicator(config),
               ingestUpdater = ingestUpdater,
