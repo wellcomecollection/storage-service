@@ -58,13 +58,11 @@ def main():
         api_url=api_url,
         client_id=oauth_details["client_id"],
         client_secret=oauth_details["client_secret"],
-        token_url=oauth_details["token_url"]
+        token_url=oauth_details["token_url"],
     )
 
     location = sess.create_s3_ingest(
-        space_id=space_id,
-        s3_bucket=args["--bucket"],
-        s3_key=bag_path
+        space_id=space_id, s3_bucket=args["--bucket"], s3_key=bag_path
     )
 
     print(location)

@@ -53,7 +53,7 @@ def main():
         api_url=api_url,
         client_id=oauth_details["client_id"],
         client_secret=oauth_details["client_secret"],
-        token_url=oauth_details["token_url"]
+        token_url=oauth_details["token_url"],
     )
 
     resp = sess.get_ingest_from_location(location_url)
