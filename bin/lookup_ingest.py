@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- encoding: utf-8
 """
-Create a request to ingest a bag into storage
+Look up the state of an ingest in the storage API.
 
-Usage: ingest_bag.py <BAG> [--oauth-credentials=<OAUTH_CREDENTIALS>] [--bucket=<BUCKET_NAME>] [--storage-space=<SPACE_NAME>]  [--api=(prod|stage)]
-       ingest_bag.py -h | --help
+Usage: lookup_ingest.py <LOCATION> [--oauth-credentials=<OAUTH_CREDENTIALS>]
+       lookup_ingest.py -h | --help
 
 Arguments:
-    BAG                    Path to BagIt locations to ingest
+    LOCATION                The location of the ingest supplied in the response from
+                            the initial call to /ingests.
 
 Examples:
     ingest_bag.py b22454408.zip
@@ -15,12 +16,6 @@ Examples:
 Options:
     --oauth-credentials=<OAUTH_CREDENTIALS> The location of the oauth credentials
                                             [default: ~/.wellcome-storage/oauth-credentials.json]
-    --bucket=<BUCKET_NAME>                  The S3 bucket containing the bags.
-                                            [default: wellcomecollection-storage-ingests]
-    --storage-space=<SPACE_NAME>            The space to use when storing the bag
-                                            [default: test]
-    --api=(prod|stage)                      The ingests API endpoint to use
-                                            [default: stage]
     -h --help                               Print this help message
 
 OAuth details:
@@ -31,6 +26,7 @@ OAuth details:
     "client_id": "YOUR-CLIENT-ID",
     "client_secret": "YOUR-CLIENT-SECRET"
   }
+
 """
 
 import json
@@ -43,13 +39,12 @@ from wellcome_storage_service import StorageServiceClient
 def main():
     args = docopt.docopt(__doc__)
 
-    bag_path = args["<BAG>"]
-    space_id = args["--storage-space"]
+    location_url = args["<LOCATION>"]
 
     oauth_filepath = os.path.expanduser(args["--oauth-credentials"])
     oauth_details = json.load(open(oauth_filepath))
 
-    if args["--api"] == "stage":
+    if location_url.startswith("https://api-stage"):
         api_url = "https://api-stage.wellcomecollection.org/storage/v1"
     else:
         api_url = "https://api.wellcomecollection.org/storage/v1"
@@ -61,13 +56,8 @@ def main():
         token_url=oauth_details["token_url"]
     )
 
-    location = sess.create_s3_ingest(
-        space_id=space_id,
-        s3_bucket=args["--bucket"],
-        s3_key=bag_path
-    )
-
-    print(location)
+    resp = sess.get_ingest_from_location(location_url)
+    print(json.dumps(resp, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":
