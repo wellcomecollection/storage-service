@@ -1,7 +1,11 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepSuccess}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  IngestFailed,
+  IngestStepSuccess
+}
 
 trait IngestOperationGenerators extends RandomThings {
 
@@ -27,7 +31,7 @@ trait IngestOperationGenerators extends RandomThings {
 
   def createIngestFailureWith(summary: TestSummary = createTestSummary(),
                               throwable: Throwable = new RuntimeException(
-                                   "error"),
+                                "error"),
                               maybeFailureMessage: Option[String] = None) =
     IngestFailed(summary, throwable, maybeFailureMessage)
 }

@@ -8,9 +8,15 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.exception.{InvalidObjectLocationException, PutObjectLocationException}
+import uk.ac.wellcome.platform.archive.common.exception.{
+  InvalidObjectLocationException,
+  PutObjectLocationException
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.operation.models.{WorkFailed, WorkSucceeded}
+import uk.ac.wellcome.platform.archive.common.operation.models.{
+  WorkFailed,
+  WorkSucceeded
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -106,7 +112,8 @@ class UnpackerTest
       val actualResult = result.asInstanceOf[WorkFailed[UnpackSummary]]
       actualResult.e shouldBe a[InvalidObjectLocationException]
       actualResult.e.getMessage should
-        startWith(s"Error getting input stream for s3://$srcLocation: The specified bucket is not valid.")
+        startWith(
+          s"Error getting input stream for s3://$srcLocation: The specified bucket is not valid.")
     }
   }
 

@@ -5,8 +5,18 @@ import java.util.UUID
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestEvent, IngestStatusUpdate, IngestUpdate}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepResult, IngestStepSuccess}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestEvent,
+  IngestStatusUpdate,
+  IngestUpdate
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSuccess
+}
 
 import scala.concurrent.Future
 
@@ -59,16 +69,18 @@ class IngestUpdater(
   }
 
   val descriptionMaxLength = 250
-  private def eventDescription(main:String, maybeInformation:Option[String]): String = {
+  private def eventDescription(main: String,
+                               maybeInformation: Option[String]): String = {
     val separator: String = " - "
     truncate(
       Seq(
-        Some(main), maybeInformation
+        Some(main),
+        maybeInformation
       ).flatten.mkString(separator),
       descriptionMaxLength)
   }
 
-  private def truncate(text: String, maxLength:Int): String = {
+  private def truncate(text: String, maxLength: Int): String = {
     if (text.length > maxLength) {
       val truncatedText = text.take(maxLength).trim
       if (truncatedText.length == maxLength && maxLength > 3) {

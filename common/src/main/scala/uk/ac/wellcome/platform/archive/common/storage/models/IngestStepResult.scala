@@ -18,9 +18,9 @@ case class IngestStepSuccess[T](
 }
 
 case class IngestFailed[T](
-                            summary: T,
-                            e: Throwable,
-                            maybeUserFacingMessage: Option[String] = None
+  summary: T,
+  e: Throwable,
+  maybeUserFacingMessage: Option[String] = None
 ) extends IngestStepResult[T] {
   def withSummary(summary: T) = IngestFailed(summary, e, maybeUserFacingMessage)
 }

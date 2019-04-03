@@ -21,8 +21,9 @@ object ConvertibleToInputStream {
   implicit object ConvertibleToInputStreamObjectLocation
       extends ToInputStream[ObjectLocation] {
 
-    def apply(objectLocation: ObjectLocation)(implicit s3Client: AmazonS3,
-                                              ec: ExecutionContext): Future[InputStream] =
+    def apply(objectLocation: ObjectLocation)(
+      implicit s3Client: AmazonS3,
+      ec: ExecutionContext): Future[InputStream] =
       Future(
         s3Client.getObject(objectLocation.namespace, objectLocation.key)
       ).map(
@@ -32,7 +33,8 @@ object ConvertibleToInputStream {
           case throwable: Throwable =>
             throw new InvalidObjectLocationException(
               objectLocation = objectLocation,
-              message = s"Error getting input stream for s3://$objectLocation: ${throwable.getMessage}",
+              message =
+                s"Error getting input stream for s3://$objectLocation: ${throwable.getMessage}",
               throwable)
         }
   }

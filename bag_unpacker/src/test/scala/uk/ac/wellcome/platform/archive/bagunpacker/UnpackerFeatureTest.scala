@@ -85,7 +85,8 @@ class UnpackerFeatureTest
             status = Ingest.Failed
           ) { events =>
             events.map { _.description } shouldBe
-              List(s"Unpacker failed - location '${unpackBagRequest.sourceLocation}' was invalid")
+              List(
+                s"Unpacker failed - location '${unpackBagRequest.sourceLocation}' was invalid")
           }
         }
     }

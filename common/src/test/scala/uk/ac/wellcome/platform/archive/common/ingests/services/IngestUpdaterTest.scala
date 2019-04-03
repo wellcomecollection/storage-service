@@ -116,7 +116,9 @@ class IngestUpdaterTest
         val bagId = createBagId
         val sendingOperationNotice = ingestUpdater.send(
           requestId,
-          createIngestFailureWith(summary, maybeFailureMessage = Some(failureMessage)),
+          createIngestFailureWith(
+            summary,
+            maybeFailureMessage = Some(failureMessage)),
           Some(bagId))
 
         whenReady(sendingOperationNotice) { _ =>

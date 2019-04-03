@@ -11,7 +11,11 @@ import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.exception.PutObjectLocationException
-import uk.ac.wellcome.platform.archive.common.operation.models.{WorkFailed, WorkResult, WorkSucceeded}
+import uk.ac.wellcome.platform.archive.common.operation.models.{
+  WorkFailed,
+  WorkResult,
+  WorkSucceeded
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,10 +24,9 @@ import scala.util.{Failure, Success}
 case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
                                             ec: ExecutionContext) {
 
-  def unpack(
-    requestId: String,
-    srcLocation: ObjectLocation,
-    dstLocation: ObjectLocation): Future[WorkResult[UnpackSummary]] = {
+  def unpack(requestId: String,
+             srcLocation: ObjectLocation,
+             dstLocation: ObjectLocation): Future[WorkResult[UnpackSummary]] = {
 
     val unpackSummary =
       UnpackSummary(
@@ -52,8 +55,11 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
                   bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
                 )
               } catch {
-                case ae : AmazonS3Exception =>
-                  throw new PutObjectLocationException(dstLocation,"upload failed", ae)
+                case ae: AmazonS3Exception =>
+                  throw new PutObjectLocationException(
+                    dstLocation,
+                    "upload failed",
+                    ae)
               }
 
             } else {
@@ -64,9 +70,9 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
 
     futureSummary.transform {
       case Success(summary) =>
-          Success(WorkSucceeded(summary))
+        Success(WorkSucceeded(summary))
       case Failure(e) =>
-          Success(WorkFailed(unpackSummary, e))
+        Success(WorkFailed(unpackSummary, e))
     }
   }
 

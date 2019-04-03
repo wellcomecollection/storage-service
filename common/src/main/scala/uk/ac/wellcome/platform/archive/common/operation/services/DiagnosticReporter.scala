@@ -4,7 +4,12 @@ import java.util.UUID
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.monitoring.MetricsSender
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepResult, IngestStepSuccess}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSuccess
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 

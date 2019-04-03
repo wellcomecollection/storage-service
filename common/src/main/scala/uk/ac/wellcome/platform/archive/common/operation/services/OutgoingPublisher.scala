@@ -2,7 +2,12 @@ package uk.ac.wellcome.platform.archive.common.operation.services
 
 import io.circe.Encoder
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepResult, IngestStepSuccess}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSuccess
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
