@@ -2,12 +2,12 @@ package uk.ac.wellcome.platform.archive.bagreplicator
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagLocator,
   BagReplicator,
   BagReplicatorWorker
 }
@@ -17,7 +17,6 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OutgoingPublisherBuilder
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
-import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -32,7 +31,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val materializer: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
-    val s3Client = S3Builder.buildS3Client(config)
+    implicit val s3Client: AmazonS3 = S3Builder.buildS3Client(config)
 
     val operationName = "replicating"
 
@@ -43,10 +42,8 @@ object Main extends WellcomeTypesafeApp {
       outgoing = OutgoingPublisherBuilder.build(config, operationName),
       reporter = DiagnosticReporterBuilder.build(config),
       replicator = new BagReplicator(
-        bagLocator = new BagLocator(s3Client),
         config = ReplicatorDestinationConfig
-          .buildDestinationConfig(config),
-        s3PrefixCopier = S3PrefixCopier(s3Client)
+          .buildDestinationConfig(config)
       )
     )
   }

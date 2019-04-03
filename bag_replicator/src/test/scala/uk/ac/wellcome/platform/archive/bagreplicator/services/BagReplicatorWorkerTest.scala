@@ -38,7 +38,7 @@ class BagReplicatorWorkerTest
             withBagReplicatorWorker(
               ingestTopic = ingestTopic,
               outgoingTopic = outgoingTopic,
-              destination = destination) { service =>
+              config = destination) { service =>
               withBag(ingestsBucket) { srcBagLocation =>
                 val bagRequest = createBagRequestWith(srcBagLocation)
 

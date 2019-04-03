@@ -38,7 +38,7 @@ class BagReplicatorFeatureTest
                 queue,
                 ingestTopic = ingestTopic,
                 outgoingTopic = outgoingTopic,
-                destination = destination) { _ =>
+                config = destination) { _ =>
                 val bagInfo = createBagInfo
 
                 withBag(ingestsBucket, bagInfo = bagInfo) { srcBagLocation =>
