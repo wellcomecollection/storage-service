@@ -1,13 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  IngestCompleted,
-  IngestFailed,
-  IngestStepSuccess
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepSuccess}
 
-trait OperationGenerators extends RandomThings {
+trait IngestOperationGenerators extends RandomThings {
 
   case class TestSummary(description: String) {
     override def toString: String = this.description
@@ -27,10 +23,11 @@ trait OperationGenerators extends RandomThings {
   def createOperationCompletedWith(summary: TestSummary = createTestSummary()) =
     IngestCompleted(summary)
 
-  def createOperationFailure() = createOperationFailureWith()
+  def createOperationFailure() = createIngestFailureWith()
 
-  def createOperationFailureWith(summary: TestSummary = createTestSummary(),
-                                 throwable: Throwable = new RuntimeException(
-                                   "error")) =
-    IngestFailed(summary, throwable)
+  def createIngestFailureWith(summary: TestSummary = createTestSummary(),
+                              throwable: Throwable = new RuntimeException(
+                                   "error"),
+                              maybeFailureMessage: Option[String] = None) =
+    IngestFailed(summary, throwable, maybeFailureMessage)
 }

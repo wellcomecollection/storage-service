@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.operation.services
+package uk.ac.wellcome.platform.archive.common.storage.models
 
 sealed trait IngestStepResult[T] {
   val summary: T
@@ -18,8 +18,9 @@ case class IngestStepSuccess[T](
 }
 
 case class IngestFailed[T](
-  summary: T,
-  e: Throwable
+                            summary: T,
+                            e: Throwable,
+                            maybeUserFacingMessage: Option[String] = None
 ) extends IngestStepResult[T] {
-  def withSummary(summary: T) = IngestFailed(summary, e)
+  def withSummary(summary: T) = IngestFailed(summary, e, maybeUserFacingMessage)
 }

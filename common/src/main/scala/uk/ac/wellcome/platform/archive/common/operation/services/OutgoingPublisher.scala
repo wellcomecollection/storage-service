@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.common.operation.services
 
 import io.circe.Encoder
 import uk.ac.wellcome.messaging.sns.SNSWriter
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepResult, IngestStepSuccess}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -16,7 +17,7 @@ class OutgoingPublisher(
     result match {
       case IngestStepSuccess(_) | IngestCompleted(_) =>
         send(outgoing)
-      case IngestFailed(_, _) =>
+      case IngestFailed(_, _, _) =>
         Future.successful(())
     }
   }

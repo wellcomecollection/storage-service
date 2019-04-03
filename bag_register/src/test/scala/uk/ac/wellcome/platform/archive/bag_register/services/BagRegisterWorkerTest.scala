@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
-  OperationGenerators
+  IngestOperationGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
@@ -27,7 +27,7 @@ class BagRegisterWorkerTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with OperationGenerators
+    with IngestOperationGenerators
     with BagInfoGenerators
     with BagLocationFixtures
     with IngestUpdateAssertions

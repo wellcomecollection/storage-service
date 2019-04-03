@@ -1,16 +1,16 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.storage
 
-import java.io._
+import java.io.{File, FileInputStream, FileOutputStream, InputStream}
 
 import org.apache.commons.compress.archivers.ArchiveEntry
-import org.apache.commons.io.IOUtils
+import org.apache.commons.compress.utils.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.operation.services.IngestStepResult
-
 import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.concurrent.Future
 
 class ArchiveTest
     extends FunSpec
@@ -39,21 +39,21 @@ class ArchiveTest
       entries + entry
     }
 
-    val unpack =
+    val unpack: Future[Set[ArchiveEntry]] =
       Archive.unpack(
         inputStream
       )(
         Set.empty[ArchiveEntry]
       )(fold)
 
-    whenReady(unpack) { unpacked: IngestStepResult[Set[ArchiveEntry]] =>
-      unpacked.summary.diff(expectedEntries) shouldBe Set.empty
+    whenReady(unpack) { unpacked =>
+      unpacked.diff(expectedEntries) shouldBe Set.empty
 
       val expectedFiles = files
         .map(file => relativeToTmpDir(file) -> file)
         .toMap
 
-      val actualFiles = unpacked.summary
+      val actualFiles = unpacked
         .map(entry => entry.getName -> new File(tmp, entry.getName))
         .toMap
 

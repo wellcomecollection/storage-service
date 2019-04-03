@@ -5,14 +5,13 @@ import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  IngestFailed,
-  IngestStepResult
-}
+import uk.ac.wellcome.platform.archive.common.exception.PutObjectLocationException
+import uk.ac.wellcome.platform.archive.common.operation.models.{WorkFailed, WorkResult, WorkSucceeded}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -24,7 +23,7 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
   def unpack(
     requestId: String,
     srcLocation: ObjectLocation,
-    dstLocation: ObjectLocation): Future[IngestStepResult[UnpackSummary]] = {
+    dstLocation: ObjectLocation): Future[WorkResult[UnpackSummary]] = {
 
     val unpackSummary =
       UnpackSummary(
@@ -36,35 +35,38 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
     val futureSummary = for {
       packageInputStream <- srcLocation.toInputStream
 
-      result <- Archive
+      unpackSummary <- Archive
         .unpack[UnpackSummary](packageInputStream)(unpackSummary) {
           (summary: UnpackSummary,
            inputStream: InputStream,
            archiveEntry: ArchiveEntry) =>
             if (!archiveEntry.isDirectory) {
-
-              val archiveEntrySize = putObject(
-                inputStream,
-                archiveEntry,
-                dstLocation
-              )
-
-              summary.copy(
-                fileCount = summary.fileCount + 1,
-                bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
-              )
+              try {
+                val archiveEntrySize = putObject(
+                  inputStream,
+                  archiveEntry,
+                  dstLocation
+                )
+                summary.copy(
+                  fileCount = summary.fileCount + 1,
+                  bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
+                )
+              } catch {
+                case ae : AmazonS3Exception =>
+                  throw new PutObjectLocationException(dstLocation,"upload failed", ae)
+              }
 
             } else {
               summary
             }
         }
-    } yield result.withSummary(summary = result.summary.complete)
+    } yield unpackSummary
 
     futureSummary.transform {
       case Success(summary) =>
-        Success(summary)
+          Success(WorkSucceeded(summary))
       case Failure(e) =>
-        Success(IngestFailed(unpackSummary.complete, e))
+          Success(WorkFailed(unpackSummary, e))
     }
   }
 

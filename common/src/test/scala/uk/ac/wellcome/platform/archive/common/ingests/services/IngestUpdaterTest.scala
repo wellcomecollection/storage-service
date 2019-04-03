@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
-  OperationGenerators
+  IngestOperationGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -23,14 +23,14 @@ class IngestUpdaterTest
     with Eventually
     with IntegrationPatience
     with OperationFixtures
-    with OperationGenerators
+    with IngestOperationGenerators
     with BagIdGenerators {
 
-  val operationName: String = randomAlphanumeric()
+  val stepName: String = randomAlphanumeric()
 
   it("sends an ingest update when successful") {
     withLocalSnsTopic { ingestTopic =>
-      withIngestUpdater(operationName, ingestTopic) { ingestUpdater =>
+      withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
         val requestId = UUID.randomUUID()
         val summary = createTestSummary()
 
@@ -41,7 +41,7 @@ class IngestUpdaterTest
           eventually {
             assertTopicReceivesIngestEvent(requestId, ingestTopic) { events =>
               events should have size 1
-              events.head.description shouldBe s"${operationName.capitalize} succeeded"
+              events.head.description shouldBe s"${stepName.capitalize} succeeded"
             }
           }
         }
@@ -52,7 +52,7 @@ class IngestUpdaterTest
 
   it("sends an ingest update when completed") {
     withLocalSnsTopic { ingestTopic =>
-      withIngestUpdater(operationName, ingestTopic) { ingestUpdater =>
+      withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
         val requestId = UUID.randomUUID()
         val summary = createTestSummary()
 
@@ -70,7 +70,7 @@ class IngestUpdaterTest
               Ingest.Completed,
               Some(bagId)) { events =>
               events should have size 1
-              events.head.description shouldBe s"${operationName.capitalize} succeeded (completed)"
+              events.head.description shouldBe s"${stepName.capitalize} succeeded (completed)"
             }
           }
         }
@@ -80,14 +80,14 @@ class IngestUpdaterTest
 
   it("sends an ingest update when failed") {
     withLocalSnsTopic { ingestTopic =>
-      withIngestUpdater(operationName, ingestTopic) { ingestUpdater =>
+      withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
         val requestId = UUID.randomUUID()
         val summary = createTestSummary()
 
         val bagId = createBagId
         val sendingOperationNotice = ingestUpdater.send(
           requestId,
-          createOperationFailureWith(summary),
+          createIngestFailureWith(summary),
           Some(bagId))
 
         whenReady(sendingOperationNotice) { _ =>
@@ -98,7 +98,36 @@ class IngestUpdaterTest
               Ingest.Failed,
               Some(bagId)) { events =>
               events should have size 1
-              events.head.description shouldBe s"${operationName.capitalize} failed"
+              events.head.description shouldBe s"${stepName.capitalize} failed"
+            }
+          }
+        }
+      }
+    }
+  }
+
+  it("sends an ingest update when failed with a failure message") {
+    withLocalSnsTopic { ingestTopic =>
+      withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
+        val requestId = UUID.randomUUID()
+        val summary = createTestSummary()
+        val failureMessage = randomAlphanumeric(length = 50)
+
+        val bagId = createBagId
+        val sendingOperationNotice = ingestUpdater.send(
+          requestId,
+          createIngestFailureWith(summary, maybeFailureMessage = Some(failureMessage)),
+          Some(bagId))
+
+        whenReady(sendingOperationNotice) { _ =>
+          eventually {
+            assertTopicReceivesIngestStatus(
+              requestId,
+              ingestTopic,
+              Ingest.Failed,
+              Some(bagId)) { events =>
+              events should have size 1
+              events.head.description shouldBe s"${stepName.capitalize} failed - $failureMessage"
             }
           }
         }
