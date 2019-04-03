@@ -33,7 +33,7 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
                              ingestUpdater: IngestUpdater,
                              outgoingPublisher: OutgoingPublisher,
                              unpacker: Unpacker)(implicit ac: ActorSystem,
-                                                 ex: ExecutionContext,
+                                                 ec: ExecutionContext,
                                                  mc: MonitoringClient,
                                                  sc: AmazonSQSAsync)
     extends Runnable
