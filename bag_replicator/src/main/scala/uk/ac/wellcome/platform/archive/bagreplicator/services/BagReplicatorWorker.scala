@@ -35,7 +35,7 @@ class BagReplicatorWorker(
         result,
         BagRequest(
           requestId = request.requestId,
-          bagLocation = result.summary.destination
+          bagLocation = result.summary.dstLocation
             .getOrElse(
               throw new RuntimeException(
                 "No destination provided by replication!"

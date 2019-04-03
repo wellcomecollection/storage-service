@@ -5,7 +5,10 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{
+  ReplicationResult,
+  ReplicationSummary
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   BagLocation,
@@ -34,9 +37,9 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
   def replicate(
     location: BagLocation
   ): Future[IngestStepResult[ReplicationSummary]] = {
-    val replicationSummary = ReplicationSummary(
+    val replicationSummary = ReplicationResult(
       startTime = Instant.now(),
-      source = location
+      srcLocation = location
     )
 
     val copyOperation = for {
@@ -63,7 +66,7 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
         Success(
           IngestStepSuccess(
             replicationSummary
-              .copy(destination = Some(dstLocation))
+              .copy(dstLocation = Some(dstLocation))
               .complete))
 
       case Failure(e) =>

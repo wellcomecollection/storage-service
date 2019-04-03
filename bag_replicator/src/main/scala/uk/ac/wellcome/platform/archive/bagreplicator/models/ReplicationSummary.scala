@@ -5,23 +5,30 @@ import java.time.Instant
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
-case class ReplicationSummary(
-  source: BagLocation,
-  destination: Option[BagLocation] = None,
+trait ReplicationSummary extends Summary {
+  val srcLocation: BagLocation
+  val dstLocation: Option[BagLocation]
+  val startTime: Instant
+  val endTime: Option[Instant]
+}
+
+case class ReplicationResult(
+  srcLocation: BagLocation,
+  dstLocation: Option[BagLocation] = None,
   startTime: Instant,
   endTime: Option[Instant] = None,
-) extends Summary {
-  def complete: ReplicationSummary = {
+) extends ReplicationSummary {
+  def complete: ReplicationResult =
     this.copy(
       endTime = Some(Instant.now())
     )
-  }
-  override def toString(): String = {
-    val destinationCompletePath = destination match {
+
+  override def toString: String = {
+    val destinationCompletePath = dstLocation match {
       case None                 => "<no-destination>"
       case Some(theDestination) => theDestination.completePath
     }
-    f"""|src=${source.completePath}
+    f"""|src=${srcLocation.completePath}
         |dst=$destinationCompletePath
         |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
