@@ -28,10 +28,8 @@ trait BagUnpackerFixtures
     with MetricsFixtures
     with OperationFixtures {
 
-  def withFakeMonitoringClient[R](
-    testWith: TestWith[FakeMonitoringClient, R]): R = {
+  def withFakeMonitoringClient[R](testWith: TestWith[FakeMonitoringClient, R]): R =
     testWith(new FakeMonitoringClient())
-  }
 
   def withBagUnpackerWorker[R](
     queue: Queue,
