@@ -18,7 +18,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagUnpackerFixtures
@@ -28,11 +27,8 @@ trait BagUnpackerFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures {
 
-  def withFakeMonitoringClient[R]()(
-    testWith: TestWith[FakeMonitoringClient, R])(
-    implicit executionContext: ExecutionContext): R = {
-    testWith(new FakeMonitoringClient()(executionContext))
-  }
+  def withFakeMonitoringClient[R](testWith: TestWith[FakeMonitoringClient, R]): R =
+    testWith(new FakeMonitoringClient())
 
   def withBagUnpackerWorker[R](
     queue: Queue,
@@ -43,7 +39,7 @@ trait BagUnpackerFixtures
     withActorSystem { implicit actorSystem =>
       withIngestUpdater("unpacker", ingestTopic) { ingestUpdater =>
         withOutgoingPublisher("unpacker", outgoingTopic) { ongoingPublisher =>
-          withFakeMonitoringClient() { implicit monitoringClient =>
+          withFakeMonitoringClient { implicit monitoringClient =>
             val bagUnpackerWorker = BagUnpackerWorker(
               alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
               bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
