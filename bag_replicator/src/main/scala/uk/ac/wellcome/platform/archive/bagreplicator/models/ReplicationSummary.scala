@@ -7,31 +7,58 @@ import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 trait ReplicationSummary extends Summary {
   val srcLocation: BagLocation
-  val dstLocation: Option[BagLocation]
   val startTime: Instant
-  val endTime: Option[Instant]
 }
 
-case class ReplicationResult(
+case class ReplicationStarted(
   srcLocation: BagLocation,
-  dstLocation: Option[BagLocation] = None,
   startTime: Instant,
-  endTime: Option[Instant] = None,
+  endTime: Option[Instant] = None
 ) extends ReplicationSummary {
-  def complete: ReplicationResult =
-    this.copy(
+  def completedWith(dstLocation: BagLocation): ReplicationCompleted =
+    ReplicationCompleted(
+      srcLocation = srcLocation,
+      dstLocation = dstLocation,
+      startTime = startTime,
       endTime = Some(Instant.now())
     )
 
-  override def toString: String = {
-    val destinationCompletePath = dstLocation match {
-      case None                 => "<no-destination>"
-      case Some(theDestination) => theDestination.completePath
-    }
-    f"""|src=${srcLocation.completePath}
-        |dst=$destinationCompletePath
+  def failed: ReplicationFailed =
+    ReplicationFailed(
+      srcLocation = srcLocation,
+      startTime = startTime,
+      endTime = Some(Instant.now())
+    )
+
+  override def toString: String =
+    s"""|src=${srcLocation.completePath}
         |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")
-  }
+}
+
+case class ReplicationCompleted(
+  srcLocation: BagLocation,
+  dstLocation: BagLocation,
+  startTime: Instant,
+  endTime: Option[Instant]
+) extends ReplicationSummary {
+  override def toString: String =
+    s"""|src=${srcLocation.completePath}
+        |dst=${dstLocation.completePath}
+        |durationSeconds=$durationSeconds
+        |duration=$formatDuration""".stripMargin
+      .replaceAll("\n", ", ")
+}
+
+case class ReplicationFailed(
+  srcLocation: BagLocation,
+  startTime: Instant,
+  endTime: Option[Instant]
+) extends ReplicationSummary {
+  override def toString: String =
+    s"""|src=${srcLocation.completePath}
+        |durationSeconds=$durationSeconds
+        |duration=$formatDuration""".stripMargin
+      .replaceAll("\n", ", ")
 }

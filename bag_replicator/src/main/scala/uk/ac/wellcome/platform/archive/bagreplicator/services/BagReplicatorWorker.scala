@@ -4,13 +4,10 @@ import akka.Done
 import uk.ac.wellcome.messaging.sqs.NotificationStream
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  DiagnosticReporter,
-  OutgoingPublisher
-}
+import uk.ac.wellcome.platform.archive.common.operation.services.{DiagnosticReporter, OutgoingPublisher}
 import uk.ac.wellcome.typesafe.Runnable
-
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationCompleted
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,17 +28,13 @@ class BagReplicatorWorker(
       )
       _ <- reporter.report(request.requestId, result)
       _ <- ingestUpdater.send(request.requestId, result)
-      _ <- outgoing.sendIfSuccessful(
-        result,
-        BagRequest(
-          requestId = request.requestId,
-          bagLocation = result.summary.dstLocation
-            .getOrElse(
-              throw new RuntimeException(
-                "No destination provided by replication!"
-              )
-            )
-        )
-      )
+      _ <- result.summary match {
+        case ReplicationCompleted(_, dstLocation, _, _) =>
+          outgoing.sendIfSuccessful(
+            result,
+            request.copy(bagLocation = dstLocation)
+          )
+        case _ => Future.successful(())
+      }
     } yield ()
 }
