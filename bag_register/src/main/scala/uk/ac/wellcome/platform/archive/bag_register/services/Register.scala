@@ -5,9 +5,9 @@ import java.time.Instant
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
 import uk.ac.wellcome.platform.archive.common.operation.services.{
-  OperationCompleted,
-  OperationFailure,
-  OperationResult
+  IngestCompleted,
+  IngestFailed,
+  IngestStepResult
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestService,
@@ -23,7 +23,7 @@ class Register(
 ) {
 
   type FutureSummary =
-    Future[OperationResult[RegistrationSummary]]
+    Future[IngestStepResult[RegistrationSummary]]
 
   def update(
     location: BagLocation
@@ -52,10 +52,10 @@ class Register(
   }
 
   private def completed(r: RegistrationSummary) = {
-    Success(OperationCompleted(r.complete))
+    Success(IngestCompleted(r.complete))
   }
 
   private def failed(r: RegistrationSummary, e: Throwable) = {
-    Success(OperationFailure(r.complete, e))
+    Success(IngestFailed(r.complete, e))
   }
 }

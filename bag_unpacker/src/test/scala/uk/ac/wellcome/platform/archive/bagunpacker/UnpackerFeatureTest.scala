@@ -4,72 +4,66 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
-  CompressFixture,
-  TestArchive,
-  WorkerServiceFixture
+  BagUnpackerFixtures,
+  CompressFixture
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagLocation,
   BagPath
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.generators.UnpackBagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   BagRequest,
-  Ingest,
-  UnpackBagRequest
+  Ingest
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 class UnpackerFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
     with RandomThings
-    with WorkerServiceFixture
+    with BagUnpackerFixtures
+    with UnpackBagRequestGenerators
     with IntegrationPatience
     with CompressFixture
     with IngestUpdateAssertions {
 
   it("receives and processes a notification") {
-    withApp {
+    val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
+    withBagUnpackerApp {
       case (_, srcBucket, queue, ingestTopic, outgoingTopic) =>
-        val (archiveFile, filesInArchive, entries) =
-          createTgzArchiveWithRandomFiles()
         withArchive(srcBucket, archiveFile) { archiveLocation =>
-          withBagNotification(
-            queue,
-            srcBucket,
-            randomUUID,
-            TestArchive(archiveFile, filesInArchive, entries, archiveLocation)
-          ) { unpackBagRequest =>
-            eventually {
+          val unpackBagRequest =
+            createUnpackBagRequestWith(sourceLocation = archiveLocation)
+          sendNotificationToSQS(queue, unpackBagRequest)
 
-              val expectedNotification = BagRequest(
-                requestId = unpackBagRequest.requestId,
-                bagLocation = BagLocation(
-                  storageNamespace = srcBucket.name,
-                  storagePrefix = None,
-                  storageSpace = unpackBagRequest.storageSpace,
-                  bagPath = BagPath(unpackBagRequest.requestId.toString)
-                )
+          eventually {
+            val expectedNotification = BagRequest(
+              requestId = unpackBagRequest.requestId,
+              bagLocation = BagLocation(
+                storageNamespace = srcBucket.name,
+                storagePrefix = None,
+                storageSpace = unpackBagRequest.storageSpace,
+                bagPath = BagPath(unpackBagRequest.requestId.toString)
               )
+            )
 
-              assertSnsReceivesOnly[BagRequest](
-                expectedNotification,
-                outgoingTopic
+            assertSnsReceivesOnly[BagRequest](
+              expectedNotification,
+              outgoingTopic
+            )
+
+            assertTopicReceivesIngestEvent(
+              requestId = unpackBagRequest.requestId,
+              ingestTopic = ingestTopic
+            ) { events =>
+              events.map {
+                _.description
+              } shouldBe List(
+                "Unpacker succeeded"
               )
-
-              topicReceivesIngestEvent(
-                requestId = unpackBagRequest.requestId,
-                ingestTopic = ingestTopic
-              ) { events =>
-                events.map {
-                  _.description
-                } shouldBe List(
-                  "Unpacker succeeded"
-                )
-              }
             }
           }
         }
@@ -77,20 +71,15 @@ class UnpackerFeatureTest
   }
 
   it("sends a failed Ingest update if it cannot read the bag") {
-    withApp {
-      case (service, _, _, ingestTopic, outgoingTopic) =>
-        val unpackBagRequest = UnpackBagRequest(
-          requestId = randomUUID,
-          sourceLocation = createObjectLocation,
-          storageSpace = StorageSpace(randomAlphanumeric())
-        )
+    withBagUnpackerApp {
+      case (_, _, queue, ingestTopic, outgoingTopic) =>
+        val unpackBagRequest = createUnpackBagRequest()
+        sendNotificationToSQS(queue, unpackBagRequest)
 
-        val future = service.processMessage(unpackBagRequest)
-
-        whenReady(future) { _ =>
+        eventually {
           assertSnsReceivesNothing(outgoingTopic)
 
-          topicReceivesIngestStatus(
+          assertTopicReceivesIngestStatus(
             requestId = unpackBagRequest.requestId,
             ingestTopic = ingestTopic,
             status = Ingest.Failed

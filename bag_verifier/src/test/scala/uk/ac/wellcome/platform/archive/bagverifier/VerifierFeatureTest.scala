@@ -36,7 +36,7 @@ class VerifierFeatureTest
                   eventually {
                     listMessagesReceivedFromSNS(outgoingTopic)
 
-                    topicReceivesIngestEvent(
+                    assertTopicReceivesIngestEvent(
                       requestId = bagRequest.requestId,
                       ingestTopic = ingestTopic
                     ) { events =>
@@ -75,7 +75,7 @@ class VerifierFeatureTest
                     sendNotificationToSQS(queue, bagRequest)
 
                     eventually {
-                      topicReceivesIngestStatus(
+                      assertTopicReceivesIngestStatus(
                         requestId = bagRequest.requestId,
                         ingestTopic = ingestTopic,
                         status = Ingest.Failed

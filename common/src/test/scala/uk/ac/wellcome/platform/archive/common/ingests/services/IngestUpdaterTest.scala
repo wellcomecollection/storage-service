@@ -39,7 +39,7 @@ class IngestUpdaterTest
 
         whenReady(sendingOperationNotice) { _ =>
           eventually {
-            topicReceivesIngestEvent(requestId, ingestTopic) { events =>
+            assertTopicReceivesIngestEvent(requestId, ingestTopic) { events =>
               events should have size 1
               events.head.description shouldBe s"${operationName.capitalize} succeeded"
             }
@@ -64,7 +64,7 @@ class IngestUpdaterTest
 
         whenReady(sendingOperationNotice) { _ =>
           eventually {
-            topicReceivesIngestStatus(
+            assertTopicReceivesIngestStatus(
               requestId,
               ingestTopic,
               Ingest.Completed,
@@ -92,7 +92,7 @@ class IngestUpdaterTest
 
         whenReady(sendingOperationNotice) { _ =>
           eventually {
-            topicReceivesIngestStatus(
+            assertTopicReceivesIngestStatus(
               requestId,
               ingestTopic,
               Ingest.Failed,

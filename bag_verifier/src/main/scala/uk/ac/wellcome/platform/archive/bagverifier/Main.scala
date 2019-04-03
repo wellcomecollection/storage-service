@@ -11,7 +11,11 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifierWorker,
   Verifier
 }
-import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  DiagnosticReporterBuilder,
+  IngestUpdaterBuilder,
+  OutgoingPublisherBuilder
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -44,14 +48,12 @@ object Main extends WellcomeTypesafeApp {
 
     val operationName = "verification"
 
-    val ingestUpdater = OperationBuilder
-      .buildIngestUpdater(config, operationName)
+    val ingestUpdater = IngestUpdaterBuilder.build(config, operationName)
 
-    val outgoingPublisher = OperationBuilder
-      .buildOutgoingPublisher(config, operationName)
+    val outgoingPublisher =
+      OutgoingPublisherBuilder.build(config, operationName)
 
-    val reporter = OperationBuilder
-      .buildOperationReporter(config)
+    val reporter = DiagnosticReporterBuilder.build(config)
 
     new BagVerifierWorker(
       stream,

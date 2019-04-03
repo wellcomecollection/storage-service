@@ -36,7 +36,7 @@ class VerifierWorkerTest
 
               whenReady(future) { _ =>
                 eventually {
-                  topicReceivesIngestEvent(
+                  assertTopicReceivesIngestEvent(
                     requestId = bagRequest.requestId,
                     ingestTopic = ingestTopic
                   ) { events =>
@@ -71,7 +71,7 @@ class VerifierWorkerTest
                 whenReady(future) { _ =>
                   assertSnsReceivesNothing(outgoingTopic)
 
-                  topicReceivesIngestStatus(
+                  assertTopicReceivesIngestStatus(
                     requestId = bagRequest.requestId,
                     ingestTopic = ingestTopic,
                     status = Ingest.Failed
@@ -108,7 +108,7 @@ class VerifierWorkerTest
 
                     assertSnsReceivesNothing(outgoingTopic)
 
-                    topicReceivesIngestStatus(
+                    assertTopicReceivesIngestStatus(
                       requestId = bagRequest.requestId,
                       ingestTopic = ingestTopic,
                       status = Ingest.Failed
@@ -137,7 +137,7 @@ class VerifierWorkerTest
             val future = service.processMessage(bagRequest)
 
             whenReady(future.failed) { _ =>
-              topicReceivesIngestEvent(
+              assertTopicReceivesIngestEvent(
                 requestId = bagRequest.requestId,
                 ingestTopic = ingestTopic
               ) { events =>

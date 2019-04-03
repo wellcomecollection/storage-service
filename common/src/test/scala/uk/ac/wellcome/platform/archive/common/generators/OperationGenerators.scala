@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.archive.common.generators
 
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.operation.services.{
-  OperationCompleted,
-  OperationFailure,
-  OperationSuccess
+  IngestCompleted,
+  IngestFailed,
+  IngestStepSuccess
 }
 
 trait OperationGenerators extends RandomThings {
@@ -20,17 +20,17 @@ trait OperationGenerators extends RandomThings {
   def createOperationSuccess() = createOperationSuccessWith()
 
   def createOperationSuccessWith(summary: TestSummary = createTestSummary()) =
-    OperationSuccess(summary)
+    IngestStepSuccess(summary)
 
   def createOperationCompleted() = createOperationCompletedWith()
 
   def createOperationCompletedWith(summary: TestSummary = createTestSummary()) =
-    OperationCompleted(summary)
+    IngestCompleted(summary)
 
   def createOperationFailure() = createOperationFailureWith()
 
   def createOperationFailureWith(summary: TestSummary = createTestSummary(),
                                  throwable: Throwable = new RuntimeException(
                                    "error")) =
-    OperationFailure(summary, throwable)
+    IngestFailed(summary, throwable)
 }

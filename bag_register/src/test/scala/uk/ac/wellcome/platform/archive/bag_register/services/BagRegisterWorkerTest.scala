@@ -73,7 +73,7 @@ class BagRegisterWorkerTest
 
             storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-            topicReceivesIngestStatus(
+            assertTopicReceivesIngestStatus(
               requestId = bagRequest.requestId,
               ingestTopic = ingestTopic,
               status = Ingest.Completed,
@@ -114,7 +114,7 @@ class BagRegisterWorkerTest
             val future = service.processMessage(bagRequest)
 
             whenReady(future) { _ =>
-              topicReceivesIngestStatus(
+              assertTopicReceivesIngestStatus(
                 requestId = bagRequest.requestId,
                 ingestTopic = ingestTopic,
                 status = Ingest.Failed,

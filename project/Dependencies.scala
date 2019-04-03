@@ -4,8 +4,8 @@ object WellcomeDependencies {
   lazy val versions = new {
     val fixtures   = "1.0.0"
     val json       = "1.1.1"
-    val messaging  = "1.6.0"
-    val monitoring = "2.0.0"
+    val messaging  = "1.9.0"
+    val monitoring = "2.1.0"
     val storage    = "3.5.1"
     val typesafe   = "1.0.0"
   }
@@ -40,10 +40,15 @@ object WellcomeDependencies {
     version = versions.typesafe
   ) ++ fixturesLibrary
 
-  val messagingTypesafeLibrary: Seq[ModuleID] = messagingLibrary ++ library(
+  val monitoringTypesafeLibrary: Seq[ModuleID] = library(
+    name = "monitoring_typesafe",
+    version = versions.monitoring
+  )
+
+  val messagingTypesafeLibrary: Seq[ModuleID] = library(
     name = "messaging_typesafe",
     version = versions.messaging
-  ) ++ monitoringLibrary ++ storageLibrary ++ typesafeLibrary
+  )
 
   private def library(name: String, version: String): Seq[ModuleID] = Seq(
     "uk.ac.wellcome" %% name % version,
@@ -109,11 +114,16 @@ object ExternalDependencies {
 object StorageDependencies {
   val commonDependencies =
     ExternalDependencies.commonsIODependencies ++
-    ExternalDependencies.akkaDependencies ++
-    ExternalDependencies.cloudwatchMetricsDependencies ++
-    ExternalDependencies.mockitoDependencies ++
-    ExternalDependencies.scalatestDependencies ++
-    ExternalDependencies.logbackDependencies ++
-    WellcomeDependencies.jsonLibrary ++
-    WellcomeDependencies.messagingTypesafeLibrary
+      ExternalDependencies.akkaDependencies ++
+      ExternalDependencies.cloudwatchMetricsDependencies ++
+      ExternalDependencies.mockitoDependencies ++
+      ExternalDependencies.scalatestDependencies ++
+      ExternalDependencies.logbackDependencies ++
+      WellcomeDependencies.jsonLibrary ++
+      WellcomeDependencies.messagingLibrary ++
+      WellcomeDependencies.monitoringLibrary ++
+      WellcomeDependencies.storageLibrary ++
+      WellcomeDependencies.typesafeLibrary ++
+      WellcomeDependencies.monitoringTypesafeLibrary ++
+      WellcomeDependencies.messagingTypesafeLibrary
 }

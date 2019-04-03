@@ -9,10 +9,10 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
-import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder
-import uk.ac.wellcome.platform.archive.common.config.builders.OperationBuilder.{
-  buildIngestUpdater,
-  buildOutgoingPublisher
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  DiagnosticReporterBuilder,
+  IngestUpdaterBuilder,
+  OutgoingPublisherBuilder
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
@@ -46,20 +46,19 @@ object Main extends WellcomeTypesafeApp {
 
     val operationName = "register"
 
-    val ingestUpdater = buildIngestUpdater(
+    val ingestUpdater = IngestUpdaterBuilder.build(
       config,
       operationName
     )
 
-    val reporter = OperationBuilder
-      .buildOperationReporter(config)
+    val reporter = DiagnosticReporterBuilder.build(config)
 
     val register = new Register(
       storageManifestService,
       storageManifestVHS
     )
 
-    val outgoing = buildOutgoingPublisher(
+    val outgoing = OutgoingPublisherBuilder.build(
       config,
       operationName
     )

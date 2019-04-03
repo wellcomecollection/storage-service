@@ -17,10 +17,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import scala.util.Try
 
 trait IngestUpdateAssertions extends SNS with Inside with Logging {
-  def topicReceivesIngestStatus[R](requestId: UUID,
-                                   ingestTopic: SNS.Topic,
-                                   status: Ingest.Status,
-                                   expectedBag: Option[BagId] = None)(
+  def assertTopicReceivesIngestStatus[R](requestId: UUID,
+                                         ingestTopic: SNS.Topic,
+                                         status: Ingest.Status,
+                                         expectedBag: Option[BagId] = None)(
     assert: Seq[IngestEvent] => R): Assertion = {
     val messages = listMessagesReceivedFromSNS(ingestTopic)
     val ingestUpdates = messages.map { messageinfo =>
@@ -49,7 +49,7 @@ trait IngestUpdateAssertions extends SNS with Inside with Logging {
     success should have size 1
   }
 
-  def topicReceivesIngestEvent(requestId: UUID, ingestTopic: SNS.Topic)(
+  def assertTopicReceivesIngestEvent(requestId: UUID, ingestTopic: SNS.Topic)(
     assert: Seq[IngestEvent] => Assertion): Assertion = {
 
     val messages = listMessagesReceivedFromSNS(ingestTopic)

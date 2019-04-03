@@ -10,9 +10,9 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.operation.services.{
-  OperationFailure,
-  OperationResult,
-  OperationSuccess
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSuccess
 }
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
@@ -28,7 +28,7 @@ class BagReplicator(
   def replicate(
     location: BagLocation
   )(implicit ec: ExecutionContext)
-    : Future[OperationResult[ReplicationSummary]] = {
+    : Future[IngestStepResult[ReplicationSummary]] = {
 
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
@@ -59,14 +59,14 @@ class BagReplicator(
     copyOperation.transform {
       case Success(location) =>
         Success(
-          OperationSuccess(
+          IngestStepSuccess(
             replicationSummary
               .copy(destination = Some(location))
               .complete))
 
       case Failure(e) =>
         Success(
-          OperationFailure(
+          IngestFailed(
             replicationSummary.complete,
             e
           ))

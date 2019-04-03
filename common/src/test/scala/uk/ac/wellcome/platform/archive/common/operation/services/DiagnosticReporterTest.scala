@@ -20,7 +20,7 @@ class DiagnosticReporterTest
 
       val future = reporter.report(
         requestId = randomUUID,
-        result = OperationSuccess(summary = "A good thing happened")
+        result = IngestStepSuccess(summary = "A good thing happened")
       )
 
       whenReady(future) { result =>
@@ -36,7 +36,7 @@ class DiagnosticReporterTest
 
       val future = reporter.report(
         requestId = randomUUID,
-        result = OperationFailure(
+        result = IngestFailed(
           summary = "A sad thing occurred",
           e = new RuntimeException(":(")
         )
@@ -55,7 +55,7 @@ class DiagnosticReporterTest
 
       val future = reporter.report(
         requestId = randomUUID,
-        result = OperationCompleted(summary = "We completed the thing")
+        result = IngestCompleted(summary = "We completed the thing")
       )
 
       whenReady(future) { _ =>
