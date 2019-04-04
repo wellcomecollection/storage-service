@@ -15,11 +15,22 @@ import uk.ac.wellcome.platform.archive.bagunpacker.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.ArchiveLocationException
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.ingests.models.{BagRequest, UnpackBagRequest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  BagRequest,
+  UnpackBagRequest
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.models.{WorkerFailed, WorkerResult, WorkerSucceeded}
+import uk.ac.wellcome.platform.archive.common.operation.models.{
+  WorkerFailed,
+  WorkerResult,
+  WorkerSucceeded
+}
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  IngestFailed,
+  IngestStepSucceeded
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -50,22 +61,25 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
           _ <- outgoingPublisher.sendIfSuccessful(
             stepResult,
             BagRequest(unpackBagRequest.requestId, location))
-        } yield stepResult match {
-          case IngestStepSucceeded(s) => Successful(Some(s))
-          case IngestCompleted(s)     => Successful(Some(s))
-          case IngestFailed(s, t, _)  => DeterministicFailure(t, Some(s))
-        }
+        } yield
+          stepResult match {
+            case IngestStepSucceeded(s) => Successful(Some(s))
+            case IngestCompleted(s)     => Successful(Some(s))
+            case IngestFailed(s, t, _)  => DeterministicFailure(t, Some(s))
+          }
     }
 
   private def stepResultFor(result: WorkerResult[UnpackSummary]) = {
     result match {
       case workSucceeded: WorkerSucceeded[UnpackSummary] =>
         IngestStepSucceeded(workSucceeded.summary)
-      case WorkerFailed(unpackSummary: UnpackSummary, archiveLocationException: ArchiveLocationException) =>
-          IngestFailed(
-            unpackSummary,
-            archiveLocationException,
-            Some(clientMessageFor(archiveLocationException)))
+      case WorkerFailed(
+          unpackSummary: UnpackSummary,
+          archiveLocationException: ArchiveLocationException) =>
+        IngestFailed(
+          unpackSummary,
+          archiveLocationException,
+          Some(clientMessageFor(archiveLocationException)))
       case WorkerFailed(s: UnpackSummary, e: Throwable) =>
         IngestFailed(s, e)
     }
@@ -78,7 +92,7 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
       case 403 => s"access to $archiveLocation is denied"
       case 400 => s"$archiveLocation is invalid"
       case 404 => s"$archiveLocation does not exist"
-      case _ => s"$archiveLocation could not be downloaded"
+      case _   => s"$archiveLocation could not be downloaded"
     }
   }
 
