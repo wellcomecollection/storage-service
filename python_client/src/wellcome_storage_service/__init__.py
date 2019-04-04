@@ -66,28 +66,26 @@ class StorageServiceClient:
         raise NotImplementedError
 
     @needs_token
-    @check_api_resp
     def get_ingest(self, ingest_id):
         """
         Query the state of an individual ingest.
         """
-        ingests_api_url = self.api_url + "/ingests/%s" % ingest_id
-        resp = self.sess.get(ingests_api_url)
-
-        if resp.status_code == 404:
-            raise IngestNotFound("Ingests API returned 404 for ingest %s" % ingest_id)
-        else:
-            return resp
+        ingest_url = self.api_url + "/ingests/%s" % ingest_id
+        return self.get_ingest_from_location(ingest_url)
 
     @needs_token
+    @check_api_resp
     def get_ingest_from_location(self, ingest_url):
         """
         Given a URL of the form /ingests/{ingest_id}, query the state of
         that ingest.
         """
-        parts = ingest_url.split("/")
-        assert parts[-2] == "ingests", "Is %s an ingest URL?" % ingest_url
-        return self.get_ingest(ingest_id=parts[-1])
+        resp = self.sess.get(ingest_url)
+
+        if resp.status_code == 404:
+            raise IngestNotFound("Ingests API returned 404 for %s" % ingest_url)
+        else:
+            return resp
 
     @needs_token
     def create_s3_ingest(self, space_id, s3_bucket, s3_key, callback_url=None):
