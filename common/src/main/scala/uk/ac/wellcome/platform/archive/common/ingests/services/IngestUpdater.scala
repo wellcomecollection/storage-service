@@ -2,28 +2,19 @@ package uk.ac.wellcome.platform.archive.common.ingests.services
 
 import java.util.UUID
 
+import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestEvent,
-  IngestStatusUpdate,
-  IngestUpdate
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestEvent, IngestStatusUpdate, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepResult, IngestStepSucceeded}
 
 import scala.concurrent.Future
 
 class IngestUpdater(
   stepName: String,
   snsWriter: SNSWriter
-) {
+) extends Logging {
 
   def send[R](
     requestId: UUID,
@@ -84,6 +75,7 @@ class IngestUpdater(
     if (text.length > maxLength) {
       val truncatedText = text.take(maxLength).trim
       if (truncatedText.length == maxLength && maxLength > 3) {
+        warn(s"Truncated message, too long to send as an ingest progress message (>$maxLength)")
         truncatedText.dropRight(3).concat("...")
       } else {
         truncatedText
