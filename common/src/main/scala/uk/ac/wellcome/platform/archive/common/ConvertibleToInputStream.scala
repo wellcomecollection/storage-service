@@ -26,8 +26,8 @@ object ConvertibleToInputStream {
       Future(
         s3Client.getObject(objectLocation.namespace, objectLocation.key)
       ).map(
-          response => response.getObjectContent
-        )
+        response => response.getObjectContent
+      )
   }
 }
 
