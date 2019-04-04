@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.common
 
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
-import uk.ac.wellcome.platform.archive.common.exception.InvalidObjectLocationException
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
@@ -27,8 +26,7 @@ class ConvertibleToInputStreamTest
       ).toInputStream
 
       whenReady(inputStreamFuture.failed) { e =>
-        e shouldBe a[InvalidObjectLocationException]
-        e.getMessage should include("s3://invalid_bucket/invalid.key")
+        e.getMessage should include("The specified bucket is not valid")
       }
     }
 

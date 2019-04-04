@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.archive.common.exception
+package uk.ac.wellcome.platform.archive.bagunpacker.exceptions
 
 import uk.ac.wellcome.storage.ObjectLocation
 
-class PutObjectLocationException(objectLocation: ObjectLocation,
-                                 message: String)
+class UnpackerArchiveEntryUploadException(dstLocation: ObjectLocation,
+                                          message: String)
     extends Exception(message: String) {
   def this(objectLocation: ObjectLocation, message: String, cause: Throwable) {
     this(objectLocation, message)
@@ -11,6 +11,6 @@ class PutObjectLocationException(objectLocation: ObjectLocation,
   }
 
   def getObjectLocation: ObjectLocation = {
-    objectLocation
+    dstLocation
   }
 }

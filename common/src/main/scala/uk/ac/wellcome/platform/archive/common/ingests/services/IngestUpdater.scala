@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed,
   IngestStepResult,
-  IngestStepSuccess
+  IngestStepSucceeded
 }
 
 import scala.concurrent.Future
@@ -43,7 +43,7 @@ class IngestUpdater(
           )
         )
 
-      case IngestStepSuccess(_) =>
+      case IngestStepSucceeded(_) =>
         IngestUpdate.event(
           id = requestId,
           description = s"${stepName.capitalize} succeeded"

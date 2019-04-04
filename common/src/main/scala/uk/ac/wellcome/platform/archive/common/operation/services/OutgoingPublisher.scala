@@ -6,7 +6,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed,
   IngestStepResult,
-  IngestStepSuccess
+  IngestStepSucceeded
 }
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,7 +20,7 @@ class OutgoingPublisher(
     ec: ExecutionContext,
     enc: Encoder[O]): Future[Unit] = {
     result match {
-      case IngestStepSuccess(_) | IngestCompleted(_) =>
+      case IngestStepSucceeded(_) | IngestCompleted(_) =>
         send(outgoing)
       case IngestFailed(_, _, _) =>
         Future.successful(())

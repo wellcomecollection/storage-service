@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
-  IngestStepSuccess
+  IngestStepSucceeded
 }
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
@@ -61,7 +61,7 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
     copyOperation.transform {
       case Success(dstLocation) =>
         Success(
-          IngestStepSuccess(
+          IngestStepSucceeded(
             replicationSummary
               .copy(destination = Some(dstLocation))
               .complete))

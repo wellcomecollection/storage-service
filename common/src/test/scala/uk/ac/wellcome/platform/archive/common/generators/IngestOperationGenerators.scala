@@ -4,7 +4,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed,
-  IngestStepSuccess
+  IngestStepSucceeded
 }
 
 trait IngestOperationGenerators extends RandomThings {
@@ -20,7 +20,7 @@ trait IngestOperationGenerators extends RandomThings {
   def createOperationSuccess() = createOperationSuccessWith()
 
   def createOperationSuccessWith(summary: TestSummary = createTestSummary()) =
-    IngestStepSuccess(summary)
+    IngestStepSucceeded(summary)
 
   def createOperationCompleted() = createOperationCompletedWith()
 

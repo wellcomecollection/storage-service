@@ -86,7 +86,7 @@ class UnpackerFeatureTest
           ) { events =>
             events.map { _.description } shouldBe
               List(
-                s"Unpacker failed - location '${unpackBagRequest.sourceLocation}' was invalid")
+                s"Unpacker failed - ${unpackBagRequest.sourceLocation} does not exist")
           }
         }
     }

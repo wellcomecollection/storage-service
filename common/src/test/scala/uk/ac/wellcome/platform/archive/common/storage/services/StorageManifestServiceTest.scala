@@ -3,16 +3,9 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
-import uk.ac.wellcome.platform.archive.common.exception.InvalidObjectLocationException
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  FileEntry
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -87,7 +80,7 @@ class StorageManifestServiceTest
         val future = service.createManifest(bagRequest.bagLocation)
 
         whenReady(future.failed) { err =>
-          err shouldBe a[InvalidObjectLocationException]
+          err shouldBe a[RuntimeException]
           err.getMessage should include("The specified key does not exist.")
         }
       }
@@ -106,7 +99,7 @@ class StorageManifestServiceTest
           val future = service.createManifest(bagRequest.bagLocation)
 
           whenReady(future.failed) { err =>
-            err shouldBe a[InvalidObjectLocationException]
+            err shouldBe a[RuntimeException]
             err.getMessage should include("The specified key does not exist.")
           }
         }
@@ -126,7 +119,7 @@ class StorageManifestServiceTest
           val future = service.createManifest(bagRequest.bagLocation)
 
           whenReady(future.failed) { err =>
-            err shouldBe a[InvalidObjectLocationException]
+            err shouldBe a[RuntimeException]
             err.getMessage should include("The specified key does not exist.")
           }
         }
@@ -165,7 +158,7 @@ class StorageManifestServiceTest
           val future = service.createManifest(bagRequest.bagLocation)
 
           whenReady(future.failed) { err =>
-            err shouldBe a[InvalidObjectLocationException]
+            err shouldBe a[RuntimeException]
             err.getMessage should include("The specified key does not exist.")
           }
         }

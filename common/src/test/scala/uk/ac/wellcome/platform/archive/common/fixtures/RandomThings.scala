@@ -156,5 +156,5 @@ trait RandomThings {
 
   def randomBagPath = BagPath(randomAlphanumeric(15))
 
-  def randomBucket = Bucket(randomAlphanumeric())
+  def randomBucket = Bucket(randomAlphanumeric().toLowerCase)
 }

@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
-  IngestStepSuccess
+  IngestStepSucceeded
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
@@ -47,7 +47,7 @@ class VerifierTest
             val future = service.verify(bagLocation)
 
             whenReady(future) { result =>
-              result shouldBe a[IngestStepSuccess[_]]
+              result shouldBe a[IngestStepSucceeded[_]]
 
               val summary = result.summary
 

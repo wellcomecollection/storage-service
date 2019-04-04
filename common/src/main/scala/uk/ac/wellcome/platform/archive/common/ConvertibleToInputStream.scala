@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common
 import java.io.InputStream
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.common.exception.InvalidObjectLocationException
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,14 +28,6 @@ object ConvertibleToInputStream {
       ).map(
           response => response.getObjectContent
         )
-        .recover {
-          case throwable: Throwable =>
-            throw new InvalidObjectLocationException(
-              objectLocation = objectLocation,
-              message =
-                s"Error getting input stream for s3://$objectLocation: ${throwable.getMessage}",
-              throwable)
-        }
   }
 }
 

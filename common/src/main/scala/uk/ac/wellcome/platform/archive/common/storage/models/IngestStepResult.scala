@@ -11,10 +11,10 @@ case class IngestCompleted[T](
   def withSummary(summary: T) = IngestCompleted(summary)
 }
 
-case class IngestStepSuccess[T](
+case class IngestStepSucceeded[T](
   summary: T
 ) extends IngestStepResult[T] {
-  def withSummary(summary: T) = IngestStepSuccess(summary)
+  def withSummary(summary: T) = IngestStepSucceeded(summary)
 }
 
 case class IngestFailed[T](

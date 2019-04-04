@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed,
-  IngestStepSuccess
+  IngestStepSucceeded
 }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,7 +25,7 @@ class DiagnosticReporterTest
 
       val future = reporter.report(
         requestId = randomUUID,
-        result = IngestStepSuccess(summary = "A good thing happened")
+        result = IngestStepSucceeded(summary = "A good thing happened")
       )
 
       whenReady(future) { result =>

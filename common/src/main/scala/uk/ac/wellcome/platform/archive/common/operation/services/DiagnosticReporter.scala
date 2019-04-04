@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed,
   IngestStepResult,
-  IngestStepSuccess
+  IngestStepSucceeded
 }
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -21,7 +21,7 @@ class DiagnosticReporter(metricsSender: MetricsSender) extends Logging {
         info(s"Completed - $requestId - ${summary.toString}")
         metricsSender.incrementCount(metricName = "OperationCompleted")
 
-      case IngestStepSuccess(summary) =>
+      case IngestStepSucceeded(summary) =>
         info(s"Success - $requestId - ${summary.toString}")
         metricsSender.incrementCount(metricName = "OperationSuccess")
 
