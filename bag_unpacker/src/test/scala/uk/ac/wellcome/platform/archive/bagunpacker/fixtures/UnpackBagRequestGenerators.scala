@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 import java.util.UUID
 
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.generators.{BagLocationGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagLocationGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.UnpackBagRequest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation

@@ -4,7 +4,10 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
 import uk.ac.wellcome.messaging.worker.models.{
   DeterministicFailure,
   Result,
@@ -33,13 +36,17 @@ class BagReplicatorWorker(
   actorSystem: ActorSystem,
   ec: ExecutionContext,
   mc: MonitoringClient,
-  sc: AmazonSQSAsync) extends Runnable with Logging {
+  sc: AmazonSQSAsync)
+    extends Runnable
+    with Logging {
   private val worker: AlpakkaSQSWorker[BagRequest, ReplicationSummary] =
     AlpakkaSQSWorker[BagRequest, ReplicationSummary](alpakkaSQSWorkerConfig) {
-      bagRequest: BagRequest => processMessage(bagRequest)
+      bagRequest: BagRequest =>
+        processMessage(bagRequest)
     }
 
-  def processMessage(bagRequest: BagRequest): Future[Result[ReplicationSummary]] =
+  def processMessage(
+    bagRequest: BagRequest): Future[Result[ReplicationSummary]] =
     for {
       replicationResult <- bagReplicator.replicate(bagRequest.bagLocation)
       _ <- ingestUpdater.send(bagRequest.requestId, replicationResult)

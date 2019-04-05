@@ -21,7 +21,8 @@ trait WorkerServiceFixture
     extends RandomThings
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures {
-  def withFakeMonitoringClient[R](testWith: TestWith[FakeMonitoringClient, R]): R =
+  def withFakeMonitoringClient[R](
+    testWith: TestWith[FakeMonitoringClient, R]): R =
     testWith(new FakeMonitoringClient())
 
   def withBagReplicatorWorker[R](queue: Queue = Queue(
@@ -36,19 +37,20 @@ trait WorkerServiceFixture
     testWith: TestWith[BagReplicatorWorker, R]): R =
     withActorSystem { implicit actorSystem =>
       withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
-        withOutgoingPublisher("replicating", outgoingTopic) { outgoingPublisher =>
-          withFakeMonitoringClient { implicit monitoringClient =>
-            val service = new BagReplicatorWorker(
-              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-              bagReplicator = new BagReplicator(config),
-              ingestUpdater = ingestUpdater,
-              outgoingPublisher = outgoingPublisher
-            )
+        withOutgoingPublisher("replicating", outgoingTopic) {
+          outgoingPublisher =>
+            withFakeMonitoringClient { implicit monitoringClient =>
+              val service = new BagReplicatorWorker(
+                alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+                bagReplicator = new BagReplicator(config),
+                ingestUpdater = ingestUpdater,
+                outgoingPublisher = outgoingPublisher
+              )
 
-            service.run()
+              service.run()
 
-            testWith(service)
-          }
+              testWith(service)
+            }
         }
       }
     }

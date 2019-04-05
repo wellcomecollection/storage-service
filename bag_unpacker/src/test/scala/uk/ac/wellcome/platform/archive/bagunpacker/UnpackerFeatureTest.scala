@@ -3,12 +3,22 @@ package uk.ac.wellcome.platform.archive.bagunpacker
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{BagUnpackerFixtures, CompressFixture, UnpackBagRequestGenerators}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
+  BagUnpackerFixtures,
+  CompressFixture,
+  UnpackBagRequestGenerators
+}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.UnpackBagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{BagRequest, Ingest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  BagRequest,
+  Ingest
+}
 
 class UnpackerFeatureTest
     extends FunSpec
