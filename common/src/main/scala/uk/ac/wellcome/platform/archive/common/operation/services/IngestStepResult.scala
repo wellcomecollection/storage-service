@@ -1,6 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.operation.services
 
-import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  DeterministicFailure,
+  Result,
+  Successful
+}
 
 sealed trait IngestStepResult[T] {
   val summary: T
