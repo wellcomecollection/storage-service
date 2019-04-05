@@ -8,21 +8,12 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
 }
-import uk.ac.wellcome.messaging.worker.models.{
-  DeterministicFailure,
-  Result,
-  Successful
-}
+import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  IngestCompleted,
-  IngestFailed,
-  IngestStepSuccess,
-  OutgoingPublisher
-}
+import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,7 +29,8 @@ class BagReplicatorWorker(
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends Runnable
-    with Logging {
+    with Logging
+    with IngestStepWorker {
   private val worker: AlpakkaSQSWorker[BagRequest, ReplicationSummary] =
     AlpakkaSQSWorker[BagRequest, ReplicationSummary](alpakkaSQSWorkerConfig) {
       bagRequest: BagRequest =>
@@ -48,21 +40,15 @@ class BagReplicatorWorker(
   def processMessage(
     bagRequest: BagRequest): Future[Result[ReplicationSummary]] =
     for {
-      replicationResult <- bagReplicator.replicate(bagRequest.bagLocation)
-      _ <- ingestUpdater.send(bagRequest.requestId, replicationResult)
+      replicationSummary <- bagReplicator.replicate(bagRequest.bagLocation)
+      _ <- ingestUpdater.send(bagRequest.requestId, replicationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
-        replicationResult,
+        replicationSummary,
         bagRequest.copy(
-          bagLocation = replicationResult.summary.destination
+          bagLocation = replicationSummary.summary.destination
         )
       )
-
-      result = replicationResult match {
-        case IngestStepSuccess(s) => Successful(Some(s))
-        case IngestCompleted(s)   => Successful(Some(s))
-        case IngestFailed(s, t)   => DeterministicFailure(t, Some(s))
-      }
-    } yield result
+    } yield toResult(replicationSummary)
 
   override def run(): Future[Any] = worker.start
 }
