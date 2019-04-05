@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagPath
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.generators.UnpackBagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   BagRequest,
