@@ -9,7 +9,6 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   OperationFixtures,
   RandomThings,
@@ -29,7 +28,6 @@ trait WorkerFixture
     with StorageManifestVHSFixture {
 
   def withBagRegisterWorker[R](
-    userTable: Option[Table] = None,
     userBucket: Option[Bucket] = None
   )(testWith: TestWith[(BagRegisterWorker,
                         Table,
@@ -37,27 +35,20 @@ trait WorkerFixture
                         Topic,
                         Topic,
                         QueuePair),
-                       R]): R = {
-
+                       R]): R =
     withLocalDynamoDbTable { table =>
       withLocalS3Bucket { bucket =>
         withLocalSnsTopic { ingestTopic =>
           withLocalSnsTopic { outgoingTopic =>
             withLocalSqsQueueAndDlq { queuePair =>
               withNotificationStream[BagRequest, R](queuePair.queue) { stream =>
-                val testTable = if (userTable.isDefined) {
-                  userTable.get
-                } else {
-                  table
-                }
-
                 val testBucket = if (userBucket.isDefined) {
                   userBucket.get
                 } else {
                   bucket
                 }
 
-                withStorageManifestVHS(testTable, testBucket) {
+                withStorageManifestVHS(table, testBucket) {
                   storageManifestVHS =>
                     val storageManifestService =
                       new StorageManifestService()
@@ -100,14 +91,4 @@ trait WorkerFixture
         }
       }
     }
-  }
-
-  def createBagRequestWith(
-    location: BagLocation
-  ): BagRequest =
-    BagRequest(
-      requestId = randomUUID,
-      bagLocation = location
-    )
-
 }
