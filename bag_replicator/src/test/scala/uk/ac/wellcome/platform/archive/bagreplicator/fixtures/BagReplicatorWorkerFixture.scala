@@ -8,8 +8,14 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
-import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagReplicator,
+  BagReplicatorWorker
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  OperationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -42,7 +48,8 @@ trait BagReplicatorWorkerFixture
             withFakeMonitoringClient { implicit monitoringClient =>
               implicit val asyncSQSClient: AmazonSQSAsync = asyncSqsClient
               val service = new BagReplicatorWorker(
-                alpakkaSQSWorkerConfig = AlpakkaSQSWorkerConfig("test", queue.url),
+                alpakkaSQSWorkerConfig =
+                  AlpakkaSQSWorkerConfig("test", queue.url),
                 bagReplicator = new BagReplicator(config),
                 ingestUpdater = ingestUpdater,
                 outgoingPublisher = outgoingPublisher
