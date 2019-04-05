@@ -4,23 +4,18 @@ import java.time.Instant
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, BagRequestGenerators, OperationGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, BagRequestGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, Ingest, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagRegisterWorkerTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with OperationGenerators
     with BagInfoGenerators
     with BagLocationFixtures
     with BagRequestGenerators
@@ -28,15 +23,8 @@ class BagRegisterWorkerTest
     with WorkerFixture {
 
   it("sends a successful IngestUpdate upon registration") {
-    withBagRegisterWorker() {
-      case (
-          service: BagRegisterWorker,
-          table: Table,
-          bucket: Bucket,
-          ingestTopic: Topic,
-          _: Topic,
-          queuePair: QueuePair
-          ) => {
+    withBagRegisterWorker {
+      case (service, table, bucket, ingestTopic, _, _) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
@@ -78,21 +66,11 @@ class BagRegisterWorkerTest
           }
         }
       }
-    }
   }
 
   it("sends a failed IngestUpdate if storing fails") {
-    withBagRegisterWorker(userBucket = Some(Bucket("does_not_exist"))) {
-
-      case (
-          service: BagRegisterWorker,
-          _: Table,
-          bucket: Bucket,
-          ingestTopic: Topic,
-          _: Topic,
-          _: QueuePair
-          ) => {
-
+    withBagRegisterWorker(Bucket("does_not_exist")) {
+      case (service, _, bucket, ingestTopic, _, _) =>
         val bagInfo = createBagInfo
 
         withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") {
@@ -119,6 +97,5 @@ class BagRegisterWorkerTest
             }
         }
       }
-    }
   }
 }

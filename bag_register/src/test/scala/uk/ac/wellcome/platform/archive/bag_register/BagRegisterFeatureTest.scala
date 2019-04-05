@@ -4,16 +4,12 @@ import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
-import uk.ac.wellcome.platform.archive.bag_register.services.BagRegisterWorker
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, BagRequestGenerators, OperationGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, Ingest, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagRegisterFeatureTest
@@ -27,16 +23,8 @@ class BagRegisterFeatureTest
     with WorkerFixture {
 
   it("sends an update if it registers a bag") {
-    withBagRegisterWorker() {
-      case (
-          _: BagRegisterWorker,
-          table: Table,
-          bucket: Bucket,
-          ingestTopic: Topic,
-          _: Topic,
-          queuePair: QueuePair
-          ) => {
-
+    withBagRegisterWorker {
+      case (_, table, bucket, ingestTopic, _, queuePair) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
         val storagePrefix = "storagePrefix"
@@ -80,20 +68,11 @@ class BagRegisterFeatureTest
           }
         }
       }
-    }
   }
 
   it("sends a failed update and discards the work on error") {
-    withBagRegisterWorker(userBucket = Some(Bucket("does_not_exist"))) {
-      case (
-          _: BagRegisterWorker,
-          _: Table,
-          bucket: Bucket,
-          ingestTopic: Topic,
-          _: Topic,
-          queuePair: QueuePair
-          ) => {
-
+    withBagRegisterWorker(Bucket("does_not_exist")) {
+      case (_, _, bucket, ingestTopic, _, queuePair) =>
         val bagInfo = createBagInfo
 
         withBag(bucket, bagInfo = bagInfo) { accessBagLocation =>
@@ -123,6 +102,5 @@ class BagRegisterFeatureTest
           assertQueueEmpty(queuePair.dlq)
         }
       }
-    }
   }
 }
