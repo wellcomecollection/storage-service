@@ -5,7 +5,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.platform.archive.bag_register.services.{NewBagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
 import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings, StorageManifestVHSFixture}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
@@ -19,7 +19,7 @@ trait WorkerFixture
     with OperationFixtures
     with StorageManifestVHSFixture {
 
-  type Fixtures = (NewBagRegisterWorker,
+  type Fixtures = (BagRegisterWorker,
     Table,
     Bucket,
     Topic,
@@ -50,7 +50,7 @@ trait WorkerFixture
                         ingestUpdater =>
                           withOutgoingPublisher("register", outgoingTopic) {
                             outgoingPublisher =>
-                              val service = new NewBagRegisterWorker(
+                              val service = new BagRegisterWorker(
                                 alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queuePair.queue),
                                 ingestUpdater = ingestUpdater,
                                 outgoingPublisher = outgoingPublisher,
