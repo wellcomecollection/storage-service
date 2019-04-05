@@ -26,44 +26,53 @@ trait WorkerFixture
     Topic,
     QueuePair)
 
-  def withBagRegisterWorker[R](bucket: Bucket)(testWith: TestWith[Fixtures, R]): R =
-    withLocalDynamoDbTable { table =>
-      withLocalSnsTopic { ingestTopic =>
-        withLocalSnsTopic { outgoingTopic =>
-          withLocalSqsQueueAndDlq { queuePair =>
-            withStorageManifestVHS(table, bucket) {
-              storageManifestVHS =>
-                val storageManifestService =
-                  new StorageManifestService()
+  def withFakeMonitoringClient[R](testWith: TestWith[FakeMonitoringClient, R]): R =
+    testWith(new FakeMonitoringClient())
 
-                val register = new Register(
-                  storageManifestService,
-                  storageManifestVHS
-                )
-                withIngestUpdater("register", ingestTopic) {
-                  ingestUpdater =>
-                    withOutgoingPublisher("register", outgoingTopic) {
-                      outgoingPublisher =>
-                        val service = new NewBagRegisterWorker(
-                          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queuePair.queue),
-                          ingestUpdater = ingestUpdater,
-                          outgoingPublisher = outgoingPublisher,
-                          register = register
-                        )
+  def withBagRegisterWorkerAndBucket[R](userBucket: Bucket)(testWith: TestWith[Fixtures, R]): R =
+    withActorSystem { implicit actorSystem =>
+      withFakeMonitoringClient { implicit monitoringClient =>
+        withLocalDynamoDbTable { table =>
+          withLocalSnsTopic { ingestTopic =>
+            withLocalSnsTopic { outgoingTopic =>
+              withLocalSqsQueueAndDlq { queuePair =>
+                withLocalS3Bucket { bucket =>
+                  withStorageManifestVHS(table, userBucket) {
+                    storageManifestVHS =>
+                      val storageManifestService =
+                        new StorageManifestService()
 
-                        service.run()
+                      val register = new Register(
+                        storageManifestService,
+                        storageManifestVHS
+                      )
+                      withIngestUpdater("register", ingestTopic) {
+                        ingestUpdater =>
+                          withOutgoingPublisher("register", outgoingTopic) {
+                            outgoingPublisher =>
+                              val service = new NewBagRegisterWorker(
+                                alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queuePair.queue),
+                                ingestUpdater = ingestUpdater,
+                                outgoingPublisher = outgoingPublisher,
+                                register = register
+                              )
 
-                        testWith(
-                          (
-                            service,
-                            table,
-                            bucket,
-                            ingestTopic,
-                            outgoingTopic,
-                            queuePair)
-                        )
-                    }
+                              service.run()
+
+                              testWith(
+                                (
+                                  service,
+                                  table,
+                                  bucket,
+                                  ingestTopic,
+                                  outgoingTopic,
+                                  queuePair)
+                              )
+                          }
+                      }
+                  }
                 }
+              }
             }
           }
         }
@@ -72,7 +81,7 @@ trait WorkerFixture
 
   def withBagRegisterWorker[R](testWith: TestWith[Fixtures, R]): R =
     withLocalS3Bucket { bucket =>
-      withBagRegisterWorker(bucket) { fixtures =>
+      withBagRegisterWorkerAndBucket(bucket) { fixtures =>
         testWith(fixtures)
       }
     }

@@ -69,7 +69,7 @@ class BagRegisterWorkerTest
   }
 
   it("sends a failed IngestUpdate if storing fails") {
-    withBagRegisterWorker(Bucket("does_not_exist")) {
+    withBagRegisterWorkerAndBucket(Bucket("does-not-exist")) {
       case (service, _, bucket, ingestTopic, _, _) =>
         val bagInfo = createBagInfo
 

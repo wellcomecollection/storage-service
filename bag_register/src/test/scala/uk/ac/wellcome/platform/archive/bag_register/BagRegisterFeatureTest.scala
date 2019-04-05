@@ -71,7 +71,7 @@ class BagRegisterFeatureTest
   }
 
   it("sends a failed update and discards the work on error") {
-    withBagRegisterWorker(Bucket("does_not_exist")) {
+    withBagRegisterWorkerAndBucket(Bucket("does_not_exist")) {
       case (_, _, bucket, ingestTopic, _, queuePair) =>
         val bagInfo = createBagInfo
 
