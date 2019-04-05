@@ -1,10 +1,9 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.NotificationStreamFixture
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
+import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagReplicator,
@@ -14,17 +13,18 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   OperationFixtures,
   RandomThings
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
-import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture
-    extends NotificationStreamFixture
-    with RandomThings
-    with S3
-    with OperationFixtures {
+    extends RandomThings
+    with OperationFixtures
+    with AlpakkaSQSWorkerFixtures {
+  def withFakeMonitoringClient[R](
+    testWith: TestWith[FakeMonitoringClient, R]): R =
+    testWith(new FakeMonitoringClient())
+
   def withBagReplicatorWorker[R](queue: Queue = Queue(
                                    "default_q",
                                    "arn::default_q"
@@ -35,17 +35,16 @@ trait WorkerServiceFixture
                                    createReplicatorDestinationConfigWith(
                                      Bucket(randomAlphanumeric())))(
     testWith: TestWith[BagReplicatorWorker, R]): R =
-    withNotificationStream[BagRequest, R](queue) { notificationStream =>
+    withActorSystem { implicit actorSystem =>
       withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
         withOutgoingPublisher("replicating", outgoingTopic) {
           outgoingPublisher =>
-            withOperationReporter() { reporter =>
+            withFakeMonitoringClient { implicit monitoringClient =>
               val service = new BagReplicatorWorker(
-                stream = notificationStream,
+                alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+                bagReplicator = new BagReplicator(config),
                 ingestUpdater = ingestUpdater,
-                outgoing = outgoingPublisher,
-                reporter = reporter,
-                replicator = new BagReplicator(config)
+                outgoingPublisher = outgoingPublisher
               )
 
               service.run()

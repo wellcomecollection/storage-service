@@ -5,14 +5,14 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   BagUnpackerFixtures,
-  CompressFixture
+  CompressFixture,
+  UnpackBagRequestGenerators
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagLocation,
   BagPath
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.generators.UnpackBagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   BagRequest,
@@ -73,7 +73,7 @@ class UnpackerFeatureTest
   it("sends a failed Ingest update if it cannot read the bag") {
     withBagUnpackerApp {
       case (_, _, queue, ingestTopic, outgoingTopic) =>
-        val unpackBagRequest = createUnpackBagRequest()
+        val unpackBagRequest = createUnpackBagRequest
         sendNotificationToSQS(queue, unpackBagRequest)
 
         eventually {
