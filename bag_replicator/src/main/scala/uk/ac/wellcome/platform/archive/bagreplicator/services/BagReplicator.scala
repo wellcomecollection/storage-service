@@ -63,7 +63,7 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
         Success(
           IngestStepSuccess(
             replicationSummary
-              .copy(destination = Some(dstLocation))
+              .copy(maybeDestination = Some(dstLocation))
               .complete))
 
       case Failure(e) =>

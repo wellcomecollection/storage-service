@@ -33,14 +33,8 @@ class BagReplicatorWorker(
       _ <- ingestUpdater.send(request.requestId, result)
       _ <- outgoing.sendIfSuccessful(
         result,
-        BagRequest(
-          requestId = request.requestId,
+        request.copy(
           bagLocation = result.summary.destination
-            .getOrElse(
-              throw new RuntimeException(
-                "No destination provided by replication!"
-              )
-            )
         )
       )
     } yield ()
