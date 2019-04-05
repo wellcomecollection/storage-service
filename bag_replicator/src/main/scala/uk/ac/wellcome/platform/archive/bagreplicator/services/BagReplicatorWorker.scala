@@ -4,25 +4,14 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
-import uk.ac.wellcome.messaging.worker.models.{
-  DeterministicFailure,
-  Result,
-  Successful
-}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Result, Successful}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  IngestCompleted,
-  IngestFailed,
-  IngestStepSuccess,
-  OutgoingPublisher
-}
+import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepSucceeded}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -58,9 +47,9 @@ class BagReplicatorWorker(
       )
 
       result = replicationResult match {
-        case IngestStepSuccess(s) => Successful(Some(s))
+        case IngestStepSucceeded(s) => Successful(Some(s))
         case IngestCompleted(s)   => Successful(Some(s))
-        case IngestFailed(s, t)   => DeterministicFailure(t, Some(s))
+        case IngestFailed(s, t, _)   => DeterministicFailure(t, Some(s))
       }
     } yield result
 

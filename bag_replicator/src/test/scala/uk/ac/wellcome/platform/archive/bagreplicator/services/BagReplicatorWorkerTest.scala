@@ -5,7 +5,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
   BagReplicatorFixtures,
-  WorkerServiceFixture
+  BagReplicatorWorkerFixture
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagLocation,
@@ -27,7 +27,7 @@ class BagReplicatorWorkerTest
     with BagReplicatorFixtures
     with BagRequestGenerators
     with IngestUpdateAssertions
-    with WorkerServiceFixture {
+    with BagReplicatorWorkerFixture {
 
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { ingestsBucket =>
