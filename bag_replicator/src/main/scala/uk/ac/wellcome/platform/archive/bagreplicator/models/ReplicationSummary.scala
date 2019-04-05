@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 case class ReplicationSummary(
   source: BagLocation,
-  destination: Option[BagLocation] = None,
+  maybeDestination: Option[BagLocation] = None,
   startTime: Instant,
   endTime: Option[Instant] = None,
 ) extends Summary {
@@ -16,10 +16,18 @@ case class ReplicationSummary(
       endTime = Some(Instant.now())
     )
   }
-  override def toString(): String = {
-    val destinationCompletePath = destination match {
-      case None                 => "<no-destination>"
-      case Some(theDestination) => theDestination.completePath
+
+  def destination: BagLocation =
+    maybeDestination.getOrElse(
+      throw new RuntimeException(
+        "No destination provided by replication!"
+      )
+    )
+
+  override def toString: String = {
+    val destinationCompletePath = maybeDestination match {
+      case None              => "<no-destination>"
+      case Some(destination) => destination.completePath
     }
     f"""|src=${source.completePath}
         |dst=$destinationCompletePath
