@@ -7,8 +7,14 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorker, Verifier}
-import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifierWorker,
+  Verifier
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
+  OperationFixtures
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,7 +42,8 @@ trait WorkerServiceFixture
             withOutgoingPublisher("verification", outgoingTopic) {
               outgoingPublisher =>
                 val service = new BagVerifierWorker(
-                  alpakkaSQSWorkerConfig = AlpakkaSQSWorkerConfig("test", queue.url),
+                  alpakkaSQSWorkerConfig =
+                    AlpakkaSQSWorkerConfig("test", queue.url),
                   ingestUpdater = ingestUpdater,
                   outgoingPublisher = outgoingPublisher,
                   verifier = verifier

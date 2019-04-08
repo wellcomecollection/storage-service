@@ -53,4 +53,4 @@ class Register(
     } yield completedRegistration
   }
 
-  }
+}
