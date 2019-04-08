@@ -2,15 +2,13 @@ package uk.ac.wellcome.platform.archive.ingests
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{NotificationStreamBuilder, SNSBuilder}
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestUpdate
+import uk.ac.wellcome.messaging.typesafe.{CloudwatchMonitoringClientBuilder, SNSBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
+import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
-import uk.ac.wellcome.platform.archive.ingests.services.{
-  CallbackNotificationService,
-  IngestsWorkerService
-}
+import uk.ac.wellcome.platform.archive.ingests.services.{CallbackNotificationService, IngestsWorker}
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -26,6 +24,12 @@ object Main extends WellcomeTypesafeApp {
     implicit val materializer: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
+    implicit val monitoringClient: CloudwatchMonitoringClient =
+      CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
+
+    implicit val sqsClient: AmazonSQSAsync =
+      SQSBuilder.buildSQSAsyncClient(config)
+
     val ingestTracker = new IngestTracker(
       dynamoDbClient = DynamoBuilder.buildDynamoClient(config),
       dynamoConfig = DynamoBuilder.buildDynamoConfig(config)
@@ -35,9 +39,8 @@ object Main extends WellcomeTypesafeApp {
       snsWriter = SNSBuilder.buildSNSWriter(config)
     )
 
-    new IngestsWorkerService(
-      notificationStream =
-        NotificationStreamBuilder.buildStream[IngestUpdate](config),
+    new IngestsWorker(
+      alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestTracker = ingestTracker,
       callbackNotificationService = callbackNotificationService
     )

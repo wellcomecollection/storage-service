@@ -13,7 +13,7 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NewIngestsWorker(
+class IngestsWorker(
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   ingestTracker: IngestTracker,
   callbackNotificationService: CallbackNotificationService
