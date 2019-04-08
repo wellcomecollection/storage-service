@@ -9,6 +9,7 @@ locals {
   bag_replicator_service_name         = "${var.namespace}-bag-replicator"
   bag_register_service_name           = "${var.namespace}-bag-register"
   bag_verifier_post_repl_service_name = "${var.namespace}-bag-verifier-post-replication"
+  bag_verifier_pre_repl_service_name  = "${var.namespace}-bag-verifier-pre-replication"
 
   bag_register_image   = "${module.images.services["bag_register"]}"
   bags_api_image       = "${module.images.services["bags_api"]}"
