@@ -7,8 +7,15 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
-import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings, StorageManifestVHSFixture}
+import uk.ac.wellcome.platform.archive.bag_register.services.{
+  BagRegisterWorker,
+  Register
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  OperationFixtures,
+  RandomThings,
+  StorageManifestVHSFixture
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -52,8 +59,9 @@ trait BagRegisterWorkerFixture
                             implicit val _asyncSqsClient = asyncSqsClient
                             outgoingPublisher =>
                               val service = new BagRegisterWorker(
-                                alpakkaSQSWorkerConfig =
-                                  AlpakkaSQSWorkerConfig("test", queuePair.queue.url),
+                                alpakkaSQSWorkerConfig = AlpakkaSQSWorkerConfig(
+                                  "test",
+                                  queuePair.queue.url),
                                 ingestUpdater = ingestUpdater,
                                 outgoingPublisher = outgoingPublisher,
                                 register = register
