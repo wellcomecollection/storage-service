@@ -3,20 +3,14 @@ package uk.ac.wellcome.platform.archive.bagverifier
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifierWorker,
-  Verifier
-}
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  DiagnosticReporterBuilder,
-  IngestUpdaterBuilder,
-  OutgoingPublisherBuilder
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
+import uk.ac.wellcome.messaging.typesafe.{CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorker, Verifier}
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OutgoingPublisherBuilder}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -35,10 +29,10 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
-
-    val stream =
-      NotificationStreamBuilder
-        .buildStream[BagRequest](config)
+    implicit val monitoringClient: MonitoringClient =
+      CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
+    implicit val sqsClient: AmazonSQSAsync =
+      SQSBuilder.buildSQSAsyncClient(config)
 
     val verifier = new Verifier(
       storageManifestService = new StorageManifestService(),
@@ -53,13 +47,12 @@ object Main extends WellcomeTypesafeApp {
     val outgoingPublisher =
       OutgoingPublisherBuilder.build(config, operationName)
 
-    val reporter = DiagnosticReporterBuilder.build(config)
 
     new BagVerifierWorker(
-      stream,
-      ingestUpdater,
-      outgoingPublisher,
-      reporter,
-      verifier)
+      alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
+      ingestUpdater = ingestUpdater,
+      outgoingPublisher = outgoingPublisher,
+      verifier = verifier
+    )
   }
 }
