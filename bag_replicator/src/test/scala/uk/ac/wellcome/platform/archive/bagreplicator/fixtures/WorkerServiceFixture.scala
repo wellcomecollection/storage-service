@@ -5,14 +5,8 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  OperationFixtures,
-  RandomThings
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures, RandomThings}
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,10 +14,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 trait WorkerServiceFixture
     extends RandomThings
     with OperationFixtures
-    with AlpakkaSQSWorkerFixtures {
-  def withFakeMonitoringClient[R](
-    testWith: TestWith[FakeMonitoringClient, R]): R =
-    testWith(new FakeMonitoringClient())
+    with AlpakkaSQSWorkerFixtures
+    with MonitoringClientFixture {
 
   def withBagReplicatorWorker[R](queue: Queue = Queue(
                                    "default_q",
@@ -39,7 +31,7 @@ trait WorkerServiceFixture
       withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
         withOutgoingPublisher("replicating", outgoingTopic) {
           outgoingPublisher =>
-            withFakeMonitoringClient { implicit monitoringClient =>
+            withMonitoringClient { implicit monitoringClient =>
               val service = new BagReplicatorWorker(
                 alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
                 bagReplicator = new BagReplicator(config),

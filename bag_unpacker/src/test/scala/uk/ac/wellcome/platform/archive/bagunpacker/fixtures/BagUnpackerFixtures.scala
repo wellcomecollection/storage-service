@@ -3,20 +3,11 @@ package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.worker.MetricsFixtures
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  BagUnpackerWorker,
-  S3Uploader,
-  Unpacker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  OperationFixtures,
-  RandomThings
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, S3Uploader, Unpacker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures, RandomThings}
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,12 +16,8 @@ trait BagUnpackerFixtures
     extends RandomThings
     with Messaging
     with BagLocationFixtures
-    with MetricsFixtures
-    with OperationFixtures {
-
-  def withFakeMonitoringClient[R](
-    testWith: TestWith[FakeMonitoringClient, R]): R =
-    testWith(new FakeMonitoringClient())
+    with OperationFixtures
+    with MonitoringClientFixture {
 
   def withBagUnpackerWorker[R](
     queue: Queue,
@@ -41,7 +28,7 @@ trait BagUnpackerFixtures
     withActorSystem { implicit actorSystem =>
       withIngestUpdater("unpacker", ingestTopic) { ingestUpdater =>
         withOutgoingPublisher("unpacker", outgoingTopic) { ongoingPublisher =>
-          withFakeMonitoringClient { implicit monitoringClient =>
+          withMonitoringClient { implicit monitoringClient =>
             val bagUnpackerWorker = BagUnpackerWorker(
               alpakkaSQSWorkerConfig = AlpakkaSQSWorkerConfig("test", queue.url),
               bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
