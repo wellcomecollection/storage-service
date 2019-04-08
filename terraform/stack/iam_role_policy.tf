@@ -58,7 +58,7 @@ resource "aws_iam_role_policy" "ingests_api_archive_ingest_table" {
 
 # bag_verifier pre-replication
 
-resource "aws_iam_role_policy" "bag_verifier_pre_repl_task_store_s3" {
+resource "aws_iam_role_policy" "bag_verifier_pre_repl_read_s3_ingests" {
   role   = "${module.bag_verifier_pre_replication.task_role_name}"
   policy = "${data.aws_iam_policy_document.ingests_read.json}"
 }
@@ -87,12 +87,12 @@ resource "aws_iam_role_policy" "bag_replicator_metrics" {
 
 # bag_verifier post-replication
 
-resource "aws_iam_role_policy" "bag_verifier_post_repl_task_read_s3" {
+resource "aws_iam_role_policy" "bag_verifier_post_repl_read_s3_archive" {
   role   = "${module.bag_verifier_post_replication.task_role_name}"
   policy = "${data.aws_iam_policy_document.storage_archive_read.json}"
 }
 
-resource "aws_iam_role_policy" "bag_verifier_post_repl_task_store_s3" {
+resource "aws_iam_role_policy" "bag_verifier_post_repl_read_s3_access" {
   role   = "${module.bag_verifier_post_replication.task_role_name}"
   policy = "${data.aws_iam_policy_document.storage_access_read.json}"
 }
