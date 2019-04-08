@@ -5,8 +5,15 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
-import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagReplicator,
+  BagReplicatorWorker
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
+  OperationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global

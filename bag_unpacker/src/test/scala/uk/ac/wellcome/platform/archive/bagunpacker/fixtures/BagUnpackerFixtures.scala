@@ -6,8 +6,17 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, S3Uploader, Unpacker}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  BagUnpackerWorker,
+  S3Uploader,
+  Unpacker
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  MonitoringClientFixture,
+  OperationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
