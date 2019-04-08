@@ -26,10 +26,11 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
                              bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
                              ingestUpdater: IngestUpdater,
                              outgoingPublisher: OutgoingPublisher,
-                             unpacker: Unpacker)(implicit ac: ActorSystem,
-                                                 ec: ExecutionContext,
-                                                 mc: MonitoringClient,
-                                                 sc: AmazonSQSAsync)
+                             unpacker: Unpacker)(
+  implicit actorSystem: ActorSystem,
+  ec: ExecutionContext,
+  mc: MonitoringClient,
+  sc: AmazonSQSAsync)
     extends Runnable
     with Logging
     with IngestStepWorker {
