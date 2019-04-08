@@ -4,6 +4,7 @@ import com.amazonaws.services.sns.model.AmazonSNSException
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
+import uk.ac.wellcome.messaging.worker.models.DeterministicFailure
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
@@ -133,12 +134,14 @@ class IngestsWorkerServiceTest
 
             val future = service.processMessage(ingestStatusUpdate)
 
-            whenReady(future.failed) { err =>
-              err shouldBe a[IdConstraintError]
+            whenReady(future) { result =>
+              result shouldBe a[DeterministicFailure[_]]
+              result
+                .asInstanceOf[DeterministicFailure[_]]
+                .failure shouldBe a[IdConstraintError]
             }
           }
         }
-
       }
     }
   }
@@ -157,8 +160,11 @@ class IngestsWorkerServiceTest
 
               val future = service.processMessage(ingestStatusUpdate)
 
-              whenReady(future.failed) { err =>
-                err shouldBe a[AmazonSNSException]
+              whenReady(future) { result =>
+                result shouldBe a[DeterministicFailure[_]]
+                result
+                  .asInstanceOf[DeterministicFailure[_]]
+                  .failure shouldBe a[AmazonSNSException]
               }
             }
           }

@@ -35,6 +35,41 @@ module "bag_unpacker" {
   container_image = "${local.bag_unpacker_image}"
 }
 
+# bag_verifier
+
+module "bag_verifier_pre_replication" {
+  source = "../modules/service/worker"
+
+  security_group_ids = [
+    "${aws_security_group.interservice.id}",
+    "${aws_security_group.service_egress.id}",
+  ]
+
+  cluster_name = "${aws_ecs_cluster.cluster.name}"
+  cluster_id   = "${aws_ecs_cluster.cluster.id}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
+  subnets      = "${var.private_subnets}"
+  service_name = "${local.bag_verifier_pre_repl_service_name}"
+
+  env_vars = {
+    queue_url          = "${module.bag_verifier_pre_replicate_queue.url}"
+    ingest_topic_arn   = "${module.ingests_topic.arn}"
+    outgoing_topic_arn = "${module.bag_verifier_pre_replicate_output_topic.arn}"
+    metrics_namespace  = "${local.bag_verifier_pre_repl_service_name}"
+    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_pre_repl_service_name}"
+  }
+
+  env_vars_length = 5
+
+  cpu    = 2048
+  memory = 4096
+
+  min_capacity = "1"
+  max_capacity = "10"
+
+  container_image = "${local.bag_verifier_image}"
+}
+
 # bag_replicator
 
 module "bag_replicator" {
@@ -73,7 +108,7 @@ module "bag_replicator" {
 
 # bag_verifier
 
-module "bag_verifier" {
+module "bag_verifier_post_replication" {
   source = "../modules/service/worker"
 
   security_group_ids = [
@@ -85,14 +120,14 @@ module "bag_verifier" {
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
-  service_name = "${local.bag_verifier_service_name}"
+  service_name = "${local.bag_verifier_post_repl_service_name}"
 
   env_vars = {
-    queue_url          = "${module.bag_verifier_input_queue.url}"
+    queue_url          = "${module.bag_verifier_post_replicate_queue.url}"
     ingest_topic_arn   = "${module.ingests_topic.arn}"
-    outgoing_topic_arn = "${module.bag_verifier_output_topic.arn}"
-    metrics_namespace  = "${local.bag_verifier_service_name}"
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_service_name}"
+    outgoing_topic_arn = "${module.bag_verifier_post_replicate_output_topic.arn}"
+    metrics_namespace  = "${local.bag_verifier_post_repl_service_name}"
+    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_post_repl_service_name}"
   }
 
   env_vars_length = 5
