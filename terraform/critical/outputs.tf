@@ -73,3 +73,7 @@ output "s3_bagger_drop_mets_only_name" {
 output "s3_bagger_errors_name" {
   value = "${aws_s3_bucket.bagger_errors.id}"
 }
+
+output "s3_bagger_cache_name" {
+  value = "${aws_s3_bucket.bagger_cache.id}"
+}

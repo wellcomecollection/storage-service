@@ -179,3 +179,8 @@ resource "aws_iam_role_policy" "bagger_s3" {
   role   = "${module.bagger.task_role_name}"
   policy = "${data.aws_iam_policy_document.bagger_s3_readwrite.json}"
 }
+
+resource "aws_iam_role_policy" "bagger_s3_cache" {
+  role   = "${module.bagger.task_role_name}"
+  policy = "${data.aws_iam_policy_document.storage_bagger_cache_drop_read_write.json}"
+}

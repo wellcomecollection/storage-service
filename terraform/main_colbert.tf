@@ -58,6 +58,7 @@ module "stack-colbert" {
   s3_bagger_drop_name           = "${module.critical-staging.s3_bagger_drop_name}"
   s3_bagger_errors_name         = "${module.critical-staging.s3_bagger_errors_name}"
   s3_bagger_drop_mets_only_name = "${module.critical-staging.s3_bagger_drop_mets_only_name}"
+  s3_bagger_cache_name          = "${module.critical-staging.s3_bagger_cache_name}"
 
   vhs_archive_manifest_full_access_policy_json = "${module.critical-staging.manifests_full_access_policy}"
   vhs_archive_manifest_read_policy_json        = "${module.critical-staging.manifests_read_policy}"
