@@ -4,10 +4,20 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
-import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.{
+  DeterministicFailure,
+  Result,
+  Successful
+}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -17,14 +27,13 @@ class IngestsWorker(
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   ingestTracker: IngestTracker,
   callbackNotificationService: CallbackNotificationService
-)(
-  implicit
+)(implicit
   actorSystem: ActorSystem,
   ec: ExecutionContext,
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
-  extends Runnable
-  with Logging {
+    extends Runnable
+    with Logging {
 
   private val worker: AlpakkaSQSWorker[IngestUpdate, Ingest] =
     AlpakkaSQSWorker[IngestUpdate, Ingest](alpakkaSQSWorkerConfig) {
@@ -41,8 +50,12 @@ class IngestsWorker(
     } yield ingest
 
     future
-      .map { ingest => Successful(Some(ingest)) }
-      .recover { case throwable => DeterministicFailure(throwable, summary = None) }
+      .map { ingest =>
+        Successful(Some(ingest))
+      }
+      .recover {
+        case throwable => DeterministicFailure(throwable, summary = None)
+      }
   }
 
   override def run(): Future[Any] = worker.start

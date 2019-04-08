@@ -7,9 +7,15 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.worker.models.DeterministicFailure
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Completed, Processing}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+  Completed,
+  Processing
+}
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
-import uk.ac.wellcome.platform.archive.ingests.fixtures.{IngestsFixture, WorkerServiceFixture}
+import uk.ac.wellcome.platform.archive.ingests.fixtures.{
+  IngestsFixture,
+  WorkerServiceFixture
+}
 
 class IngestsWorkerServiceTest
     extends FunSpec
@@ -130,7 +136,9 @@ class IngestsWorkerServiceTest
 
             whenReady(future) { result =>
               result shouldBe a[DeterministicFailure[_]]
-              result.asInstanceOf[DeterministicFailure[_]].failure shouldBe a[IdConstraintError]
+              result
+                .asInstanceOf[DeterministicFailure[_]]
+                .failure shouldBe a[IdConstraintError]
             }
           }
         }
@@ -154,7 +162,9 @@ class IngestsWorkerServiceTest
 
               whenReady(future) { result =>
                 result shouldBe a[DeterministicFailure[_]]
-                result.asInstanceOf[DeterministicFailure[_]].failure shouldBe a[AmazonSNSException]
+                result
+                  .asInstanceOf[DeterministicFailure[_]]
+                  .failure shouldBe a[AmazonSNSException]
               }
             }
           }

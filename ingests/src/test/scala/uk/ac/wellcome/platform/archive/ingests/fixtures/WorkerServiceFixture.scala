@@ -22,16 +22,17 @@ trait WorkerServiceFixture
       withActorSystem { implicit actorSystem =>
         withMaterializer { implicit materializer =>
           withIngestTracker(table) { ingestTracker =>
-            withCallbackNotificationService(topic) { callbackNotificationService =>
-              val service = new IngestsWorker(
-                alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-                ingestTracker = ingestTracker,
-                callbackNotificationService = callbackNotificationService
-              )
+            withCallbackNotificationService(topic) {
+              callbackNotificationService =>
+                val service = new IngestsWorker(
+                  alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+                  ingestTracker = ingestTracker,
+                  callbackNotificationService = callbackNotificationService
+                )
 
-              service.run()
+                service.run()
 
-              testWith(service)
+                testWith(service)
             }
           }
         }
