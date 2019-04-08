@@ -1,33 +1,34 @@
 package uk.ac.wellcome.platform.archive.notifier.fixtures
 
-import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.{NotificationStreamFixture, SNS}
-import uk.ac.wellcome.platform.archive.common.fixtures.BagIt
-import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.notifier.services.NotifierWorkerService
+import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagIt,
+  MonitoringClientFixture
+}
+import uk.ac.wellcome.platform.archive.notifier.services.NotifierWorker
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture
-    extends Akka
-    with BagIt
+    extends BagIt
     with CallbackUrlServiceFixture
-    with NotificationStreamFixture
+    with AlpakkaSQSWorkerFixtures
+    with MonitoringClientFixture
     with SNS {
 
   private def withApp[R](queue: Queue, topic: Topic)(
-    testWith: TestWith[NotifierWorkerService, R]): R =
-    withActorSystem { implicit actorSystem =>
-      withNotificationStream[CallbackNotification, R](queue) {
-        notificationStream =>
+    testWith: TestWith[NotifierWorker, R]): R =
+    withMonitoringClient { implicit monitoringClient =>
+      withActorSystem { implicit actorSystem =>
+        withMaterializer(actorSystem) { implicit materializer =>
           withCallbackUrlService { callbackUrlService =>
             withSNSWriter(topic) { snsWriter =>
-              val workerService = new NotifierWorkerService(
-                notificationStream = notificationStream,
+              val workerService = new NotifierWorker(
+                alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
                 callbackUrlService = callbackUrlService,
                 snsWriter = snsWriter
               )
@@ -37,6 +38,7 @@ trait WorkerServiceFixture
               testWith(workerService)
             }
           }
+        }
       }
     }
 
