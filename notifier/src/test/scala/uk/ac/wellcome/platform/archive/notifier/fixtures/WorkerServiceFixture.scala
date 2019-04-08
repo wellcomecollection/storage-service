@@ -5,7 +5,10 @@ import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagIt, MonitoringClientFixture}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagIt,
+  MonitoringClientFixture
+}
 import uk.ac.wellcome.platform.archive.notifier.services.NotifierWorker
 
 import scala.concurrent.ExecutionContext.Implicits.global
