@@ -9,7 +9,6 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
 }
-import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Successful}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
@@ -40,12 +39,12 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
                              ingestUpdater: IngestUpdater,
                              outgoingPublisher: OutgoingPublisher,
                              unpacker: Unpacker)(implicit ac: ActorSystem,
-                                                 ex: ExecutionContext,
+                                                 ec: ExecutionContext,
                                                  mc: MonitoringClient,
                                                  sc: AmazonSQSAsync)
     extends Runnable
-    with Logging {
-
+    with Logging
+    with IngestStepWorker {
   private val worker: AlpakkaSQSWorker[UnpackBagRequest, UnpackSummary] =
     AlpakkaSQSWorker[UnpackBagRequest, UnpackSummary](alpakkaSQSWorkerConfig) {
       unpackBagRequest: UnpackBagRequest =>
