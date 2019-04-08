@@ -1,44 +1,55 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import akka.Done
+import akka.actor.ActorSystem
+import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
-import uk.ac.wellcome.messaging.sqs.NotificationStream
+import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.Result
+import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.{
-  DiagnosticReporter,
+  IngestStepWorker,
   OutgoingPublisher
 }
 import uk.ac.wellcome.typesafe.Runnable
-import uk.ac.wellcome.json.JsonUtil._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class BagVerifierWorker(stream: NotificationStream[BagRequest],
-                        ingestUpdater: IngestUpdater,
-                        outgoing: OutgoingPublisher,
-                        reporter: DiagnosticReporter,
-                        verifier: Verifier)(implicit ec: ExecutionContext)
+class BagVerifierWorker(
+  alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
+  ingestUpdater: IngestUpdater,
+  outgoingPublisher: OutgoingPublisher,
+  verifier: Verifier
+)(implicit
+  actorSystem: ActorSystem,
+  ec: ExecutionContext,
+  mc: MonitoringClient,
+  sc: AmazonSQSAsync)
     extends Runnable
-    with Logging {
+    with Logging
+    with IngestStepWorker {
+
+  private val worker: AlpakkaSQSWorker[BagRequest, VerificationSummary] =
+    AlpakkaSQSWorker[BagRequest, VerificationSummary](alpakkaSQSWorkerConfig) {
+      processMessage
+    }
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
-  def run(): Future[Done] =
-    stream.run(processMessage)
+  def processMessage(request: BagRequest): Future[Result[VerificationSummary]] =
+    for {
+      verificationSummary <- verifier.verify(request.bagLocation)
 
-  def processMessage(request: BagRequest): Future[Unit] = {
-    info(s"Received request $request")
+      _ <- ingestUpdater.send(request.requestId, verificationSummary)
+      _ <- outgoingPublisher.sendIfSuccessful(verificationSummary, request)
+    } yield toResult(verificationSummary)
 
-    val result = for {
-      verification <- verifier.verify(request.bagLocation)
-
-      _ <- reporter.report(request.requestId, verification)
-      _ <- ingestUpdater.send(request.requestId, verification)
-      _ <- outgoing.sendIfSuccessful(verification, request)
-    } yield ()
-
-    result
-  }
+  override def run(): Future[Any] = worker.start
 }

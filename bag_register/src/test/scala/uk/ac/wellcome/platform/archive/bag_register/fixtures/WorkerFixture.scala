@@ -10,6 +10,7 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   Register
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
   OperationFixtures,
   RandomThings,
   StorageManifestVHSFixture
@@ -24,18 +25,15 @@ trait WorkerFixture
     extends RandomThings
     with AlpakkaSQSWorkerFixtures
     with OperationFixtures
-    with StorageManifestVHSFixture {
+    with StorageManifestVHSFixture
+    with MonitoringClientFixture {
 
   type Fixtures = (BagRegisterWorker, Table, Bucket, Topic, Topic, QueuePair)
-
-  def withFakeMonitoringClient[R](
-    testWith: TestWith[FakeMonitoringClient, R]): R =
-    testWith(new FakeMonitoringClient())
 
   def withBagRegisterWorkerAndBucket[R](userBucket: Bucket)(
     testWith: TestWith[Fixtures, R]): R =
     withActorSystem { implicit actorSystem =>
-      withFakeMonitoringClient { implicit monitoringClient =>
+      withMonitoringClient { implicit monitoringClient =>
         withLocalDynamoDbTable { table =>
           withLocalSnsTopic { ingestTopic =>
             withLocalSnsTopic { outgoingTopic =>
