@@ -302,7 +302,7 @@ def fetch_from_wlorg(preservica_uuid, web_url, destination, retry_attempts):
             Filename=destination
         )
         return True
-    except ClientError as err:
+    except ClientError:
         pass
 
     # This will probably fail, if the DLCS hasn't got it.
