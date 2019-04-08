@@ -2,47 +2,31 @@ package uk.ac.wellcome.platform.archive.notifier
 
 import java.net.URI
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import com.github.tomakehurst.wiremock.client.WireMock.{
-  equalToJson,
-  postRequestedFor,
-  urlPathEqualTo,
-  _
-}
+import com.github.tomakehurst.wiremock.client.WireMock.{equalToJson, postRequestedFor, urlPathEqualTo, _}
 import org.apache.http.HttpStatus
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Callback,
-  CallbackNotification,
-  IngestCallbackStatusUpdate,
-  IngestUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, CallbackNotification, IngestCallbackStatusUpdate, IngestUpdate}
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{
-  LocalWireMockFixture,
-  WorkerServiceFixture
-}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixtures}
 
 class NotifierFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
+    with Akka
     with IntegrationPatience
     with LocalWireMockFixture
-    with WorkerServiceFixture
+    with NotifierFixtures
     with Inside
     with RandomThings
     with IngestGenerators
     with TimeTestFixture {
-
-  implicit val system: ActorSystem = ActorSystem("test")
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   describe("Making callbacks") {
     it("makes a POST request when it receives an Ingest with a callback") {

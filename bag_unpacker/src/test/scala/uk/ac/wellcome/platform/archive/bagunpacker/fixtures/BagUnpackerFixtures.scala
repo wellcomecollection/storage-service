@@ -38,7 +38,6 @@ trait BagUnpackerFixtures
       withIngestUpdater("unpacker", ingestTopic) { ingestUpdater =>
         withOutgoingPublisher("unpacker", outgoingTopic) { ongoingPublisher =>
           withMonitoringClient { implicit monitoringClient =>
-            implicit val _asyncSqsClient = asyncSqsClient
             val bagUnpackerWorker = BagUnpackerWorker(
               alpakkaSQSWorkerConfig = AlpakkaSQSWorkerConfig("test", queue.url),
               bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),

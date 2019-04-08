@@ -19,7 +19,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestSe
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait WorkerServiceFixture
+trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
     with SQS
     with OperationFixtures
@@ -32,7 +32,6 @@ trait WorkerServiceFixture
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         withMaterializer(actorSystem) { implicit materializer =>
-          implicit val _asyncSqsClient = asyncSqsClient
           val verifier = new Verifier(
             storageManifestService = new StorageManifestService(),
             s3Client = s3Client,

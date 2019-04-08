@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.bag_register.fixtures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
@@ -23,9 +22,8 @@ import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait BagRegisterWorkerFixture
+trait BagRegisterFixtures
     extends RandomThings
-    with SQS
     with AlpakkaSQSWorkerFixtures
     with OperationFixtures
     with StorageManifestVHSFixture
@@ -54,7 +52,6 @@ trait BagRegisterWorkerFixture
                       withIngestUpdater("register", ingestTopic) {
                         ingestUpdater =>
                           withOutgoingPublisher("register", outgoingTopic) {
-                            implicit val _asyncSqsClient = asyncSqsClient
                             outgoingPublisher =>
                               val service = new BagRegisterWorker(
                                 alpakkaSQSWorkerConfig = AlpakkaSQSWorkerConfig(
