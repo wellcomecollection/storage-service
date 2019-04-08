@@ -2,19 +2,24 @@ package uk.ac.wellcome.platform.archive.bag_register
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.NotificationStreamBuilder
+import uk.ac.wellcome.messaging.typesafe.{
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
+import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
+import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.{
-  DiagnosticReporterBuilder,
   IngestUpdaterBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestService,
@@ -36,7 +41,13 @@ object Main extends WellcomeTypesafeApp {
     implicit val materializer: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
-    implicit val s3Client = S3Builder.buildS3Client(config)
+    implicit val s3Client: AmazonS3 = S3Builder.buildS3Client(config)
+
+    implicit val monitoringClient: CloudwatchMonitoringClient =
+      CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
+
+    implicit val sqsClient: AmazonSQSAsync =
+      SQSBuilder.buildSQSAsyncClient(config)
 
     val storageManifestService = new StorageManifestService()
 
@@ -51,27 +62,21 @@ object Main extends WellcomeTypesafeApp {
       operationName
     )
 
-    val reporter = DiagnosticReporterBuilder.build(config)
-
     val register = new Register(
       storageManifestService,
       storageManifestVHS
     )
 
-    val outgoing = OutgoingPublisherBuilder.build(
+    val outgoingPublisher = OutgoingPublisherBuilder.build(
       config,
       operationName
     )
 
-    val stream = NotificationStreamBuilder
-      .buildStream[BagRequest](config)
-
     new BagRegisterWorker(
-      stream,
-      ingestUpdater,
-      outgoing,
-      reporter,
-      register
+      alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
+      ingestUpdater = ingestUpdater,
+      outgoingPublisher = outgoingPublisher,
+      register = register
     )
   }
 }

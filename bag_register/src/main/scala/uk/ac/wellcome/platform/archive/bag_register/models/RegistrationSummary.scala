@@ -11,16 +11,15 @@ case class RegistrationSummary(
   startTime: Instant,
   endTime: Option[Instant] = None
 ) extends Summary {
-  def complete: RegistrationSummary = {
+  def complete: RegistrationSummary =
     this.copy(
       endTime = Some(Instant.now())
     )
-  }
-  override def toString(): String = {
+
+  override def toString: String =
     f"""|bag=${location.completePath}
         |id=${bagId.getOrElse("<unknown-bag>")}
         |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")
-  }
 }
