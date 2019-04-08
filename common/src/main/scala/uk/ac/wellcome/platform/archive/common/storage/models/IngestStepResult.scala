@@ -34,8 +34,8 @@ case class IngestFailed[T](
 trait IngestStepWorker {
   def toResult[T](ingestResult: IngestStepResult[T]): Result[T] =
     ingestResult match {
-      case IngestStepSuccess(s) => Successful(Some(s))
-      case IngestCompleted(s)   => Successful(Some(s))
-      case IngestFailed(s, t)   => DeterministicFailure(t, Some(s))
+      case IngestStepSucceeded(s) => Successful(Some(s))
+      case IngestCompleted(s)     => Successful(Some(s))
+      case IngestFailed(s, t, _)  => DeterministicFailure(t, Some(s))
     }
 }

@@ -4,7 +4,7 @@ import java.time.Instant
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
+import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterWorkerFixture
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
@@ -27,7 +27,7 @@ class BagRegisterWorkerTest
     with BagLocationFixtures
     with BagRequestGenerators
     with IngestUpdateAssertions
-    with WorkerFixture {
+    with BagRegisterWorkerFixture {
 
   it("sends a successful IngestUpdate upon registration") {
     withBagRegisterWorker {

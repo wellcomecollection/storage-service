@@ -3,25 +3,21 @@ package uk.ac.wellcome.platform.archive.bag_register.fixtures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
+import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.platform.archive.bag_register.services.{
-  BagRegisterWorker,
-  Register
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  OperationFixtures,
-  RandomThings,
-  StorageManifestVHSFixture
-}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, RandomThings, StorageManifestVHSFixture}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait WorkerFixture
+trait BagRegisterWorkerFixture
     extends RandomThings
+    with SQS
     with AlpakkaSQSWorkerFixtures
     with OperationFixtures
     with StorageManifestVHSFixture {
@@ -53,10 +49,11 @@ trait WorkerFixture
                       withIngestUpdater("register", ingestTopic) {
                         ingestUpdater =>
                           withOutgoingPublisher("register", outgoingTopic) {
+                            implicit val _asyncSqsClient = asyncSqsClient
                             outgoingPublisher =>
                               val service = new BagRegisterWorker(
                                 alpakkaSQSWorkerConfig =
-                                  createAlpakkaSQSWorkerConfig(queuePair.queue),
+                                  AlpakkaSQSWorkerConfig("test", queuePair.queue.url),
                                 ingestUpdater = ingestUpdater,
                                 outgoingPublisher = outgoingPublisher,
                                 register = register

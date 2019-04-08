@@ -5,31 +5,17 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.ArchiveLocationException
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  BagRequest,
-  UnpackBagRequest
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{BagRequest, UnpackBagRequest}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.models.{
-  WorkerFailed,
-  WorkerResult,
-  WorkerSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.operation.models.{WorkerFailed, WorkerResult, WorkerSucceeded}
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  IngestFailed,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded, IngestStepWorker}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -61,11 +47,7 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
             stepResult,
             BagRequest(unpackBagRequest.requestId, location))
         } yield
-          stepResult match {
-            case IngestStepSucceeded(s) => Successful(Some(s))
-            case IngestCompleted(s)     => Successful(Some(s))
-            case IngestFailed(s, t, _)  => DeterministicFailure(t, Some(s))
-          }
+          toResult(stepResult)
     }
 
   private def stepResultFor(result: WorkerResult[UnpackSummary]) = {
