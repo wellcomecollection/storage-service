@@ -8,16 +8,22 @@ import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagIt, MonitoringClientFixture}
-import uk.ac.wellcome.platform.archive.notifier.services.{CallbackUrlService, NotifierWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagIt,
+  MonitoringClientFixture
+}
+import uk.ac.wellcome.platform.archive.notifier.services.{
+  CallbackUrlService,
+  NotifierWorker
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait NotifierFixtures
-  extends BagIt
-  with AlpakkaSQSWorkerFixtures
-  with MonitoringClientFixture
-  with SNS {
+    extends BagIt
+    with AlpakkaSQSWorkerFixtures
+    with MonitoringClientFixture
+    with SNS {
 
   def withCallbackUrlService[R](testWith: TestWith[CallbackUrlService, R])(
     implicit actorSystem: ActorSystem): R = {
@@ -28,7 +34,7 @@ trait NotifierFixtures
   }
 
   private def withApp[R](queue: Queue, topic: Topic)(
-      testWith: TestWith[NotifierWorker, R]): R =
+    testWith: TestWith[NotifierWorker, R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         withMaterializer(actorSystem) { implicit materializer =>

@@ -10,9 +10,17 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagReplicator,
+  BagReplicatorWorker
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures, RandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  MonitoringClientFixture,
+  OperationFixtures,
+  RandomThings
+}
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -22,25 +30,25 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagReplicatorFixtures
     extends S3
-      with SQS
-      with Akka
-      with RandomThings
-      with Messaging
-      with BagLocationFixtures
-      with OperationFixtures
-      with AlpakkaSQSWorkerFixtures
-      with MonitoringClientFixture {
+    with SQS
+    with Akka
+    with RandomThings
+    with Messaging
+    with BagLocationFixtures
+    with OperationFixtures
+    with AlpakkaSQSWorkerFixtures
+    with MonitoringClientFixture {
 
   def withBagReplicatorWorker[R](queue: Queue = Queue(
-    "default_q",
-    "arn::default_q"
-  ),
+                                   "default_q",
+                                   "arn::default_q"
+                                 ),
                                  ingestTopic: Topic,
                                  outgoingTopic: Topic,
                                  config: ReplicatorDestinationConfig =
-                                 createReplicatorDestinationConfigWith(
-                                   Bucket(randomAlphanumeric())))(
-                                  testWith: TestWith[BagReplicatorWorker, R]): R =
+                                   createReplicatorDestinationConfigWith(
+                                     Bucket(randomAlphanumeric())))(
+    testWith: TestWith[BagReplicatorWorker, R]): R =
     withActorSystem { implicit actorSystem =>
       withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
         withOutgoingPublisher("replicating", outgoingTopic) {
@@ -63,7 +71,7 @@ trait BagReplicatorFixtures
     }
 
   def createReplicatorDestinationConfigWith(
-                                             bucket: Bucket): ReplicatorDestinationConfig =
+    bucket: Bucket): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
       namespace = bucket.name,
       rootPath = Some(randomAlphanumeric())

@@ -7,7 +7,10 @@ import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.worker.models.DeterministicFailure
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Completed, Processing}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+  Completed,
+  Processing
+}
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
 import uk.ac.wellcome.platform.archive.ingests.fixtures.IngestsFixtures
 

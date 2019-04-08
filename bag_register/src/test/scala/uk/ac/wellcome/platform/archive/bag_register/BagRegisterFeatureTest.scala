@@ -8,8 +8,16 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, BagRequestGenerators, IngestOperationGenerators}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, Ingest, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  BagRequestGenerators,
+  IngestOperationGenerators
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  Ingest,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
