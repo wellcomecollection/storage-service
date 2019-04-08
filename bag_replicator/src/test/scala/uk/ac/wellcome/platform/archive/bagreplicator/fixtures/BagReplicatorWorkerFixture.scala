@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagReplicatorWorker
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
   OperationFixtures,
   RandomThings
 }
@@ -26,10 +27,8 @@ trait BagReplicatorWorkerFixture
     with S3
     with Messaging
     with OperationFixtures
-    with AlpakkaSQSWorkerFixtures {
-  def withFakeMonitoringClient[R](
-    testWith: TestWith[FakeMonitoringClient, R]): R =
-    testWith(new FakeMonitoringClient())
+    with AlpakkaSQSWorkerFixtures
+    with MonitoringClientFixture {
 
   def withBagReplicatorWorker[R](queue: Queue = Queue(
                                    "default_q",
@@ -45,7 +44,7 @@ trait BagReplicatorWorkerFixture
       withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
         withOutgoingPublisher("replicating", outgoingTopic) {
           outgoingPublisher =>
-            withFakeMonitoringClient { implicit monitoringClient =>
+            withMonitoringClient { implicit monitoringClient =>
               implicit val asyncSQSClient: AmazonSQSAsync = asyncSqsClient
               val service = new BagReplicatorWorker(
                 alpakkaSQSWorkerConfig =
