@@ -273,7 +273,7 @@ def try_to_download_asset(preservica_uuid, destination):
             preservica_uuid=preservica_uuid,
             web_url=web_url,
             destination=destination,
-            retry_attempts=3
+            retry_attempts=3,
         )
 
     # TODO: this message could give a more detailed error report
@@ -294,12 +294,10 @@ def fetch_from_wlorg(preservica_uuid, web_url, destination, retry_attempts):
         logging.debug(
             "Looking for cached asset at s3://%s/%s",
             settings.CACHE_BUCKET,
-            preservica_uuid
+            preservica_uuid,
         )
         s3_client.download_file(
-            Bucket=settings.CACHE_BUCKET,
-            Key=preservica_uuid,
-            Filename=destination
+            Bucket=settings.CACHE_BUCKET, Key=preservica_uuid, Filename=destination
         )
         return True
     except ClientError:
@@ -327,7 +325,7 @@ def fetch_from_wlorg(preservica_uuid, web_url, destination, retry_attempts):
                 s3_client.upload_file(
                     Bucket=settings.CACHE_BUCKET,
                     Key=preservica_uuid,
-                    Filename=destination
+                    Filename=destination,
                 )
 
                 return True
