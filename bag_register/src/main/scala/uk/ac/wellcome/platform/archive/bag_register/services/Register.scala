@@ -4,7 +4,7 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
-import uk.ac.wellcome.platform.archive.common.operation.services.{
+import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed,
   IngestStepResult
@@ -44,18 +44,13 @@ class Register(
       completedRegistration <- storageManifestVHS
         .updateRecord(manifest)(_ => manifest)
         .transform {
-          case Success(_) => completed(registrationWithBagId)
-          case Failure(e) => failed(registrationWithBagId, e)
+          case Success(_) =>
+            Success(IngestCompleted(registrationWithBagId.complete))
+          case Failure(e) =>
+            Success(IngestFailed(registrationWithBagId.complete, e))
         }
 
     } yield completedRegistration
   }
 
-  private def completed(r: RegistrationSummary) = {
-    Success(IngestCompleted(r.complete))
-  }
-
-  private def failed(r: RegistrationSummary, e: Throwable) = {
-    Success(IngestFailed(r.complete, e))
-  }
 }

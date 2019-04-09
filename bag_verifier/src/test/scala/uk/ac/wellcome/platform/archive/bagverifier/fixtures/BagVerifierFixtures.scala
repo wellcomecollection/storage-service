@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixtures
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
+import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
@@ -17,8 +18,9 @@ import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestSe
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait WorkerServiceFixture
+trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
+    with SQS
     with OperationFixtures
     with MonitoringClientFixture {
   def withBagVerifierWorker[R](ingestTopic: Topic,

@@ -12,21 +12,17 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
   Processing
 }
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
-import uk.ac.wellcome.platform.archive.ingests.fixtures.{
-  IngestsFixture,
-  WorkerServiceFixture
-}
+import uk.ac.wellcome.platform.archive.ingests.fixtures.IngestsFixtures
 
 class IngestsWorkerServiceTest
     extends FunSpec
     with IngestGenerators
-    with IngestsFixture
-    with WorkerServiceFixture {
+    with IngestsFixtures {
   it("updates an existing ingest to Completed") {
     withLocalSqsQueue { queue =>
       withIngestTrackerTable { table =>
         withLocalSnsTopic { topic =>
-          withWorkerService(queue, table, topic) { service =>
+          withIngestWorker(queue, table, topic) { service =>
             withIngestTracker(table) { monitor =>
               withIngest(monitor) { ingest =>
                 val ingestStatusUpdate =
@@ -75,7 +71,7 @@ class IngestsWorkerServiceTest
     withLocalSqsQueue { queue =>
       withIngestTrackerTable { table =>
         withLocalSnsTopic { topic =>
-          withWorkerService(queue, table, topic) { service =>
+          withIngestWorker(queue, table, topic) { service =>
             withIngestTracker(table) { monitor =>
               withIngest(monitor) { ingest =>
                 val ingestStatusUpdate1 =
@@ -126,7 +122,7 @@ class IngestsWorkerServiceTest
     withLocalSqsQueue { queue =>
       withIngestTrackerTable { table =>
         withLocalSnsTopic { topic =>
-          withWorkerService(queue, table, topic) { service =>
+          withIngestWorker(queue, table, topic) { service =>
             val ingestStatusUpdate =
               createIngestStatusUpdateWith(
                 status = Completed
@@ -149,7 +145,7 @@ class IngestsWorkerServiceTest
   it("fails if publishing to SNS fails") {
     withLocalSqsQueue { queue =>
       withIngestTrackerTable { table =>
-        withWorkerService(queue, table, Topic("does-not-exist")) { service =>
+        withIngestWorker(queue, table, Topic("does-not-exist")) { service =>
           withIngestTracker(table) { monitor =>
             withIngest(monitor) { ingest =>
               val ingestStatusUpdate =

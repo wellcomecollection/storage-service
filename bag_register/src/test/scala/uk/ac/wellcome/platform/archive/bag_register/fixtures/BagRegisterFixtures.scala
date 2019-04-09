@@ -21,7 +21,7 @@ import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait WorkerFixture
+trait BagRegisterFixtures
     extends RandomThings
     with AlpakkaSQSWorkerFixtures
     with OperationFixtures

@@ -1,10 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.Messaging
-import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   BagUnpackerWorker,
@@ -26,6 +26,7 @@ trait BagUnpackerFixtures
     with Messaging
     with BagLocationFixtures
     with OperationFixtures
+    with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture {
 
   def withBagUnpackerWorker[R](
@@ -39,7 +40,7 @@ trait BagUnpackerFixtures
         withOutgoingPublisher("unpacker", outgoingTopic) { ongoingPublisher =>
           withMonitoringClient { implicit monitoringClient =>
             val bagUnpackerWorker = BagUnpackerWorker(
-              alpakkaSQSWorkerConfig = AlpakkaSQSWorkerConfig("test", queue.url),
+              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
               bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
               ingestUpdater = ingestUpdater,
               outgoingPublisher = ongoingPublisher,

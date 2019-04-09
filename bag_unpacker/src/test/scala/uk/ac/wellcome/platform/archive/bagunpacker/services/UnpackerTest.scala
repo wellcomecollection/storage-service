@@ -6,11 +6,16 @@ import java.nio.file.Paths
 import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
+  ArchiveLocationException,
+  UnpackerArchiveEntryUploadException
+}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
+import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  IngestFailed,
-  IngestStepSuccess
+import uk.ac.wellcome.platform.archive.common.operation.models.{
+  WorkerFailed,
+  WorkerSucceeded
 }
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
@@ -47,7 +52,7 @@ class UnpackerTest
             )
 
           whenReady(summaryResult) { unpacked =>
-            unpacked shouldBe a[IngestStepSuccess[_]]
+            unpacked shouldBe a[WorkerSucceeded[_]]
 
             val summary = unpacked.summary
             summary.fileCount shouldBe filesInArchive.size
@@ -78,7 +83,7 @@ class UnpackerTest
             )
 
           whenReady(summaryResult) { unpacked =>
-            unpacked shouldBe a[IngestStepSuccess[_]]
+            unpacked shouldBe a[WorkerSucceeded[_]]
 
             val summary = unpacked.summary
             summary.fileCount shouldBe filesInArchive.size
@@ -92,15 +97,23 @@ class UnpackerTest
   }
 
   it("returns an IngestFailed if it cannot open the input stream") {
-    val future = unpacker
-      .unpack(
+    val srcLocation = createObjectLocation
+    val future =
+      unpacker.unpack(
         randomUUID.toString,
-        srcLocation = createObjectLocation,
+        srcLocation = srcLocation,
         dstLocation = createObjectLocation
       )
 
     whenReady(future) { result =>
-      result shouldBe a[IngestFailed[_]]
+      result shouldBe a[WorkerFailed[_]]
+      result.summary.fileCount shouldBe 0
+      result.summary.bytesUnpacked shouldBe 0
+      val actualResult = result.asInstanceOf[WorkerFailed[UnpackSummary]]
+      actualResult.e shouldBe a[ArchiveLocationException]
+      actualResult.e.getMessage should
+        startWith(
+          s"Error getting input stream for s3://$srcLocation: The specified bucket does not exist.")
     }
   }
 
@@ -108,15 +121,21 @@ class UnpackerTest
     withLocalS3Bucket { srcBucket =>
       val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
       withArchive(srcBucket, archiveFile) { testArchive =>
-        val future = unpacker
-          .unpack(
+        val dstLocation = createObjectLocation
+        val future =
+          unpacker.unpack(
             randomUUID.toString,
             srcLocation = testArchive,
-            dstLocation = createObjectLocation
+            dstLocation = dstLocation
           )
 
-        whenReady(future) { unpacked =>
-          unpacked shouldBe a[IngestFailed[_]]
+        whenReady(future) { result =>
+          result shouldBe a[WorkerFailed[_]]
+          result.summary.fileCount shouldBe 0
+          result.summary.bytesUnpacked shouldBe 0
+          val actualResult = result.asInstanceOf[WorkerFailed[UnpackSummary]]
+          actualResult.e shouldBe a[UnpackerArchiveEntryUploadException]
+          actualResult.e.getMessage should startWith("upload failed")
         }
       }
     }

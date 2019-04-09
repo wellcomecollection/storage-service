@@ -14,12 +14,12 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagDigestFile,
   BagLocation
 }
-import uk.ac.wellcome.platform.archive.common.operation.services.{
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  FileManifest,
   IngestFailed,
   IngestStepResult,
-  IngestStepSuccess
+  IngestStepSucceeded
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.FileManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   ChecksumVerifier,
   StorageManifestService
@@ -55,7 +55,7 @@ class Verifier(
     } yield result
 
     verification.map {
-      case summary if summary.succeeded => IngestStepSuccess(summary)
+      case summary if summary.succeeded => IngestStepSucceeded(summary)
       case failed =>
         IngestFailed(
           failed,

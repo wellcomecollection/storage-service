@@ -10,8 +10,8 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.notifier.fixtures.{
-  CallbackUrlServiceFixture,
-  LocalWireMockFixture
+  LocalWireMockFixture,
+  NotifierFixtures
 }
 
 class CallbackUrlServiceTest
@@ -20,7 +20,7 @@ class CallbackUrlServiceTest
     with ScalaFutures
     with IntegrationPatience
     with Akka
-    with CallbackUrlServiceFixture
+    with NotifierFixtures
     with LocalWireMockFixture
     with IngestGenerators {
 

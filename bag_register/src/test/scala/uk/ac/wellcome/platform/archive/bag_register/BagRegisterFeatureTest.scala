@@ -4,13 +4,14 @@ import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bag_register.fixtures.WorkerFixture
+import uk.ac.wellcome.messaging.fixtures.SQS
+import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
   BagRequestGenerators,
-  OperationGenerators
+  IngestOperationGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
@@ -22,13 +23,14 @@ import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagRegisterFeatureTest
     extends FunSpec
+    with SQS
     with Matchers
-    with OperationGenerators
+    with IngestOperationGenerators
     with BagInfoGenerators
     with BagLocationFixtures
     with BagRequestGenerators
     with IngestUpdateAssertions
-    with WorkerFixture {
+    with BagRegisterFixtures {
 
   it("sends an update if it registers a bag") {
     withBagRegisterWorker {

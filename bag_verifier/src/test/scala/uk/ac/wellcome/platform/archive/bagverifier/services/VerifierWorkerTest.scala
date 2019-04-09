@@ -4,7 +4,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.platform.archive.bagverifier.fixtures.WorkerServiceFixture
+import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
@@ -21,7 +21,7 @@ class VerifierWorkerTest
     with BagRequestGenerators
     with IngestUpdateAssertions
     with IntegrationPatience
-    with WorkerServiceFixture {
+    with BagVerifierFixtures {
 
   it(
     "updates the ingest monitor and sends an outgoing notification if verification succeeds") {

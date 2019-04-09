@@ -11,10 +11,10 @@ import uk.ac.wellcome.platform.archive.common.operation.services.{
 }
 
 trait OperationFixtures extends SNS with MetricsSenderFixture {
-  def withIngestUpdater[R](operationName: String, topic: Topic)(
+  def withIngestUpdater[R](stepName: String, topic: Topic)(
     testWith: TestWith[IngestUpdater, R]): R =
     withSNSWriter(topic) { snsWriter =>
-      val ingestNotifier = new IngestUpdater(operationName, snsWriter)
+      val ingestNotifier = new IngestUpdater(stepName, snsWriter)
 
       testWith(ingestNotifier)
     }

@@ -3,21 +3,18 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{
-  BagReplicatorFixtures,
-  WorkerServiceFixture
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagLocation,
   BagPath
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   BagRequest,
   Ingest
 }
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
 class BagReplicatorWorkerTest
     extends FunSpec
@@ -26,8 +23,7 @@ class BagReplicatorWorkerTest
     with BagLocationFixtures
     with BagReplicatorFixtures
     with BagRequestGenerators
-    with IngestUpdateAssertions
-    with WorkerServiceFixture {
+    with IngestUpdateAssertions {
 
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { ingestsBucket =>

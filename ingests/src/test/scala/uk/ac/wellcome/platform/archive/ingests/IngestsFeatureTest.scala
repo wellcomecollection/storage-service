@@ -14,7 +14,7 @@ class IngestsFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with IngestsFixture
+    with IngestsFixtures
     with IntegrationPatience {
 
   it("updates an existing ingest status to Completed") {

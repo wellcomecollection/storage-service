@@ -84,7 +84,9 @@ class UnpackerFeatureTest
             ingestTopic = ingestTopic,
             status = Ingest.Failed
           ) { events =>
-            events.map { _.description } shouldBe List("Unpacker failed")
+            events.map { _.description } shouldBe
+              List(
+                s"Unpacker failed - ${unpackBagRequest.sourceLocation} does not exist")
           }
         }
     }

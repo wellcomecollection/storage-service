@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagRequestGenerators,
-  OperationGenerators
+  IngestOperationGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
@@ -24,7 +24,7 @@ class OutgoingPublisherTest
     with Eventually
     with IntegrationPatience
     with OperationFixtures
-    with OperationGenerators
+    with IngestOperationGenerators
     with BagRequestGenerators {
 
   val operationName: String = randomAlphanumeric()

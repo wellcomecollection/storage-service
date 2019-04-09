@@ -10,11 +10,6 @@ import org.apache.commons.compress.archivers.{
 }
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.io.input.CloseShieldInputStream
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSuccess
-}
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,25 +20,24 @@ object Archive extends Logging {
     inputStream: InputStream
   )(init: T)(
     f: (T, InputStream, ArchiveEntry) => T
-  )(implicit ec: ExecutionContext): Future[IngestStepResult[T]] = Future {
+  )(implicit ec: ExecutionContext): Future[T] = Future {
 
     val archiveReader = new ArchiveReader[T](inputStream)
 
     @tailrec
     def foldStream(stream: InputStream)(t: T)(
       f: (T, InputStream, ArchiveEntry) => T
-    ): IngestStepResult[T] = {
+    ): T = {
 
       archiveReader.accumulate(t, f) match {
         case StreamEnd(resultT) =>
-          IngestStepSuccess(resultT)
+          resultT
         case StreamContinues(resultT) =>
           foldStream(stream)(resultT)(f)
-        case StreamError(resultT, e) =>
-          IngestFailed(resultT, e)
+        case StreamError(_, e) =>
+          throw e
       }
     }
-
     foldStream(inputStream)(init)(f)
   }
 
