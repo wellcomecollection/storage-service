@@ -270,9 +270,7 @@ def try_to_download_asset(preservica_uuid, destination):
     web_url = origin_info["web_url"]
     if not asset_downloaded and web_url is not None:
         asset_downloaded = fetch_from_wlorg(
-            web_url=web_url,
-            destination=destination,
-            retry_attempts=3,
+            web_url=web_url, destination=destination, retry_attempts=3
         )
 
     # TODO: this message could give a more detailed error report
