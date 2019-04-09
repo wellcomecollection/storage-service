@@ -85,7 +85,6 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
     val archiveLocation = exception.getObjectLocation
     cause.getStatusCode match {
       case 403 => s"access to $archiveLocation is denied"
-      case 400 => s"$archiveLocation is invalid"
       case 404 => s"$archiveLocation does not exist"
       case _   => s"$archiveLocation could not be downloaded"
     }
