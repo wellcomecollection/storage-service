@@ -7,11 +7,18 @@ import java.time.Instant
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.commons.compress.archivers.ArchiveEntry
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{ArchiveLocationException, UnpackerArchiveEntryUploadException}
+import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
+  ArchiveLocationException,
+  UnpackerArchiveEntryUploadException
+}
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,10 +48,11 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
       case Success(summary) =>
         Success(IngestStepSucceeded(summary))
       case Failure(archiveLocationException: ArchiveLocationException) =>
-        Success(IngestFailed(
-          unpackSummary,
-          archiveLocationException,
-          Some(clientMessageFor(archiveLocationException))))
+        Success(
+          IngestFailed(
+            unpackSummary,
+            archiveLocationException,
+            Some(clientMessageFor(archiveLocationException))))
       case Failure(e) =>
         Success(IngestFailed(unpackSummary, e))
     }
@@ -56,7 +64,7 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
     cause.getStatusCode match {
       case 403 => s"access to $archiveLocation is denied"
       case 404 => s"$archiveLocation does not exist"
-      case _ => s"$archiveLocation could not be downloaded"
+      case _   => s"$archiveLocation could not be downloaded"
     }
   }
 
@@ -94,22 +102,22 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
                               inputStream: InputStream,
                               archiveEntry: ArchiveEntry) =
     try {
-              val archiveEntrySize = putObject(
-                inputStream,
-                archiveEntry,
-                dstLocation
-              )
-              summary.copy(
-                fileCount = summary.fileCount + 1,
-                bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
-              )
+      val archiveEntrySize = putObject(
+        inputStream,
+        archiveEntry,
+        dstLocation
+      )
+      summary.copy(
+        fileCount = summary.fileCount + 1,
+        bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
+      )
     } catch {
       case ae: AmazonS3Exception =>
         throw new UnpackerArchiveEntryUploadException(
           dstLocation,
           s"upload failed for ${archiveEntry.getName}",
           ae)
-            }
+    }
 
   private def putObject(
     inputStream: InputStream,
