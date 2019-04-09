@@ -6,17 +6,11 @@ import java.nio.file.Paths
 import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
-  ArchiveLocationException,
-  UnpackerArchiveEntryUploadException
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{ArchiveLocationException, UnpackerArchiveEntryUploadException}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.operation.models.{
-  WorkerFailed,
-  WorkerSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -52,7 +46,7 @@ class UnpackerTest
             )
 
           whenReady(summaryResult) { unpacked =>
-            unpacked shouldBe a[WorkerSucceeded[_]]
+            unpacked shouldBe a[IngestStepSucceeded[_]]
 
             val summary = unpacked.summary
             summary.fileCount shouldBe filesInArchive.size
@@ -83,7 +77,7 @@ class UnpackerTest
             )
 
           whenReady(summaryResult) { unpacked =>
-            unpacked shouldBe a[WorkerSucceeded[_]]
+            unpacked shouldBe a[IngestStepSucceeded[_]]
 
             val summary = unpacked.summary
             summary.fileCount shouldBe filesInArchive.size
@@ -106,10 +100,10 @@ class UnpackerTest
       )
 
     whenReady(future) { result =>
-      result shouldBe a[WorkerFailed[_]]
+      result shouldBe a[IngestFailed[_]]
       result.summary.fileCount shouldBe 0
       result.summary.bytesUnpacked shouldBe 0
-      val actualResult = result.asInstanceOf[WorkerFailed[UnpackSummary]]
+      val actualResult = result.asInstanceOf[IngestFailed[UnpackSummary]]
       actualResult.e shouldBe a[ArchiveLocationException]
       actualResult.e.getMessage should
         startWith(
@@ -130,10 +124,10 @@ class UnpackerTest
           )
 
         whenReady(future) { result =>
-          result shouldBe a[WorkerFailed[_]]
+          result shouldBe a[IngestFailed[_]]
           result.summary.fileCount shouldBe 0
           result.summary.bytesUnpacked shouldBe 0
-          val actualResult = result.asInstanceOf[WorkerFailed[UnpackSummary]]
+          val actualResult = result.asInstanceOf[IngestFailed[UnpackSummary]]
           actualResult.e shouldBe a[UnpackerArchiveEntryUploadException]
           actualResult.e.getMessage should startWith("upload failed")
         }
