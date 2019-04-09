@@ -270,7 +270,6 @@ def try_to_download_asset(preservica_uuid, destination):
     web_url = origin_info["web_url"]
     if not asset_downloaded and web_url is not None:
         asset_downloaded = fetch_from_wlorg(
-            preservica_uuid=preservica_uuid,
             web_url=web_url,
             destination=destination,
             retry_attempts=3,
@@ -286,10 +285,17 @@ def try_to_download_asset(preservica_uuid, destination):
         }
 
 
-def fetch_from_wlorg(preservica_uuid, web_url, destination, retry_attempts):
+def fetch_from_wlorg(web_url, destination, retry_attempts):
     # First, look to see if the object exists in the bagger asset cache.
-    # This relieves the load on DDS and reduces theflakiness caused
+    # This relieves the load on DDS and reduces the flakiness caused
     # by SSL errors.
+    #
+    # We use the Preservica GUID as the key because there should be
+    # a 1:1 correspondence between these URLs and the Preservica GUIDs,
+    # and each unique collection of bytes in Preservica should have
+    # its own GUID.
+    #
+    preservica_uuid = web_url.strip("/").split("/")[0]
     try:
         logging.debug(
             "Looking for cached asset at s3://%s/%s",
