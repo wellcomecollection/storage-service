@@ -19,15 +19,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IngestsFixtures
     extends S3
-      with SQS
-      with SNS
-      with Akka
-      with LocalDynamoDb
-      with ScalaFutures
-      with IngestTrackerFixture
-      with CallbackNotificationServiceFixture
-      with AlpakkaSQSWorkerFixtures
-      with MonitoringClientFixture {
+    with SQS
+    with SNS
+    with Akka
+    with LocalDynamoDb
+    with ScalaFutures
+    with IngestTrackerFixture
+    with CallbackNotificationServiceFixture
+    with AlpakkaSQSWorkerFixtures
+    with MonitoringClientFixture {
 
   def withIngestWorker[R](queue: Queue, table: Table, topic: Topic)(
     testWith: TestWith[IngestsWorker, R]): R =
