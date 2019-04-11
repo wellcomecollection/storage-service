@@ -256,16 +256,22 @@ def try_to_download_asset(preservica_uuid, destination):
             source_bucket.download_file(bucket_key, destination)
             asset_downloaded = True
         except ClientError as ce:
-            alt_key = origin_info["alt_key"]
-            if ce.response["Error"]["Code"] == "NoSuchKey" and alt_key is not None:
+            alt_key = origin_info.get("alt_key", None)
+            if ce.response["Error"]["Code"] == "404" and alt_key is not None:
                 logging.debug(
                     "key {0} not found, trying alternate key: {1}".format(
                         bucket_key, alt_key
                     )
                 )
-                source_bucket.download_file(alt_key, destination)
-                asset_downloaded = True
-                # allow error to throw
+                try:
+                    source_bucket.download_file(alt_key, destination)
+                    asset_downloaded = True
+                except ClientError:
+                    logging.info(
+                        "{0} should have been in {1} but wasn't".format(
+                            alt_key, bucket_key
+                        )
+                    )
 
     web_url = origin_info["web_url"]
     if not asset_downloaded and web_url is not None:
