@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
+import java.nio.file.Paths
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
@@ -21,15 +22,16 @@ trait BagLocationFixtures
     with StorageSpaceGenerators {
 
   def withBag[R](
-    bucket: Bucket,
-    bagInfo: BagInfo = createBagInfo,
-    storagePrefix: String = "storagePrefix",
-    dataFileCount: Int = 1,
-    storageSpace: StorageSpace = createStorageSpace,
-    createDataManifest: List[(String, String)] => Option[FileEntry] =
-      createValidDataManifest,
-    createTagManifest: List[(String, String)] => Option[FileEntry] =
-      createValidTagManifest)(testWith: TestWith[BagLocation, R]): R = {
+                  bucket: Bucket,
+                  bagInfo: BagInfo = createBagInfo,
+                  storagePrefix: String = "storagePrefix",
+                  dataFileCount: Int = 1,
+                  storageSpace: StorageSpace = createStorageSpace,
+                  createDataManifest: List[(String, String)] =>
+                    Option[FileEntry] = createValidDataManifest,
+                  createTagManifest: List[(String, String)] =>
+                    Option[FileEntry] = createValidTagManifest,
+                  bagRootDirectory:Option[String] = None)(testWith: TestWith[BagLocation, R]): R = {
     val bagIdentifier = createExternalIdentifier
 
     info(s"Creating bag $bagIdentifier")
@@ -51,7 +53,7 @@ trait BagLocationFixtures
       s3Client
         .putObject(
           bagLocation.storageNamespace,
-          s"${bagLocation.completePath}/${entry.name}",
+          Paths.get(bagLocation.completePath, bagRootDirectory.getOrElse(""), entry.name).toString,
           entry.contents
         )
     })
