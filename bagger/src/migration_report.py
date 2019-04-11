@@ -15,6 +15,7 @@ ingest_start:     NEW, use ingest date if missing
 ingest_id:
 ingest_date:
 ingest_status:
+dds_called:
 package_date:
 texts_expected:
 texts_cached:
