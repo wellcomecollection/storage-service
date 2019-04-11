@@ -6,10 +6,25 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagverifier.models.{FailedVerification, VerificationSummary}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagDigestFile, BagLocation}
-import uk.ac.wellcome.platform.archive.common.storage.models.{FileManifest, IngestFailed, IngestStepResult, IngestStepSucceeded}
-import uk.ac.wellcome.platform.archive.common.storage.services.{ChecksumVerifier, S3BagLocator, StorageManifestService}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  FailedVerification,
+  VerificationSummary
+}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagDigestFile,
+  BagLocation
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  FileManifest,
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  ChecksumVerifier,
+  S3BagLocator,
+  StorageManifestService
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -62,7 +62,10 @@ class VerifierTest
 
   it("passes a bag in a sub directory with correct checksums") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket = bucket, dataFileCount = dataFileCount, bagRootDirectory = Some("bag")) { bagLocation =>
+      withBag(
+        bucket = bucket,
+        dataFileCount = dataFileCount,
+        bagRootDirectory = Some("bag")) { bagLocation =>
         withActorSystem { actorSystem =>
           implicit val ec = actorSystem.dispatcher
 
