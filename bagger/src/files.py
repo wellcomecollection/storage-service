@@ -12,6 +12,10 @@ import dlcs
 import storage
 from xml_help import expand, namespaces
 
+import boto3
+
+s3_client = boto3.client("s3")
+
 # keep track of these to ensure no collisions in Multiple Manifestations
 ALTO_KEYS = set()
 OBJECT_KEYS = set()
@@ -252,20 +256,28 @@ def try_to_download_asset(preservica_uuid, destination):
             source_bucket.download_file(bucket_key, destination)
             asset_downloaded = True
         except ClientError as ce:
-            alt_key = origin_info["alt_key"]
-            if ce.response["Error"]["Code"] == "NoSuchKey" and alt_key is not None:
+            alt_key = origin_info.get("alt_key", None)
+            if ce.response["Error"]["Code"] == "404" and alt_key is not None:
                 logging.debug(
                     "key {0} not found, trying alternate key: {1}".format(
                         bucket_key, alt_key
                     )
                 )
-                source_bucket.download_file(alt_key, destination)
-                asset_downloaded = True
-                # allow error to throw
+                try:
+                    source_bucket.download_file(alt_key, destination)
+                    asset_downloaded = True
+                except ClientError:
+                    logging.info(
+                        "{0} should have been in {1} but wasn't".format(
+                            alt_key, bucket_key
+                        )
+                    )
 
     web_url = origin_info["web_url"]
     if not asset_downloaded and web_url is not None:
-        asset_downloaded = fetch_from_wlorg(web_url, destination, 3)
+        asset_downloaded = fetch_from_wlorg(
+            web_url=web_url, destination=destination, retry_attempts=3
+        )
 
     # TODO: this message could give a more detailed error report
     if asset_downloaded:
@@ -278,6 +290,29 @@ def try_to_download_asset(preservica_uuid, destination):
 
 
 def fetch_from_wlorg(web_url, destination, retry_attempts):
+    # First, look to see if the object exists in the bagger asset cache.
+    # This relieves the load on DDS and reduces the flakiness caused
+    # by SSL errors.
+    #
+    # We use the Preservica GUID as the key because there should be
+    # a 1:1 correspondence between these URLs and the Preservica GUIDs,
+    # and each unique collection of bytes in Preservica should have
+    # its own GUID.
+    #
+    preservica_uuid = web_url.strip("/").split("/")[0]
+    try:
+        logging.debug(
+            "Looking for cached asset at s3://%s/%s",
+            settings.CACHE_BUCKET,
+            preservica_uuid,
+        )
+        s3_client.download_file(
+            Bucket=settings.CACHE_BUCKET, Key=preservica_uuid, Filename=destination
+        )
+        return True
+    except ClientError:
+        pass
+
     # This will probably fail, if the DLCS hasn't got it.
     # But it is the only way of getting restricted files out.
     user, password = settings.DDS_API_KEY, settings.DDS_API_SECRET
@@ -296,6 +331,13 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
                 with open(destination, "wb") as f:
                     for chunk in resp.iter_content(chunk_size):
                         f.write(chunk)
+
+                s3_client.upload_file(
+                    Bucket=settings.CACHE_BUCKET,
+                    Key=preservica_uuid,
+                    Filename=destination,
+                )
+
                 return True
             else:
                 logging.debug("Received HTTP %s for %s", resp.status_code, web_url)

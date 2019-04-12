@@ -90,6 +90,7 @@ variable "s3_bagger_errors_arn" {}
 variable "s3_bagger_drop_name" {}
 variable "s3_bagger_drop_mets_only_name" {}
 variable "s3_bagger_errors_name" {}
+variable "s3_bagger_cache_name" {}
 
 # Task counts
 

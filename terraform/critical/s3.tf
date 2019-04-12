@@ -121,3 +121,8 @@ resource "aws_s3_bucket" "bagger_errors" {
   bucket = "wellcomecollection-${var.namespace}-bagger-errors"
   acl    = "private"
 }
+
+resource "aws_s3_bucket" "bagger_cache" {
+  bucket = "wellcomecollection-${var.namespace}-bagger-asset-cache"
+  acl    = "private"
+}
