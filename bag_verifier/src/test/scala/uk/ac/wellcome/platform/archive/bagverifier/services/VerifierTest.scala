@@ -5,16 +5,12 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  FileEntry
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class VerifierTest
     extends FunSpec
@@ -32,28 +28,23 @@ class VerifierTest
   it("passes a bag with correct checksums") {
     withLocalS3Bucket { bucket =>
       withBag(bucket, dataFileCount = dataFileCount) { bagLocation =>
-        withActorSystem { actorSystem =>
-          implicit val ec = actorSystem.dispatcher
+        withMaterializer { implicit materializer =>
 
-          withMaterializer { mat =>
-            implicit val _mat = mat
+          val service = new Verifier(
+            storageManifestService = new StorageManifestService(),
+            s3Client = s3Client,
+            algorithm = MessageDigestAlgorithms.SHA_256
+          )
 
-            val service = new Verifier(
-              storageManifestService = new StorageManifestService(),
-              s3Client = s3Client,
-              algorithm = MessageDigestAlgorithms.SHA_256
-            )
+          val future = service.verify(bagLocation)
 
-            val future = service.verify(bagLocation)
+          whenReady(future) { result =>
+            result shouldBe a[IngestStepSucceeded[_]]
 
-            whenReady(future) { result =>
-              result shouldBe a[IngestStepSucceeded[_]]
+            val summary = result.summary
 
-              val summary = result.summary
-
-              summary.successfulVerifications should have size expectedDataFileCount
-              summary.failedVerifications shouldBe Seq.empty
-            }
+            summary.successfulVerifications should have size expectedDataFileCount
+            summary.failedVerifications shouldBe Seq.empty
           }
         }
       }

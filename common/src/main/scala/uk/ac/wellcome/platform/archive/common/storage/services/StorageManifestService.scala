@@ -3,27 +3,11 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagIt,
-  BagItemPath,
-  BagLocation
-}
-import uk.ac.wellcome.platform.archive.common.bagit.parsers.{
-  BagInfoParser,
-  FileManifestParser
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  ChecksumAlgorithm,
-  FileManifest,
-  StorageManifest
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagIt, BagItemPath, BagLocation}
+import uk.ac.wellcome.platform.archive.common.bagit.parsers.{BagInfoParser, FileManifestParser}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{ChecksumAlgorithm, FileManifest, StorageManifest}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,7 +16,7 @@ class StorageManifestService(
   implicit
   executionContext: ExecutionContext,
   s3Client: AmazonS3
-) extends Logging {
+) {
 
   val checksumAlgorithm = ChecksumAlgorithm("sha256")
 
