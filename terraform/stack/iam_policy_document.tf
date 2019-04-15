@@ -227,6 +227,29 @@ data "aws_iam_policy_document" "storage_ingests_drop_read_write" {
   }
 }
 
+data "aws_iam_policy_document" "storage_bagger_cache_drop_read_write" {
+  statement {
+    actions = [
+      "s3:ListBucket",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.s3_bagger_cache_name}",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:GetObject*",
+      "s3:PutObject*",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.s3_bagger_cache_name}/*",
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "cloudwatch_put" {
   statement {
     actions = [

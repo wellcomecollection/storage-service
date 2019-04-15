@@ -19,6 +19,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepResult,
   IngestStepSucceeded
 }
+import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 

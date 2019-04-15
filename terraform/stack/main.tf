@@ -331,9 +331,11 @@ module "bagger" {
     DDS_ASSET_PREFIX = "${var.bagger_dds_asset_prefix}"
 
     ARCHIVE_FORMAT = "gztar"
+
+    BAGGER_CACHE_BUCKET = "${var.s3_bagger_cache_name}"
   }
 
-  env_vars_length = 17
+  env_vars_length = 18
 
   secret_env_vars = {
     DLCS_API_KEY    = "storage/bagger_dlcs_api_key"
