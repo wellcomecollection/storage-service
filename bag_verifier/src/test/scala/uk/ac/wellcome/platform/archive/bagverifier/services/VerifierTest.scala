@@ -16,6 +16,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class VerifierTest
     extends FunSpec
     with Matchers
@@ -32,6 +34,34 @@ class VerifierTest
   it("passes a bag with correct checksums") {
     withLocalS3Bucket { bucket =>
       withBag(bucket, dataFileCount = dataFileCount) { bagLocation =>
+        withMaterializer { implicit materializer =>
+          val service = new Verifier(
+            storageManifestService = new StorageManifestService(),
+            s3Client = s3Client,
+            algorithm = MessageDigestAlgorithms.SHA_256
+          )
+
+          val future = service.verify(bagLocation)
+
+          whenReady(future) { result =>
+            result shouldBe a[IngestStepSucceeded[_]]
+
+            val summary = result.summary
+
+            summary.successfulVerifications should have size expectedDataFileCount
+            summary.failedVerifications shouldBe Seq.empty
+          }
+        }
+      }
+    }
+  }
+
+  it("passes a bag in a sub directory with correct checksums") {
+    withLocalS3Bucket { bucket =>
+      withBag(
+        bucket = bucket,
+        dataFileCount = dataFileCount,
+        bagRootDirectory = Some("bag")) { bagLocation =>
         withActorSystem { actorSystem =>
           implicit val ec = actorSystem.dispatcher
 

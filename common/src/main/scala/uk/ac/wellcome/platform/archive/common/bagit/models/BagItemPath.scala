@@ -6,15 +6,16 @@ import com.gu.scanamo.DynamoFormat
 import com.gu.scanamo.error.TypeCoercionError
 import io.circe.{Decoder, Encoder, Json}
 import uk.ac.wellcome.json.JsonUtil.{fromJson, toJson}
+import uk.ac.wellcome.storage.ObjectLocation
 
 case class BagItemPath(underlying: String) extends AnyVal {
   override def toString: String = underlying
 
-  def toObjectLocation(bagLocation: BagLocation) = {
-    bagLocation.objectLocation.copy(
+  def toObjectLocation(bagRootLocation: ObjectLocation) = {
+    bagRootLocation.copy(
       key = Paths
         .get(
-          bagLocation.objectLocation.key,
+          bagRootLocation.key,
           underlying
         )
         .toString)

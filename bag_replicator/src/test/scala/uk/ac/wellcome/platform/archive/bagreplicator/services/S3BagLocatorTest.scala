@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import org.scalatest.{Assertion, FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket

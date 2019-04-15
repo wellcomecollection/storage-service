@@ -22,8 +22,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   ChecksumVerifier,
+  S3BagLocator,
   StorageManifestService
 }
+import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -34,24 +36,29 @@ class Verifier(
   algorithm: String
 )(implicit ec: ExecutionContext, mat: Materializer)
     extends Logging {
+  val s3BagLocator = new S3BagLocator(s3Client)
+
   def verify(
     bagLocation: BagLocation
   ): Future[IngestStepResult[VerificationSummary]] = {
+
     val verificationInit =
       VerificationSummary(bagLocation = bagLocation, startTime = Instant.now)
 
     val verification = for {
-      fileManifest <- getManifest("file manifest") {
-        storageManifestService.createFileManifest(bagLocation)
+      bagRootLocation <- Future.fromTry {
+        s3BagLocator.locateBagRoot(bagLocation.objectLocation)
       }
-
+      fileManifest <- getManifest("file manifest") {
+        storageManifestService.createFileManifest(bagRootLocation)
+      }
       tagManifest <- getManifest("tag manifest") {
-        storageManifestService.createTagManifest(bagLocation)
+        storageManifestService.createTagManifest(bagRootLocation)
       }
 
       digestFiles = fileManifest.files ++ tagManifest.files
 
-      result <- verifyFiles(bagLocation, digestFiles, verificationInit)
+      result <- verifyFiles(bagRootLocation, digestFiles, verificationInit)
     } yield result
 
     verification.map {
@@ -74,14 +81,14 @@ class Verifier(
     }
 
   private def verifyFiles(
-    bagLocation: BagLocation,
+    bagRootLocation: ObjectLocation,
     digestFiles: Seq[BagDigestFile],
     bagVerification: VerificationSummary
   )(implicit mat: Materializer): Future[VerificationSummary] = {
     Source[BagDigestFile](
       digestFiles.toList
     ).mapAsync(10) { digestFile: BagDigestFile =>
-        Future(verifyIndividualFile(bagLocation, digestFile = digestFile))
+        Future(verifyIndividualFile(bagRootLocation, digestFile = digestFile))
       }
       .runWith(Sink.fold(bagVerification) { (memo, item) =>
         item match {
@@ -97,16 +104,18 @@ class Verifier(
   }
 
   private def verifyIndividualFile(
-    bagLocation: BagLocation,
+    bagRootLocation: ObjectLocation,
     digestFile: BagDigestFile): Either[FailedVerification, BagDigestFile] = {
-    val objectLocation = digestFile.path.toObjectLocation(bagLocation)
+    val objectLocation = digestFile.path.toObjectLocation(bagRootLocation)
     for {
       inputStream <- Try {
         s3Client
           .getObject(objectLocation.namespace, objectLocation.key)
           .getObjectContent
-      }.toEither.left.map(e =>
-        FailedVerification(digestFile = digestFile, reason = e))
+      }.toEither.left.map(e => {
+        warn(s"Could not verify $objectLocation : $e")
+        FailedVerification(digestFile = digestFile, reason = e)
+      })
 
       actualChecksum <- ChecksumVerifier
         .checksum(
