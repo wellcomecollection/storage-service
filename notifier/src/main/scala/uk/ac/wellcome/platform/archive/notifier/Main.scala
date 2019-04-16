@@ -37,7 +37,7 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
 
     val callbackUrlService = new CallbackUrlService(
-      contextURL = HTTPServerBuilder.buildContextURL(config)
+      contextUrl = HTTPServerBuilder.buildContextURL(config)
     )
 
     new NotifierWorker(

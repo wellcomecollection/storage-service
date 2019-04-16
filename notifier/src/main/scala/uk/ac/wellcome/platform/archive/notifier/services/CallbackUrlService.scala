@@ -13,26 +13,32 @@ import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class CallbackUrlService(contextURL: URL)(implicit actorSystem: ActorSystem,
+class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
                                           ec: ExecutionContext)
     extends Logging {
   def getHttpResponse(
     callbackNotification: CallbackNotification): Future[Try[HttpResponse]] = {
-    val entity = HttpEntity(
-      contentType = ContentTypes.`application/json`,
-      string = toJson(
-        ResponseDisplayIngest(callbackNotification.payload, contextURL)).get
-    )
+    for {
+      jsonString <- Future.fromTry(
+        toJson(ResponseDisplayIngest(
+          ingest = callbackNotification.payload,
+          contextUrl = contextUrl
+        ))
+      )
+      entity <- HttpEntity(
+        contentType = ContentTypes.`application/json`,
+        string = jsonString
+      )
 
-    val callbackUri = callbackNotification.callbackUri
-    debug(s"POST to $callbackUri request:$entity")
-    val request = HttpRequest(
-      method = HttpMethods.POST,
-      uri = callbackUri.toString,
-      entity = entity
-    )
+      callbackUri = callbackNotification.callbackUri
+      _ = debug(s"POST to $callbackUri request:$entity")
 
-    Http().singleRequest(request)
+      request <- HttpRequest(
+        method = HttpMethods.POST,
+        uri = callbackUri.toString,
+        entity = entity
+      )
+    } yield Http().singleRequest(request)
   }.map { resp =>
       Success(resp)
     }
