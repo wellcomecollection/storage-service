@@ -26,7 +26,7 @@ class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
             contextUrl = contextUrl
           ))
       )
-      entity <- HttpEntity(
+      entity = HttpEntity(
         contentType = ContentTypes.`application/json`,
         string = jsonString
       )
@@ -34,14 +34,13 @@ class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
       callbackUri = callbackNotification.callbackUri
       _ = debug(s"POST to $callbackUri request:$entity")
 
-      request <- HttpRequest(
+      request = HttpRequest(
         method = HttpMethods.POST,
         uri = callbackUri.toString,
         entity = entity
       )
-    } yield Http().singleRequest(request)
-  }.map { resp =>
-      Success(resp)
-    }
+      response <- Http().singleRequest(request)
+    } yield Success(response)
+  }
     .recover { case err => Failure(err) }
 }
