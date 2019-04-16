@@ -20,10 +20,11 @@ class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
     callbackNotification: CallbackNotification): Future[Try[HttpResponse]] = {
     for {
       jsonString <- Future.fromTry(
-        toJson(ResponseDisplayIngest(
-          ingest = callbackNotification.payload,
-          contextUrl = contextUrl
-        ))
+        toJson(
+          ResponseDisplayIngest(
+            ingest = callbackNotification.payload,
+            contextUrl = contextUrl
+          ))
       )
       entity <- HttpEntity(
         contentType = ContentTypes.`application/json`,
