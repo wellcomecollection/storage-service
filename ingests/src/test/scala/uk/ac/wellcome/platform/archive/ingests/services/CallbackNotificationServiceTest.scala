@@ -45,10 +45,7 @@ class CallbackNotificationServiceTest
               payload = ingest
             )
 
-            assertSnsReceives(
-              expectedMessages = List(expectedNotification),
-              topic = topic
-            )
+            assertSnsReceivesOnly(expectedNotification, topic = topic)
           }
         }
       }
