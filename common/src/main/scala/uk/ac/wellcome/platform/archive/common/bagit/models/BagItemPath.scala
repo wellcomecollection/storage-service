@@ -11,7 +11,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 case class BagItemPath(underlying: String) extends AnyVal {
   override def toString: String = underlying
 
-  def toObjectLocation(bagRootLocation: ObjectLocation) = {
+  def toObjectLocation(bagRootLocation: ObjectLocation): ObjectLocation =
     bagRootLocation.copy(
       key = Paths
         .get(
@@ -19,8 +19,6 @@ case class BagItemPath(underlying: String) extends AnyVal {
           underlying
         )
         .toString)
-  }
-
 }
 
 object BagItemPath {
