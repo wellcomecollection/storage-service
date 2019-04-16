@@ -41,6 +41,5 @@ class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
       )
       response <- Http().singleRequest(request)
     } yield Success(response)
-  }
-    .recover { case err => Failure(err) }
+  }.recover { case err => Failure(err) }
 }
