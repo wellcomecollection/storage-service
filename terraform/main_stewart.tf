@@ -13,6 +13,9 @@ module "stack-stewart" {
   domain_name      = "${local.domain_name}"
   cert_domain_name = "${local.cert_domain_name}"
 
+  desired_bagger_count  = 12
+  desired_ec2_instances = 4
+
   vpc_id   = "${local.vpc_id}"
   vpc_cidr = "${local.vpc_cidr}"
 
@@ -20,8 +23,6 @@ module "stack-stewart" {
 
   ssh_key_name = "${local.key_name}"
   infra_bucket = "${aws_s3_bucket.infra.id}"
-
-  desired_ec2_instances = 1
 
   lambda_error_alarm_arn = "${local.lambda_error_alarm_arn}"
   dlq_alarm_arn          = "${local.dlq_alarm_arn}"
