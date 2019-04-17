@@ -19,6 +19,10 @@ def add_premis_significant_prop(premis_file, p_type, value):
     value_el.text = value
 
 
+class UnrecognisedPRONOMFormatError(KeyError):
+    pass
+
+
 def remodel_file_technical_metadata(root, id_map):
     logging.debug("transforming Tessella techMD")
     x_path = ".//mets:xmlData[tessella:File]"
@@ -85,6 +89,6 @@ def remodel_file_technical_metadata(root, id_map):
         try:
             format_registry_key.text = mappings.PRONOM[format_name.text]
         except KeyError:
-            raise KeyError("Unrecognised PRONOM format: %s" % format_name.text)
+            raise UnrecognisedPRONOMFormatError(format_name.text)
 
         remove_first_child(xmldata)
