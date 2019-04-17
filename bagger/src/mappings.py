@@ -18,6 +18,15 @@ PRONOM = {
     "Acrobat PDF/X - Portable Document Format - Exchange 1a:2001": "fmt/157",
     "Acrobat PDF/X - Portable Document Format - Exchange PDF/X-4": "fmt/488",
     "Extensible Markup Language 1.0": "fmt/101",
+
+    "JPEG File Interchange Format 1.01": "fmt/43",
+
+    "OLE2 Compound Document Format": "fmt/111",
+
+    "Plain Text File": "x-fmt/111",
+
+    "Tagged Image File Format": "fmt/353",
+
     "Waveform Audio (PCMWAVEFORMAT)": "fmt/141",
 }
 

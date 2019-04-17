@@ -81,8 +81,10 @@ def remodel_file_technical_metadata(root, id_map):
         )
         format_registry_name.text = "PRONOM"  # assume this is always used
         format_registry_key = make_child(format_registry, "premis", "formatRegistryKey")
-        format_registry_key.text = mappings.PRONOM[
-            format_name.text
-        ]  # allow this to raise error if missing key!
+
+        try:
+            format_registry_key.text = mappings.PRONOM[format_name.text]
+        except KeyError:
+            raise KeyError("Unrecognised PRONOM format: %s" % format_name.text)
 
         remove_first_child(xmldata)
