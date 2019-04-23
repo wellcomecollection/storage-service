@@ -36,7 +36,7 @@ class MigrationTool(object):
         populate_table(filter)
 
     def make_report(self):
-        make_migration_report()        
+        make_migration_report()
 
 
 def make_migration_report():
@@ -257,7 +257,7 @@ def call_dds(delay, filter, total, after):
         bnumber_source = bnumber_generator(filter)
     else:
         bnumber_source = get_uncalled_bnumbers(table, total, after)
-        
+
     for bnumber in bnumber_source:
         print("[")
         url = settings.DDS_GOOBI_NOTIFICATION.format(bnumber)
