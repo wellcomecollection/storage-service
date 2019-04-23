@@ -27,11 +27,8 @@ def main(filename):
                     print(json.dumps(j, indent=4))
                 except json.decoder.JSONDecodeError:
                     t = r.text
-                    msg = t[t.find('<title>') + 7:t.find('</title>')]
-                    e = {
-                        "identifier": b,
-                        "ERROR": msg
-                    }
+                    msg = t[t.find("<title>") + 7 : t.find("</title>")]
+                    e = {"identifier": b, "ERROR": msg}
                     print(json.dumps(e, indent=4))
                 print(",")
                 time.sleep(1)
