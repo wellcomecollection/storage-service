@@ -6,7 +6,6 @@ import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
-  BagIt,
   BagItemPath,
   BagLocation
 }
@@ -57,7 +56,7 @@ class StorageManifestService(
 
   def createBagInfo(bagLocation: BagLocation): Future[BagInfo] =
     for {
-      bagInfoInputStream <- BagIt.bagInfoPath
+      bagInfoInputStream <- BagItemPath("bag-info.txt")
         .toObjectLocation(bagLocation.objectLocation)
         .toInputStream
 

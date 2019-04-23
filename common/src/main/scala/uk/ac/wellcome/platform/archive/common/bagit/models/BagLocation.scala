@@ -19,7 +19,7 @@ case class BagLocation(
   storageSpace: StorageSpace,
   bagPath: BagPath
 ) {
-  def completePath =
+  def completePath: String =
     Paths
       .get(
         storagePrefix.getOrElse(""),
