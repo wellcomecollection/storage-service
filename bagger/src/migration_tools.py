@@ -158,10 +158,6 @@ def update_dds_status_bnumber(bnumber, table, force):
 
     status = table.get_item(Key={"bnumber": bnumber})["Item"]
 
-    print()
-    print(status)
-    print()
-
     package_date = status.get("package_date", "0")
     # "texts_expected" - the number of cached TextObjs there should be in DDS
     # "texts_cached" - the number actually present
@@ -172,8 +168,6 @@ def update_dds_status_bnumber(bnumber, table, force):
 
     dds_package_date = dds.get_package_file_modified(bnumber)
 
-    print(dds_package_date)
-    print("-")
     if dds_package_date is None:
         package_date = "0"
     else:
@@ -261,7 +255,6 @@ def call_dds(delay, filter, total, after):
     for bnumber in bnumber_source:
         print("[")
         url = settings.DDS_GOOBI_NOTIFICATION.format(bnumber)
-        print("requesting: {0}".format(url))
         r = requests.get(url)
         j = r.json()
         print(json.dumps(j, indent=4))
