@@ -19,6 +19,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
 }
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
+  OperationNameBuilder,
   OutgoingPublisherBuilder
 }
 import uk.ac.wellcome.storage.typesafe.S3Builder._
@@ -53,20 +54,21 @@ object Main extends WellcomeTypesafeApp {
     val unpackerWorkerConfig =
       UnpackerWorkerConfigBuilder.build(config)
 
+    val operationName = OperationNameBuilder
+      .getName(config, default = "unpacking")
+
     val ingestUpdater =
-      IngestUpdaterBuilder.build(config, "unpacking")
+      IngestUpdaterBuilder.build(config, operationName = operationName)
 
     val outgoingPublisher =
-      OutgoingPublisherBuilder.build(config, "unpacking")
-
-    val unpacker =
-      Unpacker(s3Uploader = new S3Uploader())
+      OutgoingPublisherBuilder.build(config, operationName = operationName)
 
     BagUnpackerWorker(
-      alpakkaSQSWorkerConfig,
-      unpackerWorkerConfig,
-      ingestUpdater,
-      outgoingPublisher,
-      unpacker)
+      alpakkaSQSWorkerConfig = alpakkaSQSWorkerConfig,
+      bagUnpackerWorkerConfig = unpackerWorkerConfig,
+      ingestUpdater = ingestUpdater,
+      outgoingPublisher = outgoingPublisher,
+      unpacker = Unpacker(s3Uploader = new S3Uploader())
+    )
   }
 }

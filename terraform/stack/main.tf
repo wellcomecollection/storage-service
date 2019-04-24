@@ -21,10 +21,11 @@ module "bag_unpacker" {
     ingest_topic_arn        = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bag_unpacker_output_topic.arn}"
     metrics_namespace       = "${local.bag_unpacker_service_name}"
+    operation_name          = "unpacking"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_unpacker_service_name}"
   }
 
-  env_vars_length = 7
+  env_vars_length = 8
 
   cpu    = 2048
   memory = 4096
@@ -56,10 +57,11 @@ module "bag_verifier_pre_replication" {
     ingest_topic_arn   = "${module.ingests_topic.arn}"
     outgoing_topic_arn = "${module.bag_verifier_pre_replicate_output_topic.arn}"
     metrics_namespace  = "${local.bag_verifier_pre_repl_service_name}"
+    operation_name     = "verification (pre-replicating to archive storage)"
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_pre_repl_service_name}"
   }
 
-  env_vars_length = 5
+  env_vars_length = 6
 
   cpu    = 2048
   memory = 4096
@@ -92,13 +94,14 @@ module "bag_replicator" {
     ingest_topic_arn        = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bag_replicator_output_topic.arn}"
     metrics_namespace       = "${local.bag_replicator_service_name}"
+    operation_name          = "replicating to archive storage"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
   }
 
+  env_vars_length = 7
+
   cpu    = 1024
   memory = 2048
-
-  env_vars_length = 6
 
   min_capacity = "1"
   max_capacity = "10"
@@ -127,10 +130,11 @@ module "bag_verifier_post_replication" {
     ingest_topic_arn   = "${module.ingests_topic.arn}"
     outgoing_topic_arn = "${module.bag_verifier_post_replicate_output_topic.arn}"
     metrics_namespace  = "${local.bag_verifier_post_repl_service_name}"
+    operation_name     = "verification (inside archive storage)"
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_post_repl_service_name}"
   }
 
-  env_vars_length = 5
+  env_vars_length = 6
 
   cpu    = 2048
   memory = 4096
@@ -160,10 +164,11 @@ module "bag_register" {
     vhs_bucket_name   = "${var.vhs_archive_manifest_bucket_name}"
     vhs_table_name    = "${var.vhs_archive_manifest_table_name}"
     metrics_namespace = "${local.bag_register_service_name}"
+    operation_name    = "register"
     JAVA_OPTS         = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_register_service_name}"
   }
 
-  env_vars_length = 8
+  env_vars_length = 9
 
   min_capacity = "1"
   max_capacity = "10"
