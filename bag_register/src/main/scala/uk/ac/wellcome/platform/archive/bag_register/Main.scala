@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
+  OperationNameBuilder,
   OutgoingPublisherBuilder
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
@@ -55,7 +56,8 @@ object Main extends WellcomeTypesafeApp {
       underlying = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
     )
 
-    val operationName = "register"
+    val operationName = OperationNameBuilder
+      .getName(config, default = "register")
 
     val ingestUpdater = IngestUpdaterBuilder.build(
       config,

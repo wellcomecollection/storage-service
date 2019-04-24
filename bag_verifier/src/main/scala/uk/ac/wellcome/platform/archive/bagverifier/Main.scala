@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.{
 }
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
+  OperationNameBuilder,
   OutgoingPublisherBuilder
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
@@ -49,7 +50,8 @@ object Main extends WellcomeTypesafeApp {
       algorithm = MessageDigestAlgorithms.SHA_256
     )
 
-    val operationName = "verification"
+    val operationName = OperationNameBuilder
+      .getName(config, default = "verification")
 
     val ingestUpdater = IngestUpdaterBuilder.build(config, operationName)
 
