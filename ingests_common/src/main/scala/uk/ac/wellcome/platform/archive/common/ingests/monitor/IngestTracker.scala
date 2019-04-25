@@ -1,19 +1,18 @@
 package uk.ac.wellcome.platform.archive.common.ingests.monitor
 
-import java.util.UUID
-
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
 import com.gu.scanamo._
-import com.gu.scanamo.error.ConditionNotMet
+import com.gu.scanamo.error.{ConditionNotMet, DynamoReadError}
 import com.gu.scanamo.syntax._
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.common.IngestID
+import uk.ac.wellcome.platform.archive.common.IngestID._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.dynamo._
 
-import scala.concurrent.{blocking, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.{Failure, Success, Try}
 
 class IngestTracker(
@@ -27,7 +26,7 @@ class IngestTracker(
     dynamoConfig = dynamoConfig
   )
 
-  def get(id: UUID): Future[Option[Ingest]] =
+  def get(id: IngestID): Future[Option[Ingest]] =
     versionedDao.getRecord[Ingest](id.toString)
 
   def initialise(ingest: Ingest): Future[Ingest] = {
@@ -123,7 +122,7 @@ class IngestTracker(
     * Returns at most 30 associated ingests with most recent first -- to simplify the code by avoiding
     * pagination, but still fulfilling DLCS's requirements.
     */
-  def findByBagId(bagId: BagId) = {
+  def findByBagId(bagId: BagId): List[Either[DynamoReadError, BagIngest]] = {
     val query = Table[BagIngest](dynamoConfig.table)
       .index(dynamoConfig.index)
       .limit(30)
