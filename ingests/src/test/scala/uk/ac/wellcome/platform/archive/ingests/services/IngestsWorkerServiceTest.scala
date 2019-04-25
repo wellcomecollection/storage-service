@@ -40,7 +40,7 @@ class IngestsWorkerServiceTest
                 )
 
                 val callbackNotification = CallbackNotification(
-                  id = ingest.id,
+                  ingestId = ingest.id,
                   callbackUri = ingest.callback.get.uri,
                   payload = expectedIngest
                 )

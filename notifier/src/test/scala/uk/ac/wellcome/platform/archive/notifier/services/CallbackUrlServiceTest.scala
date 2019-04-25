@@ -30,7 +30,7 @@ class CallbackUrlServiceTest
         val requestId = UUID.randomUUID()
         val future = service.getHttpResponse(
           callbackNotification = CallbackNotification(
-            id = requestId,
+            ingestId = requestId,
             callbackUri = new URI(
               s"http://$callbackHost:$callbackPort/callback/$requestId"),
             payload = createIngest
@@ -51,7 +51,7 @@ class CallbackUrlServiceTest
         val requestId = UUID.randomUUID()
         val future = service.getHttpResponse(
           callbackNotification = CallbackNotification(
-            id = requestId,
+            ingestId = requestId,
             callbackUri = new URI(s"http://nope.nope/callback/$requestId"),
             payload = createIngest
           )

@@ -27,8 +27,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.concurrent.{ExecutionContext, Future}
 
 class StorageManifestService(
-  implicit
-  executionContext: ExecutionContext,
+  implicit ec: ExecutionContext,
   s3Client: AmazonS3
 ) {
 

@@ -42,13 +42,13 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
           BagLocationBuilder.build(unpackBagRequest, bagUnpackerWorkerConfig)
         for {
           stepResult <- unpacker.unpack(
-            unpackBagRequest.requestId.toString,
+            unpackBagRequest.ingestId.toString,
             unpackBagRequest.sourceLocation,
             location.objectLocation)
-          _ <- ingestUpdater.send(unpackBagRequest.requestId, stepResult)
+          _ <- ingestUpdater.send(unpackBagRequest.ingestId, stepResult)
           _ <- outgoingPublisher.sendIfSuccessful(
             stepResult,
-            BagRequest(unpackBagRequest.requestId, location))
+            BagRequest(unpackBagRequest.ingestId, location))
         } yield toResult(stepResult)
     }
   override def run(): Future[Any] = worker.start

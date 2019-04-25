@@ -1,13 +1,13 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
-import java.util.UUID
+import uk.ac.wellcome.platform.archive.common.IngestID
 
 case class IngestNotice(
-  id: UUID,
+  id: IngestID,
   message: String,
   status: Option[Ingest.Status]
 ) {
-  def toUpdate() = {
+  def toUpdate(): IngestUpdate = {
     val event = IngestEvent(message)
 
     status match {
@@ -29,19 +29,19 @@ case class IngestNotice(
 }
 
 object IngestNotice {
-  def apply(id: UUID, message: String*): IngestNotice = {
+  def apply(id: IngestID, message: String*): IngestNotice = {
     IngestNotice(
-      id,
-      message.mkString(" "),
-      None
+      id = id,
+      message = message.mkString(" "),
+      status = None
     )
   }
 
-  def apply(id: UUID, status: Ingest.Status, message: String*): IngestNotice = {
+  def apply(id: IngestID, status: Ingest.Status, message: String*): IngestNotice = {
     IngestNotice(
-      id,
-      message.mkString(" "),
-      Some(status)
+      id = id,
+      message = message.mkString(" "),
+      status = Some(status)
     )
   }
 }

@@ -5,6 +5,7 @@ import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.UUID
 
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -132,6 +133,9 @@ trait RandomThings {
     }
 
   def randomUUID = UUID.randomUUID()
+
+  def createIngestRequestID: IngestID =
+    IngestID(randomUUID)
 
   def randomSourceOrganisation =
     SourceOrganisation(randomAlphanumeric())

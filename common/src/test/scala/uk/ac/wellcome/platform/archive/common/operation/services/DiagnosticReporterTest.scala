@@ -24,7 +24,7 @@ class DiagnosticReporterTest
       val reporter = new DiagnosticReporter(metricsSender)
 
       val future = reporter.report(
-        requestId = randomUUID,
+        ingestId = randomUUID,
         result = IngestStepSucceeded(summary = "A good thing happened")
       )
 
@@ -40,7 +40,7 @@ class DiagnosticReporterTest
       val reporter = new DiagnosticReporter(metricsSender)
 
       val future = reporter.report(
-        requestId = randomUUID,
+        ingestId = randomUUID,
         result = IngestFailed(
           summary = "A sad thing occurred",
           e = new RuntimeException(":(")
@@ -59,7 +59,7 @@ class DiagnosticReporterTest
       val reporter = new DiagnosticReporter(metricsSender)
 
       val future = reporter.report(
-        requestId = randomUUID,
+        ingestId = randomUUID,
         result = IngestCompleted(summary = "We completed the thing")
       )
 

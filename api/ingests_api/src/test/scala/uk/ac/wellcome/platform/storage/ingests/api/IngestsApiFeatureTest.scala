@@ -303,7 +303,7 @@ class IngestsApiFeatureTest
 
                 unpackerRequests shouldBe List(
                   UnpackBagRequest(
-                    requestId = id,
+                    ingestId = id,
                     sourceLocation = ObjectLocation("bucket", "key.txt"),
                     storageSpace = StorageSpace(spaceName)
                   ))

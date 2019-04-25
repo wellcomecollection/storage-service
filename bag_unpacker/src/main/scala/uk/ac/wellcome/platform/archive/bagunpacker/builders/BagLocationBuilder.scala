@@ -17,7 +17,7 @@ object BagLocationBuilder {
       storageNamespace = unpackerWorkerConfig.dstNamespace,
       storagePrefix = unpackerWorkerConfig.maybeDstPrefix,
       storageSpace = unpackBagRequest.storageSpace,
-      bagPath = BagPath(unpackBagRequest.requestId.toString)
+      bagPath = BagPath(unpackBagRequest.ingestId.toString)
     )
   }
 }

@@ -41,12 +41,12 @@ class UnpackerFeatureTest
 
           eventually {
             val expectedNotification = BagRequest(
-              requestId = unpackBagRequest.requestId,
+              ingestId = unpackBagRequest.ingestId,
               bagLocation = BagLocation(
                 storageNamespace = srcBucket.name,
                 storagePrefix = None,
                 storageSpace = unpackBagRequest.storageSpace,
-                bagPath = BagPath(unpackBagRequest.requestId.toString)
+                bagPath = BagPath(unpackBagRequest.ingestId.toString)
               )
             )
 
@@ -56,7 +56,7 @@ class UnpackerFeatureTest
             )
 
             assertTopicReceivesIngestEvent(
-              requestId = unpackBagRequest.requestId,
+              requestId = unpackBagRequest.ingestId,
               ingestTopic = ingestTopic
             ) { events =>
               events.map {
@@ -80,7 +80,7 @@ class UnpackerFeatureTest
           assertSnsReceivesNothing(outgoingTopic)
 
           assertTopicReceivesIngestStatus(
-            requestId = unpackBagRequest.requestId,
+            requestId = unpackBagRequest.ingestId,
             ingestTopic = ingestTopic,
             status = Ingest.Failed
           ) { events =>

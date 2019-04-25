@@ -40,7 +40,7 @@ class CallbackNotificationServiceTest
 
           whenReady(future) { _ =>
             val expectedNotification = CallbackNotification(
-              id = ingest.id,
+              ingestId = ingest.id,
               callbackUri = ingest.callback.get.uri,
               payload = ingest
             )

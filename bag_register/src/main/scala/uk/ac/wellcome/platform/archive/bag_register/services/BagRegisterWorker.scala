@@ -45,7 +45,7 @@ class BagRegisterWorker(
     for {
       registrationSummary <- register.update(bagRequest.bagLocation)
       _ <- ingestUpdater.send(
-        bagRequest.requestId,
+        bagRequest.ingestId,
         registrationSummary,
         bagId = registrationSummary.summary.bagId)
       _ <- outgoingPublisher.sendIfSuccessful(registrationSummary, bagRequest)

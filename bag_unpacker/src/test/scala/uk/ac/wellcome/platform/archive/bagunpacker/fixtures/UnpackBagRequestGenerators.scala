@@ -26,7 +26,7 @@ trait UnpackBagRequestGenerators
     storageSpace: StorageSpace = createStorageSpace
   ): UnpackBagRequest =
     UnpackBagRequest(
-      requestId = requestId,
+      ingestId = requestId,
       sourceLocation = sourceLocation,
       storageSpace = storageSpace
     )
