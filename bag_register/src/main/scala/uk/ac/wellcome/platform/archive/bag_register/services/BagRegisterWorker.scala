@@ -43,7 +43,10 @@ class BagRegisterWorker(
   def processMessage(
     bagRequest: BagRequest): Future[Result[RegistrationSummary]] =
     for {
-      registrationSummary <- register.update(bagRequest.bagLocation)
+      registrationSummary <- register.update(
+        bagRootLocation = bagRequest.bagLocation.objectLocation,
+        storageSpace = bagRequest.bagLocation.storageSpace
+      )
       _ <- ingestUpdater.send(
         bagRequest.ingestId,
         registrationSummary,

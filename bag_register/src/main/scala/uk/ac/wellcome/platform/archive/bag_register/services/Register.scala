@@ -3,16 +3,17 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed,
-  IngestStepResult
+  IngestStepResult,
+  StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestService,
   StorageManifestVHS
 }
+import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -25,17 +26,21 @@ class Register(
   type FutureSummary =
     Future[IngestStepResult[RegistrationSummary]]
 
-  def update(bagLocation: BagLocation): FutureSummary = {
+  def update(
+    bagRootLocation: ObjectLocation,
+    storageSpace: StorageSpace
+  ): FutureSummary = {
     val registration = RegistrationSummary(
       startTime = Instant.now(),
-      location = bagLocation
+      bagRootLocation = bagRootLocation,
+      storageSpace = storageSpace
     )
 
     for {
       manifest <- storageManifestService
         .createManifest(
-          bagRootLocation = bagLocation.objectLocation,
-          storageSpace = bagLocation.storageSpace
+          bagRootLocation = bagRootLocation,
+          storageSpace = storageSpace
         )
 
       registrationWithBagId = registration.copy(bagId = Some(manifest.id))
