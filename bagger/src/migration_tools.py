@@ -29,8 +29,8 @@ class MigrationTool(object):
     def ingest(self, delay, filter=""):
         do_ingest(delay, filter)
 
-    def simulate_goobi_call(self, delay, filter=""):
-        call_dds(delay, filter)
+    def simulate_goobi_calls(self, delay, filter=None, total=1, after="2019-03-15"):
+        call_dds(delay, filter, total, after)
 
     def ensure_population(self, filter=""):
         populate_table(filter)
@@ -95,7 +95,6 @@ def update_bag_and_ingest_status_bnumber(bnumber, table, no_ingest):
     bag_date = "-"
     bag_size = 0
     bag_error = "-"
-    dds_package_date = None
 
     # check for bag
     bag_zip = aws.get_dropped_bag_info(bnumber)
@@ -132,7 +131,6 @@ def update_bag_and_ingest_status_bnumber(bnumber, table, no_ingest):
         "bag_zip": bag_zip,
         "mets_error": bag_error,
         "ingest": ingest,
-        "dds_package_date": dds_package_date,
     }
 
 
@@ -159,6 +157,7 @@ def update_dds_status_slow(delay, filter, force):
 def update_dds_status_bnumber(bnumber, table, force):
 
     status = table.get_item(Key={"bnumber": bnumber})["Item"]
+
     package_date = status.get("package_date", "0")
     # "texts_expected" - the number of cached TextObjs there should be in DDS
     # "texts_cached" - the number actually present
@@ -168,6 +167,7 @@ def update_dds_status_bnumber(bnumber, table, force):
     dlcs_mismatch = status.get("dlcs_mismatch", -1)
 
     dds_package_date = dds.get_package_file_modified(bnumber)
+
     if dds_package_date is None:
         package_date = "0"
     else:
@@ -245,9 +245,14 @@ def do_ingest(delay, filter):
     print("]")
 
 
-def call_dds(delay, filter):
+def call_dds(delay, filter, total, after):
     table = status_table.get_table()
-    for bnumber in bnumber_generator(filter):
+    if filter is not None:
+        bnumber_source = bnumber_generator(filter)
+    else:
+        bnumber_source = get_uncalled_bnumbers(table, total, after)
+
+    for bnumber in bnumber_source:
         print("[")
         url = settings.DDS_GOOBI_NOTIFICATION.format(bnumber)
         r = requests.get(url)
@@ -267,6 +272,19 @@ def call_dds(delay, filter):
 
     print('{ "finished": "' + now_as_string() + '" }')
     print("]")
+
+
+def get_uncalled_bnumbers(table, total, after):
+    returned = 0
+    for item in table.all_items():
+        ingest_date = item.get("ingest_date", "0")
+        if ingest_date > after:
+            dds_called = item.get("dds_called", "0")
+            if dds_called < after:
+                returned = returned + 1
+                yield item["bnumber"]
+                if returned == total:
+                    break
 
 
 def now_as_string():
