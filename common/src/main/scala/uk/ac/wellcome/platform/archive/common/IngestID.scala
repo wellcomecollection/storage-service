@@ -12,6 +12,8 @@ case class IngestID(underlying: UUID) extends AnyVal {
 }
 
 object IngestID {
+  def random: IngestID = IngestID(UUID.randomUUID())
+
   implicit val encoder: Encoder[IngestID] = Encoder.instance[IngestID] {
     id: IngestID => Json.fromString(id.toString)
   }

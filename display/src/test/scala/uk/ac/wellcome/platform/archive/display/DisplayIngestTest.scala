@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.archive.display
 
 import java.net.{URI, URL}
 import java.time.Instant
-import java.util.UUID
 
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
@@ -16,7 +16,7 @@ class DisplayIngestTest
     with BagIdGenerators
     with TimeTestFixture {
 
-  private val id = UUID.randomUUID()
+  private val id = createIngestID
   private val callbackUrl = "http://www.example.com/callback"
   private val spaceId = "space-id"
   private val createdDate = "2018-10-10T09:38:55.321Z"
@@ -44,7 +44,7 @@ class DisplayIngestTest
 
     val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
 
-    displayIngest.id shouldBe id
+    displayIngest.id shouldBe id.underlying
     displayIngest.sourceLocation shouldBe DisplayLocation(
       StandardDisplayProvider,
       bucket = "bukkit",
@@ -75,7 +75,7 @@ class DisplayIngestTest
 
     val ingest = ingestCreateRequest.toIngest
 
-    ingest.id shouldBe a[UUID]
+    ingest.id shouldBe a[IngestID]
     ingest.sourceLocation shouldBe StorageLocation(
       InfrequentAccessStorageProvider,
       ObjectLocation(bucket, path))
