@@ -11,6 +11,7 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
+import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
@@ -39,10 +40,26 @@ class BagReplicatorWorker(
     }
 
   def processMessage(
-    bagRequest: BagRequest): Future[Result[ReplicationSummary]] =
+    bagRequest: BagRequest): Future[Result[ReplicationSummary]] = {
+    val payload = ObjectLocationPayload(
+      ingestId = bagRequest.ingestId,
+      storageSpace = bagRequest.bagLocation.storageSpace,
+      objectLocation = bagRequest.bagLocation.objectLocation
+    )
+
+    processMessage(payload, bagRequest)
+  }
+
+  def processMessage(
+    payload: ObjectLocationPayload,
+    bagRequest: BagRequest
+  ): Future[Result[ReplicationSummary]] =
     for {
-      replicationSummary <- bagReplicator.replicate(bagRequest.bagLocation)
-      _ <- ingestUpdater.send(bagRequest.ingestId, replicationSummary)
+      replicationSummary <- bagReplicator.replicate(
+        bagRootLocation = payload.objectLocation,
+        storageSpace = payload.storageSpace
+      )
+      _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         replicationSummary,
         bagRequest.copy(
