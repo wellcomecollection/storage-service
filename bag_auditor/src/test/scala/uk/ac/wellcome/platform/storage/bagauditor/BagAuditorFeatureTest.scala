@@ -2,10 +2,17 @@ package uk.ac.wellcome.platform.storage.bagauditor
 
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagLocation, BagPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagLocation,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{BagRequest, BetterBagRequest, Ingest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  BagRequest,
+  BetterBagRequest,
+  Ingest
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 import uk.ac.wellcome.storage.ObjectLocation
@@ -38,7 +45,8 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                val result = notificationMessage[BetterBagRequest](outgoingTopic)
+                val result =
+                  notificationMessage[BetterBagRequest](outgoingTopic)
                 result.requestId shouldBe bagRequest.requestId
                 result.bagLocation shouldBe bagRequest.bagLocation
                 result.bagRoot shouldBe searchRoot
@@ -80,7 +88,8 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                val result = notificationMessage[BetterBagRequest](outgoingTopic)
+                val result =
+                  notificationMessage[BetterBagRequest](outgoingTopic)
                 result.requestId shouldBe bagRequest.requestId
                 result.bagLocation shouldBe bagRequest.bagLocation
                 result.bagRoot shouldBe bagRoot

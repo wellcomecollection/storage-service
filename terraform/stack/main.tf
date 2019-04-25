@@ -53,12 +53,12 @@ module "bag_auditor" {
   service_name = "${local.bag_auditor_service_name}"
 
   env_vars = {
-    queue_url               = "${module.bag_auditor_queue.url}"
-    ingest_topic_arn        = "${module.ingests_topic.arn}"
-    outgoing_topic_arn      = "${module.bag_auditor_output_topic.arn}"
-    metrics_namespace       = "${local.bag_auditor_service_name}"
-    operation_name          = "locating bag root"
-    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_auditor_service_name}"
+    queue_url          = "${module.bag_auditor_queue.url}"
+    ingest_topic_arn   = "${module.ingests_topic.arn}"
+    outgoing_topic_arn = "${module.bag_auditor_output_topic.arn}"
+    metrics_namespace  = "${local.bag_auditor_service_name}"
+    operation_name     = "locating bag root"
+    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_auditor_service_name}"
   }
 
   env_vars_length = 6

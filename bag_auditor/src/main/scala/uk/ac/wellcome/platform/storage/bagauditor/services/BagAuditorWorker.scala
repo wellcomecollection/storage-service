@@ -4,10 +4,16 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.common.ingests.models.{BagRequest, BetterBagRequest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  BagRequest,
+  BetterBagRequest
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
@@ -37,7 +43,8 @@ class BagAuditorWorker(
 
   def processMessage(bagRequest: BagRequest): Future[Result[AuditSummary]] =
     for {
-      auditSummary <- Future.fromTry(bagAuditor.locateBagRoot(bagRequest.bagLocation))
+      auditSummary <- Future.fromTry(
+        bagAuditor.locateBagRoot(bagRequest.bagLocation))
       _ <- ingestUpdater.send(bagRequest.requestId, auditSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         auditSummary,

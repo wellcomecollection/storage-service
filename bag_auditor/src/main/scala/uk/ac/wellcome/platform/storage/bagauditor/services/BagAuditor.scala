@@ -4,7 +4,11 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.storage.bagauditor.models.AuditSummary
 
@@ -13,7 +17,8 @@ import scala.util.{Failure, Success, Try}
 class BagAuditor(implicit s3Client: AmazonS3) {
   val s3BagLocator = new S3BagLocator(s3Client)
 
-  def locateBagRoot(bagLocation: BagLocation): Try[IngestStepResult[AuditSummary]] = {
+  def locateBagRoot(
+    bagLocation: BagLocation): Try[IngestStepResult[AuditSummary]] = {
     val auditSummary = AuditSummary(
       startTime = Instant.now(),
       source = bagLocation

@@ -13,7 +13,7 @@ module "ingests_topic" {
     "${module.bag_unpacker.task_role_name}",
     "${module.ingests.task_role_name}",
     "${module.notifier.task_role_name}",
-    "${module.bag_auditor.task_role_name}"
+    "${module.bag_auditor.task_role_name}",
   ]
 }
 
