@@ -5,10 +5,9 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{BagRequest, Ingest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{BagRequest, BetterBagRequest, Ingest}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
-import uk.ac.wellcome.platform.storage.bagauditor.services.BetterBagRequest
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
