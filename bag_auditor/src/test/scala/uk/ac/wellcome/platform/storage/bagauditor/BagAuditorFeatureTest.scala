@@ -8,6 +8,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
+import uk.ac.wellcome.platform.storage.bagauditor.services.NewBagRequest
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -26,8 +27,8 @@ class BagAuditorFeatureTest
         "bag123/data/2.jpg"
       )
 
-      val objectLocation = createObjectLocationWith(bucket, "bag123")
-      val bagRequest = createBagRequestWith(objectLocation)
+      val searchRoot = createObjectLocationWith(bucket, "bag123")
+      val bagRequest = createBagRequestWith(searchRoot)
 
       withLocalSqsQueue { queue =>
         withLocalSnsTopic { ingestTopic =>
@@ -38,8 +39,10 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                val result = notificationMessage[BagRequest](outgoingTopic)
-                result.requestId shouldBe bagRequest
+                val result = notificationMessage[NewBagRequest](outgoingTopic)
+                result.requestId shouldBe bagRequest.requestId
+                result.bagLocation shouldBe bagRequest.bagLocation
+                result.bagRoot shouldBe searchRoot
 
                 assertTopicReceivesIngestEvent(
                   bagRequest.requestId,
