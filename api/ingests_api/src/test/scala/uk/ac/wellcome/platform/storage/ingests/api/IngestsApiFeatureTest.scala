@@ -12,6 +12,8 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
+import uk.ac.wellcome.platform.archive.common.IngestID
+import uk.ac.wellcome.platform.archive.common.IngestID._
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
@@ -278,22 +280,22 @@ class IngestsApiFeatureTest
                     actualCallbackStatus shouldBe "processing"
                     actualSpaceId shouldBe spaceName
 
-                    assertTableOnlyHasItem[Ingest](
-                      Ingest(
-                        id,
-                        StorageLocation(
-                          StandardStorageProvider,
-                          ObjectLocation(bucketName, s3key)),
-                        Namespace(spaceName),
-                        Some(Callback(testCallbackUri, Callback.Pending)),
-                        Ingest.Accepted,
-                        None,
-                        Instant.parse(actualCreatedDate),
-                        Instant.parse(actualLastModifiedDate),
-                        Nil
+                    val expectedIngest = Ingest(
+                      id = IngestID(id),
+                      sourceLocation = StorageLocation(
+                        StandardStorageProvider,
+                        ObjectLocation(bucketName, s3key)
                       ),
-                      table
+                      space = Namespace(spaceName),
+                      callback = Some(Callback(testCallbackUri, Callback.Pending)),
+                      status = Ingest.Accepted,
+                      bag = None,
+                      createdDate = Instant.parse(actualCreatedDate),
+                      lastModifiedDate = Instant.parse(actualLastModifiedDate),
+                      events = Nil
                     )
+
+                    assertTableOnlyHasItem[Ingest](expectedIngest, table)
                 }
 
                 // Unpacker
@@ -303,10 +305,11 @@ class IngestsApiFeatureTest
 
                 unpackerRequests shouldBe List(
                   UnpackBagRequest(
-                    ingestId = id,
+                    ingestId = IngestID(id),
                     sourceLocation = ObjectLocation("bucket", "key.txt"),
                     storageSpace = StorageSpace(spaceName)
-                  ))
+                  )
+                )
               }
 
               assertMetricSent(
@@ -690,8 +693,11 @@ class IngestsApiFeatureTest
               val ingest = createIngest
               whenReady(ingestTracker.initialise(ingest)) { _ =>
                 val bagId = createBagId
-                val bagIngest =
-                  BagIngest(bagId.toString, randomUUID, Instant.now)
+                val bagIngest = BagIngest(
+                  id = createIngestID,
+                  bagIdIndex = bagId.toString,
+                  createdDate = Instant.now
+                )
                 givenTableHasItem(bagIngest, table)
 
                 whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$bagId") {
@@ -727,8 +733,11 @@ class IngestsApiFeatureTest
               val ingest = createIngest
               whenReady(ingestTracker.initialise(ingest)) { _ =>
                 val bagId = createBagId
-                val bagIngest =
-                  BagIngest(bagId.toString, randomUUID, Instant.now)
+                val bagIngest = BagIngest(
+                  id = createIngestID,
+                  bagIdIndex = bagId.toString,
+                  createdDate = Instant.now
+                )
                 givenTableHasItem(bagIngest, table)
 
                 whenGetRequestReady(
