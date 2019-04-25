@@ -47,15 +47,14 @@ class BagAuditorFeatureTest
 
                 val result =
                   notificationMessage[BetterBagRequest](outgoingTopic)
-                result.requestId shouldBe bagRequest.requestId
+                result.ingestId shouldBe bagRequest.ingestId
                 result.bagLocation shouldBe bagRequest.bagLocation
                 result.bagRoot shouldBe searchRoot
 
-                assertTopicReceivesIngestEvent(
-                  bagRequest.requestId,
-                  ingestTopic) { events =>
-                  events should have size 1
-                  events.head.description shouldBe "Locating bag root succeeded"
+                assertTopicReceivesIngestEvent(bagRequest.ingestId, ingestTopic) {
+                  events =>
+                    events should have size 1
+                    events.head.description shouldBe "Locating bag root succeeded"
                 }
               }
             }
@@ -90,15 +89,14 @@ class BagAuditorFeatureTest
 
                 val result =
                   notificationMessage[BetterBagRequest](outgoingTopic)
-                result.requestId shouldBe bagRequest.requestId
+                result.ingestId shouldBe bagRequest.ingestId
                 result.bagLocation shouldBe bagRequest.bagLocation
                 result.bagRoot shouldBe bagRoot
 
-                assertTopicReceivesIngestEvent(
-                  bagRequest.requestId,
-                  ingestTopic) { events =>
-                  events should have size 1
-                  events.head.description shouldBe "Locating bag root succeeded"
+                assertTopicReceivesIngestEvent(bagRequest.ingestId, ingestTopic) {
+                  events =>
+                    events should have size 1
+                    events.head.description shouldBe "Locating bag root succeeded"
                 }
               }
             }
@@ -132,7 +130,7 @@ class BagAuditorFeatureTest
                 assertSnsReceivesNothing(outgoingTopic)
 
                 assertTopicReceivesIngestStatus(
-                  bagRequest.requestId,
+                  bagRequest.ingestId,
                   status = Ingest.Failed,
                   ingestTopic = ingestTopic) { events =>
                   events should have size 1
@@ -163,7 +161,7 @@ class BagAuditorFeatureTest
                 assertSnsReceivesNothing(outgoingTopic)
 
                 assertTopicReceivesIngestStatus(
-                  bagRequest.requestId,
+                  bagRequest.ingestId,
                   status = Ingest.Failed,
                   ingestTopic = ingestTopic) { events =>
                   events should have size 1
@@ -193,7 +191,7 @@ class BagAuditorFeatureTest
               assertSnsReceivesNothing(outgoingTopic)
 
               assertTopicReceivesIngestStatus(
-                bagRequest.requestId,
+                bagRequest.ingestId,
                 status = Ingest.Failed,
                 ingestTopic = ingestTopic) { events =>
                 events should have size 1

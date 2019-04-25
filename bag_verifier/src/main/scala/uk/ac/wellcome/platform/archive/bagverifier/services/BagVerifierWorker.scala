@@ -49,7 +49,7 @@ class BagVerifierWorker(
 
       verificationSummary: IngestStepResult[VerificationSummary] <- verifier
         .verify(request.bagLocation)
-      _ <- ingestUpdater.send(request.requestId, verificationSummary)
+      _ <- ingestUpdater.send(request.ingestId, verificationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(verificationSummary, request)
     } yield toResult(verificationSummary)
 

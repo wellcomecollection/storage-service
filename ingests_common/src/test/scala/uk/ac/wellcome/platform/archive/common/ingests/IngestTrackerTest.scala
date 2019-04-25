@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests
 
 import java.time.Instant
-import java.util.UUID
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.{
@@ -14,12 +13,12 @@ import org.mockito.Mockito.when
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
-import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,7 +40,7 @@ class IngestTrackerTest
           val futureIngest = ingestTracker.initialise(createIngest)
 
           whenReady(futureIngest) { ingest =>
-            assertTableOnlyHasItem(ingest, table)
+            assertIngestCreated(ingest, table)
           }
         }
       }
@@ -92,7 +91,7 @@ class IngestTrackerTest
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
           whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            assertTableOnlyHasItem[Ingest](ingest, table)
+            assertIngestCreated(ingest, table)
 
             whenReady(ingestTracker.get(ingest.id)) { result =>
               result shouldBe a[Some[_]]
@@ -106,7 +105,7 @@ class IngestTrackerTest
     it("returns None when no ingest matches id") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.get(randomUUID)) { result =>
+          whenReady(ingestTracker.get(createIngestID)) { result =>
             result shouldBe None
           }
         }
@@ -122,8 +121,9 @@ class IngestTrackerTest
 
         withIngestTracker(table, dynamoDbClient = mockDynamoDbClient) {
           ingestTracker =>
-            whenReady(ingestTracker.get(randomUUID).failed) { failedException =>
-              failedException shouldBe expectedException
+            whenReady(ingestTracker.get(createIngestID).failed) {
+              failedException =>
+                failedException shouldBe expectedException
             }
         }
       }
@@ -145,8 +145,7 @@ class IngestTrackerTest
 
             ingestTracker.update(ingestUpdate)
 
-            val storedIngest =
-              getExistingTableItem[Ingest](ingest.id.toString, table)
+            val storedIngest = getStoredIngest(ingest, table)
 
             assertRecent(storedIngest.createdDate)
             assertRecent(storedIngest.lastModifiedDate)
@@ -166,8 +165,8 @@ class IngestTrackerTest
         withIngestTracker(table) { ingestTracker =>
           whenReady(ingestTracker.initialise(createIngest)) { ingest =>
             val ingestUpdate = IngestEventUpdate(
-              ingest.id,
-              List(createIngestEvent)
+              id = ingest.id,
+              events = List(createIngestEvent)
             )
 
             ingestTracker.update(ingestUpdate)
@@ -175,9 +174,10 @@ class IngestTrackerTest
             assertIngestCreated(ingest, table)
 
             assertIngestRecordedRecentEvents(
-              ingestUpdate.id,
-              ingestUpdate.events.map(_.description),
-              table)
+              id = ingestUpdate.id,
+              expectedEventDescriptions = ingestUpdate.events.map(_.description),
+              table = table
+            )
           }
         }
       }
@@ -203,9 +203,12 @@ class IngestTrackerTest
             actualIngest.bag shouldBe someBagId
 
             assertIngestRecordedRecentEvents(
-              ingestUpdate.id,
-              ingestUpdate.events.map(_.description),
-              table)
+              id = ingestUpdate.id,
+              expectedEventDescriptions = ingestUpdate.events.map {
+                _.description
+              },
+              table = table
+            )
           }
         }
       }
@@ -229,9 +232,12 @@ class IngestTrackerTest
             actualIngest.callback.get.status shouldBe Callback.Succeeded
 
             assertIngestRecordedRecentEvents(
-              ingestUpdate.id,
-              ingestUpdate.events.map(_.description),
-              table)
+              id = ingestUpdate.id,
+              expectedEventDescriptions = ingestUpdate.events.map {
+                _.description
+              },
+              table = table
+            )
           }
         }
       }
@@ -334,10 +340,22 @@ class IngestTrackerTest
                   val bagIngests = ingestTracker.findByBagId(bagId)
 
                   bagIngests shouldBe List(
-                    Right(BagIngest(bagId.toString, ingestC.id, afterTime)),
-                    Right(BagIngest(bagId.toString, ingestB.id, time)),
-                    Right(BagIngest(bagId.toString, ingestA.id, beforeTime))
-                  )
+                    BagIngest(
+                      id = ingestC.id,
+                      bagIdIndex = bagId.toString,
+                      createdDate = afterTime
+                    ),
+                    BagIngest(
+                      id = ingestB.id,
+                      bagIdIndex = bagId.toString,
+                      createdDate = time
+                    ),
+                    BagIngest(
+                      id = ingestA.id,
+                      bagIdIndex = bagId.toString,
+                      createdDate = beforeTime
+                    )
+                  ).map { Right(_) }
                 }
             }
           }
@@ -374,7 +392,7 @@ class IngestTrackerTest
     }
   }
 
-  private def createIngestUpdateWith(id: UUID, bagId: BagId): IngestUpdate =
+  private def createIngestUpdateWith(id: IngestID, bagId: BagId): IngestUpdate =
     createIngestStatusUpdateWith(
       id = id,
       status = Ingest.Processing,

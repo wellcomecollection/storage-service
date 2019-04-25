@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.notifier.services
 
 import java.net.URI
-import java.util.UUID
 
 import akka.http.scaladsl.model.StatusCodes
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -27,12 +26,12 @@ class CallbackUrlServiceTest
   it("returns a Success if the request succeeds") {
     withActorSystem { implicit actorSystem =>
       withCallbackUrlService { service =>
-        val requestId = UUID.randomUUID()
+        val ingestID = createIngestID
         val future = service.getHttpResponse(
           callbackNotification = CallbackNotification(
-            id = requestId,
-            callbackUri = new URI(
-              s"http://$callbackHost:$callbackPort/callback/$requestId"),
+            ingestId = ingestID,
+            callbackUri =
+              new URI(s"http://$callbackHost:$callbackPort/callback/$ingestID"),
             payload = createIngest
           )
         )
@@ -48,11 +47,11 @@ class CallbackUrlServiceTest
   it("returns a failed future if the HTTP request fails") {
     withActorSystem { implicit actorSystem =>
       withCallbackUrlService { service =>
-        val requestId = UUID.randomUUID()
+        val ingestId = createIngestID
         val future = service.getHttpResponse(
           callbackNotification = CallbackNotification(
-            id = requestId,
-            callbackUri = new URI(s"http://nope.nope/callback/$requestId"),
+            ingestId = ingestId,
+            callbackUri = new URI(s"http://nope.nope/callback/$ingestId"),
             payload = createIngest
           )
         )

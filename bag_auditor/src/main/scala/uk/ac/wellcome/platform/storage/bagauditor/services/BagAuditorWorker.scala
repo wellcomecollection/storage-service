@@ -45,11 +45,11 @@ class BagAuditorWorker(
     for {
       auditSummary <- Future.fromTry(
         bagAuditor.locateBagRoot(bagRequest.bagLocation))
-      _ <- ingestUpdater.send(bagRequest.requestId, auditSummary)
+      _ <- ingestUpdater.send(bagRequest.ingestId, auditSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         auditSummary,
         BetterBagRequest(
-          requestId = bagRequest.requestId,
+          ingestId = bagRequest.ingestId,
           bagLocation = bagRequest.bagLocation,
           bagRoot = auditSummary.summary.root
         )

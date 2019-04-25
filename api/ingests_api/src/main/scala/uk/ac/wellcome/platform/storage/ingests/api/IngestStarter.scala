@@ -29,7 +29,7 @@ class IngestStarter(
   ): UnpackBagRequest = {
 
     UnpackBagRequest(
-      requestId = ingest.id,
+      ingestId = ingest.id,
       sourceLocation = ingest.sourceLocation.location,
       storageSpace = StorageSpace(ingest.space.underlying)
     )

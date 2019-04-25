@@ -34,7 +34,7 @@ class IngestsFeatureTest
             eventually {
               val actualMessage =
                 notificationMessage[CallbackNotification](topic)
-              actualMessage.id shouldBe ingest.id
+              actualMessage.ingestId shouldBe ingest.id
               actualMessage.callbackUri shouldBe ingest.callback.get.uri
 
               val expectedIngest = ingest.copy(

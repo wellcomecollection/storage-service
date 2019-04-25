@@ -42,7 +42,7 @@ class BagReplicatorWorker(
     bagRequest: BagRequest): Future[Result[ReplicationSummary]] =
     for {
       replicationSummary <- bagReplicator.replicate(bagRequest.bagLocation)
-      _ <- ingestUpdater.send(bagRequest.requestId, replicationSummary)
+      _ <- ingestUpdater.send(bagRequest.ingestId, replicationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         replicationSummary,
         bagRequest.copy(

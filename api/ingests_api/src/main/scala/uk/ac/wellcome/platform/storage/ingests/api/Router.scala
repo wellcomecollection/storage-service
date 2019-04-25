@@ -9,6 +9,7 @@ import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import grizzled.slf4j.Logging
 import io.circe.Printer
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
   ExternalIdentifier
@@ -52,7 +53,7 @@ class Router(ingestTracker: IngestTracker,
         }
       } ~ path(JavaUUID) { id: UUID =>
         get {
-          onSuccess(ingestTracker.get(id)) {
+          onSuccess(ingestTracker.get(IngestID(id))) {
             case Some(ingest) =>
               complete(ResponseDisplayIngest(ingest, contextURL))
             case None =>

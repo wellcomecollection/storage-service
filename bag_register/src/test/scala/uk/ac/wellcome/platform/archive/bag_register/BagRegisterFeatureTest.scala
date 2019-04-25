@@ -66,7 +66,7 @@ class BagRegisterFeatureTest
             storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
             assertTopicReceivesIngestStatus(
-              requestId = bagRequest.requestId,
+              ingestId = bagRequest.ingestId,
               ingestTopic = ingestTopic,
               status = Ingest.Completed,
               expectedBag = Some(bagId)) { events =>
@@ -93,7 +93,7 @@ class BagRegisterFeatureTest
 
           eventually {
             assertTopicReceivesIngestStatus(
-              requestId = replicationResult.requestId,
+              ingestId = replicationResult.ingestId,
               ingestTopic = ingestTopic,
               status = Ingest.Failed,
               expectedBag = Some(

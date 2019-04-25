@@ -37,7 +37,7 @@ class VerifierWorkerTest
               whenReady(future) { _ =>
                 eventually {
                   assertTopicReceivesIngestEvent(
-                    requestId = bagRequest.requestId,
+                    ingestId = bagRequest.ingestId,
                     ingestTopic = ingestTopic
                   ) { events =>
                     events.map {
@@ -72,7 +72,7 @@ class VerifierWorkerTest
                   assertSnsReceivesNothing(outgoingTopic)
 
                   assertTopicReceivesIngestStatus(
-                    requestId = bagRequest.requestId,
+                    ingestId = bagRequest.ingestId,
                     ingestTopic = ingestTopic,
                     status = Ingest.Failed
                   ) { events =>
@@ -109,7 +109,7 @@ class VerifierWorkerTest
                     assertSnsReceivesNothing(outgoingTopic)
 
                     assertTopicReceivesIngestStatus(
-                      requestId = bagRequest.requestId,
+                      ingestId = bagRequest.ingestId,
                       ingestTopic = ingestTopic,
                       status = Ingest.Failed
                     ) { events =>
@@ -138,7 +138,7 @@ class VerifierWorkerTest
 
             whenReady(future.failed) { _ =>
               assertTopicReceivesIngestEvent(
-                requestId = bagRequest.requestId,
+                ingestId = bagRequest.ingestId,
                 ingestTopic = ingestTopic
               ) { events =>
                 events.map {

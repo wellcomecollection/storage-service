@@ -37,7 +37,7 @@ class VerifierFeatureTest
                     listMessagesReceivedFromSNS(outgoingTopic)
 
                     assertTopicReceivesIngestEvent(
-                      requestId = bagRequest.requestId,
+                      ingestId = bagRequest.ingestId,
                       ingestTopic = ingestTopic
                     ) { events =>
                       events.map {
@@ -76,7 +76,7 @@ class VerifierFeatureTest
 
                     eventually {
                       assertTopicReceivesIngestStatus(
-                        requestId = bagRequest.requestId,
+                        ingestId = bagRequest.ingestId,
                         ingestTopic = ingestTopic,
                         status = Ingest.Failed
                       ) { events =>

@@ -1,40 +1,42 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.time.Instant
-import java.util.UUID
 
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 
-case class Ingest(id: UUID,
-                  sourceLocation: StorageLocation,
-                  space: Namespace,
-                  callback: Option[Callback],
-                  status: Ingest.Status,
-                  bag: Option[BagId],
-                  createdDate: Instant,
-                  lastModifiedDate: Instant,
-                  events: Seq[IngestEvent])
+case class Ingest(
+  id: IngestID,
+  sourceLocation: StorageLocation,
+  space: Namespace,
+  callback: Option[Callback],
+  status: Ingest.Status,
+  bag: Option[BagId],
+  createdDate: Instant,
+  lastModifiedDate: Instant,
+  events: Seq[IngestEvent]
+)
 
 case object Ingest {
-  def apply(id: UUID,
+  def apply(id: IngestID,
             sourceLocation: StorageLocation,
             space: Namespace,
             callback: Option[Callback] = None,
             status: Ingest.Status = Ingest.Accepted,
             bag: Option[BagId] = None,
             createdDate: Instant = Instant.now(),
-            events: Seq[IngestEvent] = Seq.empty): Ingest = {
+            events: Seq[IngestEvent] = Seq.empty): Ingest =
     Ingest(
-      id,
-      sourceLocation,
-      space,
-      callback,
-      status,
-      bag,
-      createdDate,
-      createdDate,
-      events)
-  }
+      id = id,
+      sourceLocation = sourceLocation,
+      space = space,
+      callback = callback,
+      status = status,
+      bag = bag,
+      createdDate = createdDate,
+      lastModifiedDate = createdDate,
+      events = events
+    )
 
   sealed trait Status
 
@@ -61,4 +63,8 @@ case object Ingest {
 
 }
 
-case class BagIngest(bagIdIndex: String, id: UUID, createdDate: Instant)
+case class BagIngest(
+  id: IngestID,
+  bagIdIndex: String,
+  createdDate: Instant
+)

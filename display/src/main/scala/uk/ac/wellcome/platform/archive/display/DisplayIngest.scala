@@ -4,9 +4,8 @@ import java.net.{URI, URL}
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.ingests.models
-import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 sealed trait DisplayIngest
@@ -19,8 +18,8 @@ case class RequestDisplayIngest(sourceLocation: DisplayLocation,
                                 ontologyType: String = "Ingest")
     extends DisplayIngest {
   def toIngest: Ingest = {
-    models.Ingest(
-      id = UUID.randomUUID,
+    Ingest(
+      id = IngestID.random,
       sourceLocation = sourceLocation.toStorageLocation,
       callback = Callback(
         callback.map(displayCallback => URI.create(displayCallback.url))),
@@ -77,7 +76,7 @@ object ResponseDisplayIngest {
   def apply(ingest: Ingest, contextUrl: URL): ResponseDisplayIngest =
     ResponseDisplayIngest(
       context = contextUrl.toString,
-      id = ingest.id,
+      id = ingest.id.underlying,
       sourceLocation = DisplayLocation(ingest.sourceLocation),
       callback = ingest.callback.map(DisplayCallback(_)),
       space = DisplayStorageSpace(ingest.space.toString),
@@ -99,7 +98,10 @@ object DisplayIngestEvent {
 
 object DisplayIngestMinimal {
   def apply(bagIngest: BagIngest): DisplayIngestMinimal =
-    DisplayIngestMinimal(bagIngest.id, bagIngest.createdDate.toString)
+    DisplayIngestMinimal(
+      id = bagIngest.id.underlying,
+      createdDate = bagIngest.createdDate.toString
+    )
 }
 
 object DisplayStatus {
