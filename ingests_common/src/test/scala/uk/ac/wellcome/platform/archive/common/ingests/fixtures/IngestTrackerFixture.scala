@@ -1,8 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.fixtures
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.{GetItemRequest, ScanRequest}
-import com.gu.scanamo.Scanamo
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.IngestID._
@@ -33,21 +31,8 @@ trait IngestTrackerFixture
     testWith(ingestTracker)
   }
 
-  def getStoredIngest(ingest: Ingest, table: Table): Ingest = {
-    println(s"@@AWLC ${ingest.id.toString}")
-
-    val request = new ScanRequest()
-      .withTableName(table.name)
-
-    println(dynamoDbClient.scan(request).getItems)
-
-    case class X(id: IngestID)
-
-    import com.gu.scanamo.syntax._
-    println(Scanamo.get[X](dynamoDbClient)(table.name)('id -> ingest.id.toString))
-
+  def getStoredIngest(ingest: Ingest, table: Table): Ingest =
     getExistingTableItem[Ingest](ingest.id.toString, table)
-  }
 
   def assertIngestCreated(ingest: Ingest, table: Table): Ingest = {
     val storedIngest = getStoredIngest(ingest, table)
