@@ -9,15 +9,17 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.BagLocationGenerators
+import uk.ac.wellcome.storage.fixtures.S3
 
 class VerificationSummaryTest
     extends FunSpec
     with Matchers
     with RandomThings
-    with BagLocationGenerators {
+    with BagLocationGenerators
+    with S3 {
   it("reports a verification with no failures as successful") {
     val result = VerificationSummary(
-      createBagLocation(),
+      createObjectLocation,
       successfulVerifications =
         Seq(createBagDigestFile, createBagDigestFile, createBagDigestFile),
       failedVerifications = List.empty
@@ -28,7 +30,7 @@ class VerificationSummaryTest
 
   it("reports a verification with some problems as unsuccessful") {
     val result = VerificationSummary(
-      createBagLocation(),
+      createObjectLocation,
       successfulVerifications = Seq(createBagDigestFile, createBagDigestFile),
       failedVerifications = List(
         FailedVerification(
@@ -43,7 +45,7 @@ class VerificationSummaryTest
 
   it("calculates duration once completed") {
     val result = VerificationSummary(
-      createBagLocation(),
+      createObjectLocation,
       startTime = Instant.now.minus(Duration.ofSeconds(1))
     )
     val completed = result.complete
@@ -53,7 +55,7 @@ class VerificationSummaryTest
 
   it("calculates duration as None when verification is not completed") {
     val result = VerificationSummary(
-      createBagLocation(),
+      createObjectLocation,
       startTime = Instant.now
     )
     result.duration shouldBe None

@@ -2,14 +2,12 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagDigestFile,
-  BagLocation
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagDigestFile
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
+import uk.ac.wellcome.storage.ObjectLocation
 
 case class VerificationSummary(
-  bagLocation: BagLocation,
+  bagRootLocation: ObjectLocation,
   successfulVerifications: Seq[BagDigestFile] = List.empty,
   failedVerifications: Seq[FailedVerification] = List.empty,
   startTime: Instant = Instant.now(),
@@ -24,7 +22,7 @@ case class VerificationSummary(
         "successful"
       else
         "failed"
-    f"""|bag=${bagLocation.completePath}
+    f"""|bag=$bagRootLocation
         |status=$status
         |verified=${successfulVerifications.size}
         |failed=${failedVerifications.size}

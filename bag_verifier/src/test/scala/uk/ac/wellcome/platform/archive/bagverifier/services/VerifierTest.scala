@@ -41,7 +41,7 @@ class VerifierTest
             algorithm = MessageDigestAlgorithms.SHA_256
           )
 
-          val future = service.verify(bagLocation)
+          val future = service.verify(bagLocation.objectLocation)
 
           whenReady(future) { result =>
             result shouldBe a[IngestStepSucceeded[_]]
@@ -63,18 +63,14 @@ class VerifierTest
         dataFileCount = dataFileCount,
         bagRootDirectory = Some("bag")) { bagLocation =>
         withActorSystem { actorSystem =>
-          implicit val ec = actorSystem.dispatcher
-
-          withMaterializer { mat =>
-            implicit val _mat = mat
-
+          withMaterializer { implicit materializer =>
             val service = new Verifier(
               storageManifestService = new StorageManifestService(),
               s3Client = s3Client,
               algorithm = MessageDigestAlgorithms.SHA_256
             )
 
-            val future = service.verify(bagLocation)
+            val future = service.verify(bagLocation.objectLocation)
 
             whenReady(future) { result =>
               result shouldBe a[IngestStepSucceeded[_]]
@@ -97,17 +93,14 @@ class VerifierTest
         dataFileCount = dataFileCount,
         createDataManifest = dataManifestWithWrongChecksum) { bagLocation =>
         withActorSystem { actorSystem =>
-          implicit val ec = actorSystem.dispatcher
-          withMaterializer { mat =>
-            implicit val _mat = mat
-
+          withMaterializer { implicit materializer =>
             val service = new Verifier(
               storageManifestService = new StorageManifestService(),
               s3Client = s3Client,
               algorithm = MessageDigestAlgorithms.SHA_256
             )
 
-            val future = service.verify(bagLocation)
+            val future = service.verify(bagLocation.objectLocation)
 
             whenReady(future) { result =>
               result shouldBe a[IngestFailed[_]]
@@ -143,7 +136,7 @@ class VerifierTest
               s3Client = s3Client,
               algorithm = MessageDigestAlgorithms.SHA_256
             )
-            val future = service.verify(bagLocation)
+            val future = service.verify(bagLocation.objectLocation)
             whenReady(future) { result =>
               result shouldBe a[IngestFailed[_]]
 
@@ -175,9 +168,7 @@ class VerifierTest
         dataFileCount = dataFileCount,
         createDataManifest = createDataManifestWithExtraFile) { bagLocation =>
         withActorSystem { actorSystem =>
-          implicit val ec = actorSystem.dispatcher
-          withMaterializer { mat =>
-            implicit val _mat = mat
+          withMaterializer { implicit materializer =>
 
             val service = new Verifier(
               storageManifestService = new StorageManifestService(),
@@ -185,7 +176,7 @@ class VerifierTest
               algorithm = MessageDigestAlgorithms.SHA_256
             )
 
-            val future = service.verify(bagLocation)
+            val future = service.verify(bagLocation.objectLocation)
             whenReady(future) { result =>
               result shouldBe a[IngestFailed[_]]
 
@@ -213,9 +204,7 @@ class VerifierTest
       withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
         bagLocation =>
           withActorSystem { actorSystem =>
-            implicit val ec = actorSystem.dispatcher
-            withMaterializer { mat =>
-              implicit val _mat = mat
+            withMaterializer { implicit mat =>
 
               val service = new Verifier(
                 storageManifestService = new StorageManifestService(),
@@ -223,7 +212,7 @@ class VerifierTest
                 algorithm = MessageDigestAlgorithms.SHA_256
               )
 
-              val future = service.verify(bagLocation)
+              val future = service.verify(bagLocation.objectLocation)
 
               whenReady(future) { result =>
                 result shouldBe a[IngestFailed[_]]
@@ -248,9 +237,7 @@ class VerifierTest
       withBag(bucket, createTagManifest = dontCreateTheTagManifest) {
         bagLocation =>
           withActorSystem { actorSystem =>
-            implicit val ec = actorSystem.dispatcher
-            withMaterializer { mat =>
-              implicit val _mat = mat
+            withMaterializer { implicit materializer =>
 
               val service = new Verifier(
                 storageManifestService = new StorageManifestService(),
@@ -258,7 +245,7 @@ class VerifierTest
                 algorithm = MessageDigestAlgorithms.SHA_256
               )
 
-              val future = service.verify(bagLocation)
+              val future = service.verify(bagLocation.objectLocation)
 
               whenReady(future) { result =>
                 result shouldBe a[IngestFailed[_]]
