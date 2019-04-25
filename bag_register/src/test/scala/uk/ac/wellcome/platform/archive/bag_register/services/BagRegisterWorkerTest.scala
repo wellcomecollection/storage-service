@@ -80,28 +80,26 @@ class BagRegisterWorkerTest
       case (service, _, bucket, ingestTopic, _, _) =>
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo, storagePrefix = "access") {
-          accessBagLocation =>
-            val bagRequest =
-              createBagRequestWith(accessBagLocation)
+        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+          val bagRequest = createBagRequestWith(bagLocation)
 
-            val bagId = BagId(
-              space = accessBagLocation.storageSpace,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+          val bagId = BagId(
+            space = bagLocation.storageSpace,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
 
-            val future = service.processMessage(bagRequest)
+          val future = service.processMessage(bagRequest)
 
-            whenReady(future) { _ =>
-              assertTopicReceivesIngestStatus(
-                ingestId = bagRequest.ingestId,
-                ingestTopic = ingestTopic,
-                status = Ingest.Failed,
-                expectedBag = Some(bagId)) { events =>
-                events.size should be >= 1
-                events.head.description shouldBe "Register failed"
-              }
+          whenReady(future) { _ =>
+            assertTopicReceivesIngestStatus(
+              ingestId = bagRequest.ingestId,
+              ingestTopic = ingestTopic,
+              status = Ingest.Failed,
+              expectedBag = Some(bagId)) { events =>
+              events.size should be >= 1
+              events.head.description shouldBe "Register failed"
             }
+          }
         }
     }
   }
