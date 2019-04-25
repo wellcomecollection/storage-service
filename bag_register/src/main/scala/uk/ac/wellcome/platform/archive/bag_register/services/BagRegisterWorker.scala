@@ -11,6 +11,7 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
+import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
@@ -41,14 +42,26 @@ class BagRegisterWorker(
     }
 
   def processMessage(
+    bagRequest: BagRequest): Future[Result[RegistrationSummary]] = {
+    val payload = ObjectLocationPayload(
+      ingestId = bagRequest.ingestId,
+      storageSpace = bagRequest.bagLocation.storageSpace,
+      objectLocation = bagRequest.bagLocation.objectLocation
+    )
+
+    processMessage(payload, bagRequest)
+  }
+
+  def processMessage(
+    payload: ObjectLocationPayload,
     bagRequest: BagRequest): Future[Result[RegistrationSummary]] =
     for {
       registrationSummary <- register.update(
-        bagRootLocation = bagRequest.bagLocation.objectLocation,
-        storageSpace = bagRequest.bagLocation.storageSpace
+        bagRootLocation = payload.objectLocation,
+        storageSpace = payload.storageSpace
       )
       _ <- ingestUpdater.send(
-        bagRequest.ingestId,
+        payload.ingestId,
         registrationSummary,
         bagId = registrationSummary.summary.bagId)
       _ <- outgoingPublisher.sendIfSuccessful(registrationSummary, bagRequest)
