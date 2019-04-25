@@ -287,7 +287,8 @@ class IngestsApiFeatureTest
                         ObjectLocation(bucketName, s3key)
                       ),
                       space = Namespace(spaceName),
-                      callback = Some(Callback(testCallbackUri, Callback.Pending)),
+                      callback =
+                        Some(Callback(testCallbackUri, Callback.Pending)),
                       status = Ingest.Accepted,
                       bag = None,
                       createdDate = Instant.parse(actualCreatedDate),

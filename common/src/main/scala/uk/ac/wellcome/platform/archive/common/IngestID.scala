@@ -13,11 +13,12 @@ object IngestID {
   def random: IngestID = IngestID(UUID.randomUUID())
 
   implicit val encoder: Encoder[IngestID] = Encoder.instance[IngestID] {
-    id: IngestID => Json.fromString(id.toString)
+    id: IngestID =>
+      Json.fromString(id.toString)
   }
 
-  implicit val decoder: Decoder[IngestID] = Decoder.instance[IngestID](cursor =>
-    cursor.value.as[UUID].map(IngestID(_)))
+  implicit val decoder: Decoder[IngestID] =
+    Decoder.instance[IngestID](cursor => cursor.value.as[UUID].map(IngestID(_)))
 
   implicit def fmtSpace: DynamoFormat[IngestID] =
     DynamoFormat.coercedXmap[IngestID, String, IllegalArgumentException](

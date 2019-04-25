@@ -37,7 +37,9 @@ object IngestNotice {
     )
   }
 
-  def apply(id: IngestID, status: Ingest.Status, message: String*): IngestNotice = {
+  def apply(id: IngestID,
+            status: Ingest.Status,
+            message: String*): IngestNotice = {
     IngestNotice(
       id = id,
       message = message.mkString(" "),

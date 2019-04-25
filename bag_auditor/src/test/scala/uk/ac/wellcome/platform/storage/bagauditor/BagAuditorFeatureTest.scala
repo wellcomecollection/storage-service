@@ -51,11 +51,10 @@ class BagAuditorFeatureTest
                 result.bagLocation shouldBe bagRequest.bagLocation
                 result.bagRoot shouldBe searchRoot
 
-                assertTopicReceivesIngestEvent(
-                  bagRequest.ingestId,
-                  ingestTopic) { events =>
-                  events should have size 1
-                  events.head.description shouldBe "Locating bag root succeeded"
+                assertTopicReceivesIngestEvent(bagRequest.ingestId, ingestTopic) {
+                  events =>
+                    events should have size 1
+                    events.head.description shouldBe "Locating bag root succeeded"
                 }
               }
             }
@@ -94,11 +93,10 @@ class BagAuditorFeatureTest
                 result.bagLocation shouldBe bagRequest.bagLocation
                 result.bagRoot shouldBe bagRoot
 
-                assertTopicReceivesIngestEvent(
-                  bagRequest.ingestId,
-                  ingestTopic) { events =>
-                  events should have size 1
-                  events.head.description shouldBe "Locating bag root succeeded"
+                assertTopicReceivesIngestEvent(bagRequest.ingestId, ingestTopic) {
+                  events =>
+                    events should have size 1
+                    events.head.description shouldBe "Locating bag root succeeded"
                 }
               }
             }

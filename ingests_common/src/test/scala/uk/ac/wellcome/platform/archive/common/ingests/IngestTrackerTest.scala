@@ -121,8 +121,9 @@ class IngestTrackerTest
 
         withIngestTracker(table, dynamoDbClient = mockDynamoDbClient) {
           ingestTracker =>
-            whenReady(ingestTracker.get(createIngestID).failed) { failedException =>
-              failedException shouldBe expectedException
+            whenReady(ingestTracker.get(createIngestID).failed) {
+              failedException =>
+                failedException shouldBe expectedException
             }
         }
       }
@@ -203,7 +204,9 @@ class IngestTrackerTest
 
             assertIngestRecordedRecentEvents(
               id = ingestUpdate.id,
-              expectedEventDescriptions = ingestUpdate.events.map { _.description },
+              expectedEventDescriptions = ingestUpdate.events.map {
+                _.description
+              },
               table = table
             )
           }
@@ -230,7 +233,9 @@ class IngestTrackerTest
 
             assertIngestRecordedRecentEvents(
               id = ingestUpdate.id,
-              expectedEventDescriptions = ingestUpdate.events.map { _.description },
+              expectedEventDescriptions = ingestUpdate.events.map {
+                _.description
+              },
               table = table
             )
           }

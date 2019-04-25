@@ -43,7 +43,8 @@ trait IngestUpdateAssertions extends SNS with Inside with Logging {
     success should have size 1
   }
 
-  def assertTopicReceivesIngestEvent(ingestId: IngestID, ingestTopic: SNS.Topic)(
+  def assertTopicReceivesIngestEvent(ingestId: IngestID,
+                                     ingestTopic: SNS.Topic)(
     assert: Seq[IngestEvent] => Assertion): Assertion = {
 
     val messages = listMessagesReceivedFromSNS(ingestTopic)

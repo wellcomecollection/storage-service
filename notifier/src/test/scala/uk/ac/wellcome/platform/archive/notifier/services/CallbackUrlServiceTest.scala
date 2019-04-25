@@ -8,7 +8,10 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixtures}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{
+  LocalWireMockFixture,
+  NotifierFixtures
+}
 
 class CallbackUrlServiceTest
     extends FunSpec
@@ -27,8 +30,8 @@ class CallbackUrlServiceTest
         val future = service.getHttpResponse(
           callbackNotification = CallbackNotification(
             ingestId = ingestID,
-            callbackUri = new URI(
-              s"http://$callbackHost:$callbackPort/callback/$ingestID"),
+            callbackUri =
+              new URI(s"http://$callbackHost:$callbackPort/callback/$ingestID"),
             payload = createIngest
           )
         )
