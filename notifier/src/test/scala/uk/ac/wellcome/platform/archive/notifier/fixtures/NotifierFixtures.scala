@@ -28,7 +28,7 @@ trait NotifierFixtures
   def withCallbackUrlService[R](testWith: TestWith[CallbackUrlService, R])(
     implicit actorSystem: ActorSystem): R = {
     val callbackUrlService = new CallbackUrlService(
-      contextURL = new URL("http://localhost/context.json")
+      contextUrl = new URL("http://localhost/context.json")
     )
     testWith(callbackUrlService)
   }
