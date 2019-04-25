@@ -22,7 +22,10 @@ class VerifierTest
 
   val dataFileCount = 3
 
-  val expectedFileCount: Int = dataFileCount + List("manifest-sha256.txt", "bagit.txt", "bag-info.txt").size
+  val expectedFileCount: Int = dataFileCount + List(
+    "manifest-sha256.txt",
+    "bagit.txt",
+    "bag-info.txt").size
 
   it("passes a bag with correct checksums") {
     withLocalS3Bucket { bucket =>
@@ -119,7 +122,7 @@ class VerifierTest
 
   it("fails a bag if the file manifest refers to a non-existent file") {
     def createDataManifestWithExtraFile(
-                                         dataFiles: List[(String, String)]): Option[FileEntry] =
+      dataFiles: List[(String, String)]): Option[FileEntry] =
       createValidDataManifest(
         dataFiles ++ List(("doesnotexist", "doesnotexist")))
 

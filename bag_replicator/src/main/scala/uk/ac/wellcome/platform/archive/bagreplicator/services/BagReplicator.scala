@@ -33,9 +33,8 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
   val s3PrefixCopier = S3PrefixCopier(s3Client)
   val s3BagLocator = new S3BagLocator(s3Client)
 
-  def replicate(
-    bagRootLocation: ObjectLocation,
-    storageSpace: StorageSpace): Future[IngestStepResult[ReplicationSummary]] = {
+  def replicate(bagRootLocation: ObjectLocation, storageSpace: StorageSpace)
+    : Future[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,

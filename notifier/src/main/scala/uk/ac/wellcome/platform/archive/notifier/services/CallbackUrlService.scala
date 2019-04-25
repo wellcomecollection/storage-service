@@ -16,9 +16,8 @@ import scala.util.{Failure, Success, Try}
 class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
                                           ec: ExecutionContext)
     extends Logging {
-  def getHttpResponse(
-    ingest: Ingest,
-    callbackUri: URI): Future[Try[HttpResponse]] = {
+  def getHttpResponse(ingest: Ingest,
+                      callbackUri: URI): Future[Try[HttpResponse]] = {
     for {
       jsonString <- Future.fromTry(
         toJson(

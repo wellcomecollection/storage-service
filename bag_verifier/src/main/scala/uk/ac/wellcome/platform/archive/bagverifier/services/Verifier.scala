@@ -57,7 +57,10 @@ class Verifier(
 
       digestFiles = fileManifest.files ++ tagManifest.files
 
-      result <- verifyFiles(actualBagRootLocation, digestFiles, verificationSummary)
+      result <- verifyFiles(
+        actualBagRootLocation,
+        digestFiles,
+        verificationSummary)
     } yield result
 
     verification.map {
