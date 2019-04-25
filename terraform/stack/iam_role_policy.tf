@@ -56,6 +56,18 @@ resource "aws_iam_role_policy" "ingests_api_archive_ingest_table" {
   policy = "${data.aws_iam_policy_document.archive_ingest_table_read_write_policy.json}"
 }
 
+# bag auditor
+
+resource "aws_iam_role_policy" "bag_auditor_read_s3_ingests" {
+  role   = "${module.bag_auditor.task_role_name}"
+  policy = "${data.aws_iam_policy_document.ingests_read.json}"
+}
+
+resource "aws_iam_role_policy" "bag_auditor_metrics" {
+  role   = "${module.bag_auditor.task_role_name}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+}
+
 # bag_verifier pre-replication
 
 resource "aws_iam_role_policy" "bag_verifier_pre_repl_read_s3_ingests" {
