@@ -5,7 +5,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagLocation, BagPath}
 import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{BagRequest, Ingest}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 import uk.ac.wellcome.platform.storage.bagauditor.services.BetterBagRequest
@@ -92,6 +92,104 @@ class BagAuditorFeatureTest
                   events should have size 1
                   events.head.description shouldBe "Locating bag root succeeded"
                 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  it("errors if the bag is nested too deep") {
+    withLocalS3Bucket { bucket =>
+      createObjectsWith(
+        bucket,
+        "bag123/subdir1/subdir2/subdir3/bag-info.txt",
+        "bag123/subdir1/subdir2/subdir3/data/1.jpg",
+        "bag123/subdir1/subdir2/subdir3/data/2.jpg"
+      )
+
+      val searchRoot = createObjectLocationWith(bucket, "bag123")
+      val bagRequest = createBagRequestWith(searchRoot)
+
+      withLocalSqsQueue { queue =>
+        withLocalSnsTopic { ingestTopic =>
+          withLocalSnsTopic { outgoingTopic =>
+            withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+              sendNotificationToSQS(queue, bagRequest)
+
+              eventually {
+                assertQueueEmpty(queue)
+
+                assertSnsReceivesNothing(outgoingTopic)
+
+                assertTopicReceivesIngestStatus(
+                  bagRequest.requestId,
+                  status = Ingest.Failed,
+                  ingestTopic = ingestTopic) { events =>
+                  events should have size 1
+                  events.head.description shouldBe "Locating bag root failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  it("errors if it cannot find the bag") {
+    withLocalS3Bucket { bucket =>
+      val searchRoot = createObjectLocationWith(bucket, "bag123")
+      val bagRequest = createBagRequestWith(searchRoot)
+
+      withLocalSqsQueue { queue =>
+        withLocalSnsTopic { ingestTopic =>
+          withLocalSnsTopic { outgoingTopic =>
+            withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+              sendNotificationToSQS(queue, bagRequest)
+
+              eventually {
+                assertQueueEmpty(queue)
+
+                assertSnsReceivesNothing(outgoingTopic)
+
+                assertTopicReceivesIngestStatus(
+                  bagRequest.requestId,
+                  status = Ingest.Failed,
+                  ingestTopic = ingestTopic) { events =>
+                  events should have size 1
+                  events.head.description shouldBe "Locating bag root failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  it("errors if it gets an error from S3") {
+    val searchRoot = createObjectLocationWith(key = "bag123")
+    val bagRequest = createBagRequestWith(searchRoot)
+
+    withLocalSqsQueue { queue =>
+      withLocalSnsTopic { ingestTopic =>
+        withLocalSnsTopic { outgoingTopic =>
+          withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+            sendNotificationToSQS(queue, bagRequest)
+
+            eventually {
+              assertQueueEmpty(queue)
+
+              assertSnsReceivesNothing(outgoingTopic)
+
+              assertTopicReceivesIngestStatus(
+                bagRequest.requestId,
+                status = Ingest.Failed,
+                ingestTopic = ingestTopic) { events =>
+                events should have size 1
+                events.head.description shouldBe "Locating bag root failed"
               }
             }
           }
