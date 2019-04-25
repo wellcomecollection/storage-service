@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
@@ -31,7 +30,10 @@ class StorageManifestServiceTest
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo) { bagLocation =>
-        val future = service.createManifest(bagLocation)
+        val future = service.createManifest(
+          bagRootLocation = bagLocation.objectLocation,
+          storageSpace = bagLocation.storageSpace
+        )
 
         whenReady(future) { storageManifest =>
           storageManifest.space shouldBe bagLocation.storageSpace
@@ -70,14 +72,10 @@ class StorageManifestServiceTest
   describe("returns a Left upon error") {
     it("if no files are at the BagLocation") {
       withLocalS3Bucket { bucket =>
-        val bagLocation = BagLocation(
-          storageNamespace = bucket.name,
-          storagePrefix = Some("archive"),
-          storageSpace = createStorageSpace,
-          bagPath = randomBagPath
+        val future = service.createManifest(
+          bagRootLocation = createObjectLocationWith(bucket),
+          storageSpace = createStorageSpace
         )
-
-        val future = service.createManifest(bagLocation)
 
         whenReady(future.failed) { err =>
           err shouldBe a[RuntimeException]
@@ -94,7 +92,10 @@ class StorageManifestServiceTest
             bagLocation.completePath + "/bag-info.txt"
           )
 
-          val future = service.createManifest(bagLocation)
+          val future = service.createManifest(
+            bagRootLocation = bagLocation.objectLocation,
+            storageSpace = bagLocation.storageSpace
+          )
 
           whenReady(future.failed) { err =>
             err shouldBe a[RuntimeException]
@@ -112,7 +113,10 @@ class StorageManifestServiceTest
             bagLocation.completePath + "/manifest-sha256.txt"
           )
 
-          val future = service.createManifest(bagLocation)
+          val future = service.createManifest(
+            bagRootLocation = bagLocation.objectLocation,
+            storageSpace = bagLocation.storageSpace
+          )
 
           whenReady(future.failed) { err =>
             err shouldBe a[RuntimeException]
@@ -129,7 +133,10 @@ class StorageManifestServiceTest
           createDataManifest =
             _ => Some(FileEntry("manifest-sha256.txt", "bleeergh!"))) {
           bagLocation =>
-            val future = service.createManifest(bagLocation)
+            val future = service.createManifest(
+              bagRootLocation = bagLocation.objectLocation,
+              storageSpace = bagLocation.storageSpace
+            )
 
             whenReady(future.failed) { err =>
               err shouldBe a[RuntimeException]
@@ -147,7 +154,10 @@ class StorageManifestServiceTest
             bagLocation.completePath + "/tagmanifest-sha256.txt"
           )
 
-          val future = service.createManifest(bagLocation)
+          val future = service.createManifest(
+            bagRootLocation = bagLocation.objectLocation,
+            storageSpace = bagLocation.storageSpace
+          )
 
           whenReady(future.failed) { err =>
             err shouldBe a[RuntimeException]
@@ -164,7 +174,10 @@ class StorageManifestServiceTest
           createTagManifest =
             _ => Some(FileEntry("tagmanifest-sha256.txt", "blaaargh!"))) {
           bagLocation =>
-            val future = service.createManifest(bagLocation)
+            val future = service.createManifest(
+              bagRootLocation = bagLocation.objectLocation,
+              storageSpace = bagLocation.storageSpace
+            )
 
             whenReady(future.failed) { err =>
               err shouldBe a[RuntimeException]

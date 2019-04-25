@@ -20,24 +20,23 @@ import scala.util.{Failure, Success}
 class Register(
   storageManifestService: StorageManifestService,
   storageManifestVHS: StorageManifestVHS
-) {
+)(implicit ec: ExecutionContext) {
 
   type FutureSummary =
     Future[IngestStepResult[RegistrationSummary]]
 
-  def update(
-    location: BagLocation
-  )(implicit
-    ec: ExecutionContext): FutureSummary = {
-
+  def update(bagLocation: BagLocation): FutureSummary = {
     val registration = RegistrationSummary(
       startTime = Instant.now(),
-      location = location
+      location = bagLocation
     )
 
     for {
       manifest <- storageManifestService
-        .createManifest(location)
+        .createManifest(
+          bagRootLocation = bagLocation.objectLocation,
+          storageSpace = bagLocation.storageSpace
+        )
 
       registrationWithBagId = registration.copy(bagId = Some(manifest.id))
 
