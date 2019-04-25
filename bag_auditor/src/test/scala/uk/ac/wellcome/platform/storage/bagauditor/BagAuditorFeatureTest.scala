@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
-import uk.ac.wellcome.platform.storage.bagauditor.services.NewBagRequest
+import uk.ac.wellcome.platform.storage.bagauditor.services.BetterBagRequest
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -39,10 +39,52 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                val result = notificationMessage[NewBagRequest](outgoingTopic)
+                val result = notificationMessage[BetterBagRequest](outgoingTopic)
                 result.requestId shouldBe bagRequest.requestId
                 result.bagLocation shouldBe bagRequest.bagLocation
                 result.bagRoot shouldBe searchRoot
+
+                assertTopicReceivesIngestEvent(
+                  bagRequest.requestId,
+                  ingestTopic) { events =>
+                  events should have size 1
+                  events.head.description shouldBe "Locating bag root succeeded"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  it("detects a bag in a subdirectory of the bagLocation") {
+    withLocalS3Bucket { bucket =>
+      createObjectsWith(
+        bucket,
+        "bag123/subdir/bag-info.txt",
+        "bag123/subdir/data/1.jpg",
+        "bag123/subdir/data/2.jpg"
+      )
+
+      val searchRoot = createObjectLocationWith(bucket, "bag123")
+      val bagRoot = createObjectLocationWith(bucket, "bag123/subdir")
+
+      val bagRequest = createBagRequestWith(searchRoot)
+
+      withLocalSqsQueue { queue =>
+        withLocalSnsTopic { ingestTopic =>
+          withLocalSnsTopic { outgoingTopic =>
+            withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+              sendNotificationToSQS(queue, bagRequest)
+
+              eventually {
+                assertQueueEmpty(queue)
+
+                val result = notificationMessage[BetterBagRequest](outgoingTopic)
+                result.requestId shouldBe bagRequest.requestId
+                result.bagLocation shouldBe bagRequest.bagLocation
+                result.bagRoot shouldBe bagRoot
 
                 assertTopicReceivesIngestEvent(
                   bagRequest.requestId,

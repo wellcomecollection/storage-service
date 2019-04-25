@@ -20,7 +20,7 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class NewBagRequest(
+case class BetterBagRequest(
   requestId: UUID,
   bagLocation: BagLocation,
   bagRoot: ObjectLocation
@@ -51,7 +51,7 @@ class BagAuditorWorker(
       _ <- ingestUpdater.send(bagRequest.requestId, auditSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         auditSummary,
-        NewBagRequest(
+        BetterBagRequest(
           requestId = bagRequest.requestId,
           bagLocation = bagRequest.bagLocation,
           bagRoot = auditSummary.summary.root
