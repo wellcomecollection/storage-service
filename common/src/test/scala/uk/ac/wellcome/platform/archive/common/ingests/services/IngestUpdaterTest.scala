@@ -1,23 +1,17 @@
 package uk.ac.wellcome.platform.archive.common.ingests.services
 
-import java.util.UUID
-
 import org.scalatest.FunSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  OperationFixtures,
-  RandomThings
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   IngestOperationGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 
 class IngestUpdaterTest
     extends FunSpec
-    with RandomThings
     with ScalaFutures
     with IngestUpdateAssertions
     with Eventually
@@ -31,15 +25,15 @@ class IngestUpdaterTest
   it("sends an ingest update when successful") {
     withLocalSnsTopic { ingestTopic =>
       withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
-        val requestId = UUID.randomUUID()
+        val ingestId = createIngestID
         val summary = createTestSummary()
 
         val sendingOperationNotice =
-          ingestUpdater.send(requestId, createOperationSuccessWith(summary))
+          ingestUpdater.send(ingestId, createOperationSuccessWith(summary))
 
         whenReady(sendingOperationNotice) { _ =>
           eventually {
-            assertTopicReceivesIngestEvent(requestId, ingestTopic) { events =>
+            assertTopicReceivesIngestEvent(ingestId, ingestTopic) { events =>
               events should have size 1
               events.head.description shouldBe s"${stepName.capitalize} succeeded"
             }
@@ -53,19 +47,20 @@ class IngestUpdaterTest
   it("sends an ingest update when completed") {
     withLocalSnsTopic { ingestTopic =>
       withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
-        val requestId = UUID.randomUUID()
+        val ingestId = createIngestID
         val summary = createTestSummary()
 
         val bagId = createBagId
         val sendingOperationNotice = ingestUpdater.send(
-          requestId,
-          createOperationCompletedWith(summary),
-          Some(bagId))
+          ingestId = ingestId,
+          result = createOperationCompletedWith(summary),
+          bagId = Some(bagId)
+        )
 
         whenReady(sendingOperationNotice) { _ =>
           eventually {
             assertTopicReceivesIngestStatus(
-              requestId,
+              ingestId,
               ingestTopic,
               Ingest.Completed,
               Some(bagId)) { events =>
@@ -81,19 +76,20 @@ class IngestUpdaterTest
   it("sends an ingest update when failed") {
     withLocalSnsTopic { ingestTopic =>
       withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
-        val requestId = UUID.randomUUID()
+        val ingestId = createIngestID
         val summary = createTestSummary()
 
         val bagId = createBagId
         val sendingOperationNotice = ingestUpdater.send(
-          requestId,
-          createIngestFailureWith(summary),
-          Some(bagId))
+          ingestId = ingestId,
+          result = createIngestFailureWith(summary),
+          bagId = Some(bagId)
+        )
 
         whenReady(sendingOperationNotice) { _ =>
           eventually {
             assertTopicReceivesIngestStatus(
-              requestId,
+              ingestId,
               ingestTopic,
               Ingest.Failed,
               Some(bagId)) { events =>
@@ -109,22 +105,24 @@ class IngestUpdaterTest
   it("sends an ingest update when failed with a failure message") {
     withLocalSnsTopic { ingestTopic =>
       withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
-        val requestId = UUID.randomUUID()
+        val ingestId = createIngestID
         val summary = createTestSummary()
         val failureMessage = randomAlphanumeric(length = 50)
 
         val bagId = createBagId
         val sendingOperationNotice = ingestUpdater.send(
-          requestId,
-          createIngestFailureWith(
+          ingestId = ingestId,
+          result = createIngestFailureWith(
             summary,
-            maybeFailureMessage = Some(failureMessage)),
-          Some(bagId))
+            maybeFailureMessage = Some(failureMessage)
+          ),
+          bagId = Some(bagId)
+        )
 
         whenReady(sendingOperationNotice) { _ =>
           eventually {
             assertTopicReceivesIngestStatus(
-              requestId,
+              ingestId,
               ingestTopic,
               Ingest.Failed,
               Some(bagId)) { events =>

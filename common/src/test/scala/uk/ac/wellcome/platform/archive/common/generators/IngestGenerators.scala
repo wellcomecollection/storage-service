@@ -2,11 +2,9 @@ package uk.ac.wellcome.platform.archive.common.generators
 
 import java.net.URI
 import java.time.Instant
-import java.util.UUID
 
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.ingests.models
-import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Status
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.ObjectLocation
@@ -22,7 +20,7 @@ trait IngestGenerators extends BagIdGenerators {
   val testCallbackUri =
     new URI("http://www.wellcomecollection.org/callback/ok")
 
-  def createIngestWith(id: UUID = randomUUID,
+  def createIngestWith(id: IngestID = createIngestID,
                        sourceLocation: StorageLocation = storageLocation,
                        callback: Option[Callback] = Some(createCallback()),
                        space: Namespace = createSpace,
@@ -30,7 +28,7 @@ trait IngestGenerators extends BagIdGenerators {
                        maybeBag: Option[BagId] = None,
                        createdDate: Instant = Instant.now,
                        events: List[IngestEvent] = List.empty): Ingest =
-    models.Ingest(
+    Ingest(
       id = id,
       sourceLocation = sourceLocation,
       callback = callback,
@@ -38,21 +36,22 @@ trait IngestGenerators extends BagIdGenerators {
       status = status,
       bag = maybeBag,
       createdDate = createdDate,
-      events = events)
+      events = events
+    )
 
   def createIngestEvent: IngestEvent =
     IngestEvent(randomAlphanumeric(15))
 
-  def createIngestEventUpdateWith(id: UUID): IngestEventUpdate =
+  def createIngestEventUpdateWith(id: IngestID): IngestEventUpdate =
     IngestEventUpdate(
       id = id,
       events = List(createIngestEvent)
     )
 
   def createIngestEventUpdate: IngestEventUpdate =
-    createIngestEventUpdateWith(id = UUID.randomUUID())
+    createIngestEventUpdateWith(id = createIngestID)
 
-  def createIngestStatusUpdateWith(id: UUID = randomUUID,
+  def createIngestStatusUpdateWith(id: IngestID = createIngestID,
                                    status: Status = Ingest.Accepted,
                                    maybeBag: Option[BagId] = Some(createBagId),
                                    events: Seq[IngestEvent] = List(

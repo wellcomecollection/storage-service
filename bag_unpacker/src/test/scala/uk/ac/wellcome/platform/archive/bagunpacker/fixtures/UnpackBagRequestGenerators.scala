@@ -1,8 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
-import java.util.UUID
-
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagLocationGenerators,
   StorageSpaceGenerators
@@ -13,20 +11,19 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
 trait UnpackBagRequestGenerators
-    extends RandomThings
-    with BagLocationGenerators
+    extends BagLocationGenerators
     with StorageSpaceGenerators
     with S3 {
   def createUnpackBagRequest: UnpackBagRequest =
     createUnpackBagRequestWith()
 
   def createUnpackBagRequestWith(
-    requestId: UUID = randomUUID,
+    ingestId: IngestID = createIngestID,
     sourceLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace
   ): UnpackBagRequest =
     UnpackBagRequest(
-      ingestId = requestId,
+      ingestId = ingestId,
       sourceLocation = sourceLocation,
       storageSpace = storageSpace
     )

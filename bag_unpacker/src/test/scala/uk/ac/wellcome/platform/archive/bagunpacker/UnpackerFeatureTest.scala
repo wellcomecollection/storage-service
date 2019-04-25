@@ -56,7 +56,7 @@ class UnpackerFeatureTest
             )
 
             assertTopicReceivesIngestEvent(
-              requestId = unpackBagRequest.ingestId,
+              ingestId = unpackBagRequest.ingestId,
               ingestTopic = ingestTopic
             ) { events =>
               events.map {
@@ -80,7 +80,7 @@ class UnpackerFeatureTest
           assertSnsReceivesNothing(outgoingTopic)
 
           assertTopicReceivesIngestStatus(
-            requestId = unpackBagRequest.ingestId,
+            ingestId = unpackBagRequest.ingestId,
             ingestTopic = ingestTopic,
             status = Ingest.Failed
           ) { events =>

@@ -9,7 +9,7 @@ trait BagRequestGenerators extends BagLocationGenerators {
   def createBagRequestWith(
     bagLocation: BagLocation = createBagLocation()): BagRequest =
     BagRequest(
-      ingestId = createIngestRequestID,
+      ingestId = createIngestID,
       bagLocation = bagLocation
     )
 }

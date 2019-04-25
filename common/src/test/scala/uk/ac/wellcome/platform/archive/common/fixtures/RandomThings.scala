@@ -134,7 +134,7 @@ trait RandomThings {
 
   def randomUUID = UUID.randomUUID()
 
-  def createIngestRequestID: IngestID =
+  def createIngestID: IngestID =
     IngestID(randomUUID)
 
   def randomSourceOrganisation =
