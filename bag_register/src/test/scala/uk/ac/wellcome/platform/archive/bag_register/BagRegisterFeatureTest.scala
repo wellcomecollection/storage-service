@@ -37,15 +37,14 @@ class BagRegisterFeatureTest
       case (_, table, bucket, ingestTopic, _, queuePair) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
-        val storagePrefix = "storagePrefix"
 
-        withBag(bucket, bagInfo, storagePrefix) { location =>
+        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
           val bagId = BagId(
-            space = location.storageSpace,
+            space = bagLocation.storageSpace,
             externalIdentifier = bagInfo.externalIdentifier
           )
 
-          val bagRequest = createBagRequestWith(location)
+          val bagRequest = createBagRequestWith(bagLocation)
 
           sendNotificationToSQS(queuePair.queue, bagRequest)
 
@@ -59,7 +58,7 @@ class BagRegisterFeatureTest
             storageManifest.locations shouldBe List(
               StorageLocation(
                 provider = InfrequentAccessStorageProvider,
-                location = location.objectLocation
+                location = bagLocation.objectLocation
               )
             )
 

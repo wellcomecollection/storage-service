@@ -3,14 +3,15 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
-  IngestStepSucceeded
+  IngestStepSucceeded,
+  StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.storage.bagauditor.models.AuditSummary
+import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
@@ -18,13 +19,15 @@ class BagAuditor(implicit s3Client: AmazonS3) {
   val s3BagLocator = new S3BagLocator(s3Client)
 
   def locateBagRoot(
-    bagLocation: BagLocation): Try[IngestStepResult[AuditSummary]] = {
+    unpackLocation: ObjectLocation,
+    storageSpace: StorageSpace): Try[IngestStepResult[AuditSummary]] = {
     val auditSummary = AuditSummary(
       startTime = Instant.now(),
-      source = bagLocation
+      unpackLocation = unpackLocation,
+      storageSpace = storageSpace
     )
 
-    s3BagLocator.locateBagRoot(bagLocation.objectLocation) match {
+    s3BagLocator.locateBagRoot(unpackLocation) match {
       case Success(root) =>
         Success(
           IngestStepSucceeded(

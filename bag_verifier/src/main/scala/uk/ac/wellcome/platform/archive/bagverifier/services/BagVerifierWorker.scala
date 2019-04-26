@@ -46,9 +46,8 @@ class BagVerifierWorker(
 
   def processMessage(request: BagRequest): Future[Result[VerificationSummary]] =
     for {
-
       verificationSummary: IngestStepResult[VerificationSummary] <- verifier
-        .verify(request.bagLocation)
+        .verify(request.bagLocation.objectLocation)
       _ <- ingestUpdater.send(request.ingestId, verificationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(verificationSummary, request)
     } yield toResult(verificationSummary)

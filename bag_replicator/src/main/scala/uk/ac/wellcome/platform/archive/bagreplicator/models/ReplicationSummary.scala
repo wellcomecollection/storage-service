@@ -4,9 +4,12 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.storage.ObjectLocation
 
 case class ReplicationSummary(
-  source: BagLocation,
+  bagRootLocation: ObjectLocation,
+  storageSpace: StorageSpace,
   maybeDestination: Option[BagLocation] = None,
   startTime: Instant,
   endTime: Option[Instant] = None,
@@ -29,7 +32,7 @@ case class ReplicationSummary(
       case None              => "<no-destination>"
       case Some(destination) => destination.completePath
     }
-    f"""|src=${source.completePath}
+    f"""|src=$bagRootLocation
         |dst=$destinationCompletePath
         |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin

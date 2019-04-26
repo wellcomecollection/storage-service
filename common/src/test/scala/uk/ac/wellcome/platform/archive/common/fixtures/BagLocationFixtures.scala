@@ -24,7 +24,6 @@ trait BagLocationFixtures
   def withBag[R](
     bucket: Bucket,
     bagInfo: BagInfo = createBagInfo,
-    storagePrefix: String = "storagePrefix",
     dataFileCount: Int = 1,
     storageSpace: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
@@ -45,7 +44,7 @@ trait BagLocationFixtures
 
     val bagLocation = BagLocation(
       storageNamespace = bucket.name,
-      storagePrefix = Some(storagePrefix),
+      storagePrefix = None,
       storageSpace = storageSpace,
       bagPath = BagPath(bagIdentifier.toString)
     )

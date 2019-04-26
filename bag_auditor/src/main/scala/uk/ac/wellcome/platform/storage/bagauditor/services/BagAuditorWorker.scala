@@ -10,6 +10,8 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 }
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   BagRequest,
   BetterBagRequest
@@ -41,16 +43,33 @@ class BagAuditorWorker(
         processMessage(bagRequest)
     }
 
-  def processMessage(bagRequest: BagRequest): Future[Result[AuditSummary]] =
+  def processMessage(bagRequest: BagRequest): Future[Result[AuditSummary]] = {
+    val payload = ObjectLocationPayload(
+      ingestId = bagRequest.ingestId,
+      storageSpace = bagRequest.bagLocation.storageSpace,
+      objectLocation = bagRequest.bagLocation.objectLocation
+    )
+
+    processMessage(payload, bagLocation = bagRequest.bagLocation)
+  }
+
+  def processMessage(
+    payload: ObjectLocationPayload,
+    bagLocation: BagLocation
+  ): Future[Result[AuditSummary]] =
     for {
       auditSummary <- Future.fromTry(
-        bagAuditor.locateBagRoot(bagRequest.bagLocation))
-      _ <- ingestUpdater.send(bagRequest.ingestId, auditSummary)
+        bagAuditor.locateBagRoot(
+          unpackLocation = payload.objectLocation,
+          storageSpace = payload.storageSpace
+        )
+      )
+      _ <- ingestUpdater.send(payload.ingestId, auditSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         auditSummary,
         BetterBagRequest(
-          ingestId = bagRequest.ingestId,
-          bagLocation = bagRequest.bagLocation,
+          ingestId = payload.ingestId,
+          bagLocation = bagLocation,
           bagRoot = auditSummary.summary.root
         )
       )

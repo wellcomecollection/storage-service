@@ -2,11 +2,14 @@ package uk.ac.wellcome.platform.archive.bag_register.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagLocation}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.storage.ObjectLocation
 
 case class RegistrationSummary(
-  location: BagLocation,
+  bagRootLocation: ObjectLocation,
+  storageSpace: StorageSpace,
   bagId: Option[BagId] = None,
   startTime: Instant,
   endTime: Option[Instant] = None
@@ -17,7 +20,8 @@ case class RegistrationSummary(
     )
 
   override def toString: String =
-    f"""|bag=${location.completePath}
+    f"""|bag=$bagRootLocation
+        |space=$storageSpace
         |id=${bagId.getOrElse("<unknown-bag>")}
         |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
