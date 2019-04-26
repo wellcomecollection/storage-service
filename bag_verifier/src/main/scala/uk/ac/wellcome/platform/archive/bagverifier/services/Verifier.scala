@@ -10,7 +10,6 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
   FailedVerification,
   VerificationSummary
 }
-import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagDigestFile
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   FileManifest,
