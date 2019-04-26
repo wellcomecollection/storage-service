@@ -11,11 +11,6 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  BagRequest,
-  BetterBagRequest
-}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
@@ -37,26 +32,12 @@ class BagAuditorWorker(
     extends Runnable
     with Logging
     with IngestStepWorker {
-  private val worker: AlpakkaSQSWorker[BagRequest, AuditSummary] =
-    AlpakkaSQSWorker[BagRequest, AuditSummary](alpakkaSQSWorkerConfig) {
-      bagRequest: BagRequest =>
-        processMessage(bagRequest)
+  private val worker: AlpakkaSQSWorker[ObjectLocationPayload, AuditSummary] =
+    AlpakkaSQSWorker[ObjectLocationPayload, AuditSummary](alpakkaSQSWorkerConfig) {
+      processMessage
     }
 
-  def processMessage(bagRequest: BagRequest): Future[Result[AuditSummary]] = {
-    val payload = ObjectLocationPayload(
-      ingestId = bagRequest.ingestId,
-      storageSpace = bagRequest.bagLocation.storageSpace,
-      objectLocation = bagRequest.bagLocation.objectLocation
-    )
-
-    processMessage(payload, bagLocation = bagRequest.bagLocation)
-  }
-
-  def processMessage(
-    payload: ObjectLocationPayload,
-    bagLocation: BagLocation
-  ): Future[Result[AuditSummary]] =
+  def processMessage(payload: ObjectLocationPayload): Future[Result[AuditSummary]] =
     for {
       auditSummary <- Future.fromTry(
         bagAuditor.locateBagRoot(
@@ -67,11 +48,7 @@ class BagAuditorWorker(
       _ <- ingestUpdater.send(payload.ingestId, auditSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         auditSummary,
-        BetterBagRequest(
-          ingestId = payload.ingestId,
-          bagLocation = bagLocation,
-          bagRoot = auditSummary.summary.root
-        )
+        payload.copy(objectLocation = auditSummary.summary.root)
       )
     } yield toResult(auditSummary)
 
