@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import java.io.InputStream
+import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
@@ -9,8 +10,6 @@ import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
-  BagLocation,
-  BagPath,
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.bagit.parsers.BagInfoParser
@@ -74,22 +73,26 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
 
   private def copyBag(
     bagRoot: ObjectLocation,
-    destination: BagLocation
+    destination: ObjectLocation
   ): Future[S3PrefixCopierResult] =
     s3PrefixCopier
       .copyObjects(
         srcLocationPrefix = bagRoot,
-        dstLocationPrefix = destination.objectLocation
+        dstLocationPrefix = destination
       )
 
   private def buildDestination(
     storageSpace: StorageSpace,
     id: ExternalIdentifier
-  ) = BagLocation(
-    storageNamespace = config.namespace,
-    storagePrefix = config.rootPath,
-    storageSpace = storageSpace,
-    bagPath = BagPath(id.underlying)
+  ): ObjectLocation = ObjectLocation(
+    namespace = config.namespace,
+    key = Paths
+      .get(
+        config.rootPath.getOrElse(""),
+        storageSpace.toString,
+        id.toString
+      )
+      .toString
   )
 
   private def getBagIdentifier(

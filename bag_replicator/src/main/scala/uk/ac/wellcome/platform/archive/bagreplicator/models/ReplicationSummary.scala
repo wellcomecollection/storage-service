@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.bagreplicator.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
@@ -10,7 +9,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 case class ReplicationSummary(
   bagRootLocation: ObjectLocation,
   storageSpace: StorageSpace,
-  maybeDestination: Option[BagLocation] = None,
+  maybeDestination: Option[ObjectLocation] = None,
   startTime: Instant,
   endTime: Option[Instant] = None,
 ) extends Summary {
@@ -20,7 +19,7 @@ case class ReplicationSummary(
     )
   }
 
-  def destination: BagLocation =
+  def destination: ObjectLocation =
     maybeDestination.getOrElse(
       throw new RuntimeException(
         "No destination provided by replication!"
@@ -30,7 +29,7 @@ case class ReplicationSummary(
   override def toString: String = {
     val destinationCompletePath = maybeDestination match {
       case None              => "<no-destination>"
-      case Some(destination) => destination.completePath
+      case Some(destination) => destination.toString()
     }
     f"""|src=$bagRootLocation
         |dst=$destinationCompletePath
