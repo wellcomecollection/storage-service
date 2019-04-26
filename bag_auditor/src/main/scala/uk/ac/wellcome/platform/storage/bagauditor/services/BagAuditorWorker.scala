@@ -33,11 +33,13 @@ class BagAuditorWorker(
     with Logging
     with IngestStepWorker {
   private val worker: AlpakkaSQSWorker[ObjectLocationPayload, AuditSummary] =
-    AlpakkaSQSWorker[ObjectLocationPayload, AuditSummary](alpakkaSQSWorkerConfig) {
+    AlpakkaSQSWorker[ObjectLocationPayload, AuditSummary](
+      alpakkaSQSWorkerConfig) {
       processMessage
     }
 
-  def processMessage(payload: ObjectLocationPayload): Future[Result[AuditSummary]] =
+  def processMessage(
+    payload: ObjectLocationPayload): Future[Result[AuditSummary]] =
     for {
       auditSummary <- Future.fromTry(
         bagAuditor.locateBagRoot(

@@ -33,12 +33,15 @@ class BagRegisterWorker(
     with Logging
     with IngestStepWorker {
 
-  private val worker: AlpakkaSQSWorker[ObjectLocationPayload, RegistrationSummary] =
-    AlpakkaSQSWorker[ObjectLocationPayload, RegistrationSummary](alpakkaSQSWorkerConfig) {
+  private val worker
+    : AlpakkaSQSWorker[ObjectLocationPayload, RegistrationSummary] =
+    AlpakkaSQSWorker[ObjectLocationPayload, RegistrationSummary](
+      alpakkaSQSWorkerConfig) {
       processMessage
     }
 
-  def processMessage(payload: ObjectLocationPayload): Future[Result[RegistrationSummary]] =
+  def processMessage(
+    payload: ObjectLocationPayload): Future[Result[RegistrationSummary]] =
     for {
       registrationSummary <- register.update(
         bagRootLocation = payload.objectLocation,

@@ -37,7 +37,8 @@ class BagReplicatorWorkerTest
                 val future = service.processMessage(payload)
 
                 whenReady(future) { _ =>
-                  val result = notificationMessage[ObjectLocationPayload](outgoingTopic)
+                  val result =
+                    notificationMessage[ObjectLocationPayload](outgoingTopic)
                   result.ingestId shouldBe payload.ingestId
 
                   val dstBagLocation = result.objectLocation
@@ -47,11 +48,10 @@ class BagReplicatorWorkerTest
                     dst = dstBagLocation
                   )
 
-                  assertTopicReceivesIngestEvent(
-                    payload.ingestId,
-                    ingestTopic) { events =>
-                    events should have size 1
-                    events.head.description shouldBe "Replicating succeeded"
+                  assertTopicReceivesIngestEvent(payload.ingestId, ingestTopic) {
+                    events =>
+                      events should have size 1
+                      events.head.description shouldBe "Replicating succeeded"
                   }
                 }
               }

@@ -32,8 +32,10 @@ class BagReplicatorWorker(
     extends Runnable
     with Logging
     with IngestStepWorker {
-  private val worker: AlpakkaSQSWorker[ObjectLocationPayload, ReplicationSummary] =
-    AlpakkaSQSWorker[ObjectLocationPayload, ReplicationSummary](alpakkaSQSWorkerConfig) {
+  private val worker
+    : AlpakkaSQSWorker[ObjectLocationPayload, ReplicationSummary] =
+    AlpakkaSQSWorker[ObjectLocationPayload, ReplicationSummary](
+      alpakkaSQSWorkerConfig) {
       processMessage
     }
 

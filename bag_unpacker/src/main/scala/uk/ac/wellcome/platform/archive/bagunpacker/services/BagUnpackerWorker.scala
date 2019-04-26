@@ -4,7 +4,10 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.builders.BagLocationBuilder
@@ -31,11 +34,13 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
     with Logging
     with IngestStepWorker {
   private val worker: AlpakkaSQSWorker[ObjectLocationPayload, UnpackSummary] =
-    AlpakkaSQSWorker[ObjectLocationPayload, UnpackSummary](alpakkaSQSWorkerConfig) {
+    AlpakkaSQSWorker[ObjectLocationPayload, UnpackSummary](
+      alpakkaSQSWorkerConfig) {
       processMessage
     }
 
-  def processMessage(payload: ObjectLocationPayload): Future[Result[UnpackSummary]] = {
+  def processMessage(
+    payload: ObjectLocationPayload): Future[Result[UnpackSummary]] = {
     val unpackBagLocation = BagLocationBuilder.build(
       ingestId = payload.ingestId,
       storageSpace = payload.storageSpace,

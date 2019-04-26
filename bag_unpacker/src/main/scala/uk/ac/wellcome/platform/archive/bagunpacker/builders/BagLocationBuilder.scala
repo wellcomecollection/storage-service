@@ -15,13 +15,12 @@ object BagLocationBuilder {
   ): ObjectLocation =
     ObjectLocation(
       namespace = unpackerWorkerConfig.dstNamespace,
-      key =
-        Paths
-          .get(
-            unpackerWorkerConfig.maybeDstPrefix.getOrElse(""),
-            storageSpace.toString,
-            ingestId.toString
-          )
-          .toString
+      key = Paths
+        .get(
+          unpackerWorkerConfig.maybeDstPrefix.getOrElse(""),
+          storageSpace.toString,
+          ingestId.toString
+        )
+        .toString
     )
 }
