@@ -35,33 +35,35 @@ class BagReplicatorFeatureTest
                 config = destination) { _ =>
                 val bagInfo = createBagInfo
 
-                withBag(ingestsBucket, bagInfo = bagInfo) { srcBagLocation =>
+                withBag(ingestsBucket, bagInfo = bagInfo) { case (srcBagRootLocation, storageSpace) =>
                   val payload = createObjectLocationPayloadWith(
-                    objectLocation = srcBagLocation.objectLocation,
-                    storageSpace = srcBagLocation.storageSpace
+                    objectLocation = srcBagRootLocation,
+                    storageSpace = storageSpace
                   )
 
                   sendNotificationToSQS(queue, payload)
 
                   eventually {
+                    val expectedDst = ObjectLocation(
+                      namespace = destination.namespace,
+                      key = Paths
+                        .get(
+                          destination.rootPath.getOrElse(""),
+                          storageSpace.toString,
+                          bagInfo.externalIdentifier.toString
+                        )
+                        .toString
+                    )
+
                     val expectedPayload = payload.copy(
-                      objectLocation = ObjectLocation(
-                        namespace = destination.namespace,
-                        key = Paths
-                          .get(
-                            destination.rootPath.getOrElse(""),
-                            srcBagLocation.storageSpace.toString,
-                            bagInfo.externalIdentifier.toString
-                          )
-                          .toString
-                      )
+                      objectLocation = expectedDst
                     )
 
                     assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
                     verifyBagCopied(
-                      src = srcBagLocation.objectLocation,
-                      dst = expectedPayload.objectLocation
+                      src = srcBagRootLocation,
+                      dst = expectedDst
                     )
 
                     assertTopicReceivesIngestEvent(

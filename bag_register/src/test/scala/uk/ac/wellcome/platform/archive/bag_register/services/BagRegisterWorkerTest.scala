@@ -35,14 +35,14 @@ class BagRegisterWorkerTest
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+        withBag(bucket, bagInfo = bagInfo) { case (bagRootLocation, storageSpace) =>
           val payload = createObjectLocationPayloadWith(
-            objectLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
+            objectLocation = bagRootLocation,
+            storageSpace = storageSpace
           )
 
           val bagId = BagId(
-            space = bagLocation.storageSpace,
+            space = storageSpace,
             externalIdentifier = bagInfo.externalIdentifier
           )
 
@@ -58,7 +58,7 @@ class BagRegisterWorkerTest
             storageManifest.locations shouldBe List(
               StorageLocation(
                 provider = InfrequentAccessStorageProvider,
-                location = bagLocation.objectLocation
+                location = bagRootLocation
               )
             )
 
@@ -82,14 +82,14 @@ class BagRegisterWorkerTest
       case (service, _, bucket, ingestTopic, _, _) =>
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+        withBag(bucket, bagInfo = bagInfo) { case (bagRootLocation, storageSpace) =>
           val payload = createObjectLocationPayloadWith(
-            objectLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
+            objectLocation = bagRootLocation,
+            storageSpace = storageSpace
           )
 
           val bagId = BagId(
-            space = bagLocation.storageSpace,
+            space = storageSpace,
             externalIdentifier = bagInfo.externalIdentifier
           )
 

@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.nio.file.Paths
+
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
@@ -12,6 +13,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -31,7 +33,7 @@ trait BagLocationFixtures
     createTagManifest: List[(String, String)] => Option[FileEntry] =
       createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
-    testWith: TestWith[BagLocation, R]): R = {
+    testWith: TestWith[(ObjectLocation, StorageSpace), R]): R = {
     val bagIdentifier = createExternalIdentifier
 
     info(s"Creating bag $bagIdentifier")
@@ -63,6 +65,6 @@ trait BagLocationFixtures
         )
     })
 
-    testWith(bagLocation)
+    testWith((bagLocation.objectLocation, storageSpace))
   }
 }
