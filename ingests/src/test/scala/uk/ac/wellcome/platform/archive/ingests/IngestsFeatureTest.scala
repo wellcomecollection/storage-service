@@ -32,17 +32,19 @@ class IngestsFeatureTest
             sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
             eventually {
-              val actualMessage =
-                notificationMessage[CallbackNotification](topic)
-              actualMessage.ingestId shouldBe ingest.id
-              actualMessage.callbackUri shouldBe ingest.callback.get.uri
-
               val expectedIngest = ingest.copy(
                 status = Completed,
                 events = ingestStatusUpdate.events,
                 bag = someBagId
               )
-              actualMessage.payload shouldBe expectedIngest
+
+              val expectedMessage = CallbackNotification(
+                ingestId = ingest.id,
+                callbackUri = ingest.callback.get.uri,
+                payload = expectedIngest
+              )
+
+              assertSnsReceivesOnly(expectedMessage, topic)
 
               assertIngestCreated(ingest, table)
 
