@@ -4,11 +4,8 @@ import java.net.URI
 
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Callback,
-  CallbackNotification,
-  Ingest
-}
+import uk.ac.wellcome.platform.archive.common.CallbackNotification
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Callback.Pending
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -30,7 +27,7 @@ class CallbackNotificationService(snsWriter: SNSWriter)(
     val callbackNotification = CallbackNotification(
       ingestId = ingest.id,
       callbackUri = callbackUri,
-      payload = ingest
+      ingest = ingest
     )
 
     snsWriter

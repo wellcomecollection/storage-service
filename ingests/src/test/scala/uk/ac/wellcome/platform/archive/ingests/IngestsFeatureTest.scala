@@ -3,11 +3,9 @@ package uk.ac.wellcome.platform.archive.ingests
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CallbackNotification,
-  IngestUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestUpdate
 import uk.ac.wellcome.platform.archive.ingests.fixtures._
 
 class IngestsFeatureTest
@@ -41,7 +39,7 @@ class IngestsFeatureTest
               val expectedMessage = CallbackNotification(
                 ingestId = ingest.id,
                 callbackUri = ingest.callback.get.uri,
-                payload = expectedIngest
+                ingest = expectedIngest
               )
 
               assertSnsReceivesOnly(expectedMessage, topic)

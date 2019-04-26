@@ -5,12 +5,9 @@ import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.worker.models.DeterministicFailure
+import uk.ac.wellcome.platform.archive.common.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
-  Completed,
-  Processing
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Completed, Processing}
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
 import uk.ac.wellcome.platform.archive.ingests.fixtures.IngestsFixtures
 
@@ -42,7 +39,7 @@ class IngestsWorkerServiceTest
                 val callbackNotification = CallbackNotification(
                   ingestId = ingest.id,
                   callbackUri = ingest.callback.get.uri,
-                  payload = expectedIngest
+                  ingest = expectedIngest
                 )
 
                 whenReady(future) { _ =>

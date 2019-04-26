@@ -5,21 +5,11 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
-import uk.ac.wellcome.messaging.worker.models.{
-  DeterministicFailure,
-  Result,
-  Successful
-}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Result, Successful}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CallbackNotification,
-  IngestCallbackStatusUpdate,
-  IngestUpdate
-}
+import uk.ac.wellcome.platform.archive.common.CallbackNotification
+import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestCallbackStatusUpdate, IngestUpdate}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,7 +34,7 @@ class NotifierWorker(
     : Future[Result[IngestCallbackStatusUpdate]] = {
     val future = for {
       httpResponse <- callbackUrlService.getHttpResponse(
-        ingest = callbackNotification.payload,
+        ingest = callbackNotification.ingest,
         callbackUri = callbackNotification.callbackUri
       )
       ingestUpdate = PrepareNotificationService.prepare(

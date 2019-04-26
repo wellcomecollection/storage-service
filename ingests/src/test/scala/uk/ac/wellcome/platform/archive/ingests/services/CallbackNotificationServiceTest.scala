@@ -4,12 +4,9 @@ import org.scalatest.FunSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Callback,
-  CallbackNotification,
-  Ingest
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest}
 import uk.ac.wellcome.platform.archive.ingests.fixtures.CallbackNotificationServiceFixture
 
 class CallbackNotificationServiceTest
@@ -42,7 +39,7 @@ class CallbackNotificationServiceTest
             val expectedNotification = CallbackNotification(
               ingestId = ingest.id,
               callbackUri = ingest.callback.get.uri,
-              payload = ingest
+              ingest = ingest
             )
 
             assertSnsReceivesOnly(expectedNotification, topic = topic)
