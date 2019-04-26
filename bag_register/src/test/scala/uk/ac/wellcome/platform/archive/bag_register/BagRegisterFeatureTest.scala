@@ -10,8 +10,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
-  BagRequestGenerators,
-  IngestOperationGenerators
+  IngestOperationGenerators,
+  PayloadGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
@@ -28,9 +28,9 @@ class BagRegisterFeatureTest
     with IngestOperationGenerators
     with BagInfoGenerators
     with BagLocationFixtures
-    with BagRequestGenerators
     with IngestUpdateAssertions
-    with BagRegisterFixtures {
+    with BagRegisterFixtures
+    with PayloadGenerators {
 
   it("sends an update if it registers a bag") {
     withBagRegisterWorker {
@@ -44,9 +44,12 @@ class BagRegisterFeatureTest
             externalIdentifier = bagInfo.externalIdentifier
           )
 
-          val bagRequest = createBagRequestWith(bagLocation)
+          val payload = createObjectLocationPayloadWith(
+            objectLocation = bagLocation.objectLocation,
+            storageSpace = bagLocation.storageSpace
+          )
 
-          sendNotificationToSQS(queuePair.queue, bagRequest)
+          sendNotificationToSQS(queuePair.queue, payload)
 
           eventually {
             val storageManifest = getStorageManifest(table, id = bagId)
@@ -65,7 +68,7 @@ class BagRegisterFeatureTest
             storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
             assertTopicReceivesIngestStatus(
-              ingestId = bagRequest.ingestId,
+              ingestId = payload.ingestId,
               ingestTopic = ingestTopic,
               status = Ingest.Completed,
               expectedBag = Some(bagId)) { events =>
@@ -84,20 +87,22 @@ class BagRegisterFeatureTest
       case (_, _, bucket, ingestTopic, _, queuePair) =>
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) { accessBagLocation =>
-          val replicationResult =
-            createBagRequestWith(accessBagLocation)
+        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+          val payload = createObjectLocationPayloadWith(
+            objectLocation = bagLocation.objectLocation,
+            storageSpace = bagLocation.storageSpace
+          )
 
-          sendNotificationToSQS(queuePair.queue, replicationResult)
+          sendNotificationToSQS(queuePair.queue, payload)
 
           eventually {
             assertTopicReceivesIngestStatus(
-              ingestId = replicationResult.ingestId,
+              ingestId = payload.ingestId,
               ingestTopic = ingestTopic,
               status = Ingest.Failed,
               expectedBag = Some(
                 BagId(
-                  space = accessBagLocation.storageSpace,
+                  space = bagLocation.storageSpace,
                   externalIdentifier = bagInfo.externalIdentifier
                 )
               )

@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
-  BagRequestGenerators
+  PayloadGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -25,9 +25,9 @@ class BagRegisterWorkerTest
     with ScalaFutures
     with BagInfoGenerators
     with BagLocationFixtures
-    with BagRequestGenerators
     with IngestUpdateAssertions
-    with BagRegisterFixtures {
+    with BagRegisterFixtures
+    with PayloadGenerators {
 
   it("sends a successful IngestUpdate upon registration") {
     withBagRegisterWorker {
@@ -35,16 +35,18 @@ class BagRegisterWorkerTest
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) { location =>
-          val bagRequest =
-            createBagRequestWith(location)
+        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+          val payload = createObjectLocationPayloadWith(
+            objectLocation = bagLocation.objectLocation,
+            storageSpace = bagLocation.storageSpace
+          )
 
           val bagId = BagId(
-            space = location.storageSpace,
+            space = bagLocation.storageSpace,
             externalIdentifier = bagInfo.externalIdentifier
           )
 
-          val future = service.processMessage(bagRequest)
+          val future = service.processMessage(payload)
 
           whenReady(future) { _ =>
             val storageManifest = getStorageManifest(table, id = bagId)
@@ -56,14 +58,14 @@ class BagRegisterWorkerTest
             storageManifest.locations shouldBe List(
               StorageLocation(
                 provider = InfrequentAccessStorageProvider,
-                location = location.objectLocation
+                location = bagLocation.objectLocation
               )
             )
 
             storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
             assertTopicReceivesIngestStatus(
-              ingestId = bagRequest.ingestId,
+              ingestId = payload.ingestId,
               ingestTopic = ingestTopic,
               status = Ingest.Completed,
               expectedBag = Some(bagId)) { events =>
@@ -81,18 +83,21 @@ class BagRegisterWorkerTest
         val bagInfo = createBagInfo
 
         withBag(bucket, bagInfo = bagInfo) { bagLocation =>
-          val bagRequest = createBagRequestWith(bagLocation)
+          val payload = createObjectLocationPayloadWith(
+            objectLocation = bagLocation.objectLocation,
+            storageSpace = bagLocation.storageSpace
+          )
 
           val bagId = BagId(
             space = bagLocation.storageSpace,
             externalIdentifier = bagInfo.externalIdentifier
           )
 
-          val future = service.processMessage(bagRequest)
+          val future = service.processMessage(payload)
 
           whenReady(future) { _ =>
             assertTopicReceivesIngestStatus(
-              ingestId = bagRequest.ingestId,
+              ingestId = payload.ingestId,
               ingestTopic = ingestTopic,
               status = Ingest.Failed,
               expectedBag = Some(bagId)) { events =>
