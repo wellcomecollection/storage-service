@@ -4,17 +4,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagLocation,
-  BagPath
-}
+import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  BagRequest,
-  Ingest
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 
 class BagReplicatorWorkerTest
     extends FunSpec
@@ -22,8 +16,8 @@ class BagReplicatorWorkerTest
     with ScalaFutures
     with BagLocationFixtures
     with BagReplicatorFixtures
-    with BagRequestGenerators
-    with IngestUpdateAssertions {
+    with IngestUpdateAssertions
+    with PayloadGenerators {
 
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { ingestsBucket =>
@@ -36,23 +30,25 @@ class BagReplicatorWorkerTest
               outgoingTopic = outgoingTopic,
               config = destination) { service =>
               withBag(ingestsBucket) { srcBagLocation =>
-                val bagRequest = createBagRequestWith(srcBagLocation)
+                val payload = createObjectLocationPayloadWith(
+                  srcBagLocation.objectLocation
+                )
 
-                val future = service.processMessage(bagRequest)
+                val future = service.processMessage(payload)
 
                 whenReady(future) { _ =>
-                  val result = notificationMessage[BagRequest](outgoingTopic)
-                  result.ingestId shouldBe bagRequest.ingestId
+                  val result = notificationMessage[ObjectLocationPayload](outgoingTopic)
+                  result.ingestId shouldBe payload.ingestId
 
-                  val dstBagLocation = result.bagLocation
+                  val dstBagLocation = result.objectLocation
 
                   verifyBagCopied(
-                    src = srcBagLocation,
+                    src = srcBagLocation.objectLocation,
                     dst = dstBagLocation
                   )
 
                   assertTopicReceivesIngestEvent(
-                    bagRequest.ingestId,
+                    payload.ingestId,
                     ingestTopic) { events =>
                     events should have size 1
                     events.head.description shouldBe "Replicating succeeded"
@@ -72,22 +68,15 @@ class BagReplicatorWorkerTest
         withBagReplicatorWorker(
           ingestTopic = ingestTopic,
           outgoingTopic = outgoingTopic) { service =>
-          val srcBagLocation = BagLocation(
-            storageNamespace = "does-not-exist",
-            storagePrefix = Some("does/not/"),
-            storageSpace = createStorageSpace,
-            bagPath = BagPath("exist.txt")
-          )
+          val payload = createObjectLocationPayload
 
-          val bagRequest = createBagRequestWith(srcBagLocation)
-
-          val future = service.processMessage(bagRequest)
+          val future = service.processMessage(payload)
 
           whenReady(future) { _ =>
             assertSnsReceivesNothing(outgoingTopic)
 
             assertTopicReceivesIngestStatus(
-              bagRequest.ingestId,
+              payload.ingestId,
               ingestTopic = ingestTopic,
               status = Ingest.Failed) { events =>
               events should have size 1

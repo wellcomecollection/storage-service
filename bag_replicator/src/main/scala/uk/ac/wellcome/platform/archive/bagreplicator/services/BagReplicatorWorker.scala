@@ -12,7 +12,6 @@ import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
-import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
@@ -33,26 +32,13 @@ class BagReplicatorWorker(
     extends Runnable
     with Logging
     with IngestStepWorker {
-  private val worker: AlpakkaSQSWorker[BagRequest, ReplicationSummary] =
-    AlpakkaSQSWorker[BagRequest, ReplicationSummary](alpakkaSQSWorkerConfig) {
-      bagRequest: BagRequest =>
-        processMessage(bagRequest)
+  private val worker: AlpakkaSQSWorker[ObjectLocationPayload, ReplicationSummary] =
+    AlpakkaSQSWorker[ObjectLocationPayload, ReplicationSummary](alpakkaSQSWorkerConfig) {
+      processMessage
     }
 
   def processMessage(
-    bagRequest: BagRequest): Future[Result[ReplicationSummary]] = {
-    val payload = ObjectLocationPayload(
-      ingestId = bagRequest.ingestId,
-      storageSpace = bagRequest.bagLocation.storageSpace,
-      objectLocation = bagRequest.bagLocation.objectLocation
-    )
-
-    processMessage(payload, bagRequest)
-  }
-
-  def processMessage(
     payload: ObjectLocationPayload,
-    bagRequest: BagRequest
   ): Future[Result[ReplicationSummary]] =
     for {
       replicationSummary <- bagReplicator.replicate(
@@ -62,8 +48,8 @@ class BagReplicatorWorker(
       _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         replicationSummary,
-        bagRequest.copy(
-          bagLocation = replicationSummary.summary.destination
+        payload.copy(
+          objectLocation = replicationSummary.summary.destination.objectLocation
         )
       )
     } yield toResult(replicationSummary)
