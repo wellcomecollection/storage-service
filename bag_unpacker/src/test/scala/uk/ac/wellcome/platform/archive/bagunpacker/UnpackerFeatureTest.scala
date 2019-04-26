@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagunpacker
 
+import java.nio.file.Paths
+
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
@@ -8,16 +10,10 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   CompressFixture,
   UnpackBagRequestGenerators
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagLocation,
-  BagPath
-}
+import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  BagRequest,
-  Ingest
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 
 class UnpackerFeatureTest
     extends FunSpec
@@ -40,18 +36,22 @@ class UnpackerFeatureTest
           sendNotificationToSQS(queue, unpackBagRequest)
 
           eventually {
-            val expectedNotification = BagRequest(
+            val expectedPayload = ObjectLocationPayload(
               ingestId = unpackBagRequest.ingestId,
-              bagLocation = BagLocation(
-                storageNamespace = srcBucket.name,
-                storagePrefix = None,
-                storageSpace = unpackBagRequest.storageSpace,
-                bagPath = BagPath(unpackBagRequest.ingestId.toString)
+              storageSpace = unpackBagRequest.storageSpace,
+              objectLocation = createObjectLocationWith(
+                bucket = srcBucket,
+                key = Paths
+                  .get(
+                    unpackBagRequest.storageSpace.toString,
+                    unpackBagRequest.ingestId.toString
+                  )
+                  .toString
               )
             )
 
-            assertSnsReceivesOnly[BagRequest](
-              expectedNotification,
+            assertSnsReceivesOnly[ObjectLocationPayload](
+              expectedPayload,
               outgoingTopic
             )
 
