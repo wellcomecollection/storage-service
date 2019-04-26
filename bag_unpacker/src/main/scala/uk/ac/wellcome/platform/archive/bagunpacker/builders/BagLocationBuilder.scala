@@ -3,12 +3,14 @@ package uk.ac.wellcome.platform.archive.bagunpacker.builders
 import java.nio.file.Paths
 
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
-import uk.ac.wellcome.platform.archive.common.ingests.models.UnpackBagRequest
+import uk.ac.wellcome.platform.archive.common.IngestID
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
 object BagLocationBuilder {
   def build(
-    unpackBagRequest: UnpackBagRequest,
+    ingestId: IngestID,
+    storageSpace: StorageSpace,
     unpackerWorkerConfig: BagUnpackerWorkerConfig
   ): ObjectLocation =
     ObjectLocation(
@@ -17,8 +19,8 @@ object BagLocationBuilder {
         Paths
           .get(
             unpackerWorkerConfig.maybeDstPrefix.getOrElse(""),
-            unpackBagRequest.storageSpace.toString,
-            unpackBagRequest.ingestId.toString
+            storageSpace.toString,
+            ingestId.toString
           )
           .toString
     )
