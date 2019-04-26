@@ -46,28 +46,6 @@ class VerifierTest
     }
   }
 
-  it("passes a bag in a sub directory with correct checksums") {
-    withLocalS3Bucket { bucket =>
-      withBag(
-        bucket = bucket,
-        dataFileCount = dataFileCount,
-        bagRootDirectory = Some("bag")) { bagLocation =>
-        withVerifier { verifier =>
-          val future = verifier.verify(bagLocation.objectLocation)
-
-          whenReady(future) { result =>
-            result shouldBe a[IngestStepSucceeded[_]]
-
-            val summary = result.summary
-
-            summary.successfulVerifications should have size expectedFileCount
-            summary.failedVerifications shouldBe Seq.empty
-          }
-        }
-      }
-    }
-  }
-
   it("fails a bag with an incorrect checksum in the file manifest") {
     withLocalS3Bucket { bucket =>
       withBag(

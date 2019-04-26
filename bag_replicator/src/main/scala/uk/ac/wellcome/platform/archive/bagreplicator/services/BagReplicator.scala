@@ -49,15 +49,10 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
         id = identifier
       )
 
-      bagRoot <- Future.fromTry {
-        s3BagLocator.locateBagRoot(bagRootLocation)
-      }
-
       _ <- copyBag(
-        bagRoot,
-        destination
+        bagRoot = bagRootLocation,
+        destination = destination
       )
-
     } yield destination
 
     copyOperation.transform {
