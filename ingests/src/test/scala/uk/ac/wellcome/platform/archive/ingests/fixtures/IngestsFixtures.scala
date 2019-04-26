@@ -1,28 +1,22 @@
 package uk.ac.wellcome.platform.archive.ingests.fixtures
 
 import org.scalatest.concurrent.ScalaFutures
-import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.messaging.fixtures.{SNS, SQS}
 import uk.ac.wellcome.platform.archive.common.fixtures.MonitoringClientFixture
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.platform.archive.ingests.services.IngestsWorker
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
-import uk.ac.wellcome.storage.fixtures.{LocalDynamoDb, S3}
+import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IngestsFixtures
-    extends S3
-    with SQS
-    with SNS
-    with Akka
-    with LocalDynamoDb
+    extends LocalDynamoDb
     with ScalaFutures
     with IngestTrackerFixture
     with CallbackNotificationServiceFixture
