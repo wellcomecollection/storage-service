@@ -42,9 +42,11 @@ class BagAuditor(implicit s3Client: AmazonS3, ec: ExecutionContext) {
         s3BagLocator.locateBagRoot(unpackLocation)
       }
       externalIdentifier <- getBagIdentifier(bagRootLocation)
+      version <- chooseVersion(externalIdentifier)
       info = AuditInformation(
         bagRootLocation = bagRootLocation,
-        externalIdentifier = externalIdentifier
+        externalIdentifier = externalIdentifier,
+        version = version
       )
     } yield info
 
@@ -65,6 +67,9 @@ class BagAuditor(implicit s3Client: AmazonS3, ec: ExecutionContext) {
       }
   }
 
+  private def chooseVersion(externalIdentifier: ExternalIdentifier): Future[Int] =
+    Future.successful(1)
+
   private def getBagIdentifier(
     bagRootLocation: ObjectLocation): Future[ExternalIdentifier] =
     for {
@@ -74,5 +79,4 @@ class BagAuditor(implicit s3Client: AmazonS3, ec: ExecutionContext) {
       inputStream: InputStream <- bagInfoLocation.toInputStream
       bagInfo: BagInfo <- BagInfoParser.create(inputStream)
     } yield bagInfo.externalIdentifier
-
 }

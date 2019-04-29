@@ -9,7 +9,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 case class AuditInformation(
   bagRootLocation: ObjectLocation,
-  externalIdentifier: ExternalIdentifier
+  externalIdentifier: ExternalIdentifier,
+  version: Int
 )
 
 case class AuditSummary(

@@ -30,6 +30,7 @@ class BagAuditorTest
 
           auditInformation.bagRootLocation shouldBe bagLocation.objectLocation
           auditInformation.externalIdentifier shouldBe bagInfo.externalIdentifier
+          auditInformation.version shouldBe 1
         }
       }
     }

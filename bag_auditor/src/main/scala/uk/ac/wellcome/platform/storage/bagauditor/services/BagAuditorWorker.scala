@@ -48,7 +48,7 @@ class BagAuditorWorker(
       _ <- ingestUpdater.send(payload.ingestId, auditSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         auditSummary,
-        payload.copy(objectLocation = auditSummary.summary.root)
+        payload.copy(objectLocation = auditSummary.summary.auditInformation.bagRootLocation)
       )
     } yield toResult(auditSummary)
 
