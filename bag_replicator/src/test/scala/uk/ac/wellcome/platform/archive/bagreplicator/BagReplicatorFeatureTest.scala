@@ -35,42 +35,45 @@ class BagReplicatorFeatureTest
                 config = destination) { _ =>
                 val bagInfo = createBagInfo
 
-                withBag(ingestsBucket, bagInfo = bagInfo) { srcBagLocation =>
-                  val payload = createObjectLocationPayloadWith(
-                    objectLocation = srcBagLocation.objectLocation,
-                    storageSpace = srcBagLocation.storageSpace
-                  )
+                withBag(ingestsBucket, bagInfo = bagInfo) {
+                  case (srcBagRootLocation, storageSpace) =>
+                    val payload = createObjectLocationPayloadWith(
+                      objectLocation = srcBagRootLocation,
+                      storageSpace = storageSpace
+                    )
 
-                  sendNotificationToSQS(queue, payload)
+                    sendNotificationToSQS(queue, payload)
 
-                  eventually {
-                    val expectedPayload = payload.copy(
-                      objectLocation = ObjectLocation(
+                    eventually {
+                      val expectedDst = ObjectLocation(
                         namespace = destination.namespace,
                         key = Paths
                           .get(
                             destination.rootPath.getOrElse(""),
-                            srcBagLocation.storageSpace.toString,
+                            storageSpace.toString,
                             bagInfo.externalIdentifier.toString
                           )
                           .toString
                       )
-                    )
 
-                    assertSnsReceivesOnly(expectedPayload, outgoingTopic)
+                      val expectedPayload = payload.copy(
+                        objectLocation = expectedDst
+                      )
 
-                    verifyBagCopied(
-                      src = srcBagLocation.objectLocation,
-                      dst = expectedPayload.objectLocation
-                    )
+                      assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
-                    assertTopicReceivesIngestEvent(
-                      payload.ingestId,
-                      ingestTopic) { events =>
-                      events should have size 1
-                      events.head.description shouldBe "Replicating succeeded"
+                      verifyBagCopied(
+                        src = srcBagRootLocation,
+                        dst = expectedDst
+                      )
+
+                      assertTopicReceivesIngestEvent(
+                        payload.ingestId,
+                        ingestTopic) { events =>
+                        events should have size 1
+                        events.head.description shouldBe "Replicating succeeded"
+                      }
                     }
-                  }
                 }
               }
             }

@@ -38,46 +38,47 @@ class BagRegisterFeatureTest
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
-          val bagId = BagId(
-            space = bagLocation.storageSpace,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
-
-          val payload = createObjectLocationPayloadWith(
-            objectLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
-          )
-
-          sendNotificationToSQS(queuePair.queue, payload)
-
-          eventually {
-            val storageManifest = getStorageManifest(table, id = bagId)
-
-            storageManifest.space shouldBe bagId.space
-            storageManifest.info shouldBe bagInfo
-            storageManifest.manifest.files should have size 1
-
-            storageManifest.locations shouldBe List(
-              StorageLocation(
-                provider = InfrequentAccessStorageProvider,
-                location = bagLocation.objectLocation
-              )
+        withBag(bucket, bagInfo = bagInfo) {
+          case (bagRootLocation, storageSpace) =>
+            val bagId = BagId(
+              space = storageSpace,
+              externalIdentifier = bagInfo.externalIdentifier
             )
 
-            storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+            val payload = createObjectLocationPayloadWith(
+              objectLocation = bagRootLocation,
+              storageSpace = storageSpace
+            )
 
-            assertTopicReceivesIngestStatus(
-              ingestId = payload.ingestId,
-              ingestTopic = ingestTopic,
-              status = Ingest.Completed,
-              expectedBag = Some(bagId)) { events =>
-              events.size should be >= 1
-              events.head.description shouldBe "Register succeeded (completed)"
+            sendNotificationToSQS(queuePair.queue, payload)
+
+            eventually {
+              val storageManifest = getStorageManifest(table, id = bagId)
+
+              storageManifest.space shouldBe bagId.space
+              storageManifest.info shouldBe bagInfo
+              storageManifest.manifest.files should have size 1
+
+              storageManifest.locations shouldBe List(
+                StorageLocation(
+                  provider = InfrequentAccessStorageProvider,
+                  location = bagRootLocation
+                )
+              )
+
+              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+
+              assertTopicReceivesIngestStatus(
+                ingestId = payload.ingestId,
+                ingestTopic = ingestTopic,
+                status = Ingest.Completed,
+                expectedBag = Some(bagId)) { events =>
+                events.size should be >= 1
+                events.head.description shouldBe "Register succeeded (completed)"
+              }
+
+              assertQueueEmpty(queuePair.queue)
             }
-
-            assertQueueEmpty(queuePair.queue)
-          }
         }
     }
   }
@@ -87,33 +88,34 @@ class BagRegisterFeatureTest
       case (_, _, bucket, ingestTopic, _, queuePair) =>
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
-          val payload = createObjectLocationPayloadWith(
-            objectLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
-          )
+        withBag(bucket, bagInfo = bagInfo) {
+          case (bagRootLocation, storageSpace) =>
+            val payload = createObjectLocationPayloadWith(
+              objectLocation = bagRootLocation,
+              storageSpace = storageSpace
+            )
 
-          sendNotificationToSQS(queuePair.queue, payload)
+            sendNotificationToSQS(queuePair.queue, payload)
 
-          eventually {
-            assertTopicReceivesIngestStatus(
-              ingestId = payload.ingestId,
-              ingestTopic = ingestTopic,
-              status = Ingest.Failed,
-              expectedBag = Some(
-                BagId(
-                  space = bagLocation.storageSpace,
-                  externalIdentifier = bagInfo.externalIdentifier
+            eventually {
+              assertTopicReceivesIngestStatus(
+                ingestId = payload.ingestId,
+                ingestTopic = ingestTopic,
+                status = Ingest.Failed,
+                expectedBag = Some(
+                  BagId(
+                    space = storageSpace,
+                    externalIdentifier = bagInfo.externalIdentifier
+                  )
                 )
-              )
-            ) { events =>
-              events.size should be >= 1
-              events.head.description shouldBe "Register failed"
+              ) { events =>
+                events.size should be >= 1
+                events.head.description shouldBe "Register failed"
+              }
             }
-          }
 
-          assertQueueEmpty(queuePair.queue)
-          assertQueueEmpty(queuePair.dlq)
+            assertQueueEmpty(queuePair.queue)
+            assertQueueEmpty(queuePair.dlq)
         }
     }
   }

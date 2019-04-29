@@ -29,19 +29,20 @@ class VerifierTest
 
   it("passes a bag with correct checksums") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket, dataFileCount = dataFileCount) { bagLocation =>
-        withVerifier { verifier =>
-          val future = verifier.verify(bagLocation.objectLocation)
+      withBag(bucket, dataFileCount = dataFileCount) {
+        case (bagRootLocation, _) =>
+          withVerifier { verifier =>
+            val future = verifier.verify(bagRootLocation)
 
-          whenReady(future) { result =>
-            result shouldBe a[IngestStepSucceeded[_]]
+            whenReady(future) { result =>
+              result shouldBe a[IngestStepSucceeded[_]]
 
-            val summary = result.summary
+              val summary = result.summary
 
-            summary.successfulVerifications should have size expectedFileCount
-            summary.failedVerifications shouldBe Seq.empty
+              summary.successfulVerifications should have size expectedFileCount
+              summary.failedVerifications shouldBe Seq.empty
+            }
           }
-        }
       }
     }
   }
@@ -51,23 +52,24 @@ class VerifierTest
       withBag(
         bucket,
         dataFileCount = dataFileCount,
-        createDataManifest = dataManifestWithWrongChecksum) { bagLocation =>
-        withVerifier { verifier =>
-          val future = verifier.verify(bagLocation.objectLocation)
+        createDataManifest = dataManifestWithWrongChecksum) {
+        case (bagRootLocation, _) =>
+          withVerifier { verifier =>
+            val future = verifier.verify(bagRootLocation)
 
-          whenReady(future) { result =>
-            result shouldBe a[IngestFailed[_]]
+            whenReady(future) { result =>
+              result shouldBe a[IngestFailed[_]]
 
-            val summary = result.summary
-            summary.successfulVerifications should have size expectedFileCount - 1
-            summary.failedVerifications should have size 1
+              val summary = result.summary
+              summary.successfulVerifications should have size expectedFileCount - 1
+              summary.failedVerifications should have size 1
 
-            val brokenFile = summary.failedVerifications.head
-            brokenFile.reason shouldBe a[RuntimeException]
-            brokenFile.reason.getMessage should startWith(
-              "Checksums do not match:")
+              val brokenFile = summary.failedVerifications.head
+              brokenFile.reason shouldBe a[RuntimeException]
+              brokenFile.reason.getMessage should startWith(
+                "Checksums do not match:")
+            }
           }
-        }
       }
     }
   }
@@ -77,23 +79,24 @@ class VerifierTest
       withBag(
         bucket,
         dataFileCount = dataFileCount,
-        createTagManifest = tagManifestWithWrongChecksum) { bagLocation =>
-        withVerifier { verifier =>
-          val future = verifier.verify(bagLocation.objectLocation)
-          whenReady(future) { result =>
-            result shouldBe a[IngestFailed[_]]
+        createTagManifest = tagManifestWithWrongChecksum) {
+        case (bagRootLocation, _) =>
+          withVerifier { verifier =>
+            val future = verifier.verify(bagRootLocation)
+            whenReady(future) { result =>
+              result shouldBe a[IngestFailed[_]]
 
-            val summary = result.summary
+              val summary = result.summary
 
-            summary.successfulVerifications should have size expectedFileCount - 1
-            summary.failedVerifications should have size 1
+              summary.successfulVerifications should have size expectedFileCount - 1
+              summary.failedVerifications should have size 1
 
-            val brokenFile = summary.failedVerifications.head
-            brokenFile.reason shouldBe a[RuntimeException]
-            brokenFile.reason.getMessage should startWith(
-              "Checksums do not match:")
+              val brokenFile = summary.failedVerifications.head
+              brokenFile.reason shouldBe a[RuntimeException]
+              brokenFile.reason.getMessage should startWith(
+                "Checksums do not match:")
+            }
           }
-        }
       }
     }
   }
@@ -108,23 +111,24 @@ class VerifierTest
       withBag(
         bucket,
         dataFileCount = dataFileCount,
-        createDataManifest = createDataManifestWithExtraFile) { bagLocation =>
-        withVerifier { verifier =>
-          val future = verifier.verify(bagLocation.objectLocation)
-          whenReady(future) { result =>
-            result shouldBe a[IngestFailed[_]]
+        createDataManifest = createDataManifestWithExtraFile) {
+        case (bagRootLocation, _) =>
+          withVerifier { verifier =>
+            val future = verifier.verify(bagRootLocation)
+            whenReady(future) { result =>
+              result shouldBe a[IngestFailed[_]]
 
-            val summary = result.summary
+              val summary = result.summary
 
-            summary.successfulVerifications should have size expectedFileCount
-            summary.failedVerifications should have size 1
+              summary.successfulVerifications should have size expectedFileCount
+              summary.failedVerifications should have size 1
 
-            val brokenFile = summary.failedVerifications.head
-            brokenFile.reason shouldBe a[RuntimeException]
-            brokenFile.reason.getMessage should startWith(
-              "The specified key does not exist")
+              val brokenFile = summary.failedVerifications.head
+              brokenFile.reason shouldBe a[RuntimeException]
+              brokenFile.reason.getMessage should startWith(
+                "The specified key does not exist")
+            }
           }
-        }
       }
     }
   }
@@ -135,9 +139,9 @@ class VerifierTest
 
     withLocalS3Bucket { bucket =>
       withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
-        bagLocation =>
+        case (bagRootLocation, _) =>
           withVerifier { verifier =>
-            val future = verifier.verify(bagLocation.objectLocation)
+            val future = verifier.verify(bagRootLocation)
 
             whenReady(future) { result =>
               result shouldBe a[IngestFailed[_]]
@@ -159,9 +163,9 @@ class VerifierTest
 
     withLocalS3Bucket { bucket =>
       withBag(bucket, createTagManifest = dontCreateTheTagManifest) {
-        bagLocation =>
+        case (bagRootLocation, _) =>
           withVerifier { verifier =>
-            val future = verifier.verify(bagLocation.objectLocation)
+            val future = verifier.verify(bagRootLocation)
 
             whenReady(future) { result =>
               result shouldBe a[IngestFailed[_]]

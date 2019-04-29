@@ -29,31 +29,33 @@ class BagReplicatorWorkerTest
               ingestTopic = ingestTopic,
               outgoingTopic = outgoingTopic,
               config = destination) { service =>
-              withBag(ingestsBucket) { srcBagLocation =>
-                val payload = createObjectLocationPayloadWith(
-                  srcBagLocation.objectLocation
-                )
-
-                val future = service.processMessage(payload)
-
-                whenReady(future) { _ =>
-                  val result =
-                    notificationMessage[ObjectLocationPayload](outgoingTopic)
-                  result.ingestId shouldBe payload.ingestId
-
-                  val dstBagLocation = result.objectLocation
-
-                  verifyBagCopied(
-                    src = srcBagLocation.objectLocation,
-                    dst = dstBagLocation
+              withBag(ingestsBucket) {
+                case (srcBagRootLocation, _) =>
+                  val payload = createObjectLocationPayloadWith(
+                    srcBagRootLocation
                   )
 
-                  assertTopicReceivesIngestEvent(payload.ingestId, ingestTopic) {
-                    events =>
+                  val future = service.processMessage(payload)
+
+                  whenReady(future) { _ =>
+                    val result =
+                      notificationMessage[ObjectLocationPayload](outgoingTopic)
+                    result.ingestId shouldBe payload.ingestId
+
+                    val dstBagRootLocation = result.objectLocation
+
+                    verifyBagCopied(
+                      src = srcBagRootLocation,
+                      dst = dstBagRootLocation
+                    )
+
+                    assertTopicReceivesIngestEvent(
+                      payload.ingestId,
+                      ingestTopic) { events =>
                       events should have size 1
                       events.head.description shouldBe "Replicating succeeded"
+                    }
                   }
-                }
               }
             }
           }

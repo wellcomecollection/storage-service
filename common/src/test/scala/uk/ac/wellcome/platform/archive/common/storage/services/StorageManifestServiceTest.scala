@@ -25,42 +25,43 @@ class StorageManifestServiceTest
   it("returns a StorageManifest if reading a bag location succeeds") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(bucket, bagInfo = bagInfo) { bagLocation =>
-        val future = service.createManifest(
-          bagRootLocation = bagLocation.objectLocation,
-          storageSpace = bagLocation.storageSpace
-        )
-
-        whenReady(future) { storageManifest =>
-          storageManifest.space shouldBe bagLocation.storageSpace
-          storageManifest.info shouldBe bagInfo
-
-          storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
-            "sha256")
-          storageManifest.manifest.files should have size 1
-
-          storageManifest.tagManifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
-            "sha256")
-          storageManifest.tagManifest.files should have size 3
-          val actualFiles =
-            storageManifest.tagManifest.files
-              .map {
-                _.path.toString
-              }
-          val expectedFiles = List(
-            "manifest-sha256.txt",
-            "bag-info.txt",
-            "bagit.txt"
+      withBag(bucket, bagInfo = bagInfo) {
+        case (bagRootLocation, storageSpace) =>
+          val future = service.createManifest(
+            bagRootLocation = bagRootLocation,
+            storageSpace = storageSpace
           )
-          actualFiles should contain theSameElementsAs expectedFiles
 
-          storageManifest.locations shouldBe List(
-            StorageLocation(
-              provider = InfrequentAccessStorageProvider,
-              location = bagLocation.objectLocation
+          whenReady(future) { storageManifest =>
+            storageManifest.space shouldBe storageSpace
+            storageManifest.info shouldBe bagInfo
+
+            storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
+              "sha256")
+            storageManifest.manifest.files should have size 1
+
+            storageManifest.tagManifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
+              "sha256")
+            storageManifest.tagManifest.files should have size 3
+            val actualFiles =
+              storageManifest.tagManifest.files
+                .map {
+                  _.path.toString
+                }
+            val expectedFiles = List(
+              "manifest-sha256.txt",
+              "bag-info.txt",
+              "bagit.txt"
             )
-          )
-        }
+            actualFiles should contain theSameElementsAs expectedFiles
+
+            storageManifest.locations shouldBe List(
+              StorageLocation(
+                provider = InfrequentAccessStorageProvider,
+                location = bagRootLocation
+              )
+            )
+          }
       }
     }
   }
@@ -82,42 +83,44 @@ class StorageManifestServiceTest
 
     it("the bag-info.txt file is missing") {
       withLocalS3Bucket { bucket =>
-        withBag(bucket) { bagLocation =>
-          s3Client.deleteObject(
-            bucket.name,
-            bagLocation.completePath + "/bag-info.txt"
-          )
+        withBag(bucket) {
+          case (bagRootLocation, storageSpace) =>
+            s3Client.deleteObject(
+              bagRootLocation.namespace,
+              bagRootLocation.key + "/bag-info.txt"
+            )
 
-          val future = service.createManifest(
-            bagRootLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
-          )
+            val future = service.createManifest(
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
+            )
 
-          whenReady(future.failed) { err =>
-            err shouldBe a[RuntimeException]
-            err.getMessage should include("The specified key does not exist.")
-          }
+            whenReady(future.failed) { err =>
+              err shouldBe a[RuntimeException]
+              err.getMessage should include("The specified key does not exist.")
+            }
         }
       }
     }
 
     it("the manifest.txt file is missing") {
       withLocalS3Bucket { bucket =>
-        withBag(bucket) { bagLocation =>
-          s3Client.deleteObject(
-            bucket.name,
-            bagLocation.completePath + "/manifest-sha256.txt"
-          )
+        withBag(bucket) {
+          case (bagRootLocation, storageSpace) =>
+            s3Client.deleteObject(
+              bagRootLocation.namespace,
+              bagRootLocation.key + "/manifest-sha256.txt"
+            )
 
-          val future = service.createManifest(
-            bagRootLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
-          )
+            val future = service.createManifest(
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
+            )
 
-          whenReady(future.failed) { err =>
-            err shouldBe a[RuntimeException]
-            err.getMessage should include("The specified key does not exist.")
-          }
+            whenReady(future.failed) { err =>
+              err shouldBe a[RuntimeException]
+              err.getMessage should include("The specified key does not exist.")
+            }
         }
       }
     }
@@ -128,10 +131,10 @@ class StorageManifestServiceTest
           bucket,
           createDataManifest =
             _ => Some(FileEntry("manifest-sha256.txt", "bleeergh!"))) {
-          bagLocation =>
+          case (bagRootLocation, storageSpace) =>
             val future = service.createManifest(
-              bagRootLocation = bagLocation.objectLocation,
-              storageSpace = bagLocation.storageSpace
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
             )
 
             whenReady(future.failed) { err =>
@@ -144,21 +147,22 @@ class StorageManifestServiceTest
 
     it("the tagmanifest.txt file is missing") {
       withLocalS3Bucket { bucket =>
-        withBag(bucket) { bagLocation =>
-          s3Client.deleteObject(
-            bucket.name,
-            bagLocation.completePath + "/tagmanifest-sha256.txt"
-          )
+        withBag(bucket) {
+          case (bagRootLocation, storageSpace) =>
+            s3Client.deleteObject(
+              bagRootLocation.namespace,
+              bagRootLocation.key + "/tagmanifest-sha256.txt"
+            )
 
-          val future = service.createManifest(
-            bagRootLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
-          )
+            val future = service.createManifest(
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
+            )
 
-          whenReady(future.failed) { err =>
-            err shouldBe a[RuntimeException]
-            err.getMessage should include("The specified key does not exist.")
-          }
+            whenReady(future.failed) { err =>
+              err shouldBe a[RuntimeException]
+              err.getMessage should include("The specified key does not exist.")
+            }
         }
       }
     }
@@ -169,10 +173,10 @@ class StorageManifestServiceTest
           bucket,
           createTagManifest =
             _ => Some(FileEntry("tagmanifest-sha256.txt", "blaaargh!"))) {
-          bagLocation =>
+          case (bagRootLocation, storageSpace) =>
             val future = service.createManifest(
-              bagRootLocation = bagLocation.objectLocation,
-              storageSpace = bagLocation.storageSpace
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
             )
 
             whenReady(future.failed) { err =>

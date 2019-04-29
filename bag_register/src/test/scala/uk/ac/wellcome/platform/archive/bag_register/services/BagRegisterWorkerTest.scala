@@ -35,44 +35,45 @@ class BagRegisterWorkerTest
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
-          val payload = createObjectLocationPayloadWith(
-            objectLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
-          )
-
-          val bagId = BagId(
-            space = bagLocation.storageSpace,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
-
-          val future = service.processMessage(payload)
-
-          whenReady(future) { _ =>
-            val storageManifest = getStorageManifest(table, id = bagId)
-
-            storageManifest.space shouldBe bagId.space
-            storageManifest.info shouldBe bagInfo
-            storageManifest.manifest.files should have size 1
-
-            storageManifest.locations shouldBe List(
-              StorageLocation(
-                provider = InfrequentAccessStorageProvider,
-                location = bagLocation.objectLocation
-              )
+        withBag(bucket, bagInfo = bagInfo) {
+          case (bagRootLocation, storageSpace) =>
+            val payload = createObjectLocationPayloadWith(
+              objectLocation = bagRootLocation,
+              storageSpace = storageSpace
             )
 
-            storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+            val bagId = BagId(
+              space = storageSpace,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
 
-            assertTopicReceivesIngestStatus(
-              ingestId = payload.ingestId,
-              ingestTopic = ingestTopic,
-              status = Ingest.Completed,
-              expectedBag = Some(bagId)) { events =>
-              events.size should be >= 1
-              events.head.description shouldBe "Register succeeded (completed)"
+            val future = service.processMessage(payload)
+
+            whenReady(future) { _ =>
+              val storageManifest = getStorageManifest(table, id = bagId)
+
+              storageManifest.space shouldBe bagId.space
+              storageManifest.info shouldBe bagInfo
+              storageManifest.manifest.files should have size 1
+
+              storageManifest.locations shouldBe List(
+                StorageLocation(
+                  provider = InfrequentAccessStorageProvider,
+                  location = bagRootLocation
+                )
+              )
+
+              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+
+              assertTopicReceivesIngestStatus(
+                ingestId = payload.ingestId,
+                ingestTopic = ingestTopic,
+                status = Ingest.Completed,
+                expectedBag = Some(bagId)) { events =>
+                events.size should be >= 1
+                events.head.description shouldBe "Register succeeded (completed)"
+              }
             }
-          }
         }
     }
   }
@@ -82,29 +83,30 @@ class BagRegisterWorkerTest
       case (service, _, bucket, ingestTopic, _, _) =>
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
-          val payload = createObjectLocationPayloadWith(
-            objectLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
-          )
+        withBag(bucket, bagInfo = bagInfo) {
+          case (bagRootLocation, storageSpace) =>
+            val payload = createObjectLocationPayloadWith(
+              objectLocation = bagRootLocation,
+              storageSpace = storageSpace
+            )
 
-          val bagId = BagId(
-            space = bagLocation.storageSpace,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
+            val bagId = BagId(
+              space = storageSpace,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
 
-          val future = service.processMessage(payload)
+            val future = service.processMessage(payload)
 
-          whenReady(future) { _ =>
-            assertTopicReceivesIngestStatus(
-              ingestId = payload.ingestId,
-              ingestTopic = ingestTopic,
-              status = Ingest.Failed,
-              expectedBag = Some(bagId)) { events =>
-              events.size should be >= 1
-              events.head.description shouldBe "Register failed"
+            whenReady(future) { _ =>
+              assertTopicReceivesIngestStatus(
+                ingestId = payload.ingestId,
+                ingestTopic = ingestTopic,
+                status = Ingest.Failed,
+                expectedBag = Some(bagId)) { events =>
+                events.size should be >= 1
+                events.head.description shouldBe "Register failed"
+              }
             }
-          }
         }
     }
   }
