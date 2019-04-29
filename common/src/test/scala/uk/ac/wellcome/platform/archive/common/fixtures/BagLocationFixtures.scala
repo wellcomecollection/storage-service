@@ -54,9 +54,7 @@ trait BagLocationFixtures
         .putObject(
           bagRootLocation.namespace,
           Paths
-            .get(
-              bagRootLocation.key,
-              entry.name)
+            .get(bagRootLocation.key, entry.name)
             .toString,
           entry.contents
         )

@@ -29,29 +29,30 @@ class VerifierWorkerTest
       withLocalSnsTopic { outgoingTopic =>
         withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
-            withBag(bucket) { case (bagRootLocation, _) =>
-              val payload = createObjectLocationPayloadWith(
-                bagRootLocation
-              )
+            withBag(bucket) {
+              case (bagRootLocation, _) =>
+                val payload = createObjectLocationPayloadWith(
+                  bagRootLocation
+                )
 
-              val future = service.processMessage(payload)
+                val future = service.processMessage(payload)
 
-              whenReady(future) { _ =>
-                eventually {
-                  assertTopicReceivesIngestEvent(
-                    ingestId = payload.ingestId,
-                    ingestTopic = ingestTopic
-                  ) { events =>
-                    events.map {
-                      _.description
-                    } shouldBe List(
-                      "Verification succeeded"
-                    )
+                whenReady(future) { _ =>
+                  eventually {
+                    assertTopicReceivesIngestEvent(
+                      ingestId = payload.ingestId,
+                      ingestTopic = ingestTopic
+                    ) { events =>
+                      events.map {
+                        _.description
+                      } shouldBe List(
+                        "Verification succeeded"
+                      )
+                    }
+
+                    assertSnsReceivesOnly(payload, topic = outgoingTopic)
                   }
-
-                  assertSnsReceivesOnly(payload, topic = outgoingTopic)
                 }
-              }
             }
           }
         }
@@ -137,23 +138,24 @@ class VerifierWorkerTest
     withLocalSnsTopic { ingestTopic =>
       withBagVerifierWorker(ingestTopic, Topic("no-such-outgoing")) { service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket) { case (bagRootLocation, _) =>
-            val payload = createObjectLocationPayloadWith(
-              bagRootLocation
-            )
+          withBag(bucket) {
+            case (bagRootLocation, _) =>
+              val payload = createObjectLocationPayloadWith(
+                bagRootLocation
+              )
 
-            val future = service.processMessage(payload)
+              val future = service.processMessage(payload)
 
-            whenReady(future.failed) { _ =>
-              assertTopicReceivesIngestEvent(
-                ingestId = payload.ingestId,
-                ingestTopic = ingestTopic
-              ) { events =>
-                events.map {
-                  _.description
-                } shouldBe List("Verification succeeded")
+              whenReady(future.failed) { _ =>
+                assertTopicReceivesIngestEvent(
+                  ingestId = payload.ingestId,
+                  ingestTopic = ingestTopic
+                ) { events =>
+                  events.map {
+                    _.description
+                  } shouldBe List("Verification succeeded")
+                }
               }
-            }
           }
         }
       }

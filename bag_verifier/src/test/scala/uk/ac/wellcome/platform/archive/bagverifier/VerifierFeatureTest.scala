@@ -28,30 +28,31 @@ class VerifierFeatureTest
           case QueuePair(queue, dlq) =>
             withBagVerifierWorker(ingestTopic, outgoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
-                withBag(bucket) { case (bagRootLocation, _) =>
-                  val payload = createObjectLocationPayloadWith(
-                    bagRootLocation
-                  )
+                withBag(bucket) {
+                  case (bagRootLocation, _) =>
+                    val payload = createObjectLocationPayloadWith(
+                      bagRootLocation
+                    )
 
-                  sendNotificationToSQS(queue, payload)
+                    sendNotificationToSQS(queue, payload)
 
-                  eventually {
-                    listMessagesReceivedFromSNS(outgoingTopic)
+                    eventually {
+                      listMessagesReceivedFromSNS(outgoingTopic)
 
-                    assertTopicReceivesIngestEvent(
-                      ingestId = payload.ingestId,
-                      ingestTopic = ingestTopic
-                    ) { events =>
-                      events.map {
-                        _.description
-                      } shouldBe List("Verification succeeded")
+                      assertTopicReceivesIngestEvent(
+                        ingestId = payload.ingestId,
+                        ingestTopic = ingestTopic
+                      ) { events =>
+                        events.map {
+                          _.description
+                        } shouldBe List("Verification succeeded")
+                      }
+
+                      assertSnsReceivesOnly(payload, topic = outgoingTopic)
+
+                      assertQueueEmpty(queue)
+                      assertQueueEmpty(dlq)
                     }
-
-                    assertSnsReceivesOnly(payload, topic = outgoingTopic)
-
-                    assertQueueEmpty(queue)
-                    assertQueueEmpty(dlq)
-                  }
                 }
               }
             }

@@ -35,44 +35,45 @@ class BagReplicatorFeatureTest
                 config = destination) { _ =>
                 val bagInfo = createBagInfo
 
-                withBag(ingestsBucket, bagInfo = bagInfo) { case (srcBagRootLocation, storageSpace) =>
-                  val payload = createObjectLocationPayloadWith(
-                    objectLocation = srcBagRootLocation,
-                    storageSpace = storageSpace
-                  )
-
-                  sendNotificationToSQS(queue, payload)
-
-                  eventually {
-                    val expectedDst = ObjectLocation(
-                      namespace = destination.namespace,
-                      key = Paths
-                        .get(
-                          destination.rootPath.getOrElse(""),
-                          storageSpace.toString,
-                          bagInfo.externalIdentifier.toString
-                        )
-                        .toString
+                withBag(ingestsBucket, bagInfo = bagInfo) {
+                  case (srcBagRootLocation, storageSpace) =>
+                    val payload = createObjectLocationPayloadWith(
+                      objectLocation = srcBagRootLocation,
+                      storageSpace = storageSpace
                     )
 
-                    val expectedPayload = payload.copy(
-                      objectLocation = expectedDst
-                    )
+                    sendNotificationToSQS(queue, payload)
 
-                    assertSnsReceivesOnly(expectedPayload, outgoingTopic)
+                    eventually {
+                      val expectedDst = ObjectLocation(
+                        namespace = destination.namespace,
+                        key = Paths
+                          .get(
+                            destination.rootPath.getOrElse(""),
+                            storageSpace.toString,
+                            bagInfo.externalIdentifier.toString
+                          )
+                          .toString
+                      )
 
-                    verifyBagCopied(
-                      src = srcBagRootLocation,
-                      dst = expectedDst
-                    )
+                      val expectedPayload = payload.copy(
+                        objectLocation = expectedDst
+                      )
 
-                    assertTopicReceivesIngestEvent(
-                      payload.ingestId,
-                      ingestTopic) { events =>
-                      events should have size 1
-                      events.head.description shouldBe "Replicating succeeded"
+                      assertSnsReceivesOnly(expectedPayload, outgoingTopic)
+
+                      verifyBagCopied(
+                        src = srcBagRootLocation,
+                        dst = expectedDst
+                      )
+
+                      assertTopicReceivesIngestEvent(
+                        payload.ingestId,
+                        ingestTopic) { events =>
+                        events should have size 1
+                        events.head.description shouldBe "Replicating succeeded"
+                      }
                     }
-                  }
                 }
               }
             }
