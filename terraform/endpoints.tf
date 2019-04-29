@@ -43,7 +43,7 @@ resource "aws_vpc_endpoint" "wt-winnipeg" {
   vpc_endpoint_type = "Interface"
 
   security_group_ids = [
-    "${module.stack-stewart.interservice_sg_id}",
+    "${module.stack_letterman.interservice_sg_id}",
   ]
 
   subnet_ids = [
