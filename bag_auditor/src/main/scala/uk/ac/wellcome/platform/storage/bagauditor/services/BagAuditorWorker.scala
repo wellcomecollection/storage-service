@@ -42,7 +42,7 @@ class BagAuditorWorker(
     payload: ObjectLocationPayload): Future[Result[AuditSummary]] =
     for {
       auditSummary <- Future.fromTry(
-        bagAuditor.locateBagRoot(
+        bagAuditor.getAuditSummary(
           unpackLocation = payload.objectLocation,
           storageSpace = payload.storageSpace
         )

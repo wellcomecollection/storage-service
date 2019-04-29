@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
-import uk.ac.wellcome.platform.storage.bagauditor.models.AuditSummary
+import uk.ac.wellcome.platform.storage.bagauditor.models.{AuditInformation, AuditSummary}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
@@ -18,7 +18,7 @@ import scala.util.{Failure, Success, Try}
 class BagAuditor(implicit s3Client: AmazonS3) {
   val s3BagLocator = new S3BagLocator(s3Client)
 
-  def locateBagRoot(
+  def getAuditSummary(
     unpackLocation: ObjectLocation,
     storageSpace: StorageSpace): Try[IngestStepResult[AuditSummary]] = {
     val auditSummary = AuditSummary(
@@ -27,12 +27,12 @@ class BagAuditor(implicit s3Client: AmazonS3) {
       storageSpace = storageSpace
     )
 
-    s3BagLocator.locateBagRoot(unpackLocation) match {
-      case Success(root) =>
+    buildAuditInformation(unpackLocation) match {
+      case Success(info) =>
         Success(
           IngestStepSucceeded(
             auditSummary
-              .copy(maybeRoot = Some(root))
+              .copy(maybeAuditInformation = Some(info))
               .complete
           )
         )
@@ -44,5 +44,11 @@ class BagAuditor(implicit s3Client: AmazonS3) {
           )
         )
     }
+  }
+
+  def buildAuditInformation(unpackLocation: ObjectLocation): Try[AuditInformation] = {
+    for {
+      bagRootLocation <- s3BagLocator.locateBagRoot(unpackLocation)
+    } yield AuditInformation(bagRootLocation)
   }
 }

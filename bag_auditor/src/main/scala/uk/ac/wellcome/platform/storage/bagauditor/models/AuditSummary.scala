@@ -6,10 +6,14 @@ import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
+case class AuditInformation(
+  bagRoot: ObjectLocation
+)
+
 case class AuditSummary(
   unpackLocation: ObjectLocation,
   storageSpace: StorageSpace,
-  maybeRoot: Option[ObjectLocation] = None,
+  maybeAuditInformation: Option[AuditInformation] = None,
   startTime: Instant,
   endTime: Option[Instant] = None,
 ) extends Summary {
@@ -18,8 +22,11 @@ case class AuditSummary(
       endTime = Some(Instant.now())
     )
 
-  def root: ObjectLocation =
-    maybeRoot.getOrElse(
-      throw new RuntimeException("No root provided by auditor!")
+  def auditInformation: AuditInformation =
+    maybeAuditInformation.getOrElse(
+      throw new RuntimeException("No info provided by auditor!")
     )
+
+  def root: ObjectLocation =
+    auditInformation.bagRoot
 }
