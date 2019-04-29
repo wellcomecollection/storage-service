@@ -25,14 +25,14 @@ class StorageManifestServiceTest
   it("returns a StorageManifest if reading a bag location succeeds") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+      withBag(bucket, bagInfo = bagInfo) { case (bagRootLocation, storageSpace) =>
         val future = service.createManifest(
-          bagRootLocation = bagLocation.objectLocation,
-          storageSpace = bagLocation.storageSpace
+          bagRootLocation = bagRootLocation,
+          storageSpace = storageSpace
         )
 
         whenReady(future) { storageManifest =>
-          storageManifest.space shouldBe bagLocation.storageSpace
+          storageManifest.space shouldBe storageSpace
           storageManifest.info shouldBe bagInfo
 
           storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
@@ -57,7 +57,7 @@ class StorageManifestServiceTest
           storageManifest.locations shouldBe List(
             StorageLocation(
               provider = InfrequentAccessStorageProvider,
-              location = bagLocation.objectLocation
+              location = bagRootLocation
             )
           )
         }
@@ -82,15 +82,15 @@ class StorageManifestServiceTest
 
     it("the bag-info.txt file is missing") {
       withLocalS3Bucket { bucket =>
-        withBag(bucket) { bagLocation =>
+        withBag(bucket) { case (bagRootLocation, storageSpace) =>
           s3Client.deleteObject(
-            bucket.name,
-            bagLocation.completePath + "/bag-info.txt"
+            bagRootLocation.namespace,
+            bagRootLocation.key + "/bag-info.txt"
           )
 
           val future = service.createManifest(
-            bagRootLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
+            bagRootLocation = bagRootLocation,
+            storageSpace = storageSpace
           )
 
           whenReady(future.failed) { err =>
@@ -103,15 +103,15 @@ class StorageManifestServiceTest
 
     it("the manifest.txt file is missing") {
       withLocalS3Bucket { bucket =>
-        withBag(bucket) { bagLocation =>
+        withBag(bucket) { case (bagRootLocation, storageSpace) =>
           s3Client.deleteObject(
-            bucket.name,
-            bagLocation.completePath + "/manifest-sha256.txt"
+            bagRootLocation.namespace,
+            bagRootLocation.key + "/manifest-sha256.txt"
           )
 
           val future = service.createManifest(
-            bagRootLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
+            bagRootLocation = bagRootLocation,
+            storageSpace = storageSpace
           )
 
           whenReady(future.failed) { err =>
@@ -128,10 +128,10 @@ class StorageManifestServiceTest
           bucket,
           createDataManifest =
             _ => Some(FileEntry("manifest-sha256.txt", "bleeergh!"))) {
-          bagLocation =>
+          case (bagRootLocation, storageSpace) =>
             val future = service.createManifest(
-              bagRootLocation = bagLocation.objectLocation,
-              storageSpace = bagLocation.storageSpace
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
             )
 
             whenReady(future.failed) { err =>
@@ -144,15 +144,15 @@ class StorageManifestServiceTest
 
     it("the tagmanifest.txt file is missing") {
       withLocalS3Bucket { bucket =>
-        withBag(bucket) { bagLocation =>
+        withBag(bucket) { case (bagRootLocation, storageSpace) =>
           s3Client.deleteObject(
-            bucket.name,
-            bagLocation.completePath + "/tagmanifest-sha256.txt"
+            bagRootLocation.namespace,
+            bagRootLocation.key + "/tagmanifest-sha256.txt"
           )
 
           val future = service.createManifest(
-            bagRootLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
+            bagRootLocation = bagRootLocation,
+            storageSpace = storageSpace
           )
 
           whenReady(future.failed) { err =>
@@ -169,10 +169,10 @@ class StorageManifestServiceTest
           bucket,
           createTagManifest =
             _ => Some(FileEntry("tagmanifest-sha256.txt", "blaaargh!"))) {
-          bagLocation =>
+          case (bagRootLocation, storageSpace) =>
             val future = service.createManifest(
-              bagRootLocation = bagLocation.objectLocation,
-              storageSpace = bagLocation.storageSpace
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
             )
 
             whenReady(future.failed) { err =>

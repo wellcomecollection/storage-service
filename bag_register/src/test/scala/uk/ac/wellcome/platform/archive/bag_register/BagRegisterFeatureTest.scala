@@ -38,15 +38,15 @@ class BagRegisterFeatureTest
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+        withBag(bucket, bagInfo = bagInfo) { case (bagRootLocation, storageSpace) =>
           val bagId = BagId(
-            space = bagLocation.storageSpace,
+            space = storageSpace,
             externalIdentifier = bagInfo.externalIdentifier
           )
 
           val payload = createObjectLocationPayloadWith(
-            objectLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
+            objectLocation = bagRootLocation,
+            storageSpace = storageSpace
           )
 
           sendNotificationToSQS(queuePair.queue, payload)
@@ -61,7 +61,7 @@ class BagRegisterFeatureTest
             storageManifest.locations shouldBe List(
               StorageLocation(
                 provider = InfrequentAccessStorageProvider,
-                location = bagLocation.objectLocation
+                location = bagRootLocation
               )
             )
 
@@ -87,10 +87,10 @@ class BagRegisterFeatureTest
       case (_, _, bucket, ingestTopic, _, queuePair) =>
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+        withBag(bucket, bagInfo = bagInfo) { case (bagRootLocation, storageSpace) =>
           val payload = createObjectLocationPayloadWith(
-            objectLocation = bagLocation.objectLocation,
-            storageSpace = bagLocation.storageSpace
+            objectLocation = bagRootLocation,
+            storageSpace = storageSpace
           )
 
           sendNotificationToSQS(queuePair.queue, payload)
@@ -102,7 +102,7 @@ class BagRegisterFeatureTest
               status = Ingest.Failed,
               expectedBag = Some(
                 BagId(
-                  space = bagLocation.storageSpace,
+                  space = storageSpace,
                   externalIdentifier = bagInfo.externalIdentifier
                 )
               )

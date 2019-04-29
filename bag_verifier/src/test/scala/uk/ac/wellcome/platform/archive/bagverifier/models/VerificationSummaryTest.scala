@@ -8,14 +8,12 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagItemPath
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.generators.BagLocationGenerators
 import uk.ac.wellcome.storage.fixtures.S3
 
 class VerificationSummaryTest
     extends FunSpec
     with Matchers
     with RandomThings
-    with BagLocationGenerators
     with S3 {
   it("reports a verification with no failures as successful") {
     val result = VerificationSummary(

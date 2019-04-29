@@ -29,9 +29,9 @@ class BagReplicatorWorkerTest
               ingestTopic = ingestTopic,
               outgoingTopic = outgoingTopic,
               config = destination) { service =>
-              withBag(ingestsBucket) { srcBagLocation =>
+              withBag(ingestsBucket) { case (srcBagRootLocation, _) =>
                 val payload = createObjectLocationPayloadWith(
-                  srcBagLocation.objectLocation
+                  srcBagRootLocation
                 )
 
                 val future = service.processMessage(payload)
@@ -41,11 +41,11 @@ class BagReplicatorWorkerTest
                     notificationMessage[ObjectLocationPayload](outgoingTopic)
                   result.ingestId shouldBe payload.ingestId
 
-                  val dstBagLocation = result.objectLocation
+                  val dstBagRootLocation = result.objectLocation
 
                   verifyBagCopied(
-                    src = srcBagLocation.objectLocation,
-                    dst = dstBagLocation
+                    src = srcBagRootLocation,
+                    dst = dstBagRootLocation
                   )
 
                   assertTopicReceivesIngestEvent(payload.ingestId, ingestTopic) {

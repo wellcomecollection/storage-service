@@ -29,9 +29,9 @@ class VerifierTest
 
   it("passes a bag with correct checksums") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket, dataFileCount = dataFileCount) { bagLocation =>
+      withBag(bucket, dataFileCount = dataFileCount) { case (bagRootLocation, _) =>
         withVerifier { verifier =>
-          val future = verifier.verify(bagLocation.objectLocation)
+          val future = verifier.verify(bagRootLocation)
 
           whenReady(future) { result =>
             result shouldBe a[IngestStepSucceeded[_]]
@@ -51,9 +51,9 @@ class VerifierTest
       withBag(
         bucket,
         dataFileCount = dataFileCount,
-        createDataManifest = dataManifestWithWrongChecksum) { bagLocation =>
+        createDataManifest = dataManifestWithWrongChecksum) { case (bagRootLocation, _) =>
         withVerifier { verifier =>
-          val future = verifier.verify(bagLocation.objectLocation)
+          val future = verifier.verify(bagRootLocation)
 
           whenReady(future) { result =>
             result shouldBe a[IngestFailed[_]]
@@ -77,9 +77,9 @@ class VerifierTest
       withBag(
         bucket,
         dataFileCount = dataFileCount,
-        createTagManifest = tagManifestWithWrongChecksum) { bagLocation =>
+        createTagManifest = tagManifestWithWrongChecksum) { case (bagRootLocation, _) =>
         withVerifier { verifier =>
-          val future = verifier.verify(bagLocation.objectLocation)
+          val future = verifier.verify(bagRootLocation)
           whenReady(future) { result =>
             result shouldBe a[IngestFailed[_]]
 
@@ -108,9 +108,9 @@ class VerifierTest
       withBag(
         bucket,
         dataFileCount = dataFileCount,
-        createDataManifest = createDataManifestWithExtraFile) { bagLocation =>
+        createDataManifest = createDataManifestWithExtraFile) { case (bagRootLocation, _) =>
         withVerifier { verifier =>
-          val future = verifier.verify(bagLocation.objectLocation)
+          val future = verifier.verify(bagRootLocation)
           whenReady(future) { result =>
             result shouldBe a[IngestFailed[_]]
 
@@ -135,9 +135,9 @@ class VerifierTest
 
     withLocalS3Bucket { bucket =>
       withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
-        bagLocation =>
+        case (bagRootLocation, _) =>
           withVerifier { verifier =>
-            val future = verifier.verify(bagLocation.objectLocation)
+            val future = verifier.verify(bagRootLocation)
 
             whenReady(future) { result =>
               result shouldBe a[IngestFailed[_]]
@@ -159,9 +159,9 @@ class VerifierTest
 
     withLocalS3Bucket { bucket =>
       withBag(bucket, createTagManifest = dontCreateTheTagManifest) {
-        bagLocation =>
+        case (bagRootLocation, _) =>
           withVerifier { verifier =>
-            val future = verifier.verify(bagLocation.objectLocation)
+            val future = verifier.verify(bagRootLocation)
 
             whenReady(future) { result =>
               result shouldBe a[IngestFailed[_]]

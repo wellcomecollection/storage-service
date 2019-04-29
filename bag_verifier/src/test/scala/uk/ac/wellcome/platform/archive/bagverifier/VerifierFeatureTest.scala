@@ -28,9 +28,9 @@ class VerifierFeatureTest
           case QueuePair(queue, dlq) =>
             withBagVerifierWorker(ingestTopic, outgoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
-                withBag(bucket) { bagLocation =>
+                withBag(bucket) { case (bagRootLocation, _) =>
                   val payload = createObjectLocationPayloadWith(
-                    bagLocation.objectLocation
+                    bagRootLocation
                   )
 
                   sendNotificationToSQS(queue, payload)
@@ -71,9 +71,9 @@ class VerifierFeatureTest
                 withBag(
                   bucket,
                   createDataManifest = dataManifestWithWrongChecksum) {
-                  bagLocation =>
+                  case (bagRootLocation, _) =>
                     val payload = createObjectLocationPayloadWith(
-                      bagLocation.objectLocation
+                      bagRootLocation
                     )
 
                     sendNotificationToSQS(queue, payload)

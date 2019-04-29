@@ -29,9 +29,9 @@ class VerifierWorkerTest
       withLocalSnsTopic { outgoingTopic =>
         withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
-            withBag(bucket) { bagLocation =>
+            withBag(bucket) { case (bagRootLocation, _) =>
               val payload = createObjectLocationPayloadWith(
-                bagLocation.objectLocation
+                bagRootLocation
               )
 
               val future = service.processMessage(payload)
@@ -65,9 +65,9 @@ class VerifierWorkerTest
         withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
-              bagLocation =>
+              case (bagRootLocation, _) =>
                 val payload = createObjectLocationPayloadWith(
-                  bagLocation.objectLocation
+                  bagRootLocation
                 )
 
                 val future = service.processMessage(payload)
@@ -102,9 +102,9 @@ class VerifierWorkerTest
         withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
-              bagLocation =>
+              case (bagRootLocation, _) =>
                 val payload = createObjectLocationPayloadWith(
-                  bagLocation.objectLocation
+                  bagRootLocation
                 )
 
                 val future = service.processMessage(payload)
@@ -137,9 +137,9 @@ class VerifierWorkerTest
     withLocalSnsTopic { ingestTopic =>
       withBagVerifierWorker(ingestTopic, Topic("no-such-outgoing")) { service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket) { bagLocation =>
+          withBag(bucket) { case (bagRootLocation, _) =>
             val payload = createObjectLocationPayloadWith(
-              bagLocation.objectLocation
+              bagRootLocation
             )
 
             val future = service.processMessage(payload)

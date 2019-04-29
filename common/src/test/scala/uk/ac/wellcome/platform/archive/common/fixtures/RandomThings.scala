@@ -158,7 +158,5 @@ trait RandomThings {
     LocalDate.ofEpochDay(startRange + Random.nextInt(maxValue))
   }
 
-  def randomBagPath = BagPath(randomAlphanumeric(15))
-
   def randomBucket = Bucket(randomAlphanumeric().toLowerCase)
 }
