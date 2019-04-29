@@ -67,7 +67,8 @@ class BagAuditor(implicit s3Client: AmazonS3, ec: ExecutionContext) {
       }
   }
 
-  private def chooseVersion(externalIdentifier: ExternalIdentifier): Future[Int] =
+  private def chooseVersion(
+    externalIdentifier: ExternalIdentifier): Future[Int] =
     Future.successful(1)
 
   private def getBagIdentifier(

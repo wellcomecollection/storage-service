@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common
 
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -12,3 +13,11 @@ case class ObjectLocationPayload(
   storageSpace: StorageSpace,
   objectLocation: ObjectLocation
 ) extends PipelinePayload
+
+case class BagInformationPayload(
+  ingestId: IngestID,
+  storageSpace: StorageSpace,
+  bagRootLocation: ObjectLocation,
+  externalIdentifier: ExternalIdentifier,
+  version: Int
+)

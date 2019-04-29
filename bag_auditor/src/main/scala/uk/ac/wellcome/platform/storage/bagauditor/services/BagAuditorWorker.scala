@@ -10,7 +10,10 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 }
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
+import uk.ac.wellcome.platform.archive.common.{
+  BagInformationPayload,
+  ObjectLocationPayload
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
@@ -48,7 +51,15 @@ class BagAuditorWorker(
       _ <- ingestUpdater.send(payload.ingestId, auditSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         auditSummary,
-        payload.copy(objectLocation = auditSummary.summary.auditInformation.bagRootLocation)
+        BagInformationPayload(
+          ingestId = payload.ingestId,
+          storageSpace = payload.storageSpace,
+          bagRootLocation =
+            auditSummary.summary.auditInformation.bagRootLocation,
+          externalIdentifier =
+            auditSummary.summary.auditInformation.externalIdentifier,
+          version = auditSummary.summary.auditInformation.version
+        )
       )
     } yield toResult(auditSummary)
 

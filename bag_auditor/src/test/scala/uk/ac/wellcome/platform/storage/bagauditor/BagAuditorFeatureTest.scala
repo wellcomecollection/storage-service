@@ -18,10 +18,19 @@ class BagAuditorFeatureTest
 
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket) { bagLocation =>
-        val searchRoot = bagLocation.objectLocation
-        val payload = createObjectLocationPayloadWith(searchRoot)
-        val expectedPayload = payload
+      val bagInfo = createBagInfo
+      withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+        val payload = createObjectLocationPayloadWith(
+          objectLocation = bagLocation.objectLocation,
+          storageSpace = bagLocation.storageSpace
+        )
+
+        val expectedPayload = createBagInformationPayloadWith(
+          ingestId = payload.ingestId,
+          bagRootLocation = bagLocation.objectLocation,
+          storageSpace = bagLocation.storageSpace,
+          externalIdentifier = bagInfo.externalIdentifier
+        )
 
         withLocalSqsQueue { queue =>
           withLocalSnsTopic { ingestTopic =>
@@ -50,36 +59,48 @@ class BagAuditorFeatureTest
 
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket, bagRootDirectory = Some("subdir")) { bagLocation =>
-        val searchRoot = bagLocation.objectLocation
-        val bagRoot = bagLocation.objectLocation.copy(
-          key = Paths.get(bagLocation.completePath, "subdir").toString
-        )
+      val bagInfo = createBagInfo
+      withBag(bucket, bagInfo = bagInfo, bagRootDirectory = Some("subdir")) {
+        bagLocation =>
+          val searchRoot = bagLocation.objectLocation
+          val bagRoot = bagLocation.objectLocation.copy(
+            key = Paths.get(bagLocation.completePath, "subdir").toString
+          )
 
-        val payload = createObjectLocationPayloadWith(searchRoot)
-        val expectedPayload = payload.copy(objectLocation = bagRoot)
+          val payload = createObjectLocationPayloadWith(
+            objectLocation = searchRoot,
+            storageSpace = bagLocation.storageSpace
+          )
 
-        withLocalSqsQueue { queue =>
-          withLocalSnsTopic { ingestTopic =>
-            withLocalSnsTopic { outgoingTopic =>
-              withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
-                sendNotificationToSQS(queue, payload)
+          val expectedPayload = createBagInformationPayloadWith(
+            ingestId = payload.ingestId,
+            bagRootLocation = bagRoot,
+            storageSpace = bagLocation.storageSpace,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
 
-                eventually {
-                  assertQueueEmpty(queue)
+          withLocalSqsQueue { queue =>
+            withLocalSnsTopic { ingestTopic =>
+              withLocalSnsTopic { outgoingTopic =>
+                withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+                  sendNotificationToSQS(queue, payload)
 
-                  assertSnsReceivesOnly(expectedPayload, outgoingTopic)
+                  eventually {
+                    assertQueueEmpty(queue)
 
-                  assertTopicReceivesIngestEvent(payload.ingestId, ingestTopic) {
-                    events =>
+                    assertSnsReceivesOnly(expectedPayload, outgoingTopic)
+
+                    assertTopicReceivesIngestEvent(
+                      payload.ingestId,
+                      ingestTopic) { events =>
                       events should have size 1
                       events.head.description shouldBe "Locating bag root succeeded"
+                    }
                   }
                 }
               }
             }
           }
-        }
       }
     }
   }
