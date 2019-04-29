@@ -46,7 +46,7 @@ class BagAuditor(implicit s3Client: AmazonS3) {
     }
   }
 
-  def buildAuditInformation(unpackLocation: ObjectLocation): Try[AuditInformation] = {
+  private def buildAuditInformation(unpackLocation: ObjectLocation): Try[AuditInformation] = {
     for {
       bagRootLocation <- s3BagLocator.locateBagRoot(unpackLocation)
     } yield AuditInformation(bagRootLocation)
