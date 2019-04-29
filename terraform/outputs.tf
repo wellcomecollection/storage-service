@@ -4,6 +4,6 @@
 output "unpacker_task_role_arns" {
   value = [
     "${module.stack-colbert.unpacker_task_role_arn}",
-    "${module.stack-stewart.unpacker_task_role_arn}",
+/*    "${module.stack-stewart.unpacker_task_role_arn}",*/
   ]
 }
