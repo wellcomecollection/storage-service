@@ -12,7 +12,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.IngestID
+import uk.ac.wellcome.platform.archive.common.{IngestID, ObjectLocationPayload}
 import uk.ac.wellcome.platform.archive.common.IngestID._
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
@@ -300,17 +300,13 @@ class IngestsApiFeatureTest
                 }
 
                 // Unpacker
-                val unpackerRequests =
-                  listMessagesReceivedFromSNS(unpackerTopic).map(messageInfo =>
-                    fromJson[UnpackBagRequest](messageInfo.message).get)
-
-                unpackerRequests shouldBe List(
-                  UnpackBagRequest(
-                    ingestId = IngestID(id),
-                    sourceLocation = ObjectLocation("bucket", "key.txt"),
-                    storageSpace = StorageSpace(spaceName)
-                  )
+                val expectedPayload = ObjectLocationPayload(
+                  ingestId = IngestID(id),
+                  storageSpace = StorageSpace(spaceName),
+                  objectLocation = ObjectLocation(bucketName, s3key)
                 )
+
+                assertSnsReceivesOnly(expectedPayload, unpackerTopic)
               }
 
               assertMetricSent(

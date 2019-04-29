@@ -19,7 +19,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   ChecksumVerifier,
-  S3BagLocator,
   StorageManifestService
 }
 import uk.ac.wellcome.storage.ObjectLocation
@@ -33,8 +32,6 @@ class Verifier(
   algorithm: String
 )(implicit ec: ExecutionContext, materializer: Materializer)
     extends Logging {
-  val s3BagLocator = new S3BagLocator(s3Client)
-
   def verify(
     bagRootLocation: ObjectLocation
   ): Future[IngestStepResult[VerificationSummary]] = {
@@ -45,22 +42,16 @@ class Verifier(
     )
 
     val verification = for {
-      actualBagRootLocation <- Future.fromTry {
-        s3BagLocator.locateBagRoot(bagRootLocation)
-      }
       fileManifest <- getManifest("file manifest") {
-        storageManifestService.createFileManifest(actualBagRootLocation)
+        storageManifestService.createFileManifest(bagRootLocation)
       }
       tagManifest <- getManifest("tag manifest") {
-        storageManifestService.createTagManifest(actualBagRootLocation)
+        storageManifestService.createTagManifest(bagRootLocation)
       }
 
       digestFiles = fileManifest.files ++ tagManifest.files
 
-      result <- verifyFiles(
-        actualBagRootLocation,
-        digestFiles,
-        verificationSummary)
+      result <- verifyFiles(bagRootLocation, digestFiles, verificationSummary)
     } yield result
 
     verification.map {

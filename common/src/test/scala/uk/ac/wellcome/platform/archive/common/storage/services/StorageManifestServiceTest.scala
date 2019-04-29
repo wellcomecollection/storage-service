@@ -6,13 +6,11 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
 }
-import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
-import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -20,9 +18,7 @@ class StorageManifestServiceTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with BagLocationFixtures
-    with BagRequestGenerators
-    with S3 {
+    with BagLocationFixtures {
 
   val service = new StorageManifestService()
 

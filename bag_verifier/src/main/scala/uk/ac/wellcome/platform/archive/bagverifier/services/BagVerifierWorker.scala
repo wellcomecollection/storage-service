@@ -12,7 +12,7 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
-import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -37,19 +37,22 @@ class BagVerifierWorker(
     with Logging
     with IngestStepWorker {
 
-  private val worker: AlpakkaSQSWorker[BagRequest, VerificationSummary] =
-    AlpakkaSQSWorker[BagRequest, VerificationSummary](alpakkaSQSWorkerConfig) {
+  private val worker
+    : AlpakkaSQSWorker[ObjectLocationPayload, VerificationSummary] =
+    AlpakkaSQSWorker[ObjectLocationPayload, VerificationSummary](
+      alpakkaSQSWorkerConfig) {
       processMessage
     }
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
-  def processMessage(request: BagRequest): Future[Result[VerificationSummary]] =
+  def processMessage(
+    payload: ObjectLocationPayload): Future[Result[VerificationSummary]] =
     for {
       verificationSummary: IngestStepResult[VerificationSummary] <- verifier
-        .verify(request.bagLocation.objectLocation)
-      _ <- ingestUpdater.send(request.ingestId, verificationSummary)
-      _ <- outgoingPublisher.sendIfSuccessful(verificationSummary, request)
+        .verify(payload.objectLocation)
+      _ <- ingestUpdater.send(payload.ingestId, verificationSummary)
+      _ <- outgoingPublisher.sendIfSuccessful(verificationSummary, payload)
     } yield toResult(verificationSummary)
 
   override def run(): Future[Any] = worker.start
