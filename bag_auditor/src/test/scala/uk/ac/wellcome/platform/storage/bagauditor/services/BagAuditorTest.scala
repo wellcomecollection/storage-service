@@ -1,23 +1,36 @@
 package uk.ac.wellcome.platform.storage.bagauditor.services
+import java.nio.file.Paths
+
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
 
-class BagAuditorTest extends FunSpec with Matchers with BagLocationFixtures {
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class BagAuditorTest
+    extends FunSpec
+    with Matchers
+    with ScalaFutures
+    with BagLocationFixtures {
   val bagAuditor = new BagAuditor()
 
   it("gets the audit information for a valid bag") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket) { bagLocation =>
-        val result = bagAuditor.getAuditSummary(
+      val bagInfo = createBagInfo
+      withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+        val future = bagAuditor.getAuditSummary(
           unpackLocation = bagLocation.objectLocation,
           storageSpace = bagLocation.storageSpace
         )
 
-        val auditSummary = result.get.summary
-        val auditInformation = auditSummary.auditInformation
+        whenReady(future) { result =>
+          val auditSummary = result.summary
+          val auditInformation = auditSummary.auditInformation
 
-        auditInformation.bagRoot shouldBe bagLocation.objectLocation
+          auditInformation.bagRootLocation shouldBe bagLocation.objectLocation
+          auditInformation.externalIdentifier shouldBe bagInfo.externalIdentifier
+        }
       }
     }
   }
@@ -25,13 +38,36 @@ class BagAuditorTest extends FunSpec with Matchers with BagLocationFixtures {
   it("errors if it cannot find the bag root") {
     withLocalS3Bucket { bucket =>
       withBag(bucket, bagRootDirectory = Some("1/2/3")) { bagLocation =>
-        val result = bagAuditor.getAuditSummary(
+        val future = bagAuditor.getAuditSummary(
           unpackLocation = createObjectLocationWith(bucket, key = "1/"),
           storageSpace = bagLocation.storageSpace
         )
 
-        result.get shouldBe a[IngestFailed[_]]
+        whenReady(future) { result =>
+          result shouldBe a[IngestFailed[_]]
+        }
       }
     }
   }
+
+  it("errors if it cannot find the bag identifier") {
+    withLocalS3Bucket { bucket =>
+      withBag(bucket) { bagLocation =>
+        s3Client.deleteObject(
+          bagLocation.objectLocation.namespace,
+          Paths.get(bagLocation.objectLocation.key, "bag-info.txt").toString
+        )
+
+        val future = bagAuditor.getAuditSummary(
+          unpackLocation = bagLocation.objectLocation,
+          storageSpace = bagLocation.storageSpace
+        )
+
+        whenReady(future) { result =>
+          result shouldBe a[IngestFailed[_]]
+        }
+      }
+    }
+  }
+
 }

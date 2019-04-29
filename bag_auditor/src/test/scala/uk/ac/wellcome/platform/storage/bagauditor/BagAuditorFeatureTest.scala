@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.storage.bagauditor
 
+import java.nio.file.Paths
+
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
@@ -16,32 +18,27 @@ class BagAuditorFeatureTest
 
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      createObjectsWith(
-        bucket,
-        "bag123/bag-info.txt",
-        "bag123/data/1.jpg",
-        "bag123/data/2.jpg"
-      )
+      withBag(bucket) { bagLocation =>
+        val searchRoot = bagLocation.objectLocation
+        val payload = createObjectLocationPayloadWith(searchRoot)
+        val expectedPayload = payload
 
-      val searchRoot = createObjectLocationWith(bucket, "bag123")
-      val payload = createObjectLocationPayloadWith(searchRoot)
-      val expectedPayload = payload
+        withLocalSqsQueue { queue =>
+          withLocalSnsTopic { ingestTopic =>
+            withLocalSnsTopic { outgoingTopic =>
+              withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+                sendNotificationToSQS(queue, payload)
 
-      withLocalSqsQueue { queue =>
-        withLocalSnsTopic { ingestTopic =>
-          withLocalSnsTopic { outgoingTopic =>
-            withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
-              sendNotificationToSQS(queue, payload)
+                eventually {
+                  assertQueueEmpty(queue)
 
-              eventually {
-                assertQueueEmpty(queue)
+                  assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
-                assertSnsReceivesOnly(expectedPayload, outgoingTopic)
-
-                assertTopicReceivesIngestEvent(payload.ingestId, ingestTopic) {
-                  events =>
-                    events should have size 1
-                    events.head.description shouldBe "Locating bag root succeeded"
+                  assertTopicReceivesIngestEvent(payload.ingestId, ingestTopic) {
+                    events =>
+                      events should have size 1
+                      events.head.description shouldBe "Locating bag root succeeded"
+                  }
                 }
               }
             }
@@ -53,34 +50,31 @@ class BagAuditorFeatureTest
 
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      createObjectsWith(
-        bucket,
-        "bag123/subdir/bag-info.txt",
-        "bag123/subdir/data/1.jpg",
-        "bag123/subdir/data/2.jpg"
-      )
+      withBag(bucket, bagRootDirectory = Some("subdir")) { bagLocation =>
+        val searchRoot = bagLocation.objectLocation
+        val bagRoot = bagLocation.objectLocation.copy(
+          key = Paths.get(bagLocation.completePath, "subdir").toString
+        )
 
-      val searchRoot = createObjectLocationWith(bucket, "bag123")
-      val bagRoot = createObjectLocationWith(bucket, "bag123/subdir")
+        val payload = createObjectLocationPayloadWith(searchRoot)
+        val expectedPayload = payload.copy(objectLocation = bagRoot)
 
-      val payload = createObjectLocationPayloadWith(searchRoot)
-      val expectedPayload = payload.copy(objectLocation = bagRoot)
+        withLocalSqsQueue { queue =>
+          withLocalSnsTopic { ingestTopic =>
+            withLocalSnsTopic { outgoingTopic =>
+              withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+                sendNotificationToSQS(queue, payload)
 
-      withLocalSqsQueue { queue =>
-        withLocalSnsTopic { ingestTopic =>
-          withLocalSnsTopic { outgoingTopic =>
-            withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
-              sendNotificationToSQS(queue, payload)
+                eventually {
+                  assertQueueEmpty(queue)
 
-              eventually {
-                assertQueueEmpty(queue)
+                  assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
-                assertSnsReceivesOnly(expectedPayload, outgoingTopic)
-
-                assertTopicReceivesIngestEvent(payload.ingestId, ingestTopic) {
-                  events =>
-                    events should have size 1
-                    events.head.description shouldBe "Locating bag root succeeded"
+                  assertTopicReceivesIngestEvent(payload.ingestId, ingestTopic) {
+                    events =>
+                      events should have size 1
+                      events.head.description shouldBe "Locating bag root succeeded"
+                  }
                 }
               }
             }
@@ -92,38 +86,34 @@ class BagAuditorFeatureTest
 
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
-      createObjectsWith(
-        bucket,
-        "bag123/subdir1/subdir2/subdir3/bag-info.txt",
-        "bag123/subdir1/subdir2/subdir3/data/1.jpg",
-        "bag123/subdir1/subdir2/subdir3/data/2.jpg"
-      )
+      withBag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
+        bagLocation =>
+          val searchRoot = bagLocation.objectLocation
+          val payload = createObjectLocationPayloadWith(searchRoot)
 
-      val searchRoot = createObjectLocationWith(bucket, "bag123")
-      val payload = createObjectLocationPayloadWith(searchRoot)
+          withLocalSqsQueue { queue =>
+            withLocalSnsTopic { ingestTopic =>
+              withLocalSnsTopic { outgoingTopic =>
+                withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+                  sendNotificationToSQS(queue, payload)
 
-      withLocalSqsQueue { queue =>
-        withLocalSnsTopic { ingestTopic =>
-          withLocalSnsTopic { outgoingTopic =>
-            withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
-              sendNotificationToSQS(queue, payload)
+                  eventually {
+                    assertQueueEmpty(queue)
 
-              eventually {
-                assertQueueEmpty(queue)
+                    assertSnsReceivesNothing(outgoingTopic)
 
-                assertSnsReceivesNothing(outgoingTopic)
-
-                assertTopicReceivesIngestStatus(
-                  payload.ingestId,
-                  status = Ingest.Failed,
-                  ingestTopic = ingestTopic) { events =>
-                  events should have size 1
-                  events.head.description shouldBe "Locating bag root failed"
+                    assertTopicReceivesIngestStatus(
+                      payload.ingestId,
+                      status = Ingest.Failed,
+                      ingestTopic = ingestTopic) { events =>
+                      events should have size 1
+                      events.head.description shouldBe "Locating bag root failed"
+                    }
+                  }
                 }
               }
             }
           }
-        }
       }
     }
   }
