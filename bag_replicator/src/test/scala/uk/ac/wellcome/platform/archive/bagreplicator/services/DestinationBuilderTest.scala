@@ -1,9 +1,16 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
 
-class DestinationBuilderTest extends FunSpec with Matchers with ExternalIdentifierGenerators with StorageSpaceGenerators {
+class DestinationBuilderTest
+    extends FunSpec
+    with Matchers
+    with ExternalIdentifierGenerators
+    with StorageSpaceGenerators {
 
   it("uses the root path if provided") {
     val builder = new DestinationBuilder(

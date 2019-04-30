@@ -35,19 +35,19 @@ trait BagReplicatorFixtures
     arn = "arn::default_q"
   )
 
-  def withBagReplicatorWorker[R](
-    ingestTopic: Topic,
-    outgoingTopic: Topic)(
+  def withBagReplicatorWorker[R](ingestTopic: Topic, outgoingTopic: Topic)(
     testWith: TestWith[BagReplicatorWorker, R]
   ): R =
     withLocalS3Bucket { bucket =>
       val config = createReplicatorDestinationConfigWith(bucket)
-      withBagReplicatorWorker(defaultQueue, ingestTopic, outgoingTopic, config) { worker =>
-        testWith(worker)
+      withBagReplicatorWorker(defaultQueue, ingestTopic, outgoingTopic, config) {
+        worker =>
+          testWith(worker)
       }
     }
 
-  def withBagReplicatorWorker[R](bucket: Bucket)(testWith: TestWith[BagReplicatorWorker, R]): R = {
+  def withBagReplicatorWorker[R](bucket: Bucket)(
+    testWith: TestWith[BagReplicatorWorker, R]): R = {
     val config = createReplicatorDestinationConfigWith(bucket)
     withBagReplicatorWorker(config) { worker =>
       testWith(worker)
@@ -63,23 +63,22 @@ trait BagReplicatorFixtures
       }
     }
 
-  def withBagReplicatorWorker[R](
-    ingestTopic: Topic,
-    outgoingTopic: Topic,
-    bucket: Bucket)(
+  def withBagReplicatorWorker[R](ingestTopic: Topic,
+                                 outgoingTopic: Topic,
+                                 bucket: Bucket)(
     testWith: TestWith[BagReplicatorWorker, R]
   ): R = {
     val config = createReplicatorDestinationConfigWith(bucket)
-    withBagReplicatorWorker(defaultQueue, ingestTopic, outgoingTopic, config) { worker =>
-      testWith(worker)
+    withBagReplicatorWorker(defaultQueue, ingestTopic, outgoingTopic, config) {
+      worker =>
+        testWith(worker)
     }
   }
 
-  def withBagReplicatorWorker[R](
-    queue: Queue,
-    ingestTopic: Topic,
-    outgoingTopic: Topic,
-    config: ReplicatorDestinationConfig)(
+  def withBagReplicatorWorker[R](queue: Queue,
+                                 ingestTopic: Topic,
+                                 outgoingTopic: Topic,
+                                 config: ReplicatorDestinationConfig)(
     testWith: TestWith[BagReplicatorWorker, R]): R =
     withActorSystem { implicit actorSystem =>
       withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
@@ -101,9 +100,10 @@ trait BagReplicatorFixtures
       }
     }
 
-  def createReplicatorDestinationConfigWith(
-    bucket: Bucket,
-    rootPath: Option[String] = Some(randomAlphanumeric())): ReplicatorDestinationConfig =
+  def createReplicatorDestinationConfigWith(bucket: Bucket,
+                                            rootPath: Option[String] = Some(
+                                              randomAlphanumeric()))
+    : ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
       namespace = bucket.name,
       rootPath = rootPath
