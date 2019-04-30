@@ -108,7 +108,8 @@ class BagReplicatorWorkerTest
                   Paths.get(
                     config.rootPath.get,
                     payload.storageSpace.underlying,
-                    payload.externalIdentifier.toString
+                    payload.externalIdentifier.toString,
+                    s"v${payload.version}"
                   )
                   .toString
                 destination.key shouldBe expectedKey
@@ -119,20 +120,21 @@ class BagReplicatorWorkerTest
       }
     }
 
-    it("key ends with the external identifier of the bag") {
+    it("key ends with the external identifier and version of the bag") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
           withBagReplicatorWorker(archiveBucket) { worker =>
             withBag(ingestsBucket) { case (bagRootLocation, _) =>
               val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
+                bagRootLocation = bagRootLocation,
+                version = 3
               )
 
                 val future = worker.processMessage(payload)
 
               whenReady(future) { result =>
                 val destination = result.summary.get.destination
-                destination.key should endWith(payload.externalIdentifier.toString)
+                destination.key should endWith(s"/${payload.externalIdentifier.toString}/v3")
               }
             }
           }

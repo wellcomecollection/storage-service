@@ -48,7 +48,8 @@ class BagReplicatorFeatureTest
                           .get(
                             destination.rootPath.getOrElse(""),
                             payload.storageSpace.toString,
-                            payload.externalIdentifier.toString
+                            payload.externalIdentifier.toString,
+                            s"v${payload.version}"
                           )
                           .toString
                       )

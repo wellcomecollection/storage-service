@@ -23,11 +23,12 @@ class DestinationBuilderTest
 
     val location = builder.buildDestination(
       storageSpace = storageSpace,
-      externalIdentifier = externalIdentifier
+      externalIdentifier = externalIdentifier,
+      version = 1
     )
 
     location.namespace shouldBe "MyNamespace"
-    location.key shouldBe s"RootPath/${storageSpace.underlying}/${externalIdentifier.toString}"
+    location.key shouldBe s"RootPath/${storageSpace.underlying}/${externalIdentifier.toString}/v1"
   }
 
   it("skips the root path if not provided") {
@@ -41,10 +42,11 @@ class DestinationBuilderTest
 
     val location = builder.buildDestination(
       storageSpace = storageSpace,
-      externalIdentifier = externalIdentifier
+      externalIdentifier = externalIdentifier,
+      version = 2
     )
 
     location.namespace shouldBe "MyNamespace"
-    location.key shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}"
+    location.key shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/v2"
   }
 }

@@ -10,14 +10,16 @@ class DestinationBuilder(namespace: String, rootPath: Option[String]) {
 
   def buildDestination(
     storageSpace: StorageSpace,
-    externalIdentifier: ExternalIdentifier
+    externalIdentifier: ExternalIdentifier,
+    version: Int
   ): ObjectLocation = ObjectLocation(
     namespace = namespace,
     key = Paths
       .get(
         rootPath.getOrElse(""),
         storageSpace.toString,
-        externalIdentifier.toString
+        externalIdentifier.toString,
+        s"v$version"
       )
       .toString
   )

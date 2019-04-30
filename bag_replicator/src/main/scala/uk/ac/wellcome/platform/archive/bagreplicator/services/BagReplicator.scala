@@ -34,7 +34,8 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
   def replicate(
     bagRootLocation: ObjectLocation,
     storageSpace: StorageSpace,
-    externalIdentifier: ExternalIdentifier)
+    externalIdentifier: ExternalIdentifier,
+    version: Int)
     : Future[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
@@ -44,7 +45,8 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
 
     val destination = destinationBuilder.buildDestination(
       storageSpace = storageSpace,
-      externalIdentifier = externalIdentifier
+      externalIdentifier = externalIdentifier,
+      version = version
     )
 
     val copyOperation = for {
