@@ -31,8 +31,8 @@ class VerifierWorkerTest
           withLocalS3Bucket { bucket =>
             withBag(bucket) {
               case (bagRootLocation, _) =>
-                val payload = createObjectLocationPayloadWith(
-                  bagRootLocation
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation
                 )
 
                 val future = service.processMessage(payload)
@@ -67,8 +67,8 @@ class VerifierWorkerTest
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
               case (bagRootLocation, _) =>
-                val payload = createObjectLocationPayloadWith(
-                  bagRootLocation
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation
                 )
 
                 val future = service.processMessage(payload)
@@ -104,8 +104,8 @@ class VerifierWorkerTest
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
               case (bagRootLocation, _) =>
-                val payload = createObjectLocationPayloadWith(
-                  bagRootLocation
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation
                 )
 
                 val future = service.processMessage(payload)
@@ -140,8 +140,8 @@ class VerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket) {
             case (bagRootLocation, _) =>
-              val payload = createObjectLocationPayloadWith(
-                bagRootLocation
+              val payload = createBagInformationPayloadWith(
+                bagRootLocation = bagRootLocation
               )
 
               val future = service.processMessage(payload)
