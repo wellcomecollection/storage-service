@@ -37,8 +37,8 @@ class BagReplicatorFeatureTest
 
                 withBag(ingestsBucket, bagInfo = bagInfo) {
                   case (srcBagRootLocation, storageSpace) =>
-                    val payload = createObjectLocationPayloadWith(
-                      objectLocation = srcBagRootLocation,
+                    val payload = createBagInformationPayloadWith(
+                      bagRootLocation = srcBagRootLocation,
                       storageSpace = storageSpace
                     )
 

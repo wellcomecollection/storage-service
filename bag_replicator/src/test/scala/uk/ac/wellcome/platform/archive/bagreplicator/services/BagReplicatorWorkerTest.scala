@@ -31,9 +31,10 @@ class BagReplicatorWorkerTest
               outgoingTopic = outgoingTopic,
               bucket = archiveBucket) { service =>
               withBag(ingestsBucket) {
-                case (srcBagRootLocation, _) =>
-                  val payload = createObjectLocationPayloadWith(
-                    srcBagRootLocation
+                case (srcBagRootLocation, storageSpace) =>
+                  val payload = createBagInformationPayloadWith(
+                    bagRootLocation = srcBagRootLocation,
+                    storageSpace = storageSpace
                   )
 
                   val future = service.processMessage(payload)
@@ -202,7 +203,7 @@ class BagReplicatorWorkerTest
         withBagReplicatorWorker(
           ingestTopic = ingestTopic,
           outgoingTopic = outgoingTopic) { service =>
-          val payload = createObjectLocationPayload
+          val payload = createBagInformationPayload
 
           val future = service.processMessage(payload)
 

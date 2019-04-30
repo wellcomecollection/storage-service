@@ -20,9 +20,12 @@ trait PayloadGenerators extends ExternalIdentifierGenerators with StorageSpaceGe
       objectLocation = objectLocation
     )
 
+  def createObjectLocationPayload: ObjectLocationPayload =
+    createObjectLocationPayloadWith()
+
   def createBagInformationPayloadWith(
     ingestId: IngestID = createIngestID,
-    bagRootLocation: ObjectLocation,
+    bagRootLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: Int = 1): BagInformationPayload =
@@ -34,6 +37,6 @@ trait PayloadGenerators extends ExternalIdentifierGenerators with StorageSpaceGe
       version = version
     )
 
-  def createObjectLocationPayload: ObjectLocationPayload =
-    createObjectLocationPayloadWith()
+  def createBagInformationPayload: BagInformationPayload =
+    createBagInformationPayloadWith()
 }
