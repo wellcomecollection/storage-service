@@ -32,6 +32,11 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
   val s3PrefixCopier = S3PrefixCopier(s3Client)
   val s3BagLocator = new S3BagLocator(s3Client)
 
+  val destinationBuilder = new DestinationBuilder(
+    namespace = config.namespace,
+    rootPath = config.rootPath
+  )
+
   def replicate(bagRootLocation: ObjectLocation, storageSpace: StorageSpace)
     : Future[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
@@ -43,9 +48,9 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
     val copyOperation = for {
       identifier <- getBagIdentifier(bagRootLocation)
 
-      destination = buildDestination(
+      destination = destinationBuilder.buildDestination(
         storageSpace = storageSpace,
-        id = identifier
+        externalIdentifier = identifier
       )
 
       _ <- copyBag(
@@ -80,20 +85,6 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
         srcLocationPrefix = bagRoot,
         dstLocationPrefix = destination
       )
-
-  private def buildDestination(
-    storageSpace: StorageSpace,
-    id: ExternalIdentifier
-  ): ObjectLocation = ObjectLocation(
-    namespace = config.namespace,
-    key = Paths
-      .get(
-        config.rootPath.getOrElse(""),
-        storageSpace.toString,
-        id.toString
-      )
-      .toString
-  )
 
   private def getBagIdentifier(
     bagRootLocation: ObjectLocation): Future[ExternalIdentifier] =
