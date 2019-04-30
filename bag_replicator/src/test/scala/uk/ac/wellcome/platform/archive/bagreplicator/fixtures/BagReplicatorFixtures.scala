@@ -48,6 +48,15 @@ trait BagReplicatorFixtures
     }
 
   def withBagReplicatorWorker[R](
+    config: ReplicatorDestinationConfig
+  )(testWith: TestWith[BagReplicatorWorker, R]): R =
+    withLocalSnsTopic { topic =>
+      withBagReplicatorWorker(defaultQueue, topic, topic, config) { worker =>
+        testWith(worker)
+      }
+    }
+
+  def withBagReplicatorWorker[R](
     ingestTopic: Topic,
     outgoingTopic: Topic,
     bucket: Bucket)(

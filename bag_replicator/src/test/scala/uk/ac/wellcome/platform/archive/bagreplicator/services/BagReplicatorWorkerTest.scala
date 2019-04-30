@@ -63,6 +63,26 @@ class BagReplicatorWorkerTest
     }
   }
 
+  it("copies the bag to the configured bucket") {
+    withLocalS3Bucket { ingestsBucket =>
+      withLocalS3Bucket { archiveBucket =>
+        val config = createReplicatorDestinationConfigWith(archiveBucket)
+        withBagReplicatorWorker(config) { worker =>
+          withBag(ingestsBucket) { case (bagRootLocation, _) =>
+            val payload = createObjectLocationPayloadWith(bagRootLocation)
+
+            val future = worker.processMessage(payload)
+
+            whenReady(future) { result =>
+              val destination = result.summary.get.destination
+              destination.namespace shouldBe archiveBucket.name
+            }
+          }
+        }
+      }
+    }
+  }
+
   it("sends a failed IngestUpdate if replication fails") {
     withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
