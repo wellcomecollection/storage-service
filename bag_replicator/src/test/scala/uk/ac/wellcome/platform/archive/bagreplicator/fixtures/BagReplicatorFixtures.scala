@@ -47,6 +47,13 @@ trait BagReplicatorFixtures
       }
     }
 
+  def withBagReplicatorWorker[R](bucket: Bucket)(testWith: TestWith[BagReplicatorWorker, R]): R = {
+    val config = createReplicatorDestinationConfigWith(bucket)
+    withBagReplicatorWorker(config) { worker =>
+      testWith(worker)
+    }
+  }
+
   def withBagReplicatorWorker[R](
     config: ReplicatorDestinationConfig
   )(testWith: TestWith[BagReplicatorWorker, R]): R =
@@ -95,10 +102,11 @@ trait BagReplicatorFixtures
     }
 
   def createReplicatorDestinationConfigWith(
-    bucket: Bucket): ReplicatorDestinationConfig =
+    bucket: Bucket,
+    rootPath: Option[String] = Some(randomAlphanumeric())): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
       namespace = bucket.name,
-      rootPath = Some(randomAlphanumeric())
+      rootPath = rootPath
     )
 
   def verifyBagCopied(src: ObjectLocation, dst: ObjectLocation): Assertion = {
