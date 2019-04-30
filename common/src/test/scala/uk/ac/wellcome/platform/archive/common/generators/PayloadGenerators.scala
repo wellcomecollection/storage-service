@@ -28,7 +28,7 @@ trait PayloadGenerators extends StorageSpaceGenerators with S3 {
     BagInformationPayload(
       ingestId = ingestId,
       storageSpace = storageSpace,
-      bagRootLocation = bagRootLocation,
+      objectLocation = bagRootLocation,
       externalIdentifier = externalIdentifier,
       version = version
     )

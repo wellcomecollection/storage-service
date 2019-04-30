@@ -54,7 +54,7 @@ class BagAuditorWorker(
         BagInformationPayload(
           ingestId = payload.ingestId,
           storageSpace = payload.storageSpace,
-          bagRootLocation =
+          objectLocation =
             auditSummary.summary.auditInformation.bagRootLocation,
           externalIdentifier =
             auditSummary.summary.auditInformation.externalIdentifier,
