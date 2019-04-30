@@ -95,25 +95,27 @@ class BagReplicatorWorkerTest
           val config = createReplicatorDestinationConfigWith(archiveBucket)
           withBagReplicatorWorker(config) { worker =>
             val bagInfo = createBagInfo
-            withBag(ingestsBucket, bagInfo = bagInfo) { case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+            withBag(ingestsBucket, bagInfo = bagInfo) {
+              case (bagRootLocation, _) =>
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation
+                )
 
-              val future = worker.processMessage(payload)
+                val future = worker.processMessage(payload)
 
-              whenReady(future) { result =>
-                val destination = result.summary.get.destination
-                val expectedKey =
-                  Paths.get(
-                    config.rootPath.get,
-                    payload.storageSpace.underlying,
-                    payload.externalIdentifier.toString,
-                    s"v${payload.version}"
-                  )
-                  .toString
-                destination.key shouldBe expectedKey
-              }
+                whenReady(future) { result =>
+                  val destination = result.summary.get.destination
+                  val expectedKey =
+                    Paths
+                      .get(
+                        config.rootPath.get,
+                        payload.storageSpace.underlying,
+                        payload.externalIdentifier.toString,
+                        s"v${payload.version}"
+                      )
+                      .toString
+                  destination.key shouldBe expectedKey
+                }
             }
           }
         }
@@ -124,18 +126,20 @@ class BagReplicatorWorkerTest
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
           withBagReplicatorWorker(archiveBucket) { worker =>
-            withBag(ingestsBucket) { case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation,
-                version = 3
-              )
+            withBag(ingestsBucket) {
+              case (bagRootLocation, _) =>
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation,
+                  version = 3
+                )
 
                 val future = worker.processMessage(payload)
 
-              whenReady(future) { result =>
-                val destination = result.summary.get.destination
-                destination.key should endWith(s"/${payload.externalIdentifier.toString}/v3")
-              }
+                whenReady(future) { result =>
+                  val destination = result.summary.get.destination
+                  destination.key should endWith(
+                    s"/${payload.externalIdentifier.toString}/v3")
+                }
             }
           }
         }
@@ -150,17 +154,19 @@ class BagReplicatorWorkerTest
             rootPath = None
           )
           withBagReplicatorWorker(config) { worker =>
-            withBag(ingestsBucket) { case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+            withBag(ingestsBucket) {
+              case (bagRootLocation, _) =>
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation
+                )
 
-              val future = worker.processMessage(payload)
+                val future = worker.processMessage(payload)
 
-              whenReady(future) { result =>
-                val destination = result.summary.get.destination
-                destination.key should startWith(payload.storageSpace.underlying)
-              }
+                whenReady(future) { result =>
+                  val destination = result.summary.get.destination
+                  destination.key should startWith(
+                    payload.storageSpace.underlying)
+                }
             }
           }
         }
@@ -175,17 +181,18 @@ class BagReplicatorWorkerTest
             rootPath = Some("rootprefix")
           )
           withBagReplicatorWorker(config) { worker =>
-            withBag(ingestsBucket) { case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+            withBag(ingestsBucket) {
+              case (bagRootLocation, _) =>
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation
+                )
 
-              val future = worker.processMessage(payload)
+                val future = worker.processMessage(payload)
 
-              whenReady(future) { result =>
-                val destination = result.summary.get.destination
-                destination.key should startWith("rootprefix/")
-              }
+                whenReady(future) { result =>
+                  val destination = result.summary.get.destination
+                  destination.key should startWith("rootprefix/")
+                }
             }
           }
         }

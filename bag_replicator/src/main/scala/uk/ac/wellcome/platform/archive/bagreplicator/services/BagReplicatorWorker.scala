@@ -33,7 +33,8 @@ class BagReplicatorWorker(
     with Logging
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[BagInformationPayload, ReplicationSummary](alpakkaSQSWorkerConfig) {
+    AlpakkaSQSWorker[BagInformationPayload, ReplicationSummary](
+      alpakkaSQSWorkerConfig) {
       processMessage
     }
 

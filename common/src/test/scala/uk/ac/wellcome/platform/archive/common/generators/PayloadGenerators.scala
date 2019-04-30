@@ -10,7 +10,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
-trait PayloadGenerators extends ExternalIdentifierGenerators with StorageSpaceGenerators with S3 {
+trait PayloadGenerators
+    extends ExternalIdentifierGenerators
+    with StorageSpaceGenerators
+    with S3 {
   def createObjectLocationPayloadWith(
     objectLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace): ObjectLocationPayload =

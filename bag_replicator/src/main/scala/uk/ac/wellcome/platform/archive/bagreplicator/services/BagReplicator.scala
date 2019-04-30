@@ -28,12 +28,10 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
     rootPath = config.rootPath
   )
 
-  def replicate(
-    bagRootLocation: ObjectLocation,
-    storageSpace: StorageSpace,
-    externalIdentifier: ExternalIdentifier,
-    version: Int)
-    : Future[IngestStepResult[ReplicationSummary]] = {
+  def replicate(bagRootLocation: ObjectLocation,
+                storageSpace: StorageSpace,
+                externalIdentifier: ExternalIdentifier,
+                version: Int): Future[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,
