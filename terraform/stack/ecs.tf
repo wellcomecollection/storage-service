@@ -20,7 +20,7 @@ module "cluster_hosts" {
 
   cluster_name = "${aws_ecs_cluster.cluster.name}"
 
-  asg_min     = "1"
+  asg_min     = "${min(1, var.desired_ec2_instances)}"
   asg_desired = "${var.desired_ec2_instances}"
   asg_max     = "${var.desired_ec2_instances}"
 

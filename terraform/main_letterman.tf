@@ -1,13 +1,13 @@
-resource "aws_api_gateway_base_path_mapping" "mapping-stewart" {
-  api_id      = "${module.stack-stewart.api_gateway_id}"
+resource "aws_api_gateway_base_path_mapping" "mapping_letterman" {
+  api_id      = "${module.stack_letterman.api_gateway_id}"
   domain_name = "${local.domain_name}"
   base_path   = "storage"
 }
 
-module "stack-stewart" {
+module "stack_letterman" {
   source = "stack"
 
-  namespace = "${local.namespace}-stewart"
+  namespace = "${local.namespace}-letterman"
 
   api_url          = "${local.api_url}"
   domain_name      = "${local.domain_name}"
