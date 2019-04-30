@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import java.io.InputStream
-import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
