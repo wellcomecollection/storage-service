@@ -43,7 +43,8 @@ class BagReplicatorWorker(
     for {
       replicationSummary <- bagReplicator.replicate(
         bagRootLocation = payload.bagRootLocation,
-        storageSpace = payload.storageSpace
+        storageSpace = payload.storageSpace,
+        externalIdentifier = payload.externalIdentifier
       )
       _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
