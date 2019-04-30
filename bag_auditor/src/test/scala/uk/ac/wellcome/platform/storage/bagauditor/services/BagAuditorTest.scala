@@ -17,56 +17,59 @@ class BagAuditorTest
   it("gets the audit information for a valid bag") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(bucket, bagInfo = bagInfo) { case (bagRootLocation, storageSpace) =>
-        val future = bagAuditor.getAuditSummary(
-          unpackLocation = bagRootLocation,
-          storageSpace = storageSpace
-        )
+      withBag(bucket, bagInfo = bagInfo) {
+        case (bagRootLocation, storageSpace) =>
+          val future = bagAuditor.getAuditSummary(
+            unpackLocation = bagRootLocation,
+            storageSpace = storageSpace
+          )
 
-        whenReady(future) { result =>
-          val auditSummary = result.summary
-          val auditInformation = auditSummary.auditInformation
+          whenReady(future) { result =>
+            val auditSummary = result.summary
+            val auditInformation = auditSummary.auditInformation
 
-          auditInformation.bagRootLocation shouldBe bagRootLocation
-          auditInformation.externalIdentifier shouldBe bagInfo.externalIdentifier
-          auditInformation.version shouldBe 1
-        }
+            auditInformation.bagRootLocation shouldBe bagRootLocation
+            auditInformation.externalIdentifier shouldBe bagInfo.externalIdentifier
+            auditInformation.version shouldBe 1
+          }
       }
     }
   }
 
   it("errors if it cannot find the bag root") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket, bagRootDirectory = Some("1/2/3")) { case (_, storageSpace) =>
-        val future = bagAuditor.getAuditSummary(
-          unpackLocation = createObjectLocationWith(bucket, key = "1/"),
-          storageSpace = storageSpace
-        )
+      withBag(bucket, bagRootDirectory = Some("1/2/3")) {
+        case (_, storageSpace) =>
+          val future = bagAuditor.getAuditSummary(
+            unpackLocation = createObjectLocationWith(bucket, key = "1/"),
+            storageSpace = storageSpace
+          )
 
-        whenReady(future) { result =>
-          result shouldBe a[IngestFailed[_]]
-        }
+          whenReady(future) { result =>
+            result shouldBe a[IngestFailed[_]]
+          }
       }
     }
   }
 
   it("errors if it cannot find the bag identifier") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket) { case (bagRootLocation, storageSpace) =>
-        val bagInfoLocation = bagRootLocation.join("bag-info.txt")
-        s3Client.deleteObject(
-          bagInfoLocation.namespace,
-          bagInfoLocation.key
-        )
+      withBag(bucket) {
+        case (bagRootLocation, storageSpace) =>
+          val bagInfoLocation = bagRootLocation.join("bag-info.txt")
+          s3Client.deleteObject(
+            bagInfoLocation.namespace,
+            bagInfoLocation.key
+          )
 
-        val future = bagAuditor.getAuditSummary(
-          unpackLocation = bagRootLocation,
-          storageSpace = storageSpace
-        )
+          val future = bagAuditor.getAuditSummary(
+            unpackLocation = bagRootLocation,
+            storageSpace = storageSpace
+          )
 
-        whenReady(future) { result =>
-          result shouldBe a[IngestFailed[_]]
-        }
+          whenReady(future) { result =>
+            result shouldBe a[IngestFailed[_]]
+          }
       }
     }
   }
