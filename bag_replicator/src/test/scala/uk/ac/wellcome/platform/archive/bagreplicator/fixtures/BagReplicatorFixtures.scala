@@ -30,15 +30,40 @@ trait BagReplicatorFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture {
 
-  def withBagReplicatorWorker[R](queue: Queue = Queue(
-                                   "default_q",
-                                   "arn::default_q"
-                                 ),
-                                 ingestTopic: Topic,
-                                 outgoingTopic: Topic,
-                                 config: ReplicatorDestinationConfig =
-                                   createReplicatorDestinationConfigWith(
-                                     Bucket(randomAlphanumeric())))(
+  private val defaultQueue = Queue(
+    url = "default_q",
+    arn = "arn::default_q"
+  )
+
+  def withBagReplicatorWorker[R](
+    ingestTopic: Topic,
+    outgoingTopic: Topic)(
+    testWith: TestWith[BagReplicatorWorker, R]
+  ): R =
+    withLocalS3Bucket { bucket =>
+      val config = createReplicatorDestinationConfigWith(bucket)
+      withBagReplicatorWorker(defaultQueue, ingestTopic, outgoingTopic, config) { worker =>
+        testWith(worker)
+      }
+    }
+
+  def withBagReplicatorWorker[R](
+    ingestTopic: Topic,
+    outgoingTopic: Topic,
+    bucket: Bucket)(
+    testWith: TestWith[BagReplicatorWorker, R]
+  ): R = {
+    val config = createReplicatorDestinationConfigWith(bucket)
+    withBagReplicatorWorker(defaultQueue, ingestTopic, outgoingTopic, config) { worker =>
+      testWith(worker)
+    }
+  }
+
+  def withBagReplicatorWorker[R](
+    queue: Queue,
+    ingestTopic: Topic,
+    outgoingTopic: Topic,
+    config: ReplicatorDestinationConfig)(
     testWith: TestWith[BagReplicatorWorker, R]): R =
     withActorSystem { implicit actorSystem =>
       withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>

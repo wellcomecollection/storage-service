@@ -22,13 +22,12 @@ class BagReplicatorWorkerTest
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { ingestsBucket =>
       withLocalS3Bucket { archiveBucket =>
-        val destination = createReplicatorDestinationConfigWith(archiveBucket)
         withLocalSnsTopic { ingestTopic =>
           withLocalSnsTopic { outgoingTopic =>
             withBagReplicatorWorker(
               ingestTopic = ingestTopic,
               outgoingTopic = outgoingTopic,
-              config = destination) { service =>
+              bucket = archiveBucket) { service =>
               withBag(ingestsBucket) {
                 case (srcBagRootLocation, _) =>
                   val payload = createObjectLocationPayloadWith(
