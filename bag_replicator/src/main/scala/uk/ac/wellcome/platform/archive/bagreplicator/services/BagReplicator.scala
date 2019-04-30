@@ -29,6 +29,7 @@ import scala.util.{Failure, Success}
 class BagReplicator(config: ReplicatorDestinationConfig)(
   implicit s3Client: AmazonS3,
   ec: ExecutionContext) {
+
   val s3PrefixCopier = S3PrefixCopier(s3Client)
   val s3BagLocator = new S3BagLocator(s3Client)
 

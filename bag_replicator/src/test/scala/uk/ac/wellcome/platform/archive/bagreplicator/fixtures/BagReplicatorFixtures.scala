@@ -53,7 +53,7 @@ trait BagReplicatorFixtures
           outgoingPublisher =>
             withMonitoringClient { implicit monitoringClient =>
               val service = new BagReplicatorWorker(
-                alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+                config = createAlpakkaSQSWorkerConfig(queue),
                 bagReplicator = new BagReplicator(config),
                 ingestUpdater = ingestUpdater,
                 outgoingPublisher = outgoingPublisher

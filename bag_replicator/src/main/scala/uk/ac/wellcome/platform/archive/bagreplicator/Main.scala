@@ -45,7 +45,7 @@ object Main extends WellcomeTypesafeApp {
     val operationName = "replicating"
 
     new BagReplicatorWorker(
-      alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = AlpakkaSqsWorkerConfigBuilder.build(config),
       bagReplicator = new BagReplicator(
         config = ReplicatorDestinationConfig
           .buildDestinationConfig(config)
