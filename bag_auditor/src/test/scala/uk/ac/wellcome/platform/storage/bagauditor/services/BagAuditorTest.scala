@@ -1,5 +1,4 @@
 package uk.ac.wellcome.platform.storage.bagauditor.services
-import java.nio.file.Paths
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
@@ -18,17 +17,17 @@ class BagAuditorTest
   it("gets the audit information for a valid bag") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(bucket, bagInfo = bagInfo) { bagLocation =>
+      withBag(bucket, bagInfo = bagInfo) { case (bagRootLocation, storageSpace) =>
         val future = bagAuditor.getAuditSummary(
-          unpackLocation = bagLocation.objectLocation,
-          storageSpace = bagLocation.storageSpace
+          unpackLocation = bagRootLocation,
+          storageSpace = storageSpace
         )
 
         whenReady(future) { result =>
           val auditSummary = result.summary
           val auditInformation = auditSummary.auditInformation
 
-          auditInformation.bagRootLocation shouldBe bagLocation.objectLocation
+          auditInformation.bagRootLocation shouldBe bagRootLocation
           auditInformation.externalIdentifier shouldBe bagInfo.externalIdentifier
           auditInformation.version shouldBe 1
         }
@@ -38,10 +37,10 @@ class BagAuditorTest
 
   it("errors if it cannot find the bag root") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket, bagRootDirectory = Some("1/2/3")) { bagLocation =>
+      withBag(bucket, bagRootDirectory = Some("1/2/3")) { case (_, storageSpace) =>
         val future = bagAuditor.getAuditSummary(
           unpackLocation = createObjectLocationWith(bucket, key = "1/"),
-          storageSpace = bagLocation.storageSpace
+          storageSpace = storageSpace
         )
 
         whenReady(future) { result =>
@@ -53,15 +52,16 @@ class BagAuditorTest
 
   it("errors if it cannot find the bag identifier") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket) { bagLocation =>
+      withBag(bucket) { case (bagRootLocation, storageSpace) =>
+        val bagInfoLocation = bagRootLocation.join("bag-info.txt")
         s3Client.deleteObject(
-          bagLocation.objectLocation.namespace,
-          Paths.get(bagLocation.objectLocation.key, "bag-info.txt").toString
+          bagInfoLocation.namespace,
+          bagInfoLocation.key
         )
 
         val future = bagAuditor.getAuditSummary(
-          unpackLocation = bagLocation.objectLocation,
-          storageSpace = bagLocation.storageSpace
+          unpackLocation = bagRootLocation,
+          storageSpace = storageSpace
         )
 
         whenReady(future) { result =>
@@ -70,5 +70,4 @@ class BagAuditorTest
       }
     }
   }
-
 }

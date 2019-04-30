@@ -1,14 +1,11 @@
 package uk.ac.wellcome.platform.storage.bagauditor
 
-import java.nio.file.Paths
-
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagAuditorFeatureTest
     extends FunSpec
@@ -19,40 +16,42 @@ class BagAuditorFeatureTest
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(bucket, bagInfo = bagInfo) { bagLocation =>
-        val payload = createObjectLocationPayloadWith(
-          objectLocation = bagLocation.objectLocation,
-          storageSpace = bagLocation.storageSpace
-        )
+      withBag(bucket, bagInfo = bagInfo) {
+        case (bagRootLocation, storageSpace) =>
+          val payload = createObjectLocationPayloadWith(
+            objectLocation = bagRootLocation,
+            storageSpace = storageSpace
+          )
 
-        val expectedPayload = createBagInformationPayloadWith(
-          ingestId = payload.ingestId,
-          bagRootLocation = bagLocation.objectLocation,
-          storageSpace = bagLocation.storageSpace,
-          externalIdentifier = bagInfo.externalIdentifier
-        )
+          val expectedPayload = createBagInformationPayloadWith(
+            ingestId = payload.ingestId,
+            bagRootLocation = bagRootLocation,
+            storageSpace = storageSpace,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
 
-        withLocalSqsQueue { queue =>
-          withLocalSnsTopic { ingestTopic =>
-            withLocalSnsTopic { outgoingTopic =>
-              withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
-                sendNotificationToSQS(queue, payload)
+          withLocalSqsQueue { queue =>
+            withLocalSnsTopic { ingestTopic =>
+              withLocalSnsTopic { outgoingTopic =>
+                withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+                  sendNotificationToSQS(queue, payload)
 
-                eventually {
-                  assertQueueEmpty(queue)
+                  eventually {
+                    assertQueueEmpty(queue)
 
-                  assertSnsReceivesOnly(expectedPayload, outgoingTopic)
+                    assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
-                  assertTopicReceivesIngestEvent(payload.ingestId, ingestTopic) {
-                    events =>
+                    assertTopicReceivesIngestEvent(
+                      payload.ingestId,
+                      ingestTopic) { events =>
                       events should have size 1
                       events.head.description shouldBe "Locating bag root succeeded"
+                    }
                   }
                 }
               }
             }
           }
-        }
       }
     }
   }
@@ -61,21 +60,18 @@ class BagAuditorFeatureTest
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo, bagRootDirectory = Some("subdir")) {
-        bagLocation =>
-          val searchRoot = bagLocation.objectLocation
-          val bagRoot = bagLocation.objectLocation.copy(
-            key = Paths.get(bagLocation.completePath, "subdir").toString
-          )
+        case (searchRootLocation, storageSpace) =>
+          val bagRoot = searchRootLocation.join("subdir")
 
           val payload = createObjectLocationPayloadWith(
-            objectLocation = searchRoot,
-            storageSpace = bagLocation.storageSpace
+            objectLocation = searchRootLocation,
+            storageSpace = storageSpace
           )
 
           val expectedPayload = createBagInformationPayloadWith(
             ingestId = payload.ingestId,
             bagRootLocation = bagRoot,
-            storageSpace = bagLocation.storageSpace,
+            storageSpace = storageSpace,
             externalIdentifier = bagInfo.externalIdentifier
           )
 
@@ -108,9 +104,8 @@ class BagAuditorFeatureTest
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
       withBag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
-        bagLocation =>
-          val searchRoot = bagLocation.objectLocation
-          val payload = createObjectLocationPayloadWith(searchRoot)
+        case (searchRootLocation, _) =>
+          val payload = createObjectLocationPayloadWith(searchRootLocation)
 
           withLocalSqsQueue { queue =>
             withLocalSnsTopic { ingestTopic =>
@@ -198,9 +193,4 @@ class BagAuditorFeatureTest
       }
     }
   }
-
-  def createObjectsWith(bucket: Bucket, keys: String*): Unit =
-    keys.foreach { k =>
-      s3Client.putObject(bucket.name, k, "example object")
-    }
 }
