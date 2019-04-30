@@ -63,19 +63,42 @@ class BagReplicatorWorkerTest
     }
   }
 
-  it("copies the bag to the configured bucket") {
-    withLocalS3Bucket { ingestsBucket =>
-      withLocalS3Bucket { archiveBucket =>
-        val config = createReplicatorDestinationConfigWith(archiveBucket)
-        withBagReplicatorWorker(config) { worker =>
-          withBag(ingestsBucket) { case (bagRootLocation, _) =>
-            val payload = createObjectLocationPayloadWith(bagRootLocation)
+  describe("gets the correct destination") {
+    it("copies the bag to the configured bucket") {
+      withLocalS3Bucket { ingestsBucket =>
+        withLocalS3Bucket { archiveBucket =>
+          val config = createReplicatorDestinationConfigWith(archiveBucket)
+          withBagReplicatorWorker(config) { worker =>
+            withBag(ingestsBucket) { case (bagRootLocation, _) =>
+              val payload = createObjectLocationPayloadWith(bagRootLocation)
 
-            val future = worker.processMessage(payload)
+              val future = worker.processMessage(payload)
 
-            whenReady(future) { result =>
-              val destination = result.summary.get.destination
-              destination.namespace shouldBe archiveBucket.name
+              whenReady(future) { result =>
+                val destination = result.summary.get.destination
+                destination.namespace shouldBe archiveBucket.name
+              }
+            }
+          }
+        }
+      }
+    }
+
+    it("key ends with the external identifier of the bag") {
+      withLocalS3Bucket { ingestsBucket =>
+        withLocalS3Bucket { archiveBucket =>
+          val config = createReplicatorDestinationConfigWith(archiveBucket)
+          withBagReplicatorWorker(config) { worker =>
+            val bagInfo = createBagInfo
+            withBag(ingestsBucket, bagInfo = bagInfo) { case (bagRootLocation, _) =>
+              val payload = createObjectLocationPayloadWith(bagRootLocation)
+
+              val future = worker.processMessage(payload)
+
+              whenReady(future) { result =>
+                val destination = result.summary.get.destination
+                destination.key should endWith(bagInfo.externalIdentifier.toString)
+              }
             }
           }
         }
