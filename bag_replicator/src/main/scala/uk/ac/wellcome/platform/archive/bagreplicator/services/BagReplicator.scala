@@ -13,10 +13,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.s3.{
-  S3PrefixCopier,
-  S3PrefixCopierResult
-}
+import uk.ac.wellcome.storage.s3.S3PrefixCopier
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -49,19 +46,19 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
       version = version
     )
 
-    val copyOperation = for {
-      _ <- copyBag(
-        bagRoot = bagRootLocation,
-        destination = destination
-      )
-    } yield destination
+    val copyResult =
+      s3PrefixCopier
+        .copyObjects(
+          srcLocationPrefix = bagRootLocation,
+          dstLocationPrefix = destination
+        )
 
-    copyOperation.transform {
-      case Success(dstLocation) =>
+    copyResult.transform {
+      case Success(_) =>
         Success(
           IngestStepSucceeded(
             replicationSummary
-              .copy(maybeDestination = Some(dstLocation))
+              .copy(maybeDestination = Some(destination))
               .complete))
 
       case Failure(e) =>
@@ -72,14 +69,4 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
           ))
     }
   }
-
-  private def copyBag(
-    bagRoot: ObjectLocation,
-    destination: ObjectLocation
-  ): Future[S3PrefixCopierResult] =
-    s3PrefixCopier
-      .copyObjects(
-        srcLocationPrefix = bagRoot,
-        dstLocationPrefix = destination
-      )
 }
