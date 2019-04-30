@@ -1,14 +1,12 @@
 package uk.ac.wellcome.platform.archive.notifier.services
 
 import java.net.URI
-import java.util.UUID
 
 import akka.http.scaladsl.model.StatusCodes
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.notifier.fixtures.{
   LocalWireMockFixture,
   NotifierFixtures
@@ -27,14 +25,12 @@ class CallbackUrlServiceTest
   it("returns a Success if the request succeeds") {
     withActorSystem { implicit actorSystem =>
       withCallbackUrlService { service =>
-        val requestId = UUID.randomUUID()
+        val ingest = createIngest
+
         val future = service.getHttpResponse(
-          callbackNotification = CallbackNotification(
-            id = requestId,
-            callbackUri = new URI(
-              s"http://$callbackHost:$callbackPort/callback/$requestId"),
-            payload = createIngest
-          )
+          ingest = ingest,
+          callbackUri =
+            new URI(s"http://$callbackHost:$callbackPort/callback/${ingest.id}")
         )
 
         whenReady(future) { result =>
@@ -48,13 +44,11 @@ class CallbackUrlServiceTest
   it("returns a failed future if the HTTP request fails") {
     withActorSystem { implicit actorSystem =>
       withCallbackUrlService { service =>
-        val requestId = UUID.randomUUID()
+        val ingest = createIngest
+
         val future = service.getHttpResponse(
-          callbackNotification = CallbackNotification(
-            id = requestId,
-            callbackUri = new URI(s"http://nope.nope/callback/$requestId"),
-            payload = createIngest
-          )
+          ingest = ingest,
+          callbackUri = new URI(s"http://nope.nope/callback/${ingest.id}")
         )
 
         whenReady(future) { result =>

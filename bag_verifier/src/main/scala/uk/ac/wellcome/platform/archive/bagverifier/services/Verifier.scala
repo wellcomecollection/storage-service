@@ -10,10 +10,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
   FailedVerification,
   VerificationSummary
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagDigestFile,
-  BagLocation
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagDigestFile
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   FileManifest,
   IngestFailed,
@@ -22,7 +19,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   ChecksumVerifier,
-  S3BagLocator,
   StorageManifestService
 }
 import uk.ac.wellcome.storage.ObjectLocation
@@ -34,21 +30,18 @@ class Verifier(
   storageManifestService: StorageManifestService,
   s3Client: AmazonS3,
   algorithm: String
-)(implicit ec: ExecutionContext, mat: Materializer)
+)(implicit ec: ExecutionContext, materializer: Materializer)
     extends Logging {
-  val s3BagLocator = new S3BagLocator(s3Client)
-
   def verify(
-    bagLocation: BagLocation
+    bagRootLocation: ObjectLocation
   ): Future[IngestStepResult[VerificationSummary]] = {
 
-    val verificationInit =
-      VerificationSummary(bagLocation = bagLocation, startTime = Instant.now)
+    val verificationSummary = VerificationSummary(
+      bagRootLocation = bagRootLocation,
+      startTime = Instant.now
+    )
 
     val verification = for {
-      bagRootLocation <- Future.fromTry {
-        s3BagLocator.locateBagRoot(bagLocation.objectLocation)
-      }
       fileManifest <- getManifest("file manifest") {
         storageManifestService.createFileManifest(bagRootLocation)
       }
@@ -58,7 +51,7 @@ class Verifier(
 
       digestFiles = fileManifest.files ++ tagManifest.files
 
-      result <- verifyFiles(bagRootLocation, digestFiles, verificationInit)
+      result <- verifyFiles(bagRootLocation, digestFiles, verificationSummary)
     } yield result
 
     verification.map {
@@ -69,7 +62,7 @@ class Verifier(
           new RuntimeException("Verification failed")
         )
     } recover {
-      case e: Throwable => IngestFailed(verificationInit, e)
+      case e: Throwable => IngestFailed(verificationSummary, e)
     }
   }
 
@@ -84,7 +77,7 @@ class Verifier(
     bagRootLocation: ObjectLocation,
     digestFiles: Seq[BagDigestFile],
     bagVerification: VerificationSummary
-  )(implicit mat: Materializer): Future[VerificationSummary] = {
+  ): Future[VerificationSummary] = {
     Source[BagDigestFile](
       digestFiles.toList
     ).mapAsync(10) { digestFile: BagDigestFile =>

@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.services.{
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
+  OperationNameBuilder,
   OutgoingPublisherBuilder
 }
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -42,7 +43,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val operationName = "replicating"
+    val operationName = OperationNameBuilder
+      .getName(config, default = "replicating")
 
     new BagReplicatorWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),

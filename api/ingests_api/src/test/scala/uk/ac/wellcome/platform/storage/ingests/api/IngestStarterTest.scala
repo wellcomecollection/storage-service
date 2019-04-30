@@ -7,9 +7,9 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
+import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.UnpackBagRequest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
@@ -35,20 +35,13 @@ class IngestStarterTest
             assertTableOnlyHasItem(ingest, table)
 
             eventually {
-              // Unpacker
-              val unpackerRequests =
-                listMessagesReceivedFromSNS(
-                  unpackerTopic
-                ).map(messageInfo =>
-                  fromJson[UnpackBagRequest](messageInfo.message).get)
-
-              unpackerRequests shouldBe List(
-                UnpackBagRequest(
-                  requestId = ingest.id,
-                  sourceLocation = ingest.sourceLocation.location,
-                  storageSpace = StorageSpace(ingest.space.underlying)
-                )
+              val expectedPayload = ObjectLocationPayload(
+                ingestId = ingest.id,
+                storageSpace = StorageSpace(ingest.space.underlying),
+                objectLocation = ingest.sourceLocation.location
               )
+
+              assertSnsReceivesOnly(expectedPayload, unpackerTopic)
             }
           }
 

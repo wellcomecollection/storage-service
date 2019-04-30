@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
-import io.circe.{Decoder, Encoder}
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
@@ -11,7 +11,7 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
@@ -28,27 +28,30 @@ class BagRegisterWorker(
   actorSystem: ActorSystem,
   ec: ExecutionContext,
   mc: MonitoringClient,
-  sc: AmazonSQSAsync,
-  decoder: Decoder[BagRequest],
-  encoder: Encoder[BagRequest])
+  sc: AmazonSQSAsync)
     extends Runnable
     with Logging
     with IngestStepWorker {
 
-  private val worker: AlpakkaSQSWorker[BagRequest, RegistrationSummary] =
-    AlpakkaSQSWorker[BagRequest, RegistrationSummary](alpakkaSQSWorkerConfig) {
+  private val worker
+    : AlpakkaSQSWorker[ObjectLocationPayload, RegistrationSummary] =
+    AlpakkaSQSWorker[ObjectLocationPayload, RegistrationSummary](
+      alpakkaSQSWorkerConfig) {
       processMessage
     }
 
   def processMessage(
-    bagRequest: BagRequest): Future[Result[RegistrationSummary]] =
+    payload: ObjectLocationPayload): Future[Result[RegistrationSummary]] =
     for {
-      registrationSummary <- register.update(bagRequest.bagLocation)
+      registrationSummary <- register.update(
+        bagRootLocation = payload.objectLocation,
+        storageSpace = payload.storageSpace
+      )
       _ <- ingestUpdater.send(
-        bagRequest.requestId,
+        payload.ingestId,
         registrationSummary,
         bagId = registrationSummary.summary.bagId)
-      _ <- outgoingPublisher.sendIfSuccessful(registrationSummary, bagRequest)
+      _ <- outgoingPublisher.sendIfSuccessful(registrationSummary, payload)
     } yield toResult(registrationSummary)
 
   override def run(): Future[Any] = worker.start

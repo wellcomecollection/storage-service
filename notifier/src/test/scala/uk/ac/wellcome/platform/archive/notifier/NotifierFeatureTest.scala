@@ -46,19 +46,19 @@ class NotifierFeatureTest
       withLocalWireMockClient { wireMock =>
         withNotifier {
           case (queue, _) =>
-            val requestId = randomUUID
+            val ingestId = createIngestID
 
             val callbackUri =
-              new URI(s"http://$callbackHost:$callbackPort/callback/$requestId")
+              new URI(s"http://$callbackHost:$callbackPort/callback/$ingestId")
 
             val ingest = createIngestWith(
-              id = requestId,
+              id = ingestId,
               callback = Some(createCallbackWith(uri = callbackUri))
             )
 
             sendNotificationToSQS(
               queue,
-              CallbackNotification(requestId, callbackUri, ingest)
+              CallbackNotification(ingestId, callbackUri, ingest)
             )
 
             eventually {
@@ -67,7 +67,7 @@ class NotifierFeatureTest
                 postRequestedFor(urlPathEqualTo(callbackUri.getPath))
                   .withRequestBody(equalToJson(toJson(ResponseDisplayIngest(
                     "http://localhost/context.json",
-                    ingest.id,
+                    ingest.id.underlying,
                     DisplayLocation(
                       StandardDisplayProvider,
                       ingest.sourceLocation.location.namespace,
@@ -109,9 +109,9 @@ class NotifierFeatureTest
         withLocalWireMockClient { wireMock =>
           withNotifier {
             case (queue, topic) =>
-              val requestId = randomUUID
+              val ingestID = createIngestID
 
-              val callbackPath = s"/callback/$requestId"
+              val callbackPath = s"/callback/$ingestID"
               val callbackUri = new URI(
                 s"http://$callbackHost:$callbackPort" + callbackPath
               )
@@ -122,13 +122,13 @@ class NotifierFeatureTest
               )
 
               val ingest = createIngestWith(
-                id = requestId,
+                id = ingestID,
                 callback = Some(createCallbackWith(uri = callbackUri))
               )
 
-              sendNotificationToSQS[CallbackNotification](
+              sendNotificationToSQS(
                 queue,
-                CallbackNotification(requestId, callbackUri, ingest)
+                CallbackNotification(ingestID, callbackUri, ingest)
               )
 
               eventually {
@@ -137,7 +137,7 @@ class NotifierFeatureTest
                   postRequestedFor(urlPathEqualTo(callbackUri.getPath))
                     .withRequestBody(equalToJson(toJson(ResponseDisplayIngest(
                       "http://localhost/context.json",
-                      ingest.id,
+                      ingest.id.underlying,
                       DisplayLocation(
                         StandardDisplayProvider,
                         ingest.sourceLocation.location.namespace,
@@ -178,20 +178,20 @@ class NotifierFeatureTest
       "sends an IngestUpdate when it receives an Ingest with a callback it cannot fulfill") {
       withNotifier {
         case (queue, topic) =>
-          val requestId = randomUUID
+          val ingestId = createIngestID
 
           val callbackUri = new URI(
-            s"http://$callbackHost:$callbackPort/callback/$requestId"
+            s"http://$callbackHost:$callbackPort/callback/$ingestId"
           )
 
           val ingest = createIngestWith(
-            id = requestId,
+            id = ingestId,
             callback = Some(createCallbackWith(uri = callbackUri))
           )
 
           sendNotificationToSQS[CallbackNotification](
             queue,
-            CallbackNotification(requestId, callbackUri, ingest)
+            CallbackNotification(ingestId, callbackUri, ingest)
           )
 
           eventually {

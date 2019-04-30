@@ -1,23 +1,17 @@
 package uk.ac.wellcome.platform.archive.common.ingests.fixtures
 
-import java.util.UUID
-
 import grizzled.slf4j.Logging
 import org.scalatest.{Assertion, Inside}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SNS
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestEvent,
-  IngestUpdate,
-  _
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 import scala.util.Try
 
 trait IngestUpdateAssertions extends SNS with Inside with Logging {
-  def assertTopicReceivesIngestStatus[R](requestId: UUID,
+  def assertTopicReceivesIngestStatus[R](ingestId: IngestID,
                                          ingestTopic: SNS.Topic,
                                          status: Ingest.Status,
                                          expectedBag: Option[BagId] = None)(
@@ -34,7 +28,7 @@ trait IngestUpdateAssertions extends SNS with Inside with Logging {
         debug(s"Received IngestUpdate: $ingestUpdate")
         Try(inside(ingestUpdate) {
           case IngestStatusUpdate(id, actualStatus, maybeBag, events) =>
-            id shouldBe requestId
+            id shouldBe ingestId
             actualStatus shouldBe status
             maybeBag shouldBe expectedBag
             assert(events)
@@ -49,7 +43,8 @@ trait IngestUpdateAssertions extends SNS with Inside with Logging {
     success should have size 1
   }
 
-  def assertTopicReceivesIngestEvent(requestId: UUID, ingestTopic: SNS.Topic)(
+  def assertTopicReceivesIngestEvent(ingestId: IngestID,
+                                     ingestTopic: SNS.Topic)(
     assert: Seq[IngestEvent] => Assertion): Assertion = {
 
     val messages = listMessagesReceivedFromSNS(ingestTopic)
@@ -65,7 +60,7 @@ trait IngestUpdateAssertions extends SNS with Inside with Logging {
         println(s"Received IngestUpdate: $ingestUpdate")
         Try(inside(ingestUpdate) {
           case IngestEventUpdate(id, events) =>
-            id shouldBe requestId
+            id shouldBe ingestId
 
             assert(events)
         })

@@ -9,8 +9,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
-import uk.ac.wellcome.platform.archive.common.ingests.models.BagRequest
+import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepWorker}
@@ -33,7 +32,7 @@ class BagReplicatorWorker(
     with IngestStepWorker {
 
   type ReplicatorWorker =
-    AlpakkaSQSWorker[BagRequest, ReplicationSummary]
+    AlpakkaSQSWorker[ObjectLocationPayload, ReplicationSummary]
 
   type IngestSummary =
     IngestStepResult[ReplicationSummary]
@@ -47,10 +46,8 @@ class BagReplicatorWorker(
   private val publishOutgoing =
     (request: BagRequest, summary: IngestSummary) =>
       outgoingPublisher.sendIfSuccessful(summary,
-          request.copy(
-            bagLocation = summary.summary.destination
-          )
-        )
+          payload.copy(
+            objectLocation = summary.summary.destination))
 
   val processMessage = (request: BagRequest)  =>
     for {

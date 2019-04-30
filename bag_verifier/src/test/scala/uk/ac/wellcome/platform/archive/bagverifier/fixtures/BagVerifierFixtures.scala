@@ -31,27 +31,35 @@ trait BagVerifierFixtures
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         withMaterializer(actorSystem) { implicit materializer =>
-          val verifier = new Verifier(
-            storageManifestService = new StorageManifestService(),
-            s3Client = s3Client,
-            algorithm = MessageDigestAlgorithms.SHA_256
-          )
-          withIngestUpdater("verification", ingestTopic) { ingestUpdater =>
-            withOutgoingPublisher("verification", outgoingTopic) {
-              outgoingPublisher =>
-                val service = new BagVerifierWorker(
-                  alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-                  ingestUpdater = ingestUpdater,
-                  outgoingPublisher = outgoingPublisher,
-                  verifier = verifier
-                )
+          withVerifier { verifier =>
+            withIngestUpdater("verification", ingestTopic) { ingestUpdater =>
+              withOutgoingPublisher("verification", outgoingTopic) {
+                outgoingPublisher =>
+                  val service = new BagVerifierWorker(
+                    alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+                    ingestUpdater = ingestUpdater,
+                    outgoingPublisher = outgoingPublisher,
+                    verifier = verifier
+                  )
 
-                service.run()
+                  service.run()
 
-                testWith(service)
+                  testWith(service)
+              }
             }
           }
         }
       }
+    }
+
+  def withVerifier[R](testWith: TestWith[Verifier, R]): R =
+    withMaterializer { implicit materializer =>
+      val verifier = new Verifier(
+        storageManifestService = new StorageManifestService(),
+        s3Client = s3Client,
+        algorithm = MessageDigestAlgorithms.SHA_256
+      )
+
+      testWith(verifier)
     }
 }

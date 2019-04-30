@@ -48,6 +48,10 @@ lazy val common = setupProject(project, "common",
   externalDependencies = StorageDependencies.commonDependencies
 )
 
+lazy val bag_auditor = setupProject(project, "bag_auditor",
+  localDependencies = Seq(common)
+)
+
 lazy val bag_register = setupProject(project, "bag_register",
   localDependencies = Seq(common),
   externalDependencies = ExternalDependencies.circeOpticsDependencies

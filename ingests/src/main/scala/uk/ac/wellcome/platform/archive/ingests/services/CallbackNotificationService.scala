@@ -28,7 +28,7 @@ class CallbackNotificationService(snsWriter: SNSWriter)(
 
   private def sendSnsMessage(callbackUri: URI, ingest: Ingest): Future[Unit] = {
     val callbackNotification = CallbackNotification(
-      id = ingest.id,
+      ingestId = ingest.id,
       callbackUri = callbackUri,
       payload = ingest
     )

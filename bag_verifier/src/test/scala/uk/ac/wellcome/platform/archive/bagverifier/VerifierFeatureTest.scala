@@ -6,7 +6,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
@@ -15,10 +15,10 @@ class VerifierFeatureTest
     with Matchers
     with ScalaFutures
     with BagLocationFixtures
-    with BagRequestGenerators
     with IntegrationPatience
     with IngestUpdateAssertions
-    with BagVerifierFixtures {
+    with BagVerifierFixtures
+    with PayloadGenerators {
 
   it(
     "updates the ingest monitor and sends an outgoing notification if verification succeeds") {
@@ -28,28 +28,31 @@ class VerifierFeatureTest
           case QueuePair(queue, dlq) =>
             withBagVerifierWorker(ingestTopic, outgoingTopic, queue) { _ =>
               withLocalS3Bucket { bucket =>
-                withBag(bucket) { bagLocation =>
-                  val bagRequest = createBagRequestWith(bagLocation)
+                withBag(bucket) {
+                  case (bagRootLocation, _) =>
+                    val payload = createObjectLocationPayloadWith(
+                      bagRootLocation
+                    )
 
-                  sendNotificationToSQS(queue, bagRequest)
+                    sendNotificationToSQS(queue, payload)
 
-                  eventually {
-                    listMessagesReceivedFromSNS(outgoingTopic)
+                    eventually {
+                      listMessagesReceivedFromSNS(outgoingTopic)
 
-                    assertTopicReceivesIngestEvent(
-                      requestId = bagRequest.requestId,
-                      ingestTopic = ingestTopic
-                    ) { events =>
-                      events.map {
-                        _.description
-                      } shouldBe List("Verification succeeded")
+                      assertTopicReceivesIngestEvent(
+                        ingestId = payload.ingestId,
+                        ingestTopic = ingestTopic
+                      ) { events =>
+                        events.map {
+                          _.description
+                        } shouldBe List("Verification succeeded")
+                      }
+
+                      assertSnsReceivesOnly(payload, topic = outgoingTopic)
+
+                      assertQueueEmpty(queue)
+                      assertQueueEmpty(dlq)
                     }
-
-                    assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
-
-                    assertQueueEmpty(queue)
-                    assertQueueEmpty(dlq)
-                  }
                 }
               }
             }
@@ -69,14 +72,16 @@ class VerifierFeatureTest
                 withBag(
                   bucket,
                   createDataManifest = dataManifestWithWrongChecksum) {
-                  bagLocation =>
-                    val bagRequest = createBagRequestWith(bagLocation)
+                  case (bagRootLocation, _) =>
+                    val payload = createObjectLocationPayloadWith(
+                      bagRootLocation
+                    )
 
-                    sendNotificationToSQS(queue, bagRequest)
+                    sendNotificationToSQS(queue, payload)
 
                     eventually {
                       assertTopicReceivesIngestStatus(
-                        requestId = bagRequest.requestId,
+                        ingestId = payload.ingestId,
                         ingestTopic = ingestTopic,
                         status = Ingest.Failed
                       ) { events =>

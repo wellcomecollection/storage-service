@@ -13,6 +13,7 @@ module "ingests_topic" {
     "${module.bag_unpacker.task_role_name}",
     "${module.ingests.task_role_name}",
     "${module.notifier.task_role_name}",
+    "${module.bag_auditor.task_role_name}",
   ]
 }
 
@@ -131,6 +132,39 @@ module "bag_unpacker_output_topic" {
   ]
 }
 
+# bag auditor
+
+module "bag_auditor_queue" {
+  source = "../modules/queue"
+
+  name = "${var.namespace}_bag_auditor_input"
+
+  topic_names = ["${module.bag_unpacker_output_topic.name}"]
+
+  role_names = ["${module.bag_auditor.task_role_name}"]
+
+  queue_high_actions = [
+    "${module.bag_auditor.scale_up_arn}",
+  ]
+
+  queue_low_actions = [
+    "${module.bag_auditor.scale_down_arn}",
+  ]
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+}
+
+module "bag_auditor_output_topic" {
+  source = "../modules/topic"
+
+  name = "${var.namespace}_bag_auditor_output"
+
+  role_names = [
+    "${module.bag_auditor.task_role_name}",
+  ]
+}
+
 # bag_verifier pre-replication
 
 module "bag_verifier_pre_replicate_queue" {
@@ -138,7 +172,7 @@ module "bag_verifier_pre_replicate_queue" {
 
   name = "${var.namespace}_bag_verifier_pre_replicate_input"
 
-  topic_names = ["${module.bag_unpacker_output_topic.name}"]
+  topic_names = ["${module.bag_auditor_output_topic.name}"]
 
   role_names = ["${module.bag_verifier_pre_replication.task_role_name}"]
 

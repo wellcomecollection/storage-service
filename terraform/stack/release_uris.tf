@@ -10,6 +10,7 @@ module "images" {
     "ingests_api",
     "notifier",
     "bagger",
+    "bag_auditor",
     "bag_register",
     "bag_replicator",
     "bag_verifier",

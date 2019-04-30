@@ -43,10 +43,14 @@ class NotifierWorker(
   def processMessage(callbackNotification: CallbackNotification)
     : Future[Result[IngestCallbackStatusUpdate]] = {
     val future = for {
-      httpResponse <- callbackUrlService.getHttpResponse(callbackNotification)
+      httpResponse <- callbackUrlService.getHttpResponse(
+        ingest = callbackNotification.payload,
+        callbackUri = callbackNotification.callbackUri
+      )
       ingestUpdate = PrepareNotificationService.prepare(
-        callbackNotification.id,
-        httpResponse)
+        id = callbackNotification.ingestId,
+        httpResponse = httpResponse
+      )
 
       _ <- snsWriter.writeMessage[IngestUpdate](
         ingestUpdate,

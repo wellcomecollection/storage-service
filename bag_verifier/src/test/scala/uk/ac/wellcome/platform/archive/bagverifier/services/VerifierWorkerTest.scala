@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
 }
-import uk.ac.wellcome.platform.archive.common.generators.BagRequestGenerators
+import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
@@ -18,10 +18,10 @@ class VerifierWorkerTest
     with Matchers
     with ScalaFutures
     with BagLocationFixtures
-    with BagRequestGenerators
     with IngestUpdateAssertions
     with IntegrationPatience
-    with BagVerifierFixtures {
+    with BagVerifierFixtures
+    with PayloadGenerators {
 
   it(
     "updates the ingest monitor and sends an outgoing notification if verification succeeds") {
@@ -29,27 +29,30 @@ class VerifierWorkerTest
       withLocalSnsTopic { outgoingTopic =>
         withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
-            withBag(bucket) { bagLocation =>
-              val bagRequest = createBagRequestWith(bagLocation)
+            withBag(bucket) {
+              case (bagRootLocation, _) =>
+                val payload = createObjectLocationPayloadWith(
+                  bagRootLocation
+                )
 
-              val future = service.processMessage(bagRequest)
+                val future = service.processMessage(payload)
 
-              whenReady(future) { _ =>
-                eventually {
-                  assertTopicReceivesIngestEvent(
-                    requestId = bagRequest.requestId,
-                    ingestTopic = ingestTopic
-                  ) { events =>
-                    events.map {
-                      _.description
-                    } shouldBe List(
-                      "Verification succeeded"
-                    )
+                whenReady(future) { _ =>
+                  eventually {
+                    assertTopicReceivesIngestEvent(
+                      ingestId = payload.ingestId,
+                      ingestTopic = ingestTopic
+                    ) { events =>
+                      events.map {
+                        _.description
+                      } shouldBe List(
+                        "Verification succeeded"
+                      )
+                    }
+
+                    assertSnsReceivesOnly(payload, topic = outgoingTopic)
                   }
-
-                  assertSnsReceivesOnly(bagRequest, topic = outgoingTopic)
                 }
-              }
             }
           }
         }
@@ -63,16 +66,18 @@ class VerifierWorkerTest
         withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
-              bagLocation =>
-                val bagRequest = createBagRequestWith(bagLocation)
+              case (bagRootLocation, _) =>
+                val payload = createObjectLocationPayloadWith(
+                  bagRootLocation
+                )
 
-                val future = service.processMessage(bagRequest)
+                val future = service.processMessage(payload)
 
                 whenReady(future) { _ =>
                   assertSnsReceivesNothing(outgoingTopic)
 
                   assertTopicReceivesIngestStatus(
-                    requestId = bagRequest.requestId,
+                    ingestId = payload.ingestId,
                     ingestTopic = ingestTopic,
                     status = Ingest.Failed
                   ) { events =>
@@ -98,10 +103,12 @@ class VerifierWorkerTest
         withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
-              bagLocation =>
-                val bagRequest = createBagRequestWith(bagLocation)
+              case (bagRootLocation, _) =>
+                val payload = createObjectLocationPayloadWith(
+                  bagRootLocation
+                )
 
-                val future = service.processMessage(bagRequest)
+                val future = service.processMessage(payload)
 
                 whenReady(future) { _ =>
                   eventually {
@@ -109,7 +116,7 @@ class VerifierWorkerTest
                     assertSnsReceivesNothing(outgoingTopic)
 
                     assertTopicReceivesIngestStatus(
-                      requestId = bagRequest.requestId,
+                      ingestId = payload.ingestId,
                       ingestTopic = ingestTopic,
                       status = Ingest.Failed
                     ) { events =>
@@ -131,21 +138,24 @@ class VerifierWorkerTest
     withLocalSnsTopic { ingestTopic =>
       withBagVerifierWorker(ingestTopic, Topic("no-such-outgoing")) { service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket) { bagLocation =>
-            val bagRequest = createBagRequestWith(bagLocation)
+          withBag(bucket) {
+            case (bagRootLocation, _) =>
+              val payload = createObjectLocationPayloadWith(
+                bagRootLocation
+              )
 
-            val future = service.processMessage(bagRequest)
+              val future = service.processMessage(payload)
 
-            whenReady(future.failed) { _ =>
-              assertTopicReceivesIngestEvent(
-                requestId = bagRequest.requestId,
-                ingestTopic = ingestTopic
-              ) { events =>
-                events.map {
-                  _.description
-                } shouldBe List("Verification succeeded")
+              whenReady(future.failed) { _ =>
+                assertTopicReceivesIngestEvent(
+                  ingestId = payload.ingestId,
+                  ingestTopic = ingestTopic
+                ) { events =>
+                  events.map {
+                    _.description
+                  } shouldBe List("Verification succeeded")
+                }
               }
-            }
           }
         }
       }

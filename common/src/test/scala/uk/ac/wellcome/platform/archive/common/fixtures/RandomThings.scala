@@ -5,6 +5,7 @@ import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.UUID
 
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
@@ -133,6 +134,9 @@ trait RandomThings {
 
   def randomUUID = UUID.randomUUID()
 
+  def createIngestID: IngestID =
+    IngestID(randomUUID)
+
   def randomSourceOrganisation =
     SourceOrganisation(randomAlphanumeric())
 
@@ -153,8 +157,6 @@ trait RandomThings {
     val maxValue = 1999999998
     LocalDate.ofEpochDay(startRange + Random.nextInt(maxValue))
   }
-
-  def randomBagPath = BagPath(randomAlphanumeric(15))
 
   def randomBucket = Bucket(randomAlphanumeric().toLowerCase)
 }

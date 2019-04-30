@@ -6,8 +6,7 @@ import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
-  BagItemPath,
-  BagLocation
+  BagItemPath
 }
 import uk.ac.wellcome.platform.archive.common.bagit.parsers.{
   BagInfoParser,
@@ -20,44 +19,47 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   ChecksumAlgorithm,
   FileManifest,
-  StorageManifest
+  StorageManifest,
+  StorageSpace
 }
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class StorageManifestService(
-  implicit
-  executionContext: ExecutionContext,
+  implicit ec: ExecutionContext,
   s3Client: AmazonS3
 ) {
 
   val checksumAlgorithm = ChecksumAlgorithm("sha256")
 
-  def createManifest(bagLocation: BagLocation): Future[StorageManifest] =
+  def createManifest(
+    bagRootLocation: ObjectLocation,
+    storageSpace: StorageSpace
+  ): Future[StorageManifest] =
     for {
-      bagInfo <- createBagInfo(bagLocation)
-      fileManifest <- createFileManifest(bagLocation.objectLocation)
-      tagManifest <- createTagManifest(bagLocation.objectLocation)
+      bagInfo <- createBagInfo(bagRootLocation)
+      fileManifest <- createFileManifest(bagRootLocation)
+      tagManifest <- createTagManifest(bagRootLocation)
     } yield
       StorageManifest(
-        space = bagLocation.storageSpace,
+        space = storageSpace,
         info = bagInfo,
         manifest = fileManifest,
         tagManifest = tagManifest,
         locations = List(
           StorageLocation(
             provider = InfrequentAccessStorageProvider,
-            location = bagLocation.objectLocation
+            location = bagRootLocation
           )
         ),
         createdDate = Instant.now()
       )
 
-  def createBagInfo(bagLocation: BagLocation): Future[BagInfo] =
+  def createBagInfo(bagRootLocation: ObjectLocation): Future[BagInfo] =
     for {
       bagInfoInputStream <- BagItemPath("bag-info.txt")
-        .toObjectLocation(bagLocation.objectLocation)
+        .toObjectLocation(bagRootLocation)
         .toInputStream
 
       bagInfo <- BagInfoParser.create(
