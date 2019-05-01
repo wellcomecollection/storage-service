@@ -18,8 +18,8 @@ class BagAuditorFeatureTest
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
-          val payload = createObjectLocationPayloadWith(
-            objectLocation = bagRootLocation,
+          val payload = createUnpackedBagPayloadWith(
+            unpackedBagLocation = bagRootLocation,
             storageSpace = storageSpace
           )
 
@@ -60,11 +60,11 @@ class BagAuditorFeatureTest
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo, bagRootDirectory = Some("subdir")) {
-        case (searchRootLocation, storageSpace) =>
-          val bagRoot = searchRootLocation.join("subdir")
+        case (unpackedBagLocation, storageSpace) =>
+          val bagRoot = unpackedBagLocation.join("subdir")
 
-          val payload = createObjectLocationPayloadWith(
-            objectLocation = searchRootLocation,
+          val payload = createUnpackedBagPayloadWith(
+            unpackedBagLocation = unpackedBagLocation,
             storageSpace = storageSpace
           )
 
@@ -104,8 +104,8 @@ class BagAuditorFeatureTest
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
       withBag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
-        case (searchRootLocation, _) =>
-          val payload = createObjectLocationPayloadWith(searchRootLocation)
+        case (unpackedBagLocation, _) =>
+          val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
           withLocalSqsQueue { queue =>
             withLocalSnsTopic { ingestTopic =>
@@ -136,8 +136,8 @@ class BagAuditorFeatureTest
 
   it("errors if it cannot find the bag") {
     withLocalS3Bucket { bucket =>
-      val searchRoot = createObjectLocationWith(bucket, "bag123")
-      val payload = createObjectLocationPayloadWith(searchRoot)
+      val unpackedBagLocation = createObjectLocation
+      val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
       withLocalSqsQueue { queue =>
         withLocalSnsTopic { ingestTopic =>
@@ -166,8 +166,8 @@ class BagAuditorFeatureTest
   }
 
   it("errors if it gets an error from S3") {
-    val searchRoot = createObjectLocationWith(key = "bag123")
-    val payload = createObjectLocationPayloadWith(searchRoot)
+    val unpackedBagLocation = createObjectLocation
+    val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
     withLocalSqsQueue { queue =>
       withLocalSnsTopic { ingestTopic =>

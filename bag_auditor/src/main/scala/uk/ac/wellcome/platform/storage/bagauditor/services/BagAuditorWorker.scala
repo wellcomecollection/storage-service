@@ -12,7 +12,7 @@ import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.{
   BagInformationPayload,
-  ObjectLocationPayload
+  UnpackedBagPayload
 }
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
@@ -35,17 +35,17 @@ class BagAuditorWorker(
     extends Runnable
     with Logging
     with IngestStepWorker {
-  private val worker: AlpakkaSQSWorker[ObjectLocationPayload, AuditSummary] =
-    AlpakkaSQSWorker[ObjectLocationPayload, AuditSummary](
+  private val worker =
+    AlpakkaSQSWorker[UnpackedBagPayload, AuditSummary](
       alpakkaSQSWorkerConfig) {
       processMessage
     }
 
   def processMessage(
-    payload: ObjectLocationPayload): Future[Result[AuditSummary]] =
+    payload: UnpackedBagPayload): Future[Result[AuditSummary]] =
     for {
       auditSummary <- bagAuditor.getAuditSummary(
-        unpackLocation = payload.objectLocation,
+        unpackLocation = payload.unpackedBagLocation,
         storageSpace = payload.storageSpace
       )
       _ <- ingestUpdater.send(payload.ingestId, auditSummary)
