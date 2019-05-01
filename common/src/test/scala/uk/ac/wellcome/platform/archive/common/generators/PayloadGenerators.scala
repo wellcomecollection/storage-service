@@ -12,18 +12,6 @@ trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
     with S3 {
-  def createObjectLocationPayloadWith(
-    objectLocation: ObjectLocation = createObjectLocation,
-    storageSpace: StorageSpace = createStorageSpace): ObjectLocationPayload =
-    ObjectLocationPayload(
-      ingestId = createIngestID,
-      storageSpace = storageSpace,
-      objectLocation = objectLocation
-    )
-
-  def createObjectLocationPayload: ObjectLocationPayload =
-    createObjectLocationPayloadWith()
-
   def createIngestRequestPayloadWith(
     sourceLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace

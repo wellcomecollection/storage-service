@@ -31,7 +31,7 @@ class OutgoingPublisherTest
     forAll(successfulOperations) { operation =>
       withLocalSnsTopic { topic =>
         withOutgoingPublisher(operationName, topic) { outgoingPublisher =>
-          val outgoing = createObjectLocationPayload
+          val outgoing = createIngestRequestPayload
 
           val sendingOperationNotice =
             outgoingPublisher.sendIfSuccessful(operation, outgoing)
@@ -47,7 +47,7 @@ class OutgoingPublisherTest
   it("does not send outgoing if operation failed") {
     withLocalSnsTopic { topic =>
       withOutgoingPublisher(operationName, topic) { outgoingPublisher =>
-        val outgoing = createObjectLocationPayload
+        val outgoing = createIngestRequestPayload
 
         val sendingOperationNotice =
           outgoingPublisher.sendIfSuccessful(createOperationFailure(), outgoing)

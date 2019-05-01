@@ -11,12 +11,6 @@ sealed trait PipelinePayload {
   val ingestId: IngestID
 }
 
-case class ObjectLocationPayload(
-  ingestId: IngestID,
-  storageSpace: StorageSpace,
-  objectLocation: ObjectLocation
-) extends PipelinePayload
-
 case class IngestRequestPayload(
   ingestId: IngestID,
   ingestDate: Instant,

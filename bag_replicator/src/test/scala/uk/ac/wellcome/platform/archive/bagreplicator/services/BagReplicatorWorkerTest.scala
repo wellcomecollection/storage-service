@@ -6,7 +6,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
+import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -41,10 +41,10 @@ class BagReplicatorWorkerTest
 
                   whenReady(future) { _ =>
                     val result =
-                      notificationMessage[ObjectLocationPayload](outgoingTopic)
+                      notificationMessage[BagInformationPayload](outgoingTopic)
                     result.ingestId shouldBe payload.ingestId
 
-                    val dstBagRootLocation = result.objectLocation
+                    val dstBagRootLocation = result.bagRootLocation
 
                     verifyBagCopied(
                       src = srcBagRootLocation,
