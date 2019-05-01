@@ -1,8 +1,11 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
+import java.time.Instant
+
 import uk.ac.wellcome.platform.archive.common.{
   BagInformationPayload,
   IngestID,
+  IngestRequestPayload,
   ObjectLocationPayload
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
@@ -25,6 +28,17 @@ trait PayloadGenerators
 
   def createObjectLocationPayload: ObjectLocationPayload =
     createObjectLocationPayloadWith()
+
+  def createIngestRequestPayloadWith(
+    sourceLocation: ObjectLocation = createObjectLocation,
+    storageSpace: StorageSpace = createStorageSpace
+  ): IngestRequestPayload =
+    IngestRequestPayload(
+      ingestId = createIngestID,
+      ingestDate = Instant.now(),
+      storageSpace = storageSpace,
+      sourceLocation = sourceLocation
+    )
 
   def createBagInformationPayloadWith(
     ingestId: IngestID = createIngestID,
