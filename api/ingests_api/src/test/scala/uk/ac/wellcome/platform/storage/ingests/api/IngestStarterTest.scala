@@ -7,10 +7,9 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
-import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
+import uk.ac.wellcome.platform.archive.common.IngestRequestPayload
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,11 +34,7 @@ class IngestStarterTest
             assertTableOnlyHasItem(ingest, table)
 
             eventually {
-              val expectedPayload = ObjectLocationPayload(
-                ingestId = ingest.id,
-                storageSpace = StorageSpace(ingest.space.underlying),
-                objectLocation = ingest.sourceLocation.location
-              )
+              val expectedPayload = IngestRequestPayload(ingest)
 
               assertSnsReceivesOnly(expectedPayload, unpackerTopic)
             }
