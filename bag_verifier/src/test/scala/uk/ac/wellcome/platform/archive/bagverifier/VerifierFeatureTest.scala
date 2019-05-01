@@ -30,8 +30,8 @@ class VerifierFeatureTest
               withLocalS3Bucket { bucket =>
                 withBag(bucket) {
                   case (bagRootLocation, _) =>
-                    val payload = createObjectLocationPayloadWith(
-                      bagRootLocation
+                    val payload = createBagInformationPayloadWith(
+                      bagRootLocation = bagRootLocation
                     )
 
                     sendNotificationToSQS(queue, payload)
@@ -73,8 +73,8 @@ class VerifierFeatureTest
                   bucket,
                   createDataManifest = dataManifestWithWrongChecksum) {
                   case (bagRootLocation, _) =>
-                    val payload = createObjectLocationPayloadWith(
-                      bagRootLocation
+                    val payload = createBagInformationPayloadWith(
+                      bagRootLocation = bagRootLocation
                     )
 
                     sendNotificationToSQS(queue, payload)

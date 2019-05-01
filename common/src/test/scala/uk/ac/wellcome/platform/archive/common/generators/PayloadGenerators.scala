@@ -10,7 +10,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
-trait PayloadGenerators extends StorageSpaceGenerators with S3 {
+trait PayloadGenerators
+    extends ExternalIdentifierGenerators
+    with StorageSpaceGenerators
+    with S3 {
   def createObjectLocationPayloadWith(
     objectLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace): ObjectLocationPayload =
@@ -20,11 +23,15 @@ trait PayloadGenerators extends StorageSpaceGenerators with S3 {
       objectLocation = objectLocation
     )
 
-  def createBagInformationPayloadWith(ingestId: IngestID = createIngestID,
-                                      bagRootLocation: ObjectLocation,
-                                      storageSpace: StorageSpace,
-                                      externalIdentifier: ExternalIdentifier,
-                                      version: Int = 1): BagInformationPayload =
+  def createObjectLocationPayload: ObjectLocationPayload =
+    createObjectLocationPayloadWith()
+
+  def createBagInformationPayloadWith(
+    ingestId: IngestID = createIngestID,
+    bagRootLocation: ObjectLocation = createObjectLocation,
+    storageSpace: StorageSpace = createStorageSpace,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    version: Int = 1): BagInformationPayload =
     BagInformationPayload(
       ingestId = ingestId,
       storageSpace = storageSpace,
@@ -33,6 +40,6 @@ trait PayloadGenerators extends StorageSpaceGenerators with S3 {
       version = version
     )
 
-  def createObjectLocationPayload: ObjectLocationPayload =
-    createObjectLocationPayloadWith()
+  def createBagInformationPayload: BagInformationPayload =
+    createBagInformationPayloadWith()
 }

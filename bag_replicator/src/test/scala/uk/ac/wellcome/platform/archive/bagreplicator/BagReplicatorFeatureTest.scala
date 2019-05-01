@@ -33,13 +33,10 @@ class BagReplicatorFeatureTest
                 ingestTopic = ingestTopic,
                 outgoingTopic = outgoingTopic,
                 config = destination) { _ =>
-                val bagInfo = createBagInfo
-
-                withBag(ingestsBucket, bagInfo = bagInfo) {
-                  case (srcBagRootLocation, storageSpace) =>
-                    val payload = createObjectLocationPayloadWith(
-                      objectLocation = srcBagRootLocation,
-                      storageSpace = storageSpace
+                withBag(ingestsBucket) {
+                  case (srcBagRootLocation, _) =>
+                    val payload = createBagInformationPayloadWith(
+                      bagRootLocation = srcBagRootLocation
                     )
 
                     sendNotificationToSQS(queue, payload)
@@ -50,8 +47,9 @@ class BagReplicatorFeatureTest
                         key = Paths
                           .get(
                             destination.rootPath.getOrElse(""),
-                            storageSpace.toString,
-                            bagInfo.externalIdentifier.toString
+                            payload.storageSpace.toString,
+                            payload.externalIdentifier.toString,
+                            s"v${payload.version}"
                           )
                           .toString
                       )
