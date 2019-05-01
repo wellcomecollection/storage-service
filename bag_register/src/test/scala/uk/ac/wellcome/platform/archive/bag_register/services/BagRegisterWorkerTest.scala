@@ -37,8 +37,8 @@ class BagRegisterWorkerTest
 
         withBag(bucket, bagInfo = bagInfo) {
           case (bagRootLocation, storageSpace) =>
-            val payload = createObjectLocationPayloadWith(
-              objectLocation = bagRootLocation,
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation,
               storageSpace = storageSpace
             )
 
@@ -85,8 +85,8 @@ class BagRegisterWorkerTest
 
         withBag(bucket, bagInfo = bagInfo) {
           case (bagRootLocation, storageSpace) =>
-            val payload = createObjectLocationPayloadWith(
-              objectLocation = bagRootLocation,
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation,
               storageSpace = storageSpace
             )
 

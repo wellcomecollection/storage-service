@@ -45,8 +45,8 @@ class BagRegisterFeatureTest
               externalIdentifier = bagInfo.externalIdentifier
             )
 
-            val payload = createObjectLocationPayloadWith(
-              objectLocation = bagRootLocation,
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation,
               storageSpace = storageSpace
             )
 
@@ -90,8 +90,8 @@ class BagRegisterFeatureTest
 
         withBag(bucket, bagInfo = bagInfo) {
           case (bagRootLocation, storageSpace) =>
-            val payload = createObjectLocationPayloadWith(
-              objectLocation = bagRootLocation,
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation,
               storageSpace = storageSpace
             )
 
