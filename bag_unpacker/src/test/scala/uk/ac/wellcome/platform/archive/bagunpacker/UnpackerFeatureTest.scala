@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   BagUnpackerFixtures,
   CompressFixture
 }
-import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
+import uk.ac.wellcome.platform.archive.common.UnpackedBagPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -31,31 +31,27 @@ class UnpackerFeatureTest
     withBagUnpackerApp {
       case (_, srcBucket, queue, ingestTopic, outgoingTopic) =>
         withArchive(srcBucket, archiveFile) { archiveLocation =>
-          val payload = createObjectLocationPayloadWith(archiveLocation)
-          sendNotificationToSQS(queue, payload)
+          val ingestRequestPayload = createIngestRequestPayloadWith(archiveLocation)
+          sendNotificationToSQS(queue, ingestRequestPayload)
 
           eventually {
-            val expectedPayload = ObjectLocationPayload(
-              ingestId = payload.ingestId,
-              storageSpace = payload.storageSpace,
-              objectLocation = createObjectLocationWith(
+            val expectedPayload = UnpackedBagPayload(
+              ingestRequestPayload = ingestRequestPayload,
+              unpackedBagLocation = createObjectLocationWith(
                 bucket = srcBucket,
                 key = Paths
                   .get(
-                    payload.storageSpace.toString,
-                    payload.ingestId.toString
+                    ingestRequestPayload.storageSpace.toString,
+                    ingestRequestPayload.ingestId.toString
                   )
                   .toString
               )
             )
 
-            assertSnsReceivesOnly[ObjectLocationPayload](
-              expectedPayload,
-              outgoingTopic
-            )
+            assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
             assertTopicReceivesIngestEvent(
-              ingestId = payload.ingestId,
+              ingestId = ingestRequestPayload.ingestId,
               ingestTopic = ingestTopic
             ) { events =>
               events.map {
@@ -72,7 +68,7 @@ class UnpackerFeatureTest
   it("sends a failed Ingest update if it cannot read the bag") {
     withBagUnpackerApp {
       case (_, _, queue, ingestTopic, outgoingTopic) =>
-        val payload = createObjectLocationPayload
+        val payload = createIngestRequestPayload
         sendNotificationToSQS(queue, payload)
 
         eventually {
@@ -83,9 +79,9 @@ class UnpackerFeatureTest
             ingestTopic = ingestTopic,
             status = Ingest.Failed
           ) { events =>
-            events.map { _.description } shouldBe
+            events.map { _.description }.distinct shouldBe
               List(
-                s"Unpacker failed - ${payload.objectLocation} does not exist")
+                s"Unpacker failed - ${payload.sourceLocation} does not exist")
           }
         }
     }

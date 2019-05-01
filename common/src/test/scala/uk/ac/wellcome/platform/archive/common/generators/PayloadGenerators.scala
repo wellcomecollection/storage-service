@@ -40,6 +40,9 @@ trait PayloadGenerators
       sourceLocation = sourceLocation
     )
 
+  def createIngestRequestPayload: IngestRequestPayload =
+    createIngestRequestPayloadWith()
+
   def createBagInformationPayloadWith(
     ingestId: IngestID = createIngestID,
     bagRootLocation: ObjectLocation = createObjectLocation,
