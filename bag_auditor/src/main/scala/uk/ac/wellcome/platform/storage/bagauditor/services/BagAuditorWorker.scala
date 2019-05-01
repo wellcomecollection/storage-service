@@ -36,8 +36,7 @@ class BagAuditorWorker(
     with Logging
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[UnpackedBagPayload, AuditSummary](
-      alpakkaSQSWorkerConfig) {
+    AlpakkaSQSWorker[UnpackedBagPayload, AuditSummary](alpakkaSQSWorkerConfig) {
       processMessage
     }
 
@@ -54,7 +53,8 @@ class BagAuditorWorker(
         BagInformationPayload(
           ingestId = payload.ingestId,
           storageSpace = payload.storageSpace,
-          bagRootLocation = auditSummary.summary.auditInformation.bagRootLocation,
+          bagRootLocation =
+            auditSummary.summary.auditInformation.bagRootLocation,
           externalIdentifier =
             auditSummary.summary.auditInformation.externalIdentifier,
           version = auditSummary.summary.auditInformation.version

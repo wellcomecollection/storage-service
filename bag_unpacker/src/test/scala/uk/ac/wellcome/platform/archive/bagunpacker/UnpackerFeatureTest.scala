@@ -31,7 +31,8 @@ class UnpackerFeatureTest
     withBagUnpackerApp {
       case (_, srcBucket, queue, ingestTopic, outgoingTopic) =>
         withArchive(srcBucket, archiveFile) { archiveLocation =>
-          val ingestRequestPayload = createIngestRequestPayloadWith(archiveLocation)
+          val ingestRequestPayload =
+            createIngestRequestPayloadWith(archiveLocation)
           sendNotificationToSQS(queue, ingestRequestPayload)
 
           eventually {

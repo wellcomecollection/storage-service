@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.common
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 
-class UnpackedBagPayloadTest extends FunSpec with Matchers with PayloadGenerators {
+class UnpackedBagPayloadTest
+    extends FunSpec
+    with Matchers
+    with PayloadGenerators {
   it("creates a payload from an ingest payload and an unpacked bag location") {
     val sourceLocation = createObjectLocation
     val unpackedBagLocation = createObjectLocation

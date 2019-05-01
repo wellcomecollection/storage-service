@@ -36,7 +36,8 @@ case class UnpackedBagPayload(
 ) extends PipelinePayload
 
 case object UnpackedBagPayload {
-  def apply(ingestRequestPayload: IngestRequestPayload, unpackedBagLocation: ObjectLocation): UnpackedBagPayload =
+  def apply(ingestRequestPayload: IngestRequestPayload,
+            unpackedBagLocation: ObjectLocation): UnpackedBagPayload =
     UnpackedBagPayload(
       ingestId = ingestRequestPayload.ingestId,
       ingestDate = ingestRequestPayload.ingestDate,
