@@ -52,7 +52,7 @@ class BagReplicatorWorker(
       _ <- outgoingPublisher.sendIfSuccessful(
         replicationSummary,
         payload.copy(
-          objectLocation = replicationSummary.summary.destination
+          bagRootLocation = replicationSummary.summary.destination
         )
       )
     } yield toResult(replicationSummary)

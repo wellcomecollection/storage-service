@@ -17,9 +17,7 @@ case class ObjectLocationPayload(
 case class BagInformationPayload(
   ingestId: IngestID,
   storageSpace: StorageSpace,
-  objectLocation: ObjectLocation,
+  bagRootLocation: ObjectLocation,
   externalIdentifier: ExternalIdentifier,
   version: Int
-) {
-  def bagRootLocation: ObjectLocation = objectLocation
-}
+)

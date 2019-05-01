@@ -55,7 +55,7 @@ class BagReplicatorFeatureTest
                       )
 
                       val expectedPayload = payload.copy(
-                        objectLocation = expectedDst
+                        bagRootLocation = expectedDst
                       )
 
                       assertSnsReceivesOnly(expectedPayload, outgoingTopic)

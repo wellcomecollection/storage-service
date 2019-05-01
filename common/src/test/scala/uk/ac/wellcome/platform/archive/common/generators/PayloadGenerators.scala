@@ -35,7 +35,7 @@ trait PayloadGenerators
     BagInformationPayload(
       ingestId = ingestId,
       storageSpace = storageSpace,
-      objectLocation = bagRootLocation,
+      bagRootLocation = bagRootLocation,
       externalIdentifier = externalIdentifier,
       version = version
     )
