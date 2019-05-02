@@ -1,10 +1,12 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import java.nio.file.Paths
+import java.util.UUID
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{BagReplicatorFixtures, BetterInMemoryLockDao}
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
@@ -12,6 +14,7 @@ import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.storage.{LockDao, LockFailure}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -246,6 +249,42 @@ class BagReplicatorWorkerTest
                 lockServiceDao.history should have size 1
                 // Make more assertions about the results
               }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  it("doesn't delete the SQS message if it can't acquire a lock") {
+    val neverAllowLockDao = new LockDao[String, UUID] {
+      override def lock(id: String, contextId: UUID): LockResult =
+        Left(LockFailure(id, new Throwable("BOOM!")))
+      override def unlock(contextId: UUID): UnlockResult = Right(Unit)
+    }
+
+    withLocalS3Bucket { bucket =>
+      withBag(bucket, dataFileCount = 20) { case (bagRootLocation, _) =>
+        withLocalSnsTopic { ingestTopic =>
+          withLocalSnsTopic { outgoingTopic =>
+            withLocalSqsQueueAndDlqAndTimeout(1) { case QueuePair(queue, dlq) =>
+              withBagReplicatorWorker(
+                queue = queue,
+                ingestTopic = ingestTopic,
+                outgoingTopic = outgoingTopic,
+                config = createReplicatorDestinationConfigWith(bucket),
+                lockServiceDao = neverAllowLockDao) { _ =>
+                  val payload = createBagInformationPayloadWith(
+                    bagRootLocation = bagRootLocation
+                  )
+
+                  sendNotificationToSQS(queue, payload)
+
+                  eventually {
+                    assertQueueEmpty(queue)
+                    assertQueueHasSize(dlq, size = 1)
+                  }
+                }
             }
           }
         }
