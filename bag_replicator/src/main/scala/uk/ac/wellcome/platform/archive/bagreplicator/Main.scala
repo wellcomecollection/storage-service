@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
@@ -11,9 +13,11 @@ import uk.ac.wellcome.messaging.typesafe.{
 }
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagReplicator,
-  BagReplicatorWorker
+  BagReplicatorWorker,
+  BetterDynamoLockingService
 }
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.{
@@ -21,11 +25,13 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.storage.typesafe.S3Builder
+import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
+import uk.ac.wellcome.storage.{LockDao, LockingService}
+import uk.ac.wellcome.storage.typesafe.{LockingBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -46,6 +52,11 @@ object Main extends WellcomeTypesafeApp {
     val operationName = OperationNameBuilder
       .getName(config, default = "replicating")
 
+    implicit val dynamoLockDao = LockingBuilder.buildDynamoLockDao(config)
+
+    val lockingService: LockingService[IngestStepResult[ReplicationSummary], Future, LockDao[String, UUID]] =
+      new BetterDynamoLockingService[IngestStepResult[ReplicationSummary], Future]
+
     new BagReplicatorWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
       bagReplicator = new BagReplicator(
@@ -53,7 +64,8 @@ object Main extends WellcomeTypesafeApp {
           .buildDestinationConfig(config)
       ),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
+      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
+      lockingService = lockingService
     )
   }
 }
