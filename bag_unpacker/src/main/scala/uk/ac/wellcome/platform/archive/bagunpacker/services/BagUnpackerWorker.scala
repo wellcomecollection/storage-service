@@ -48,6 +48,8 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
       unpackerWorkerConfig = bagUnpackerWorkerConfig
     )
     for {
+      _ <- ingestUpdater.start(payload.ingestId)
+
       stepResult <- unpacker.unpack(
         requestId = payload.ingestId.toString,
         srcLocation = payload.sourceLocation,
