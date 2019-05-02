@@ -54,7 +54,7 @@ class DisplayIngestTest
     displayIngest.space shouldBe DisplayStorageSpace(spaceId)
     displayIngest.status shouldBe DisplayStatus("processing")
     displayIngest.bag shouldBe Some(
-      IngestDisplayBag(s"${bagId.space}/${bagId.externalIdentifier}"))
+      ResponseDisplayIngestBag(s"${bagId.space}/${bagId.externalIdentifier}"))
     displayIngest.createdDate shouldBe createdDate
     displayIngest.lastModifiedDate shouldBe modifiedDate
     displayIngest.events shouldBe List(

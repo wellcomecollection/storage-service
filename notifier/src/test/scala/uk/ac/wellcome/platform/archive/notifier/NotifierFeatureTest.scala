@@ -77,7 +77,7 @@ class NotifierFeatureTest
                     DisplayStorageSpace(ingest.space.underlying),
                     DisplayStatus(ingest.status.toString),
                     ingest.bag.map(bagId =>
-                      IngestDisplayBag(
+                      ResponseDisplayIngestBag(
                         s"${bagId.space}/${bagId.externalIdentifier}")),
                     ingest.events.map(event =>
                       DisplayIngestEvent(
@@ -147,7 +147,7 @@ class NotifierFeatureTest
                       DisplayStorageSpace(ingest.space.underlying),
                       DisplayStatus(ingest.status.toString),
                       ingest.bag.map(bagId =>
-                        IngestDisplayBag(
+                        ResponseDisplayIngestBag(
                           s"${bagId.space}/${bagId.externalIdentifier}")),
                       ingest.events.map(event =>
                         DisplayIngestEvent(
