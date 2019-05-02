@@ -26,64 +26,80 @@ class DisplayIngestTest
   private val contextUrl = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
-  it("creates a DisplayIngest from Ingest") {
-    val bagId = createBagId
-    val ingest: Ingest = Ingest(
-      id,
-      StorageLocation(
-        StandardStorageProvider,
-        ObjectLocation("bukkit", "key.txt")),
-      Namespace(spaceId),
-      Some(Callback(new URI(callbackUrl))),
-      Ingest.Processing,
-      Some(bagId),
-      Instant.parse(createdDate),
-      Instant.parse(modifiedDate),
-      List(IngestEvent(eventDescription, Instant.parse(eventDate)))
-    )
+  describe("ResponseDisplayIngest") {
+    it("creates a DisplayIngest from Ingest") {
+      val bagId = createBagId
+      val ingest: Ingest = Ingest(
+        id = id,
+        sourceLocation = StorageLocation(
+          provider = StandardStorageProvider,
+          location = ObjectLocation("bukkit", "key.txt")
+        ),
+        space = Namespace(spaceId),
+        callback = Some(Callback(new URI(callbackUrl))),
+        status = Ingest.Processing,
+        bag = Some(bagId),
+        createdDate = Instant.parse(createdDate),
+        lastModifiedDate = Instant.parse(modifiedDate),
+        events = List(IngestEvent(eventDescription, Instant.parse(eventDate)))
+      )
 
-    val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
 
-    displayIngest.id shouldBe id.underlying
-    displayIngest.sourceLocation shouldBe DisplayLocation(
-      StandardDisplayProvider,
-      bucket = "bukkit",
-      path = "key.txt")
-    displayIngest.callback shouldBe Some(
-      DisplayCallback(callbackUrl, Some(displayIngest.callback.get.status.get)))
-    displayIngest.space shouldBe DisplayStorageSpace(spaceId)
-    displayIngest.status shouldBe DisplayStatus("processing")
-    displayIngest.bag shouldBe Some(
-      ResponseDisplayIngestBag(s"${bagId.space}/${bagId.externalIdentifier}"))
-    displayIngest.createdDate shouldBe createdDate
-    displayIngest.lastModifiedDate shouldBe modifiedDate
-    displayIngest.events shouldBe List(
-      DisplayIngestEvent(eventDescription, eventDate))
+      displayIngest.id shouldBe id.underlying
+      displayIngest.sourceLocation shouldBe DisplayLocation(
+        StandardDisplayProvider,
+        bucket = "bukkit",
+        path = "key.txt"
+      )
+      displayIngest.callback shouldBe Some(
+        DisplayCallback(
+          url = callbackUrl,
+          status = Some(displayIngest.callback.get.status.get)
+        )
+      )
+      displayIngest.space shouldBe DisplayStorageSpace(spaceId)
+      displayIngest.status shouldBe DisplayStatus("processing")
+      displayIngest.bag shouldBe Some(
+        ResponseDisplayIngestBag(s"${bagId.space}/${bagId.externalIdentifier}")
+      )
+      displayIngest.createdDate shouldBe createdDate
+      displayIngest.lastModifiedDate shouldBe modifiedDate
+      displayIngest.events shouldBe List(
+        DisplayIngestEvent(eventDescription, eventDate)
+      )
+    }
   }
 
-  it("transforms itself into a ingest") {
-    val displayProvider = InfrequentAccessDisplayProvider
-    val bucket = "ingest-bucket"
-    val path = "bag.zip"
-    val ingestCreateRequest = RequestDisplayIngest(
-      DisplayLocation(displayProvider, bucket, path),
-      Some(
-        DisplayCallback("http://www.wellcomecollection.org/callback/ok", None)),
-      CreateDisplayIngestType,
-      DisplayStorageSpace("space-id")
-    )
+  describe("RequestDisplayIngest") {
+    it("transforms itself into a ingest") {
+      val displayProvider = InfrequentAccessDisplayProvider
+      val bucket = "ingest-bucket"
+      val path = "bag.zip"
+      val ingestCreateRequest = RequestDisplayIngest(
+        DisplayLocation(displayProvider, bucket, path),
+        Some(
+          DisplayCallback(
+            url = "http://www.wellcomecollection.org/callback/ok",
+            status = None
+          )
+        ),
+        CreateDisplayIngestType,
+        DisplayStorageSpace("space-id")
+      )
 
-    val ingest = ingestCreateRequest.toIngest
+      val ingest = ingestCreateRequest.toIngest
 
-    ingest.id shouldBe a[IngestID]
-    ingest.sourceLocation shouldBe StorageLocation(
-      InfrequentAccessStorageProvider,
-      ObjectLocation(bucket, path))
-    ingest.callback shouldBe Some(
-      Callback(URI.create(ingestCreateRequest.callback.get.url)))
-    ingest.status shouldBe Ingest.Accepted
-    assertRecent(ingest.createdDate)
-    assertRecent(ingest.lastModifiedDate)
-    ingest.events shouldBe List.empty
+      ingest.id shouldBe a[IngestID]
+      ingest.sourceLocation shouldBe StorageLocation(
+        InfrequentAccessStorageProvider,
+        ObjectLocation(bucket, path))
+      ingest.callback shouldBe Some(
+        Callback(URI.create(ingestCreateRequest.callback.get.url)))
+      ingest.status shouldBe Ingest.Accepted
+      assertRecent(ingest.createdDate)
+      assertRecent(ingest.lastModifiedDate)
+      ingest.events shouldBe List.empty
+    }
   }
 }
