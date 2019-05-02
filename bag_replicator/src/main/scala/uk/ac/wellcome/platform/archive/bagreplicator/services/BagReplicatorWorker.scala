@@ -89,6 +89,7 @@ class BagReplicatorWorker(
     }.map {
       case Right(result) => result
       case Left(failedLockingServiceOp) =>
+        warn(s"Unable to lock successfully: $failedLockingServiceOp")
         NonDeterministicFailure(
           new Throwable(
             s"Unable to lock successfully: $failedLockingServiceOp"))
