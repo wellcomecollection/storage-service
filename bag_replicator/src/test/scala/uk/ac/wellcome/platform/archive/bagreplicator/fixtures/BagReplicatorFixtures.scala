@@ -64,6 +64,20 @@ trait BagReplicatorFixtures
       }
     }
 
+
+  def withBagReplicatorWorker[R](lockServiceDao: LockDao[String, UUID])(
+    testWith: TestWith[BagReplicatorWorker, R]
+  ): R =
+    withLocalS3Bucket { bucket =>
+      val config = createReplicatorDestinationConfigWith(bucket)
+      withLocalSnsTopic { topic =>
+        withBagReplicatorWorker(defaultQueue, topic, topic, config, lockServiceDao) {
+          worker =>
+            testWith(worker)
+        }
+      }
+    }
+
   def withBagReplicatorWorker[R](bucket: Bucket)(
     testWith: TestWith[BagReplicatorWorker, R]): R = {
     val config = createReplicatorDestinationConfigWith(bucket)

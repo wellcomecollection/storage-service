@@ -13,6 +13,9 @@ import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 class BagReplicatorWorkerTest
     extends FunSpec
     with Matchers
@@ -204,24 +207,46 @@ class BagReplicatorWorkerTest
   }
 
   it("locks around the destination") {
-    withLocalSnsTopic { ingestTopic =>
-      withLocalSnsTopic { outgoingTopic =>
+    val lockServiceDao = new BetterInMemoryLockDao()
 
-        val lockServiceDao = new BetterInMemoryLockDao()
+    withBagReplicatorWorker(lockServiceDao = lockServiceDao) { service =>
+      val payload = createBagInformationPayload
+       val future = service.processMessage(payload)
 
-        withBagReplicatorWorker(
-          ingestTopic = ingestTopic,
-          outgoingTopic = outgoingTopic,
-          lockServiceDao = lockServiceDao) { service =>
-          val payload = createBagInformationPayload
+      whenReady(future) { result: Result[ReplicationSummary] =>
+        val destination = result.summary.get.destination
 
-          val future = service.processMessage(payload)
+        lockServiceDao.history should have size 1
+        lockServiceDao.history.head.id shouldBe destination.toString
+      }
+    }
+  }
 
-          whenReady(future) { result: Result[ReplicationSummary] =>
-            val destination = result.summary.get.destination
+  it("only allows one worker to process a destination") {
+    val lockServiceDao = new BetterInMemoryLockDao()
 
-            lockServiceDao.history should have size 1
-            lockServiceDao.history.head.id shouldBe destination.toString
+    withLocalS3Bucket { bucket =>
+      withBag(bucket, dataFileCount = 20) { case (bagRootLocation, _) =>
+        withLocalSnsTopic { ingestTopic =>
+          withLocalSnsTopic { outgoingTopic =>
+            withBagReplicatorWorker(
+              ingestTopic = ingestTopic,
+              outgoingTopic = outgoingTopic,
+              lockServiceDao = lockServiceDao) { worker =>
+
+              val payload = createBagInformationPayloadWith(
+                bagRootLocation = bagRootLocation
+              )
+
+              val futures: Future[Seq[Result[ReplicationSummary]]] = Future.sequence((1 to 5).map { _ =>
+                worker.processMessage(payload)
+              })
+
+              whenReady(futures) { result =>
+                lockServiceDao.history should have size 1
+                // Make more assertions about the results
+              }
+            }
           }
         }
       }
