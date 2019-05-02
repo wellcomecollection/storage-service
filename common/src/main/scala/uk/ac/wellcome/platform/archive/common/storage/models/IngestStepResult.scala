@@ -1,6 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  DeterministicFailure,
+  Result,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.common.IngestID
 
 sealed trait IngestStep[T]

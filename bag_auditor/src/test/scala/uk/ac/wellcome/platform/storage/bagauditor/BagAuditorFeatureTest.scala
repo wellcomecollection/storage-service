@@ -4,7 +4,10 @@ import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 
 class BagAuditorFeatureTest
@@ -41,12 +44,14 @@ class BagAuditorFeatureTest
 
                     assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
-                    assertTopicReceivesIngestEvent(
+                    assertTopicReceivesIngestEvents(
                       payload.ingestId,
-                      ingestTopic) { events =>
-                      events should have size 1
-                      events.head.description shouldBe "Locating bag root succeeded"
-                    }
+                      ingestTopic,
+                      expectedDescriptions = Seq(
+                        "Locating bag root started",
+                        "Locating bag root succeeded"
+                      )
+                    )
                   }
                 }
               }
@@ -86,12 +91,14 @@ class BagAuditorFeatureTest
 
                     assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
-                    assertTopicReceivesIngestEvent(
+                    assertTopicReceivesIngestEvents(
                       payload.ingestId,
-                      ingestTopic) { events =>
-                      events should have size 1
-                      events.head.description shouldBe "Locating bag root succeeded"
-                    }
+                      ingestTopic,
+                      expectedDescriptions = Seq(
+                        "Locating bag root started",
+                        "Locating bag root succeeded"
+                      )
+                    )
                   }
                 }
               }
@@ -118,12 +125,18 @@ class BagAuditorFeatureTest
 
                     assertSnsReceivesNothing(outgoingTopic)
 
-                    assertTopicReceivesIngestStatus(
+                    assertTopicReceivesIngestUpdates(
                       payload.ingestId,
-                      status = Ingest.Failed,
-                      ingestTopic = ingestTopic) { events =>
-                      events should have size 1
-                      events.head.description shouldBe "Locating bag root failed"
+                      ingestTopic) { ingestUpdates =>
+                      ingestUpdates.size shouldBe 2
+
+                      val ingestStart = ingestUpdates.head
+                      ingestStart.events.head.description shouldBe "Locating bag root started"
+
+                      val ingestFailed =
+                        ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                      ingestFailed.status shouldBe Ingest.Failed
+                      ingestFailed.events.head.description shouldBe "Locating bag root failed"
                     }
                   }
                 }
@@ -150,12 +163,17 @@ class BagAuditorFeatureTest
 
                 assertSnsReceivesNothing(outgoingTopic)
 
-                assertTopicReceivesIngestStatus(
-                  payload.ingestId,
-                  status = Ingest.Failed,
-                  ingestTopic = ingestTopic) { events =>
-                  events should have size 1
-                  events.head.description shouldBe "Locating bag root failed"
+                assertTopicReceivesIngestUpdates(payload.ingestId, ingestTopic) {
+                  ingestUpdates =>
+                    ingestUpdates.size shouldBe 2
+
+                    val ingestStart = ingestUpdates.head
+                    ingestStart.events.head.description shouldBe "Locating bag root started"
+
+                    val ingestFailed =
+                      ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                    ingestFailed.status shouldBe Ingest.Failed
+                    ingestFailed.events.head.description shouldBe "Locating bag root failed"
                 }
               }
             }
@@ -180,12 +198,17 @@ class BagAuditorFeatureTest
 
               assertSnsReceivesNothing(outgoingTopic)
 
-              assertTopicReceivesIngestStatus(
-                payload.ingestId,
-                status = Ingest.Failed,
-                ingestTopic = ingestTopic) { events =>
-                events should have size 1
-                events.head.description shouldBe "Locating bag root failed"
+              assertTopicReceivesIngestUpdates(payload.ingestId, ingestTopic) {
+                ingestUpdates =>
+                  ingestUpdates.size shouldBe 2
+
+                  val ingestStart = ingestUpdates.head
+                  ingestStart.events.head.description shouldBe "Locating bag root started"
+
+                  val ingestFailed =
+                    ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                  ingestFailed.status shouldBe Ingest.Failed
+                  ingestFailed.events.head.description shouldBe "Locating bag root failed"
               }
             }
           }

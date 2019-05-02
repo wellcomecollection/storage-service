@@ -20,6 +20,12 @@ class IngestUpdater(
   snsWriter: SNSWriter
 ) extends Logging {
 
+  def start(ingestId: IngestID): Future[PublishAttempt] =
+    send(
+      ingestId = ingestId,
+      step = IngestStepStarted(ingestId)
+    )
+
   def send[R](
     ingestId: IngestID,
     step: IngestStep[R],
