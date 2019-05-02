@@ -32,16 +32,18 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
                 storageSpace: StorageSpace,
                 externalIdentifier: ExternalIdentifier,
                 version: Int): Future[IngestStepResult[ReplicationSummary]] = {
-    val replicationSummary = ReplicationSummary(
-      startTime = Instant.now(),
-      bagRootLocation = bagRootLocation,
-      storageSpace = storageSpace
-    )
 
     val destination = destinationBuilder.buildDestination(
       storageSpace = storageSpace,
       externalIdentifier = externalIdentifier,
       version = version
+    )
+
+    val replicationSummary = ReplicationSummary(
+      startTime = Instant.now(),
+      bagRootLocation = bagRootLocation,
+      storageSpace = storageSpace,
+      destination = destination
     )
 
     val copyResult =
@@ -55,9 +57,9 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
       case Success(_) =>
         Success(
           IngestStepSucceeded(
-            replicationSummary
-              .copy(maybeDestination = Some(destination))
-              .complete))
+            replicationSummary.complete
+          )
+        )
 
       case Failure(e) =>
         Success(

@@ -9,7 +9,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 case class ReplicationSummary(
   bagRootLocation: ObjectLocation,
   storageSpace: StorageSpace,
-  maybeDestination: Option[ObjectLocation] = None,
+  destination: ObjectLocation,
   startTime: Instant,
   endTime: Option[Instant] = None,
 ) extends Summary {
@@ -19,22 +19,10 @@ case class ReplicationSummary(
     )
   }
 
-  def destination: ObjectLocation =
-    maybeDestination.getOrElse(
-      throw new RuntimeException(
-        "No destination provided by replication!"
-      )
-    )
-
-  override def toString: String = {
-    val destinationCompletePath = maybeDestination match {
-      case None              => "<no-destination>"
-      case Some(destination) => destination.toString()
-    }
+  override def toString: String =
     f"""|src=$bagRootLocation
-        |dst=$destinationCompletePath
+        |dst=$destination
         |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")
-  }
 }
