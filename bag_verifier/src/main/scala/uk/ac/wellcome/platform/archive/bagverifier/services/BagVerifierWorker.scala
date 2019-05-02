@@ -48,6 +48,7 @@ class BagVerifierWorker(
   def processMessage(
     payload: BagInformationPayload): Future[Result[VerificationSummary]] =
     for {
+      _ <- ingestUpdater.start(payload.ingestId)
       verificationSummary: IngestStepResult[VerificationSummary] <- verifier
         .verify(payload.bagRootLocation)
       _ <- ingestUpdater.send(payload.ingestId, verificationSummary)

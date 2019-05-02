@@ -7,7 +7,7 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
 class VerifierFeatureTest
@@ -39,14 +39,14 @@ class VerifierFeatureTest
                     eventually {
                       listMessagesReceivedFromSNS(outgoingTopic)
 
-                      assertTopicReceivesIngestEvent(
-                        ingestId = payload.ingestId,
-                        ingestTopic = ingestTopic
-                      ) { events =>
-                        events.map {
-                          _.description
-                        } shouldBe List("Verification succeeded")
-                      }
+                      assertTopicReceivesIngestEvents(
+                        payload.ingestId,
+                        ingestTopic,
+                        expectedDescriptions = Seq(
+                          "Verification started",
+                          "Verification succeeded"
+                        )
+                      )
 
                       assertSnsReceivesOnly(payload, topic = outgoingTopic)
 
@@ -80,15 +80,16 @@ class VerifierFeatureTest
                     sendNotificationToSQS(queue, payload)
 
                     eventually {
-                      assertTopicReceivesIngestStatus(
-                        ingestId = payload.ingestId,
-                        ingestTopic = ingestTopic,
-                        status = Ingest.Failed
-                      ) { events =>
-                        val description = events.map {
-                          _.description
-                        }.head
-                        description should startWith("Verification failed")
+                      assertTopicReceivesIngestUpdates(payload.ingestId, ingestTopic) { ingestUpdates =>
+                        ingestUpdates.size shouldBe 2
+
+                        val ingestStart = ingestUpdates.head
+                        ingestStart.events.head.description shouldBe "Verification started"
+
+                        val ingestFailed =
+                          ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                        ingestFailed.status shouldBe Ingest.Failed
+                        ingestFailed.events.head.description shouldBe "Verification failed"
                       }
 
                       assertSnsReceivesNothing(outgoingTopic)
