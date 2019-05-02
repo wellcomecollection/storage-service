@@ -14,6 +14,10 @@ case class IngestCompleted[T](
   summary: T
 ) extends IngestStepResult[T]
 
+case class IngestStepStarted[T](
+  summary: T
+) extends IngestStepResult[T]
+
 case class IngestStepSucceeded[T](
   summary: T
 ) extends IngestStepResult[T]
@@ -30,5 +34,6 @@ trait IngestStepWorker {
       case IngestStepSucceeded(s) => Successful(Some(s))
       case IngestCompleted(s)     => Successful(Some(s))
       case IngestFailed(s, t, _)  => DeterministicFailure(t, Some(s))
+      case IngestStepStarted(_)   => throw new RuntimeException("Cannot cast IngestStepStarted to a Result")
     }
 }
