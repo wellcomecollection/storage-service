@@ -16,14 +16,13 @@ import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class BagReplicator(
-  implicit s3Client: AmazonS3,
-  ec: ExecutionContext) {
+class BagReplicator(implicit s3Client: AmazonS3, ec: ExecutionContext) {
   val s3PrefixCopier = S3PrefixCopier(s3Client)
 
   def replicate(bagRootLocation: ObjectLocation,
                 storageSpace: StorageSpace,
-                destination: ObjectLocation): Future[IngestStepResult[ReplicationSummary]] = {
+                destination: ObjectLocation)
+    : Future[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,

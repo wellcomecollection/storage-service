@@ -7,7 +7,10 @@ import cats.instances.future._
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
 import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
@@ -27,7 +30,9 @@ class BagReplicatorWorker(
   bagReplicator: BagReplicator,
   ingestUpdater: IngestUpdater,
   outgoingPublisher: OutgoingPublisher,
-  lockingService: LockingService[Result[ReplicationSummary], Future, LockDao[String, UUID]],
+  lockingService: LockingService[Result[ReplicationSummary],
+                                 Future,
+                                 LockDao[String, UUID]],
   replicatorDestinationConfig: ReplicatorDestinationConfig
 )(implicit
   actorSystem: ActorSystem,
@@ -63,30 +68,34 @@ class BagReplicatorWorker(
       result <- replicate(payload, destination)
     } yield result
 
-  def replicate(payload: BagInformationPayload, destination: ObjectLocation): Future[Result[ReplicationSummary]] =
-    lockingService.withLock(destination.toString) {
-      for {
-        replicationSummary <- bagReplicator.replicate(
-          bagRootLocation = payload.bagRootLocation,
-          destination = destination,
-          storageSpace = payload.storageSpace
-        )
-        _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
-        _ <- outgoingPublisher.sendIfSuccessful(
-          replicationSummary,
-          payload.copy(
-            bagRootLocation = replicationSummary.summary.destination
+  def replicate(
+    payload: BagInformationPayload,
+    destination: ObjectLocation): Future[Result[ReplicationSummary]] =
+    lockingService
+      .withLock(destination.toString) {
+        for {
+          replicationSummary <- bagReplicator.replicate(
+            bagRootLocation = payload.bagRootLocation,
+            destination = destination,
+            storageSpace = payload.storageSpace
           )
-        )
-      } yield toResult(replicationSummary)
-    }.map {
-      case Right(result) => result
-      case Left(failedLockingServiceOp) =>
-        warn(s"Unable to lock successfully: $failedLockingServiceOp")
-        NonDeterministicFailure(
-          new Throwable(
-            s"Unable to lock successfully: $failedLockingServiceOp"))
-    }
+          _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
+          _ <- outgoingPublisher.sendIfSuccessful(
+            replicationSummary,
+            payload.copy(
+              bagRootLocation = replicationSummary.summary.destination
+            )
+          )
+        } yield toResult(replicationSummary)
+      }
+      .map {
+        case Right(result) => result
+        case Left(failedLockingServiceOp) =>
+          warn(s"Unable to lock successfully: $failedLockingServiceOp")
+          NonDeterministicFailure(
+            new Throwable(
+              s"Unable to lock successfully: $failedLockingServiceOp"))
+      }
 
   override def run(): Future[Any] = worker.start
 }

@@ -48,7 +48,8 @@ object Main extends WellcomeTypesafeApp {
     val operationName = OperationNameBuilder
       .getName(config, default = "replicating")
 
-    val lockingService = LockingBuilder.buildDynamoLockingService[Result[ReplicationSummary], Future](config)
+    val lockingService = LockingBuilder
+      .buildDynamoLockingService[Result[ReplicationSummary], Future](config)
 
     new BagReplicatorWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),

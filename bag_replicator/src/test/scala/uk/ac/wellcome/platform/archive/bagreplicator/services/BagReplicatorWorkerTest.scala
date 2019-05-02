@@ -7,7 +7,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
@@ -215,7 +219,7 @@ class BagReplicatorWorkerTest
 
     withBagReplicatorWorker(lockServiceDao = lockServiceDao) { service =>
       val payload = createBagInformationPayload
-       val future = service.processMessage(payload)
+      val future = service.processMessage(payload)
 
       whenReady(future) { result: Result[ReplicationSummary] =>
         val destination = result.summary.get.destination
@@ -230,35 +234,35 @@ class BagReplicatorWorkerTest
     val lockServiceDao = new InMemoryLockDao()
 
     withLocalS3Bucket { bucket =>
-
       // We have to create a large bag to slow down the replicators, or the
       // first process finishes and releases the lock before the later
       // processes have started.
-      withBag(bucket, dataFileCount = 250) { case (bagRootLocation, _) =>
-        withLocalSnsTopic { ingestTopic =>
-          withLocalSnsTopic { outgoingTopic =>
-            withBagReplicatorWorker(
-              ingestTopic = ingestTopic,
-              outgoingTopic = outgoingTopic,
-              lockServiceDao = lockServiceDao) { worker =>
+      withBag(bucket, dataFileCount = 250) {
+        case (bagRootLocation, _) =>
+          withLocalSnsTopic { ingestTopic =>
+            withLocalSnsTopic { outgoingTopic =>
+              withBagReplicatorWorker(
+                ingestTopic = ingestTopic,
+                outgoingTopic = outgoingTopic,
+                lockServiceDao = lockServiceDao) { worker =>
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation
+                )
 
-              val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+                val futures: Future[Seq[Result[ReplicationSummary]]] =
+                  Future.sequence((1 to 5).map { _ =>
+                    worker.processMessage(payload)
+                  })
 
-              val futures: Future[Seq[Result[ReplicationSummary]]] = Future.sequence((1 to 5).map { _ =>
-                worker.processMessage(payload)
-              })
+                whenReady(futures) { result =>
+                  result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
+                  result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
 
-              whenReady(futures) { result =>
-                result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
-                result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
-
-                lockServiceDao.history should have size 1
+                  lockServiceDao.history should have size 1
+                }
               }
             }
           }
-        }
       }
     }
   }
@@ -271,30 +275,32 @@ class BagReplicatorWorkerTest
     }
 
     withLocalS3Bucket { bucket =>
-      withBag(bucket, dataFileCount = 20) { case (bagRootLocation, _) =>
-        withLocalSnsTopic { ingestTopic =>
-          withLocalSnsTopic { outgoingTopic =>
-            withLocalSqsQueueAndDlqAndTimeout(1) { case QueuePair(queue, dlq) =>
-              withBagReplicatorWorker(
-                queue = queue,
-                ingestTopic = ingestTopic,
-                outgoingTopic = outgoingTopic,
-                config = createReplicatorDestinationConfigWith(bucket),
-                lockServiceDao = neverAllowLockDao) { _ =>
-                  val payload = createBagInformationPayloadWith(
-                    bagRootLocation = bagRootLocation
-                  )
+      withBag(bucket, dataFileCount = 20) {
+        case (bagRootLocation, _) =>
+          withLocalSnsTopic { ingestTopic =>
+            withLocalSnsTopic { outgoingTopic =>
+              withLocalSqsQueueAndDlqAndTimeout(1) {
+                case QueuePair(queue, dlq) =>
+                  withBagReplicatorWorker(
+                    queue = queue,
+                    ingestTopic = ingestTopic,
+                    outgoingTopic = outgoingTopic,
+                    config = createReplicatorDestinationConfigWith(bucket),
+                    lockServiceDao = neverAllowLockDao) { _ =>
+                    val payload = createBagInformationPayloadWith(
+                      bagRootLocation = bagRootLocation
+                    )
 
-                  sendNotificationToSQS(queue, payload)
+                    sendNotificationToSQS(queue, payload)
 
-                  eventually {
-                    assertQueueEmpty(queue)
-                    assertQueueHasSize(dlq, size = 1)
+                    eventually {
+                      assertQueueEmpty(queue)
+                      assertQueueHasSize(dlq, size = 1)
+                    }
                   }
-                }
+              }
             }
           }
-        }
       }
     }
   }
