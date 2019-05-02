@@ -11,12 +11,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestStatusUpdate,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 
 import scala.concurrent.Future
 
@@ -27,10 +22,10 @@ class IngestUpdater(
 
   def send[R](
     ingestId: IngestID,
-    result: IngestStepResult[R],
+    step: IngestStep[R],
     bagId: Option[BagId] = None
   ): Future[PublishAttempt] = {
-    val update = result match {
+    val update = step match {
       case IngestCompleted(_) =>
         IngestStatusUpdate(
           id = ingestId,
@@ -47,6 +42,12 @@ class IngestUpdater(
         IngestUpdate.event(
           id = ingestId,
           description = s"${stepName.capitalize} succeeded"
+        )
+
+      case IngestStepStarted(_) =>
+        IngestUpdate.event(
+          id = ingestId,
+          description = s"${stepName.capitalize} started"
         )
 
       case IngestFailed(_, _, maybeMessage) =>

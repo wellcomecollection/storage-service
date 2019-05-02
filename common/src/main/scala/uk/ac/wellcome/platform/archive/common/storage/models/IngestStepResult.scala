@@ -1,20 +1,19 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.messaging.worker.models.{
-  DeterministicFailure,
-  Result,
-  Successful
-}
+import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Result, Successful}
+import uk.ac.wellcome.platform.archive.common.IngestID
 
-sealed trait IngestStepResult[T] {
+sealed trait IngestStep[T]
+
+case class IngestStepStarted(
+  id: IngestID
+) extends IngestStep[IngestID]
+
+sealed trait IngestStepResult[T] extends IngestStep[T] {
   val summary: T
 }
 
 case class IngestCompleted[T](
-  summary: T
-) extends IngestStepResult[T]
-
-case class IngestStepStarted[T](
   summary: T
 ) extends IngestStepResult[T]
 
@@ -34,6 +33,5 @@ trait IngestStepWorker {
       case IngestStepSucceeded(s) => Successful(Some(s))
       case IngestCompleted(s)     => Successful(Some(s))
       case IngestFailed(s, t, _)  => DeterministicFailure(t, Some(s))
-      case IngestStepStarted(_)   => throw new RuntimeException("Cannot cast IngestStepStarted to a Result")
     }
 }
