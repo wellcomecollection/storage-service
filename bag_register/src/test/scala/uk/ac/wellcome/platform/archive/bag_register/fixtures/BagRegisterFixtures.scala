@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bag_register.fixtures
 
+import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
@@ -8,11 +9,18 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
+import uk.ac.wellcome.platform.archive.common.IngestID
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures,
   RandomThings,
   StorageManifestVHSFixture
+}
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
@@ -25,7 +33,8 @@ trait BagRegisterFixtures
     with AlpakkaSQSWorkerFixtures
     with OperationFixtures
     with StorageManifestVHSFixture
-    with MonitoringClientFixture {
+    with MonitoringClientFixture
+    with IngestUpdateAssertions {
 
   type Fixtures = (BagRegisterWorker, Table, Bucket, Topic, Topic, QueuePair)
 
@@ -86,5 +95,37 @@ trait BagRegisterFixtures
       withBagRegisterWorkerAndBucket(bucket) { fixtures =>
         testWith(fixtures)
       }
+    }
+
+  def assertBagRegisterSucceeded(ingestId: IngestID,
+                                 ingestTopic: Topic,
+                                 bagId: BagId): Assertion =
+    assertTopicReceivesIngestUpdates(ingestId, ingestTopic) { ingestUpdates =>
+      ingestUpdates.size shouldBe 2
+
+      val ingestStart = ingestUpdates.head
+      ingestStart.events.head.description shouldBe "Register started"
+
+      val ingestCompleted =
+        ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+      ingestCompleted.status shouldBe Ingest.Completed
+      ingestCompleted.affectedBag shouldBe Some(bagId)
+      ingestCompleted.events.head.description shouldBe "Register succeeded (completed)"
+    }
+
+  def assertBagRegisterFailed(ingestId: IngestID,
+                              ingestTopic: Topic,
+                              bagId: BagId): Assertion =
+    assertTopicReceivesIngestUpdates(ingestId, ingestTopic) { ingestUpdates =>
+      ingestUpdates.size shouldBe 2
+
+      val ingestStart = ingestUpdates.head
+      ingestStart.events.head.description shouldBe "Register started"
+
+      val ingestFailed =
+        ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+      ingestFailed.status shouldBe Ingest.Failed
+      ingestFailed.affectedBag shouldBe Some(bagId)
+      ingestFailed.events.head.description shouldBe "Register failed"
     }
 }

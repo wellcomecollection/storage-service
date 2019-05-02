@@ -15,10 +15,8 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
-  Ingest,
   StorageLocation
 }
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagRegisterFeatureTest
@@ -28,7 +26,6 @@ class BagRegisterFeatureTest
     with IngestOperationGenerators
     with BagInfoGenerators
     with BagLocationFixtures
-    with IngestUpdateAssertions
     with BagRegisterFixtures
     with PayloadGenerators {
 
@@ -68,14 +65,11 @@ class BagRegisterFeatureTest
 
               storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-              assertTopicReceivesIngestStatus(
+              assertBagRegisterSucceeded(
                 ingestId = payload.ingestId,
                 ingestTopic = ingestTopic,
-                status = Ingest.Completed,
-                expectedBag = Some(bagId)) { events =>
-                events.size should be >= 1
-                events.head.description shouldBe "Register succeeded (completed)"
-              }
+                bagId = bagId
+              )
 
               assertQueueEmpty(queuePair.queue)
             }
@@ -97,21 +91,17 @@ class BagRegisterFeatureTest
 
             sendNotificationToSQS(queuePair.queue, payload)
 
+            val bagId = BagId(
+              space = storageSpace,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
+
             eventually {
-              assertTopicReceivesIngestStatus(
+              assertBagRegisterFailed(
                 ingestId = payload.ingestId,
                 ingestTopic = ingestTopic,
-                status = Ingest.Failed,
-                expectedBag = Some(
-                  BagId(
-                    space = storageSpace,
-                    externalIdentifier = bagInfo.externalIdentifier
-                  )
-                )
-              ) { events =>
-                events.size should be >= 1
-                events.head.description shouldBe "Register failed"
-              }
+                bagId = bagId
+              )
             }
 
             assertQueueEmpty(queuePair.queue)

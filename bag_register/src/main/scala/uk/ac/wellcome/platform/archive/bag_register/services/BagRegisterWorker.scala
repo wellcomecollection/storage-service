@@ -42,6 +42,8 @@ class BagRegisterWorker(
   def processMessage(
     payload: BagInformationPayload): Future[Result[RegistrationSummary]] =
     for {
+      _ <- ingestUpdater.start(payload.ingestId)
+
       registrationSummary <- register.update(
         bagRootLocation = payload.bagRootLocation,
         storageSpace = payload.storageSpace
