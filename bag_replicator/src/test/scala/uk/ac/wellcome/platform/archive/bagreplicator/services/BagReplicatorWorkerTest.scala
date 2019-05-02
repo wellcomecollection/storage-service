@@ -8,12 +8,13 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{BagReplicatorFixtures, BetterInMemoryLockDao}
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
 import uk.ac.wellcome.storage.{LockDao, LockFailure}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -210,7 +211,7 @@ class BagReplicatorWorkerTest
   }
 
   it("locks around the destination") {
-    val lockServiceDao = new BetterInMemoryLockDao()
+    val lockServiceDao = new InMemoryLockDao()
 
     withBagReplicatorWorker(lockServiceDao = lockServiceDao) { service =>
       val payload = createBagInformationPayload
@@ -226,7 +227,7 @@ class BagReplicatorWorkerTest
   }
 
   it("only allows one worker to process a destination") {
-    val lockServiceDao = new BetterInMemoryLockDao()
+    val lockServiceDao = new InMemoryLockDao()
 
     withLocalS3Bucket { bucket =>
 

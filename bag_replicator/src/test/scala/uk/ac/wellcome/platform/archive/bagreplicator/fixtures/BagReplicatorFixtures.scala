@@ -12,17 +12,10 @@ import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  MonitoringClientFixture,
-  OperationFixtures
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
 import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
-import uk.ac.wellcome.storage.fixtures.LockingServiceFixtures
+import uk.ac.wellcome.storage.fixtures.{InMemoryLockDao, LockingServiceFixtures}
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.collection.JavaConverters._
@@ -111,7 +104,7 @@ trait BagReplicatorFixtures
                                  ingestTopic: Topic,
                                  outgoingTopic: Topic,
                                  config: ReplicatorDestinationConfig,
-                                 lockServiceDao: LockDao[String, UUID] = new BetterInMemoryLockDao())(
+                                 lockServiceDao: LockDao[String, UUID] = new InMemoryLockDao())(
     testWith: TestWith[BagReplicatorWorker, R]): R =
     withActorSystem { implicit actorSystem =>
       withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
