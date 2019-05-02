@@ -97,6 +97,11 @@ resource "aws_iam_role_policy" "bag_replicator_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
+resource "aws_iam_role_policy" "bag_replicator_locking_table" {
+  role   = "${module.bag_replicator.task_role_name}"
+  policy = "${data.aws_iam_policy_document.lock_table_readwrite.json}"
+}
+
 # bag_verifier post-replication
 
 resource "aws_iam_role_policy" "bag_verifier_post_repl_read_s3_archive" {
