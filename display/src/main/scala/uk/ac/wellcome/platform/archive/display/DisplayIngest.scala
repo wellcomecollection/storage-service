@@ -53,7 +53,9 @@ object ResponseDisplayIngest {
       ingestType = CreateDisplayIngestType,
       bag = ingest.bag.map { ResponseDisplayIngestBag(_) },
       status = DisplayStatus(ingest.status),
-      events = ingest.events.map { DisplayIngestEvent(_) },
+      events = ingest.events
+        .sortBy { _.createdDate }
+        .map { DisplayIngestEvent(_) },
       createdDate = ingest.createdDate.toString,
       lastModifiedDate = ingest.lastModifiedDate.toString
     )

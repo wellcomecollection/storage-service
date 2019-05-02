@@ -9,12 +9,14 @@ import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.fixtures.S3
 
 class DisplayIngestTest
     extends FunSpec
     with Matchers
     with BagIdGenerators
-    with TimeTestFixture {
+    with TimeTestFixture
+    with S3 {
 
   private val id = createIngestID
   private val callbackUrl = "http://www.example.com/callback"
@@ -69,6 +71,27 @@ class DisplayIngestTest
         DisplayIngestEvent(eventDescription, eventDate)
       )
     }
+
+    it("sorts events by created date") {
+      val events = Seq(1, 3, 2, 4, 5).map { i =>
+        IngestEvent(
+          description = s"Event $i",
+          createdDate = Instant.ofEpochSecond(i)
+        )
+      }
+
+      val ingest = createIngestWith(events)
+
+      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+
+      displayIngest.events.map { _.description } shouldBe Seq(
+        "Event 1",
+        "Event 2",
+        "Event 3",
+        "Event 4",
+        "Event 5"
+      )
+    }
   }
 
   describe("RequestDisplayIngest") {
@@ -102,4 +125,15 @@ class DisplayIngestTest
       ingest.events shouldBe List.empty
     }
   }
+
+  def createIngestWith(events: Seq[IngestEvent]): Ingest =
+    Ingest(
+      id = createIngestID,
+      sourceLocation = StorageLocation(
+        provider = StandardStorageProvider,
+        location = createObjectLocation
+      ),
+      space = Namespace(randomAlphanumeric()),
+      events = events
+    )
 }
