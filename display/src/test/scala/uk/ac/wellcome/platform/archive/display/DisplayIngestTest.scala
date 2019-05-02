@@ -9,12 +9,14 @@ import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.fixtures.S3
 
 class DisplayIngestTest
     extends FunSpec
     with Matchers
     with BagIdGenerators
-    with TimeTestFixture {
+    with TimeTestFixture
+    with S3 {
 
   private val id = createIngestID
   private val callbackUrl = "http://www.example.com/callback"
@@ -26,64 +28,112 @@ class DisplayIngestTest
   private val contextUrl = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
-  it("creates a DisplayIngest from Ingest") {
-    val bagId = createBagId
-    val ingest: Ingest = Ingest(
-      id,
-      StorageLocation(
-        StandardStorageProvider,
-        ObjectLocation("bukkit", "key.txt")),
-      Namespace(spaceId),
-      Some(Callback(new URI(callbackUrl))),
-      Ingest.Processing,
-      Some(bagId),
-      Instant.parse(createdDate),
-      Instant.parse(modifiedDate),
-      List(IngestEvent(eventDescription, Instant.parse(eventDate)))
-    )
+  describe("ResponseDisplayIngest") {
+    it("creates a DisplayIngest from Ingest") {
+      val bagId = createBagId
+      val ingest: Ingest = Ingest(
+        id = id,
+        sourceLocation = StorageLocation(
+          provider = StandardStorageProvider,
+          location = ObjectLocation("bukkit", "key.txt")
+        ),
+        space = Namespace(spaceId),
+        callback = Some(Callback(new URI(callbackUrl))),
+        status = Ingest.Processing,
+        bag = Some(bagId),
+        createdDate = Instant.parse(createdDate),
+        lastModifiedDate = Instant.parse(modifiedDate),
+        events = List(IngestEvent(eventDescription, Instant.parse(eventDate)))
+      )
 
-    val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
 
-    displayIngest.id shouldBe id.underlying
-    displayIngest.sourceLocation shouldBe DisplayLocation(
-      StandardDisplayProvider,
-      bucket = "bukkit",
-      path = "key.txt")
-    displayIngest.callback shouldBe Some(
-      DisplayCallback(callbackUrl, Some(displayIngest.callback.get.status.get)))
-    displayIngest.space shouldBe DisplayStorageSpace(spaceId)
-    displayIngest.status shouldBe DisplayStatus("processing")
-    displayIngest.bag shouldBe Some(
-      IngestDisplayBag(s"${bagId.space}/${bagId.externalIdentifier}"))
-    displayIngest.createdDate shouldBe createdDate
-    displayIngest.lastModifiedDate shouldBe modifiedDate
-    displayIngest.events shouldBe List(
-      DisplayIngestEvent(eventDescription, eventDate))
+      displayIngest.id shouldBe id.underlying
+      displayIngest.sourceLocation shouldBe DisplayLocation(
+        StandardDisplayProvider,
+        bucket = "bukkit",
+        path = "key.txt"
+      )
+      displayIngest.callback shouldBe Some(
+        DisplayCallback(
+          url = callbackUrl,
+          status = Some(displayIngest.callback.get.status.get)
+        )
+      )
+      displayIngest.space shouldBe DisplayStorageSpace(spaceId)
+      displayIngest.status shouldBe DisplayStatus("processing")
+      displayIngest.bag shouldBe Some(
+        ResponseDisplayIngestBag(s"${bagId.space}/${bagId.externalIdentifier}")
+      )
+      displayIngest.createdDate shouldBe createdDate
+      displayIngest.lastModifiedDate shouldBe modifiedDate
+      displayIngest.events shouldBe List(
+        DisplayIngestEvent(eventDescription, eventDate)
+      )
+    }
+
+    it("sorts events by created date") {
+      val events = Seq(1, 3, 2, 4, 5).map { i =>
+        IngestEvent(
+          description = s"Event $i",
+          createdDate = Instant.ofEpochSecond(i)
+        )
+      }
+
+      val ingest = createIngestWith(events)
+
+      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+
+      displayIngest.events.map { _.description } shouldBe Seq(
+        "Event 1",
+        "Event 2",
+        "Event 3",
+        "Event 4",
+        "Event 5"
+      )
+    }
   }
 
-  it("transforms itself into a ingest") {
-    val displayProvider = InfrequentAccessDisplayProvider
-    val bucket = "ingest-bucket"
-    val path = "bag.zip"
-    val ingestCreateRequest = RequestDisplayIngest(
-      DisplayLocation(displayProvider, bucket, path),
-      Some(
-        DisplayCallback("http://www.wellcomecollection.org/callback/ok", None)),
-      CreateDisplayIngestType,
-      DisplayStorageSpace("space-id")
-    )
+  describe("RequestDisplayIngest") {
+    it("transforms itself into a ingest") {
+      val displayProvider = InfrequentAccessDisplayProvider
+      val bucket = "ingest-bucket"
+      val path = "bag.zip"
+      val ingestCreateRequest = RequestDisplayIngest(
+        DisplayLocation(displayProvider, bucket, path),
+        Some(
+          DisplayCallback(
+            url = "http://www.wellcomecollection.org/callback/ok",
+            status = None
+          )
+        ),
+        CreateDisplayIngestType,
+        DisplayStorageSpace("space-id")
+      )
 
-    val ingest = ingestCreateRequest.toIngest
+      val ingest = ingestCreateRequest.toIngest
 
-    ingest.id shouldBe a[IngestID]
-    ingest.sourceLocation shouldBe StorageLocation(
-      InfrequentAccessStorageProvider,
-      ObjectLocation(bucket, path))
-    ingest.callback shouldBe Some(
-      Callback(URI.create(ingestCreateRequest.callback.get.url)))
-    ingest.status shouldBe Ingest.Accepted
-    assertRecent(ingest.createdDate)
-    assertRecent(ingest.lastModifiedDate)
-    ingest.events shouldBe List.empty
+      ingest.id shouldBe a[IngestID]
+      ingest.sourceLocation shouldBe StorageLocation(
+        InfrequentAccessStorageProvider,
+        ObjectLocation(bucket, path))
+      ingest.callback shouldBe Some(
+        Callback(URI.create(ingestCreateRequest.callback.get.url)))
+      ingest.status shouldBe Ingest.Accepted
+      assertRecent(ingest.createdDate)
+      assertRecent(ingest.lastModifiedDate)
+      ingest.events shouldBe List.empty
+    }
   }
+
+  def createIngestWith(events: Seq[IngestEvent]): Ingest =
+    Ingest(
+      id = createIngestID,
+      sourceLocation = StorageLocation(
+        provider = StandardStorageProvider,
+        location = createObjectLocation
+      ),
+      space = Namespace(randomAlphanumeric()),
+      events = events
+    )
 }

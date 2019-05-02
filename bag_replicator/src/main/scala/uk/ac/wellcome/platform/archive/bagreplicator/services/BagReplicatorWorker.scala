@@ -42,6 +42,8 @@ class BagReplicatorWorker(
     payload: BagInformationPayload,
   ): Future[Result[ReplicationSummary]] =
     for {
+      _ <- ingestUpdater.start(payload.ingestId)
+
       replicationSummary <- bagReplicator.replicate(
         bagRootLocation = payload.bagRootLocation,
         storageSpace = payload.storageSpace,

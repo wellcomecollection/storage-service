@@ -10,7 +10,10 @@ import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 
 class BagReplicatorWorkerTest
     extends FunSpec
@@ -51,12 +54,14 @@ class BagReplicatorWorkerTest
                       dst = dstBagRootLocation
                     )
 
-                    assertTopicReceivesIngestEvent(
+                    assertTopicReceivesIngestEvents(
                       payload.ingestId,
-                      ingestTopic) { events =>
-                      events should have size 1
-                      events.head.description shouldBe "Replicating succeeded"
-                    }
+                      ingestTopic,
+                      expectedDescriptions = Seq(
+                        "Replicating started",
+                        "Replicating succeeded"
+                      )
+                    )
                   }
               }
             }
@@ -213,12 +218,17 @@ class BagReplicatorWorkerTest
           whenReady(future) { _ =>
             assertSnsReceivesNothing(outgoingTopic)
 
-            assertTopicReceivesIngestStatus(
-              payload.ingestId,
-              ingestTopic = ingestTopic,
-              status = Ingest.Failed) { events =>
-              events should have size 1
-              events.head.description shouldBe "Replicating failed"
+            assertTopicReceivesIngestUpdates(payload.ingestId, ingestTopic) {
+              ingestUpdates =>
+                ingestUpdates.size shouldBe 2
+
+                val ingestStart = ingestUpdates.head
+                ingestStart.events.head.description shouldBe "Replicating started"
+
+                val ingestFailed =
+                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                ingestFailed.status shouldBe Ingest.Failed
+                ingestFailed.events.head.description shouldBe "Replicating failed"
             }
           }
         }

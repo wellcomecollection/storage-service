@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepStarted
 
 class IngestUpdaterTest
     extends FunSpec
@@ -53,7 +54,7 @@ class IngestUpdaterTest
         val bagId = createBagId
         val sendingOperationNotice = ingestUpdater.send(
           ingestId = ingestId,
-          result = createOperationCompletedWith(summary),
+          step = createOperationCompletedWith(summary),
           bagId = Some(bagId)
         )
 
@@ -82,7 +83,7 @@ class IngestUpdaterTest
         val bagId = createBagId
         val sendingOperationNotice = ingestUpdater.send(
           ingestId = ingestId,
-          result = createIngestFailureWith(summary),
+          step = createIngestFailureWith(summary),
           bagId = Some(bagId)
         )
 
@@ -102,6 +103,28 @@ class IngestUpdaterTest
     }
   }
 
+  it("sends an ingest update when an ingest step starts") {
+    withLocalSnsTopic { ingestTopic =>
+      withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
+        val ingestId = createIngestID
+
+        val sendingOperationNotice = ingestUpdater.send(
+          ingestId = ingestId,
+          step = IngestStepStarted(ingestId)
+        )
+
+        whenReady(sendingOperationNotice) { _ =>
+          eventually {
+            assertTopicReceivesIngestEvent(ingestId, ingestTopic) { events =>
+              events should have size 1
+              events.head.description shouldBe s"${stepName.capitalize} started"
+            }
+          }
+        }
+      }
+    }
+  }
+
   it("sends an ingest update when failed with a failure message") {
     withLocalSnsTopic { ingestTopic =>
       withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
@@ -112,7 +135,7 @@ class IngestUpdaterTest
         val bagId = createBagId
         val sendingOperationNotice = ingestUpdater.send(
           ingestId = ingestId,
-          result = createIngestFailureWith(
+          step = createIngestFailureWith(
             summary,
             maybeFailureMessage = Some(failureMessage)
           ),

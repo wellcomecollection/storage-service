@@ -126,5 +126,4 @@ trait BagReplicatorFixtures
       .getObjectSummaries
       .asScala
       .toList
-
 }

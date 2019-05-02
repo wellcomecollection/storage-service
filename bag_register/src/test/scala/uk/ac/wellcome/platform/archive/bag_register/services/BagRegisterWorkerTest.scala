@@ -11,10 +11,8 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
   PayloadGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
-  Ingest,
   StorageLocation
 }
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -25,7 +23,6 @@ class BagRegisterWorkerTest
     with ScalaFutures
     with BagInfoGenerators
     with BagLocationFixtures
-    with IngestUpdateAssertions
     with BagRegisterFixtures
     with PayloadGenerators {
 
@@ -65,14 +62,11 @@ class BagRegisterWorkerTest
 
               storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-              assertTopicReceivesIngestStatus(
+              assertBagRegisterSucceeded(
                 ingestId = payload.ingestId,
                 ingestTopic = ingestTopic,
-                status = Ingest.Completed,
-                expectedBag = Some(bagId)) { events =>
-                events.size should be >= 1
-                events.head.description shouldBe "Register succeeded (completed)"
-              }
+                bagId = bagId
+              )
             }
         }
     }
@@ -98,14 +92,11 @@ class BagRegisterWorkerTest
             val future = service.processMessage(payload)
 
             whenReady(future) { _ =>
-              assertTopicReceivesIngestStatus(
+              assertBagRegisterFailed(
                 ingestId = payload.ingestId,
                 ingestTopic = ingestTopic,
-                status = Ingest.Failed,
-                expectedBag = Some(bagId)) { events =>
-                events.size should be >= 1
-                events.head.description shouldBe "Register failed"
-              }
+                bagId = bagId
+              )
             }
         }
     }

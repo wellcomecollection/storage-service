@@ -39,16 +39,14 @@ class VerifierWorkerTest
 
                 whenReady(future) { _ =>
                   eventually {
-                    assertTopicReceivesIngestEvent(
-                      ingestId = payload.ingestId,
-                      ingestTopic = ingestTopic
-                    ) { events =>
-                      events.map {
-                        _.description
-                      } shouldBe List(
+                    assertTopicReceivesIngestEvents(
+                      payload.ingestId,
+                      ingestTopic,
+                      expectedDescriptions = Seq(
+                        "Verification started",
                         "Verification succeeded"
                       )
-                    }
+                    )
 
                     assertSnsReceivesOnly(payload, topic = outgoingTopic)
                   }

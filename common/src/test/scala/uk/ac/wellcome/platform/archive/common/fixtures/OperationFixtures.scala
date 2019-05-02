@@ -5,10 +5,7 @@ import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.{
-  DiagnosticReporter,
-  OutgoingPublisher
-}
+import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 
 trait OperationFixtures extends SNS with MetricsSenderFixture {
   def withIngestUpdater[R](stepName: String, topic: Topic)(
@@ -25,12 +22,5 @@ trait OperationFixtures extends SNS with MetricsSenderFixture {
       val outgoingNotifier = new OutgoingPublisher(operationName, snsWriter)
 
       testWith(outgoingNotifier)
-    }
-
-  def withOperationReporter[R]()(testWith: TestWith[DiagnosticReporter, R]): R =
-    withMockMetricsSender { metricsSender =>
-      val reporter = new DiagnosticReporter(metricsSender)
-
-      testWith(reporter)
     }
 }

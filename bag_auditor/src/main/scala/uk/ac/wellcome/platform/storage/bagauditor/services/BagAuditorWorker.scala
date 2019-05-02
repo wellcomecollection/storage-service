@@ -43,10 +43,13 @@ class BagAuditorWorker(
   def processMessage(
     payload: UnpackedBagPayload): Future[Result[AuditSummary]] =
     for {
+      _ <- ingestUpdater.start(ingestId = payload.ingestId)
+
       auditSummary <- bagAuditor.getAuditSummary(
         unpackLocation = payload.unpackedBagLocation,
         storageSpace = payload.storageSpace
       )
+
       _ <- ingestUpdater.send(payload.ingestId, auditSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         auditSummary,

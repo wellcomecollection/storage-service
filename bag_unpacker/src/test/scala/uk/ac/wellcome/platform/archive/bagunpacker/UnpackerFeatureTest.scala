@@ -13,7 +13,10 @@ import uk.ac.wellcome.platform.archive.common.UnpackedBagPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 
 class UnpackerFeatureTest
     extends FunSpec
@@ -51,16 +54,14 @@ class UnpackerFeatureTest
 
             assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
-            assertTopicReceivesIngestEvent(
-              ingestId = ingestRequestPayload.ingestId,
-              ingestTopic = ingestTopic
-            ) { events =>
-              events.map {
-                _.description
-              } shouldBe List(
+            assertTopicReceivesIngestEvents(
+              ingestRequestPayload.ingestId,
+              ingestTopic,
+              expectedDescriptions = Seq(
+                "Unpacker started",
                 "Unpacker succeeded"
               )
-            }
+            )
           }
         }
     }
@@ -75,14 +76,17 @@ class UnpackerFeatureTest
         eventually {
           assertSnsReceivesNothing(outgoingTopic)
 
-          assertTopicReceivesIngestStatus(
-            ingestId = payload.ingestId,
-            ingestTopic = ingestTopic,
-            status = Ingest.Failed
-          ) { events =>
-            events.map { _.description }.distinct shouldBe
-              List(
-                s"Unpacker failed - ${payload.sourceLocation} does not exist")
+          assertTopicReceivesIngestUpdates(payload.ingestId, ingestTopic) {
+            ingestUpdates =>
+              ingestUpdates.size shouldBe 2
+
+              val ingestStart = ingestUpdates.head
+              ingestStart.events.head.description shouldBe "Unpacker started"
+
+              val ingestFailed =
+                ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+              ingestFailed.status shouldBe Ingest.Failed
+              ingestFailed.events.head.description shouldBe s"Unpacker failed - ${payload.sourceLocation} does not exist"
           }
         }
     }
