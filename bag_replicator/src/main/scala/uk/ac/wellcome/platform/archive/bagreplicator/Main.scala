@@ -11,6 +11,7 @@ import uk.ac.wellcome.messaging.typesafe.{
   CloudwatchMonitoringClientBuilder,
   SQSBuilder
 }
+import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
@@ -25,7 +26,6 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.{LockDao, LockingService}
 import uk.ac.wellcome.storage.typesafe.{LockingBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -54,8 +54,8 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val dynamoLockDao = LockingBuilder.buildDynamoLockDao(config)
 
-    val lockingService: LockingService[IngestStepResult[ReplicationSummary], Future, LockDao[String, UUID]] =
-      new BetterDynamoLockingService[IngestStepResult[ReplicationSummary], Future]
+    val lockingService: LockingService[Result[ReplicationSummary], Future, LockDao[String, UUID]] =
+      new BetterDynamoLockingService[Result[ReplicationSummary], Future]
 
     new BagReplicatorWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),

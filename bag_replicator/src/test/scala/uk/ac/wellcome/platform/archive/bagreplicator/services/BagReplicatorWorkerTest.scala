@@ -7,7 +7,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
-import uk.ac.wellcome.messaging.worker.models.Result
+import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{BagReplicatorFixtures, BetterInMemoryLockDao}
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
@@ -229,7 +229,11 @@ class BagReplicatorWorkerTest
     val lockServiceDao = new BetterInMemoryLockDao()
 
     withLocalS3Bucket { bucket =>
-      withBag(bucket, dataFileCount = 20) { case (bagRootLocation, _) =>
+
+      // We have to create a large bag to slow down the replicators, or the
+      // first process finishes and releases the lock before the later
+      // processes have started.
+      withBag(bucket, dataFileCount = 250) { case (bagRootLocation, _) =>
         withLocalSnsTopic { ingestTopic =>
           withLocalSnsTopic { outgoingTopic =>
             withBagReplicatorWorker(
@@ -246,8 +250,10 @@ class BagReplicatorWorkerTest
               })
 
               whenReady(futures) { result =>
+                result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
+                result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
+
                 lockServiceDao.history should have size 1
-                // Make more assertions about the results
               }
             }
           }

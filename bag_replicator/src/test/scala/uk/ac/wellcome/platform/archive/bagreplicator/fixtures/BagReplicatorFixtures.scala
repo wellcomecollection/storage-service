@@ -9,6 +9,7 @@ import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
@@ -20,7 +21,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
 import uk.ac.wellcome.storage.fixtures.LockingServiceFixtures
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -118,7 +118,7 @@ trait BagReplicatorFixtures
         withOutgoingPublisher("replicating", outgoingTopic) {
           outgoingPublisher =>
             withMonitoringClient { implicit monitoringClient =>
-              val lockingService = new LockingService[IngestStepResult[ReplicationSummary], Future, LockDao[String, UUID]] {
+              val lockingService = new LockingService[Result[ReplicationSummary], Future, LockDao[String, UUID]] {
                 override implicit val lockDao: LockDao[String, UUID] = lockServiceDao
                 override protected def createContextId(): lockDao.ContextId = UUID.randomUUID()
               }
