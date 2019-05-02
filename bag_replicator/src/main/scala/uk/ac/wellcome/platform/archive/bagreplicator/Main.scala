@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagreplicator
 
-import java.util.UUID
-
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
@@ -17,8 +15,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinatio
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagReplicator,
-  BagReplicatorWorker,
-  BetterDynamoLockingService
+  BagReplicatorWorker
 }
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.{
@@ -26,7 +23,6 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.storage.{LockDao, LockingService}
 import uk.ac.wellcome.storage.typesafe.{LockingBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -52,10 +48,7 @@ object Main extends WellcomeTypesafeApp {
     val operationName = OperationNameBuilder
       .getName(config, default = "replicating")
 
-    implicit val dynamoLockDao = LockingBuilder.buildDynamoLockDao(config)
-
-    val lockingService: LockingService[Result[ReplicationSummary], Future, LockDao[String, UUID]] =
-      new BetterDynamoLockingService[Result[ReplicationSummary], Future]
+    val lockingService = LockingBuilder.buildDynamoLockingService[Result[ReplicationSummary], Future](config)
 
     new BagReplicatorWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),

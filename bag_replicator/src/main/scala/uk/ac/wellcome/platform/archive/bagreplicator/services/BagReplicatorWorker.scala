@@ -16,18 +16,11 @@ import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
-import uk.ac.wellcome.storage.locking.DynamoLockDao
 import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
-
-class BetterDynamoLockingService[Out, OutMonad[_]](implicit val lockDao: DynamoLockDao)
-  extends LockingService[Out, OutMonad, LockDao[String, UUID]] {
-  override protected def createContextId(): lockDao.ContextId =
-    UUID.randomUUID()
-}
 
 class BagReplicatorWorker(
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
