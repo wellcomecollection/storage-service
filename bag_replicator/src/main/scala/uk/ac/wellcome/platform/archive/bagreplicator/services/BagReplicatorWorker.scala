@@ -23,7 +23,6 @@ import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.higherKinds
 
 class BagReplicatorWorker(
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
