@@ -125,7 +125,7 @@ trait BagReplicatorFixtures
 
               val service = new BagReplicatorWorker(
                 alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-                bagReplicator = new BagReplicator(config),
+                bagReplicator = new BagReplicator(),
                 ingestUpdater = ingestUpdater,
                 outgoingPublisher = outgoingPublisher,
                 lockingService = lockingService,

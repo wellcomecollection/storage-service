@@ -59,10 +59,7 @@ object Main extends WellcomeTypesafeApp {
 
     new BagReplicatorWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
-      bagReplicator = new BagReplicator(
-        config = ReplicatorDestinationConfig
-          .buildDestinationConfig(config)
-      ),
+      bagReplicator = new BagReplicator(),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
       lockingService = lockingService,

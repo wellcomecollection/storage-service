@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
@@ -17,7 +16,7 @@ import uk.ac.wellcome.storage.s3.S3PrefixCopier
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class BagReplicator(config: ReplicatorDestinationConfig)(
+class BagReplicator(
   implicit s3Client: AmazonS3,
   ec: ExecutionContext) {
   val s3PrefixCopier = S3PrefixCopier(s3Client)
