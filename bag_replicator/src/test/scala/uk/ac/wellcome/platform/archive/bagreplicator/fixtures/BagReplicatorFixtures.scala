@@ -128,7 +128,8 @@ trait BagReplicatorFixtures
                 bagReplicator = new BagReplicator(config),
                 ingestUpdater = ingestUpdater,
                 outgoingPublisher = outgoingPublisher,
-                lockingService = lockingService
+                lockingService = lockingService,
+                replicatorDestinationConfig = config
               )
 
               service.run()

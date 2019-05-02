@@ -5,7 +5,6 @@ import java.time.Instant
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
@@ -23,22 +22,9 @@ class BagReplicator(config: ReplicatorDestinationConfig)(
   ec: ExecutionContext) {
   val s3PrefixCopier = S3PrefixCopier(s3Client)
 
-  val destinationBuilder = new DestinationBuilder(
-    namespace = config.namespace,
-    rootPath = config.rootPath
-  )
-
   def replicate(bagRootLocation: ObjectLocation,
                 storageSpace: StorageSpace,
-                externalIdentifier: ExternalIdentifier,
-                version: Int): Future[IngestStepResult[ReplicationSummary]] = {
-
-    val destination = destinationBuilder.buildDestination(
-      storageSpace = storageSpace,
-      externalIdentifier = externalIdentifier,
-      version = version
-    )
-
+                destination: ObjectLocation): Future[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,

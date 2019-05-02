@@ -65,7 +65,9 @@ object Main extends WellcomeTypesafeApp {
       ),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
-      lockingService = lockingService
+      lockingService = lockingService,
+      replicatorDestinationConfig = ReplicatorDestinationConfig
+        .buildDestinationConfig(config)
     )
   }
 }
