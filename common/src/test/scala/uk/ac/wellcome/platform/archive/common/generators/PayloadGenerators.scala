@@ -1,10 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
-import uk.ac.wellcome.platform.archive.common.{
-  BagInformationPayload,
-  IngestID,
-  ObjectLocationPayload
-}
+import java.time.Instant
+
+import uk.ac.wellcome.platform.archive.common._
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
@@ -14,17 +12,30 @@ trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
     with S3 {
-  def createObjectLocationPayloadWith(
-    objectLocation: ObjectLocation = createObjectLocation,
-    storageSpace: StorageSpace = createStorageSpace): ObjectLocationPayload =
-    ObjectLocationPayload(
+  def createIngestRequestPayloadWith(
+    sourceLocation: ObjectLocation = createObjectLocation,
+    storageSpace: StorageSpace = createStorageSpace
+  ): IngestRequestPayload =
+    IngestRequestPayload(
       ingestId = createIngestID,
+      ingestDate = Instant.now(),
       storageSpace = storageSpace,
-      objectLocation = objectLocation
+      sourceLocation = sourceLocation
     )
 
-  def createObjectLocationPayload: ObjectLocationPayload =
-    createObjectLocationPayloadWith()
+  def createIngestRequestPayload: IngestRequestPayload =
+    createIngestRequestPayloadWith()
+
+  def createUnpackedBagPayloadWith(
+    unpackedBagLocation: ObjectLocation = createObjectLocation,
+    storageSpace: StorageSpace = createStorageSpace
+  ): UnpackedBagPayload =
+    UnpackedBagPayload(
+      ingestId = createIngestID,
+      ingestDate = Instant.now(),
+      storageSpace = storageSpace,
+      unpackedBagLocation = unpackedBagLocation
+    )
 
   def createBagInformationPayloadWith(
     ingestId: IngestID = createIngestID,
@@ -35,7 +46,7 @@ trait PayloadGenerators
     BagInformationPayload(
       ingestId = ingestId,
       storageSpace = storageSpace,
-      objectLocation = bagRootLocation,
+      bagRootLocation = bagRootLocation,
       externalIdentifier = externalIdentifier,
       version = version
     )

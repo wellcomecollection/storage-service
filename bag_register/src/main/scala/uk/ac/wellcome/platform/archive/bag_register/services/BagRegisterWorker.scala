@@ -11,7 +11,7 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.ObjectLocationPayload
+import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
@@ -33,18 +33,17 @@ class BagRegisterWorker(
     with Logging
     with IngestStepWorker {
 
-  private val worker
-    : AlpakkaSQSWorker[ObjectLocationPayload, RegistrationSummary] =
-    AlpakkaSQSWorker[ObjectLocationPayload, RegistrationSummary](
+  private val worker =
+    AlpakkaSQSWorker[BagInformationPayload, RegistrationSummary](
       alpakkaSQSWorkerConfig) {
       processMessage
     }
 
   def processMessage(
-    payload: ObjectLocationPayload): Future[Result[RegistrationSummary]] =
+    payload: BagInformationPayload): Future[Result[RegistrationSummary]] =
     for {
       registrationSummary <- register.update(
-        bagRootLocation = payload.objectLocation,
+        bagRootLocation = payload.bagRootLocation,
         storageSpace = payload.storageSpace
       )
       _ <- ingestUpdater.send(

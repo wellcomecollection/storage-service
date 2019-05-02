@@ -12,13 +12,12 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.{IngestID, ObjectLocationPayload}
+import uk.ac.wellcome.platform.archive.common.{IngestID, IngestRequestPayload}
 import uk.ac.wellcome.platform.archive.common.IngestID._
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import uk.ac.wellcome.storage.ObjectLocation
@@ -297,16 +296,10 @@ class IngestsApiFeatureTest
                     )
 
                     assertTableOnlyHasItem[Ingest](expectedIngest, table)
+
+                    val expectedPayload = IngestRequestPayload(expectedIngest)
+                    assertSnsReceivesOnly(expectedPayload, unpackerTopic)
                 }
-
-                // Unpacker
-                val expectedPayload = ObjectLocationPayload(
-                  ingestId = IngestID(id),
-                  storageSpace = StorageSpace(spaceName),
-                  objectLocation = ObjectLocation(bucketName, s3key)
-                )
-
-                assertSnsReceivesOnly(expectedPayload, unpackerTopic)
               }
 
               assertMetricSent(
