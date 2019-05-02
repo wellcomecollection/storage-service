@@ -8,28 +8,21 @@ import uk.ac.wellcome.messaging.worker.models.{
 
 sealed trait IngestStepResult[T] {
   val summary: T
-  def withSummary(summary: T): IngestStepResult[T]
 }
 
 case class IngestCompleted[T](
   summary: T
-) extends IngestStepResult[T] {
-  def withSummary(summary: T) = IngestCompleted(summary)
-}
+) extends IngestStepResult[T]
 
 case class IngestStepSucceeded[T](
   summary: T
-) extends IngestStepResult[T] {
-  def withSummary(summary: T) = IngestStepSucceeded(summary)
-}
+) extends IngestStepResult[T]
 
 case class IngestFailed[T](
   summary: T,
   e: Throwable,
   maybeUserFacingMessage: Option[String] = None
-) extends IngestStepResult[T] {
-  def withSummary(summary: T) = IngestFailed(summary, e, maybeUserFacingMessage)
-}
+) extends IngestStepResult[T]
 
 trait IngestStepWorker {
   def toResult[T](ingestResult: IngestStepResult[T]): Result[T] =
