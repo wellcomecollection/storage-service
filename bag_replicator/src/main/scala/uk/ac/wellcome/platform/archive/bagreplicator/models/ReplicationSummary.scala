@@ -13,11 +13,10 @@ case class ReplicationSummary(
   startTime: Instant,
   endTime: Option[Instant] = None,
 ) extends Summary {
-  def complete: ReplicationSummary = {
+  def complete: ReplicationSummary =
     this.copy(
       endTime = Some(Instant.now())
     )
-  }
 
   override def toString: String =
     f"""|src=$bagRootLocation
