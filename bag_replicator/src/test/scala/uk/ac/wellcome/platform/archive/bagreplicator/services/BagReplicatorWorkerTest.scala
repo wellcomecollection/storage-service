@@ -5,15 +5,13 @@ import java.nio.file.Paths
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
+import uk.ac.wellcome.messaging.worker.models.Result
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.{BagReplicatorFixtures, BetterInMemoryLockDao}
+import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestStatusUpdate
-}
 
 class BagReplicatorWorkerTest
     extends FunSpec
@@ -205,31 +203,25 @@ class BagReplicatorWorkerTest
     }
   }
 
-  it("sends a failed IngestUpdate if replication fails") {
+  it("locks around the destination") {
     withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
+
+        val lockServiceDao = new BetterInMemoryLockDao()
+
         withBagReplicatorWorker(
           ingestTopic = ingestTopic,
-          outgoingTopic = outgoingTopic) { service =>
+          outgoingTopic = outgoingTopic,
+          lockServiceDao = lockServiceDao) { service =>
           val payload = createBagInformationPayload
 
           val future = service.processMessage(payload)
 
-          whenReady(future) { _ =>
-            assertSnsReceivesNothing(outgoingTopic)
+          whenReady(future) { result: Result[ReplicationSummary] =>
+            val destination = result.summary.get.destination
 
-            assertTopicReceivesIngestUpdates(payload.ingestId, ingestTopic) {
-              ingestUpdates =>
-                ingestUpdates.size shouldBe 2
-
-                val ingestStart = ingestUpdates.head
-                ingestStart.events.head.description shouldBe "Replicating started"
-
-                val ingestFailed =
-                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-                ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe "Replicating failed"
-            }
+            lockServiceDao.history should have size 1
+            lockServiceDao.history.head.id shouldBe destination.toString
           }
         }
       }

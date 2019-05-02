@@ -22,10 +22,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
-import uk.ac.wellcome.storage.fixtures.{
-  InMemoryLockDao,
-  LockingServiceFixtures
-}
+import uk.ac.wellcome.storage.fixtures.LockingServiceFixtures
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.collection.JavaConverters._
@@ -51,6 +48,17 @@ trait BagReplicatorFixtures
     withLocalS3Bucket { bucket =>
       val config = createReplicatorDestinationConfigWith(bucket)
       withBagReplicatorWorker(defaultQueue, ingestTopic, outgoingTopic, config) {
+        worker =>
+          testWith(worker)
+      }
+    }
+
+  def withBagReplicatorWorker[R](ingestTopic: Topic, outgoingTopic: Topic, lockServiceDao: LockDao[String, UUID])(
+    testWith: TestWith[BagReplicatorWorker, R]
+  ): R =
+    withLocalS3Bucket { bucket =>
+      val config = createReplicatorDestinationConfigWith(bucket)
+      withBagReplicatorWorker(defaultQueue, ingestTopic, outgoingTopic, config, lockServiceDao) {
         worker =>
           testWith(worker)
       }
@@ -89,7 +97,7 @@ trait BagReplicatorFixtures
                                  ingestTopic: Topic,
                                  outgoingTopic: Topic,
                                  config: ReplicatorDestinationConfig,
-                                 lockServiceDao: LockDao[String, UUID] = new InMemoryLockDao())(
+                                 lockServiceDao: LockDao[String, UUID] = new BetterInMemoryLockDao())(
     testWith: TestWith[BagReplicatorWorker, R]): R =
     withActorSystem { implicit actorSystem =>
       withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
