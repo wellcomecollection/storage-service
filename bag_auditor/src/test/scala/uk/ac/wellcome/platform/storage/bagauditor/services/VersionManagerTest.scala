@@ -10,23 +10,17 @@ import com.gu.scanamo.syntax._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.IngestID
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
-case class BagVersion(
-  ingestId: IngestID,
-  ingestDate: Instant,
-  externalIdentifier: ExternalIdentifier,
-  version: Int
-)
-
 trait VersionManagerFixtures extends LocalDynamoDb {
   def withVersionManager[R](table: Table)(testWith: TestWith[VersionManager, R]): R = {
-    val versionManager = new VersionManager()
+    val versionManager = new VersionManager(
+      dynamoClient = dynamoDbClient,
+      dynamoConfig = createDynamoConfigWith(table)
+    )
 
     testWith(versionManager)
   }
