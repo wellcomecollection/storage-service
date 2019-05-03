@@ -6,7 +6,6 @@ import java.util.UUID
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.worker.models.{
   NonDeterministicFailure,
   Result,
@@ -21,6 +20,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
 import uk.ac.wellcome.storage.{LockDao, LockFailure}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -279,25 +279,38 @@ class BagReplicatorWorkerTest
         case (bagRootLocation, _) =>
           withLocalSnsTopic { ingestTopic =>
             withLocalSnsTopic { outgoingTopic =>
-              withLocalSqsQueueAndDlqAndTimeout(1) {
-                case QueuePair(queue, dlq) =>
-                  withBagReplicatorWorker(
-                    queue = queue,
-                    ingestTopic = ingestTopic,
-                    outgoingTopic = outgoingTopic,
-                    config = createReplicatorDestinationConfigWith(bucket),
-                    lockServiceDao = neverAllowLockDao) { _ =>
-                    val payload = createBagInformationPayloadWith(
-                      bagRootLocation = bagRootLocation
-                    )
+              withLocalSqsQueue { queue =>
+                withBagReplicatorWorker(
+                  queue = queue,
+                  ingestTopic = ingestTopic,
+                  outgoingTopic = outgoingTopic,
+                  config = createReplicatorDestinationConfigWith(bucket),
+                  lockServiceDao = neverAllowLockDao) { _ =>
+                  val payload = createBagInformationPayloadWith(
+                    bagRootLocation = bagRootLocation
+                  )
 
-                    sendNotificationToSQS(queue, payload)
+                  sendNotificationToSQS(queue, payload)
 
-                    eventually {
-                      assertQueueEmpty(queue)
-                      assertQueueHasSize(dlq, size = 1)
-                    }
+                  // Give the worker time to pick up the message, discover it
+                  // can't lock, and mark the message visibility timeout.
+                  Thread.sleep(2000)
+
+                  eventually {
+                    val queueAttributes =
+                      sqsClient
+                        .getQueueAttributes(
+                          queue.url,
+                          List(
+                            "ApproximateNumberOfMessagesNotVisible",
+                            "ApproximateNumberOfMessages").asJava
+                        )
+                        .getAttributes
+
+                    queueAttributes.get("ApproximateNumberOfMessagesNotVisible") shouldBe "1"
+                    queueAttributes.get("ApproximateNumberOfMessages") shouldBe "0"
                   }
+                }
               }
             }
           }
