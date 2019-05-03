@@ -44,12 +44,16 @@ class BagReplicatorWorker(
     with Logging
     with IngestStepWorker {
   private val worker =
-    new AlpakkaSQSWorker[BagInformationPayload, ReplicationSummary, MonitoringClient](
-      alpakkaSQSWorkerConfig)(processMessage) {
-      
+    new AlpakkaSQSWorker[
+      BagInformationPayload,
+      ReplicationSummary,
+      MonitoringClient](alpakkaSQSWorkerConfig)(processMessage) {
+
       // TODO: This is hard-coded, read it from config!
       override val retryAction = (message: SQSMessage) =>
-        (message, MessageAction.changeMessageVisibility(visibilityTimeout = 180))
+        (
+          message,
+          MessageAction.changeMessageVisibility(visibilityTimeout = 180))
     }
 
   val destinationBuilder = new DestinationBuilder(
