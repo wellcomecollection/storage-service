@@ -17,6 +17,7 @@ import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait VersionManagerFixtures extends LocalDynamoDb {
   def withVersionManager[R](table: Table)(testWith: TestWith[VersionManager, R]): R = {
@@ -198,6 +199,32 @@ class VersionManagerTest extends FunSpec with Matchers with ScalaFutures with Ex
           )
 
           whenReady(future) { _ shouldBe existingVersion }
+        }
+      }
+
+      Scanamo.scan[VersionRecord](dynamoDbClient)(versionTable.name) should have size 5
+    }
+  }
+
+  it("errors if you query the same ingest ID with different external identifiers") {
+    withVersionManager { versionManager =>
+      val ingestId = createIngestID
+
+      val future1 = versionManager.assignVersion(
+        ingestId = ingestId,
+        ingestDate = Instant.now(),
+        externalIdentifier = createExternalIdentifier
+      )
+
+      whenReady(future1) { _ =>
+        val future2 = versionManager.assignVersion(
+          ingestId = ingestId,
+          ingestDate = Instant.now(),
+          externalIdentifier = createExternalIdentifier
+        )
+
+        whenReady(future2.failed) { t =>
+          t.getMessage should startWith("Found different external identifier")
         }
       }
     }

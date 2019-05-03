@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.storage.dynamo._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 case class VersionRecord(
   ingestId: IngestID,
@@ -25,7 +25,7 @@ case class VersionRecord(
 class VersionManager(
   dynamoClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig
-) {
+)(implicit ec: ExecutionContext) {
 
   val documentClient = new DynamoDB(dynamoClient)
 
@@ -35,14 +35,20 @@ class VersionManager(
     ingestId: IngestID,
     ingestDate: Instant,
     externalIdentifier: ExternalIdentifier
-  ): Future[Int] = {
-
-    findExistingVersionRecord(ingestId) match {
-      case Some(existingRecord) => Future.successful(existingRecord.version)
+  ): Future[Int] = Future {
+      lookupExistingIngestIdentifier(ingestId) match {
+      case Some(existingRecord) =>
+        if (existingRecord.externalIdentifier == externalIdentifier.underlying) {
+          existingRecord.version
+        } else {
+          throw new RuntimeException(
+            s"Found different external identifier in DynamoDB: ${existingRecord.externalIdentifier} != $externalIdentifier"
+          )
+        }
       case None =>
         val newVersion = getLatestVersionRecord(externalIdentifier) match {
           case Some(existingRecord) => existingRecord.version + 1
-          case None => 1
+          case None                 => 1
         }
 
         val newRecord = VersionRecord(
@@ -54,12 +60,12 @@ class VersionManager(
 
         Scanamo.exec(dynamoClient)(table.put(newRecord))
 
-        Future.successful(newVersion)
+        newVersion
     }
   }
 
   /** Find the existing version record for this ingest ID, if it exists. */
-  private def findExistingVersionRecord(ingestId: IngestID): Option[VersionRecord] = {
+  private def lookupExistingIngestIdentifier(ingestId: IngestID): Option[VersionRecord] = {
     val ops = table
       .index(dynamoConfig.index)
       .query('ingestId -> ingestId)
