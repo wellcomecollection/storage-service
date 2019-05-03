@@ -7,11 +7,11 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
   CloudwatchMonitoringClientBuilder,
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifierWorker,
   Verifier
