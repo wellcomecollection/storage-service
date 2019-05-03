@@ -10,10 +10,13 @@ import com.gu.scanamo.syntax._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
+
+import scala.collection.JavaConverters._
 
 trait VersionManagerFixtures extends LocalDynamoDb {
   def withVersionManager[R](table: Table)(testWith: TestWith[VersionManager, R]): R = {
@@ -50,12 +53,37 @@ trait VersionManagerFixtures extends LocalDynamoDb {
             .withAttributeType("S"),
           new AttributeDefinition()
             .withAttributeName("version")
-            .withAttributeType("N")
+            .withAttributeType("N"),
+          new AttributeDefinition()
+            .withAttributeName("ingestId")
+            .withAttributeType("S")
         )
         .withProvisionedThroughput(new ProvisionedThroughput()
           .withReadCapacityUnits(1L)
           .withWriteCapacityUnits(1L)
         )
+        .withGlobalSecondaryIndexes(
+          new GlobalSecondaryIndex()
+            .withIndexName(table.index)
+            .withProjection(
+              new Projection()
+                .withProjectionType(ProjectionType.INCLUDE)
+                .withNonKeyAttributes(
+                  List("ingestId", "ingestDate", "externalIdentifier", "version").asJava)
+            )
+            .withKeySchema(
+              new KeySchemaElement()
+                .withAttributeName("ingestId")
+                .withKeyType(KeyType.HASH),
+              new KeySchemaElement()
+                .withAttributeName("version")
+                .withKeyType(KeyType.RANGE)
+            )
+            .withProvisionedThroughput(new ProvisionedThroughput()
+              .withReadCapacityUnits(1L)
+              .withWriteCapacityUnits(1L))
+        )
+
     )
 
     eventually {
@@ -138,6 +166,40 @@ class VersionManagerTest extends FunSpec with Matchers with ScalaFutures with Ex
       }
 
       Scanamo.scan[VersionRecord](dynamoDbClient)(versionTable.name) should have size 5
+    }
+  }
+
+  it("always assigns the same version for a given ingest ID") {
+    withLocalDynamoDbTable { versionTable =>
+      withVersionManager(versionTable) { versionManager =>
+        val externalIdentifier = createExternalIdentifier
+
+        // First we store some ingest IDs in the database, and record
+        // the version that were stored as.
+        val ingestIds: Map[IngestID, Int] = (1 to 5).map { i =>
+          val ingestId = createIngestID
+
+          val future = versionManager.assignVersion(
+            ingestId = ingestId,
+            ingestDate = Instant.ofEpochSecond(i),
+            externalIdentifier = externalIdentifier
+          )
+
+          ingestId -> whenReady(future) { version => version }
+        }.toMap
+
+        // Now we re-assign the version for those ingest IDs, and
+        // check we get the same version back.
+        ingestIds.map { case (ingestId, existingVersion) =>
+          val future = versionManager.assignVersion(
+            ingestId = ingestId,
+            ingestDate = Instant.now(),
+            externalIdentifier = externalIdentifier
+          )
+
+          whenReady(future) { _ shouldBe existingVersion }
+        }
+      }
     }
   }
 }

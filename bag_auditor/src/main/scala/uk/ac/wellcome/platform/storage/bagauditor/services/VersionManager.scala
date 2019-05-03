@@ -8,6 +8,7 @@ import com.amazonaws.services.dynamodbv2.document.{DynamoDB, Item}
 import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.gu.scanamo.error.DynamoReadError
 import com.gu.scanamo.{DynamoFormat, Scanamo, ScanamoFree, Table}
+import com.gu.scanamo.syntax._
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.storage.dynamo._
@@ -35,21 +36,39 @@ class VersionManager(
     ingestDate: Instant,
     externalIdentifier: ExternalIdentifier
   ): Future[Int] = {
-    val newVersion = getLatestVersionRecord(externalIdentifier) match {
-      case Some(existingRecord) => existingRecord.version + 1
-      case None => 1
+
+    findExistingVersionRecord(ingestId) match {
+      case Some(existingRecord) => Future.successful(existingRecord.version)
+      case None =>
+        val newVersion = getLatestVersionRecord(externalIdentifier) match {
+          case Some(existingRecord) => existingRecord.version + 1
+          case None => 1
+        }
+
+        val newRecord = VersionRecord(
+          ingestId = ingestId,
+          ingestDate = ingestDate,
+          externalIdentifier = externalIdentifier.underlying,
+          version = newVersion
+        )
+
+        Scanamo.exec(dynamoClient)(table.put(newRecord))
+
+        Future.successful(newVersion)
     }
+  }
 
-    val newRecord = VersionRecord(
-      ingestId = ingestId,
-      ingestDate = ingestDate,
-      externalIdentifier = externalIdentifier.underlying,
-      version = newVersion
-    )
+  /** Find the existing version record for this ingest ID, if it exists. */
+  private def findExistingVersionRecord(ingestId: IngestID): Option[VersionRecord] = {
+    val ops = table
+      .index(dynamoConfig.index)
+      .query('ingestId -> ingestId)
 
-    Scanamo.exec(dynamoClient)(table.put(newRecord))
-
-    Future.successful(newVersion)
+    Scanamo.exec(dynamoClient)(ops) match {
+      case List(Right(versionRecord)) => Some(versionRecord)
+      case List(Left(err)) => throw new RuntimeException(s"Error looking up ingest ID $ingestId: $err")
+      case _ => None
+    }
   }
 
   /** Find the existing version record with the highest version, or None
