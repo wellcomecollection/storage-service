@@ -3,8 +3,10 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import java.util.UUID
 
 import akka.actor.ActorSystem
+import akka.stream.alpakka.sqs.MessageAction
 import cats.instances.future._
 import com.amazonaws.services.sqs.AmazonSQSAsync
+import com.amazonaws.services.sqs.model.{Message => SQSMessage}
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqsworker.alpakka.{
@@ -42,9 +44,12 @@ class BagReplicatorWorker(
     with Logging
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[BagInformationPayload, ReplicationSummary](
-      alpakkaSQSWorkerConfig) {
-      processMessage
+    new AlpakkaSQSWorker[BagInformationPayload, ReplicationSummary, MonitoringClient](
+      alpakkaSQSWorkerConfig)(processMessage) {
+      
+      // TODO: This is hard-coded, read it from config!
+      override val retryAction = (message: SQSMessage) =>
+        (message, MessageAction.changeMessageVisibility(visibilityTimeout = 180))
     }
 
   val destinationBuilder = new DestinationBuilder(
