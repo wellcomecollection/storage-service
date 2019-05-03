@@ -25,6 +25,13 @@ trait VersionManagerFixtures extends LocalDynamoDb {
     testWith(versionManager)
   }
 
+  def withVersionManager[R](testWith: TestWith[VersionManager, R]): R =
+    withLocalDynamoDbTable { versionTable =>
+      withVersionManager(versionTable) { versionManager =>
+        testWith(versionManager)
+      }
+    }
+
   def createTable(table: Table): Table = {
     dynamoDbClient.createTable(
       new CreateTableRequest()
@@ -70,17 +77,15 @@ trait VersionManagerFixtures extends LocalDynamoDb {
 
 class VersionManagerTest extends FunSpec with Matchers with ScalaFutures with ExternalIdentifierGenerators with VersionManagerFixtures {
   it("assigns v1 for an external ID/ingest ID it's never seen before") {
-    withLocalDynamoDbTable { versionTable =>
-      withVersionManager(versionTable) { versionManager =>
-        val future = versionManager.assignVersion(
-          ingestId = createIngestID,
-          ingestDate = Instant.now(),
-          externalIdentifier = createExternalIdentifier
-        )
+    withVersionManager { versionManager =>
+      val future = versionManager.assignVersion(
+        ingestId = createIngestID,
+        ingestDate = Instant.now(),
+        externalIdentifier = createExternalIdentifier
+      )
 
-        whenReady(future) { version =>
-          version shouldBe 1
-        }
+      whenReady(future) { version =>
+        version shouldBe 1
       }
     }
   }
@@ -110,6 +115,22 @@ class VersionManagerTest extends FunSpec with Matchers with ScalaFutures with Ex
 
           assertTableHasBagVersion(versionTable, expectedBagVersion)
         }
+      }
+    }
+  }
+
+  it("assigns sequential version numbers for the same external ID") {
+    withVersionManager { versionManager =>
+      val externalIdentifier = createExternalIdentifier
+
+      (1 to 5).foreach { i =>
+        val future = versionManager.assignVersion(
+          ingestId = createIngestID,
+          ingestDate = Instant.ofEpochSecond(i),
+          externalIdentifier = externalIdentifier
+        )
+
+        whenReady(future) { _ shouldBe i }
       }
     }
   }
