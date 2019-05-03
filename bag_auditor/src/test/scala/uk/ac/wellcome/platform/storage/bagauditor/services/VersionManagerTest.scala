@@ -65,11 +65,13 @@ trait VersionManagerFixtures extends LocalDynamoDb {
     table
   }
 
-  def assertTableHasBagVersion(table: Table, bagVersion: BagVersion): Assertion = {
-    val result: Option[Either[DynamoReadError, BagVersion]] =
-      Scanamo.get[BagVersion](dynamoDbClient)(table.name)(
+  def assertTableHasBagVersion(table: Table, bagVersion: VersionRecord): Assertion = {
+    val result: Option[Either[DynamoReadError, VersionRecord]] =
+      Scanamo.get[VersionRecord](dynamoDbClient)(table.name)(
         'externalIdentifier -> bagVersion.externalIdentifier and
         'version -> bagVersion.version)
+
+    println(Scanamo.scan[VersionRecord](dynamoDbClient)(table.name))
 
     result.get.right.get shouldBe bagVersion
   }
@@ -97,7 +99,7 @@ class VersionManagerTest extends FunSpec with Matchers with ScalaFutures with Ex
         val ingestDate = Instant.now()
         val externalIdentifier = createExternalIdentifier
 
-        assertTableEmpty[BagVersion](versionTable)
+        assertTableEmpty[VersionRecord](versionTable)
 
         val future = versionManager.assignVersion(
           ingestId = ingestId,
@@ -105,11 +107,11 @@ class VersionManagerTest extends FunSpec with Matchers with ScalaFutures with Ex
           externalIdentifier = externalIdentifier
         )
 
-        whenReady(future) { version =>
-          val expectedBagVersion = BagVersion(
+        whenReady(future) { _ =>
+          val expectedBagVersion = VersionRecord(
             ingestId = ingestId,
             ingestDate = ingestDate,
-            externalIdentifier = externalIdentifier,
+            externalIdentifier = externalIdentifier.underlying,
             version = 1
           )
 
@@ -120,18 +122,22 @@ class VersionManagerTest extends FunSpec with Matchers with ScalaFutures with Ex
   }
 
   it("assigns sequential version numbers for the same external ID") {
-    withVersionManager { versionManager =>
-      val externalIdentifier = createExternalIdentifier
+    withLocalDynamoDbTable { versionTable =>
+      withVersionManager(versionTable) { versionManager =>
+        val externalIdentifier = createExternalIdentifier
 
-      (1 to 5).foreach { i =>
-        val future = versionManager.assignVersion(
-          ingestId = createIngestID,
-          ingestDate = Instant.ofEpochSecond(i),
-          externalIdentifier = externalIdentifier
-        )
+        (1 to 5).foreach { i =>
+          val future = versionManager.assignVersion(
+            ingestId = createIngestID,
+            ingestDate = Instant.ofEpochSecond(i),
+            externalIdentifier = externalIdentifier
+          )
 
-        whenReady(future) { _ shouldBe i }
+          whenReady(future) { _ shouldBe i }
+        }
       }
+
+      Scanamo.scan[VersionRecord](dynamoDbClient)(versionTable.name) should have size 5
     }
   }
 }
