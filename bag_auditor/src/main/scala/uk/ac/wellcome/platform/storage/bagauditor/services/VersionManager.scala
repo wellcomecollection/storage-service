@@ -47,7 +47,13 @@ class VersionManager(
         }
       case None =>
         val newVersion = getLatestVersionRecord(externalIdentifier) match {
-          case Some(existingRecord) => existingRecord.version + 1
+          case Some(existingRecord) =>
+            if (!existingRecord.ingestDate.isBefore(ingestDate)) {
+              throw new RuntimeException(
+                s"Already assigned a version for a newer ingest: ${existingRecord.ingestDate} > $ingestDate"
+              )
+            }
+            existingRecord.version + 1
           case None                 => 1
         }
 

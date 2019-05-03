@@ -109,14 +109,16 @@ trait VersionManagerFixtures extends LocalDynamoDb {
 class VersionManagerTest extends FunSpec with Matchers with ScalaFutures with ExternalIdentifierGenerators with VersionManagerFixtures {
   it("assigns v1 for an external ID/ingest ID it's never seen before") {
     withVersionManager { versionManager =>
-      val future = versionManager.assignVersion(
-        ingestId = createIngestID,
-        ingestDate = Instant.now(),
-        externalIdentifier = createExternalIdentifier
-      )
+      (1 to 3).foreach { _ =>
+        val future = versionManager.assignVersion(
+          ingestId = createIngestID,
+          ingestDate = Instant.now(),
+          externalIdentifier = createExternalIdentifier
+        )
 
-      whenReady(future) { version =>
-        version shouldBe 1
+        whenReady(future) { version =>
+          version shouldBe 1
+        }
       }
     }
   }
@@ -225,6 +227,30 @@ class VersionManagerTest extends FunSpec with Matchers with ScalaFutures with Ex
 
         whenReady(future2.failed) { t =>
           t.getMessage should startWith("Found different external identifier")
+        }
+      }
+    }
+  }
+
+  it("errors if you try to create a new version for an older ingest date than already stored") {
+    withVersionManager { versionManager =>
+      val externalIdentifier = createExternalIdentifier
+
+      val future = versionManager.assignVersion(
+        ingestId = createIngestID,
+        ingestDate = Instant.ofEpochSecond(2000L),
+        externalIdentifier = externalIdentifier
+      )
+
+      whenReady(future) { _ =>
+        val future = versionManager.assignVersion(
+          ingestId = createIngestID,
+          ingestDate = Instant.ofEpochSecond(100L),
+          externalIdentifier = externalIdentifier
+        )
+
+        whenReady(future.failed) { t =>
+          t.getMessage should startWith("Already assigned a version for a newer ingest")
         }
       }
     }
