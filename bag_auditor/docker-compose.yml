@@ -13,3 +13,7 @@ s3:
     - "S3BACKEND=mem"
   ports:
     - "33333:8000"
+dynamodb:
+  image: "peopleperhour/dynamodb"
+  ports:
+    - "45678:8000"
