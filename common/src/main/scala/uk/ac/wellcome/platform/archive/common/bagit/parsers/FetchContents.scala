@@ -3,13 +3,9 @@ package uk.ac.wellcome.platform.archive.common.bagit.parsers
 import java.io.{BufferedReader, InputStream, InputStreamReader}
 import java.net.URI
 
-import scala.util.matching.Regex
+import uk.ac.wellcome.platform.archive.common.bagit.models.FetchEntry
 
-case class FetchEntry(
-  url: URI,
-  length: Option[Int],
-  filepath: String
-)
+import scala.util.matching.Regex
 
 object FetchContents {
 

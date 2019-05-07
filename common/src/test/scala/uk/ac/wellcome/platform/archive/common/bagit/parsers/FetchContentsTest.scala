@@ -5,6 +5,7 @@ import java.net.URI
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.bagit.models.FetchEntry
 
 class FetchContentsTest extends FunSpec with Matchers {
 
@@ -79,6 +80,21 @@ class FetchContentsTest extends FunSpec with Matchers {
       )
 
       FetchContents.read(contents) shouldBe expected
+    }
+
+    it("correctly decodes a percent-encoded CR/LF/CRLF in the file path") {
+      val contents = toInputStream(
+        s"""
+           |http://example.org/abc - example%0D1%0D.txt
+           |http://example.org/abc - example%0A2%0A.txt
+           |http://example.org/abc - example%0D%0A3%0D%0A.txt
+       """.stripMargin)
+
+      FetchContents.read(contents).map { _.filepath } shouldBe Seq(
+        "example\r1\r.txt",
+        "example\n2\n.txt",
+        "example\r\n3\r\n.txt"
+      )
     }
   }
 
