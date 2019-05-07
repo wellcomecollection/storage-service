@@ -39,6 +39,7 @@ object FetchContents {
     Iterator
       .continually(bufferedReader.readLine())
       .takeWhile { _ != null }
+      .filterNot { _.trim.isEmpty }
       .map { line: String =>
         val m = FETCH_LINE_REGEX.findFirstMatchIn(line).get
 

@@ -64,6 +64,22 @@ class FetchContentsTest extends FunSpec with Matchers {
 
       FetchContents.read(contents) shouldBe expected
     }
+
+    it("handles an empty line in the fetch.txt") {
+      val contents = toInputStream(
+        s"""
+           |http://example.org/\t25 example.txt
+           |
+           |https://wellcome.ac.uk/ -\tlogo.png
+       """.stripMargin)
+
+      val expected = Seq(
+        FetchEntry(url = new URI("http://example.org/"), length = Some(25), filepath = "example.txt"),
+        FetchEntry(url = new URI("https://wellcome.ac.uk/"), length = None, filepath = "logo.png")
+      )
+
+      FetchContents.read(contents) shouldBe expected
+    }
   }
 
   private def toInputStream(s: String): InputStream =
