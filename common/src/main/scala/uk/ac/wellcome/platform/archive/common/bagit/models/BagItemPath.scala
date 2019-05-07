@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
-import java.nio.file.Paths
-
 import com.gu.scanamo.DynamoFormat
 import com.gu.scanamo.error.TypeCoercionError
 import io.circe.{Decoder, Encoder, Json}
@@ -12,13 +10,7 @@ case class BagItemPath(underlying: String) extends AnyVal {
   override def toString: String = underlying
 
   def toObjectLocation(bagRootLocation: ObjectLocation): ObjectLocation =
-    bagRootLocation.copy(
-      key = Paths
-        .get(
-          bagRootLocation.key,
-          underlying
-        )
-        .toString)
+    bagRootLocation.join(underlying)
 }
 
 object BagItemPath {

@@ -1,19 +1,28 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import java.nio.file.Paths
+import java.util.UUID
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
+import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestStatusUpdate
-}
+import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
+import uk.ac.wellcome.storage.{LockDao, LockFailure}
+
+import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class BagReplicatorWorkerTest
     extends FunSpec
@@ -205,33 +214,106 @@ class BagReplicatorWorkerTest
     }
   }
 
-  it("sends a failed IngestUpdate if replication fails") {
-    withLocalSnsTopic { ingestTopic =>
-      withLocalSnsTopic { outgoingTopic =>
-        withBagReplicatorWorker(
-          ingestTopic = ingestTopic,
-          outgoingTopic = outgoingTopic) { service =>
-          val payload = createBagInformationPayload
+  it("locks around the destination") {
+    val lockServiceDao = new InMemoryLockDao()
 
-          val future = service.processMessage(payload)
+    withBagReplicatorWorker(lockServiceDao = lockServiceDao) { service =>
+      val payload = createBagInformationPayload
+      val future = service.processMessage(payload)
 
-          whenReady(future) { _ =>
-            assertSnsReceivesNothing(outgoingTopic)
+      whenReady(future) { result: Result[ReplicationSummary] =>
+        val destination = result.summary.get.destination
 
-            assertTopicReceivesIngestUpdates(payload.ingestId, ingestTopic) {
-              ingestUpdates =>
-                ingestUpdates.size shouldBe 2
+        lockServiceDao.history should have size 1
+        lockServiceDao.history.head.id shouldBe destination.toString
+      }
+    }
+  }
 
-                val ingestStart = ingestUpdates.head
-                ingestStart.events.head.description shouldBe "Replicating started"
+  it("only allows one worker to process a destination") {
+    val lockServiceDao = new InMemoryLockDao()
 
-                val ingestFailed =
-                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-                ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe "Replicating failed"
+    withLocalS3Bucket { bucket =>
+      // We have to create a large bag to slow down the replicators, or the
+      // first process finishes and releases the lock before the later
+      // processes have started.
+      withBag(bucket, dataFileCount = 250) {
+        case (bagRootLocation, _) =>
+          withLocalSnsTopic { ingestTopic =>
+            withLocalSnsTopic { outgoingTopic =>
+              withBagReplicatorWorker(
+                ingestTopic = ingestTopic,
+                outgoingTopic = outgoingTopic,
+                lockServiceDao = lockServiceDao) { worker =>
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation
+                )
+
+                val futures: Future[Seq[Result[ReplicationSummary]]] =
+                  Future.sequence((1 to 5).map { _ =>
+                    worker.processMessage(payload)
+                  })
+
+                whenReady(futures) { result =>
+                  result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
+                  result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
+
+                  lockServiceDao.history should have size 1
+                }
+              }
             }
           }
-        }
+      }
+    }
+  }
+
+  it("doesn't delete the SQS message if it can't acquire a lock") {
+    val neverAllowLockDao = new LockDao[String, UUID] {
+      override def lock(id: String, contextId: UUID): LockResult =
+        Left(LockFailure(id, new Throwable("BOOM!")))
+      override def unlock(contextId: UUID): UnlockResult = Right(Unit)
+    }
+
+    withLocalS3Bucket { bucket =>
+      withBag(bucket, dataFileCount = 20) {
+        case (bagRootLocation, _) =>
+          withLocalSnsTopic { ingestTopic =>
+            withLocalSnsTopic { outgoingTopic =>
+              withLocalSqsQueue { queue =>
+                withBagReplicatorWorker(
+                  queue = queue,
+                  ingestTopic = ingestTopic,
+                  outgoingTopic = outgoingTopic,
+                  config = createReplicatorDestinationConfigWith(bucket),
+                  lockServiceDao = neverAllowLockDao) { _ =>
+                  val payload = createBagInformationPayloadWith(
+                    bagRootLocation = bagRootLocation
+                  )
+
+                  sendNotificationToSQS(queue, payload)
+
+                  // Give the worker time to pick up the message, discover it
+                  // can't lock, and mark the message visibility timeout.
+                  Thread.sleep(2000)
+
+                  eventually {
+                    val queueAttributes =
+                      sqsClient
+                        .getQueueAttributes(
+                          queue.url,
+                          List(
+                            "ApproximateNumberOfMessagesNotVisible",
+                            "ApproximateNumberOfMessages").asJava
+                        )
+                        .getAttributes
+
+                    queueAttributes.get("ApproximateNumberOfMessagesNotVisible") shouldBe "1"
+                    queueAttributes.get("ApproximateNumberOfMessages") shouldBe "0"
+                  }
+                }
+              }
+            }
+          }
       }
     }
   }

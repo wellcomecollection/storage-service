@@ -5,7 +5,7 @@ locals {
 }
 
 module "queue" {
-  source      = "git::https://github.com/wellcometrust/terraform-modules.git//sqs?ref=v11.6.0"
+  source      = "git::https://github.com/wellcometrust/terraform-modules.git//sqs?ref=58303f9"
   queue_name  = "${replace(var.name,"-","_")}"
   aws_region  = "${var.aws_region}"
   account_id  = "${data.aws_caller_identity.current.account_id}"

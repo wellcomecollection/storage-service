@@ -35,7 +35,7 @@ class IngestsWorker(
     extends Runnable
     with Logging {
 
-  private val worker: AlpakkaSQSWorker[IngestUpdate, Ingest] =
+  private val worker =
     AlpakkaSQSWorker[IngestUpdate, Ingest](alpakkaSQSWorkerConfig) {
       processMessage
     }

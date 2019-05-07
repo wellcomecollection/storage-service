@@ -60,6 +60,7 @@ trait IngestUpdateAssertions extends SNS with Inside with Logging {
         ingestUpdates
           .flatMap { _.events }
           .map { _.description }
+          .distinct
 
       eventDescriptions should contain theSameElementsAs expectedDescriptions
     }

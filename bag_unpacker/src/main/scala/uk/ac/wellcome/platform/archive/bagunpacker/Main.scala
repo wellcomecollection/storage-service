@@ -5,11 +5,13 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.CloudwatchMonitoringClientBuilder._
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder
+}
 import uk.ac.wellcome.messaging.typesafe.SQSBuilder.buildSQSAsyncClient
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.{
-  AlpakkaSqsWorkerConfigBuilder,
   UnpackerWorkerConfigBuilder
 }
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
@@ -43,7 +45,7 @@ object Main extends WellcomeTypesafeApp {
       buildS3Client(config)
 
     implicit val monitoringClient: CloudwatchMonitoringClient =
-      buildCloudwatchMonitoringClient(config)
+      CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
 
     implicit val sqsClient: AmazonSQSAsync =
       buildSQSAsyncClient(config)
