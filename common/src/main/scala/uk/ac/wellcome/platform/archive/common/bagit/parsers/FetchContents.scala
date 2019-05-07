@@ -7,23 +7,22 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.FetchEntry
 
 import scala.util.matching.Regex
 
+/** Read/write the contents of a Fetch File as defined by RFC 8493 § 2.2.3.
+  *
+  * Relevant notes:
+  *
+  *   - Each line of a fetch file MUST be of the form
+  *
+  *         url length filepath
+  *
+  *   - `url` must be an absolute URI, and whitespace characters must be
+  *     percent encoded
+  *   - `length` is the number of octets in the file, or "-" if unspecified
+  *   - `filename` is the path to the file.  Line break characters (LR, CF, LRCF)
+  *     and *only* those characters must be percent-encoded.
+  *
+  */
 object FetchContents {
-
-  /** Create the contents of a Fetch File as defined by RFC 8493 § 2.2.3.
-    *
-    * Relevant notes:
-    *
-    *   - Each line of a fetch file MUST be of the form
-    *
-    *         url length filepath
-    *
-    *   - `url` must be an absolute URI, and whitespace characters must be
-    *     percent encoded
-    *   - `length` is the number of octets in the file, or "-" if unspecified
-    *   - `filename` is the path to the file.  Line break characters (LR, CF, LRCF)
-    *     and *only* those characters must be percent-encoded.
-    *
-    */
 
   val FETCH_LINE_REGEX: Regex = new Regex(
     "(.*)[ \t]+(\\d*|-)[ \t]+(.*)", "url", "length", "filepath"
