@@ -11,22 +11,6 @@ case class FetchEntry(
   filepath: String
 )
 
-object FetchReader {
-  val FETCH_LINE_REGEX: Regex = ".*[ \t]+(\\d*|-)[ \t]+.*".r
-
-  def read(inputStream: InputStream): Seq[FetchEntry] = {
-    val bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
-
-    Iterator
-      .continually(bufferedReader.readLine())
-      .foreach { line: String =>
-        println(FETCH_LINE_REGEX.findFirstMatchIn(line))
-      }
-
-    Seq.empty
-  }
-}
-
 object FetchContents {
 
   /** Create the contents of a Fetch File as defined by RFC 8493 § 2.2.3.
@@ -44,11 +28,46 @@ object FetchContents {
     *     and *only* those characters must be percent-encoded.
     *
     */
+
+  val FETCH_LINE_REGEX: Regex = new Regex(
+    "(.*)[ \t]+(\\d*|-)[ \t]+(.*)", "url", "length", "filepath"
+  )
+
+  def read(is: InputStream): Seq[FetchEntry] = {
+    val bufferedReader = new BufferedReader(new InputStreamReader(is))
+
+    Iterator
+      .continually(bufferedReader.readLine())
+      .takeWhile { _ != null }
+      .map { line: String =>
+        val m = FETCH_LINE_REGEX.findFirstMatchIn(line).get
+
+        FetchEntry(
+          url = new URI(m.group("url")),
+          length = decodeLength(m.group("length")),
+          filepath = decodeFilepath(m.group("filepath"))
+        )
+      }
+      .toSeq
+  }
+
   def write(entries: Seq[FetchEntry]): String =
     entries.map { e =>
-      s"${e.url} ${e.length.getOrElse("-")} ${encodeFilepath(e.filepath)}"
+      s"${e.url} ${encodeLength(e.length)} ${encodeFilepath(e.filepath)}"
     }.mkString("\n")
+
+  private def encodeLength(length: Option[Int]): String =
+    length match {
+      case Some(i) => i.toString
+      case None => "-"
+    }
+
+  private def decodeLength(ls: String): Option[Int] =
+    if (ls == "-") None else Some(ls.toInt)
 
   private def encodeFilepath(path: String): String =
     path.replaceAll("\n", "%0A").replaceAll("\r", "%0D")
+
+  private def decodeFilepath(path: String): String =
+    path.replaceAll("%0A", "\n").replaceAll("%0D", "\r")
 }
