@@ -25,7 +25,10 @@ import scala.util.matching.Regex
 object FetchContents {
 
   val FETCH_LINE_REGEX: Regex = new Regex(
-    "(.*)[ \t]+(\\d*|-)[ \t]+(.*)", "url", "length", "filepath"
+    "(.*)[ \t]+(\\d*|-)[ \t]+(.*)",
+    "url",
+    "length",
+    "filepath"
   )
 
   def read(is: InputStream): Seq[FetchEntry] = {
@@ -48,14 +51,16 @@ object FetchContents {
   }
 
   def write(entries: Seq[FetchEntry]): String =
-    entries.map { e =>
-      s"${e.url} ${encodeLength(e.length)} ${encodeFilepath(e.filepath)}"
-    }.mkString("\n")
+    entries
+      .map { e =>
+        s"${e.url} ${encodeLength(e.length)} ${encodeFilepath(e.filepath)}"
+      }
+      .mkString("\n")
 
   private def encodeLength(length: Option[Int]): String =
     length match {
       case Some(i) => i.toString
-      case None => "-"
+      case None    => "-"
     }
 
   private def decodeLength(ls: String): Option[Int] =

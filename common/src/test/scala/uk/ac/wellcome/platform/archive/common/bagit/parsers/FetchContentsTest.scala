@@ -12,8 +12,14 @@ class FetchContentsTest extends FunSpec with Matchers {
   describe("write") {
     it("writes the lines of a fetch.txt") {
       val entries = Seq(
-        FetchEntry(url = new URI("http://example.org/"), length = Some(25), filepath = "example.txt"),
-        FetchEntry(url = new URI("https://wellcome.ac.uk/"), length = None, filepath = "logo.png")
+        FetchEntry(
+          url = new URI("http://example.org/"),
+          length = Some(25),
+          filepath = "example.txt"),
+        FetchEntry(
+          url = new URI("https://wellcome.ac.uk/"),
+          length = None,
+          filepath = "logo.png")
       )
 
       val expected =
@@ -30,13 +36,21 @@ class FetchContentsTest extends FunSpec with Matchers {
         "example\rnumber\r1.txt",
         "example\nnumber\n2.txt",
         "example\r\nnumber\r\n3.txt").map { filepath =>
-        FetchEntry(url = new URI("http://example.org/"), length = None, filepath = filepath)
+        FetchEntry(
+          url = new URI("http://example.org/"),
+          length = None,
+          filepath = filepath)
       }
 
-
       Seq(
-        FetchEntry(url = new URI("http://example.org/"), length = None, filepath = "example.txt"),
-        FetchEntry(url = new URI("https://wellcome.ac.uk/"), length = None, filepath = "logo.png")
+        FetchEntry(
+          url = new URI("http://example.org/"),
+          length = None,
+          filepath = "example.txt"),
+        FetchEntry(
+          url = new URI("https://wellcome.ac.uk/"),
+          length = None,
+          filepath = "logo.png")
       )
 
       val expected =
@@ -52,39 +66,48 @@ class FetchContentsTest extends FunSpec with Matchers {
 
   describe("read") {
     it("reads the contents of a fetch.txt") {
-      val contents = toInputStream(
-        s"""
+      val contents = toInputStream(s"""
            |http://example.org/\t25 example.txt
            |https://wellcome.ac.uk/ -\tlogo.png
        """.stripMargin)
 
       val expected = Seq(
-        FetchEntry(url = new URI("http://example.org/"), length = Some(25), filepath = "example.txt"),
-        FetchEntry(url = new URI("https://wellcome.ac.uk/"), length = None, filepath = "logo.png")
+        FetchEntry(
+          url = new URI("http://example.org/"),
+          length = Some(25),
+          filepath = "example.txt"),
+        FetchEntry(
+          url = new URI("https://wellcome.ac.uk/"),
+          length = None,
+          filepath = "logo.png")
       )
 
       FetchContents.read(contents) shouldBe expected
     }
 
     it("handles an empty line in the fetch.txt") {
-      val contents = toInputStream(
-        s"""
+      val contents = toInputStream(s"""
            |http://example.org/\t25 example.txt
            |
            |https://wellcome.ac.uk/ -\tlogo.png
        """.stripMargin)
 
       val expected = Seq(
-        FetchEntry(url = new URI("http://example.org/"), length = Some(25), filepath = "example.txt"),
-        FetchEntry(url = new URI("https://wellcome.ac.uk/"), length = None, filepath = "logo.png")
+        FetchEntry(
+          url = new URI("http://example.org/"),
+          length = Some(25),
+          filepath = "example.txt"),
+        FetchEntry(
+          url = new URI("https://wellcome.ac.uk/"),
+          length = None,
+          filepath = "logo.png")
       )
 
       FetchContents.read(contents) shouldBe expected
     }
 
     it("correctly decodes a percent-encoded CR/LF/CRLF in the file path") {
-      val contents = toInputStream(
-        s"""
+      val contents = toInputStream(s"""
            |http://example.org/abc - example%0D1%0D.txt
            |http://example.org/abc - example%0A2%0A.txt
            |http://example.org/abc - example%0D%0A3%0D%0A.txt
