@@ -7,7 +7,9 @@ import akka.stream.scaladsl.{Sink, Source}
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  Checksum,
   FailedVerification,
+  VerificationRequest,
   VerificationSummary
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagDigestFile

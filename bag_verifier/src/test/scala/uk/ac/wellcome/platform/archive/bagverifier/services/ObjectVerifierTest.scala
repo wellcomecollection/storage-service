@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult}
 import org.scalatest.{EitherValues, FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{Checksum, VerificationRequest}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3

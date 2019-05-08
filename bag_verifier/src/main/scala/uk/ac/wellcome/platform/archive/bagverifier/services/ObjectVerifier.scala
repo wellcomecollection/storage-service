@@ -2,25 +2,13 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  BetterFailedVerification,
+  VerificationRequest
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.ChecksumVerifier
-import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.Try
-
-case class Checksum(
-  algorithm: String,
-  value: String
-)
-
-case class VerificationRequest(
-  objectLocation: ObjectLocation,
-  checksum: Checksum
-)
-
-case class BetterFailedVerification(
-  request: VerificationRequest,
-  error: Throwable
-)
 
 class ObjectVerifier(s3Client: AmazonS3) extends Logging {
   def verify(request: VerificationRequest): Either[BetterFailedVerification, VerificationRequest] =
