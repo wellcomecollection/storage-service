@@ -17,14 +17,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepResult,
   IngestStepSucceeded
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  ChecksumVerifier,
-  StorageManifestService
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 class Verifier(
   storageManifestService: StorageManifestService,
@@ -32,6 +28,9 @@ class Verifier(
   algorithm: String
 )(implicit ec: ExecutionContext, materializer: Materializer)
     extends Logging {
+
+  val objectVerifier = new ObjectVerifier(s3Client)
+
   def verify(
     bagRootLocation: ObjectLocation
   ): Future[IngestStepResult[VerificationSummary]] = {
@@ -99,42 +98,22 @@ class Verifier(
   private def verifyIndividualFile(
     bagRootLocation: ObjectLocation,
     digestFile: BagDigestFile): Either[FailedVerification, BagDigestFile] = {
-    val objectLocation = digestFile.path.toObjectLocation(bagRootLocation)
-    for {
-      inputStream <- Try {
-        s3Client
-          .getObject(objectLocation.namespace, objectLocation.key)
-          .getObjectContent
-      }.toEither.left.map(e => {
-        warn(s"Could not verify $objectLocation : $e")
-        FailedVerification(digestFile = digestFile, reason = e)
-      })
+    val verificationRequest = VerificationRequest(
+      objectLocation = digestFile.path.toObjectLocation(bagRootLocation),
+      checksum = Checksum(
+        algorithm = algorithm,
+        value = digestFile.checksum
+      )
+    )
 
-      actualChecksum <- ChecksumVerifier
-        .checksum(
-          inputStream,
-          algorithm = algorithm
-        )
-        .toEither
-        .left
-        .map(e => FailedVerification(digestFile = digestFile, reason = e))
-
-      result <- getResult(digestFile, actualChecksum = actualChecksum)
-    } yield result
-  }
-
-  private def getResult(
-    digestFile: BagDigestFile,
-    actualChecksum: String
-  ): Either[FailedVerification, BagDigestFile] =
-    if (digestFile.checksum == actualChecksum) {
-      Right(digestFile)
-    } else {
-      Left(
+    objectVerifier.verify(verificationRequest) match {
+      case Right(_) => Right(digestFile)
+      case Left(err) => Left(
         FailedVerification(
           digestFile = digestFile,
-          reason = new RuntimeException(
-            s"Checksums do not match: expected ${digestFile.checksum}, actually saw $actualChecksum")
-        ))
+          reason = err.error
+        )
+      )
     }
+  }
 }
