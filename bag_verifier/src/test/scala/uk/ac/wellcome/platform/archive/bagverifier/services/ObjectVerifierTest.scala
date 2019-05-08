@@ -2,14 +2,22 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult}
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bagverifier.models.{Checksum, VerificationRequest}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  Checksum,
+  VerificationRequest
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.sys.process._
 
-class ObjectVerifierTest extends FunSpec with Matchers with EitherValues with S3 with RandomThings {
+class ObjectVerifierTest
+    extends FunSpec
+    with Matchers
+    with EitherValues
+    with S3
+    with RandomThings {
   val objectVerifier = new ObjectVerifier(s3Client)
 
   it("returns a failure if the bucket doesn't exist") {
@@ -28,7 +36,8 @@ class ObjectVerifierTest extends FunSpec with Matchers with EitherValues with S3
     val failedVerification = result.left.value
     failedVerification.request shouldBe request
     failedVerification.error shouldBe a[AmazonS3Exception]
-    failedVerification.error.getMessage should startWith("The specified bucket does not exist")
+    failedVerification.error.getMessage should startWith(
+      "The specified bucket does not exist")
   }
 
   it("returns a failure if the object doesn't exist") {
@@ -48,7 +57,8 @@ class ObjectVerifierTest extends FunSpec with Matchers with EitherValues with S3
       val failedVerification = result.left.value
       failedVerification.request shouldBe request
       failedVerification.error shouldBe a[AmazonS3Exception]
-      failedVerification.error.getMessage should startWith("The specified key does not exist")
+      failedVerification.error.getMessage should startWith(
+        "The specified key does not exist")
     }
   }
 
@@ -98,7 +108,8 @@ class ObjectVerifierTest extends FunSpec with Matchers with EitherValues with S3
       val failedVerification = result.left.value
       failedVerification.request shouldBe request
       failedVerification.error shouldBe a[RuntimeException]
-      failedVerification.error.getMessage should startWith("Checksums do not match")
+      failedVerification.error.getMessage should startWith(
+        "Checksums do not match")
     }
   }
 
@@ -127,7 +138,7 @@ class ObjectVerifierTest extends FunSpec with Matchers with EitherValues with S3
         objectLocation = createObjectLocationWith(bucket),
         checksum = Checksum(
           algorithm = "SHA-512",
-          value = getChecksum("HelloWorld", algorithm="sha512")
+          value = getChecksum("HelloWorld", algorithm = "sha512")
         )
       )
 
@@ -147,7 +158,8 @@ class ObjectVerifierTest extends FunSpec with Matchers with EitherValues with S3
     s"echo -n $s" #| s"openssl dgst -$algorithm" !!
   }.trim
 
-  def put(objectLocation: ObjectLocation, contents: String = randomAlphanumeric()): PutObjectResult =
+  def put(objectLocation: ObjectLocation,
+          contents: String = randomAlphanumeric()): PutObjectResult =
     s3Client
       .putObject(objectLocation.namespace, objectLocation.key, contents)
 }

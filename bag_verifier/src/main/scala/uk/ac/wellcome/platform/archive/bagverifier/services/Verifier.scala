@@ -92,9 +92,9 @@ class Verifier(
       .map(bagVerification => bagVerification.complete)
   }
 
-  private def verifyIndividualFile(
-    bagRootLocation: ObjectLocation,
-    digestFile: BagDigestFile): Either[FailedVerification, VerificationRequest] = {
+  private def verifyIndividualFile(bagRootLocation: ObjectLocation,
+                                   digestFile: BagDigestFile)
+    : Either[FailedVerification, VerificationRequest] = {
     val verificationRequest = VerificationRequest(
       objectLocation = digestFile.path.toObjectLocation(bagRootLocation),
       checksum = Checksum(

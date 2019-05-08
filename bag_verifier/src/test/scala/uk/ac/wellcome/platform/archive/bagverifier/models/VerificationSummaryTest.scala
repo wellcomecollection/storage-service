@@ -14,8 +14,10 @@ class VerificationSummaryTest
   it("reports a verification with no failures as successful") {
     val result = VerificationSummary(
       createObjectLocation,
-      successfulVerifications =
-        Seq(createVerificationRequest, createVerificationRequest, createVerificationRequest),
+      successfulVerifications = Seq(
+        createVerificationRequest,
+        createVerificationRequest,
+        createVerificationRequest),
       failedVerifications = List.empty
     )
 
@@ -25,7 +27,8 @@ class VerificationSummaryTest
   it("reports a verification with some problems as unsuccessful") {
     val result = VerificationSummary(
       createObjectLocation,
-      successfulVerifications = Seq(createVerificationRequest, createVerificationRequest),
+      successfulVerifications =
+        Seq(createVerificationRequest, createVerificationRequest),
       failedVerifications = List(
         FailedVerification(
           request = createVerificationRequest,
