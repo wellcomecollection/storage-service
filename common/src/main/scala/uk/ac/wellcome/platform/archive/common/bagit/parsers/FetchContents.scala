@@ -35,20 +35,30 @@ object FetchContents {
   def read(is: InputStream): Try[Seq[FetchEntry]] = Try {
     val bufferedReader = new BufferedReader(new InputStreamReader(is))
 
-    Iterator
-      .continually(bufferedReader.readLine())
-      .takeWhile { _ != null }
-      .filterNot { _.trim.isEmpty }
-      .map { line: String =>
-        val m = FETCH_LINE_REGEX.findFirstMatchIn(line).get
+    val lines: List[String] =
+      Iterator
+        .continually(bufferedReader.readLine())
+        .takeWhile { _ != null }
+        .filterNot { _.trim.isEmpty }
+        .toList
 
-        FetchEntry(
-          url = new URI(m.group("url")),
-          length = decodeLength(m.group("length")),
-          filepath = decodeFilepath(m.group("filepath"))
-        )
+    lines
+      .map { line: String =>
+        FETCH_LINE_REGEX.findFirstMatchIn(line) match {
+          case Some(m) =>
+            FetchEntry(
+              url = new URI(m.group("url")),
+              length = decodeLength(m.group("length")),
+              filepath = decodeFilepath(m.group("filepath"))
+            )
+          case None =>
+            throw new RuntimeException(
+              s"Line <<$line>> is incorrectly formatted!"
+            )
+        }
+
+
       }
-      .toSeq
   }
 
   def write(entries: Seq[FetchEntry]): String =
