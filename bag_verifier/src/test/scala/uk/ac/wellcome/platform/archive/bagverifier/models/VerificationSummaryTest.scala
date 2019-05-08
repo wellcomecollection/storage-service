@@ -32,8 +32,8 @@ class VerificationSummaryTest
       successfulVerifications = Seq(createBagDigestFile, createBagDigestFile),
       failedVerifications = List(
         FailedVerification(
-          digestFile = createBagDigestFile,
-          reason = new RuntimeException("AAARGH!")
+          request = createVerificationRequest,
+          error = new RuntimeException("AAARGH!")
         )
       )
     )
@@ -58,6 +58,15 @@ class VerificationSummaryTest
     )
     result.duration shouldBe None
   }
+
+  def createVerificationRequest: VerificationRequest =
+    VerificationRequest(
+      objectLocation = createObjectLocation,
+      checksum = Checksum(
+        algorithm = "SHA-256",
+        value = randomAlphanumeric()
+      )
+    )
 
   def createBagDigestFile: BagDigestFile =
     BagDigestFile(

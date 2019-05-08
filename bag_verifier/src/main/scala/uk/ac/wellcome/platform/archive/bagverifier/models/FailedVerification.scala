@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.models
 
-case class BetterFailedVerification(
+case class FailedVerification(
   request: VerificationRequest,
   error: Throwable
 )

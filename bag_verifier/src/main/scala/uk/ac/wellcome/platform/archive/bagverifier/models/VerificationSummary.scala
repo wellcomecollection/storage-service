@@ -31,8 +31,3 @@ case class VerificationSummary(
       .replaceAll("\n", ", ")
   }
 }
-
-case class FailedVerification(
-  digestFile: BagDigestFile,
-  reason: Throwable
-)

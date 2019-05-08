@@ -6,12 +6,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  Checksum,
-  FailedVerification,
-  VerificationRequest,
-  VerificationSummary
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagDigestFile
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   FileManifest,
@@ -110,12 +105,7 @@ class Verifier(
 
     objectVerifier.verify(verificationRequest) match {
       case Right(_) => Right(digestFile)
-      case Left(err) => Left(
-        FailedVerification(
-          digestFile = digestFile,
-          reason = err.error
-        )
-      )
+      case Left(err) => Left(err)
     }
   }
 }
