@@ -64,13 +64,15 @@ class FetchContentsTest extends FunSpec with Matchers {
     }
 
     it("percent encodes whitespace characters in the URL") {
-      val entries = Seq("http://example.org/x y z", "http://example.org/a\tb\tc").map { url =>
-        FetchEntry(
-          url = new URL(url),
-          length = None,
-          filepath = "example.txt"
-        )
-      }
+      val entries =
+        Seq("http://example.org/x y z", "http://example.org/a\tb\tc").map {
+          url =>
+            FetchEntry(
+              url = new URL(url),
+              length = None,
+              filepath = "example.txt"
+            )
+        }
 
       val expected =
         s"""
@@ -139,8 +141,7 @@ class FetchContentsTest extends FunSpec with Matchers {
     }
 
     it("decodes a percent-encoded whitespace character in the URL") {
-      val contents = toInputStream(
-        s"""
+      val contents = toInputStream(s"""
            |http://example.org/x%20y%20z - example.txt
            |http://example.org/a%09b%09c - example.txt
        """.stripMargin)
