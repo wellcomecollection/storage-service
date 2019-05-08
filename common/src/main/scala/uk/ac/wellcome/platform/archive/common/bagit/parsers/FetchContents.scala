@@ -5,6 +5,7 @@ import java.net.URI
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.FetchEntry
 
+import scala.util.Try
 import scala.util.matching.Regex
 
 /** Read/write the contents of a Fetch File as defined by RFC 8493 § 2.2.3.
@@ -31,23 +32,32 @@ object FetchContents {
     "filepath"
   )
 
-  def read(is: InputStream): Seq[FetchEntry] = {
+  def read(is: InputStream): Try[Seq[FetchEntry]] = Try {
     val bufferedReader = new BufferedReader(new InputStreamReader(is))
 
-    Iterator
-      .continually(bufferedReader.readLine())
-      .takeWhile { _ != null }
-      .filterNot { _.trim.isEmpty }
-      .map { line: String =>
-        val m = FETCH_LINE_REGEX.findFirstMatchIn(line).get
+    val lines: List[String] =
+      Iterator
+        .continually(bufferedReader.readLine())
+        .takeWhile { _ != null }
+        .filterNot { _.trim.isEmpty }
+        .toList
 
-        FetchEntry(
-          url = new URI(m.group("url")),
-          length = decodeLength(m.group("length")),
-          filepath = decodeFilepath(m.group("filepath"))
-        )
+    lines
+      .map { line: String =>
+        FETCH_LINE_REGEX.findFirstMatchIn(line) match {
+          case Some(m) =>
+            FetchEntry(
+              url = new URI(m.group("url")),
+              length = decodeLength(m.group("length")),
+              filepath = decodeFilepath(m.group("filepath"))
+            )
+          case None =>
+            throw new RuntimeException(
+              s"Line <<$line>> is incorrectly formatted!"
+            )
+        }
+
       }
-      .toSeq
   }
 
   def write(entries: Seq[FetchEntry]): String =
