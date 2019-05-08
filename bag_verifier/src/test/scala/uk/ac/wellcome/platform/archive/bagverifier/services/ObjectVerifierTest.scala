@@ -117,7 +117,8 @@ class ObjectVerifierTest
         objectLocation = createObjectLocationWith(bucket),
         checksum = Checksum(
           algorithm = "SHA-256",
-          value = "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"  // sha256("HelloWorld")
+          value =
+            "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4" // sha256("HelloWorld")
         )
       )
 
@@ -136,7 +137,7 @@ class ObjectVerifierTest
         objectLocation = createObjectLocationWith(bucket),
         checksum = Checksum(
           algorithm = "MD5",
-          value = "68e109f0f40ca72a15e05cc22786f8e6"  // md5("HelloWorld")
+          value = "68e109f0f40ca72a15e05cc22786f8e6" // md5("HelloWorld")
         )
       )
 
