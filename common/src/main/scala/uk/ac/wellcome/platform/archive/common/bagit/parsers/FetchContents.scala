@@ -47,7 +47,7 @@ object FetchContents {
         FETCH_LINE_REGEX.findFirstMatchIn(line) match {
           case Some(m) =>
             FetchEntry(
-              url = new URL(m.group("url")),
+              url = decodeURL(m.group("url")),
               length = decodeLength(m.group("length")),
               filepath = decodeFilepath(m.group("filepath"))
             )
@@ -63,9 +63,15 @@ object FetchContents {
   def write(entries: Seq[FetchEntry]): String =
     entries
       .map { e =>
-        s"${e.url} ${encodeLength(e.length)} ${encodeFilepath(e.filepath)}"
+        s"${encodeURL(e.url)} ${encodeLength(e.length)} ${encodeFilepath(e.filepath)}"
       }
       .mkString("\n")
+
+  private def encodeURL(url: URL): String =
+    url.toString.replaceAll(" ", "%20").replaceAll("\t", "%09")
+
+  private def decodeURL(url: String): URL =
+    new URL(url.replaceAll("%20", " ").replaceAll("%09", "\t"))
 
   private def encodeLength(length: Option[Int]): String =
     length match {
