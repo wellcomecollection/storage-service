@@ -3,10 +3,6 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 import java.time.{Duration, Instant}
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagDigestFile,
-  BagItemPath
-}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -19,7 +15,7 @@ class VerificationSummaryTest
     val result = VerificationSummary(
       createObjectLocation,
       successfulVerifications =
-        Seq(createBagDigestFile, createBagDigestFile, createBagDigestFile),
+        Seq(createVerificationRequest, createVerificationRequest, createVerificationRequest),
       failedVerifications = List.empty
     )
 
@@ -29,7 +25,7 @@ class VerificationSummaryTest
   it("reports a verification with some problems as unsuccessful") {
     val result = VerificationSummary(
       createObjectLocation,
-      successfulVerifications = Seq(createBagDigestFile, createBagDigestFile),
+      successfulVerifications = Seq(createVerificationRequest, createVerificationRequest),
       failedVerifications = List(
         FailedVerification(
           request = createVerificationRequest,
@@ -66,11 +62,5 @@ class VerificationSummaryTest
         algorithm = "SHA-256",
         value = randomAlphanumeric()
       )
-    )
-
-  def createBagDigestFile: BagDigestFile =
-    BagDigestFile(
-      checksum = randomAlphanumeric(),
-      path = BagItemPath(randomAlphanumeric())
     )
 }

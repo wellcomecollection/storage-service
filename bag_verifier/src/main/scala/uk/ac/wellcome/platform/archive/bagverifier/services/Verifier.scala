@@ -94,7 +94,7 @@ class Verifier(
 
   private def verifyIndividualFile(
     bagRootLocation: ObjectLocation,
-    digestFile: BagDigestFile): Either[FailedVerification, BagDigestFile] = {
+    digestFile: BagDigestFile): Either[FailedVerification, VerificationRequest] = {
     val verificationRequest = VerificationRequest(
       objectLocation = digestFile.path.toObjectLocation(bagRootLocation),
       checksum = Checksum(
@@ -103,9 +103,6 @@ class Verifier(
       )
     )
 
-    objectVerifier.verify(verificationRequest) match {
-      case Right(_) => Right(digestFile)
-      case Left(err) => Left(err)
-    }
+    objectVerifier.verify(verificationRequest)
   }
 }
