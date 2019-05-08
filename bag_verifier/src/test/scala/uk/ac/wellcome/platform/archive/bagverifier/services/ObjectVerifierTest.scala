@@ -10,8 +10,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
-import scala.sys.process._
-
 class ObjectVerifierTest
     extends FunSpec
     with Matchers
@@ -92,7 +90,7 @@ class ObjectVerifierTest
         objectLocation = createObjectLocationWith(bucket),
         checksum = Checksum(
           algorithm = "MD5",
-          value = getChecksum("HelloWorld")
+          value = randomAlphanumeric()
         )
       )
 
@@ -119,7 +117,7 @@ class ObjectVerifierTest
         objectLocation = createObjectLocationWith(bucket),
         checksum = Checksum(
           algorithm = "SHA-256",
-          value = getChecksum("HelloWorld")
+          value = "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"  // sha256("HelloWorld")
         )
       )
 
@@ -137,8 +135,8 @@ class ObjectVerifierTest
       val request = VerificationRequest(
         objectLocation = createObjectLocationWith(bucket),
         checksum = Checksum(
-          algorithm = "SHA-512",
-          value = getChecksum("HelloWorld", algorithm = "sha512")
+          algorithm = "MD5",
+          value = "68e109f0f40ca72a15e05cc22786f8e6"  // md5("HelloWorld")
         )
       )
 
@@ -150,13 +148,6 @@ class ObjectVerifierTest
       objectVerifier.verify(request) shouldBe Right(request)
     }
   }
-
-  def getChecksum(s: String, algorithm: String = "sha256"): String = {
-    // The intention here isn't to compute a SHA256 checksum in the most
-    // "Scala-like" way, it's to use an external tool that means we have an
-    // independent validation of the result.
-    s"echo -n $s" #| s"openssl dgst -$algorithm" !!
-  }.trim
 
   def put(objectLocation: ObjectLocation,
           contents: String = randomAlphanumeric()): PutObjectResult =
