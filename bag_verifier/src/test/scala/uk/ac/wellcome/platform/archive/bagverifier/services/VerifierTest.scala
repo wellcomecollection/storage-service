@@ -65,8 +65,8 @@ class VerifierTest
               summary.failedVerifications should have size 1
 
               val brokenFile = summary.failedVerifications.head
-              brokenFile.reason shouldBe a[RuntimeException]
-              brokenFile.reason.getMessage should startWith(
+              brokenFile.error shouldBe a[RuntimeException]
+              brokenFile.error.getMessage should startWith(
                 "Checksums do not match:")
             }
           }
@@ -92,8 +92,8 @@ class VerifierTest
               summary.failedVerifications should have size 1
 
               val brokenFile = summary.failedVerifications.head
-              brokenFile.reason shouldBe a[RuntimeException]
-              brokenFile.reason.getMessage should startWith(
+              brokenFile.error shouldBe a[RuntimeException]
+              brokenFile.error.getMessage should startWith(
                 "Checksums do not match:")
             }
           }
@@ -124,8 +124,8 @@ class VerifierTest
               summary.failedVerifications should have size 1
 
               val brokenFile = summary.failedVerifications.head
-              brokenFile.reason shouldBe a[RuntimeException]
-              brokenFile.reason.getMessage should startWith(
+              brokenFile.error shouldBe a[RuntimeException]
+              brokenFile.error.getMessage should startWith(
                 "The specified key does not exist")
             }
           }
