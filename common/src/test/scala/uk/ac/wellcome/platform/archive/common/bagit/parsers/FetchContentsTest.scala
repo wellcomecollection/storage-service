@@ -82,7 +82,7 @@ class FetchContentsTest extends FunSpec with Matchers {
           filepath = "logo.png")
       )
 
-      FetchContents.read(contents) shouldBe expected
+      FetchContents.read(contents).get shouldBe expected
     }
 
     it("handles an empty line in the fetch.txt") {
@@ -103,7 +103,7 @@ class FetchContentsTest extends FunSpec with Matchers {
           filepath = "logo.png")
       )
 
-      FetchContents.read(contents) shouldBe expected
+      FetchContents.read(contents).get shouldBe expected
     }
 
     it("correctly decodes a percent-encoded CR/LF/CRLF in the file path") {
@@ -113,11 +113,23 @@ class FetchContentsTest extends FunSpec with Matchers {
            |http://example.org/abc - example%0D%0A3%0D%0A.txt
        """.stripMargin)
 
-      FetchContents.read(contents).map { _.filepath } shouldBe Seq(
+      FetchContents.read(contents).get.map { _.filepath } shouldBe Seq(
         "example\r1\r.txt",
         "example\n2\n.txt",
         "example\r\n3\r\n.txt"
       )
+    }
+
+    it("throws an exception if a line is incorrectly formatted") {
+      val contents = toInputStream(s"""
+           |http://example.org/abc - example1.txt
+           |NO NO NO
+           |http://example.org/abc - example3.txt
+       """.stripMargin)
+
+      val exc = FetchContents.read(contents).failed.get
+      exc shouldBe a[RuntimeException]
+      exc.getMessage shouldBe "Line <<NO NO NO>> is incorrectly formatted!"
     }
   }
 

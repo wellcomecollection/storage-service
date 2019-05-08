@@ -5,6 +5,7 @@ import java.net.URI
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.FetchEntry
 
+import scala.util.Try
 import scala.util.matching.Regex
 
 /** Read/write the contents of a Fetch File as defined by RFC 8493 § 2.2.3.
@@ -31,7 +32,7 @@ object FetchContents {
     "filepath"
   )
 
-  def read(is: InputStream): Seq[FetchEntry] = {
+  def read(is: InputStream): Try[Seq[FetchEntry]] = Try {
     val bufferedReader = new BufferedReader(new InputStreamReader(is))
 
     Iterator
