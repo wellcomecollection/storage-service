@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.bagit.parsers
 
 import java.io.InputStream
-import java.net.URI
+import java.net.URL
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FunSpec, Matchers}
@@ -13,11 +13,11 @@ class FetchContentsTest extends FunSpec with Matchers {
     it("writes the lines of a fetch.txt") {
       val entries = Seq(
         FetchEntry(
-          url = new URI("http://example.org/"),
+          url = new URL("http://example.org/"),
           length = Some(25),
           filepath = "example.txt"),
         FetchEntry(
-          url = new URI("https://wellcome.ac.uk/"),
+          url = new URL("https://wellcome.ac.uk/"),
           length = None,
           filepath = "logo.png")
       )
@@ -37,18 +37,18 @@ class FetchContentsTest extends FunSpec with Matchers {
         "example\nnumber\n2.txt",
         "example\r\nnumber\r\n3.txt").map { filepath =>
         FetchEntry(
-          url = new URI("http://example.org/"),
+          url = new URL("http://example.org/"),
           length = None,
           filepath = filepath)
       }
 
       Seq(
         FetchEntry(
-          url = new URI("http://example.org/"),
+          url = new URL("http://example.org/"),
           length = None,
           filepath = "example.txt"),
         FetchEntry(
-          url = new URI("https://wellcome.ac.uk/"),
+          url = new URL("https://wellcome.ac.uk/"),
           length = None,
           filepath = "logo.png")
       )
@@ -73,11 +73,11 @@ class FetchContentsTest extends FunSpec with Matchers {
 
       val expected = Seq(
         FetchEntry(
-          url = new URI("http://example.org/"),
+          url = new URL("http://example.org/"),
           length = Some(25),
           filepath = "example.txt"),
         FetchEntry(
-          url = new URI("https://wellcome.ac.uk/"),
+          url = new URL("https://wellcome.ac.uk/"),
           length = None,
           filepath = "logo.png")
       )
@@ -94,11 +94,11 @@ class FetchContentsTest extends FunSpec with Matchers {
 
       val expected = Seq(
         FetchEntry(
-          url = new URI("http://example.org/"),
+          url = new URL("http://example.org/"),
           length = Some(25),
           filepath = "example.txt"),
         FetchEntry(
-          url = new URI("https://wellcome.ac.uk/"),
+          url = new URL("https://wellcome.ac.uk/"),
           length = None,
           filepath = "logo.png")
       )

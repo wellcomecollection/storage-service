@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.bagit.parsers
 
 import java.io.{BufferedReader, InputStream, InputStreamReader}
-import java.net.URI
+import java.net.URL
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.FetchEntry
 
@@ -47,7 +47,7 @@ object FetchContents {
         FETCH_LINE_REGEX.findFirstMatchIn(line) match {
           case Some(m) =>
             FetchEntry(
-              url = new URI(m.group("url")),
+              url = new URL(m.group("url")),
               length = decodeLength(m.group("length")),
               filepath = decodeFilepath(m.group("filepath"))
             )

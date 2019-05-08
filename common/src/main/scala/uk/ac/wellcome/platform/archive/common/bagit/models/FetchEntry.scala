@@ -1,9 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
-import java.net.URI
+import java.net.URL
 
 case class FetchEntry(
-  url: URI,
+  url: URL,
   length: Option[Int],
   filepath: String
 )
