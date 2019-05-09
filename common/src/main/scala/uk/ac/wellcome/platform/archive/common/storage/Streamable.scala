@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common
+package uk.ac.wellcome.platform.archive.common.storage
 
 import java.io.InputStream
 
@@ -7,18 +7,22 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object ConvertibleToInputStream {
+trait Streamable[T] {
+  def apply(t: T)(implicit s3Client: AmazonS3,
+                  ec: ExecutionContext): Future[InputStream]
+}
 
-  implicit class ConvertibleToInputStreamOps[T](t: T) {
-    def toInputStream(implicit toInputStream: ToInputStream[T],
+object Streamable {
+
+  implicit class StreamableFuture[T](t: T) {
+    def toInputStream(implicit toInputStream: Streamable[T],
                       s3Client: AmazonS3,
                       ec: ExecutionContext): Future[InputStream] = {
       toInputStream.apply(t)
     }
   }
 
-  implicit object ConvertibleToInputStreamObjectLocation
-      extends ToInputStream[ObjectLocation] {
+  implicit object Streamable extends Streamable[ObjectLocation] {
 
     def apply(objectLocation: ObjectLocation)(
       implicit s3Client: AmazonS3,
@@ -29,9 +33,4 @@ object ConvertibleToInputStream {
         response => response.getObjectContent
       )
   }
-}
-
-trait ToInputStream[T] {
-  def apply(t: T)(implicit s3Client: AmazonS3,
-                  ec: ExecutionContext): Future[InputStream]
 }

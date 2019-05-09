@@ -17,6 +17,9 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.ObjectLocation
 
+import uk.ac.wellcome.platform.archive.common.storage.Resolvable._
+
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class Verifier(
@@ -96,7 +99,7 @@ class Verifier(
                                    digestFile: BagDigestFile)
     : Either[FailedVerification, VerificationRequest] = {
     val verificationRequest = VerificationRequest(
-      objectLocation = digestFile.path.toObjectLocation(bagRootLocation),
+      objectLocation = digestFile.path.resolve(bagRootLocation),
       checksum = Checksum(
         algorithm = algorithm,
         value = digestFile.checksum
