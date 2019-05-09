@@ -3,7 +3,8 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
+import uk.ac.wellcome.platform.archive.common.storage.Streamable._
+import uk.ac.wellcome.platform.archive.common.storage.Resolvable._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   BagItemPath
@@ -59,7 +60,7 @@ class StorageManifestService(
   def createBagInfo(bagRootLocation: ObjectLocation): Future[BagInfo] =
     for {
       bagInfoInputStream <- BagItemPath("bag-info.txt")
-        .toObjectLocation(bagRootLocation)
+        .resolve(bagRootLocation)
         .toInputStream
 
       bagInfo <- Future.fromTry {
@@ -88,7 +89,7 @@ class StorageManifestService(
   ): Future[FileManifest] = {
     for {
       fileManifestInputStream <- BagItemPath(name)
-        .toObjectLocation(bagRootLocation)
+        .resolve(bagRootLocation)
         .toInputStream
 
       fileManifest <- FileManifestParser.create(

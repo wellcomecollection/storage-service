@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
 }
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
-import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
+import uk.ac.wellcome.platform.archive.common.storage.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,

@@ -4,14 +4,9 @@ import com.gu.scanamo.DynamoFormat
 import com.gu.scanamo.error.TypeCoercionError
 import io.circe.{Decoder, Encoder, Json}
 import uk.ac.wellcome.json.JsonUtil.{fromJson, toJson}
-import uk.ac.wellcome.storage.ObjectLocation
 
-case class BagItemPath(underlying: String) extends AnyVal {
-  override def toString: String = underlying
-
-  def toObjectLocation(bagRootLocation: ObjectLocation): ObjectLocation =
-    bagRootLocation.join(underlying)
-}
+import uk.ac.wellcome.platform.archive.common.storage.Located
+case class BagItemPath(value: String) extends Located
 
 object BagItemPath {
   def apply(

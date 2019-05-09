@@ -8,13 +8,13 @@ import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ConvertibleToInputStreamTest
+class StreamableTest
     extends FunSpec
     with S3
     with ScalaFutures
     with RandomThings {
 
-  import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
+  import uk.ac.wellcome.platform.archive.common.storage.Streamable._
 
   implicit val _s3Client = s3Client
 
