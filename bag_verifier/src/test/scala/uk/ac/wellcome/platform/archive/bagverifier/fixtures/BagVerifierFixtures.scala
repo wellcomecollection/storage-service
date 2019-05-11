@@ -8,7 +8,7 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifierWorker,
-  Verifier
+  BagVerifier
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
@@ -52,9 +52,9 @@ trait BagVerifierFixtures
       }
     }
 
-  def withVerifier[R](testWith: TestWith[Verifier, R]): R =
+  def withVerifier[R](testWith: TestWith[BagVerifier, R]): R =
     withMaterializer { implicit materializer =>
-      val verifier = new Verifier(
+      val verifier = new BagVerifier(
         storageManifestService = new StorageManifestService(),
         s3Client = s3Client,
         algorithm = MessageDigestAlgorithms.SHA_256

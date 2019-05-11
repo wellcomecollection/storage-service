@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
-class VerifierWorkerTest
+class BagVerifierWorkerTest
     extends FunSpec
     with Matchers
     with ScalaFutures

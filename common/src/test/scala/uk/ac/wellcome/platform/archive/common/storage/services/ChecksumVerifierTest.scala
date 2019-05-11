@@ -5,6 +5,7 @@ import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
 
 import scala.util.{Failure, Success}
 
@@ -17,7 +18,9 @@ class ChecksumVerifierTest
   private def toInputStream(s: String) =
     IOUtils.toInputStream(s, "UTF-8");
 
-  val algorithm = MessageDigestAlgorithms.SHA_256
+  val algorithm = ChecksumAlgorithm(MessageDigestAlgorithms.SHA_256)
+  val unknownAlgorithm = ChecksumAlgorithm("unknown")
+
 
   it("calculates the checksum") {
     val content = "text"
@@ -38,7 +41,7 @@ class ChecksumVerifierTest
   it("fails for an unknown algorithm") {
     val actualChecksumTry = ChecksumVerifier.checksum(
       toInputStream(randomAlphanumeric()),
-      algorithm = "unknown"
+      unknownAlgorithm
     )
 
     actualChecksumTry shouldBe a[Failure[_]]

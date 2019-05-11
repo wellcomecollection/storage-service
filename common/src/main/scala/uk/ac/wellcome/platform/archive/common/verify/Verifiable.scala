@@ -1,21 +1,19 @@
 package uk.ac.wellcome.platform.archive.common.verify
 
-import uk.ac.wellcome.platform.archive.common.storage.StorageContainer
+import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
+import uk.ac.wellcome.storage.ObjectLocation
 
-trait Verifiable[F[_], Container <: StorageContainer] {
-  def verifiable(container: Container): F[VerifiableObjectLocation]
+trait Verifiable[T] {
+  def create(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(t: T): List[VerifiableLocation]
 }
 
 object Verifiable {
-  implicit def verifiable[F[_], Container <: StorageContainer](
-                                                                implicit verifier: Container => F[VerifiableObjectLocation]
-                                                              ) =
-    new Verifiable[F, Container] {
-      override def verifiable(container: Container): F[VerifiableObjectLocation] = verifier(container)
+  implicit def verifiable[T](
+    implicit
+      verifiable: ObjectLocation => ChecksumAlgorithm => T => List[VerifiableLocation]
+      ) =
+    new Verifiable[T] {
+      override def create(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(t: T): List[VerifiableLocation] =
+        verifiable(root)(algorithm)(t)
     }
-
-  implicit class Verifier[Container <: StorageContainer](container: Container)(implicit verifier: Verifiable[Seq, Container]) {
-    def verifiable: Seq[VerifiableObjectLocation] =
-      verifier.verifiable(container)
-  }
 }
