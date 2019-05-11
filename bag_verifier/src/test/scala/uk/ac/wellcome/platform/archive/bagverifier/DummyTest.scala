@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier
 
 import org.scalatest.FunSpec
-import uk.ac.wellcome.platform.archive.common.verify.Verifiable._
+import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, VerifiableLocation, VerifiedSuccess, Verifier}
 
 class DummyTest extends FunSpec {
 
@@ -13,14 +13,18 @@ class DummyTest extends FunSpec {
 
   val checksumAlgorithm = ChecksumAlgorithm("BBQ95")
   val root = ObjectLocation("root","location")
+  val checksumValue = ChecksumValue("checksum")
+  val itemPath = BagItemPath("path")
+
   val fileManifest = FileManifest(
     checksumAlgorithm,
-    List(BagDigestFile("checksum", BagItemPath("path")))
+    List(BagDigestFile(checksumValue, itemPath))
   )
   val tagManifest = FileManifest(
     checksumAlgorithm,
-    List(BagDigestFile("checksum", BagItemPath("path")))
+    List(BagDigestFile(checksumValue, itemPath))
   )
+
   val bagInfo = BagInfo(
     ExternalIdentifier("id"),
     PayloadOxum(0L, 1),
@@ -30,8 +34,22 @@ class DummyTest extends FunSpec {
   val bag = Bag(bagInfo, fileManifest, tagManifest)
 
   it("fails") {
-    val verifiable = bag.verifiable
 
-    println(verifiable)
+    import uk.ac.wellcome.platform.archive.common.bagit.models._
+
+    implicit val objectLocationVerifier = new DummyObjectLocationVerifier()
+
+    import uk.ac.wellcome.platform.archive.common.verify.Verifiable._
+    import uk.ac.wellcome.platform.archive.common.verify.Verification._
+
+    // verifications
+
+    val verified = bag.verify(root)
+
+    println(verified)
   }
+}
+
+class DummyObjectLocationVerifier extends Verifier {
+  override def verify(location: VerifiableLocation) = VerifiedSuccess(location)
 }

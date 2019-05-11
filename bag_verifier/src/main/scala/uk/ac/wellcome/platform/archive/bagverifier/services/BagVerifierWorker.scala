@@ -27,7 +27,7 @@ class BagVerifierWorker(
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater,
   outgoingPublisher: OutgoingPublisher,
-  verifier: Verifier
+  verifier: BagVerifier
 )(implicit
   actorSystem: ActorSystem,
   ec: ExecutionContext,

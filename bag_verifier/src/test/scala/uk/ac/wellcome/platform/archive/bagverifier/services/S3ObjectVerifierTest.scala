@@ -10,13 +10,13 @@ import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
-class ObjectVerifierTest
+class S3ObjectVerifierTest
     extends FunSpec
     with Matchers
     with EitherValues
     with S3
     with RandomThings {
-  val objectVerifier = new ObjectVerifier(s3Client)
+  val objectVerifier = new S3ObjectVerifier(s3Client)
 
   it("returns a failure if the bucket doesn't exist") {
     val request = VerificationRequest(

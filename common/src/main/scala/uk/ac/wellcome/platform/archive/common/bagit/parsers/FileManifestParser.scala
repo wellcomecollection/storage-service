@@ -2,14 +2,9 @@ package uk.ac.wellcome.platform.archive.common.bagit.parsers
 
 import java.io.InputStream
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagDigestFile,
-  BagItemPath
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  ChecksumAlgorithm,
-  FileManifest
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagDigestFile, BagItemPath}
+import uk.ac.wellcome.platform.archive.common.storage.models.{ChecksumAlgorithm, FileManifest}
+import uk.ac.wellcome.platform.archive.common.verify.ChecksumValue
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
@@ -56,8 +51,8 @@ object FileManifestParser {
     case checksumLineRegex(checksum, itemPath) =>
       Success(
         BagDigestFile(
-          checksum = checksum.trim,
-          path = BagItemPath(itemPath.trim, bagRootPathInZip)
+          ChecksumValue(checksum.trim),
+          BagItemPath(itemPath.trim, bagRootPathInZip)
         )
       )
     case _ =>

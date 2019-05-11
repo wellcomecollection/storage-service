@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded
 }
 
-class VerifierTest
+class BagVerifierTest
     extends FunSpec
     with Matchers
     with ScalaFutures

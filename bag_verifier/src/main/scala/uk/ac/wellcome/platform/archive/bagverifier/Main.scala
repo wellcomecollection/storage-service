@@ -9,8 +9,9 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.messaging.typesafe.{CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorker, Verifier}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker, S3ObjectVerifier}
 import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -34,11 +35,15 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val verifier = new Verifier(
-      storageManifestService = new StorageManifestService(),
-      s3Client = s3Client,
-      algorithm = MessageDigestAlgorithms.SHA_256
-    )
+    implicit val s3ObjectVerifier = new S3ObjectVerifier(s3Client)
+
+    val checksumAlgorithm =
+      ChecksumAlgorithm(MessageDigestAlgorithms.SHA_256)
+
+    val service =
+      new StorageManifestService()
+
+    val verifier = new BagVerifier(service, s3Client, checksumAlgorithm)
 
     val operationName = OperationNameBuilder
       .getName(config, default = "verification")
