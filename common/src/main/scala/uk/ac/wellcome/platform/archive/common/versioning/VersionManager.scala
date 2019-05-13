@@ -14,25 +14,40 @@ trait VersionManager {
 
   protected def storeNewVersion(record: VersionRecord): Try[Unit]
 
+  private def createNewVersionFor(
+    externalIdentifier: ExternalIdentifier,
+    ingestId: IngestID,
+    ingestDate: Instant
+  ): Try[Int] =
+    lookupLatestVersionFor(externalIdentifier).flatMap { maybeRecord =>
+      val newVersion: Int = maybeRecord match {
+        case Some(existingRecord) => existingRecord.version + 1
+        case None                 => 1
+      }
+
+      val newRecord = VersionRecord(
+        externalIdentifier = externalIdentifier,
+        ingestId = ingestId,
+        ingestDate = ingestDate,
+        version = newVersion
+      )
+
+      storeNewVersion(newRecord)
+
+      Success(newVersion)
+    }
+
   def assignVersion(
     externalIdentifier: ExternalIdentifier,
     ingestId: IngestID,
     ingestDate: Instant
-  ): Try[Int] = lookupLatestVersionFor(externalIdentifier).flatMap { maybeRecord =>
-    val newVersion: Int = maybeRecord match {
-      case Some(existingRecord) => existingRecord.version + 1
-      case None                 => 1
+  ): Try[Int] =
+    lookupExistingVersion(ingestId).flatMap {
+      case Some(existingRecord) => Success(existingRecord.version)
+      case None => createNewVersionFor(
+        externalIdentifier = externalIdentifier,
+        ingestId = ingestId,
+        ingestDate = ingestDate
+      )
     }
-
-    val newRecord = VersionRecord(
-      externalIdentifier = externalIdentifier,
-      ingestId = ingestId,
-      ingestDate = ingestDate,
-      version = newVersion
-    )
-
-    storeNewVersion(newRecord)
-
-    Success(newVersion)
-  }
 }

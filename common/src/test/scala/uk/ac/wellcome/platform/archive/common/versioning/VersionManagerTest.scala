@@ -56,4 +56,30 @@ class VersionManagerTest extends FunSpec with Matchers with ExternalIdentifierGe
       ) shouldBe Success(version)
     }
   }
+
+  it("always assigns the same version to a given ingest ID") {
+    val manager = new MemoryVersionManager()
+
+    val externalIdentifier = createExternalIdentifier
+
+    val ingestIds = (1 to 5).map { idx => (idx, createIngestID) }
+
+    val assignedVersions = ingestIds.map { case (idx, ingestId) =>
+      val version = manager.assignVersion(
+        externalIdentifier = externalIdentifier,
+        ingestId = ingestId,
+        ingestDate = Instant.ofEpochSecond(idx)
+      ).get
+
+      (idx, ingestId, version)
+    }
+
+    assignedVersions.foreach { case (idx, ingestId, version) =>
+      manager.assignVersion(
+        externalIdentifier = externalIdentifier,
+        ingestId = ingestId,
+        ingestDate = Instant.ofEpochSecond(idx)
+      ) shouldBe Success(version)
+    }
+  }
 }
