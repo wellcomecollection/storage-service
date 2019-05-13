@@ -2,10 +2,10 @@ package uk.ac.wellcome.platform.archive.common.generators
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagDigestFile, BagInfo, BagItemPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFile, BagInfo, BagManifest, BagPath}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{StandardStorageProvider, StorageLocation}
-import uk.ac.wellcome.platform.archive.common.storage.models.{ChecksumAlgorithm, FileManifest, StorageManifest, StorageSpace}
-import uk.ac.wellcome.platform.archive.common.verify.ChecksumValue
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.verify.{ChecksumAlgorithm, ChecksumValue}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -17,8 +17,8 @@ trait StorageManifestGenerators
   val checksumAlgorithm = ChecksumAlgorithm("sha256")
   val checksumValue = ChecksumValue("a")
 
-  val bagItemPath = BagItemPath("bag-info.txt")
-  val manifestFiles = List(BagDigestFile(checksumValue, bagItemPath))
+  val bagItemPath = BagPath("bag-info.txt")
+  val manifestFiles = List(BagFile(checksumValue, bagItemPath))
   val emptyFiles = Nil
 
   def createStorageManifestWith(
@@ -29,11 +29,11 @@ trait StorageManifestGenerators
     StorageManifest(
       space = space,
       info = bagInfo,
-      manifest = FileManifest(
+      manifest = BagManifest(
         checksumAlgorithm,
         emptyFiles
       ),
-      tagManifest = FileManifest(
+      tagManifest = BagManifest(
         checksumAlgorithm,
         manifestFiles
       ),

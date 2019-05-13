@@ -4,8 +4,7 @@ import java.nio.file.Paths
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagIt.verifyFileManifest
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.storage.models.{ChecksumAlgorithm, FileManifest}
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, VerifiableLocation}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumAlgorithm, VerifiableLocation}
 import uk.ac.wellcome.storage.ObjectLocation
 
 
@@ -14,31 +13,30 @@ package object models {
 
   // resolvers
 
-  // TODO: Can I resolve a bag here?
-
-  implicit val bagItemPathResolver = new Resolvable[BagItemPath] {
-    override def resolve(root: ObjectLocation)(path: BagItemPath): ObjectLocation = {
+  implicit val bagPathResolver: Resolvable[BagPath] = new Resolvable[BagPath] {
+    override def resolve(root: ObjectLocation)(path: BagPath): ObjectLocation = {
       val paths = Paths.get(root.key, path.value)
       root.copy(key = paths.toString)
     }
   }
 
-  implicit val bagDigestFileResolver = new Resolvable[BagDigestFile] {
-    override def resolve(root: ObjectLocation)(bag: BagDigestFile): ObjectLocation = {
+  implicit val bagDigestFileResolver: Resolvable[BagFile] = new Resolvable[BagFile] {
+    override def resolve(root: ObjectLocation)(bag: BagFile): ObjectLocation = {
       bag.path.resolve(root)
     }
   }
+
 
   // verifiables
 
   // ObjectLocation => ChecksumAlgorithm => T => List[VerifiableLocation]
 
-  implicit def bagDigestFileVerifiable(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(file: BagDigestFile): List[VerifiableLocation] = List(VerifiableLocation(
+  implicit def bagDigestFileVerifiable(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(file: BagFile): List[VerifiableLocation] = List(VerifiableLocation(
         file.path.resolve(root),
         Checksum(algorithm, file.checksum)))
 
   implicit def fileManifestVerifiable(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(
-    manifest: FileManifest
+    manifest: BagManifest
   ): List[VerifiableLocation] = verifyFileManifest(manifest)(root)
 
   implicit def bagVerifiable(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(bag: Bag): List[VerifiableLocation] =

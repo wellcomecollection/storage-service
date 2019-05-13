@@ -8,15 +8,14 @@ import cats.Id
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.models._
-
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.verify.Verifiable._
 import uk.ac.wellcome.platform.archive.common.verify.Verification._
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable._
-
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagDigestFile
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagFile
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
+import uk.ac.wellcome.platform.archive.common.verify.ChecksumAlgorithm
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,7 +24,7 @@ class BagVerifier(
   storageManifestService: StorageManifestService,
   s3Client: AmazonS3,
   algorithm: ChecksumAlgorithm
-)(implicit ec: ExecutionContext, materializer: Materializer, s3ObjectVerifier: S3ObjectVerifier)
+)(implicit ec: ExecutionContext, mat: Materializer, s3ObjectVerifier: S3ObjectVerifier)
     extends Logging {
 
   type FutureStep = Future[IngestStepResult[VerificationSummary]]
@@ -66,7 +65,7 @@ class BagVerifier(
   } yield (fileManifest, tagManifest)
 
   private val verifyManifests = (root: ObjectLocation) =>
-    (fileManifest: FileManifest, tagManifest: FileManifest) => {
+    (fileManifest: BagManifest, tagManifest: BagManifest) => {
       fileManifest.verify(root)(fileManifest.checksumAlgorithm)
       tagManifest.verify(root)(tagManifest.checksumAlgorithm)
 
@@ -76,7 +75,7 @@ class BagVerifier(
   private val verifyFile =
     (root: ObjectLocation) =>
       (algorithm: ChecksumAlgorithm) =>
-        (file: BagDigestFile) => Future {
+        (file: BagFile) => Future {
           file.verify(root)(algorithm)
         }
 

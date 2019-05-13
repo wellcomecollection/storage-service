@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.verify
 
-import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
 import uk.ac.wellcome.storage.ObjectLocation
 
 trait Verifiable[T] {

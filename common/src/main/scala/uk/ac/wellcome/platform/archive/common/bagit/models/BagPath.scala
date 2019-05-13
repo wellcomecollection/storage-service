@@ -5,18 +5,18 @@ import com.gu.scanamo.error.TypeCoercionError
 import io.circe.{Decoder, Encoder, Json}
 import uk.ac.wellcome.json.JsonUtil.{fromJson, toJson}
 
-case class BagItemPath(value: String)
+case class BagPath(value: String)
 
-object BagItemPath {
+object BagPath {
   def apply(
     itemPath: String,
     maybeBagRootPath: Option[String] = None
-  ): BagItemPath = {
+  ): BagPath = {
 
     maybeBagRootPath match {
-      case None => BagItemPath(itemPath)
+      case None => BagPath(itemPath)
       case Some(bagRootPath) =>
-        BagItemPath(f"${rTrimPath(bagRootPath)}/${lTrimPath(itemPath)}")
+        BagPath(f"${rTrimPath(bagRootPath)}/${lTrimPath(itemPath)}")
     }
   }
 
@@ -28,20 +28,20 @@ object BagItemPath {
     path.replaceAll("/$", "")
   }
 
-  implicit val encoder: Encoder[BagItemPath] = Encoder.instance[BagItemPath] {
-    space: BagItemPath =>
+  implicit val encoder: Encoder[BagPath] = Encoder.instance[BagPath] {
+    space: BagPath =>
       Json.fromString(space.toString)
   }
 
-  implicit val decoder: Decoder[BagItemPath] =
-    Decoder.instance[BagItemPath](cursor =>
-      cursor.value.as[String].map(BagItemPath(_)))
+  implicit val decoder: Decoder[BagPath] =
+    Decoder.instance[BagPath](cursor =>
+      cursor.value.as[String].map(BagPath(_)))
 
-  implicit def fmtSpace: DynamoFormat[BagItemPath] =
-    DynamoFormat.xmap[BagItemPath, String](
-      fromJson[BagItemPath](_)(decoder).toEither.left
+  implicit def fmtSpace: DynamoFormat[BagPath] =
+    DynamoFormat.xmap[BagPath, String](
+      fromJson[BagPath](_)(decoder).toEither.left
         .map(TypeCoercionError)
     )(
-      toJson[BagItemPath](_).get
+      toJson[BagPath](_).get
     )
 }
