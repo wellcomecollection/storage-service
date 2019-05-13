@@ -7,19 +7,23 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 
 import scala.util.{Success, Try}
 
-trait VersionManager {
-  protected def lookupExistingVersion(ingestID: IngestID): Try[Option[VersionRecord]]
+trait IngestVersionManagerDao {
+  def lookupExistingVersion(ingestID: IngestID): Try[Option[VersionRecord]]
 
-  protected def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]]
+  def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]]
 
-  protected def storeNewVersion(record: VersionRecord): Try[Unit]
+  def storeNewVersion(record: VersionRecord): Try[Unit]
+}
+
+trait IngestVersionManager {
+  val dao: IngestVersionManagerDao
 
   private def createNewVersionFor(
     externalIdentifier: ExternalIdentifier,
     ingestId: IngestID,
     ingestDate: Instant
   ): Try[Int] =
-    lookupLatestVersionFor(externalIdentifier).flatMap { maybeRecord =>
+    dao.lookupLatestVersionFor(externalIdentifier).flatMap { maybeRecord =>
       Try {
         val newVersion: Int = maybeRecord match {
           case Some(existingRecord) =>
@@ -37,7 +41,7 @@ trait VersionManager {
           version = newVersion
         )
 
-        storeNewVersion(newRecord)
+        dao.storeNewVersion(newRecord)
 
         newVersion
       }
@@ -48,7 +52,7 @@ trait VersionManager {
     ingestId: IngestID,
     ingestDate: Instant
   ): Try[Int] =
-    lookupExistingVersion(ingestId).flatMap {
+    dao.lookupExistingVersion(ingestId).flatMap {
       case Some(existingRecord) =>
         if (existingRecord.externalIdentifier == externalIdentifier)
           Success(existingRecord.version)

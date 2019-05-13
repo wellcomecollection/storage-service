@@ -9,14 +9,14 @@ import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGener
 
 import scala.util.{Failure, Success, Try}
 
-class MemoryVersionManager extends VersionManager {
+class MemoryIngestVersionManagerDao extends IngestVersionManagerDao {
   private var versions: List[VersionRecord] = List.empty
 
-  override protected def lookupExistingVersion(ingestID: IngestID): Try[Option[VersionRecord]] = Try {
+  override def lookupExistingVersion(ingestID: IngestID): Try[Option[VersionRecord]] = Try {
     versions.find { _.ingestId == ingestID }
   }
 
-  override protected def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] = Try {
+  override def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] = Try {
     val matchingVersions =
       versions
         .filter { _.externalIdentifier == externalIdentifier }
@@ -27,14 +27,18 @@ class MemoryVersionManager extends VersionManager {
       Some(matchingVersions.maxBy { _.version })
   }
 
-  override protected def storeNewVersion(record: VersionRecord): Try[Unit] = Try {
+  override def storeNewVersion(record: VersionRecord): Try[Unit] = Try {
     versions = versions :+ record
   }
 }
 
-class VersionManagerTest extends FunSpec with Matchers with ExternalIdentifierGenerators {
+class MemoryIngestVersionManager extends IngestVersionManager {
+  val dao = new MemoryIngestVersionManagerDao()
+}
+
+class IngestVersionManagerTest extends FunSpec with Matchers with ExternalIdentifierGenerators {
   it("assigns version 1 if it hasn't seen this external ID before") {
-    val manager = new MemoryVersionManager()
+    val manager = new MemoryIngestVersionManager()
 
     manager.assignVersion(
       externalIdentifier = createExternalIdentifier,
@@ -44,7 +48,7 @@ class VersionManagerTest extends FunSpec with Matchers with ExternalIdentifierGe
   }
 
   it("assigns increasing versions if it sees newer ingest dates each time") {
-    val manager = new MemoryVersionManager()
+    val manager = new MemoryIngestVersionManager()
 
     val externalIdentifier = createExternalIdentifier
 
@@ -58,7 +62,7 @@ class VersionManagerTest extends FunSpec with Matchers with ExternalIdentifierGe
   }
 
   it("always assigns the same version to a given ingest ID") {
-    val manager = new MemoryVersionManager()
+    val manager = new MemoryIngestVersionManager()
 
     val externalIdentifier = createExternalIdentifier
 
@@ -84,7 +88,7 @@ class VersionManagerTest extends FunSpec with Matchers with ExternalIdentifierGe
   }
 
   it("errors if the external ID in the request doesn't match the database") {
-    val manager = new MemoryVersionManager()
+    val manager = new MemoryIngestVersionManager()
 
     val ingestId = createIngestID
 
@@ -105,7 +109,7 @@ class VersionManagerTest extends FunSpec with Matchers with ExternalIdentifierGe
   }
 
   it("doesn't assign a new version if the ingest date is older") {
-    val manager = new MemoryVersionManager()
+    val manager = new MemoryIngestVersionManager()
 
     val externalIdentifier = createExternalIdentifier
 
