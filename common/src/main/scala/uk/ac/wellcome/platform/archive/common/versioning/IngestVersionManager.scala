@@ -10,7 +10,8 @@ import scala.util.{Success, Try}
 trait IngestVersionManagerDao {
   def lookupExistingVersion(ingestID: IngestID): Try[Option[VersionRecord]]
 
-  def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]]
+  def lookupLatestVersionFor(
+    externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]]
 
   def storeNewVersion(record: VersionRecord): Try[Unit]
 }
@@ -30,7 +31,8 @@ trait IngestVersionManager {
             if (existingRecord.ingestDate.isBefore(ingestDate))
               existingRecord.version + 1
             else
-              throw new RuntimeException(s"Latest version has a newer ingest date: ${existingRecord.ingestDate} (stored) > $ingestDate (request)")
+              throw new RuntimeException(
+                s"Latest version has a newer ingest date: ${existingRecord.ingestDate} (stored) > $ingestDate (request)")
           case None => 1
         }
 
@@ -57,12 +59,14 @@ trait IngestVersionManager {
         if (existingRecord.externalIdentifier == externalIdentifier)
           Success(existingRecord.version)
         else
-          throw new RuntimeException(s"External identifiers don't match: ${existingRecord.externalIdentifier} (stored) != $externalIdentifier (request)")
+          throw new RuntimeException(
+            s"External identifiers don't match: ${existingRecord.externalIdentifier} (stored) != $externalIdentifier (request)")
 
-      case None => createNewVersionFor(
-        externalIdentifier = externalIdentifier,
-        ingestId = ingestId,
-        ingestDate = ingestDate
-      )
+      case None =>
+        createNewVersionFor(
+          externalIdentifier = externalIdentifier,
+          ingestId = ingestId,
+          ingestDate = ingestDate
+        )
     }
 }

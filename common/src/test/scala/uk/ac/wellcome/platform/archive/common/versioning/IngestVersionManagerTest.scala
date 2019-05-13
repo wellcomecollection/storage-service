@@ -12,11 +12,13 @@ import scala.util.{Failure, Success, Try}
 class MemoryIngestVersionManagerDao extends IngestVersionManagerDao {
   private var versions: List[VersionRecord] = List.empty
 
-  override def lookupExistingVersion(ingestID: IngestID): Try[Option[VersionRecord]] = Try {
+  override def lookupExistingVersion(
+    ingestID: IngestID): Try[Option[VersionRecord]] = Try {
     versions.find { _.ingestId == ingestID }
   }
 
-  override def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] = Try {
+  override def lookupLatestVersionFor(
+    externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] = Try {
     val matchingVersions =
       versions
         .filter { _.externalIdentifier == externalIdentifier }
@@ -36,7 +38,10 @@ class MemoryIngestVersionManager extends IngestVersionManager {
   val dao = new MemoryIngestVersionManagerDao()
 }
 
-class IngestVersionManagerTest extends FunSpec with Matchers with ExternalIdentifierGenerators {
+class IngestVersionManagerTest
+    extends FunSpec
+    with Matchers
+    with ExternalIdentifierGenerators {
   it("assigns version 1 if it hasn't seen this external ID before") {
     val manager = new MemoryIngestVersionManager()
 
@@ -66,24 +71,30 @@ class IngestVersionManagerTest extends FunSpec with Matchers with ExternalIdenti
 
     val externalIdentifier = createExternalIdentifier
 
-    val ingestIds = (1 to 5).map { idx => (idx, createIngestID) }
-
-    val assignedVersions = ingestIds.map { case (idx, ingestId) =>
-      val version = manager.assignVersion(
-        externalIdentifier = externalIdentifier,
-        ingestId = ingestId,
-        ingestDate = Instant.ofEpochSecond(idx)
-      ).get
-
-      (idx, ingestId, version)
+    val ingestIds = (1 to 5).map { idx =>
+      (idx, createIngestID)
     }
 
-    assignedVersions.foreach { case (idx, ingestId, version) =>
-      manager.assignVersion(
-        externalIdentifier = externalIdentifier,
-        ingestId = ingestId,
-        ingestDate = Instant.ofEpochSecond(idx)
-      ) shouldBe Success(version)
+    val assignedVersions = ingestIds.map {
+      case (idx, ingestId) =>
+        val version = manager
+          .assignVersion(
+            externalIdentifier = externalIdentifier,
+            ingestId = ingestId,
+            ingestDate = Instant.ofEpochSecond(idx)
+          )
+          .get
+
+        (idx, ingestId, version)
+    }
+
+    assignedVersions.foreach {
+      case (idx, ingestId, version) =>
+        manager.assignVersion(
+          externalIdentifier = externalIdentifier,
+          ingestId = ingestId,
+          ingestDate = Instant.ofEpochSecond(idx)
+        ) shouldBe Success(version)
     }
   }
 
@@ -105,7 +116,8 @@ class IngestVersionManagerTest extends FunSpec with Matchers with ExternalIdenti
     )
 
     result shouldBe a[Failure[_]]
-    result.failed.get.getMessage should startWith("External identifiers don't match:")
+    result.failed.get.getMessage should startWith(
+      "External identifiers don't match:")
   }
 
   it("doesn't assign a new version if the ingest date is older") {
@@ -126,6 +138,7 @@ class IngestVersionManagerTest extends FunSpec with Matchers with ExternalIdenti
     )
 
     result shouldBe a[Failure[_]]
-    result.failed.get.getMessage should startWith("Latest version has a newer ingest date:")
+    result.failed.get.getMessage should startWith(
+      "Latest version has a newer ingest date:")
   }
 }
