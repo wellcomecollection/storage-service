@@ -3,11 +3,11 @@ package uk.ac.wellcome.platform.archive.display.fixtures
 import java.time.format.DateTimeFormatter
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagDigestFile,
+  BagFile,
   BagInfo
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
-import uk.ac.wellcome.platform.archive.common.storage.models.FileManifest
+import uk.ac.wellcome.platform.archive.common.storage.models.BagManifest
 
 trait DisplayJsonHelpers {
   private def stringField[T](t: T): String =
@@ -55,7 +55,7 @@ trait DisplayJsonHelpers {
        |}
      """.stripMargin
 
-  private def bagDigestFile(file: BagDigestFile): String =
+  private def bagDigestFile(file: BagFile): String =
     s"""
        |{
        |  "type": "File",
@@ -64,7 +64,7 @@ trait DisplayJsonHelpers {
        |}
      """.stripMargin
 
-  def manifest(fm: FileManifest): String =
+  def manifest(fm: BagManifest): String =
     s"""
        |{
        |  "type": "BagManifest",

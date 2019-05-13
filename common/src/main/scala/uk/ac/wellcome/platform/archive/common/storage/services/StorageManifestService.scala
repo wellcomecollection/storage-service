@@ -3,100 +3,70 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.common.storage.Streamable._
-import uk.ac.wellcome.platform.archive.common.storage.Resolvable._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagItemPath
-}
-import uk.ac.wellcome.platform.archive.common.bagit.parsers.{
-  BagInfoParser,
-  FileManifestParser
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  ChecksumAlgorithm,
-  FileManifest,
-  StorageManifest,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.verify.ChecksumAlgorithm
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
+
+
+
+
 
 class StorageManifestService(
-  implicit ec: ExecutionContext,
-  s3Client: AmazonS3
-) {
+                              implicit
+                              s3Client: AmazonS3
+                            ) {
+
+  import S3StreamableInstances._
+  import uk.ac.wellcome.platform.archive.common.bagit.models._
 
   val checksumAlgorithm = ChecksumAlgorithm("sha256")
 
   def createManifest(
-    bagRootLocation: ObjectLocation,
-    storageSpace: StorageSpace
-  ): Future[StorageManifest] =
+                      root: ObjectLocation,
+                      space: StorageSpace
+  ): Try[StorageManifest] =
     for {
-      bagInfo <- createBagInfo(bagRootLocation)
-      fileManifest <- createFileManifest(bagRootLocation)
-      tagManifest <- createTagManifest(bagRootLocation)
+      bagInfo <- createBagInfo(root)
+      fileManifest <- createFileManifest(root)
+      tagManifest <- createTagManifest(root)
     } yield
       StorageManifest(
-        space = storageSpace,
+        space = space,
         info = bagInfo,
         manifest = fileManifest,
         tagManifest = tagManifest,
         locations = List(
           StorageLocation(
             provider = InfrequentAccessStorageProvider,
-            location = bagRootLocation
+            location = root
           )
         ),
         createdDate = Instant.now()
       )
 
-  def createBagInfo(bagRootLocation: ObjectLocation): Future[BagInfo] =
-    for {
-      bagInfoInputStream <- BagItemPath("bag-info.txt")
-        .resolve(bagRootLocation)
-        .toInputStream
-
-      bagInfo <- Future.fromTry {
-        BagInfoParser.create(
-          bagInfoInputStream
-        )
-      }
+  def createBagInfo(root: ObjectLocation): Try[BagInfo] = for {
+      stream <- BagPath("bag-info.txt").from(root)
+      bagInfo <- BagInfo.create(stream)
     } yield bagInfo
 
-  def createFileManifest(
-    bagRootLocation: ObjectLocation): Future[FileManifest] =
-    createManifest(
-      s"manifest-$checksumAlgorithm.txt",
-      bagRootLocation
-    )
+  val fileManifest = (a: ChecksumAlgorithm) => s"manifest-$a.txt"
+  val tagManifest = (a: ChecksumAlgorithm) => s"tagmanifest-$a.txt"
 
-  def createTagManifest(bagRootLocation: ObjectLocation): Future[FileManifest] =
-    createManifest(
-      s"tagmanifest-$checksumAlgorithm.txt",
-      bagRootLocation
-    )
+  def createFileManifest(root: ObjectLocation): Try[BagManifest] =
+    createManifest(fileManifest(checksumAlgorithm), root)
+
+  def createTagManifest(root: ObjectLocation): Try[BagManifest] =
+    createManifest(tagManifest(checksumAlgorithm), root)
 
   private def createManifest(
     name: String,
-    bagRootLocation: ObjectLocation
-  ): Future[FileManifest] = {
-    for {
-      fileManifestInputStream <- BagItemPath(name)
-        .resolve(bagRootLocation)
-        .toInputStream
-
-      fileManifest <- FileManifestParser.create(
-        fileManifestInputStream,
-        checksumAlgorithm
-      )
-    } yield fileManifest
-  }
+    root: ObjectLocation
+  ): Try[BagManifest] = for {
+      stream <- BagPath(name).from(root)
+      manifest <- BagManifest.create(stream, checksumAlgorithm)
+    } yield manifest
 
 }

@@ -1,11 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.verify
 
-import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
 import uk.ac.wellcome.storage.ObjectLocation
 
 
 trait Verification[T] {
-  def verify(root: ObjectLocation)(algo: ChecksumAlgorithm)(t: T): VerificationResult
+  def verify(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(t: T): VerificationResult
 }
 
 object Verification {

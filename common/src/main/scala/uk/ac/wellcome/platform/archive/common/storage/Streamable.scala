@@ -2,35 +2,27 @@ package uk.ac.wellcome.platform.archive.common.storage
 
 import java.io.InputStream
 
-import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.storage.ObjectLocation
+import scala.util.Try
 
-import scala.concurrent.{ExecutionContext, Future}
 
-trait Streamable[T] {
-  def apply(t: T)(implicit s3Client: AmazonS3,
-                  ec: ExecutionContext): Future[InputStream]
+trait Streamable[T, IS <: InputStream] {
+  def stream(t: T): Try[IS]
 }
 
 object Streamable {
-
-  implicit class StreamableFuture[T](t: T) {
-    def toInputStream(implicit toInputStream: Streamable[T],
-                      s3Client: AmazonS3,
-                      ec: ExecutionContext): Future[InputStream] = {
-      toInputStream.apply(t)
+  implicit def streamable[T, IS <: InputStream](
+    implicit
+      streamConverter: T => Try[IS]
+  ) =
+    new Streamable[T, IS] {
+      override def stream(t: T): Try[IS] =
+        streamConverter(t)
     }
-  }
 
-  implicit object Streamable extends Streamable[ObjectLocation] {
-
-    def apply(objectLocation: ObjectLocation)(
-      implicit s3Client: AmazonS3,
-      ec: ExecutionContext): Future[InputStream] =
-      Future(
-        s3Client.getObject(objectLocation.namespace, objectLocation.key)
-      ).map(
-        response => response.getObjectContent
-      )
+  implicit class StreamableOps[T, IS <: InputStream](t: T)(
+    implicit streamable: Streamable[T, IS]
+  ) {
+    def toInputStream: Try[InputStream] =
+      streamable.stream(t)
   }
 }

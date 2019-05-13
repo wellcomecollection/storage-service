@@ -8,21 +8,21 @@ class DummyTest extends FunSpec {
   import java.time.{Instant, ZoneId}
 
   import uk.ac.wellcome.platform.archive.common.bagit.models._
-  import uk.ac.wellcome.platform.archive.common.storage.models.{ChecksumAlgorithm, FileManifest}
+  import uk.ac.wellcome.platform.archive.common.storage.models.{ChecksumAlgorithm, BagManifest}
   import uk.ac.wellcome.storage.ObjectLocation
 
   val checksumAlgorithm = ChecksumAlgorithm("BBQ95")
   val root = ObjectLocation("root","location")
   val checksumValue = ChecksumValue("checksum")
-  val itemPath = BagItemPath("path")
+  val itemPath = BagPath("path")
 
-  val fileManifest = FileManifest(
+  val fileManifest = BagManifest(
     checksumAlgorithm,
-    List(BagDigestFile(checksumValue, itemPath))
+    List(BagFile(checksumValue, itemPath))
   )
-  val tagManifest = FileManifest(
+  val tagManifest = BagManifest(
     checksumAlgorithm,
-    List(BagDigestFile(checksumValue, itemPath))
+    List(BagFile(checksumValue, itemPath))
   )
 
   val bagInfo = BagInfo(

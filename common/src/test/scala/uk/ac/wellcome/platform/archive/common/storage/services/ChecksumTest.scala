@@ -5,11 +5,11 @@ import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumAlgorithm}
 
 import scala.util.{Failure, Success}
 
-class ChecksumVerifierTest
+class ChecksumTest
     extends FunSpec
     with Matchers
     with ScalaFutures
@@ -29,7 +29,7 @@ class ChecksumVerifierTest
     val expectedChecksum =
       "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
 
-    val actualChecksumTry = ChecksumVerifier.checksum(
+    val actualChecksumTry = Checksum.create(
       inputStream,
       algorithm
     )
@@ -39,7 +39,7 @@ class ChecksumVerifierTest
   }
 
   it("fails for an unknown algorithm") {
-    val actualChecksumTry = ChecksumVerifier.checksum(
+    val actualChecksumTry = Checksum.create(
       toInputStream(randomAlphanumeric()),
       unknownAlgorithm
     )

@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.storage.bags.api.models
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.storage.models.FileManifest
+import uk.ac.wellcome.platform.archive.common.storage.models.BagManifest
 
 case class DisplayBagManifest(
   checksumAlgorithm: String,
@@ -10,7 +10,7 @@ case class DisplayBagManifest(
   ontologyType: String = "BagManifest"
 )
 object DisplayBagManifest {
-  def apply(fileManifest: FileManifest): DisplayBagManifest =
+  def apply(fileManifest: BagManifest): DisplayBagManifest =
     DisplayBagManifest(
       fileManifest.checksumAlgorithm.value,
       fileManifest.files.map(DisplayFileDigest.apply))
