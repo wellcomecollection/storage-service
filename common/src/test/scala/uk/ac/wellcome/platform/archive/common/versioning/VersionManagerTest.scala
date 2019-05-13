@@ -13,7 +13,7 @@ class MemoryVersionManager extends VersionManager {
   private var versions: List[VersionRecord] = List.empty
 
   override protected def lookupExistingVersion(ingestID: IngestID): Try[Option[VersionRecord]] = Try {
-    versions.find { _.ingestID == ingestID }
+    versions.find { _.ingestId == ingestID }
   }
 
   override protected def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] = Try {
@@ -41,5 +41,19 @@ class VersionManagerTest extends FunSpec with Matchers with ExternalIdentifierGe
       ingestId = createIngestID,
       ingestDate = Instant.now
     ) shouldBe Success(1)
+  }
+
+  it("assigns increasing versions if it sees newer ingest dates each time") {
+    val manager = new MemoryVersionManager()
+
+    val externalIdentifier = createExternalIdentifier
+
+    (1 to 5).map { version =>
+      manager.assignVersion(
+        externalIdentifier = externalIdentifier,
+        ingestId = createIngestID,
+        ingestDate = Instant.ofEpochSecond(version)
+      ) shouldBe Success(version)
+    }
   }
 }

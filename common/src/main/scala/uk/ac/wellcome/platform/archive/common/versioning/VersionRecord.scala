@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 
 case class VersionRecord(
   externalIdentifier: ExternalIdentifier,
-  ingestID: IngestID,
+  ingestId: IngestID,
   ingestDate: Instant,
   version: Int
 )
