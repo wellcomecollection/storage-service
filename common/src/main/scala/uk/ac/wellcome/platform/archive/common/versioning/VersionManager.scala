@@ -20,21 +20,27 @@ trait VersionManager {
     ingestDate: Instant
   ): Try[Int] =
     lookupLatestVersionFor(externalIdentifier).flatMap { maybeRecord =>
-      val newVersion: Int = maybeRecord match {
-        case Some(existingRecord) => existingRecord.version + 1
-        case None                 => 1
+      Try {
+        val newVersion: Int = maybeRecord match {
+          case Some(existingRecord) =>
+            if (existingRecord.ingestDate.isBefore(ingestDate))
+              existingRecord.version + 1
+            else
+              throw new RuntimeException(s"Latest version has a newer ingest date: ${existingRecord.ingestDate} (stored) > $ingestDate (request)")
+          case None => 1
+        }
+
+        val newRecord = VersionRecord(
+          externalIdentifier = externalIdentifier,
+          ingestId = ingestId,
+          ingestDate = ingestDate,
+          version = newVersion
+        )
+
+        storeNewVersion(newRecord)
+
+        newVersion
       }
-
-      val newRecord = VersionRecord(
-        externalIdentifier = externalIdentifier,
-        ingestId = ingestId,
-        ingestDate = ingestDate,
-        version = newVersion
-      )
-
-      storeNewVersion(newRecord)
-
-      Success(newVersion)
     }
 
   def assignVersion(
@@ -43,7 +49,12 @@ trait VersionManager {
     ingestDate: Instant
   ): Try[Int] =
     lookupExistingVersion(ingestId).flatMap {
-      case Some(existingRecord) => Success(existingRecord.version)
+      case Some(existingRecord) =>
+        if (existingRecord.externalIdentifier == externalIdentifier)
+          Success(existingRecord.version)
+        else
+          throw new RuntimeException(s"External identifiers don't match: ${existingRecord.externalIdentifier} (stored) != $externalIdentifier (request)")
+
       case None => createNewVersionFor(
         externalIdentifier = externalIdentifier,
         ingestId = ingestId,

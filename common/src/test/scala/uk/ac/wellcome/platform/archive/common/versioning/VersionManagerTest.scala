@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 class MemoryVersionManager extends VersionManager {
   private var versions: List[VersionRecord] = List.empty
@@ -81,5 +81,47 @@ class VersionManagerTest extends FunSpec with Matchers with ExternalIdentifierGe
         ingestDate = Instant.ofEpochSecond(idx)
       ) shouldBe Success(version)
     }
+  }
+
+  it("errors if the external ID in the request doesn't match the database") {
+    val manager = new MemoryVersionManager()
+
+    val ingestId = createIngestID
+
+    manager.assignVersion(
+      externalIdentifier = createExternalIdentifier,
+      ingestId = ingestId,
+      ingestDate = Instant.now
+    )
+
+    val result = manager.assignVersion(
+      externalIdentifier = createExternalIdentifier,
+      ingestId = ingestId,
+      ingestDate = Instant.now
+    )
+
+    result shouldBe a[Failure[_]]
+    result.failed.get.getMessage should startWith("External identifiers don't match:")
+  }
+
+  it("doesn't assign a new version if the ingest date is older") {
+    val manager = new MemoryVersionManager()
+
+    val externalIdentifier = createExternalIdentifier
+
+    manager.assignVersion(
+      externalIdentifier = externalIdentifier,
+      ingestId = createIngestID,
+      ingestDate = Instant.ofEpochSecond(100)
+    )
+
+    val result = manager.assignVersion(
+      externalIdentifier = externalIdentifier,
+      ingestId = createIngestID,
+      ingestDate = Instant.ofEpochSecond(50)
+    )
+
+    result shouldBe a[Failure[_]]
+    result.failed.get.getMessage should startWith("Latest version has a newer ingest date:")
   }
 }
