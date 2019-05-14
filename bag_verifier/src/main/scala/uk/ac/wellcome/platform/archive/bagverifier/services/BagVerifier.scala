@@ -2,108 +2,49 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import java.time.Instant
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
-import cats.Id
-import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.common.bagit.models._
-import uk.ac.wellcome.platform.archive.common.verify.Verifiable._
-import uk.ac.wellcome.platform.archive.common.verify.Verification._
-import uk.ac.wellcome.platform.archive.common.storage.Resolvable._
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagFile
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
-import uk.ac.wellcome.platform.archive.common.verify.ChecksumAlgorithm
+import uk.ac.wellcome.platform.archive.common.verify.Verification._
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
-class BagVerifier(
-  storageManifestService: StorageManifestService,
-  s3Client: AmazonS3,
-  algorithm: ChecksumAlgorithm
-)(implicit ec: ExecutionContext, mat: Materializer, s3ObjectVerifier: S3ObjectVerifier)
-    extends Logging {
+class BagVerifier()(
+  implicit
+    bagService: BagService,
+    verifier: S3ObjectVerifier
+) extends Logging {
 
-  type FutureStep = Future[IngestStepResult[VerificationSummary]]
+  type IngestStep = Try[IngestStepResult[VerificationSummary]]
 
-  def verify(root: ObjectLocation): FutureStep = {
+  def verify(root: ObjectLocation): IngestStep = {
+    val startTime = Instant.now()
 
-    val initialSummary = VerificationSummary(root)
-
-    val verification = for {
-      (fileManifest, tagManifest) <- getManifests(root)
-
-      verifyManifests(root)(fileManifest, tagManifest)
-
-//      summary1 <- processManifest(root, fileManifest, initialSummary)
-//      finalSummary <- processManifest(root, tagManifest, summary1)
-
-    } yield finalSummary
-
-    verification.map {
-      case summary if summary.succeeded => IngestStepSucceeded(summary)
-      case failed =>
-        IngestFailed(
-          failed,
-          new RuntimeException("Verification failed")
-        )
+    val verification = bagService.create(root).map { bag =>
+      implicit val verifiable = bag.verifiable(root)
+      VerificationSummary.create(root, bag.verify, startTime)
     } recover {
-      case e: Throwable => IngestFailed(initialSummary, e)
+      case e => VerificationSummary.incomplete(root, e, startTime)
+    }
+
+    verification map {
+      case Success(success@VerificationSuccessSummary(_,_,_,_)) =>
+        IngestStepSucceeded(success)
+      case Success(failure@VerificationFailureSummary(_,_,_,_)) =>
+        IngestFailed(
+          failure,
+          new RuntimeException("Invalid bag!"))
+      case Success(failure@VerificationIncompleteSummary(_,e,_,_)) =>
+        IngestFailed(
+          failure,
+          new RuntimeException("Could not verify!"))
+      case Failure(e) =>
+        IngestFailed(
+          VerificationSummary.incomplete(root, new UnknownError(), startTime),
+          e)
     }
   }
-
-  private val getManifests = (root: ObjectLocation) => for {
-    fileManifest <-
-      storageManifestService
-        .createFileManifest(root)
-    tagManifest <-
-      storageManifestService
-        .createTagManifest(root)
-  } yield (fileManifest, tagManifest)
-
-  private val verifyManifests = (root: ObjectLocation) =>
-    (fileManifest: BagManifest, tagManifest: BagManifest) => {
-      fileManifest.verify(root)(fileManifest.checksumAlgorithm)
-      tagManifest.verify(root)(tagManifest.checksumAlgorithm)
-
-      // provide summary
-    }
-
-  private val verifyFile =
-    (root: ObjectLocation) =>
-      (algorithm: ChecksumAlgorithm) =>
-        (file: BagFile) => Future {
-          file.verify(root)(algorithm)
-        }
-
-
-//  private def bagVerifierSink(summary: VerificationSummary) = Sink.fold(summary) { (memo: VerificationSummary, item) =>
-//    item match {
-//      case Left(failedVerification) =>
-//        memo.copy(failedVerifications =
-//          memo.failedVerifications :+ failedVerification)
-//      case Right(digestFile) =>
-//        memo.copy(successfulVerifications =
-//          memo.successfulVerifications :+ digestFile)
-//    }
-//  }
-
-
-
-//  private def processManifest(
-//    root: ObjectLocation,
-//    fileManifest: FileManifest,
-//    bagVerification: VerificationSummary
-//  ): Future[VerificationSummary] = {
-//    Source[BagDigestFile](
-//      fileManifest.files
-//    ).mapAsync(10)(
-//      verifyFile(root)(fileManifest.checksumAlgorithm)(_)
-//    ).runWith(
-//      bagVerifierSink
-//    ).map(bagVerification => bagVerification.complete)
-//  }
 }

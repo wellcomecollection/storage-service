@@ -1,10 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.verify
 
-import uk.ac.wellcome.storage.ObjectLocation
 
 
 trait Verification[T] {
-  def verify(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(t: T): VerificationResult
+  def verify(t: T): VerificationResult
 }
 
 object Verification {
@@ -15,9 +14,9 @@ object Verification {
                                           verifier: Verifier
                                       ) =
     new Verification[Container] {
-      override def verify(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(container: Container): VerificationResult = {
+      override def verify(container: Container): VerificationResult = {
         verifiable
-          .create(root)(algorithm)(container)
+          .create(container)
           .map(verifier.verify)
           .foldLeft[VerificationResult](VerificationSuccess(Nil)) {
 
@@ -40,7 +39,6 @@ object Verification {
   implicit class Verify[Container](container: Container)(
     implicit verification: Verification[Container]
   ) {
-    def verify(root: ObjectLocation)(algorithm: ChecksumAlgorithm): VerificationResult =
-      verification.verify(root)(algorithm: ChecksumAlgorithm)(container)
+    def verify: VerificationResult = verification.verify(container)
   }
 }

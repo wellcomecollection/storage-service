@@ -14,14 +14,13 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3) extends Verifier with Loggin
       inputStream <- location.objectLocation.toInputStream
       checksum <- Checksum.create(
         inputStream,
-        location.checksum.algorithm
-      )
+        location.checksum.algorithm)
       result <- Try(assert(checksum == location.checksum))
     } yield result
 
     tryVerify
       .map(_ => VerifiedSuccess(location))
       .recover { case e => VerifiedFailure(location, e) }
-      .getOrElse(VerifiedFailure(location, new RuntimeException(s"Unknown failure for $location!")))
+      .getOrElse(VerifiedFailure(location, new UnknownError()))
   }
 }

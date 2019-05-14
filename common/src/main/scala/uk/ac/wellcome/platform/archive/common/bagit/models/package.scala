@@ -4,7 +4,7 @@ import java.nio.file.Paths
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagIt.verifyFileManifest
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumAlgorithm, VerifiableLocation}
+import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 
 
@@ -14,34 +14,59 @@ package object models {
   // resolvers
 
   implicit val bagPathResolver: Resolvable[BagPath] = new Resolvable[BagPath] {
-    override def resolve(root: ObjectLocation)(path: BagPath): ObjectLocation = {
-      val paths = Paths.get(root.key, path.value)
+    override def resolve(root: ObjectLocation)(bagPath: BagPath): ObjectLocation = {
+      val paths = Paths.get(root.key, bagPath.value)
       root.copy(key = paths.toString)
     }
   }
 
-  implicit val bagDigestFileResolver: Resolvable[BagFile] = new Resolvable[BagFile] {
-    override def resolve(root: ObjectLocation)(bag: BagFile): ObjectLocation = {
-      bag.path.resolve(root)
+  implicit val bagFileResolver: Resolvable[BagFile] = new Resolvable[BagFile] {
+    override def resolve(root: ObjectLocation)(bagFile: BagFile): ObjectLocation = {
+      bagFile.path.resolve(root)
     }
   }
 
+  implicit val bagManifest: Resolvable[BagManifest] = new Resolvable[BagManifest] {
+    override def resolve(root: ObjectLocation)(bag: BagManifest): ObjectLocation = {
+      root
+    }
+  }
+
+  implicit val bagResolver: Resolvable[Bag] = new Resolvable[Bag] {
+    override def resolve(root: ObjectLocation)(bag: Bag): ObjectLocation = {
+      root
+    }
+  }
 
   // verifiables
 
-  // ObjectLocation => ChecksumAlgorithm => T => List[VerifiableLocation]
+  implicit class ResolvedVerifiable[T](t: T)(
+    implicit
+    resolver: Resolvable[T],
+    f: ObjectLocation => T => List[VerifiableLocation]
+  ) {
+    def verifiable(
+                  root: ObjectLocation
+                ) = {
 
-  implicit def bagDigestFileVerifiable(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(file: BagFile): List[VerifiableLocation] = List(VerifiableLocation(
-        file.path.resolve(root),
-        Checksum(algorithm, file.checksum)))
+      new Verifiable[T] {
+        override def create(t: T): List[VerifiableLocation] = {
+          val resolved = resolver.resolve(root)(t)
 
-  implicit def fileManifestVerifiable(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(
-    manifest: BagManifest
-  ): List[VerifiableLocation] = verifyFileManifest(manifest)(root)
 
-  implicit def bagVerifiable(root: ObjectLocation)(algorithm: ChecksumAlgorithm)(bag: Bag): List[VerifiableLocation] =
-    List(bag.manifest, bag.tagManifest)
-      .map(verifyFileManifest)
-      .flatMap(withRoot => withRoot(root))
+          f(resolved)(t)
+        }
+      }
+    }
+  }
+
+  // ObjectLocation => T => List[VerifiableLocation]
+
+  implicit def bagManifestVerifiable(root: ObjectLocation)(manifest: BagManifest): List[VerifiableLocation] =
+    verifyFileManifest(manifest)(root)
+
+  implicit def bagVerifiable(root: ObjectLocation)(bag: Bag) = {
+    bagManifestVerifiable(root)(bag.manifest) ++ bagManifestVerifiable(root)(bag.tagManifest)
+  }
 
 }
