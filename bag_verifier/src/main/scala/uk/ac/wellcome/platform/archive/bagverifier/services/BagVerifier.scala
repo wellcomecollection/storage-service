@@ -8,6 +8,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.verify.Verification._
+import uk.ac.wellcome.platform.archive.common.verify.Verifier
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
@@ -15,12 +16,12 @@ import scala.util.{Failure, Success, Try}
 class BagVerifier()(
   implicit
     bagService: BagService,
-    verifier: S3ObjectVerifier
+    verifier: Verifier
 ) extends Logging {
 
   type IngestStep = Try[IngestStepResult[VerificationSummary]]
 
-  def verify(root: ObjectLocation): IngestStep = {
+  def verify(root: ObjectLocation): IngestStep = Try {
     val startTime = Instant.now()
 
     val verification = bagService.create(root).map { bag =>
@@ -30,7 +31,7 @@ class BagVerifier()(
       case e => VerificationSummary.incomplete(root, e, startTime)
     }
 
-    verification map {
+    verification match {
       case Success(success@VerificationSuccessSummary(_,_,_,_)) =>
         IngestStepSucceeded(success)
       case Success(failure@VerificationFailureSummary(_,_,_,_)) =>

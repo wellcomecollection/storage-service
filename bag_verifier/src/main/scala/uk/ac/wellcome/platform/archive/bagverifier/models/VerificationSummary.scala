@@ -51,8 +51,8 @@ object VerificationSummary {
               root: ObjectLocation,
               v: VerificationResult,
               t: Instant
-            ): VerificationFailureSummary = {
-    case f@VerificationFailure(_,_) => VerificationFailureSummary(
+            ): VerificationSummary = v match {
+    case f@VerificationFailure(_, _) => VerificationFailureSummary(
       root, Some(f), t, Some(Instant.now())
     )
     case s@VerificationSuccess(_) => VerificationSuccessSummary(

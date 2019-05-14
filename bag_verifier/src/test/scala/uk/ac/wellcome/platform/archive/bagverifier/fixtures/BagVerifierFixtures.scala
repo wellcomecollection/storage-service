@@ -1,20 +1,13 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixtures
 
-import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifierWorker,
-  BagVerifier
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures
-}
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker, S3ObjectVerifier}
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
+import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -30,7 +23,7 @@ trait BagVerifierFixtures
     testWith: TestWith[BagVerifierWorker, R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
-        withMaterializer(actorSystem) { implicit materializer =>
+        withMaterializer(actorSystem) { implicit mat =>
           withVerifier { verifier =>
             withIngestUpdater("verification", ingestTopic) { ingestUpdater =>
               withOutgoingPublisher("verification", outgoingTopic) {
@@ -53,12 +46,11 @@ trait BagVerifierFixtures
     }
 
   def withVerifier[R](testWith: TestWith[BagVerifier, R]): R =
-    withMaterializer { implicit materializer =>
-      val verifier = new BagVerifier(
-        storageManifestService = new StorageManifestService(),
-        s3Client = s3Client,
-        algorithm = MessageDigestAlgorithms.SHA_256
-      )
+    withMaterializer { implicit mat =>
+      implicit val _bagService = new BagService()
+      implicit val _s3ObjectVerifier = new S3ObjectVerifier()
+
+      val verifier = new BagVerifier()
 
       testWith(verifier)
     }
