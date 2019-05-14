@@ -49,11 +49,10 @@ class BagVerifierWorker(
     payload: BagInformationPayload): Future[Result[VerificationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
-      verificationSummary: IngestStepResult[VerificationSummary] <- verifier
-        .verify(payload.bagRootLocation)
-      _ <- ingestUpdater.send(payload.ingestId, verificationSummary)
-      _ <- outgoingPublisher.sendIfSuccessful(verificationSummary, payload)
-    } yield toResult(verificationSummary)
+      summary <- Future.fromTry(verifier.verify(payload.bagRootLocation))
+      _ <- ingestUpdater.send(payload.ingestId, summary)
+      _ <- outgoingPublisher.sendIfSuccessful(summary, payload)
+    } yield toResult(summary)
 
   override def run(): Future[Any] = worker.start
 }

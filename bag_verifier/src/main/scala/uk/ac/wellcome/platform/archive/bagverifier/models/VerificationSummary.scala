@@ -3,32 +3,80 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.platform.archive.common.verify.{VerificationFailure, VerificationSuccess}
+import uk.ac.wellcome.platform.archive.common.verify.{VerificationFailure, VerificationResult, VerificationSuccess}
 import uk.ac.wellcome.storage.ObjectLocation
 
-case class VerificationSummary(
-                                rootLocation: ObjectLocation,
-                                verificationSuccess: VerificationSuccess[Seq] = VerificationSuccess.empty,
-                                verificationFailure: VerificationFailure[Seq] = VerificationFailure.empty,
-                                startTime: Instant = Instant.now(),
-                                endTime: Option[Instant] = None)
-    extends Summary {
-
-  def succeeded: Boolean = verificationFailure.locations.isEmpty
-  def complete: VerificationSummary = this.copy(endTime = Some(Instant.now()))
+sealed trait VerificationSummary extends Summary {
+  val rootLocation: ObjectLocation
+  val verification: Option[VerificationResult]
+  val startTime: Instant
+  val endTime: Option[Instant]
 
   override def toString: String = {
-    val status =
-      if (succeeded)
-        "successful"
-      else
-        "failed"
+
+    val status = verification match {
+      case Some(VerificationFailure(failed,succeeded)) =>
+        f"""
+           |status=failure
+           |verified=${succeeded.size}
+           |failed=${failed.size}
+         """.stripMargin
+      case Some(VerificationSuccess(succeeded)) =>
+        f"""
+           |status=success
+           |verified=${succeeded.size}
+         """.stripMargin
+      case None =>
+        f"""
+           |status=incomplete
+        """.stripMargin
+
+    }
+
     f"""|bag=$rootLocation
-        |status=$status
-        |verified=${verificationSuccess.locations.size}
-        |failed=${verificationFailure.locations.size}
         |durationSeconds=$durationSeconds
-        |duration=$formatDuration""".stripMargin
+        |duration=$formatDuration
+        |$status
+        """.stripMargin
       .replaceAll("\n", ", ")
   }
 }
+
+object VerificationSummary {
+  def incomplete(root: ObjectLocation, e: Throwable,
+                 t: Instant): VerificationIncompleteSummary = {
+    VerificationIncompleteSummary(root, e, t, Some(Instant.now()))
+  }
+  def create(
+              root: ObjectLocation,
+              v: VerificationResult,
+              t: Instant
+            ): VerificationFailureSummary = {
+    case f@VerificationFailure(_,_) => VerificationFailureSummary(
+      root, Some(f), t, Some(Instant.now())
+    )
+    case s@VerificationSuccess(_) => VerificationSuccessSummary(
+      root, Some(s), t, Some(Instant.now())
+    )
+  }
+}
+
+case class VerificationIncompleteSummary(rootLocation: ObjectLocation,
+                                         e: Throwable,
+                                         startTime: Instant,
+                                         endTime: Option[Instant] = None
+                                        ) extends VerificationSummary {
+  val verification = None
+}
+
+case class VerificationSuccessSummary(rootLocation: ObjectLocation,
+                                      verification: Some[VerificationSuccess],
+                                      startTime: Instant,
+                                      endTime: Option[Instant] = None
+                                     ) extends VerificationSummary
+
+case class VerificationFailureSummary(rootLocation: ObjectLocation,
+                                      verification: Some[VerificationFailure],
+                                      startTime: Instant,
+                                      endTime: Option[Instant] = None
+                                     ) extends VerificationSummary
