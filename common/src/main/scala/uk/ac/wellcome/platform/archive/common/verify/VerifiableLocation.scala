@@ -16,13 +16,13 @@ case class VerifiableLocation(
 
 
 case class Checksum(
-                     algorithm: ChecksumAlgorithm,
+                     algorithm: HashingAlgorithm,
                      value: ChecksumValue
                    )
 object Checksum {
   def create(
              inputStream: InputStream,
-             algorithm: ChecksumAlgorithm
+             algorithm: HashingAlgorithm
            ): Try[Checksum] = Try {
     Checksum(
       algorithm,
@@ -31,16 +31,26 @@ object Checksum {
   }
 }
 
-case class ChecksumAlgorithm(value: String) {
+sealed trait HashingAlgorithm {
+  val value: String
   override def toString: String = value
+}
+
+case class ChecksumAlgorithm(value: String) extends HashingAlgorithm
+
+case object SHA256 extends HashingAlgorithm {
+  val value = "SHA-256"
+}
+
+case object MD5 extends HashingAlgorithm {
+  val value = "MD5"
 }
 
 case class ChecksumValue(value: String)
 object ChecksumValue {
-
   def apply(
                 inputStream: InputStream,
-                algorithm: ChecksumAlgorithm
+                algorithm: HashingAlgorithm
               ): ChecksumValue = {
     ChecksumValue(
       Hex.encodeHexString(

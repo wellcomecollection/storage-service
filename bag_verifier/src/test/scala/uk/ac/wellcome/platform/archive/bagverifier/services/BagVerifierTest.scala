@@ -1,22 +1,18 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{FunSpec, Matchers, OptionValues, TryValues}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  FileEntry
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
 
 class BagVerifierTest
-    extends FunSpec
+  extends FunSpec
     with Matchers
     with ScalaFutures
+    with TryValues
+    with OptionValues
     with BagLocationFixtures
     with BagVerifierFixtures {
 
@@ -27,21 +23,21 @@ class BagVerifierTest
     "bagit.txt",
     "bag-info.txt").size
 
-  it("passes a bag with correct checksums") {
+  it("passes a bag with correct checksum values ") {
     withLocalS3Bucket { bucket =>
       withBag(bucket, dataFileCount = dataFileCount) {
-        case (bagRootLocation, _) =>
+        case (root, _) =>
           withVerifier { verifier =>
-            val future = verifier.verify(bagRootLocation)
+            val ingestStep = verifier.verify(root)
+            val result = ingestStep.success.get
 
-            whenReady(future) { result =>
-              result shouldBe a[IngestStepSucceeded[_]]
+            result shouldBe a[IngestStepSucceeded[_]]
+            result.summary shouldBe a[VerificationSuccessSummary]
 
-              val summary = result.summary
+            val summary = result.summary.asInstanceOf[VerificationSuccessSummary]
+            val verification = summary.verification.value
 
-              summary.successfulVerifications should have size expectedFileCount
-              summary.failedVerifications shouldBe Seq.empty
-            }
+            verification.locations should have size expectedFileCount
           }
       }
     }
@@ -53,22 +49,25 @@ class BagVerifierTest
         bucket,
         dataFileCount = dataFileCount,
         createDataManifest = dataManifestWithWrongChecksum) {
-        case (bagRootLocation, _) =>
+        case (root, _) =>
           withVerifier { verifier =>
-            val future = verifier.verify(bagRootLocation)
+            val ingestStep = verifier.verify(root)
+            val result = ingestStep.failure.get
 
-            whenReady(future) { result =>
-              result shouldBe a[IngestFailed[_]]
+            result shouldBe a[IngestFailed[_]]
+            result.summary shouldBe a[VerificationFailureSummary]
 
-              val summary = result.summary
-              summary.successfulVerifications should have size expectedFileCount - 1
-              summary.failedVerifications should have size 1
+            val summary = result.summary.asInstanceOf[VerificationFailureSummary]
+            val verification = summary.verification.value
 
-              val brokenFile = summary.failedVerifications.head
-              brokenFile.error shouldBe a[RuntimeException]
-              brokenFile.error.getMessage should startWith(
-                "Checksums do not match:")
-            }
+            verification.success should have size expectedFileCount - 1
+            verification.failure should have size 1
+
+            val location = verification.failure.head
+            val error = location.e
+
+            error shouldBe a[RuntimeException]
+            error.getMessage should startWith("Checksum values do not match:")
           }
       }
     }
@@ -80,22 +79,25 @@ class BagVerifierTest
         bucket,
         dataFileCount = dataFileCount,
         createTagManifest = tagManifestWithWrongChecksum) {
-        case (bagRootLocation, _) =>
+        case (root, _) =>
           withVerifier { verifier =>
-            val future = verifier.verify(bagRootLocation)
-            whenReady(future) { result =>
-              result shouldBe a[IngestFailed[_]]
+            val ingestStep = verifier.verify(root)
+            val result = ingestStep.failure.get
 
-              val summary = result.summary
+            result shouldBe a[IngestFailed[_]]
+            result.summary shouldBe a[VerificationFailureSummary]
 
-              summary.successfulVerifications should have size expectedFileCount - 1
-              summary.failedVerifications should have size 1
+            val summary = result.summary.asInstanceOf[VerificationFailureSummary]
+            val verification = summary.verification.value
 
-              val brokenFile = summary.failedVerifications.head
-              brokenFile.error shouldBe a[RuntimeException]
-              brokenFile.error.getMessage should startWith(
-                "Checksums do not match:")
-            }
+            verification.success should have size expectedFileCount - 1
+            verification.failure should have size 1
+
+            val location = verification.failure.head
+            val error = location.e
+
+            error shouldBe a[RuntimeException]
+            error.getMessage should startWith("Checksum values do not match:")
           }
       }
     }
@@ -103,7 +105,7 @@ class BagVerifierTest
 
   it("fails a bag if the file manifest refers to a non-existent file") {
     def createDataManifestWithExtraFile(
-      dataFiles: List[(String, String)]): Option[FileEntry] =
+                                         dataFiles: List[(String, String)]): Option[FileEntry] =
       createValidDataManifest(
         dataFiles ++ List(("doesnotexist", "doesnotexist")))
 
@@ -112,22 +114,25 @@ class BagVerifierTest
         bucket,
         dataFileCount = dataFileCount,
         createDataManifest = createDataManifestWithExtraFile) {
-        case (bagRootLocation, _) =>
+        case (root, _) =>
           withVerifier { verifier =>
-            val future = verifier.verify(bagRootLocation)
-            whenReady(future) { result =>
-              result shouldBe a[IngestFailed[_]]
+            val ingestStep = verifier.verify(root)
+            val result = ingestStep.failure.get
 
-              val summary = result.summary
+            result shouldBe a[IngestFailed[_]]
+            result.summary shouldBe a[VerificationFailureSummary]
 
-              summary.successfulVerifications should have size expectedFileCount
-              summary.failedVerifications should have size 1
+            val summary = result.summary.asInstanceOf[VerificationFailureSummary]
+            val verification = summary.verification.value
 
-              val brokenFile = summary.failedVerifications.head
-              brokenFile.error shouldBe a[RuntimeException]
-              brokenFile.error.getMessage should startWith(
-                "The specified key does not exist")
-            }
+            verification.success should have size expectedFileCount - 1
+            verification.failure should have size 1
+
+            val location = verification.failure.head
+            val error = location.e
+
+            error shouldBe a[RuntimeException]
+            error.getMessage should startWith("The specified key does not exist")
           }
       }
     }
@@ -135,23 +140,23 @@ class BagVerifierTest
 
   it("fails a bag if the file manifest does not exist") {
     def dontCreateTheDataManifest(
-      dataFiles: List[(String, String)]): Option[FileEntry] = None
+                                   dataFiles: List[(String, String)]): Option[FileEntry] = None
 
     withLocalS3Bucket { bucket =>
       withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
-        case (bagRootLocation, _) =>
+        case (root, _) =>
           withVerifier { verifier =>
-            val future = verifier.verify(bagRootLocation)
+            val ingestStep = verifier.verify(root)
+            val result = ingestStep.failure.get
 
-            whenReady(future) { result =>
-              result shouldBe a[IngestFailed[_]]
-              val err = result
-                .asInstanceOf[IngestFailed[VerificationSummary]]
-                .e
+            result shouldBe a[IngestFailed[_]]
+            result.summary shouldBe a[VerificationIncompleteSummary]
 
-              err shouldBe a[RuntimeException]
-              err.getMessage should startWith("Error getting file manifest")
-            }
+            val summary = result.summary.asInstanceOf[VerificationIncompleteSummary]
+            val error = summary.e
+
+            error shouldBe a[RuntimeException]
+            error.getMessage should startWith("Error getting file manifest")
           }
       }
     }
@@ -159,23 +164,23 @@ class BagVerifierTest
 
   it("fails a bag if the tag manifest does not exist") {
     def dontCreateTheTagManifest(
-      dataFiles: List[(String, String)]): Option[FileEntry] = None
+                                  dataFiles: List[(String, String)]): Option[FileEntry] = None
 
     withLocalS3Bucket { bucket =>
       withBag(bucket, createTagManifest = dontCreateTheTagManifest) {
-        case (bagRootLocation, _) =>
+        case (root, _) =>
           withVerifier { verifier =>
-            val future = verifier.verify(bagRootLocation)
+            val ingestStep = verifier.verify(root)
+            val result = ingestStep.failure.get
 
-            whenReady(future) { result =>
-              result shouldBe a[IngestFailed[_]]
-              val err = result
-                .asInstanceOf[IngestFailed[VerificationSummary]]
-                .e
+            result shouldBe a[IngestFailed[_]]
+            result.summary shouldBe a[VerificationIncompleteSummary]
 
-              err shouldBe a[RuntimeException]
-              err.getMessage should startWith("Error getting tag manifest")
-            }
+            val summary = result.summary.asInstanceOf[VerificationIncompleteSummary]
+            val error = summary.e
+
+            error shouldBe a[RuntimeException]
+            error.getMessage should startWith("Error getting tag manifest")
           }
       }
     }

@@ -29,6 +29,7 @@ object S3StreamableInstances {
           resolved.toInputStream
         }
       }
+
       streamable.stream(t)
     }
   }
