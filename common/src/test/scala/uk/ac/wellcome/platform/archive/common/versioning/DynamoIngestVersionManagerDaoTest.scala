@@ -74,6 +74,59 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
     testWith(dao)
   }
 
+  it("is internally consistent") {
+    val recordA1 = createVersionRecordWith(
+      externalIdentifier = ExternalIdentifier("acorn"),
+      ingestId = createIngestID,
+      version = 1
+    )
+
+    val recordA2 = createVersionRecordWith(
+      externalIdentifier = ExternalIdentifier("acorn"),
+      ingestId = createIngestID,
+      version = 2
+    )
+
+    val recordA3 = createVersionRecordWith(
+      externalIdentifier = ExternalIdentifier("acorn"),
+      ingestId = createIngestID,
+      version = 3
+    )
+
+    val recordB1 = createVersionRecordWith(
+      externalIdentifier = ExternalIdentifier("barley"),
+      ingestId = createIngestID,
+      version = 1
+    )
+
+    val recordB2 = createVersionRecordWith(
+      externalIdentifier = ExternalIdentifier("barley"),
+      ingestId = createIngestID,
+      version = 2
+    )
+
+    val records = List(
+      recordA1, recordA2, recordA3,
+      recordB1, recordB2
+    )
+
+    withLocalDynamoDbTable { table =>
+      withDao(table) { dao =>
+        records.foreach { r =>
+          dao.storeNewVersion(r) shouldBe Success(())
+        }
+
+        records.foreach { r =>
+          dao.lookupExistingVersion(ingestId = r.ingestId) shouldBe Success(Some(r))
+        }
+
+        dao.lookupLatestVersionFor(ExternalIdentifier("acorn")) shouldBe Success(Some(recordA3))
+        dao.lookupLatestVersionFor(ExternalIdentifier("barley")) shouldBe Success(Some(recordB2))
+        dao.lookupLatestVersionFor(ExternalIdentifier("chestnut")) shouldBe Success(None)
+      }
+    }
+  }
+
   describe("lookupExistingVersion") {
     it("returns Success[None] if it can't find anything") {
       withLocalDynamoDbTable { table =>
