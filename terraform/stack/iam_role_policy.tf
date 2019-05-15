@@ -99,7 +99,7 @@ resource "aws_iam_role_policy" "bag_replicator_metrics" {
 
 resource "aws_iam_role_policy" "bag_replicator_locking_table" {
   role   = "${module.bag_replicator.task_role_name}"
-  policy = "${data.aws_iam_policy_document.lock_table_readwrite.json}"
+  policy = "${module.replicator_lock_table.iam_policy}"
 }
 
 # bag_verifier post-replication

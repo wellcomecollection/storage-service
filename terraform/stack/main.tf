@@ -131,8 +131,8 @@ module "bag_replicator" {
     outgoing_topic_arn      = "${module.bag_replicator_output_topic.arn}"
     metrics_namespace       = "${local.bag_replicator_service_name}"
     operation_name          = "replicating to archive storage"
-    locking_table_name      = "${aws_dynamodb_table.replicator_lock_table.name}"
-    locking_table_index     = "${local.replicator_lock_table_index}"
+    locking_table_name      = "${module.replicator_lock_table.table_name}"
+    locking_table_index     = "${module.replicator_lock_table.index_name}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
   }
 
