@@ -5,9 +5,10 @@ import com.gu.scanamo.syntax._
 import com.gu.scanamo.{Scanamo, Table}
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier._
 import uk.ac.wellcome.storage.dynamo._
 
-import scala.util.{Failure, Try}
+import scala.util.Try
 
 class DynamoIngestVersionManagerDao(
   dynamoClient: AmazonDynamoDB,
@@ -16,6 +17,14 @@ class DynamoIngestVersionManagerDao(
 
   private val table = Table[VersionRecord](dynamoConfig.table)
   private val index = table.index(dynamoConfig.index)
+
+  val hashLookup = new DynamoHashKeyLookup[VersionRecord, String](
+    dynamoClient = dynamoClient,
+    lookupConfig = DynamoHashKeyLookupConfig(
+      hashKeyName = "externalIdentifier",
+      dynamoConfig = dynamoConfig
+    )
+  )
 
   override def lookupExistingVersion(ingestId: IngestID): Try[Option[VersionRecord]] = Try {
     val ops = index.query('ingestId -> ingestId)
@@ -29,7 +38,8 @@ class DynamoIngestVersionManagerDao(
     }
   }
 
-  override def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] = Failure(new Throwable("BOOM!"))
+  override def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] =
+    hashLookup.lookupHighestHashKey(externalIdentifier.underlying)
 
   override def storeNewVersion(record: VersionRecord): Try[Unit] = Try {
     Scanamo.put(dynamoClient)(table.name)(record) match {

@@ -7,6 +7,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier._
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
@@ -147,6 +148,44 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
           result.failed.get shouldBe a[RuntimeException]
           result.failed.get.getMessage should startWith("Did not find exactly one row with ingest ID")
         }
+      }
+    }
+  }
+
+  describe("lookupLatestVersionFor") {
+    it("returns None if there isn't one") {
+      withLocalDynamoDbTable { table =>
+        withDao(table) { dao =>
+          dao.lookupLatestVersionFor(createExternalIdentifier) shouldBe Success(None)
+        }
+      }
+    }
+
+    it("finds the latest version associated with an externalIdentifier") {
+      withLocalDynamoDbTable { table =>
+        val externalIdentifier = createExternalIdentifier
+
+        val records = (1 to 5).map { version =>
+          createVersionRecordWith(externalIdentifier = externalIdentifier, version = version)
+        }
+
+        records.foreach { r =>
+          Scanamo.put(dynamoDbClient)(table.name)(r)
+        }
+
+        withDao(table) { dao =>
+          dao.lookupLatestVersionFor(externalIdentifier) shouldBe Success(Some(records(4)))
+        }
+      }
+    }
+
+    it("fails if it cannot reach the table") {
+      withDao(Table("does-not-exist", "does-not-exist")) { dao =>
+        val result = dao.lookupLatestVersionFor(createExternalIdentifier)
+
+        result shouldBe a[Failure[_]]
+        result.failed.get shouldBe a[ResourceNotFoundException]
+        result.failed.get.getMessage should startWith("Cannot do operations on a non-existent table")
       }
     }
   }
