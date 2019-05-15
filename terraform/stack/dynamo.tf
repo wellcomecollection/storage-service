@@ -49,10 +49,11 @@ resource "aws_dynamodb_table" "auditor_versions_table" {
 data "aws_iam_policy_document" "auditor_versions_table_table_readwrite" {
   statement {
     actions = [
-      "dynamodb:UpdateItem",
-      "dynamodb:PutItem",
-      "dynamodb:GetItem",
       "dynamodb:DeleteItem",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:UpdateItem",
     ]
 
     resources = [
