@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.versioning
 
-import java.time.Instant
-
 import com.amazonaws.services.dynamodbv2.model._
 import com.amazonaws.services.dynamodbv2.util.TableUtils.waitUntilActive
 import com.gu.scanamo.Scanamo
@@ -9,7 +7,6 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
@@ -17,7 +14,7 @@ import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success}
 
-class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with LocalDynamoDb with ExternalIdentifierGenerators {
+class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with LocalDynamoDb with VersionRecordGenerators {
   override def createTable(table: LocalDynamoDb.Table): LocalDynamoDb.Table = {
     dynamoDbClient.createTable(
       new CreateTableRequest()
@@ -87,12 +84,7 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
 
     it("returns Success[Some] if it finds an existing record") {
       withLocalDynamoDbTable { table =>
-        val record = VersionRecord(
-          externalIdentifier = createExternalIdentifier,
-          ingestId = createIngestID,
-          ingestDate = Instant.now,
-          version = 3
-        )
+        val record = createVersionRecord
 
         Scanamo.put(dynamoDbClient)(table.name)(record)
 
@@ -116,19 +108,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
       withLocalDynamoDbTable { table =>
         val ingestId = createIngestID
 
-        val record1 = VersionRecord(
-          externalIdentifier = createExternalIdentifier,
-          ingestId = ingestId,
-          ingestDate = Instant.now,
-          version = 1
-        )
-
-        val record2 = VersionRecord(
-          externalIdentifier = createExternalIdentifier,
-          ingestId = ingestId,
-          ingestDate = Instant.now,
-          version = 2
-        )
+        val record1 = createVersionRecordWith(ingestId = ingestId, version = 1)
+        val record2 = createVersionRecordWith(ingestId = ingestId, version = 2)
 
         Scanamo.put(dynamoDbClient)(table.name)(record1)
         Scanamo.put(dynamoDbClient)(table.name)(record2)
@@ -175,12 +156,7 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
       withLocalDynamoDbTable { table =>
         withDao(table) { dao =>
           val records = (1 to 3).map { version =>
-            VersionRecord(
-              externalIdentifier = createExternalIdentifier,
-              ingestId = createIngestID,
-              ingestDate = Instant.now,
-              version = version
-            )
+            createVersionRecordWith(version = version)
           }
 
           records.foreach { r =>
@@ -198,14 +174,7 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
 
     it("fails if it cannot reach the table") {
       withDao(Table("does-not-exist", "does-not-exist")) { dao =>
-        val record = VersionRecord(
-          externalIdentifier = createExternalIdentifier,
-          ingestId = createIngestID,
-          ingestDate = Instant.now,
-          version = 1
-        )
-
-        val result = dao.storeNewVersion(record)
+        val result = dao.storeNewVersion(createVersionRecord)
 
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[ResourceNotFoundException]
