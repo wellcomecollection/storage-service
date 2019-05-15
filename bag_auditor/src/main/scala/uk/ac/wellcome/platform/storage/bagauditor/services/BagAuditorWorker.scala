@@ -95,5 +95,22 @@ class BagAuditorWorker(
       case _ => Future.successful(())
     }
 
+  private def sendAuditInformation(
+                                    ingestId: IngestID,
+                                    auditSummary: AuditSummary
+                                  ): Future[Unit] =
+    auditSummary.maybeAuditInformation match {
+      case Some(auditInformation) =>
+        ingestUpdater.sendEvent(
+          ingestId = ingestId,
+          messages = Seq(
+            s"Detected bag root as ${auditInformation.bagRootLocation}",
+            s"Detected bag identifier as ${auditInformation.externalIdentifier}",
+            s"Assigned bag version ${auditInformation.version}"
+          )
+        )
+      case None => Future.successful(())
+    }
+
   override def run(): Future[Any] = worker.start
 }

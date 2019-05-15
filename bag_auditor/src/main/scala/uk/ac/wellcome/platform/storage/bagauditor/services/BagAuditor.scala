@@ -17,11 +17,12 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
+import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
-class BagAuditor(implicit s3Client: AmazonS3) {
+class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
   val s3BagLocator = new S3BagLocator(s3Client)
 
   type IngestStep = Try[IngestStepResult[AuditSummary]]
@@ -37,7 +38,11 @@ class BagAuditor(implicit s3Client: AmazonS3) {
       val auditTry: Try[AuditSuccess] = for {
         root <- s3BagLocator.locateBagRoot(unpackLocation)
         externalIdentifier <- getBagIdentifier(root)
-        version <- chooseVersion(externalIdentifier)
+        version <- versionPicker.chooseVersion(
+          externalIdentifier = externalIdentifier,
+          ingestId = ingestId,
+          ingestDate = ingestDate
+        )
         auditSuccess = AuditSuccess(
           root = root,
           externalIdentifier = externalIdentifier,
@@ -79,9 +84,6 @@ class BagAuditor(implicit s3Client: AmazonS3) {
           )
       }
     }
-
-  private def chooseVersion(externalIdentifier: ExternalIdentifier): Try[Int] =
-    Success(1)
 
   private def getBagIdentifier(
     bagRootLocation: ObjectLocation): Try[ExternalIdentifier] =
