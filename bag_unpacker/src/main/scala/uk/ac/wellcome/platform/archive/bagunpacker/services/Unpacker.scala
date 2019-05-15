@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
 }
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
-import uk.ac.wellcome.platform.archive.common.storage.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
@@ -26,6 +25,8 @@ import scala.util.{Failure, Success}
 
 case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
                                             ec: ExecutionContext) {
+
+  import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 
   def unpack(
     requestId: String,
@@ -85,7 +86,7 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
   }
 
   private def archiveDownloadStream(srcLocation: ObjectLocation) = {
-    srcLocation.toInputStream
+    Future.fromTry(srcLocation.toInputStream)
       .recoverWith {
         case ae: AmazonS3Exception =>
           Future.failed(

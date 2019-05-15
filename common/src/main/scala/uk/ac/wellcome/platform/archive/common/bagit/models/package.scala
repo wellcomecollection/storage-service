@@ -6,7 +6,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagIt.verifyFileManif
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
-
+import scala.language.implicitConversions
 
 package object models {
   import Resolvable._
