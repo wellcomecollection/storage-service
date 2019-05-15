@@ -5,9 +5,8 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker, S3ObjectVerifier}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
 import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}

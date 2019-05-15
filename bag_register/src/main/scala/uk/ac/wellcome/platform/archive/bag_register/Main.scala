@@ -6,10 +6,9 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
-import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestService, StorageManifestVHS}
