@@ -31,5 +31,10 @@ class DynamoIngestVersionManagerDao(
 
   override def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] = Failure(new Throwable("BOOM!"))
 
-  override def storeNewVersion(record: VersionRecord): Try[Unit] = Failure(new Throwable("BOOM!"))
+  override def storeNewVersion(record: VersionRecord): Try[Unit] = Try {
+    Scanamo.put(dynamoClient)(table.name)(record) match {
+      case Some(Left(err)) => throw new RuntimeException(s"Scanamo error: $err")
+      case _ => ()
+    }
+  }
 }
