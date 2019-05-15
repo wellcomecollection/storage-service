@@ -2,10 +2,14 @@ package uk.ac.wellcome.platform.archive.common.verify
 
 import java.io.InputStream
 
+import com.gu.scanamo.DynamoFormat
+import com.gu.scanamo.error.TypeCoercionError
 import grizzled.slf4j.Logging
+import io.circe.{Decoder, Encoder, Json}
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils.{getDigest, updateDigest}
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
+import uk.ac.wellcome.json.JsonUtil.{fromJson, toJson}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.Try
@@ -50,8 +54,15 @@ case object MD5 extends HashingAlgorithm {
   val pathRepr = "md5"
 }
 
-case class ChecksumValue(value: String)
+case class ChecksumValue(value: String) {
+  override def toString: String = value
+}
 object ChecksumValue extends Logging {
+  def create(raw: String) = {
+    ChecksumValue(raw.trim)
+  }
+
+
   def create(
                 inputStream: InputStream,
                 algorithm: HashingAlgorithm
@@ -73,4 +84,18 @@ object ChecksumValue extends Logging {
 
     checksumValue
   }
+
+  implicit val enc = Encoder.instance[ChecksumValue](o =>
+    Json.fromString(o.toString))
+
+  implicit val dec = Decoder.instance[ChecksumValue](cursor =>
+    cursor.value.as[String].map(ChecksumValue(_)))
+
+  implicit def fmt =
+    DynamoFormat.xmap[ChecksumValue, String](
+      fromJson[ChecksumValue](_)(dec).toEither.left
+        .map(TypeCoercionError)
+    )(
+      toJson[ChecksumValue](_).get
+    )
 }

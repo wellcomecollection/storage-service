@@ -1,83 +1,58 @@
 package uk.ac.wellcome.platform.storage.bagauditor.services
 
-import java.io.InputStream
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.common.storage.ConvertibleToInputStream._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.bagit.parsers.BagInfoParser
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.storage.bagauditor.models._
+import uk.ac.wellcome.platform.archive.common.bagit.models._
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
-import uk.ac.wellcome.platform.storage.bagauditor.models.{
-  AuditInformation,
-  AuditSummary
-}
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
-class BagAuditor(implicit s3Client: AmazonS3, ec: ExecutionContext) {
+class BagAuditor(implicit s3Client: AmazonS3) {
   val s3BagLocator = new S3BagLocator(s3Client)
+  import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 
-  def getAuditSummary(
-    unpackLocation: ObjectLocation,
-    storageSpace: StorageSpace): Future[IngestStepResult[AuditSummary]] = {
-    val auditSummary = AuditSummary(
-      startTime = Instant.now(),
-      unpackLocation = unpackLocation,
-      storageSpace = storageSpace
-    )
+  type IngestStep = Try[IngestStepResult[AuditSummary]]
 
-    val auditInformation = for {
-      bagRootLocation <- Future.fromTry {
-        s3BagLocator.locateBagRoot(unpackLocation)
-      }
-      externalIdentifier <- getBagIdentifier(bagRootLocation)
+  def getAuditSummary(location: ObjectLocation, space: StorageSpace): IngestStep = Try {
+
+    val startTime = Instant.now()
+
+    val auditTry = for {
+      root <- s3BagLocator.locateBagRoot(location)
+      externalIdentifier <- getBagIdentifier(root)
       version <- chooseVersion(externalIdentifier)
-      info = AuditInformation(
-        bagRootLocation = bagRootLocation,
-        externalIdentifier = externalIdentifier,
-        version = version
-      )
-    } yield info
+    } yield AuditSuccess(root, externalIdentifier, version)
 
-    auditInformation
-      .map { info =>
+    auditTry recover {
+      case e => AuditFailure(e)
+    } match {
+      case Success(audit@AuditSuccess(_,_,_)) =>
         IngestStepSucceeded(
-          auditSummary
-            .copy(maybeAuditInformation = Some(info))
-            .complete
+          AuditSummary.create(location, space, audit, startTime)
         )
-      }
-      .recover {
-        case t: Throwable =>
-          IngestFailed(
-            auditSummary.complete,
-            t
-          )
-      }
+      case Success(audit@AuditFailure(e)) =>
+        IngestFailed(
+          AuditSummary.create(location, space, audit, startTime),
+          e
+        )
+      case Failure(e) =>
+        IngestFailed(
+          AuditSummary.incomplete(location, space, e, startTime),
+          e
+        )
+    }
   }
 
-  private def chooseVersion(
-    externalIdentifier: ExternalIdentifier): Future[Int] =
-    Future.successful(1)
+  private def chooseVersion(externalIdentifier: ExternalIdentifier) = Success(1)
 
-  private def getBagIdentifier(
-    bagRootLocation: ObjectLocation): Future[ExternalIdentifier] =
+  private def getBagIdentifier(root: ObjectLocation): Try[ExternalIdentifier] =
     for {
-      bagInfoLocation <- Future.fromTry {
-        s3BagLocator.locateBagInfo(bagRootLocation)
-      }
-      inputStream: InputStream <- bagInfoLocation.toInputStream
-      bagInfo: BagInfo <- BagInfoParser.create(inputStream)
+      location <- s3BagLocator.locateBagInfo(root)
+      inputStream <- location.toInputStream
+      bagInfo <- BagInfo.create(inputStream)
     } yield bagInfo.externalIdentifier
 }

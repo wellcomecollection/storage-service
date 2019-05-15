@@ -2,12 +2,8 @@ package uk.ac.wellcome.platform.archive.display.fixtures
 
 import java.time.format.DateTimeFormatter
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFile,
-  BagInfo
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFile, BagInfo, BagManifest}
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
-import uk.ac.wellcome.platform.archive.common.storage.models.BagManifest
 
 trait DisplayJsonHelpers {
   private def stringField[T](t: T): String =
