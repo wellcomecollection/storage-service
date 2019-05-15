@@ -13,8 +13,9 @@ object StorageSpace {
       Json.fromString(space.toString)
   }
 
-  implicit val decoder: Decoder[StorageSpace] = Decoder.instance[StorageSpace](cursor =>
-    cursor.value.as[String].map(StorageSpace(_)))
+  implicit val decoder: Decoder[StorageSpace] =
+    Decoder.instance[StorageSpace](cursor =>
+      cursor.value.as[String].map(StorageSpace(_)))
 
   implicit def evidence: DynamoFormat[StorageSpace] =
     DynamoFormat.coercedXmap[StorageSpace, String, IllegalArgumentException](

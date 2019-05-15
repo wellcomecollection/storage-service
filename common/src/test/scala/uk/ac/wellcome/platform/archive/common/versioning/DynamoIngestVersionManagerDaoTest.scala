@@ -15,7 +15,11 @@ import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success}
 
-class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with LocalDynamoDb with VersionRecordGenerators {
+class DynamoIngestVersionManagerDaoTest
+    extends FunSpec
+    with Matchers
+    with LocalDynamoDb
+    with VersionRecordGenerators {
   override def createTable(table: LocalDynamoDb.Table): LocalDynamoDb.Table = {
     dynamoDbClient.createTable(
       new CreateTableRequest()
@@ -44,7 +48,11 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
               new Projection()
                 .withProjectionType(ProjectionType.INCLUDE)
                 .withNonKeyAttributes(
-                  List("externalIdentifier", "ingestId", "version", "ingestDate").asJava)
+                  List(
+                    "externalIdentifier",
+                    "ingestId",
+                    "version",
+                    "ingestDate").asJava)
             )
             .withKeySchema(
               new KeySchemaElement()
@@ -65,7 +73,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
     table
   }
 
-  def withDao[R](table: Table)(testWith: TestWith[DynamoIngestVersionManagerDao, R]): R = {
+  def withDao[R](table: Table)(
+    testWith: TestWith[DynamoIngestVersionManagerDao, R]): R = {
     val dao = new DynamoIngestVersionManagerDao(
       dynamoClient = dynamoDbClient,
       dynamoConfig = createDynamoConfigWith(table)
@@ -106,8 +115,11 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
     )
 
     val records = List(
-      recordA1, recordA2, recordA3,
-      recordB1, recordB2
+      recordA1,
+      recordA2,
+      recordA3,
+      recordB1,
+      recordB2
     )
 
     withLocalDynamoDbTable { table =>
@@ -117,12 +129,16 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
         }
 
         records.foreach { r =>
-          dao.lookupExistingVersion(ingestId = r.ingestId) shouldBe Success(Some(r))
+          dao.lookupExistingVersion(ingestId = r.ingestId) shouldBe Success(
+            Some(r))
         }
 
-        dao.lookupLatestVersionFor(ExternalIdentifier("acorn")) shouldBe Success(Some(recordA3))
-        dao.lookupLatestVersionFor(ExternalIdentifier("barley")) shouldBe Success(Some(recordB2))
-        dao.lookupLatestVersionFor(ExternalIdentifier("chestnut")) shouldBe Success(None)
+        dao.lookupLatestVersionFor(ExternalIdentifier("acorn")) shouldBe Success(
+          Some(recordA3))
+        dao.lookupLatestVersionFor(ExternalIdentifier("barley")) shouldBe Success(
+          Some(recordB2))
+        dao.lookupLatestVersionFor(ExternalIdentifier("chestnut")) shouldBe Success(
+          None)
       }
     }
   }
@@ -143,7 +159,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
         Scanamo.put(dynamoDbClient)(table.name)(record)
 
         withDao(table) { dao =>
-          dao.lookupExistingVersion(record.ingestId) shouldBe Success(Some(record))
+          dao.lookupExistingVersion(record.ingestId) shouldBe Success(
+            Some(record))
         }
       }
     }
@@ -154,7 +171,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
 
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[ResourceNotFoundException]
-        result.failed.get.getMessage should startWith("Cannot do operations on a non-existent table")
+        result.failed.get.getMessage should startWith(
+          "Cannot do operations on a non-existent table")
       }
     }
 
@@ -173,7 +191,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
 
           result shouldBe a[Failure[_]]
           result.failed.get shouldBe a[RuntimeException]
-          result.failed.get.getMessage should startWith("Did not find exactly one row with ingest ID")
+          result.failed.get.getMessage should startWith(
+            "Did not find exactly one row with ingest ID")
         }
       }
     }
@@ -199,7 +218,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
 
           result shouldBe a[Failure[_]]
           result.failed.get shouldBe a[RuntimeException]
-          result.failed.get.getMessage should startWith("Did not find exactly one row with ingest ID")
+          result.failed.get.getMessage should startWith(
+            "Did not find exactly one row with ingest ID")
         }
       }
     }
@@ -209,7 +229,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
     it("returns None if there isn't one") {
       withLocalDynamoDbTable { table =>
         withDao(table) { dao =>
-          dao.lookupLatestVersionFor(createExternalIdentifier) shouldBe Success(None)
+          dao.lookupLatestVersionFor(createExternalIdentifier) shouldBe Success(
+            None)
         }
       }
     }
@@ -219,7 +240,9 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
         val externalIdentifier = createExternalIdentifier
 
         val records = (1 to 5).map { version =>
-          createVersionRecordWith(externalIdentifier = externalIdentifier, version = version)
+          createVersionRecordWith(
+            externalIdentifier = externalIdentifier,
+            version = version)
         }
 
         records.foreach { r =>
@@ -227,7 +250,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
         }
 
         withDao(table) { dao =>
-          dao.lookupLatestVersionFor(externalIdentifier) shouldBe Success(Some(records(4)))
+          dao.lookupLatestVersionFor(externalIdentifier) shouldBe Success(
+            Some(records(4)))
         }
       }
     }
@@ -238,7 +262,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
 
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[ResourceNotFoundException]
-        result.failed.get.getMessage should startWith("Cannot do operations on a non-existent table")
+        result.failed.get.getMessage should startWith(
+          "Cannot do operations on a non-existent table")
       }
     }
   }
@@ -256,7 +281,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
           }
 
           val storedRecords =
-            Scanamo.scan[VersionRecord](dynamoDbClient)(table.name)
+            Scanamo
+              .scan[VersionRecord](dynamoDbClient)(table.name)
               .map { _.right.get }
 
           storedRecords should contain theSameElementsAs records
@@ -270,7 +296,8 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
 
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[ResourceNotFoundException]
-        result.failed.get.getMessage should startWith("Cannot do operations on a non-existent table")
+        result.failed.get.getMessage should startWith(
+          "Cannot do operations on a non-existent table")
       }
     }
   }

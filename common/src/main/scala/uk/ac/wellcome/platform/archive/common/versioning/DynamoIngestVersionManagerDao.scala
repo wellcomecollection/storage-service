@@ -26,25 +26,28 @@ class DynamoIngestVersionManagerDao(
     )
   )
 
-  override def lookupExistingVersion(ingestId: IngestID): Try[Option[VersionRecord]] = Try {
+  override def lookupExistingVersion(
+    ingestId: IngestID): Try[Option[VersionRecord]] = Try {
     val ops = index.query('ingestId -> ingestId)
 
     Scanamo.exec(dynamoClient)(ops) match {
       case List(Right(record)) => Some(record)
       case Nil                 => None
-      case result              => throw new RuntimeException(
-        s"Did not find exactly one row with ingest ID $ingestId, got $result"
-      )
+      case result =>
+        throw new RuntimeException(
+          s"Did not find exactly one row with ingest ID $ingestId, got $result"
+        )
     }
   }
 
-  override def lookupLatestVersionFor(externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] =
+  override def lookupLatestVersionFor(
+    externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] =
     hashLookup.lookupHighestHashKey(externalIdentifier.underlying)
 
   override def storeNewVersion(record: VersionRecord): Try[Unit] = Try {
     Scanamo.put(dynamoClient)(table.name)(record) match {
       case Some(Left(err)) => throw new RuntimeException(s"Scanamo error: $err")
-      case _ => ()
+      case _               => ()
     }
   }
 }
