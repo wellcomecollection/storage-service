@@ -12,7 +12,7 @@ module "replicator_lock_table" {
   owner     = "replicator"
 }
 
-local {
+locals {
   auditor_versions_table_name  = "${aws_dynamodb_table.auditor_versions_table.name}"
   auditor_versions_table_index = "ingestId_index"
 }

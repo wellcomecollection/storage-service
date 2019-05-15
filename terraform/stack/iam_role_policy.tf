@@ -75,7 +75,7 @@ resource "aws_iam_role_policy" "bag_auditor_locking_table" {
 
 resource "aws_iam_role_policy" "bag_auditor_locking_table" {
   role   = "${module.bag_auditor.task_role_name}"
-  policy = "${module.auditor_versions_table_table_readwrite.iam_policy}"
+  policy = "${data.aws_iam_policy_document.auditor_versions_table_table_readwrite.json}"
 }
 
 # bag_verifier pre-replication
