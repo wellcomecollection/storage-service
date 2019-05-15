@@ -7,13 +7,15 @@ import com.amazonaws.services.dynamodbv2.util.TableUtils.waitUntilActive
 import com.gu.scanamo.Scanamo
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.IngestID
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
 import scala.collection.JavaConverters._
-import scala.util.Success
+import scala.util.{Failure, Success}
 
 class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with LocalDynamoDb with ExternalIdentifierGenerators {
   override def createTable(table: LocalDynamoDb.Table): LocalDynamoDb.Table = {
@@ -96,6 +98,73 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
 
         withDao(table) { dao =>
           dao.lookupExistingVersion(record.ingestId) shouldBe Success(Some(record))
+        }
+      }
+    }
+
+    it("fails if there's an error connecting to DynamoDB") {
+      withDao(Table("does-not-exist", "does-not-exist")) { dao =>
+        val result = dao.lookupExistingVersion(createIngestID)
+
+        result shouldBe a[Failure[_]]
+        result.failed.get shouldBe a[ResourceNotFoundException]
+        result.failed.get.getMessage should startWith("Cannot do operations on a non-existent table")
+      }
+    }
+
+    it("fails if the same ingest ID appears multiple times") {
+      withLocalDynamoDbTable { table =>
+        val ingestId = createIngestID
+
+        val record1 = VersionRecord(
+          externalIdentifier = createExternalIdentifier,
+          ingestId = ingestId,
+          ingestDate = Instant.now,
+          version = 1
+        )
+
+        val record2 = VersionRecord(
+          externalIdentifier = createExternalIdentifier,
+          ingestId = ingestId,
+          ingestDate = Instant.now,
+          version = 2
+        )
+
+        Scanamo.put(dynamoDbClient)(table.name)(record1)
+        Scanamo.put(dynamoDbClient)(table.name)(record2)
+
+        withDao(table) { dao =>
+          val result = dao.lookupExistingVersion(ingestId)
+
+          result shouldBe a[Failure[_]]
+          result.failed.get shouldBe a[RuntimeException]
+          result.failed.get.getMessage should startWith("Did not find exactly one row with ingest ID")
+        }
+      }
+    }
+
+    it("fails if the DynamoDB table format is wrong") {
+      withLocalDynamoDbTable { table =>
+        case class BadRecord(
+          externalIdentifier: ExternalIdentifier,
+          ingestId: IngestID,
+          version: Int
+        )
+
+        val record = BadRecord(
+          externalIdentifier = createExternalIdentifier,
+          ingestId = createIngestID,
+          version = 1
+        )
+
+        Scanamo.put(dynamoDbClient)(table.name)(record)
+
+        withDao(table) { dao =>
+          val result = dao.lookupExistingVersion(record.ingestId)
+
+          result shouldBe a[Failure[_]]
+          result.failed.get shouldBe a[RuntimeException]
+          result.failed.get.getMessage should startWith("Did not find exactly one row with ingest ID")
         }
       }
     }
