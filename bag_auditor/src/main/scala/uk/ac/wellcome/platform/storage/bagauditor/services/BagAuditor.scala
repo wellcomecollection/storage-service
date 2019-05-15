@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.storage.bagauditor.services
 
-import java.io.InputStream
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
@@ -8,31 +7,32 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.bagit.parsers.BagInfoParser
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
   IngestStepSucceeded,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.storage.bagauditor.models._
+import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
 class BagAuditor(implicit s3Client: AmazonS3) {
   val s3BagLocator = new S3BagLocator(s3Client)
+  import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
+
+  type IngestStep = Try[IngestStepResult[AuditSummary]]
 
   def getAuditSummary(
-    unpackLocation: ObjectLocation,
-    storageSpace: StorageSpace): Try[IngestStepResult[AuditSummary]] =
+    location: ObjectLocation,
+    space: StorageSpace): IngestStep =
     Try {
-
       val startTime = Instant.now()
 
       val auditTry: Try[AuditSuccess] = for {
-        root <- s3BagLocator.locateBagRoot(unpackLocation)
+        root <- s3BagLocator.locateBagRoot(location)
         externalIdentifier <- getBagIdentifier(root)
         version <- chooseVersion(externalIdentifier)
         auditSuccess = AuditSuccess(
@@ -48,8 +48,8 @@ class BagAuditor(implicit s3Client: AmazonS3) {
         case Success(audit @ AuditSuccess(_, _, _)) =>
           IngestStepSucceeded(
             AuditSummary.create(
-              location = unpackLocation,
-              space = storageSpace,
+              location = location,
+              space = space,
               audit = audit,
               t = startTime
             )
@@ -57,8 +57,8 @@ class BagAuditor(implicit s3Client: AmazonS3) {
         case Success(audit @ AuditFailure(e)) =>
           IngestFailed(
             summary = AuditSummary.create(
-              location = unpackLocation,
-              space = storageSpace,
+              location = location,
+              space = space,
               audit = audit,
               t = startTime
             ),
@@ -66,9 +66,9 @@ class BagAuditor(implicit s3Client: AmazonS3) {
           )
         case Failure(e) =>
           IngestFailed(
-            summary = AuditSummary.incomplete(
-              location = unpackLocation,
-              space = storageSpace,
+            AuditSummary.incomplete(
+              location = location,
+              space = space,
               e = e,
               t = startTime
             ),
@@ -80,15 +80,10 @@ class BagAuditor(implicit s3Client: AmazonS3) {
   private def chooseVersion(externalIdentifier: ExternalIdentifier): Try[Int] =
     Success(1)
 
-  private def getBagIdentifier(
-    bagRootLocation: ObjectLocation): Try[ExternalIdentifier] =
+  private def getBagIdentifier(root: ObjectLocation): Try[ExternalIdentifier] =
     for {
-      bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
-      inputStream: InputStream <- Try {
-        s3Client
-          .getObject(bagInfoLocation.namespace, bagInfoLocation.key)
-          .getObjectContent
-      }
-      bagInfo: BagInfo <- BagInfoParser.create(inputStream)
+      location <- s3BagLocator.locateBagInfo(root)
+      inputStream <- location.toInputStream
+      bagInfo <- BagInfo.create(inputStream)
     } yield bagInfo.externalIdentifier
 }

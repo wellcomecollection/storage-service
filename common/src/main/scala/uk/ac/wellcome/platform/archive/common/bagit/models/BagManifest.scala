@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
-import java.io.InputStream
+import java.io.{BufferedReader, InputStream, InputStreamReader}
 
 import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, HashingAlgorithm}
 
@@ -13,23 +13,35 @@ case class BagManifest(
                       )
 
 object BagManifest {
+
+  // Intended to match BagIt `manifest-algorithm.txt` file format:
+  // https://tools.ietf.org/html/draft-kunze-bagit-17#section-2.1.3
+
   val lineRegex: Regex = """(.+?)\s+(.+)""".r
 
-  def create(stream: InputStream, algorithm: HashingAlgorithm): Try[BagManifest] = {
+  def create(inputStream: InputStream, algorithm: HashingAlgorithm): Try[BagManifest] = {
 
-    val lines = scala.io.Source
-      .fromInputStream(stream)
-      .mkString
-      .split("\n")
+    val bufferedReader = new BufferedReader(
+      new InputStreamReader(inputStream)
+    )
+
+    val lines = Iterator
+      .continually(bufferedReader.readLine())
+      .takeWhile { _ != null }
       .filter { _.nonEmpty }
       .toList
 
-    val eitherFiles = lines.zipWithIndex.map {
-      case (l, i)  => createBagFile(i, l, None)
+    val eitherFiles = lines.map(createBagFile(_,None))
+
+    // Collect left
+    val errorStrings = eitherFiles.collect {
+      case Left(errorString) => errorString
     }
 
-    val errorStrings = eitherFiles.collect { case Left(errorString) => errorString }
-    val files = eitherFiles.collect { case Right(bagFile) => bagFile }
+    // Collect right
+    val files = eitherFiles.collect {
+      case Right(bagFile) => bagFile
+    }
 
     if(errorStrings.isEmpty) {
       Success(BagManifest(algorithm, files))
@@ -39,13 +51,15 @@ object BagManifest {
   }
 
   private def createBagFile(
-    lineNumber: Int,
     line: String,
     maybeRoot: Option[String]
   ): Either[String, BagFile] = line match {
-    case lineRegex(checksum, itemPath) => Right(BagFile(
-        ChecksumValue(checksum.trim),
-        BagPath(itemPath.trim, maybeRoot)))
-    case line => Left(s"$lineNumber: $line")
+    case lineRegex(checksumString, itemPathString) => Right(
+      BagFile(
+        ChecksumValue.create(checksumString),
+        BagPath.create(itemPathString)
+      )
+    )
+    case l => Left(l)
   }
 }

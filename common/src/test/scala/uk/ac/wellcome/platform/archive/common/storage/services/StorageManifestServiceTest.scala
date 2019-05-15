@@ -7,8 +7,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.verify.SHA256
-import uk.ac.wellcome.storage.ObjectLocation
-
 
 class StorageManifestServiceTest
   extends FunSpec
@@ -16,19 +14,15 @@ class StorageManifestServiceTest
     with ScalaFutures
     with BagLocationFixtures {
 
-  def withStorageManifestService[R](root: ObjectLocation)(testWith: TestWith[StorageManifestService, R]): R = {
-
-    val service = new StorageManifestService()
-
-    testWith(service)
-  }
+  def withStorageManifestService[R](testWith: TestWith[StorageManifestService, R]): R =
+    testWith(new StorageManifestService())
 
   it("returns a StorageManifest if reading a bag location succeeds") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo) {
         case (root, space) =>
-          withStorageManifestService(root) { service =>
+          withStorageManifestService { service =>
 
             val maybeManifest = service.retrieve(
               root = root,
@@ -67,11 +61,7 @@ class StorageManifestServiceTest
   describe("returns a Left upon error") {
     it("if no files are at the BagLocation") {
       withLocalS3Bucket { bucket =>
-
-        val root = createObjectLocationWith(bucket)
-
-        withStorageManifestService(root) { service =>
-
+        withStorageManifestService { service =>
 
           val maybeManifest = service.retrieve(
             root = createObjectLocationWith(bucket),
@@ -95,7 +85,7 @@ class StorageManifestServiceTest
               root.key + "/bag-info.txt"
             )
 
-            withStorageManifestService(root) { service =>
+            withStorageManifestService { service =>
 
               val maybeManifest = service.retrieve(
                 root = root,
@@ -121,7 +111,7 @@ class StorageManifestServiceTest
               root.key + "/manifest-sha256.txt"
             )
 
-            withStorageManifestService(root) { service =>
+            withStorageManifestService { service =>
 
               val maybeManifest =
                 service.retrieve(root, space)
@@ -143,7 +133,7 @@ class StorageManifestServiceTest
             _ => Some(FileEntry("manifest-sha256.txt", "bleeergh!"))) {
           case (root, space) =>
 
-            withStorageManifestService(root) { service =>
+            withStorageManifestService { service =>
 
               val maybeManifest = service.retrieve(
                 root = root,
@@ -169,7 +159,7 @@ class StorageManifestServiceTest
               root.key + "/tagmanifest-sha256.txt"
             )
 
-            withStorageManifestService(root) { service =>
+            withStorageManifestService { service =>
 
               val maybeManifest = service.retrieve(
                 root = root,
@@ -195,7 +185,7 @@ class StorageManifestServiceTest
             _ => Some(FileEntry("tagmanifest-sha256.txt", "blaaargh!"))) {
           case (root, space) =>
 
-            withStorageManifestService(root) { service =>
+            withStorageManifestService { service =>
 
               val maybeManifest = service.retrieve(
                 root = root,

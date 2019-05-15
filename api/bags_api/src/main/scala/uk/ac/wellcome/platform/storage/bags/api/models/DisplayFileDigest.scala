@@ -10,9 +10,9 @@ case class DisplayFileDigest(
 )
 
 case object DisplayFileDigest {
-  def apply(bagDigestFile: BagFile): DisplayFileDigest =
+  def apply(bagFile: BagFile): DisplayFileDigest =
     DisplayFileDigest(
-      checksum = bagDigestFile.checksum,
-      path = bagDigestFile.path.toString
+      checksum = bagFile.checksum.value,
+      path = bagFile.path.toString
     )
 }

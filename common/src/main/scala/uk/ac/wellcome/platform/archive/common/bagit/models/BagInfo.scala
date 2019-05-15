@@ -19,6 +19,10 @@ case class BagInfo(
   internalSenderDescription: Option[InternalSenderDescription] = None)
 
 object BagInfo {
+
+  // Intended to match BagIt `bag-info` file format:
+  // https://tools.ietf.org/html/draft-kunze-bagit-17#section-2.2.2
+
   private val bagInfoFieldRegex = """(.*?)\s*:\s*(.*)\s*""".r
   private val payloadOxumRegex =
     s"""${BagInfoKeys.payloadOxum}\\s*:\\s*([0-9]+)\\.([0-9]+)\\s*""".r

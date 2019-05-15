@@ -19,17 +19,17 @@ class BagAuditorTest
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo) {
-        case (bagRootLocation, storageSpace) =>
+        case (root, space) =>
           val maybeAudit = bagAuditor.getAuditSummary(
-            unpackLocation = bagRootLocation,
-            storageSpace = storageSpace
+            location = root,
+            space = space
           )
 
           val result = maybeAudit.success.get
           val summary = result.summary
             .asInstanceOf[AuditSuccessSummary]
 
-          summary.audit.root shouldBe bagRootLocation
+          summary.audit.root shouldBe root
           summary.audit.externalIdentifier shouldBe bagInfo.externalIdentifier
           summary.audit.version shouldBe 1
       }
@@ -41,8 +41,8 @@ class BagAuditorTest
       withBag(bucket, bagRootDirectory = Some("1/2/3")) {
         case (_, storageSpace) =>
           val maybeAudit = bagAuditor.getAuditSummary(
-            unpackLocation = createObjectLocationWith(bucket, key = "1/"),
-            storageSpace = storageSpace
+            location = createObjectLocationWith(bucket, key = "1/"),
+            space = storageSpace
           )
 
           val result = maybeAudit.success.get
@@ -64,8 +64,8 @@ class BagAuditorTest
           )
 
           val maybeAudit = bagAuditor.getAuditSummary(
-            unpackLocation = bagRootLocation,
-            storageSpace = storageSpace
+            location = bagRootLocation,
+            space = storageSpace
           )
 
           val result = maybeAudit.success.get
