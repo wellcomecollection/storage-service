@@ -8,7 +8,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManager, IngestVersionManagerDao, MemoryIngestVersionManagerDao}
 import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
-import uk.ac.wellcome.storage.{LockDao, LockingService}
+import uk.ac.wellcome.storage.{LockDao, LockFailure, LockingService, UnlockFailure}
 
 import scala.util.{Failure, Success, Try}
 
@@ -120,6 +120,50 @@ class VersionPickerTest extends FunSpec with Matchers with ExternalIdentifierGen
         result.failed.get shouldBe a[RuntimeException]
         result.failed.get.getMessage should startWith("Latest version has a newer ingest date")
       }
+    }
+  }
+
+  it("locks around the ingest ID and external identifiers") {
+    val lockDao = new InMemoryLockDao()
+
+    withVersionPicker(lockDao) { picker =>
+      val ingestId = createIngestID
+      val externalIdentifier = createExternalIdentifier
+
+      picker.chooseVersion(
+        externalIdentifier = externalIdentifier,
+        ingestId = ingestId,
+        ingestDate = Instant.now()
+      )
+
+      lockDao.getCurrentLocks shouldBe empty
+      lockDao.history.map { _.id } should contain theSameElementsAs List(
+        s"ingest:$ingestId", s"external:$externalIdentifier"
+      )
+    }
+  }
+
+  it("fails if the locking dao fails") {
+    val lockDao = new LockDao[String, UUID] {
+      override def lock(id: String, contextId: UUID): LockResult = Left(
+        LockFailure(id, new Throwable("BOOM!"))
+      )
+
+      override def unlock(contextId: UUID): UnlockResult = Left(
+        UnlockFailure(contextId, new Throwable("BOOM!"))
+      )
+    }
+
+    withVersionPicker(lockDao) { picker =>
+      val result = picker.chooseVersion(
+        externalIdentifier = createExternalIdentifier,
+        ingestId = createIngestID,
+        ingestDate = Instant.now()
+      )
+
+      result shouldBe a[Failure[_]]
+      result.failed.get shouldBe a[RuntimeException]
+      result.failed.get.getMessage should startWith("Locking error:")
     }
   }
 }
