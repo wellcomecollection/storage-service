@@ -2,20 +2,20 @@ package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import java.io.InputStream
 
-import uk.ac.wellcome.platform.archive.common.verify.{ChecksumAlgorithm, ChecksumValue}
+import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, HashingAlgorithm}
 
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
 case class BagManifest(
-                        checksumAlgorithm: ChecksumAlgorithm,
+                        checksumAlgorithm: HashingAlgorithm,
                         files: List[BagFile]
                       )
 
 object BagManifest {
   val lineRegex: Regex = """(.+?)\s+(.+)""".r
 
-  def create(stream: InputStream, algorithm: ChecksumAlgorithm): Try[BagManifest] = {
+  def create(stream: InputStream, algorithm: HashingAlgorithm): Try[BagManifest] = {
 
     val lines = scala.io.Source
       .fromInputStream(stream)

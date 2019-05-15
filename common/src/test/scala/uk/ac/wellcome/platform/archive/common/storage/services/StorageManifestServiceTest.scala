@@ -5,7 +5,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
-import uk.ac.wellcome.platform.archive.common.verify.ChecksumAlgorithm
+import uk.ac.wellcome.platform.archive.common.verify.SHA256
 import uk.ac.wellcome.storage.ObjectLocation
 
 
@@ -39,12 +39,10 @@ class StorageManifestServiceTest
             storageManifest.space shouldBe space
             storageManifest.info shouldBe bagInfo
 
-            storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
-              "sha256")
+            storageManifest.manifest.checksumAlgorithm shouldBe SHA256
             storageManifest.manifest.files should have size 1
 
-            storageManifest.tagManifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
-              "sha256")
+            storageManifest.tagManifest.checksumAlgorithm shouldBe SHA256
             storageManifest.tagManifest.files should have size 3
             val actualFiles =
               storageManifest.tagManifest.files

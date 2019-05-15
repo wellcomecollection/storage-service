@@ -14,7 +14,7 @@ class S3ObjectVerifierTest
 
   it("returns a failure if the bucket doesn't exist") {
     val badVerifiableLocation = verifiableLocation()
-    val verifiedLocation = objectVerifier.verify(verifiableLocation())
+    val verifiedLocation = objectVerifier.verify(badVerifiableLocation)
 
     verifiedLocation shouldBe a[VerifiedFailure]
     val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
@@ -60,9 +60,9 @@ class S3ObjectVerifierTest
       val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
 
       verifiedFailure.location shouldBe verifiableLocation
-      verifiedFailure.e shouldBe a[AmazonS3Exception]
+      verifiedFailure.e shouldBe a[RuntimeException]
       verifiedFailure.e.getMessage should startWith(
-        "Checksums do not match"
+        "Checksum values do not match"
       )
     }
   }
