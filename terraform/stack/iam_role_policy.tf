@@ -68,6 +68,11 @@ resource "aws_iam_role_policy" "bag_auditor_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
+resource "aws_iam_role_policy" "bag_auditor_locking_table" {
+  role   = "${module.bag_auditor.task_role_name}"
+  policy = "${module.auditor_lock_table.iam_policy}"
+}
+
 # bag_verifier pre-replication
 
 resource "aws_iam_role_policy" "bag_verifier_pre_repl_read_s3_ingests" {
