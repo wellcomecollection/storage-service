@@ -169,4 +169,48 @@ class DynamoIngestVersionManagerDaoTest extends FunSpec with Matchers with Local
       }
     }
   }
+
+  describe("storeNewVersion") {
+    it("stores a record in the table") {
+      withLocalDynamoDbTable { table =>
+        withDao(table) { dao =>
+          val records = (1 to 3).map { version =>
+            VersionRecord(
+              externalIdentifier = createExternalIdentifier,
+              ingestId = createIngestID,
+              ingestDate = Instant.now,
+              version = version
+            )
+          }
+
+          records.foreach { r =>
+            dao.storeNewVersion(r) shouldBe Success(())
+          }
+
+          val storedRecords =
+            Scanamo.scan[VersionRecord](dynamoDbClient)(table.name)
+              .map { _.right.get }
+
+          storedRecords should contain theSameElementsAs records
+        }
+      }
+    }
+
+    it("fails if it cannot reach the table") {
+      withDao(Table("does-not-exist", "does-not-exist")) { dao =>
+        val record = VersionRecord(
+          externalIdentifier = createExternalIdentifier,
+          ingestId = createIngestID,
+          ingestDate = Instant.now,
+          version = 1
+        )
+
+        val result = dao.storeNewVersion(record)
+
+        result shouldBe a[Failure[_]]
+        result.failed.get shouldBe a[ResourceNotFoundException]
+        result.failed.get.getMessage should startWith("Cannot do operations on a non-existent table")
+      }
+    }
+  }
 }
