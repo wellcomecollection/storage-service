@@ -58,10 +58,14 @@ module "bag_auditor" {
     outgoing_topic_arn = "${module.bag_auditor_output_topic.arn}"
     metrics_namespace  = "${local.bag_auditor_service_name}"
     operation_name     = "auditing bag"
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_auditor_service_name}"
+
+    locking_table_name  = "${module.auditor_lock_table.table_name}"
+    locking_table_index = "${module.auditor_lock_table.index_name}"
+
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_auditor_service_name}"
   }
 
-  env_vars_length = 6
+  env_vars_length = 8
 
   cpu    = 512
   memory = 1024
