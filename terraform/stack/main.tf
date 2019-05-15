@@ -62,10 +62,13 @@ module "bag_auditor" {
     locking_table_name  = "${module.auditor_lock_table.table_name}"
     locking_table_index = "${module.auditor_lock_table.index_name}"
 
+    versions_table_name  = "${local.auditor_versions_table_name}"
+    versions_table_index = "${local.auditor_versions_table_index}"
+
     JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_auditor_service_name}"
   }
 
-  env_vars_length = 8
+  env_vars_length = 10
 
   cpu    = 512
   memory = 1024

@@ -11,3 +11,62 @@ module "replicator_lock_table" {
   namespace = "${var.namespace}"
   owner     = "replicator"
 }
+
+local {
+  auditor_versions_table_name  = "${aws_dynamodb_table.auditor_versions_table.name}"
+  auditor_versions_table_index = "ingestId_index"
+}
+
+resource "aws_dynamodb_table" "auditor_versions_table" {
+  name      = "${var.namespace}_auditor_versions_table"
+  hash_key  = "externalIdentifier"
+  range_key = "version"
+
+  billing_mode = "PAY_PER_REQUEST"
+
+  attribute {
+    name = "externalIdentifier"
+    type = "S"
+  }
+
+  attribute {
+    name = "ingestId"
+    type = "S"
+  }
+
+  attribute {
+    name = "version"
+    type = "N"
+  }
+
+  global_secondary_index {
+    name            = "${var.index_name}"
+    hash_key        = "${local.auditor_versions_table_index}"
+    projection_type = "ALL"
+  }
+}
+
+data "aws_iam_policy_document" "auditor_versions_table_table_readwrite" {
+  statement {
+    actions = [
+      "dynamodb:UpdateItem",
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:DeleteItem",
+    ]
+
+    resources = [
+      "${aws_dynamodb_table.auditor_versions_table.arn}",
+    ]
+  }
+
+  statement {
+    actions = [
+      "dynamodb:Query",
+    ]
+
+    resources = [
+      "${aws_dynamodb_table.auditor_versions_table.arn}/index/*",
+    ]
+  }
+}
