@@ -45,7 +45,7 @@ sealed trait VerificationSummary extends Summary {
 object VerificationSummary {
   def incomplete(root: ObjectLocation, e: Throwable,
                  t: Instant): VerificationIncompleteSummary = {
-    VerificationIncompleteSummary(root, e, t, Some(Instant.now()))
+    VerificationIncompleteSummary(root, e, t, None)
   }
   def create(
               root: ObjectLocation,

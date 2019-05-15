@@ -2,8 +2,10 @@ package uk.ac.wellcome.platform.archive.common.verify
 
 import java.io.InputStream
 
+import grizzled.slf4j.Logging
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils.{getDigest, updateDigest}
+import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.Try
@@ -19,46 +21,56 @@ case class Checksum(
                      algorithm: HashingAlgorithm,
                      value: ChecksumValue
                    )
-object Checksum {
+object Checksum extends Logging {
   def create(
              inputStream: InputStream,
              algorithm: HashingAlgorithm
-           ): Try[Checksum] = Try {
-    Checksum(
-      algorithm,
-      ChecksumValue(inputStream, algorithm)
-    )
+           ): Try[Checksum] = {
+    debug(s"Creating Checksum for $inputStream with  $algorithm")
+    val checksumValue = ChecksumValue.create(inputStream, algorithm)
+    val checksum = checksumValue.map(Checksum(algorithm, _))
+    debug(s"Got: $checksum")
+    checksum
   }
 }
 
 sealed trait HashingAlgorithm {
   val value: String
+  val pathRepr: String
   override def toString: String = value
 }
 
-case class ChecksumAlgorithm(value: String) extends HashingAlgorithm
-
 case object SHA256 extends HashingAlgorithm {
-  val value = "SHA-256"
+  val value = MessageDigestAlgorithms.SHA_256
+  val pathRepr = "sha256"
 }
 
 case object MD5 extends HashingAlgorithm {
-  val value = "MD5"
+  val value = MessageDigestAlgorithms.MD5
+  val pathRepr = "md5"
 }
 
 case class ChecksumValue(value: String)
-object ChecksumValue {
-  def apply(
+object ChecksumValue extends Logging {
+  def create(
                 inputStream: InputStream,
                 algorithm: HashingAlgorithm
-              ): ChecksumValue = {
-    ChecksumValue(
-      Hex.encodeHexString(
-        updateDigest(
-          getDigest(algorithm.value),
-          inputStream
-        ).digest
+              ): Try[ChecksumValue] = {
+    debug(s"Creating ChecksumValue from $inputStream, $algorithm")
+
+    val checksumValue = Try {
+      ChecksumValue(
+        Hex.encodeHexString(
+          updateDigest(
+            getDigest(algorithm.value),
+            inputStream
+          ).digest
+        )
       )
-    )
+    }
+
+    debug(s"Got: $checksumValue")
+
+    checksumValue
   }
 }

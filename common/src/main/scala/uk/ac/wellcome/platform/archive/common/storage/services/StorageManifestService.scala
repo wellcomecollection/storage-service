@@ -5,7 +5,7 @@ import java.time.Instant
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
-import uk.ac.wellcome.platform.archive.common.verify.ChecksumAlgorithm
+import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.Try
@@ -22,7 +22,7 @@ class StorageManifestService(
   import S3StreamableInstances._
   import uk.ac.wellcome.platform.archive.common.bagit.models._
 
-  val checksumAlgorithm = ChecksumAlgorithm("sha256")
+  val checksumAlgorithm = SHA256
 
   def createManifest(
                       root: ObjectLocation,
@@ -52,8 +52,8 @@ class StorageManifestService(
       bagInfo <- BagInfo.create(stream)
     } yield bagInfo
 
-  val fileManifest = (a: ChecksumAlgorithm) => s"manifest-$a.txt"
-  val tagManifest = (a: ChecksumAlgorithm) => s"tagmanifest-$a.txt"
+  val fileManifest = (a: HashingAlgorithm) => s"manifest-${a.pathRepr}.txt"
+  val tagManifest = (a: HashingAlgorithm) => s"tagmanifest-${a.pathRepr}.txt"
 
   def createFileManifest(root: ObjectLocation): Try[BagManifest] =
     createManifest(fileManifest(checksumAlgorithm), root)

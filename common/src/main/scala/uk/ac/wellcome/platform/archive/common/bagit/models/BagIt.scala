@@ -1,12 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable._
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumAlgorithm, VerifiableLocation}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, HashingAlgorithm, VerifiableLocation}
 import uk.ac.wellcome.storage.ObjectLocation
 
 object BagIt {
   val checksum =
-    (algorithm: ChecksumAlgorithm) =>
+    (algorithm: HashingAlgorithm) =>
       (file: BagFile) =>
         Checksum(
           algorithm,
@@ -16,7 +16,7 @@ object BagIt {
     (file: BagFile) => file.resolve(root)
 
   val verifiable =
-    (algorithm: ChecksumAlgorithm) =>
+    (algorithm: HashingAlgorithm) =>
       (root: ObjectLocation) =>
         (file: BagFile) =>
           VerifiableLocation(
