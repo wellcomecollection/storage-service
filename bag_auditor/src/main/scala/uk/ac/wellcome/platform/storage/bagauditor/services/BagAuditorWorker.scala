@@ -51,6 +51,8 @@ class BagAuditorWorker(
 
       auditStep <- Future.fromTry {
         bagAuditor.getAuditSummary(
+          ingestId = payload.ingestId,
+          ingestDate = payload.ingestDate,
           unpackLocation = payload.unpackedBagLocation,
           storageSpace = payload.storageSpace
         )

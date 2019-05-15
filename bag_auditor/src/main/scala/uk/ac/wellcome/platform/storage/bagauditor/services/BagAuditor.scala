@@ -7,6 +7,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   ExternalIdentifier
 }
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
@@ -25,8 +26,11 @@ class BagAuditor(implicit s3Client: AmazonS3) {
 
   type IngestStep = Try[IngestStepResult[AuditSummary]]
 
-  def getAuditSummary(unpackLocation: ObjectLocation,
-                      storageSpace: StorageSpace): IngestStep =
+  def getAuditSummary(
+    ingestId: IngestID,
+    ingestDate: Instant,
+    unpackLocation: ObjectLocation,
+    storageSpace: StorageSpace): IngestStep =
     Try {
       val startTime = Instant.now()
 
