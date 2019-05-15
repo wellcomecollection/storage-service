@@ -1,28 +1,25 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
 import com.gu.scanamo.DynamoFormat
-import com.gu.scanamo.error.TypeCoercionError
 import io.circe.{Decoder, Encoder, Json}
-import uk.ac.wellcome.json.JsonUtil.{fromJson, toJson}
 
 case class StorageSpace(underlying: String) extends AnyVal {
   override def toString: String = underlying
 }
 
 object StorageSpace {
-  implicit val spaceEnc = Encoder.instance[StorageSpace] {
+  implicit val encoder: Encoder[StorageSpace] = Encoder.instance[StorageSpace] {
     space: StorageSpace =>
       Json.fromString(space.toString)
   }
 
-  implicit val spaceDec = Decoder.instance[StorageSpace](cursor =>
+  implicit val decoder: Decoder[StorageSpace] = Decoder.instance[StorageSpace](cursor =>
     cursor.value.as[String].map(StorageSpace(_)))
 
-  implicit def fmtSpace =
-    DynamoFormat.xmap[StorageSpace, String](
-      fromJson[StorageSpace](_)(spaceDec).toEither.left
-        .map(TypeCoercionError)
+  implicit def evidence: DynamoFormat[StorageSpace] =
+    DynamoFormat.coercedXmap[StorageSpace, String, IllegalArgumentException](
+      StorageSpace(_)
     )(
-      toJson[StorageSpace](_).get
+      _.underlying
     )
 }
