@@ -7,8 +7,8 @@ trait Verifiable[T] {
 object Verifiable {
   implicit def verifiable[T](
     implicit
-      verifiable: T => List[VerifiableLocation]
-      ) =
+    verifiable: T => List[VerifiableLocation]
+  ) =
     new Verifiable[T] {
       override def create(t: T): List[VerifiableLocation] =
         verifiable(t)

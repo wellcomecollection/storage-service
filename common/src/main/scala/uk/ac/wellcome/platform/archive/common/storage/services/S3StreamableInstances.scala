@@ -10,7 +10,9 @@ import scala.util.Try
 
 object S3StreamableInstances {
 
-  implicit class ObjectLocationStreamable(location: ObjectLocation)(implicit s3Client: AmazonS3) extends Logging {
+  implicit class ObjectLocationStreamable(location: ObjectLocation)(
+    implicit s3Client: AmazonS3)
+      extends Logging {
     def toInputStream = {
       debug(s"Converting $location to InputStream")
 
@@ -27,7 +29,9 @@ object S3StreamableInstances {
     }
   }
 
-  implicit class ResolvableStreamable[T](t: T)(implicit s3Client: AmazonS3, resolver: Resolvable[T]) extends Logging {
+  implicit class ResolvableStreamable[T](t: T)(implicit s3Client: AmazonS3,
+                                               resolver: Resolvable[T])
+      extends Logging {
     def from(root: ObjectLocation) = {
       debug(s"Attempting to resolve Streamable $t")
 

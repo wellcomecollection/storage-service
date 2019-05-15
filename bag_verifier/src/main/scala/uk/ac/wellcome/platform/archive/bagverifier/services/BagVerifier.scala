@@ -15,8 +15,8 @@ import scala.util.{Failure, Success, Try}
 
 class BagVerifier()(
   implicit
-    bagService: BagService,
-    verifier: Verifier
+  bagService: BagService,
+  verifier: Verifier
 ) extends Logging {
 
   type IngestStep = Try[IngestStepResult[VerificationSummary]]
@@ -32,16 +32,12 @@ class BagVerifier()(
     }
 
     verification match {
-      case Success(success@VerificationSuccessSummary(_,_,_,_)) =>
+      case Success(success @ VerificationSuccessSummary(_, _, _, _)) =>
         IngestStepSucceeded(success)
-      case Success(failure@VerificationFailureSummary(_,_,_,_)) =>
-        IngestFailed(
-          failure,
-          new RuntimeException("Invalid bag!"))
-      case Success(failure@VerificationIncompleteSummary(_,e,_,_)) =>
-        IngestFailed(
-          failure,
-          new RuntimeException("Could not verify!"))
+      case Success(failure @ VerificationFailureSummary(_, _, _, _)) =>
+        IngestFailed(failure, new RuntimeException("Invalid bag!"))
+      case Success(failure @ VerificationIncompleteSummary(_, e, _, _)) =>
+        IngestFailed(failure, new RuntimeException("Could not verify!"))
       case Failure(e) =>
         IngestFailed(
           VerificationSummary.incomplete(root, new UnknownError(), startTime),

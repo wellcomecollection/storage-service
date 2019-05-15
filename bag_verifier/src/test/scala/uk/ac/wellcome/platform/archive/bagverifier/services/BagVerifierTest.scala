@@ -3,12 +3,22 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, OptionValues, TryValues}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.bagverifier.models.{VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  VerificationFailureSummary,
+  VerificationIncompleteSummary,
+  VerificationSuccessSummary
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  FileEntry
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepSucceeded
+}
 
 class BagVerifierTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with TryValues
@@ -71,8 +81,7 @@ class BagVerifierTest
             val error = location.e
 
             error shouldBe a[RuntimeException]
-            error.getMessage should startWith(
-              "Checksum values do not match:")
+            error.getMessage should startWith("Checksum values do not match:")
           }
       }
     }
@@ -103,8 +112,7 @@ class BagVerifierTest
             val error = location.e
 
             error shouldBe a[RuntimeException]
-            error.getMessage should startWith(
-              "Checksum values do not match:")
+            error.getMessage should startWith("Checksum values do not match:")
           }
       }
     }
@@ -113,9 +121,9 @@ class BagVerifierTest
   it("fails a bag if the file manifest refers to a non-existent file") {
     def createDataManifestWithExtraFile(
       dataFiles: StringTuple): Option[FileEntry] =
-        createValidDataManifest(
-          dataFiles ++ List(("doesnotexist", "doesnotexist"))
-        )
+      createValidDataManifest(
+        dataFiles ++ List(("doesnotexist", "doesnotexist"))
+      )
 
     withLocalS3Bucket { bucket =>
       withBag(
@@ -166,8 +174,7 @@ class BagVerifierTest
             val error = summary.e
 
             error shouldBe a[RuntimeException]
-            error.getMessage should startWith(
-              "Error getting file manifest")
+            error.getMessage should startWith("Error getting file manifest")
           }
       }
     }
@@ -191,8 +198,7 @@ class BagVerifierTest
             val error = summary.e
 
             error shouldBe a[RuntimeException]
-            error.getMessage should startWith(
-              "Error getting tag manifest")
+            error.getMessage should startWith("Error getting tag manifest")
           }
       }
     }

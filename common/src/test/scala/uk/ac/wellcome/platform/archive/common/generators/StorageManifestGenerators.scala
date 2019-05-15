@@ -2,9 +2,20 @@ package uk.ac.wellcome.platform.archive.common.generators
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFile, BagInfo, BagManifest, BagPath}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{StandardStorageProvider, StorageLocation}
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFile,
+  BagInfo,
+  BagManifest,
+  BagPath
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  StandardStorageProvider,
+  StorageLocation
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3

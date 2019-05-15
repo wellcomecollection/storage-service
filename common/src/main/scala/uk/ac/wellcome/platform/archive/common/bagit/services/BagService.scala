@@ -26,8 +26,10 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
 
     val bag = for {
       bagInfo <- recoverable(createBagInfo(root))("Error getting bag info")
-      fileManifest <- recoverable(createFileManifest(root))("Error getting file manifest")
-      tagManifest <- recoverable(createTagManifest(root))("Error getting tag manifest")
+      fileManifest <- recoverable(createFileManifest(root))(
+        "Error getting file manifest")
+      tagManifest <- recoverable(createTagManifest(root))(
+        "Error getting tag manifest")
     } yield Bag(bagInfo, fileManifest, tagManifest)
 
     debug(s"BagService got: $bag")
@@ -35,10 +37,11 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
     bag
   }
 
-  def createBagInfo(root: ObjectLocation): Try[BagInfo] = for {
-    stream <- BagPath("bag-info.txt").from(root)
-    bagInfo <- BagInfo.create(stream)
-  } yield bagInfo
+  def createBagInfo(root: ObjectLocation): Try[BagInfo] =
+    for {
+      stream <- BagPath("bag-info.txt").from(root)
+      bagInfo <- BagInfo.create(stream)
+    } yield bagInfo
 
   val fileManifest = (a: HashingAlgorithm) => s"manifest-${a.pathRepr}.txt"
   val tagManifest = (a: HashingAlgorithm) => s"tagmanifest-${a.pathRepr}.txt"
@@ -50,11 +53,11 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
     createManifest(tagManifest(checksumAlgorithm), root)
 
   private def createManifest(
-                              name: String,
-                              root: ObjectLocation
-                            ): Try[BagManifest] = for {
-    stream <- BagPath(name).from(root)
-    manifest <- BagManifest.create(stream, checksumAlgorithm)
-  } yield manifest
+    name: String,
+    root: ObjectLocation
+  ): Try[BagManifest] =
+    for {
+      stream <- BagPath(name).from(root)
+      manifest <- BagManifest.create(stream, checksumAlgorithm)
+    } yield manifest
 }
-

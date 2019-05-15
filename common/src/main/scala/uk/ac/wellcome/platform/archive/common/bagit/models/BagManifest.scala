@@ -2,15 +2,18 @@ package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import java.io.{BufferedReader, InputStream, InputStreamReader}
 
-import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, HashingAlgorithm}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  ChecksumValue,
+  HashingAlgorithm
+}
 
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
 case class BagManifest(
-                        checksumAlgorithm: HashingAlgorithm,
-                        files: List[BagFile]
-                      )
+  checksumAlgorithm: HashingAlgorithm,
+  files: List[BagFile]
+)
 
 object BagManifest {
 
@@ -19,7 +22,8 @@ object BagManifest {
 
   val lineRegex: Regex = """(.+?)\s+(.+)""".r
 
-  def create(inputStream: InputStream, algorithm: HashingAlgorithm): Try[BagManifest] = {
+  def create(inputStream: InputStream,
+             algorithm: HashingAlgorithm): Try[BagManifest] = {
 
     val bufferedReader = new BufferedReader(
       new InputStreamReader(inputStream)
@@ -31,7 +35,7 @@ object BagManifest {
       .filter { _.nonEmpty }
       .toList
 
-    val eitherFiles = lines.map(createBagFile(_,None))
+    val eitherFiles = lines.map(createBagFile(_, None))
 
     // Collect left
     val errorStrings = eitherFiles.collect {
@@ -43,7 +47,7 @@ object BagManifest {
       case Right(bagFile) => bagFile
     }
 
-    if(errorStrings.isEmpty) {
+    if (errorStrings.isEmpty) {
       Success(BagManifest(algorithm, files))
     } else {
       Failure(new RuntimeException(s"Failed to parse: ${lines}"))
@@ -54,12 +58,13 @@ object BagManifest {
     line: String,
     maybeRoot: Option[String]
   ): Either[String, BagFile] = line match {
-    case lineRegex(checksumString, itemPathString) => Right(
-      BagFile(
-        ChecksumValue.create(checksumString),
-        BagPath.create(itemPathString)
+    case lineRegex(checksumString, itemPathString) =>
+      Right(
+        BagFile(
+          ChecksumValue.create(checksumString),
+          BagPath.create(itemPathString)
+        )
       )
-    )
     case l => Left(l)
   }
 }

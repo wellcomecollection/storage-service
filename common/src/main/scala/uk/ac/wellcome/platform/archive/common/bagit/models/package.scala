@@ -14,23 +14,27 @@ package object models {
   // resolvers
 
   implicit val bagPathResolver: Resolvable[BagPath] = new Resolvable[BagPath] {
-    override def resolve(root: ObjectLocation)(bagPath: BagPath): ObjectLocation = {
+    override def resolve(root: ObjectLocation)(
+      bagPath: BagPath): ObjectLocation = {
       val paths = Paths.get(root.key, bagPath.value)
       root.copy(key = paths.toString)
     }
   }
 
   implicit val bagFileResolver: Resolvable[BagFile] = new Resolvable[BagFile] {
-    override def resolve(root: ObjectLocation)(bagFile: BagFile): ObjectLocation = {
+    override def resolve(root: ObjectLocation)(
+      bagFile: BagFile): ObjectLocation = {
       bagFile.path.resolve(root)
     }
   }
 
-  implicit val bagManifest: Resolvable[BagManifest] = new Resolvable[BagManifest] {
-    override def resolve(root: ObjectLocation)(bag: BagManifest): ObjectLocation = {
-      root
+  implicit val bagManifest: Resolvable[BagManifest] =
+    new Resolvable[BagManifest] {
+      override def resolve(root: ObjectLocation)(
+        bag: BagManifest): ObjectLocation = {
+        root
+      }
     }
-  }
 
   implicit val bagResolver: Resolvable[Bag] = new Resolvable[Bag] {
     override def resolve(root: ObjectLocation)(bag: Bag): ObjectLocation = {
@@ -46,13 +50,12 @@ package object models {
     f: ObjectLocation => T => List[VerifiableLocation]
   ) {
     def verifiable(
-                  root: ObjectLocation
-                ) = {
+      root: ObjectLocation
+    ) = {
 
       new Verifiable[T] {
         override def create(t: T): List[VerifiableLocation] = {
           val resolved = resolver.resolve(root)(t)
-
 
           f(resolved)(t)
         }
@@ -62,11 +65,13 @@ package object models {
 
   // ObjectLocation => T => List[VerifiableLocation]
 
-  implicit def bagManifestVerifiable(root: ObjectLocation)(manifest: BagManifest): List[VerifiableLocation] =
+  implicit def bagManifestVerifiable(root: ObjectLocation)(
+    manifest: BagManifest): List[VerifiableLocation] =
     verifyFileManifest(manifest)(root)
 
   implicit def bagVerifiable(root: ObjectLocation)(bag: Bag) = {
-    bagManifestVerifiable(root)(bag.manifest) ++ bagManifestVerifiable(root)(bag.tagManifest)
+    bagManifestVerifiable(root)(bag.manifest) ++ bagManifestVerifiable(root)(
+      bag.tagManifest)
   }
 
 }

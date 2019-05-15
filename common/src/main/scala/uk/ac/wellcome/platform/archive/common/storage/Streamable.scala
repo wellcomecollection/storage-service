@@ -4,7 +4,6 @@ import java.io.InputStream
 
 import scala.util.Try
 
-
 trait Streamable[T, IS <: InputStream] {
   def stream(t: T): Try[IS]
 }
@@ -12,7 +11,7 @@ trait Streamable[T, IS <: InputStream] {
 object Streamable {
   implicit def streamable[T, IS <: InputStream](
     implicit
-      streamConverter: T => Try[IS]
+    streamConverter: T => Try[IS]
   ) =
     new Streamable[T, IS] {
       override def stream(t: T): Try[IS] =

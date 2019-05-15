@@ -4,17 +4,24 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  FileEntry
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.common.verify.SHA256
 
 class StorageManifestServiceTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ScalaFutures
     with BagLocationFixtures {
 
-  def withStorageManifestService[R](testWith: TestWith[StorageManifestService, R]): R =
+  def withStorageManifestService[R](
+    testWith: TestWith[StorageManifestService, R]): R =
     testWith(new StorageManifestService())
 
   it("returns a StorageManifest if reading a bag location succeeds") {
@@ -23,7 +30,6 @@ class StorageManifestServiceTest
       withBag(bucket, bagInfo = bagInfo) {
         case (root, space) =>
           withStorageManifestService { service =>
-
             val maybeManifest = service.retrieve(
               root = root,
               space = space
@@ -62,7 +68,6 @@ class StorageManifestServiceTest
     it("if no files are at the BagLocation") {
       withLocalS3Bucket { bucket =>
         withStorageManifestService { service =>
-
           val maybeManifest = service.retrieve(
             root = createObjectLocationWith(bucket),
             space = createStorageSpace
@@ -86,7 +91,6 @@ class StorageManifestServiceTest
             )
 
             withStorageManifestService { service =>
-
               val maybeManifest = service.retrieve(
                 root = root,
                 space = storageSpace
@@ -112,7 +116,6 @@ class StorageManifestServiceTest
             )
 
             withStorageManifestService { service =>
-
               val maybeManifest =
                 service.retrieve(root, space)
 
@@ -132,9 +135,7 @@ class StorageManifestServiceTest
           createDataManifest =
             _ => Some(FileEntry("manifest-sha256.txt", "bleeergh!"))) {
           case (root, space) =>
-
             withStorageManifestService { service =>
-
               val maybeManifest = service.retrieve(
                 root = root,
                 space = space
@@ -160,14 +161,12 @@ class StorageManifestServiceTest
             )
 
             withStorageManifestService { service =>
-
               val maybeManifest = service.retrieve(
                 root = root,
                 space = space
               )
 
               val err = maybeManifest.failed.get
-
 
               err shouldBe a[RuntimeException]
               err.getMessage should include("The specified key does not exist.")
@@ -184,16 +183,13 @@ class StorageManifestServiceTest
           createTagManifest =
             _ => Some(FileEntry("tagmanifest-sha256.txt", "blaaargh!"))) {
           case (root, space) =>
-
             withStorageManifestService { service =>
-
               val maybeManifest = service.retrieve(
                 root = root,
                 space = space
               )
 
               val err = maybeManifest.failed.get
-
 
               err shouldBe a[RuntimeException]
               err.getMessage shouldBe "Error getting tag manifest: Failed to parse: List(blaaargh!)"

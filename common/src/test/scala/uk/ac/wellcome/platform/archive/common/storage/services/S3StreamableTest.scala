@@ -10,7 +10,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
 class S3StreamableTest
-  extends FunSpec
+    extends FunSpec
     with S3
     with ScalaFutures
     with TryValues
@@ -41,8 +41,8 @@ class S3StreamableTest
 
       val myStream = myThing.from(invalidRoot)
 
-      myStream.failed.get
-        .getMessage should include("The specified bucket is not valid")
+      myStream.failed.get.getMessage should include(
+        "The specified bucket is not valid")
     }
 
     it("produces a success from a valid ObjectLocation") {
