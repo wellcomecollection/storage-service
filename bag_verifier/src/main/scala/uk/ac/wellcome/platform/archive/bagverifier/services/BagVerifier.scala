@@ -24,7 +24,7 @@ class BagVerifier()(
   def verify(root: ObjectLocation): IngestStep = Try {
     val startTime = Instant.now()
 
-    val verification = bagService.create(root).map { bag =>
+    val verification = bagService.retrieve(root).map { bag =>
       implicit val verifiable = bag.verifiable(root)
       VerificationSummary.create(root, bag.verify, startTime)
     } recover {

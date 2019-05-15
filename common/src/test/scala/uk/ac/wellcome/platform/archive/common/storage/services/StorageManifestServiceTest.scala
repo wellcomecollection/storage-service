@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.verify.SHA256
@@ -29,7 +30,7 @@ class StorageManifestServiceTest
         case (root, space) =>
           withStorageManifestService(root) { service =>
 
-            val maybeManifest = service.createManifest(
+            val maybeManifest = service.retrieve(
               root = root,
               space = space
             )
@@ -44,15 +45,11 @@ class StorageManifestServiceTest
 
             storageManifest.tagManifest.checksumAlgorithm shouldBe SHA256
             storageManifest.tagManifest.files should have size 3
-            val actualFiles =
-              storageManifest.tagManifest.files
-                .map {
-                  _.path.toString
-                }
+            val actualFiles = storageManifest.tagManifest.files.map(_.path)
             val expectedFiles = List(
-              "manifest-sha256.txt",
-              "bag-info.txt",
-              "bagit.txt"
+              BagPath("manifest-sha256.txt"),
+              BagPath("bag-info.txt"),
+              BagPath("bagit.txt")
             )
             actualFiles should contain theSameElementsAs expectedFiles
 
@@ -76,7 +73,7 @@ class StorageManifestServiceTest
         withStorageManifestService(root) { service =>
 
 
-          val maybeManifest = service.createManifest(
+          val maybeManifest = service.retrieve(
             root = createObjectLocationWith(bucket),
             space = createStorageSpace
           )
@@ -100,7 +97,7 @@ class StorageManifestServiceTest
 
             withStorageManifestService(root) { service =>
 
-              val maybeManifest = service.createManifest(
+              val maybeManifest = service.retrieve(
                 root = root,
                 space = storageSpace
               )
@@ -127,7 +124,7 @@ class StorageManifestServiceTest
             withStorageManifestService(root) { service =>
 
               val maybeManifest =
-                service.createManifest(root, space)
+                service.retrieve(root, space)
 
               val err = maybeManifest.failed.get
 
@@ -148,7 +145,7 @@ class StorageManifestServiceTest
 
             withStorageManifestService(root) { service =>
 
-              val maybeManifest = service.createManifest(
+              val maybeManifest = service.retrieve(
                 root = root,
                 space = space
               )
@@ -156,7 +153,7 @@ class StorageManifestServiceTest
               val err = maybeManifest.failed.get
 
               err shouldBe a[RuntimeException]
-              err.getMessage shouldBe "Line <<bleeergh!>> is incorrectly formatted!"
+              err.getMessage shouldBe "Error getting file manifest: Failed to parse: List(bleeergh!)"
             }
         }
 
@@ -174,7 +171,7 @@ class StorageManifestServiceTest
 
             withStorageManifestService(root) { service =>
 
-              val maybeManifest = service.createManifest(
+              val maybeManifest = service.retrieve(
                 root = root,
                 space = space
               )
@@ -200,7 +197,7 @@ class StorageManifestServiceTest
 
             withStorageManifestService(root) { service =>
 
-              val maybeManifest = service.createManifest(
+              val maybeManifest = service.retrieve(
                 root = root,
                 space = space
               )
@@ -209,7 +206,7 @@ class StorageManifestServiceTest
 
 
               err shouldBe a[RuntimeException]
-              err.getMessage shouldBe "Line <<blaaargh!>> is incorrectly formatted!"
+              err.getMessage shouldBe "Error getting tag manifest: Failed to parse: List(blaaargh!)"
             }
         }
       }

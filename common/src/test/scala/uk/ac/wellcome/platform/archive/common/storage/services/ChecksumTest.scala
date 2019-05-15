@@ -4,7 +4,7 @@ import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, SHA256}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, SHA256}
 
 import scala.util.Success
 
@@ -23,8 +23,12 @@ class ChecksumTest
     val content = "text"
     val inputStream = toInputStream(content)
 
-    val expectedChecksum =
-      "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
+    val expectedChecksum = Checksum(
+      SHA256,
+      ChecksumValue(
+        "982d9e3eb996f559e633f4d194def3761d909f5a3b647d1a851fead67c32c9d1"
+      )
+    )
 
     val actualChecksumTry = Checksum.create(
       inputStream,

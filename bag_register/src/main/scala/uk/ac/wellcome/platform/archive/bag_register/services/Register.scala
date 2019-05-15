@@ -30,6 +30,7 @@ class Register(
     bagRootLocation: ObjectLocation,
     storageSpace: StorageSpace
   ): FutureSummary = {
+
     val registration = RegistrationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,
@@ -37,11 +38,12 @@ class Register(
     )
 
     for {
-      manifest <- storageManifestService
-        .createManifest(
+      manifest <- Future.fromTry(storageManifestService
+        .retrieve(
           root = bagRootLocation,
           space = storageSpace
         )
+      )
 
       registrationWithBagId = registration.copy(bagId = Some(manifest.id))
 

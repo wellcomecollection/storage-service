@@ -21,11 +21,11 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
     }
   }
 
-  def create(root: ObjectLocation): Try[Bag] = {
+  def retrieve(root: ObjectLocation): Try[Bag] = {
     debug(s"BagService attempting to create Bag @ $root")
 
     val bag = for {
-      bagInfo <- createBagInfo(root)
+      bagInfo <- recoverable(createBagInfo(root))("Error getting bag info")
       fileManifest <- recoverable(createFileManifest(root))("Error getting file manifest")
       tagManifest <- recoverable(createTagManifest(root))("Error getting tag manifest")
     } yield Bag(bagInfo, fileManifest, tagManifest)
