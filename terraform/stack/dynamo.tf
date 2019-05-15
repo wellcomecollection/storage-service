@@ -40,8 +40,8 @@ resource "aws_dynamodb_table" "auditor_versions_table" {
   }
 
   global_secondary_index {
-    name            = "${var.index_name}"
-    hash_key        = "${local.auditor_versions_table_index}"
+    name            = "${local.auditor_versions_table_index}"
+    hash_key        = "ingestId"
     projection_type = "ALL"
   }
 }
