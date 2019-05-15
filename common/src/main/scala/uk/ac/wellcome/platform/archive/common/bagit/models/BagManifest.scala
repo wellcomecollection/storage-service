@@ -34,7 +34,7 @@ object BagManifest {
     if(errorStrings.isEmpty) {
       Success(BagManifest(algorithm, files))
     } else {
-      Failure(new Throwable(s"Failed to parse: ${lines}"))
+      Failure(new RuntimeException(s"Failed to parse: ${lines}"))
     }
   }
 

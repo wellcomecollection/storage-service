@@ -133,7 +133,7 @@ class BagVerifierTest
             val summary = result.summary
               .asInstanceOf[VerificationFailureSummary]
             val verification = summary.verification.value
-            
+
             verification.success should have size expectedFileCount
             verification.failure should have size 1
 

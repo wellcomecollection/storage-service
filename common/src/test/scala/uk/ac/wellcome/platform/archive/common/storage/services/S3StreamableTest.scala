@@ -45,25 +45,25 @@ class S3StreamableTest
         .getMessage should include("The specified bucket is not valid")
     }
 
-    it("produces a success from an valid ObjectLocation") {
+    it("produces a success from a valid ObjectLocation") {
       withLocalS3Bucket { bucket =>
         val key = randomAlphanumeric()
-        val content = randomAlphanumeric()
+        val thingStuff = randomAlphanumeric()
 
-        s3Client.putObject(bucket.name, key, content)
+        s3Client.putObject(bucket.name, s"$key/$thingStuff", thingStuff)
 
         val validRoot = ObjectLocation(
           bucket.name,
           key
         )
 
-        val myThing = Thing(randomAlphanumeric())
+        val myThing = Thing(thingStuff)
 
         val inputStream = myThing.from(validRoot).get
 
         scala.io.Source
           .fromInputStream(inputStream)
-          .mkString shouldEqual content
+          .mkString shouldEqual thingStuff
       }
     }
   }
