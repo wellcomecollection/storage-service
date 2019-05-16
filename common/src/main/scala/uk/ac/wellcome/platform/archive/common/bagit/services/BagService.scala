@@ -6,29 +6,46 @@ import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInsta
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
+
+object TryHard {
+  implicit class Recoverable[T](tryT: Try[T]) {
+    def recoverWithMessage(message: String) = {
+      tryT.recoverWith {
+        case e => Failure(new RuntimeException(s"$message: ${e.getMessage}"))
+      }
+    }
+  }
+
+  implicit class Available[T](maybeT: Option[T]) {
+    def unavailableWithMessage(message: String) =
+      Try(maybeT.get).recoverWith {
+        case e => Failure(new RuntimeException(message))
+      }
+
+  }
+}
 
 class BagService()(implicit s3Client: AmazonS3) extends Logging {
 
+  import TryHard._
   import S3StreamableInstances._
   import uk.ac.wellcome.platform.archive.common.bagit.models._
 
   val checksumAlgorithm = SHA256
 
-  private def recoverable[T](tryT: Try[T])(message: String) = {
-    tryT.recoverWith {
-      case e => Failure(new RuntimeException(s"$message: ${e.getMessage}"))
-    }
-  }
-
   def retrieve(root: ObjectLocation): Try[Bag] = {
     debug(s"BagService attempting to create Bag @ $root")
 
     val bag = for {
-      bagInfo <- recoverable(createBagInfo(root))("Error getting bag info")
-      fileManifest <- recoverable(createFileManifest(root))("Error getting file manifest")
-      tagManifest <- recoverable(createTagManifest(root))("Error getting tag manifest")
-
+      bagInfo <- createBagInfo(root)
+        .recoverWithMessage("Error getting bag info")
+      fileManifest <- createFileManifest(root)
+        .recoverWithMessage("Error getting file manifest")
+      tagManifest <- createTagManifest(root)
+        .recoverWithMessage("Error getting tag manifest")
+      bagFetch <- createBagFetch(root)
+        .recoverWithMessage("Error getting fetch")
     } yield Bag(bagInfo, fileManifest, tagManifest)
 
     debug(s"BagService got: $bag")
@@ -36,21 +53,18 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
     bag
   }
 
-  def createBagInfo(root: ObjectLocation): Try[BagInfo] = for {
-    stream <- BagPath("bag-info.txt").from(root)
-    bagInfo <- BagInfo.create(stream)
-  } yield bagInfo
-
   val fileManifest = (a: HashingAlgorithm) => s"manifest-${a.pathRepr}.txt"
   val tagManifest = (a: HashingAlgorithm) => s"tagmanifest-${a.pathRepr}.txt"
   val bagFetch = "fetch.txt"
 
-  def createBagFetch(root: ObjectLocation): Try[BagFetch] = {
-    for {
-      stream <- BagPath(bagFetch).from(root)
-      fetch <- BagFetch.create(stream)
-    } yield fetch
-  }
+  def createBagFetch(root: ObjectLocation): Try[Option[BagFetch]] =
+    BagPath("fetch.txt").from(root).flatMap {
+      case Some(inputStream) => BagFetch
+        .create(inputStream)
+        .map(Some(_))
+
+      case None => Success(None)
+    }
 
   def createFileManifest(root: ObjectLocation): Try[BagManifest] =
     createManifest(fileManifest(checksumAlgorithm), root)
@@ -62,10 +76,18 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
                               name: String,
                               root: ObjectLocation
                             ): Try[BagManifest] = for {
-    stream <- BagPath(name).from(root)
+    maybeStream <- BagPath(name).from(root)
+    stream <- maybeStream
+      .unavailableWithMessage(s"$name is not available")
     manifest <- BagManifest.create(stream, checksumAlgorithm)
   } yield manifest
 
-  def
+  def createBagInfo(root: ObjectLocation): Try[BagInfo] = for {
+    maybeStream <- BagPath("bag-info.txt").from(root)
+    stream <- maybeStream
+      .unavailableWithMessage("bag-info.txt is not available")
+    bagInfo <- BagInfo.create(stream)
+  } yield bagInfo
+
 }
 

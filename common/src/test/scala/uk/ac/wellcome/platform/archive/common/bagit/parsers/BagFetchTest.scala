@@ -82,7 +82,7 @@ class BagFetchTest extends FunSpec with Matchers {
           filepath = "logo.png")
       )
 
-      BagFetch.create(contents).get shouldBe expected
+      BagFetch.create(contents).get.files shouldBe expected
     }
 
     it("handles an empty line in the fetch.txt") {
@@ -103,7 +103,7 @@ class BagFetchTest extends FunSpec with Matchers {
           filepath = "logo.png")
       )
 
-      BagFetch.create(contents).get shouldBe expected
+      BagFetch.create(contents).get.files shouldBe expected
     }
 
     it("correctly decodes a percent-encoded CR/LF/CRLF in the file path") {
@@ -113,7 +113,7 @@ class BagFetchTest extends FunSpec with Matchers {
            |http://example.org/abc - example%0D%0A3%0D%0A.txt
        """.stripMargin)
 
-      BagFetch.create(contents).get.map { _.filepath } shouldBe Seq(
+      BagFetch.create(contents).get.files.map { _.filepath } shouldBe Seq(
         "example\r1\r.txt",
         "example\n2\n.txt",
         "example\r\n3\r\n.txt"

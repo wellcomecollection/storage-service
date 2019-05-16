@@ -71,7 +71,7 @@ class StorageManifestServiceTest
           val err = maybeManifest.failed.get
 
           err shouldBe a[RuntimeException]
-          err.getMessage should include("The specified key does not exist.")
+          err.getMessage should include("bag-info.txt is not available")
         }
       }
     }
@@ -95,7 +95,7 @@ class StorageManifestServiceTest
               val err = maybeManifest.failed.get
 
               err shouldBe a[RuntimeException]
-              err.getMessage should include("The specified key does not exist.")
+              err.getMessage should include("bag-info.txt is not available")
 
             }
         }
@@ -119,7 +119,7 @@ class StorageManifestServiceTest
               val err = maybeManifest.failed.get
 
               err shouldBe a[RuntimeException]
-              err.getMessage should include("The specified key does not exist.")
+              err.getMessage should include("manifest-sha256.txt is not available")
             }
         }
       }
@@ -170,7 +170,7 @@ class StorageManifestServiceTest
 
 
               err shouldBe a[RuntimeException]
-              err.getMessage should include("The specified key does not exist.")
+              err.getMessage should include("tagmanifest-sha256.txt is not available")
             }
 
         }

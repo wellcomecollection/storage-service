@@ -59,7 +59,7 @@ class S3StreamableTest
 
         val myThing = Thing(thingStuff)
 
-        val inputStream = myThing.from(validRoot).get
+        val inputStream = myThing.from(validRoot).get.get
 
         scala.io.Source
           .fromInputStream(inputStream)
