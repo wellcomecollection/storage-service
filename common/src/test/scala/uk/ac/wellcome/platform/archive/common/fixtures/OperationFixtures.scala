@@ -7,6 +7,8 @@ import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 trait OperationFixtures extends SNS with MetricsSenderFixture {
   def withIngestUpdater[R](stepName: String, topic: Topic)(
     testWith: TestWith[IngestUpdater, R]): R =

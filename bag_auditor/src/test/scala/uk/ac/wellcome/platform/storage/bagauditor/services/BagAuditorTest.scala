@@ -1,16 +1,17 @@
 package uk.ac.wellcome.platform.storage.bagauditor.services
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import uk.ac.wellcome.platform.storage.bagauditor.models.{
+  AuditFailureSummary,
+  AuditSuccessSummary
+}
 
 class BagAuditorTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
+    with TryValues
     with BagLocationFixtures {
   val bagAuditor = new BagAuditor()
 
@@ -19,19 +20,18 @@ class BagAuditorTest
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
-          val future = bagAuditor.getAuditSummary(
+          val maybeAudit = bagAuditor.getAuditSummary(
             unpackLocation = bagRootLocation,
             storageSpace = storageSpace
           )
 
-          whenReady(future) { result =>
-            val auditSummary = result.summary
-            val auditInformation = auditSummary.auditInformation
+          val result = maybeAudit.success.get
+          val summary = result.summary
+            .asInstanceOf[AuditSuccessSummary]
 
-            auditInformation.bagRootLocation shouldBe bagRootLocation
-            auditInformation.externalIdentifier shouldBe bagInfo.externalIdentifier
-            auditInformation.version shouldBe 1
-          }
+          summary.audit.root shouldBe bagRootLocation
+          summary.audit.externalIdentifier shouldBe bagInfo.externalIdentifier
+          summary.audit.version shouldBe 1
       }
     }
   }
@@ -40,14 +40,15 @@ class BagAuditorTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, bagRootDirectory = Some("1/2/3")) {
         case (_, storageSpace) =>
-          val future = bagAuditor.getAuditSummary(
+          val maybeAudit = bagAuditor.getAuditSummary(
             unpackLocation = createObjectLocationWith(bucket, key = "1/"),
             storageSpace = storageSpace
           )
 
-          whenReady(future) { result =>
-            result shouldBe a[IngestFailed[_]]
-          }
+          val result = maybeAudit.success.get
+
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[AuditFailureSummary]
       }
     }
   }
@@ -62,14 +63,15 @@ class BagAuditorTest
             bagInfoLocation.key
           )
 
-          val future = bagAuditor.getAuditSummary(
+          val maybeAudit = bagAuditor.getAuditSummary(
             unpackLocation = bagRootLocation,
             storageSpace = storageSpace
           )
 
-          whenReady(future) { result =>
-            result shouldBe a[IngestFailed[_]]
-          }
+          val result = maybeAudit.success.get
+
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[AuditFailureSummary]
       }
     }
   }

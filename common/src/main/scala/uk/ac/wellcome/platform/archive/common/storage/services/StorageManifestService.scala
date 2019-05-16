@@ -62,9 +62,11 @@ class StorageManifestService(
         .toObjectLocation(bagRootLocation)
         .toInputStream
 
-      bagInfo <- BagInfoParser.create(
-        bagInfoInputStream
-      )
+      bagInfo <- Future.fromTry {
+        BagInfoParser.create(
+          bagInfoInputStream
+        )
+      }
     } yield bagInfo
 
   def createFileManifest(

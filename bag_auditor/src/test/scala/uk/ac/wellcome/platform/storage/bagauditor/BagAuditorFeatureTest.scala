@@ -48,8 +48,11 @@ class BagAuditorFeatureTest
                       payload.ingestId,
                       ingestTopic,
                       expectedDescriptions = Seq(
-                        "Locating bag root started",
-                        "Locating bag root succeeded"
+                        "Auditing bag started",
+                        s"Detected bag root as $bagRootLocation",
+                        s"Detected bag identifier as ${bagInfo.externalIdentifier}",
+                        s"Assigned bag version 1",
+                        "Auditing bag succeeded"
                       )
                     )
                   }
@@ -66,7 +69,7 @@ class BagAuditorFeatureTest
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo, bagRootDirectory = Some("subdir")) {
         case (unpackedBagLocation, storageSpace) =>
-          val bagRoot = unpackedBagLocation.join("subdir")
+          val bagRootLocation = unpackedBagLocation.join("subdir")
 
           val payload = createUnpackedBagPayloadWith(
             unpackedBagLocation = unpackedBagLocation,
@@ -75,7 +78,7 @@ class BagAuditorFeatureTest
 
           val expectedPayload = createBagInformationPayloadWith(
             ingestId = payload.ingestId,
-            bagRootLocation = bagRoot,
+            bagRootLocation = bagRootLocation,
             storageSpace = storageSpace,
             externalIdentifier = bagInfo.externalIdentifier
           )
@@ -95,8 +98,11 @@ class BagAuditorFeatureTest
                       payload.ingestId,
                       ingestTopic,
                       expectedDescriptions = Seq(
-                        "Locating bag root started",
-                        "Locating bag root succeeded"
+                        "Auditing bag started",
+                        s"Detected bag root as $bagRootLocation",
+                        s"Detected bag identifier as ${bagInfo.externalIdentifier}",
+                        s"Assigned bag version 1",
+                        "Auditing bag succeeded"
                       )
                     )
                   }
@@ -131,12 +137,12 @@ class BagAuditorFeatureTest
                       ingestUpdates.size shouldBe 2
 
                       val ingestStart = ingestUpdates.head
-                      ingestStart.events.head.description shouldBe "Locating bag root started"
+                      ingestStart.events.head.description shouldBe "Auditing bag started"
 
                       val ingestFailed =
                         ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                       ingestFailed.status shouldBe Ingest.Failed
-                      ingestFailed.events.head.description shouldBe "Locating bag root failed"
+                      ingestFailed.events.head.description shouldBe "Auditing bag failed"
                     }
                   }
                 }
@@ -168,12 +174,12 @@ class BagAuditorFeatureTest
                     ingestUpdates.size shouldBe 2
 
                     val ingestStart = ingestUpdates.head
-                    ingestStart.events.head.description shouldBe "Locating bag root started"
+                    ingestStart.events.head.description shouldBe "Auditing bag started"
 
                     val ingestFailed =
                       ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                     ingestFailed.status shouldBe Ingest.Failed
-                    ingestFailed.events.head.description shouldBe "Locating bag root failed"
+                    ingestFailed.events.head.description shouldBe "Auditing bag failed"
                 }
               }
             }
@@ -203,12 +209,12 @@ class BagAuditorFeatureTest
                   ingestUpdates.size shouldBe 2
 
                   val ingestStart = ingestUpdates.head
-                  ingestStart.events.head.description shouldBe "Locating bag root started"
+                  ingestStart.events.head.description shouldBe "Auditing bag started"
 
                   val ingestFailed =
                     ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                   ingestFailed.status shouldBe Ingest.Failed
-                  ingestFailed.events.head.description shouldBe "Locating bag root failed"
+                  ingestFailed.events.head.description shouldBe "Auditing bag failed"
               }
             }
           }
