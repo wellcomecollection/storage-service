@@ -37,11 +37,13 @@ class Register(
     )
 
     for {
-      manifest <- storageManifestService
-        .createManifest(
-          bagRootLocation = bagRootLocation,
-          storageSpace = storageSpace
-        )
+      manifest <- Future.fromTry {
+        storageManifestService
+          .createManifest(
+            bagRootLocation = bagRootLocation,
+            storageSpace = storageSpace
+          )
+      }
 
       registrationWithBagId = registration.copy(bagId = Some(manifest.id))
 

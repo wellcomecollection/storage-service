@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   BagItemPath
@@ -23,20 +22,18 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.storage.ObjectLocation
+import S3StreamableInstances._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
-class StorageManifestService(
-  implicit ec: ExecutionContext,
-  s3Client: AmazonS3
-) {
+class StorageManifestService(implicit s3Client: AmazonS3) {
 
   val checksumAlgorithm = ChecksumAlgorithm("sha256")
 
   def createManifest(
     bagRootLocation: ObjectLocation,
     storageSpace: StorageSpace
-  ): Future[StorageManifest] =
+  ): Try[StorageManifest] =
     for {
       bagInfo <- createBagInfo(bagRootLocation)
       fileManifest <- createFileManifest(bagRootLocation)
@@ -56,27 +53,22 @@ class StorageManifestService(
         createdDate = Instant.now()
       )
 
-  def createBagInfo(bagRootLocation: ObjectLocation): Future[BagInfo] =
+  def createBagInfo(bagRootLocation: ObjectLocation): Try[BagInfo] =
     for {
       bagInfoInputStream <- BagItemPath("bag-info.txt")
         .toObjectLocation(bagRootLocation)
         .toInputStream
 
-      bagInfo <- Future.fromTry {
-        BagInfoParser.create(
-          bagInfoInputStream
-        )
-      }
+      bagInfo <- BagInfoParser.create(bagInfoInputStream)
     } yield bagInfo
 
-  def createFileManifest(
-    bagRootLocation: ObjectLocation): Future[FileManifest] =
+  def createFileManifest(bagRootLocation: ObjectLocation): Try[FileManifest] =
     createManifest(
       s"manifest-$checksumAlgorithm.txt",
       bagRootLocation
     )
 
-  def createTagManifest(bagRootLocation: ObjectLocation): Future[FileManifest] =
+  def createTagManifest(bagRootLocation: ObjectLocation): Try[FileManifest] =
     createManifest(
       s"tagmanifest-$checksumAlgorithm.txt",
       bagRootLocation
@@ -85,7 +77,7 @@ class StorageManifestService(
   private def createManifest(
     name: String,
     bagRootLocation: ObjectLocation
-  ): Future[FileManifest] = {
+  ): Try[FileManifest] = {
     for {
       fileManifestInputStream <- BagItemPath(name)
         .toObjectLocation(bagRootLocation)

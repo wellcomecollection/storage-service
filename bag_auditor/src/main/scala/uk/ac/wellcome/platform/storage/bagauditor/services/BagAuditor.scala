@@ -16,6 +16,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
+import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -84,11 +85,7 @@ class BagAuditor(implicit s3Client: AmazonS3) {
     bagRootLocation: ObjectLocation): Try[ExternalIdentifier] =
     for {
       bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
-      inputStream: InputStream <- Try {
-        s3Client
-          .getObject(bagInfoLocation.namespace, bagInfoLocation.key)
-          .getObjectContent
-      }
+      inputStream: InputStream <- bagInfoLocation.toInputStream
       bagInfo: BagInfo <- BagInfoParser.create(inputStream)
     } yield bagInfo.externalIdentifier
 }

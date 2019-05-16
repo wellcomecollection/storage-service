@@ -11,7 +11,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   FileManifest
 }
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
@@ -21,7 +20,7 @@ object FileManifestParser {
   def create(
     inputStream: InputStream,
     checksumAlgorithm: ChecksumAlgorithm
-  )(implicit executionContext: ExecutionContext): Future[FileManifest] = {
+  ): Try[FileManifest] = {
 
     val lines = scala.io.Source
       .fromInputStream(inputStream)
@@ -37,16 +36,19 @@ object FileManifestParser {
       )
     }
 
-    val futureDigestFiles = Future.sequence(
-      tryBagDigestFiles.map { Future.fromTry }
-    )
+    val errors = tryBagDigestFiles.collect {
+      case Failure(error) => error
+    }
 
-    futureDigestFiles.map(
-      files =>
-        FileManifest(
-          checksumAlgorithm,
-          files
-      ))
+    val files = tryBagDigestFiles.collect {
+      case Success(bagFile) => bagFile
+    }
+
+    if (errors.isEmpty) {
+      Success(FileManifest(checksumAlgorithm, files))
+    } else {
+      Failure(new RuntimeException(s"Failed to parse: $errors"))
+    }
   }
 
   private def createBagDigestFile(

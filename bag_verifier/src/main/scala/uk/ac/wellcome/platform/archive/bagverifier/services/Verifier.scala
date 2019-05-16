@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestSe
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class Verifier(
   storageManifestService: StorageManifestService,
@@ -63,8 +64,8 @@ class Verifier(
   }
 
   private def getManifest(name: String)(
-    result: Future[FileManifest]): Future[FileManifest] =
-    result.recover {
+    result: Try[FileManifest]): Future[FileManifest] =
+    Future.fromTry(result).recover {
       case err: Throwable =>
         throw new RuntimeException(s"Error getting $name: ${err.getMessage}")
     }
