@@ -13,16 +13,16 @@ import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
 }
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
-import uk.ac.wellcome.platform.archive.common.ConvertibleToInputStream._
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
   IngestStepSucceeded
 }
+import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
                                             ec: ExecutionContext) {
@@ -40,7 +40,9 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
         startTime = Instant.now)
 
     val futureSummary = for {
-      archiveInputStream <- archiveDownloadStream(srcLocation)
+      archiveInputStream <- Future.fromTry {
+        archiveDownloadStream(srcLocation)
+      }
       unpackSummary <- unpack(unpackSummary, archiveInputStream, dstLocation)
     } yield unpackSummary
 
@@ -84,11 +86,11 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
       }
   }
 
-  private def archiveDownloadStream(srcLocation: ObjectLocation) = {
+  private def archiveDownloadStream(srcLocation: ObjectLocation): Try[InputStream] = {
     srcLocation.toInputStream
       .recoverWith {
         case ae: AmazonS3Exception =>
-          Future.failed(
+          Failure(
             new ArchiveLocationException(
               objectLocation = srcLocation,
               message =
