@@ -4,8 +4,16 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures, RandomThings}
-import uk.ac.wellcome.platform.storage.bagauditor.services.{BagAuditor, BagAuditorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  MonitoringClientFixture,
+  OperationFixtures,
+  RandomThings
+}
+import uk.ac.wellcome.platform.storage.bagauditor.services.{
+  BagAuditor,
+  BagAuditorWorker
+}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.fixtures.S3
 
@@ -32,7 +40,8 @@ trait BagAuditorFixtures
       }
     }
 
-  def withBagAuditor[R](versionPicker: VersionPicker)(testWith: TestWith[BagAuditor, R]): R = {
+  def withBagAuditor[R](versionPicker: VersionPicker)(
+    testWith: TestWith[BagAuditor, R]): R = {
     val bagAuditor = new BagAuditor(versionPicker)
 
     testWith(bagAuditor)

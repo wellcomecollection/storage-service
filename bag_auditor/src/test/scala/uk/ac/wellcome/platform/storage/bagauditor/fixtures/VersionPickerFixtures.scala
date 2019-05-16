@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.storage.bagauditor.fixtures
 import java.util.UUID
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManager, IngestVersionManagerDao, MemoryIngestVersionManagerDao}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManager,
+  IngestVersionManagerDao,
+  MemoryIngestVersionManagerDao
+}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.{LockDao, LockingService}
 import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
@@ -16,7 +20,8 @@ trait VersionPickerFixtures {
       testWith(picker)
     }
 
-  def withVersionPicker[R](dao: LockDao[String, UUID])(testWith: TestWith[VersionPicker, R]): R = {
+  def withVersionPicker[R](dao: LockDao[String, UUID])(
+    testWith: TestWith[VersionPicker, R]): R = {
     val lockingService = new LockingService[Int, Try, LockDao[String, UUID]] {
       override implicit val lockDao: LockDao[String, UUID] = dao
 
@@ -24,7 +29,8 @@ trait VersionPickerFixtures {
     }
 
     val ingestVersionManager = new IngestVersionManager {
-      override val dao: IngestVersionManagerDao = new MemoryIngestVersionManagerDao()
+      override val dao: IngestVersionManagerDao =
+        new MemoryIngestVersionManagerDao()
     }
 
     val picker = new VersionPicker(

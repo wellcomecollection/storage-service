@@ -5,13 +5,32 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
-import uk.ac.wellcome.platform.archive.common.versioning.{DynamoIngestVersionManagerDao, IngestVersionManager, IngestVersionManagerDao}
-import uk.ac.wellcome.platform.storage.bagauditor.services.{BagAuditor, BagAuditorWorker}
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  DynamoIngestVersionManagerDao,
+  IngestVersionManager,
+  IngestVersionManagerDao
+}
+import uk.ac.wellcome.platform.storage.bagauditor.services.{
+  BagAuditor,
+  BagAuditorWorker
+}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
-import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, LockingBuilder, S3Builder}
+import uk.ac.wellcome.storage.typesafe.{
+  DynamoBuilder,
+  LockingBuilder,
+  S3Builder
+}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
@@ -37,11 +56,13 @@ object Main extends WellcomeTypesafeApp {
     val operationName = OperationNameBuilder
       .getName(config, default = "auditing bag")
 
-    val lockingService = LockingBuilder.buildDynamoLockingService[Int, Try](config)
+    val lockingService =
+      LockingBuilder.buildDynamoLockingService[Int, Try](config)
 
     val ingestVersionManagerDao = new DynamoIngestVersionManagerDao(
       dynamoClient = DynamoBuilder.buildDynamoClient(config),
-      dynamoConfig = DynamoBuilder.buildDynamoConfig(config, namespace = "versions")
+      dynamoConfig =
+        DynamoBuilder.buildDynamoConfig(config, namespace = "versions")
     )
 
     val versionPicker = new VersionPicker(

@@ -20,15 +20,17 @@ class VersionPicker(
     ingestId: IngestID,
     ingestDate: Instant
   ): Try[Int] =
-    lockingService.withLocks(Set(s"ingest:$ingestId", s"external:$externalIdentifier")) {
-      ingestVersionManager.assignVersion(
-        externalIdentifier = externalIdentifier,
-        ingestId = ingestId,
-        ingestDate = ingestDate
-      )
-    }.map {
-      case Right(version) => version
-      case Left(FailedProcess(_, err)) => throw err
-      case Left(err) => throw new RuntimeException(s"Locking error: $err")
-    }
+    lockingService
+      .withLocks(Set(s"ingest:$ingestId", s"external:$externalIdentifier")) {
+        ingestVersionManager.assignVersion(
+          externalIdentifier = externalIdentifier,
+          ingestId = ingestId,
+          ingestDate = ingestDate
+        )
+      }
+      .map {
+        case Right(version)              => version
+        case Left(FailedProcess(_, err)) => throw err
+        case Left(err)                   => throw new RuntimeException(s"Locking error: $err")
+      }
 }

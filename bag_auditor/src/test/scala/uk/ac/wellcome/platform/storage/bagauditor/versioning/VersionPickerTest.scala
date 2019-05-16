@@ -6,14 +6,27 @@ import java.util.UUID
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManager, IngestVersionManagerDao, MemoryIngestVersionManagerDao}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManager,
+  IngestVersionManagerDao,
+  MemoryIngestVersionManagerDao
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
 import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
-import uk.ac.wellcome.storage.{LockDao, LockFailure, LockingService, UnlockFailure}
+import uk.ac.wellcome.storage.{
+  LockDao,
+  LockFailure,
+  LockingService,
+  UnlockFailure
+}
 
 import scala.util.{Failure, Success, Try}
 
-class VersionPickerTest extends FunSpec with Matchers with ExternalIdentifierGenerators with VersionPickerFixtures {
+class VersionPickerTest
+    extends FunSpec
+    with Matchers
+    with ExternalIdentifierGenerators
+    with VersionPickerFixtures {
   it("assigns version 1 if it hasn't seen this external ID before") {
     withVersionPicker { picker =>
       val result = picker.chooseVersion(
@@ -95,7 +108,8 @@ class VersionPickerTest extends FunSpec with Matchers with ExternalIdentifierGen
 
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[RuntimeException]
-        result.failed.get.getMessage should startWith("Latest version has a newer ingest date")
+        result.failed.get.getMessage should startWith(
+          "Latest version has a newer ingest date")
       }
     }
   }
@@ -115,7 +129,8 @@ class VersionPickerTest extends FunSpec with Matchers with ExternalIdentifierGen
 
       lockDao.getCurrentLocks shouldBe empty
       lockDao.history.map { _.id } should contain theSameElementsAs List(
-        s"ingest:$ingestId", s"external:$externalIdentifier"
+        s"ingest:$ingestId",
+        s"external:$externalIdentifier"
       )
     }
   }
