@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
@@ -12,12 +11,11 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
 
 class StorageManifestServiceTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
     with BagLocationFixtures {
 
   val service = new StorageManifestService()
@@ -27,41 +25,42 @@ class StorageManifestServiceTest
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
-          val future = service.createManifest(
+          val maybeManifest = service.createManifest(
             bagRootLocation = bagRootLocation,
             storageSpace = storageSpace
           )
 
-          whenReady(future) { storageManifest =>
-            storageManifest.space shouldBe storageSpace
-            storageManifest.info shouldBe bagInfo
+          maybeManifest shouldBe a[Success[_]]
+          val storageManifest = maybeManifest.get
 
-            storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
-              "sha256")
-            storageManifest.manifest.files should have size 1
+          storageManifest.space shouldBe storageSpace
+          storageManifest.info shouldBe bagInfo
 
-            storageManifest.tagManifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
-              "sha256")
-            storageManifest.tagManifest.files should have size 3
-            val actualFiles =
-              storageManifest.tagManifest.files
-                .map {
-                  _.path.toString
-                }
-            val expectedFiles = List(
-              "manifest-sha256.txt",
-              "bag-info.txt",
-              "bagit.txt"
+          storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
+            "sha256")
+          storageManifest.manifest.files should have size 1
+
+          storageManifest.tagManifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
+            "sha256")
+          storageManifest.tagManifest.files should have size 3
+          val actualFiles =
+            storageManifest.tagManifest.files
+              .map {
+                _.path.toString
+              }
+          val expectedFiles = List(
+            "manifest-sha256.txt",
+            "bag-info.txt",
+            "bagit.txt"
+          )
+          actualFiles should contain theSameElementsAs expectedFiles
+
+          storageManifest.locations shouldBe List(
+            StorageLocation(
+              provider = InfrequentAccessStorageProvider,
+              location = bagRootLocation
             )
-            actualFiles should contain theSameElementsAs expectedFiles
-
-            storageManifest.locations shouldBe List(
-              StorageLocation(
-                provider = InfrequentAccessStorageProvider,
-                location = bagRootLocation
-              )
-            )
-          }
+          )
       }
     }
   }
@@ -69,15 +68,15 @@ class StorageManifestServiceTest
   describe("returns a Left upon error") {
     it("if no files are at the BagLocation") {
       withLocalS3Bucket { bucket =>
-        val future = service.createManifest(
+        val maybeManifest = service.createManifest(
           bagRootLocation = createObjectLocationWith(bucket),
           storageSpace = createStorageSpace
         )
 
-        whenReady(future.failed) { err =>
-          err shouldBe a[RuntimeException]
-          err.getMessage should include("The specified key does not exist.")
-        }
+        maybeManifest shouldBe a[Failure[_]]
+        val err = maybeManifest.failed.get
+        err shouldBe a[RuntimeException]
+        err.getMessage should include("The specified key does not exist.")
       }
     }
 
@@ -90,15 +89,15 @@ class StorageManifestServiceTest
               bagRootLocation.key + "/bag-info.txt"
             )
 
-            val future = service.createManifest(
+            val maybeManifest = service.createManifest(
               bagRootLocation = bagRootLocation,
               storageSpace = storageSpace
             )
 
-            whenReady(future.failed) { err =>
-              err shouldBe a[RuntimeException]
-              err.getMessage should include("The specified key does not exist.")
-            }
+            maybeManifest shouldBe a[Failure[_]]
+            val err = maybeManifest.failed.get
+            err shouldBe a[RuntimeException]
+            err.getMessage should include("The specified key does not exist.")
         }
       }
     }
@@ -112,15 +111,15 @@ class StorageManifestServiceTest
               bagRootLocation.key + "/manifest-sha256.txt"
             )
 
-            val future = service.createManifest(
+            val maybeManifest = service.createManifest(
               bagRootLocation = bagRootLocation,
               storageSpace = storageSpace
             )
 
-            whenReady(future.failed) { err =>
-              err shouldBe a[RuntimeException]
-              err.getMessage should include("The specified key does not exist.")
-            }
+            maybeManifest shouldBe a[Failure[_]]
+            val err = maybeManifest.failed.get
+            err shouldBe a[RuntimeException]
+            err.getMessage should include("The specified key does not exist.")
         }
       }
     }
@@ -132,15 +131,15 @@ class StorageManifestServiceTest
           createDataManifest =
             _ => Some(FileEntry("manifest-sha256.txt", "bleeergh!"))) {
           case (bagRootLocation, storageSpace) =>
-            val future = service.createManifest(
+            val maybeManifest = service.createManifest(
               bagRootLocation = bagRootLocation,
               storageSpace = storageSpace
             )
 
-            whenReady(future.failed) { err =>
-              err shouldBe a[RuntimeException]
-              err.getMessage shouldBe "Line <<bleeergh!>> is incorrectly formatted!"
-            }
+            maybeManifest shouldBe a[Failure[_]]
+            val err = maybeManifest.failed.get
+            err shouldBe a[RuntimeException]
+            err.getMessage shouldBe "Line <<bleeergh!>> is incorrectly formatted!"
         }
       }
     }
@@ -154,15 +153,15 @@ class StorageManifestServiceTest
               bagRootLocation.key + "/tagmanifest-sha256.txt"
             )
 
-            val future = service.createManifest(
+            val maybeManifest = service.createManifest(
               bagRootLocation = bagRootLocation,
               storageSpace = storageSpace
             )
 
-            whenReady(future.failed) { err =>
-              err shouldBe a[RuntimeException]
-              err.getMessage should include("The specified key does not exist.")
-            }
+            maybeManifest shouldBe a[Failure[_]]
+            val err = maybeManifest.failed.get
+            err shouldBe a[RuntimeException]
+            err.getMessage should include("The specified key does not exist.")
         }
       }
     }
@@ -174,15 +173,15 @@ class StorageManifestServiceTest
           createTagManifest =
             _ => Some(FileEntry("tagmanifest-sha256.txt", "blaaargh!"))) {
           case (bagRootLocation, storageSpace) =>
-            val future = service.createManifest(
+            val maybeManifest = service.createManifest(
               bagRootLocation = bagRootLocation,
               storageSpace = storageSpace
             )
 
-            whenReady(future.failed) { err =>
-              err shouldBe a[RuntimeException]
-              err.getMessage shouldBe "Line <<blaaargh!>> is incorrectly formatted!"
-            }
+            maybeManifest shouldBe a[Failure[_]]
+            val err = maybeManifest.failed.get
+            err shouldBe a[RuntimeException]
+            err.getMessage shouldBe "Line <<blaaargh!>> is incorrectly formatted!"
         }
       }
     }
