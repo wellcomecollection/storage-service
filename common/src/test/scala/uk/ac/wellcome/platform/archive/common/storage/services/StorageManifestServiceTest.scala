@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
@@ -17,7 +16,6 @@ import uk.ac.wellcome.platform.archive.common.verify.SHA256
 class StorageManifestServiceTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
     with BagLocationFixtures {
 
   def withStorageManifestService[R](
@@ -28,11 +26,11 @@ class StorageManifestServiceTest
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo) {
-        case (root, space) =>
+        case (bagRootLocation, storageSpace) =>
           withStorageManifestService { service =>
             val maybeManifest = service.retrieve(
-              root = root,
-              space = space
+              root = bagRootLocation,
+              space = storageSpace
             )
 
             val storageManifest = maybeManifest.get
@@ -56,10 +54,10 @@ class StorageManifestServiceTest
             storageManifest.locations shouldBe List(
               StorageLocation(
                 provider = InfrequentAccessStorageProvider,
-                location = root
+                location = bagRootLocation
               )
             )
-          }
+          )
       }
     }
   }
@@ -84,7 +82,7 @@ class StorageManifestServiceTest
     it("the bag-info.txt file is missing") {
       withLocalS3Bucket { bucket =>
         withBag(bucket) {
-          case (root, storageSpace) =>
+          case (bagRootLocation, storageSpace) =>
             s3Client.deleteObject(
               root.namespace,
               root.key + "/bag-info.txt"
@@ -92,7 +90,7 @@ class StorageManifestServiceTest
 
             withStorageManifestService { service =>
               val maybeManifest = service.retrieve(
-                root = root,
+                root = bagRootLocation,
                 space = storageSpace
               )
 
@@ -109,15 +107,17 @@ class StorageManifestServiceTest
     it("the manifest.txt file is missing") {
       withLocalS3Bucket { bucket =>
         withBag(bucket) {
-          case (root, space) =>
+          case (bagRootLocation, storageSpace) =>
             s3Client.deleteObject(
               root.namespace,
               root.key + "/manifest-sha256.txt"
             )
 
             withStorageManifestService { service =>
-              val maybeManifest =
-                service.retrieve(root, space)
+              val maybeManifest = service.retrieve(
+                root = bagRootLocation,
+                space = storageSpace
+              )
 
               val err = maybeManifest.failed.get
 
@@ -134,11 +134,11 @@ class StorageManifestServiceTest
           bucket,
           createDataManifest =
             _ => Some(FileEntry("manifest-sha256.txt", "bleeergh!"))) {
-          case (root, space) =>
+          case (bagRootLocation, storageSpace) =>
             withStorageManifestService { service =>
               val maybeManifest = service.retrieve(
-                root = root,
-                space = space
+                root = bagRootLocation,
+                space = storageSpace
               )
 
               val err = maybeManifest.failed.get
@@ -154,7 +154,7 @@ class StorageManifestServiceTest
     it("the tagmanifest.txt file is missing") {
       withLocalS3Bucket { bucket =>
         withBag(bucket) {
-          case (root, space) =>
+          case (bagRootLocation, storageSpace) =>
             s3Client.deleteObject(
               root.namespace,
               root.key + "/tagmanifest-sha256.txt"
@@ -162,8 +162,8 @@ class StorageManifestServiceTest
 
             withStorageManifestService { service =>
               val maybeManifest = service.retrieve(
-                root = root,
-                space = space
+                root = bagRootLocation,
+                space = storageSpace
               )
 
               val err = maybeManifest.failed.get
@@ -171,7 +171,6 @@ class StorageManifestServiceTest
               err shouldBe a[RuntimeException]
               err.getMessage should include("The specified key does not exist.")
             }
-
         }
       }
     }
@@ -182,11 +181,11 @@ class StorageManifestServiceTest
           bucket,
           createTagManifest =
             _ => Some(FileEntry("tagmanifest-sha256.txt", "blaaargh!"))) {
-          case (root, space) =>
+          case (bagRootLocation, storageSpace) =>
             withStorageManifestService { service =>
               val maybeManifest = service.retrieve(
-                root = root,
-                space = space
+                root = bagRootLocation,
+                space = storageSpace
               )
 
               val err = maybeManifest.failed.get

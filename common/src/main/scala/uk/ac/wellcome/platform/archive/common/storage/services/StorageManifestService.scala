@@ -14,18 +14,13 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.Try
 
-class StorageManifestService(
-  implicit
-  s3Client: AmazonS3
-) {
+class StorageManifestService(implicit s3Client: AmazonS3) {
+  val bagService = new BagService()
 
   def retrieve(
     root: ObjectLocation,
     space: StorageSpace
   ): Try[StorageManifest] = {
-
-    val bagService = new BagService()
-
     val locations = List(
       StorageLocation(
         provider = InfrequentAccessStorageProvider,

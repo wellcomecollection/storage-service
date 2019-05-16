@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepResult,
   IngestStepSucceeded
 }
+import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -88,7 +89,7 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
   }
 
   private def archiveDownloadStream(
-    srcLocation: ObjectLocation): Try[S3ObjectInputStream] =
+    srcLocation: ObjectLocation): Try[InputStream] = {
     srcLocation.toInputStream
       .recoverWith {
         case ae: AmazonS3Exception =>

@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import java.nio.file.Paths
 
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, TryValues}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
@@ -12,11 +11,8 @@ import uk.ac.wellcome.storage.fixtures.S3
 class S3StreamableTest
     extends FunSpec
     with S3
-    with ScalaFutures
     with TryValues
     with RandomThings {
-
-  implicit val _s3Client = s3Client
 
   import S3StreamableInstances._
 

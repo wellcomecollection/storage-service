@@ -15,13 +15,13 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
+import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
 class BagAuditor(implicit s3Client: AmazonS3) {
   val s3BagLocator = new S3BagLocator(s3Client)
-  import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 
   type IngestStep = Try[IngestStepResult[AuditSummary]]
 
@@ -82,8 +82,8 @@ class BagAuditor(implicit s3Client: AmazonS3) {
   private def getBagIdentifier(
     bagRootLocation: ObjectLocation): Try[ExternalIdentifier] =
     for {
-      location <- s3BagLocator.locateBagInfo(bagRootLocation)
-      inputStream <- location.toInputStream
+      bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
+      inputStream: InputStream <- bagInfoLocation.toInputStream
       bagInfo <- BagInfo.create(inputStream)
     } yield bagInfo.externalIdentifier
 }
