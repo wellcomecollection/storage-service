@@ -18,18 +18,18 @@ class StorageManifestService(implicit s3Client: AmazonS3) {
   val bagService = new BagService()
 
   def retrieve(
-    root: ObjectLocation,
-    space: StorageSpace
+    bagRootLocation: ObjectLocation,
+    storageSpace: StorageSpace
   ): Try[StorageManifest] = {
     val locations = List(
       StorageLocation(
         provider = InfrequentAccessStorageProvider,
-        location = root
+        location = bagRootLocation
       )
     )
 
-    bagService.retrieve(root).map { bag =>
-      StorageManifest.create(root, space, bag, locations)
+    bagService.retrieve(bagRootLocation).map { bag =>
+      StorageManifest.create(bagRootLocation, storageSpace, bag, locations)
     }
   }
 }

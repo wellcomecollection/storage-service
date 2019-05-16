@@ -29,13 +29,13 @@ class StorageManifestServiceTest
         case (bagRootLocation, storageSpace) =>
           withStorageManifestService { service =>
             val maybeManifest = service.retrieve(
-              root = bagRootLocation,
-              space = storageSpace
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
             )
 
             val storageManifest = maybeManifest.get
 
-            storageManifest.space shouldBe space
+            storageManifest.space shouldBe storageSpace
             storageManifest.info shouldBe bagInfo
 
             storageManifest.manifest.checksumAlgorithm shouldBe SHA256
@@ -43,7 +43,7 @@ class StorageManifestServiceTest
 
             storageManifest.tagManifest.checksumAlgorithm shouldBe SHA256
             storageManifest.tagManifest.files should have size 3
-            val actualFiles = storageManifest.tagManifest.files.map(_.path)
+            val actualFiles = storageManifest.tagManifest.files.map { _.path }
             val expectedFiles = List(
               BagPath("manifest-sha256.txt"),
               BagPath("bag-info.txt"),
@@ -57,7 +57,7 @@ class StorageManifestServiceTest
                 location = bagRootLocation
               )
             )
-          )
+          }
       }
     }
   }
@@ -67,8 +67,8 @@ class StorageManifestServiceTest
       withLocalS3Bucket { bucket =>
         withStorageManifestService { service =>
           val maybeManifest = service.retrieve(
-            root = createObjectLocationWith(bucket),
-            space = createStorageSpace
+            bagRootLocation = createObjectLocationWith(bucket),
+            storageSpace = createStorageSpace
           )
 
           val err = maybeManifest.failed.get
@@ -84,14 +84,14 @@ class StorageManifestServiceTest
         withBag(bucket) {
           case (bagRootLocation, storageSpace) =>
             s3Client.deleteObject(
-              root.namespace,
-              root.key + "/bag-info.txt"
+              bagRootLocation.namespace,
+              bagRootLocation.key + "/bag-info.txt"
             )
 
             withStorageManifestService { service =>
               val maybeManifest = service.retrieve(
-                root = bagRootLocation,
-                space = storageSpace
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
               )
 
               val err = maybeManifest.failed.get
@@ -109,14 +109,14 @@ class StorageManifestServiceTest
         withBag(bucket) {
           case (bagRootLocation, storageSpace) =>
             s3Client.deleteObject(
-              root.namespace,
-              root.key + "/manifest-sha256.txt"
+              bagRootLocation.namespace,
+              bagRootLocation.key + "/manifest-sha256.txt"
             )
 
             withStorageManifestService { service =>
               val maybeManifest = service.retrieve(
-                root = bagRootLocation,
-                space = storageSpace
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
               )
 
               val err = maybeManifest.failed.get
@@ -137,8 +137,8 @@ class StorageManifestServiceTest
           case (bagRootLocation, storageSpace) =>
             withStorageManifestService { service =>
               val maybeManifest = service.retrieve(
-                root = bagRootLocation,
-                space = storageSpace
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
               )
 
               val err = maybeManifest.failed.get
@@ -156,14 +156,14 @@ class StorageManifestServiceTest
         withBag(bucket) {
           case (bagRootLocation, storageSpace) =>
             s3Client.deleteObject(
-              root.namespace,
-              root.key + "/tagmanifest-sha256.txt"
+              bagRootLocation.namespace,
+              bagRootLocation.key + "/tagmanifest-sha256.txt"
             )
 
             withStorageManifestService { service =>
               val maybeManifest = service.retrieve(
-                root = bagRootLocation,
-                space = storageSpace
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
               )
 
               val err = maybeManifest.failed.get
@@ -184,8 +184,8 @@ class StorageManifestServiceTest
           case (bagRootLocation, storageSpace) =>
             withStorageManifestService { service =>
               val maybeManifest = service.retrieve(
-                root = bagRootLocation,
-                space = storageSpace
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
               )
 
               val err = maybeManifest.failed.get

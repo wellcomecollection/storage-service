@@ -40,10 +40,10 @@ class Register(
       manifest <- Future.fromTry {
         storageManifestService
           .retrieve(
-            root = bagRootLocation,
-            space = storageSpace
+            bagRootLocation = bagRootLocation,
+            storageSpace = storageSpace
           )
-        }
+      }
 
       registrationWithBagId = registration.copy(bagId = Some(manifest.id))
 

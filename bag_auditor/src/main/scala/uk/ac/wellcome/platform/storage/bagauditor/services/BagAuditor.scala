@@ -83,7 +83,7 @@ class BagAuditor(implicit s3Client: AmazonS3) {
     bagRootLocation: ObjectLocation): Try[ExternalIdentifier] =
     for {
       bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
-      inputStream: InputStream <- bagInfoLocation.toInputStream
+      inputStream <- bagInfoLocation.toInputStream
       bagInfo <- BagInfo.create(inputStream)
     } yield bagInfo.externalIdentifier
 }
