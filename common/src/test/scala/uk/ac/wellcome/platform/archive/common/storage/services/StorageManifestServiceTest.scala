@@ -139,7 +139,7 @@ class StorageManifestServiceTest
             maybeManifest shouldBe a[Failure[_]]
             val err = maybeManifest.failed.get
             err shouldBe a[RuntimeException]
-            err.getMessage shouldBe "Line <<bleeergh!>> is incorrectly formatted!"
+            err.getMessage should include("Line <<bleeergh!>> is incorrectly formatted!")
         }
       }
     }
@@ -181,7 +181,7 @@ class StorageManifestServiceTest
             maybeManifest shouldBe a[Failure[_]]
             val err = maybeManifest.failed.get
             err shouldBe a[RuntimeException]
-            err.getMessage shouldBe "Line <<blaaargh!>> is incorrectly formatted!"
+            err.getMessage should include("Line <<blaaargh!>> is incorrectly formatted!")
         }
       }
     }
