@@ -143,7 +143,7 @@ class StorageManifestServiceTest
               val err = maybeManifest.failed.get
 
               err shouldBe a[RuntimeException]
-              err.getMessage shouldBe "Error getting file manifest: Failed to parse: List(bleeergh!)"
+              err.getMessage shouldBe "Error loading manifest-sha256.txt: Failed to parse: List(bleeergh!)"
             }
         }
 
@@ -196,7 +196,7 @@ class StorageManifestServiceTest
 
 
               err shouldBe a[RuntimeException]
-              err.getMessage shouldBe "Error getting tag manifest: Failed to parse: List(blaaargh!)"
+              err.getMessage shouldBe "Error loading tagmanifest-sha256.txt: Failed to parse: List(blaaargh!)"
             }
         }
       }

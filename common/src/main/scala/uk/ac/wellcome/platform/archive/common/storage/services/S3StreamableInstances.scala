@@ -17,7 +17,7 @@ object S3StreamableInstances {
       val bucketExists = s3Client.doesBucketExistV2(location.namespace)
 
       if(!bucketExists) {
-        throw new RuntimeException("The specified bucket is not valid!")
+        throw new RuntimeException("The specified bucket is not valid")
       }
 
       val objectExists = s3Client.doesObjectExist(
@@ -43,7 +43,7 @@ object S3StreamableInstances {
   }
 
   implicit class ResolvableStreamable[T](t: T)(implicit s3Client: AmazonS3, resolver: Resolvable[T]) extends Logging {
-    def from(root: ObjectLocation) = {
+    def from(root: ObjectLocation): Try[Option[S3ObjectInputStream]] = {
       debug(s"Attempting to resolve Streamable $t")
 
       val streamable = new Streamable[T, S3ObjectInputStream] {

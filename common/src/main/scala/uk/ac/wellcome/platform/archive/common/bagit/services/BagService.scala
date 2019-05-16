@@ -1,93 +1,60 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
+import java.io.InputStream
+
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.util.{Failure, Success, Try}
-
-object TryHard {
-  implicit class Recoverable[T](tryT: Try[T]) {
-    def recoverWithMessage(message: String) = {
-      tryT.recoverWith {
-        case e => Failure(new RuntimeException(s"$message: ${e.getMessage}"))
-      }
-    }
-  }
-
-  implicit class Available[T](maybeT: Option[T]) {
-    def unavailableWithMessage(message: String) =
-      Try(maybeT.get).recoverWith {
-        case e => Failure(new RuntimeException(message))
-      }
-
-  }
-}
+import scala.util.{Success, Try}
 
 class BagService()(implicit s3Client: AmazonS3) extends Logging {
 
-  import TryHard._
+  type Stream[T] = InputStream => Try[T]
+
   import S3StreamableInstances._
+  import uk.ac.wellcome.platform.archive.common.TryHard._
   import uk.ac.wellcome.platform.archive.common.bagit.models._
 
-  val checksumAlgorithm = SHA256
+  private val bagFetch = BagPath("fetch.txt")
+  private val bagInfo = BagPath("bag-info.txt")
+  private val fileManifest = (a: HashingAlgorithm) => BagPath(s"manifest-${a.pathRepr}.txt")
+  private val tagManifest = (a: HashingAlgorithm) => BagPath(s"tagmanifest-${a.pathRepr}.txt")
 
-  def retrieve(root: ObjectLocation): Try[Bag] = {
-    debug(s"BagService attempting to create Bag @ $root")
+  def retrieve(root: ObjectLocation): Try[Bag] = for {
 
-    val bag = for {
-      bagInfo <- createBagInfo(root)
-        .recoverWithMessage("Error getting bag info")
-      fileManifest <- createFileManifest(root)
-        .recoverWithMessage("Error getting file manifest")
-      tagManifest <- createTagManifest(root)
-        .recoverWithMessage("Error getting tag manifest")
-      bagFetch <- createBagFetch(root)
-        .recoverWithMessage("Error getting fetch")
+      bagInfo <- loadRequired[BagInfo](root)(
+        bagInfo)(BagInfo.create)
+
+      fileManifest <- loadRequired[BagManifest](root)(
+        fileManifest(SHA256))(BagManifest.create(_,SHA256))
+
+      tagManifest <- loadRequired[BagManifest](root)(
+        tagManifest(SHA256))(BagManifest.create(_,SHA256))
+
+      bagFetch <- loadOptional[BagFetch](root)(
+        bagFetch)(BagFetch.create)
+
     } yield Bag(bagInfo, fileManifest, tagManifest)
 
-    debug(s"BagService got: $bag")
-
-    bag
-  }
-
-  val fileManifest = (a: HashingAlgorithm) => s"manifest-${a.pathRepr}.txt"
-  val tagManifest = (a: HashingAlgorithm) => s"tagmanifest-${a.pathRepr}.txt"
-  val bagFetch = "fetch.txt"
-
-  def createBagFetch(root: ObjectLocation): Try[Option[BagFetch]] =
-    BagPath("fetch.txt").from(root).flatMap {
-      case Some(inputStream) => BagFetch
-        .create(inputStream)
-        .map(Some(_))
+  private def loadOptional[T](root: ObjectLocation)(path: BagPath)(f: Stream[T]) =
+    path.from(root).flatMap {
+      case Some(inputStream) =>
+        f(inputStream).map(Some(_))
 
       case None => Success(None)
-    }
+    } recoverWithMessage s"Error loading ${path.value}"
 
-  def createFileManifest(root: ObjectLocation): Try[BagManifest] =
-    createManifest(fileManifest(checksumAlgorithm), root)
-
-  def createTagManifest(root: ObjectLocation): Try[BagManifest] =
-    createManifest(tagManifest(checksumAlgorithm), root)
-
-  private def createManifest(
-                              name: String,
-                              root: ObjectLocation
-                            ): Try[BagManifest] = for {
-    maybeStream <- BagPath(name).from(root)
+  private def loadRequired[T](root: ObjectLocation)(path: BagPath)(f: Stream[T]) = (for {
+    maybeStream <- path.from(root)
     stream <- maybeStream
-      .unavailableWithMessage(s"$name is not available")
-    manifest <- BagManifest.create(stream, checksumAlgorithm)
-  } yield manifest
-
-  def createBagInfo(root: ObjectLocation): Try[BagInfo] = for {
-    maybeStream <- BagPath("bag-info.txt").from(root)
-    stream <- maybeStream
-      .unavailableWithMessage("bag-info.txt is not available")
-    bagInfo <- BagInfo.create(stream)
-  } yield bagInfo
+      .unavailableWithMessage(
+        s"${path.value} is not available!"
+      )
+    o <- f(stream)
+  } yield o) recoverWithMessage s"Error loading ${path.value}"
 
 }
 
