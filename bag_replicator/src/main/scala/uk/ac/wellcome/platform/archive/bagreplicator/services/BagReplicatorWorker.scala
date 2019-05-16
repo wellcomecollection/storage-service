@@ -4,6 +4,7 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs.MessageAction
+import cats.instances.future._
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.amazonaws.services.sqs.model.{Message => SQSMessage}
 import grizzled.slf4j.Logging
@@ -22,7 +23,6 @@ import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
 import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
 import uk.ac.wellcome.typesafe.Runnable
-import cats.instances.future._
 
 import scala.concurrent.{ExecutionContext, Future}
 

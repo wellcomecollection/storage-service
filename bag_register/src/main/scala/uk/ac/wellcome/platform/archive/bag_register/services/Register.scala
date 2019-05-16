@@ -30,7 +30,6 @@ class Register(
     bagRootLocation: ObjectLocation,
     storageSpace: StorageSpace
   ): FutureSummary = {
-
     val registration = RegistrationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,

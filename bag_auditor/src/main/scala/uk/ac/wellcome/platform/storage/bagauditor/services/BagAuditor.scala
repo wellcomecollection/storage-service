@@ -25,13 +25,14 @@ class BagAuditor(implicit s3Client: AmazonS3) {
 
   type IngestStep = Try[IngestStepResult[AuditSummary]]
 
-  def getAuditSummary(location: ObjectLocation,
-                      space: StorageSpace): IngestStep =
+  def getAuditSummary(
+    unpackLocation: ObjectLocation,
+    storageSpace: StorageSpace): IngestStep =
     Try {
       val startTime = Instant.now()
 
       val auditTry: Try[AuditSuccess] = for {
-        root <- s3BagLocator.locateBagRoot(location)
+        root <- s3BagLocator.locateBagRoot(unpackLocation)
         externalIdentifier <- getBagIdentifier(root)
         version <- chooseVersion(externalIdentifier)
         auditSuccess = AuditSuccess(
@@ -47,8 +48,8 @@ class BagAuditor(implicit s3Client: AmazonS3) {
         case Success(audit @ AuditSuccess(_, _, _)) =>
           IngestStepSucceeded(
             AuditSummary.create(
-              location = location,
-              space = space,
+              location = unpackLocation,
+              space = storageSpace,
               audit = audit,
               t = startTime
             )
@@ -56,8 +57,8 @@ class BagAuditor(implicit s3Client: AmazonS3) {
         case Success(audit @ AuditFailure(e)) =>
           IngestFailed(
             summary = AuditSummary.create(
-              location = location,
-              space = space,
+              location = unpackLocation,
+              space = storageSpace,
               audit = audit,
               t = startTime
             ),
@@ -65,9 +66,9 @@ class BagAuditor(implicit s3Client: AmazonS3) {
           )
         case Failure(e) =>
           IngestFailed(
-            AuditSummary.incomplete(
-              location = location,
-              space = space,
+            summary = AuditSummary.incomplete(
+              location = unpackLocation,
+              space = storageSpace,
               e = e,
               t = startTime
             ),
@@ -79,9 +80,10 @@ class BagAuditor(implicit s3Client: AmazonS3) {
   private def chooseVersion(externalIdentifier: ExternalIdentifier): Try[Int] =
     Success(1)
 
-  private def getBagIdentifier(root: ObjectLocation): Try[ExternalIdentifier] =
+  private def getBagIdentifier(
+    bagRootLocation: ObjectLocation): Try[ExternalIdentifier] =
     for {
-      location <- s3BagLocator.locateBagInfo(root)
+      location <- s3BagLocator.locateBagInfo(bagRootLocation)
       inputStream <- location.toInputStream
       bagInfo <- BagInfo.create(inputStream)
     } yield bagInfo.externalIdentifier

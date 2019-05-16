@@ -5,7 +5,7 @@ import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import com.amazonaws.services.s3.model.{AmazonS3Exception, S3ObjectInputStream}
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
   ArchiveLocationException,
@@ -21,7 +21,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
                                             ec: ExecutionContext) {
@@ -41,7 +41,9 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
         startTime = Instant.now)
 
     val futureSummary = for {
-      archiveInputStream <- archiveDownloadStream(srcLocation)
+      archiveInputStream <- Future.fromTry {
+        archiveDownloadStream(srcLocation)
+      }
       unpackSummary <- unpack(unpackSummary, archiveInputStream, dstLocation)
     } yield unpackSummary
 
@@ -85,19 +87,17 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
       }
   }
 
-  private def archiveDownloadStream(srcLocation: ObjectLocation) = {
-    Future
-      .fromTry(srcLocation.toInputStream)
+  private def archiveDownloadStream(srcLocation: ObjectLocation): Try[S3ObjectInputStream] =
+    srcLocation.toInputStream
       .recoverWith {
         case ae: AmazonS3Exception =>
-          Future.failed(
+          Failure(
             new ArchiveLocationException(
               objectLocation = srcLocation,
               message =
                 s"Error getting input stream for s3://$srcLocation: ${ae.getMessage}",
               ae))
       }
-  }
 
   private def putArchiveEntry(dstLocation: ObjectLocation,
                               summary: UnpackSummary,
