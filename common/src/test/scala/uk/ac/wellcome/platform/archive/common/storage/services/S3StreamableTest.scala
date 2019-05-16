@@ -9,7 +9,7 @@ import uk.ac.wellcome.storage.fixtures.S3
 import scala.util.{Failure, Success}
 
 class S3StreamableTest
-  extends FunSpec
+    extends FunSpec
     with S3
     with ScalaFutures
     with TryValues
@@ -23,7 +23,8 @@ class S3StreamableTest
 
       result shouldBe a[Failure[_]]
       result.failed.get shouldBe a[AmazonS3Exception]
-      result.failed.get.getMessage should startWith("The specified bucket does not exist")
+      result.failed.get.getMessage should startWith(
+        "The specified bucket does not exist")
     }
 
     it("produces a success from an valid ObjectLocation") {
@@ -38,7 +39,9 @@ class S3StreamableTest
         result shouldBe a[Success[_]]
         val inputStream = result.get
 
-        scala.io.Source.fromInputStream(inputStream).mkString shouldEqual content
+        scala.io.Source
+          .fromInputStream(inputStream)
+          .mkString shouldEqual content
       }
     }
   }

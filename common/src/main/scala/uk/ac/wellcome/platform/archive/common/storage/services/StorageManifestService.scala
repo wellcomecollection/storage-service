@@ -62,8 +62,7 @@ class StorageManifestService(implicit s3Client: AmazonS3) {
       bagInfo <- BagInfoParser.create(bagInfoInputStream)
     } yield bagInfo
 
-  def createFileManifest(
-    bagRootLocation: ObjectLocation): Try[FileManifest] =
+  def createFileManifest(bagRootLocation: ObjectLocation): Try[FileManifest] =
     createManifest(
       s"manifest-$checksumAlgorithm.txt",
       bagRootLocation
@@ -80,10 +79,9 @@ class StorageManifestService(implicit s3Client: AmazonS3) {
     bagRootLocation: ObjectLocation
   ): Try[FileManifest] = {
     for {
-      fileManifestInputStream <-
-        BagItemPath(name)
-          .toObjectLocation(bagRootLocation)
-          .toInputStream
+      fileManifestInputStream <- BagItemPath(name)
+        .toObjectLocation(bagRootLocation)
+        .toInputStream
 
       fileManifest <- FileManifestParser.create(
         fileManifestInputStream,

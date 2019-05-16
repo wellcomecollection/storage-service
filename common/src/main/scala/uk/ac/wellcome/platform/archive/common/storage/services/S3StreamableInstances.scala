@@ -11,7 +11,7 @@ import scala.util.Try
 object S3StreamableInstances {
   implicit class ObjectLocationStreamable(location: ObjectLocation)(
     implicit s3Client: AmazonS3)
-    extends Logging {
+      extends Logging {
     def toInputStream: Try[InputStream] = {
       debug(s"Converting $location to InputStream")
 
