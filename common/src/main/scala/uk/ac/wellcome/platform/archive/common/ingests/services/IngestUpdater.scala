@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.ingests.services
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.{PublishAttempt, SNSWriter}
+import uk.ac.wellcome.messaging.sns.SNSWriter
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -13,14 +13,14 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class IngestUpdater(
   stepName: String,
   snsWriter: SNSWriter
-) extends Logging {
+)(implicit ec: ExecutionContext) extends Logging {
 
-  def start(ingestId: IngestID): Future[PublishAttempt] =
+  def start(ingestId: IngestID): Future[Unit] =
     send(
       ingestId = ingestId,
       step = IngestStepStarted(ingestId)
@@ -30,7 +30,7 @@ class IngestUpdater(
     ingestId: IngestID,
     step: IngestStep[R],
     bagId: Option[BagId] = None
-  ): Future[PublishAttempt] = {
+  ): Future[Unit] = {
     val update = step match {
       case IngestCompleted(_) =>
         IngestStatusUpdate(
@@ -72,7 +72,7 @@ class IngestUpdater(
     snsWriter.writeMessage[IngestUpdate](
       update,
       subject = s"Sent by ${this.getClass.getSimpleName}"
-    )
+    ).map { _ => () }
   }
 
   val descriptionMaxLength = 250
