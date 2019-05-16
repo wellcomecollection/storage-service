@@ -1,30 +1,32 @@
-package uk.ac.wellcome.platform.archive.common.bagit.parsers
+package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import java.io.{BufferedReader, InputStream, InputStreamReader}
 import java.net.URI
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.FetchEntry
-
 import scala.util.Try
 import scala.util.matching.Regex
 
-/** Read/write the contents of a Fetch File as defined by RFC 8493 § 2.2.3.
-  *
-  * Relevant notes:
-  *
-  *   - Each line of a fetch file MUST be of the form
-  *
-  *         url length filepath
-  *
-  *   - `url` must be an absolute URI, and whitespace characters must be
-  *     percent encoded
-  *   - `length` is the number of octets in the file, or "-" if unspecified
-  *   - `filename` is the path to the file.  Line break characters (LR, CF, LRCF)
-  *     and *only* those characters must be percent-encoded.
-  *
-  */
-object FetchContents {
+case class BagFetch(
+                     files: List[BagFetchEntry]
+                   )
 
+
+object BagFetch {
+  /** Read/write the contents of a Fetch File as defined by RFC 8493 § 2.2.3.
+    *
+    * Relevant notes:
+    *
+    *   - Each line of a fetch file MUST be of the form
+    *
+    *         url length filepath
+    *
+    *   - `url` must be an absolute URI, and whitespace characters must be
+    *     percent encoded
+    *   - `length` is the number of octets in the file, or "-" if unspecified
+    *   - `filename` is the path to the file.  Line break characters (LR, CF, LRCF)
+    *     and *only* those characters must be percent-encoded.
+    *
+    */
   val FETCH_LINE_REGEX: Regex = new Regex(
     "(.*)[ \t]+(\\d*|-)[ \t]+(.*)",
     "url",
@@ -32,8 +34,8 @@ object FetchContents {
     "filepath"
   )
 
-  def read(is: InputStream): Try[Seq[FetchEntry]] = Try {
-    val bufferedReader = new BufferedReader(new InputStreamReader(is))
+  def create(stream: InputStream): Try[BagFetch] = Try {
+    val bufferedReader = new BufferedReader(new InputStreamReader(stream))
 
     val lines: List[String] =
       Iterator
@@ -42,11 +44,11 @@ object FetchContents {
         .filterNot { _.trim.isEmpty }
         .toList
 
-    lines
+    val entries = lines
       .map { line: String =>
         FETCH_LINE_REGEX.findFirstMatchIn(line) match {
           case Some(m) =>
-            FetchEntry(
+            BagFetchEntry(
               url = new URI(m.group("url")),
               length = decodeLength(m.group("length")),
               filepath = decodeFilepath(m.group("filepath"))
@@ -58,9 +60,11 @@ object FetchContents {
         }
 
       }
+
+    BagFetch(entries)
   }
 
-  def write(entries: Seq[FetchEntry]): String =
+  def write(entries: Seq[BagFetchEntry]): String =
     entries
       .map { e =>
         s"${e.url} ${encodeLength(e.length)} ${encodeFilepath(e.filepath)}"
@@ -82,3 +86,10 @@ object FetchContents {
   private def decodeFilepath(path: String): String =
     path.replaceAll("%0A", "\n").replaceAll("%0D", "\r")
 }
+
+
+case class BagFetchEntry(
+                          url: URI,
+                          length: Option[Int],
+                          filepath: String
+                        )

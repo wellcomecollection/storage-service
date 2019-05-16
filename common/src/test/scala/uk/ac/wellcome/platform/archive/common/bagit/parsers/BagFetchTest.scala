@@ -5,18 +5,18 @@ import java.net.URI
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.FetchEntry
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetch, BagFetchEntry}
 
-class FetchContentsTest extends FunSpec with Matchers {
+class BagFetchTest extends FunSpec with Matchers {
 
   describe("write") {
     it("writes the lines of a fetch.txt") {
       val entries = Seq(
-        FetchEntry(
+        BagFetchEntry(
           url = new URI("http://example.org/"),
           length = Some(25),
           filepath = "example.txt"),
-        FetchEntry(
+        BagFetchEntry(
           url = new URI("https://wellcome.ac.uk/"),
           length = None,
           filepath = "logo.png")
@@ -28,7 +28,7 @@ class FetchContentsTest extends FunSpec with Matchers {
            |https://wellcome.ac.uk/ - logo.png
        """.stripMargin.trim
 
-      FetchContents.write(entries) shouldBe expected
+      BagFetch.write(entries) shouldBe expected
     }
 
     it("percent-encodes a CR, LF or CRLF in the filename") {
@@ -36,18 +36,18 @@ class FetchContentsTest extends FunSpec with Matchers {
         "example\rnumber\r1.txt",
         "example\nnumber\n2.txt",
         "example\r\nnumber\r\n3.txt").map { filepath =>
-        FetchEntry(
+        BagFetchEntry(
           url = new URI("http://example.org/"),
           length = None,
           filepath = filepath)
       }
 
       Seq(
-        FetchEntry(
+        BagFetchEntry(
           url = new URI("http://example.org/"),
           length = None,
           filepath = "example.txt"),
-        FetchEntry(
+        BagFetchEntry(
           url = new URI("https://wellcome.ac.uk/"),
           length = None,
           filepath = "logo.png")
@@ -60,7 +60,7 @@ class FetchContentsTest extends FunSpec with Matchers {
            |http://example.org/ - example%0D%0Anumber%0D%0A3.txt
        """.stripMargin.trim
 
-      FetchContents.write(entries) shouldBe expected
+      BagFetch.write(entries) shouldBe expected
     }
   }
 
@@ -72,17 +72,17 @@ class FetchContentsTest extends FunSpec with Matchers {
        """.stripMargin)
 
       val expected = Seq(
-        FetchEntry(
+        BagFetchEntry(
           url = new URI("http://example.org/"),
           length = Some(25),
           filepath = "example.txt"),
-        FetchEntry(
+        BagFetchEntry(
           url = new URI("https://wellcome.ac.uk/"),
           length = None,
           filepath = "logo.png")
       )
 
-      FetchContents.read(contents).get shouldBe expected
+      BagFetch.create(contents).get shouldBe expected
     }
 
     it("handles an empty line in the fetch.txt") {
@@ -93,17 +93,17 @@ class FetchContentsTest extends FunSpec with Matchers {
        """.stripMargin)
 
       val expected = Seq(
-        FetchEntry(
+        BagFetchEntry(
           url = new URI("http://example.org/"),
           length = Some(25),
           filepath = "example.txt"),
-        FetchEntry(
+        BagFetchEntry(
           url = new URI("https://wellcome.ac.uk/"),
           length = None,
           filepath = "logo.png")
       )
 
-      FetchContents.read(contents).get shouldBe expected
+      BagFetch.create(contents).get shouldBe expected
     }
 
     it("correctly decodes a percent-encoded CR/LF/CRLF in the file path") {
@@ -113,7 +113,7 @@ class FetchContentsTest extends FunSpec with Matchers {
            |http://example.org/abc - example%0D%0A3%0D%0A.txt
        """.stripMargin)
 
-      FetchContents.read(contents).get.map { _.filepath } shouldBe Seq(
+      BagFetch.create(contents).get.map { _.filepath } shouldBe Seq(
         "example\r1\r.txt",
         "example\n2\n.txt",
         "example\r\n3\r\n.txt"
@@ -127,7 +127,7 @@ class FetchContentsTest extends FunSpec with Matchers {
            |http://example.org/abc - example3.txt
        """.stripMargin)
 
-      val exc = FetchContents.read(contents).failed.get
+      val exc = BagFetch.create(contents).failed.get
       exc shouldBe a[RuntimeException]
       exc.getMessage shouldBe "Line <<NO NO NO>> is incorrectly formatted!"
     }

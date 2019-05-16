@@ -26,6 +26,12 @@ package object models {
     }
   }
 
+  implicit val bagFetch: Resolvable[BagFetch] = new Resolvable[BagFetch] {
+    override def resolve(root: ObjectLocation)(bagFetch: BagFetch): ObjectLocation = {
+      root
+    }
+  }
+
   implicit val bagManifest: Resolvable[BagManifest] = new Resolvable[BagManifest] {
     override def resolve(root: ObjectLocation)(bag: BagManifest): ObjectLocation = {
       root
@@ -40,19 +46,17 @@ package object models {
 
   // verifiables
 
+
   implicit class ResolvedVerifiable[T](t: T)(
     implicit
     resolver: Resolvable[T],
     f: ObjectLocation => T => List[VerifiableLocation]
   ) {
-    def verifiable(
-                  root: ObjectLocation
-                ) = {
+    def verifiable(root: ObjectLocation) = {
 
       new Verifiable[T] {
         override def create(t: T): List[VerifiableLocation] = {
-          val resolved = resolver.resolve(root)(t)
-
+          val resolved: ObjectLocation = t.resolve(root)
 
           f(resolved)(t)
         }

@@ -19,6 +19,7 @@ import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
 import scala.concurrent.ExecutionContext
 
+
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =

@@ -29,4 +29,5 @@ object BagIt {
         manifest.files.map(
           verifiable(manifest.checksumAlgorithm)(root)(_)
         )
+
 }
