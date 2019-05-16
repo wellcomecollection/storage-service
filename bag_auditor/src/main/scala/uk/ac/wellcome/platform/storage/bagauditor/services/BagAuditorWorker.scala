@@ -59,9 +59,25 @@ class BagAuditorWorker(
         )
       }
 
+      _ <- sendIngestInformation(payload)(auditStep)
       _ <- ingestUpdater.send(payload.ingestId, auditStep)
       _ <- sendSuccessful(payload)(auditStep)
     } yield toResult(auditStep)
+
+  private def sendIngestInformation(payload: UnpackedBagPayload)(
+    step: IngestStepResult[BetterAuditSummary]): Future[Unit] =
+    step match {
+      case IngestStepSucceeded(summary: AuditSuccessSummary) =>
+        ingestUpdater.sendEvent(
+          ingestId = payload.ingestId,
+          messages = Seq(
+            s"Detected bag root as ${summary.audit.root}",
+            s"Detected bag identifier as ${summary.audit.externalIdentifier}",
+            s"Assigned bag version ${summary.audit.version}"
+          )
+        )
+      case _ => Future.successful(())
+    }
 
   private def sendSuccessful(payload: UnpackedBagPayload)(
     step: IngestStepResult[BetterAuditSummary]): Future[Unit] =

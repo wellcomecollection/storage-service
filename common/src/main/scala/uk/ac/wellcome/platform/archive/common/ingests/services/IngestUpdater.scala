@@ -5,12 +5,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSWriter
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestEvent,
-  IngestStatusUpdate,
-  IngestUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -72,6 +67,17 @@ class IngestUpdater(
     snsWriter.writeMessage[IngestUpdate](
       update,
       subject = s"Sent by ${this.getClass.getSimpleName}"
+    ).map { _ => () }
+  }
+
+  def sendEvent(ingestId: IngestID, messages: Seq[String]): Future[Unit] = {
+    val update: IngestUpdate = IngestEventUpdate(
+      id = ingestId,
+      events = messages.map { IngestEvent(_) }
+    )
+
+    snsWriter.writeMessage[IngestUpdate](
+      update, subject = s"Sent by ${this.getClass.getSimpleName}"
     ).map { _ => () }
   }
 
