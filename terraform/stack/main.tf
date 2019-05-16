@@ -57,7 +57,7 @@ module "bag_auditor" {
     ingest_topic_arn   = "${module.ingests_topic.arn}"
     outgoing_topic_arn = "${module.bag_auditor_output_topic.arn}"
     metrics_namespace  = "${local.bag_auditor_service_name}"
-    operation_name     = "locating bag root"
+    operation_name     = "auditing bag"
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_auditor_service_name}"
   }
 
