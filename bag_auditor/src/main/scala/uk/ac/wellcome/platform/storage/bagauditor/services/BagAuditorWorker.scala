@@ -43,8 +43,7 @@ class BagAuditorWorker(
     with Logging
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[UnpackedBagPayload, AuditSummary](
-      alpakkaSQSWorkerConfig) {
+    AlpakkaSQSWorker[UnpackedBagPayload, AuditSummary](alpakkaSQSWorkerConfig) {
       processMessage
     }
 
