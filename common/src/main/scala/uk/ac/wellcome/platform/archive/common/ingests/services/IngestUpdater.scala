@@ -73,7 +73,7 @@ class IngestUpdater(
   def sendEvent(ingestId: IngestID, messages: Seq[String]): Future[Unit] = {
     val update: IngestUpdate = IngestEventUpdate(
       id = ingestId,
-      events = messages.map { IngestEvent(_) }
+      events = messages.map { m: String => IngestEvent(eventDescription(m)) }
     )
 
     snsWriter.writeMessage[IngestUpdate](
@@ -83,7 +83,7 @@ class IngestUpdater(
 
   val descriptionMaxLength = 250
   private def eventDescription(main: String,
-                               maybeInformation: Option[String]): String = {
+                               maybeInformation: Option[String] = None): String = {
     val separator: String = " - "
     truncate(
       Seq(
