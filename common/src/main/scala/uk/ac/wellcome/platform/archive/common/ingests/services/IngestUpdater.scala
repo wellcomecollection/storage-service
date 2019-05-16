@@ -13,7 +13,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class IngestUpdater(
   stepName: String,
   snsWriter: SNSWriter
-)(implicit ec: ExecutionContext) extends Logging {
+)(implicit ec: ExecutionContext)
+    extends Logging {
 
   def start(ingestId: IngestID): Future[Unit] =
     send(
@@ -64,26 +65,38 @@ class IngestUpdater(
         )
     }
 
-    snsWriter.writeMessage[IngestUpdate](
-      update,
-      subject = s"Sent by ${this.getClass.getSimpleName}"
-    ).map { _ => () }
+    snsWriter
+      .writeMessage[IngestUpdate](
+        update,
+        subject = s"Sent by ${this.getClass.getSimpleName}"
+      )
+      .map { _ =>
+        ()
+      }
   }
 
   def sendEvent(ingestId: IngestID, messages: Seq[String]): Future[Unit] = {
     val update: IngestUpdate = IngestEventUpdate(
       id = ingestId,
-      events = messages.map { m: String => IngestEvent(eventDescription(m)) }
+      events = messages.map { m: String =>
+        IngestEvent(eventDescription(m))
+      }
     )
 
-    snsWriter.writeMessage[IngestUpdate](
-      update, subject = s"Sent by ${this.getClass.getSimpleName}"
-    ).map { _ => () }
+    snsWriter
+      .writeMessage[IngestUpdate](
+        update,
+        subject = s"Sent by ${this.getClass.getSimpleName}"
+      )
+      .map { _ =>
+        ()
+      }
   }
 
   val descriptionMaxLength = 250
-  private def eventDescription(main: String,
-                               maybeInformation: Option[String] = None): String = {
+  private def eventDescription(
+    main: String,
+    maybeInformation: Option[String] = None): String = {
     val separator: String = " - "
     truncate(
       Seq(

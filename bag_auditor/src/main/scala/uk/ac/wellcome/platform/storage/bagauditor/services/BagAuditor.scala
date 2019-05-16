@@ -26,58 +26,58 @@ class BagAuditor(implicit s3Client: AmazonS3) {
 
   def getAuditSummary(
     unpackLocation: ObjectLocation,
-    storageSpace: StorageSpace): Try[IngestStepResult[BetterAuditSummary]] = Try {
+    storageSpace: StorageSpace): Try[IngestStepResult[BetterAuditSummary]] =
+    Try {
 
-    val startTime = Instant.now()
+      val startTime = Instant.now()
 
-    val auditTry: Try[AuditSuccess] = for {
-      root <- s3BagLocator.locateBagRoot(unpackLocation)
-      externalIdentifier <- getBagIdentifier(root)
-      version <- chooseVersion(externalIdentifier)
-      auditSuccess = AuditSuccess(
-        root = root,
-        externalIdentifier = externalIdentifier,
-        version = version
-      )
-    } yield auditSuccess
+      val auditTry: Try[AuditSuccess] = for {
+        root <- s3BagLocator.locateBagRoot(unpackLocation)
+        externalIdentifier <- getBagIdentifier(root)
+        version <- chooseVersion(externalIdentifier)
+        auditSuccess = AuditSuccess(
+          root = root,
+          externalIdentifier = externalIdentifier,
+          version = version
+        )
+      } yield auditSuccess
 
-    auditTry recover {
-      case e => AuditFailure(e)
-    } match {
-      case Success(audit @ AuditSuccess(_, _, _)) =>
-        IngestStepSucceeded(
-          BetterAuditSummary.create(
-            location = unpackLocation,
-            space = storageSpace,
-            audit = audit,
-            t = startTime
+      auditTry recover {
+        case e => AuditFailure(e)
+      } match {
+        case Success(audit @ AuditSuccess(_, _, _)) =>
+          IngestStepSucceeded(
+            BetterAuditSummary.create(
+              location = unpackLocation,
+              space = storageSpace,
+              audit = audit,
+              t = startTime
+            )
           )
-        )
-      case Success(audit @ AuditFailure(e)) =>
-        IngestFailed(
-          summary = BetterAuditSummary.create(
-            location = unpackLocation,
-            space = storageSpace,
-            audit = audit,
-            t = startTime
-          ),
-          e
-        )
-      case Failure(e) =>
-        IngestFailed(
-          summary = BetterAuditSummary.incomplete(
-            location = unpackLocation,
-            space = storageSpace,
-            e = e,
-            t = startTime
-          ),
-          e
-        )
+        case Success(audit @ AuditFailure(e)) =>
+          IngestFailed(
+            summary = BetterAuditSummary.create(
+              location = unpackLocation,
+              space = storageSpace,
+              audit = audit,
+              t = startTime
+            ),
+            e
+          )
+        case Failure(e) =>
+          IngestFailed(
+            summary = BetterAuditSummary.incomplete(
+              location = unpackLocation,
+              space = storageSpace,
+              e = e,
+              t = startTime
+            ),
+            e
+          )
+      }
     }
-  }
 
-  private def chooseVersion(
-    externalIdentifier: ExternalIdentifier): Try[Int] =
+  private def chooseVersion(externalIdentifier: ExternalIdentifier): Try[Int] =
     Success(1)
 
   private def getBagIdentifier(

@@ -36,11 +36,10 @@ case class AuditSuccessSummary(
 ) extends BetterAuditSummary
 
 case object BetterAuditSummary {
-  def incomplete(
-    location: ObjectLocation,
-    space: StorageSpace,
-    e: Throwable,
-    t: Instant): AuditIncompleteSummary =
+  def incomplete(location: ObjectLocation,
+                 space: StorageSpace,
+                 e: Throwable,
+                 t: Instant): AuditIncompleteSummary =
     AuditIncompleteSummary(
       location = location,
       space = space,
