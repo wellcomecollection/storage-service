@@ -87,7 +87,8 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
       }
   }
 
-  private def archiveDownloadStream(srcLocation: ObjectLocation): Try[S3ObjectInputStream] =
+  private def archiveDownloadStream(
+    srcLocation: ObjectLocation): Try[S3ObjectInputStream] =
     srcLocation.toInputStream
       .recoverWith {
         case ae: AmazonS3Exception =>
