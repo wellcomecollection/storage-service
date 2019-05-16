@@ -12,7 +12,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.error.{
   InvalidBagInfo
 }
 
-import scala.concurrent.Future
 import scala.util.Try
 
 object BagInfoKeys {
@@ -30,13 +29,10 @@ object BagInfoParser {
   private val payloadOxumRegex =
     s"""${BagInfoKeys.payloadOxum}\\s*:\\s*([0-9]+)\\.([0-9]+)\\s*""".r
 
-  def create(inputStream: InputStream): Future[BagInfo] = {
-    Future.fromTry(
-      validate(inputStream).toEither.left
-        .map(e => new RuntimeException(e.toString))
-        .toTry
-    )
-  }
+  def create(inputStream: InputStream): Try[BagInfo] =
+    validate(inputStream).toEither.left
+      .map(e => new RuntimeException(e.toString))
+      .toTry
 
   private def validate(inputStream: InputStream) = {
     val bagInfoLines = scala.io.Source
