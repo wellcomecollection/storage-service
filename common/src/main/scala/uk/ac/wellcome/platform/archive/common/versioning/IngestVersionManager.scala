@@ -7,15 +7,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 
 import scala.util.{Success, Try}
 
-trait IngestVersionManagerDao {
-  def lookupExistingVersion(ingestID: IngestID): Try[Option[VersionRecord]]
-
-  def lookupLatestVersionFor(
-    externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]]
-
-  def storeNewVersion(record: VersionRecord): Try[Unit]
-}
-
 trait IngestVersionManager {
   val dao: IngestVersionManagerDao
 
