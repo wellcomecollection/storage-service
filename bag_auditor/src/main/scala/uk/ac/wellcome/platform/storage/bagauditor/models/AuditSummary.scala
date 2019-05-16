@@ -2,36 +2,72 @@ package uk.ac.wellcome.platform.storage.bagauditor.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
-case class AuditInformation(
-  bagRootLocation: ObjectLocation,
-  externalIdentifier: ExternalIdentifier,
-  version: Int
-)
+sealed trait AuditSummary extends Summary {
+  val location: ObjectLocation
+  val space: StorageSpace
+  val startTime: Instant
+}
 
-case class AuditSummary(
-  unpackLocation: ObjectLocation,
-  storageSpace: StorageSpace,
-  maybeAuditInformation: Option[AuditInformation] = None,
+case class AuditIncompleteSummary(
+  location: ObjectLocation,
+  space: StorageSpace,
+  e: Throwable,
   startTime: Instant,
-  endTime: Option[Instant] = None,
-) extends Summary {
-  def complete: AuditSummary =
-    this.copy(
-      endTime = Some(Instant.now())
+  endTime: Option[Instant] = None
+) extends AuditSummary
+
+case class AuditFailureSummary(
+  location: ObjectLocation,
+  space: StorageSpace,
+  startTime: Instant,
+  endTime: Option[Instant]
+) extends AuditSummary
+
+case class AuditSuccessSummary(
+  location: ObjectLocation,
+  space: StorageSpace,
+  startTime: Instant,
+  audit: AuditSuccess,
+  endTime: Option[Instant]
+) extends AuditSummary
+
+case object AuditSummary {
+  def incomplete(location: ObjectLocation,
+                 space: StorageSpace,
+                 e: Throwable,
+                 t: Instant): AuditIncompleteSummary =
+    AuditIncompleteSummary(
+      location = location,
+      space = space,
+      e = e,
+      startTime = t,
+      endTime = None
     )
 
-  def auditInformation: AuditInformation =
-    maybeAuditInformation.getOrElse(
-      throw new RuntimeException("No info provided by auditor!")
-    )
-
-  def root: ObjectLocation = auditInformation.bagRootLocation
-
-  def externalIdentifier: ExternalIdentifier =
-    auditInformation.externalIdentifier
+  def create(
+    location: ObjectLocation,
+    space: StorageSpace,
+    audit: Audit,
+    t: Instant
+  ): AuditSummary = audit match {
+    case f @ AuditFailure(e) =>
+      AuditFailureSummary(
+        location = location,
+        space = space,
+        startTime = t,
+        endTime = Some(Instant.now())
+      )
+    case s @ AuditSuccess(_, _, _) =>
+      AuditSuccessSummary(
+        location = location,
+        space = space,
+        startTime = t,
+        audit = s,
+        endTime = Some(Instant.now())
+      )
+  }
 }

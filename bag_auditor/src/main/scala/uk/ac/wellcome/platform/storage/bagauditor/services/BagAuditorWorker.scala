@@ -23,7 +23,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.storage.bagauditor.models.{
   AuditSuccessSummary,
-  BetterAuditSummary
+  AuditSummary
 }
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -43,13 +43,13 @@ class BagAuditorWorker(
     with Logging
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[UnpackedBagPayload, BetterAuditSummary](
+    AlpakkaSQSWorker[UnpackedBagPayload, AuditSummary](
       alpakkaSQSWorkerConfig) {
       processMessage
     }
 
   def processMessage(
-    payload: UnpackedBagPayload): Future[Result[BetterAuditSummary]] =
+    payload: UnpackedBagPayload): Future[Result[AuditSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
@@ -66,7 +66,7 @@ class BagAuditorWorker(
     } yield toResult(auditStep)
 
   private def sendIngestInformation(payload: UnpackedBagPayload)(
-    step: IngestStepResult[BetterAuditSummary]): Future[Unit] =
+    step: IngestStepResult[AuditSummary]): Future[Unit] =
     step match {
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
         ingestUpdater.sendEvent(
@@ -81,7 +81,7 @@ class BagAuditorWorker(
     }
 
   private def sendSuccessful(payload: UnpackedBagPayload)(
-    step: IngestStepResult[BetterAuditSummary]): Future[Unit] =
+    step: IngestStepResult[AuditSummary]): Future[Unit] =
     step match {
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
         outgoingPublisher.sendIfSuccessful(

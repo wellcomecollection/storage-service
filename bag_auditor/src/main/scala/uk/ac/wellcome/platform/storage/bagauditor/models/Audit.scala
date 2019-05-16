@@ -3,12 +3,12 @@ package uk.ac.wellcome.platform.storage.bagauditor.models
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.storage.ObjectLocation
 
-sealed trait BetterAudit
+sealed trait Audit
 
 case class AuditSuccess(
   root: ObjectLocation,
   externalIdentifier: ExternalIdentifier,
   version: Int
-) extends BetterAudit
+) extends Audit
 
-case class AuditFailure(e: Throwable) extends BetterAudit
+case class AuditFailure(e: Throwable) extends Audit

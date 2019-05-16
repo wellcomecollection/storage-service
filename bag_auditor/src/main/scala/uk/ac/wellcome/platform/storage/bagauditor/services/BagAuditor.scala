@@ -26,7 +26,7 @@ class BagAuditor(implicit s3Client: AmazonS3) {
 
   def getAuditSummary(
     unpackLocation: ObjectLocation,
-    storageSpace: StorageSpace): Try[IngestStepResult[BetterAuditSummary]] =
+    storageSpace: StorageSpace): Try[IngestStepResult[AuditSummary]] =
     Try {
 
       val startTime = Instant.now()
@@ -47,7 +47,7 @@ class BagAuditor(implicit s3Client: AmazonS3) {
       } match {
         case Success(audit @ AuditSuccess(_, _, _)) =>
           IngestStepSucceeded(
-            BetterAuditSummary.create(
+            AuditSummary.create(
               location = unpackLocation,
               space = storageSpace,
               audit = audit,
@@ -56,7 +56,7 @@ class BagAuditor(implicit s3Client: AmazonS3) {
           )
         case Success(audit @ AuditFailure(e)) =>
           IngestFailed(
-            summary = BetterAuditSummary.create(
+            summary = AuditSummary.create(
               location = unpackLocation,
               space = storageSpace,
               audit = audit,
@@ -66,7 +66,7 @@ class BagAuditor(implicit s3Client: AmazonS3) {
           )
         case Failure(e) =>
           IngestFailed(
-            summary = BetterAuditSummary.incomplete(
+            summary = AuditSummary.incomplete(
               location = unpackLocation,
               space = storageSpace,
               e = e,
