@@ -37,8 +37,8 @@ trait BagAuditorFixtures
     outgoingTopic: Topic
   )(testWith: TestWith[BagAuditorWorker, R]): R =
     withActorSystem { implicit actorSystem =>
-      withIngestUpdater("locating bag root", ingestTopic) { ingestUpdater =>
-        withOutgoingPublisher("locating bag root", outgoingTopic) {
+      withIngestUpdater("auditing bag", ingestTopic) { ingestUpdater =>
+        withOutgoingPublisher("auditing bag", outgoingTopic) {
           outgoingPublisher =>
             withMonitoringClient { implicit monitoringClient =>
               val worker = new BagAuditorWorker(
