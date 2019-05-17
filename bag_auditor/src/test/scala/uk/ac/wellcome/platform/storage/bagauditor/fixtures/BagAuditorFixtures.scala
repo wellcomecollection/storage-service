@@ -31,26 +31,34 @@ trait BagAuditorFixtures
     arn = "arn::default_q"
   )
 
+  def withBagAuditor[R](testWith: TestWith[BagAuditor, R]): R = {
+    val bagAuditor = new BagAuditor()
+
+    testWith(bagAuditor)
+  }
+
   def withAuditorWorker[R](
     queue: Queue = defaultQueue,
     ingestTopic: Topic,
     outgoingTopic: Topic
   )(testWith: TestWith[BagAuditorWorker, R]): R =
     withActorSystem { implicit actorSystem =>
-      withIngestUpdater("locating bag root", ingestTopic) { ingestUpdater =>
-        withOutgoingPublisher("locating bag root", outgoingTopic) {
+      withIngestUpdater("auditing bag", ingestTopic) { ingestUpdater =>
+        withOutgoingPublisher("auditing bag", outgoingTopic) {
           outgoingPublisher =>
             withMonitoringClient { implicit monitoringClient =>
-              val worker = new BagAuditorWorker(
-                alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-                bagAuditor = new BagAuditor(),
-                ingestUpdater = ingestUpdater,
-                outgoingPublisher = outgoingPublisher
-              )
+              withBagAuditor { bagAuditor =>
+                val worker = new BagAuditorWorker(
+                  alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+                  bagAuditor = bagAuditor,
+                  ingestUpdater = ingestUpdater,
+                  outgoingPublisher = outgoingPublisher
+                )
 
-              worker.run()
+                worker.run()
 
-              testWith(worker)
+                testWith(worker)
+              }
             }
         }
       }

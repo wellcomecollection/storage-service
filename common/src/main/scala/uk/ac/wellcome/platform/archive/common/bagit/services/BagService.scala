@@ -37,7 +37,7 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
       bagFetch <- loadOptional[BagFetch](root)(
         bagFetch)(BagFetch.create)
 
-    } yield Bag(bagInfo, fileManifest, tagManifest)
+    } yield Bag(bagInfo, fileManifest, tagManifest, bagFetch)
 
   private def loadOptional[T](root: ObjectLocation)(path: BagPath)(f: Stream[T]) =
     path.from(root).flatMap {

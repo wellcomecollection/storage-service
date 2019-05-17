@@ -14,22 +14,20 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.Try
 
-
 case class VerifiableLocation(
-                               objectLocation: ObjectLocation,
-                               checksum: Checksum
-                             )
-
+  objectLocation: ObjectLocation,
+  checksum: Checksum
+)
 
 case class Checksum(
-                     algorithm: HashingAlgorithm,
-                     value: ChecksumValue
-                   )
+  algorithm: HashingAlgorithm,
+  value: ChecksumValue
+)
 object Checksum extends Logging {
   def create(
-             inputStream: InputStream,
-             algorithm: HashingAlgorithm
-           ): Try[Checksum] = {
+    inputStream: InputStream,
+    algorithm: HashingAlgorithm
+  ): Try[Checksum] = {
     debug(s"Creating Checksum for $inputStream with  $algorithm")
     val checksumValue = ChecksumValue.create(inputStream, algorithm)
     val checksum = checksumValue.map(Checksum(algorithm, _))
@@ -62,11 +60,10 @@ object ChecksumValue extends Logging {
     ChecksumValue(raw.trim)
   }
 
-
   def create(
-                inputStream: InputStream,
-                algorithm: HashingAlgorithm
-              ): Try[ChecksumValue] = {
+    inputStream: InputStream,
+    algorithm: HashingAlgorithm
+  ): Try[ChecksumValue] = {
     debug(s"Creating ChecksumValue from $inputStream, $algorithm")
 
     val checksumValue = Try {
@@ -85,8 +82,8 @@ object ChecksumValue extends Logging {
     checksumValue
   }
 
-  implicit val enc = Encoder.instance[ChecksumValue](o =>
-    Json.fromString(o.toString))
+  implicit val enc =
+    Encoder.instance[ChecksumValue](o => Json.fromString(o.toString))
 
   implicit val dec = Decoder.instance[ChecksumValue](cursor =>
     cursor.value.as[String].map(ChecksumValue(_)))

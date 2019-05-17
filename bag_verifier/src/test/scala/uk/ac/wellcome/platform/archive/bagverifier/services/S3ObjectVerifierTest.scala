@@ -47,7 +47,8 @@ class S3ObjectVerifierTest
   it("returns a failure if the checksum is incorrect") {
     withLocalS3Bucket { bucket =>
       val objectLocation = createObjectLocationWith(bucket)
-      val verifiableLocation = verifiableLocationWith(objectLocation, badChecksum)
+      val verifiableLocation =
+        verifiableLocationWith(objectLocation, badChecksum)
 
       put(
         verifiableLocation.objectLocation,

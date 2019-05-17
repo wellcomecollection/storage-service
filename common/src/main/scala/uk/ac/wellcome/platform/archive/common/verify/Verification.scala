@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.verify
 
-
-
 trait Verification[T] {
   def verify(t: T): VerificationResult
 }
@@ -9,10 +7,10 @@ trait Verification[T] {
 object Verification {
 
   implicit def verification[Container](
-                                        implicit
-                                          verifiable: Verifiable[Container],
-                                          verifier: Verifier
-                                      ) =
+    implicit
+    verifiable: Verifiable[Container],
+    verifier: Verifier
+  ) =
     new Verification[Container] {
       override def verify(container: Container): VerificationResult = {
         verifiable
@@ -20,19 +18,19 @@ object Verification {
           .map(verifier.verify)
           .foldLeft[VerificationResult](VerificationSuccess(Nil)) {
 
-          case (VerificationSuccess(sl), s@VerifiedSuccess(_)) =>
-            VerificationSuccess(s :: sl)
+            case (VerificationSuccess(sl), s @ VerifiedSuccess(_)) =>
+              VerificationSuccess(s :: sl)
 
-          case (VerificationSuccess(sl), f@VerifiedFailure(_, _)) =>
-            VerificationFailure(List(f), sl)
+            case (VerificationSuccess(sl), f @ VerifiedFailure(_, _)) =>
+              VerificationFailure(List(f), sl)
 
-          case (VerificationFailure(fl, sl), s@VerifiedSuccess(_)) =>
-            VerificationFailure(fl, s :: sl)
+            case (VerificationFailure(fl, sl), s @ VerifiedSuccess(_)) =>
+              VerificationFailure(fl, s :: sl)
 
-          case (VerificationFailure(fl, sl), f@VerifiedFailure(_, _)) =>
-            VerificationFailure(f :: fl, sl)
+            case (VerificationFailure(fl, sl), f @ VerifiedFailure(_, _)) =>
+              VerificationFailure(f :: fl, sl)
 
-        }
+          }
       }
     }
 

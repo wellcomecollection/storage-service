@@ -6,13 +6,17 @@ import uk.ac.wellcome.platform.archive.common.verify._
 
 import scala.util.{Failure, Success}
 
-class S3ObjectVerifier(implicit s3Client: AmazonS3) extends Verifier with Logging {
+class S3ObjectVerifier(implicit s3Client: AmazonS3)
+    extends Verifier
+    with Logging {
   import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
+
+  import uk.ac.wellcome.platform.archive.common.TryHard._
 
   private def compareChecksum(a: Checksum, b: Checksum) = {
     debug(s"Comparing $a, $b")
 
-    val result = if(a.value == b.value && a.algorithm == b.algorithm) {
+    val result = if (a.value == b.value && a.algorithm == b.algorithm) {
       Success(())
     } else {
       Failure(
@@ -28,10 +32,11 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3) extends Verifier with Loggin
   def verify(location: VerifiableLocation): VerifiedLocation = {
     debug(s"Attempting to verify: $location")
     val tryVerify = for {
-      inputStream <- location.objectLocation.toInputStream
-      checksum <- Checksum.create(
-        inputStream,
-        location.checksum.algorithm)
+      maybeInputStream <- location.objectLocation.toInputStream
+      inputStream <- maybeInputStream.unavailableWithMessage(
+        s"Location ${location.objectLocation} is unavailable"
+      )
+      checksum <- Checksum.create(inputStream, location.checksum.algorithm)
       result <- compareChecksum(checksum, location.checksum)
     } yield result
 

@@ -33,7 +33,7 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
 
     val operationName = OperationNameBuilder
-      .getName(config, default = "locating bag root")
+      .getName(config, default = "auditing bag")
 
     new BagAuditorWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),

@@ -12,14 +12,14 @@ class BagFetchTest extends FunSpec with Matchers {
   describe("write") {
     it("writes the lines of a fetch.txt") {
       val entries = Seq(
-        BagFetchEntry(
+        BagFetchEntry.create(
           url = new URI("http://example.org/"),
           length = Some(25),
-          filepath = "example.txt"),
-        BagFetchEntry(
+          path = "example.txt"),
+        BagFetchEntry.create(
           url = new URI("https://wellcome.ac.uk/"),
           length = None,
-          filepath = "logo.png")
+          path = "logo.png")
       )
 
       val expected =
@@ -35,22 +35,22 @@ class BagFetchTest extends FunSpec with Matchers {
       val entries = Seq(
         "example\rnumber\r1.txt",
         "example\nnumber\n2.txt",
-        "example\r\nnumber\r\n3.txt").map { filepath =>
-        BagFetchEntry(
+        "example\r\nnumber\r\n3.txt").map { path =>
+        BagFetchEntry.create(
           url = new URI("http://example.org/"),
           length = None,
-          filepath = filepath)
+          path = path)
       }
 
       Seq(
-        BagFetchEntry(
+        BagFetchEntry.create(
           url = new URI("http://example.org/"),
           length = None,
-          filepath = "example.txt"),
-        BagFetchEntry(
+          path = "example.txt"),
+        BagFetchEntry.create(
           url = new URI("https://wellcome.ac.uk/"),
           length = None,
-          filepath = "logo.png")
+          path = "logo.png")
       )
 
       val expected =
@@ -67,19 +67,19 @@ class BagFetchTest extends FunSpec with Matchers {
   describe("read") {
     it("reads the contents of a fetch.txt") {
       val contents = toInputStream(s"""
-           |http://example.org/\t25 example.txt
-           |https://wellcome.ac.uk/ -\tlogo.png
+                                      |http://example.org/\t25 example.txt
+                                      |https://wellcome.ac.uk/ -\tlogo.png
        """.stripMargin)
 
       val expected = Seq(
-        BagFetchEntry(
+        BagFetchEntry.create(
           url = new URI("http://example.org/"),
           length = Some(25),
-          filepath = "example.txt"),
-        BagFetchEntry(
+          path = "example.txt"),
+        BagFetchEntry.create(
           url = new URI("https://wellcome.ac.uk/"),
           length = None,
-          filepath = "logo.png")
+          path = "logo.png")
       )
 
       BagFetch.create(contents).get.files shouldBe expected
@@ -87,20 +87,20 @@ class BagFetchTest extends FunSpec with Matchers {
 
     it("handles an empty line in the fetch.txt") {
       val contents = toInputStream(s"""
-           |http://example.org/\t25 example.txt
-           |
+                                      |http://example.org/\t25 example.txt
+                                      |
            |https://wellcome.ac.uk/ -\tlogo.png
        """.stripMargin)
 
       val expected = Seq(
-        BagFetchEntry(
+        BagFetchEntry.create(
           url = new URI("http://example.org/"),
           length = Some(25),
-          filepath = "example.txt"),
-        BagFetchEntry(
+          path = "example.txt"),
+        BagFetchEntry.create(
           url = new URI("https://wellcome.ac.uk/"),
           length = None,
-          filepath = "logo.png")
+          path = "logo.png")
       )
 
       BagFetch.create(contents).get.files shouldBe expected
@@ -108,12 +108,12 @@ class BagFetchTest extends FunSpec with Matchers {
 
     it("correctly decodes a percent-encoded CR/LF/CRLF in the file path") {
       val contents = toInputStream(s"""
-           |http://example.org/abc - example%0D1%0D.txt
-           |http://example.org/abc - example%0A2%0A.txt
-           |http://example.org/abc - example%0D%0A3%0D%0A.txt
+                                      |http://example.org/abc - example%0D1%0D.txt
+                                      |http://example.org/abc - example%0A2%0A.txt
+                                      |http://example.org/abc - example%0D%0A3%0D%0A.txt
        """.stripMargin)
 
-      BagFetch.create(contents).get.files.map { _.filepath } shouldBe Seq(
+      BagFetch.create(contents).get.files.map { _.path } shouldBe Seq(
         "example\r1\r.txt",
         "example\n2\n.txt",
         "example\r\n3\r\n.txt"
@@ -122,9 +122,9 @@ class BagFetchTest extends FunSpec with Matchers {
 
     it("throws an exception if a line is incorrectly formatted") {
       val contents = toInputStream(s"""
-           |http://example.org/abc - example1.txt
-           |NO NO NO
-           |http://example.org/abc - example3.txt
+                                      |http://example.org/abc - example1.txt
+                                      |NO NO NO
+                                      |http://example.org/abc - example3.txt
        """.stripMargin)
 
       val exc = BagFetch.create(contents).failed.get
