@@ -51,7 +51,7 @@ object BagFetch {
             BagFetchEntry(
               url = new URI(m.group("url")),
               length = decodeLength(m.group("length")),
-              filepath = decodeFilepath(m.group("filepath"))
+              path = BagPath(decodeFilepath(m.group("filepath")))
             )
           case None =>
             throw new RuntimeException(
@@ -67,7 +67,7 @@ object BagFetch {
   def write(entries: Seq[BagFetchEntry]): String =
     entries
       .map { e =>
-        s"${e.url} ${encodeLength(e.length)} ${encodeFilepath(e.filepath)}"
+        s"${e.url} ${encodeLength(e.length)} ${encodeFilepath(e.path.value)}"
       }
       .mkString("\n")
 
@@ -86,10 +86,3 @@ object BagFetch {
   private def decodeFilepath(path: String): String =
     path.replaceAll("%0A", "\n").replaceAll("%0D", "\r")
 }
-
-
-case class BagFetchEntry(
-                          url: URI,
-                          length: Option[Int],
-                          filepath: String
-                        )

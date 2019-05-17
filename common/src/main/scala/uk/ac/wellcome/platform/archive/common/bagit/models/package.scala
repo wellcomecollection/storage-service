@@ -2,11 +2,13 @@ package uk.ac.wellcome.platform.archive.common.bagit
 
 import java.nio.file.Paths
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagIt.verifyFileManifest
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
+
 import scala.language.implicitConversions
+import scala.util.{Failure, Success}
+
 
 package object models {
   import Resolvable._
@@ -26,51 +28,81 @@ package object models {
     }
   }
 
-  implicit val bagFetch: Resolvable[BagFetch] = new Resolvable[BagFetch] {
-    override def resolve(root: ObjectLocation)(bagFetch: BagFetch): ObjectLocation = {
-      root
-    }
-  }
-
-  implicit val bagManifest: Resolvable[BagManifest] = new Resolvable[BagManifest] {
-    override def resolve(root: ObjectLocation)(bag: BagManifest): ObjectLocation = {
-      root
-    }
-  }
-
-  implicit val bagResolver: Resolvable[Bag] = new Resolvable[Bag] {
-    override def resolve(root: ObjectLocation)(bag: Bag): ObjectLocation = {
-      root
-    }
-  }
-
   // verifiables
 
+  case class MatchedLocation[A <: BagLocation, B <: BagLocation](a: A, b: Option[B])
 
-  implicit class ResolvedVerifiable[T](t: T)(
-    implicit
-    resolver: Resolvable[T],
-    f: ObjectLocation => T => List[VerifiableLocation]
-  ) {
-    def verifiable(root: ObjectLocation) = {
+  implicit val bagVerifier: Verifiable[Bag] = new Verifiable[Bag] {
+    private def matchBagLocation[A <: BagLocation, B <: BagLocation](
+      a: List[A],
+      b: List[B]
+    ): Either[List[Throwable], List[MatchedLocation[A, B]]] = {
 
-      new Verifiable[T] {
-        override def create(t: T): List[VerifiableLocation] = {
-          val resolved: ObjectLocation = t.resolve(root)
+      val filtered = a.map { l1 => b.collect {
+        case l2 if l1.path == l2.path => MatchedLocation(l1, Some(l2))
+        case _ => MatchedLocation(l1, None)
+      }}
 
-          f(resolved)(t)
-        }
+      val matched = filtered.map {
+        case List(matched@MatchedLocation(_,_)) =>
+          Success(Some(matched))
+
+        case Nil => Success(None)
+
+        case _ => Failure(new RuntimeException(
+          "Found multiple matches for fetch!"
+        ))
       }
+
+      val successes = matched.collect { case Success(s) => s } flatten
+      val failures = matched.collect { case Failure(e: Throwable) => e } flatten
+
+      if(failures.isEmpty) Right(successes) else Left(failures)
+    }
+
+    override def create(bag: Bag): List[VerifiableLocation] = {
+      val bagFiles = bag.tagManifest.files ++ bag.manifest.files
+      val fetchEntries = bag.fetch.toList.flatMap(_.files)
+
+
+
+      for {
+        matched <- matchBagLocation(bagFiles, fetchEntries)
+
+
+      }
+      matchBagLocation(bagFiles, fetchEntries).map(_.map {
+        case MatchedLocation(bagFile: BagFile, fetchEntry: BagFetchEntry) => {
+
+        }
+      })
+
+      Nil
     }
   }
 
-  // ObjectLocation => T => List[VerifiableLocation]
-
-  implicit def bagManifestVerifiable(root: ObjectLocation)(manifest: BagManifest): List[VerifiableLocation] =
-    verifyFileManifest(manifest)(root)
-
-  implicit def bagVerifiable(root: ObjectLocation)(bag: Bag) = {
-    bagManifestVerifiable(root)(bag.manifest) ++ bagManifestVerifiable(root)(bag.tagManifest)
-  }
-
+//  val checksum =
+//    (algorithm: HashingAlgorithm) =>
+//      (file: BagFile) =>
+//        Checksum(
+//          algorithm,
+//          file.checksum)
+//
+//  val location = (root: ObjectLocation) =>
+//    (file: BagFile) => file.resolve(root)
+//
+//  val verifiable =
+//    (algorithm: HashingAlgorithm) =>
+//      (root: ObjectLocation) =>
+//        (file: BagFile) =>
+//          VerifiableLocation(
+//            location(root)(file),
+//            checksum(algorithm)(file))
+//
+//  val verifyFileManifest =
+//    (manifest: BagManifest) =>
+//      (root: ObjectLocation) =>
+//        manifest.files.map(
+//          verifiable(manifest.checksumAlgorithm)(root)(_)
+//        )
 }

@@ -7,6 +7,7 @@ import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, HashingAlgo
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
+
 case class BagManifest(
                         checksumAlgorithm: HashingAlgorithm,
                         files: List[BagFile]
