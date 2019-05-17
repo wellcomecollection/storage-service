@@ -5,7 +5,7 @@ import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{AmazonS3Exception, S3ObjectInputStream}
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
   ArchiveLocationException,
@@ -26,8 +26,6 @@ import scala.util.{Failure, Success, Try}
 
 case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
                                             ec: ExecutionContext) {
-
-  import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 
   def unpack(
     requestId: String,
