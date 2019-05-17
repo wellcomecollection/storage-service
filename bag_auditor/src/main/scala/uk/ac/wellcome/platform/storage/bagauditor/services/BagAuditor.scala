@@ -27,11 +27,10 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
 
   type IngestStep = Try[IngestStepResult[AuditSummary]]
 
-  def getAuditSummary(
-    ingestId: IngestID,
-    ingestDate: Instant,
-    unpackLocation: ObjectLocation,
-    storageSpace: StorageSpace): IngestStep =
+  def getAuditSummary(ingestId: IngestID,
+                      ingestDate: Instant,
+                      unpackLocation: ObjectLocation,
+                      storageSpace: StorageSpace): IngestStep =
     Try {
       val startTime = Instant.now()
 
