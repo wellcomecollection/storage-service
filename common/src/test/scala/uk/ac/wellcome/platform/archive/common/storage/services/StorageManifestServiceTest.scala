@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
@@ -9,58 +11,53 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.ChecksumAlgorithm
-
-import scala.util.{Failure, Success}
+import uk.ac.wellcome.platform.archive.common.verify.SHA256
 
 class StorageManifestServiceTest
     extends FunSpec
     with Matchers
     with BagLocationFixtures {
 
-  val service = new StorageManifestService()
+  def withStorageManifestService[R](
+    testWith: TestWith[StorageManifestService, R]): R =
+    testWith(new StorageManifestService())
 
   it("returns a StorageManifest if reading a bag location succeeds") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
-          val maybeManifest = service.createManifest(
-            bagRootLocation = bagRootLocation,
-            storageSpace = storageSpace
-          )
-
-          maybeManifest shouldBe a[Success[_]]
-          val storageManifest = maybeManifest.get
-
-          storageManifest.space shouldBe storageSpace
-          storageManifest.info shouldBe bagInfo
-
-          storageManifest.manifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
-            "sha256")
-          storageManifest.manifest.files should have size 1
-
-          storageManifest.tagManifest.checksumAlgorithm shouldBe ChecksumAlgorithm(
-            "sha256")
-          storageManifest.tagManifest.files should have size 3
-          val actualFiles =
-            storageManifest.tagManifest.files
-              .map {
-                _.path.toString
-              }
-          val expectedFiles = List(
-            "manifest-sha256.txt",
-            "bag-info.txt",
-            "bagit.txt"
-          )
-          actualFiles should contain theSameElementsAs expectedFiles
-
-          storageManifest.locations shouldBe List(
-            StorageLocation(
-              provider = InfrequentAccessStorageProvider,
-              location = bagRootLocation
+          withStorageManifestService { service =>
+            val maybeManifest = service.retrieve(
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
             )
-          )
+
+            val storageManifest = maybeManifest.get
+
+            storageManifest.space shouldBe storageSpace
+            storageManifest.info shouldBe bagInfo
+
+            storageManifest.manifest.checksumAlgorithm shouldBe SHA256
+            storageManifest.manifest.files should have size 1
+
+            storageManifest.tagManifest.checksumAlgorithm shouldBe SHA256
+            storageManifest.tagManifest.files should have size 3
+            val actualFiles = storageManifest.tagManifest.files.map { _.path }
+            val expectedFiles = List(
+              BagPath("manifest-sha256.txt"),
+              BagPath("bag-info.txt"),
+              BagPath("bagit.txt")
+            )
+            actualFiles should contain theSameElementsAs expectedFiles
+
+            storageManifest.locations shouldBe List(
+              StorageLocation(
+                provider = InfrequentAccessStorageProvider,
+                location = bagRootLocation
+              )
+            )
+          }
       }
     }
   }
@@ -68,15 +65,17 @@ class StorageManifestServiceTest
   describe("returns a Left upon error") {
     it("if no files are at the BagLocation") {
       withLocalS3Bucket { bucket =>
-        val maybeManifest = service.createManifest(
-          bagRootLocation = createObjectLocationWith(bucket),
-          storageSpace = createStorageSpace
-        )
+        withStorageManifestService { service =>
+          val maybeManifest = service.retrieve(
+            bagRootLocation = createObjectLocationWith(bucket),
+            storageSpace = createStorageSpace
+          )
 
-        maybeManifest shouldBe a[Failure[_]]
-        val err = maybeManifest.failed.get
-        err shouldBe a[RuntimeException]
-        err.getMessage should include("The specified key does not exist.")
+          val err = maybeManifest.failed.get
+
+          err shouldBe a[RuntimeException]
+          err.getMessage should include("The specified key does not exist.")
+        }
       }
     }
 
@@ -89,15 +88,18 @@ class StorageManifestServiceTest
               bagRootLocation.key + "/bag-info.txt"
             )
 
-            val maybeManifest = service.createManifest(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
+            withStorageManifestService { service =>
+              val maybeManifest = service.retrieve(
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
+              )
 
-            maybeManifest shouldBe a[Failure[_]]
-            val err = maybeManifest.failed.get
-            err shouldBe a[RuntimeException]
-            err.getMessage should include("The specified key does not exist.")
+              val err = maybeManifest.failed.get
+
+              err shouldBe a[RuntimeException]
+              err.getMessage should include("The specified key does not exist.")
+
+            }
         }
       }
     }
@@ -111,15 +113,17 @@ class StorageManifestServiceTest
               bagRootLocation.key + "/manifest-sha256.txt"
             )
 
-            val maybeManifest = service.createManifest(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
+            withStorageManifestService { service =>
+              val maybeManifest = service.retrieve(
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
+              )
 
-            maybeManifest shouldBe a[Failure[_]]
-            val err = maybeManifest.failed.get
-            err shouldBe a[RuntimeException]
-            err.getMessage should include("The specified key does not exist.")
+              val err = maybeManifest.failed.get
+
+              err shouldBe a[RuntimeException]
+              err.getMessage should include("The specified key does not exist.")
+            }
         }
       }
     }
@@ -131,17 +135,19 @@ class StorageManifestServiceTest
           createDataManifest =
             _ => Some(FileEntry("manifest-sha256.txt", "bleeergh!"))) {
           case (bagRootLocation, storageSpace) =>
-            val maybeManifest = service.createManifest(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
+            withStorageManifestService { service =>
+              val maybeManifest = service.retrieve(
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
+              )
 
-            maybeManifest shouldBe a[Failure[_]]
-            val err = maybeManifest.failed.get
-            err shouldBe a[RuntimeException]
-            err.getMessage should include(
-              "Line <<bleeergh!>> is incorrectly formatted!")
+              val err = maybeManifest.failed.get
+
+              err shouldBe a[RuntimeException]
+              err.getMessage shouldBe "Error getting file manifest: Failed to parse: List(bleeergh!)"
+            }
         }
+
       }
     }
 
@@ -154,15 +160,17 @@ class StorageManifestServiceTest
               bagRootLocation.key + "/tagmanifest-sha256.txt"
             )
 
-            val maybeManifest = service.createManifest(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
+            withStorageManifestService { service =>
+              val maybeManifest = service.retrieve(
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
+              )
 
-            maybeManifest shouldBe a[Failure[_]]
-            val err = maybeManifest.failed.get
-            err shouldBe a[RuntimeException]
-            err.getMessage should include("The specified key does not exist.")
+              val err = maybeManifest.failed.get
+
+              err shouldBe a[RuntimeException]
+              err.getMessage should include("The specified key does not exist.")
+            }
         }
       }
     }
@@ -174,16 +182,17 @@ class StorageManifestServiceTest
           createTagManifest =
             _ => Some(FileEntry("tagmanifest-sha256.txt", "blaaargh!"))) {
           case (bagRootLocation, storageSpace) =>
-            val maybeManifest = service.createManifest(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
+            withStorageManifestService { service =>
+              val maybeManifest = service.retrieve(
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
+              )
 
-            maybeManifest shouldBe a[Failure[_]]
-            val err = maybeManifest.failed.get
-            err shouldBe a[RuntimeException]
-            err.getMessage should include(
-              "Line <<blaaargh!>> is incorrectly formatted!")
+              val err = maybeManifest.failed.get
+
+              err shouldBe a[RuntimeException]
+              err.getMessage shouldBe "Error getting tag manifest: Failed to parse: List(blaaargh!)"
+            }
         }
       }
     }

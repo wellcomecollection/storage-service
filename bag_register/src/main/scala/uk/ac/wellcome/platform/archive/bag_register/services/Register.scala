@@ -39,7 +39,7 @@ class Register(
     for {
       manifest <- Future.fromTry {
         storageManifestService
-          .createManifest(
+          .retrieve(
             bagRootLocation = bagRootLocation,
             storageSpace = storageSpace
           )

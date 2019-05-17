@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
-class VerifierFeatureTest
+class BagVerifierFeatureTest
     extends FunSpec
     with Matchers
     with ScalaFutures

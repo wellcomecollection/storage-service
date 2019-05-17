@@ -30,13 +30,15 @@ trait BagLocationFixtures
     testWith: TestWith[(ObjectLocation, StorageSpace), R]): R = {
     val bagIdentifier = createExternalIdentifier
 
-    info(s"Creating bag $bagIdentifier")
+    info(s"Creating Bag $bagIdentifier")
 
     val fileEntries = createBag(
       bagInfo,
       dataFileCount = dataFileCount,
       createDataManifest = createDataManifest,
       createTagManifest = createTagManifest)
+
+    debug(s"fileEntries: $fileEntries")
 
     val storageSpaceRootLocation = createObjectLocationWith(
       bucket = bucket,

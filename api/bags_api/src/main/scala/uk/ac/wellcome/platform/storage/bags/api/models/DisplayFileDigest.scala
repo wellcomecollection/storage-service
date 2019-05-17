@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.storage.bags.api.models
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagDigestFile
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagFile
 
 case class DisplayFileDigest(
   checksum: String,
@@ -10,9 +10,9 @@ case class DisplayFileDigest(
 )
 
 case object DisplayFileDigest {
-  def apply(bagDigestFile: BagDigestFile): DisplayFileDigest =
+  def apply(bagFile: BagFile): DisplayFileDigest =
     DisplayFileDigest(
-      checksum = bagDigestFile.checksum,
-      path = bagDigestFile.path.toString
+      checksum = bagFile.checksum.value,
+      path = bagFile.path.toString
     )
 }

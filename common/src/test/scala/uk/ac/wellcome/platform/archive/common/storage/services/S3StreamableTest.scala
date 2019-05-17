@@ -1,47 +1,65 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
-import org.scalatest.concurrent.ScalaFutures
+import java.nio.file.Paths
+
 import org.scalatest.{FunSpec, TryValues}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.storage.Resolvable
+import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
-
-import scala.util.{Failure, Success}
 
 class S3StreamableTest
     extends FunSpec
     with S3
-    with ScalaFutures
     with TryValues
     with RandomThings {
 
   import S3StreamableInstances._
 
-  describe("converts to a Try[InputStream]") {
-    it("produces a failure from an invalid ObjectLocation") {
-      val result = createObjectLocation.toInputStream
+  case class Thing(stuff: String)
 
-      result shouldBe a[Failure[_]]
-      result.failed.get shouldBe a[AmazonS3Exception]
-      result.failed.get.getMessage should startWith(
-        "The specified bucket does not exist")
+  implicit val thingResolver: Resolvable[Thing] = new Resolvable[Thing] {
+    override def resolve(root: ObjectLocation)(thing: Thing): ObjectLocation = {
+      val paths = Paths.get(root.key, thing.stuff)
+      root.copy(key = paths.toString)
+    }
+  }
+
+  describe("converts to a Try[InputStream]") {
+    it("produces a failure from an invalid root") {
+
+      val invalidRoot = ObjectLocation(
+        "invalid_bucket",
+        "invalid.key"
+      )
+
+      val myThing = Thing(randomAlphanumeric())
+
+      val myStream = myThing.from(invalidRoot)
+
+      myStream.failed.get.getMessage should include(
+        "The specified bucket is not valid")
     }
 
-    it("produces a success from an valid ObjectLocation") {
+    it("produces a success from a valid ObjectLocation") {
       withLocalS3Bucket { bucket =>
-        val content = randomAlphanumeric()
+        val key = randomAlphanumeric()
+        val thingStuff = randomAlphanumeric()
 
-        val location = createObjectLocationWith(bucket)
-        createObject(location, content = content)
+        s3Client.putObject(bucket.name, s"$key/$thingStuff", thingStuff)
 
-        val result = location.toInputStream
+        val validRoot = ObjectLocation(
+          bucket.name,
+          key
+        )
 
-        result shouldBe a[Success[_]]
-        val inputStream = result.get
+        val myThing = Thing(thingStuff)
+
+        val inputStream = myThing.from(validRoot).get
 
         scala.io.Source
           .fromInputStream(inputStream)
-          .mkString shouldEqual content
+          .mkString shouldEqual thingStuff
       }
     }
   }
