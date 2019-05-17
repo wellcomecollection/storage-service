@@ -21,13 +21,14 @@ class IngestTracker(
 )(implicit ec: ExecutionContext)
     extends Logging {
 
-  val versionedDao = new VersionedDao(
+  val versionedDao = new DynamoVersionedDao[Ingest](
     dynamoDbClient = dynamoDbClient,
     dynamoConfig = dynamoConfig
   )
 
-  def get(id: IngestID): Future[Option[Ingest]] =
-    versionedDao.getRecord[Ingest](id.toString)
+  def get(id: IngestID): Future[Option[Ingest]] = Future.fromTry {
+    versionedDao.get(id.toString)
+  }
 
   def initialise(ingest: Ingest): Future[Ingest] = {
     val ingestTable = Table[Ingest](dynamoConfig.table)
