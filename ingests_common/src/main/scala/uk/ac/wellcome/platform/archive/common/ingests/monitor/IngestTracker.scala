@@ -22,10 +22,13 @@ class IngestTracker(
     extends Logging {
 
   def get(id: IngestID): Future[Option[Ingest]] = Future {
-    Scanamo.get[Ingest](dynamoDbClient)(dynamoConfig.table)('id -> id.toString).map {
-      case Right(ingest) => ingest
-      case Left(err) => throw new RuntimeException(s"Failed to read from DynamoDB: $err")
-    }
+    Scanamo
+      .get[Ingest](dynamoDbClient)(dynamoConfig.table)('id -> id.toString)
+      .map {
+        case Right(ingest) => ingest
+        case Left(err) =>
+          throw new RuntimeException(s"Failed to read from DynamoDB: $err")
+      }
   }
 
   def initialise(ingest: Ingest): Future[Ingest] = {
