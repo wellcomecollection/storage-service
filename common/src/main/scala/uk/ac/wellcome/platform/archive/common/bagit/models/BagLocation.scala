@@ -2,14 +2,14 @@ package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import java.net.URI
 
-import uk.ac.wellcome.platform.archive.common.verify.ChecksumValue
+import uk.ac.wellcome.platform.archive.common.verify.Checksum
 
 sealed trait BagLocation {
   val path: BagPath
 }
 
 case class BagFile(
-                    checksum: ChecksumValue,
+                    checksum: Checksum,
                     path: BagPath
                   ) extends BagLocation
 

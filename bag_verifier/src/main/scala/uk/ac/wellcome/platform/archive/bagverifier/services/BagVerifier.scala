@@ -25,7 +25,6 @@ class BagVerifier()(
     val startTime = Instant.now()
 
     val verification = bagService.retrieve(root).map { bag =>
-      implicit val verifiable = bag.verifiable(root)
       VerificationSummary.create(root, bag.verify, startTime)
     } recover {
       case e => VerificationSummary.incomplete(root, e, startTime)

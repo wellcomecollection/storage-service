@@ -5,12 +5,9 @@ trait Verifiable[T] {
 }
 
 object Verifiable {
-  implicit def verifiable[T](
-    implicit
-    verifiable: T => List[VerifiableLocation]
-  ) =
-    new Verifiable[T] {
-      override def create(t: T): List[VerifiableLocation] =
-        verifiable(t)
+  implicit class Convert[T](t: T)(implicit verifiable: Verifiable[T]) {
+    def toVerifiable: List[VerifiableLocation] = {
+      verifiable.create(t)
     }
+  }
 }

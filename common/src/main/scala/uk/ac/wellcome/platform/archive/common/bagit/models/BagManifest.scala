@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import java.io.{BufferedReader, InputStream, InputStreamReader}
 
-import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, HashingAlgorithm}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, HashingAlgorithm}
 
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
@@ -32,7 +32,7 @@ object BagManifest {
       .filter { _.nonEmpty }
       .toList
 
-    val eitherFiles = lines.map(createBagFile(_,None))
+    val eitherFiles = lines.map(createBagFile(_,None, algorithm))
 
     // Collect left
     val errorStrings = eitherFiles.collect {
@@ -53,11 +53,15 @@ object BagManifest {
 
   private def createBagFile(
     line: String,
-    maybeRoot: Option[String]
+    maybeRoot: Option[String],
+    algorithm: HashingAlgorithm
   ): Either[String, BagFile] = line match {
     case LINE_REGEX(checksumString, itemPathString) => Right(
       BagFile(
-        ChecksumValue.create(checksumString),
+        Checksum(
+          algorithm,
+          ChecksumValue.create(checksumString)
+        ),
         BagPath.create(itemPathString)
       )
     )

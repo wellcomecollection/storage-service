@@ -17,7 +17,7 @@ case class MatchedLocation[A <: BagLocation, B <: BagLocation](a: A, b: Option[B
 package object models {
   import Resolvable._
 
-  // resolvers
+  // resolvable
 
   implicit val bagPathResolver: Resolvable[BagPath] = new Resolvable[BagPath] {
     override def resolve(root: ObjectLocation)(bagPath: BagPath): ObjectLocation = {
@@ -32,14 +32,13 @@ package object models {
     }
   }
 
-  // verifiables
-
+  // verifiable
 
   implicit val bagVerifier: Verifiable[Bag] = new Verifiable[Bag] {
-    private def matchBagLocation(
-      a: List[BagLocation],
-      b: List[BagLocation]
-    ): Either[List[Throwable], List[MatchedLocation[BagLocation, BagLocation]]] = {
+    private def matchBagLocation[A <: BagLocation, B <: BagLocation](
+      a: List[A],
+      b: List[B]
+    ) = {
 
       val filtered = a.map { l1 => b.collect {
         case l2 if l1.path == l2.path => MatchedLocation(l1, Some(l2))
@@ -60,7 +59,6 @@ package object models {
       val successes = matched
         .collect { case Success(t) => t }
         .collect { case Some(o) => o }
-        .collect { case m: MatchedLocation[BagLocation, BagLocation] => m }
 
       val failures = matched.collect { case Failure(e: Throwable) => e }
 
@@ -71,7 +69,19 @@ package object models {
       val bagFiles = bag.tagManifest.files ++ bag.manifest.files
       val fetchEntries = bag.fetch.toList.flatMap(_.files)
 
-      matchBagLocation(bagFiles, fetchEntries)
+
+      matchBagLocation(bagFiles, fetchEntries) match {
+        case Left(_) => List.empty[VerifiableLocation]
+        case Right(matchedLocations) => matchedLocations map {
+          case MatchedLocation(bagFile, Some(fetchEntry: BagLocation)) => {
+
+            VerifiableLocation(ObjectLocation("namespace", "key"), bagFile.checksum)
+
+          }
+          case MatchedLocation(bagFile, None) =>
+            VerifiableLocation(ObjectLocation("namespace", "key"), bagFile.checksum)
+        }
+      }
 
 //      for {
 //        matched <- matchBagLocation(bagFiles, fetchEntries)
@@ -83,8 +93,6 @@ package object models {
 //
 //        }
 //      })
-
-      Nil
     }
   }
 
