@@ -12,7 +12,6 @@ import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.{
   BagInformationPayload,
-  IngestID,
   UnpackedBagPayload
 }
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
