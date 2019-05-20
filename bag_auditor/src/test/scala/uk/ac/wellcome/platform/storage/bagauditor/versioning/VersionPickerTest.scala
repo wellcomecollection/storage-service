@@ -4,23 +4,12 @@ import java.time.Instant
 import java.util.UUID
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
-import uk.ac.wellcome.platform.archive.common.versioning.{
-  IngestVersionManager,
-  IngestVersionManagerDao,
-  MemoryIngestVersionManagerDao
-}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
 import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
-import uk.ac.wellcome.storage.{
-  LockDao,
-  LockFailure,
-  LockingService,
-  UnlockFailure
-}
+import uk.ac.wellcome.storage.{LockDao, LockFailure, UnlockFailure}
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 class VersionPickerTest
     extends FunSpec
