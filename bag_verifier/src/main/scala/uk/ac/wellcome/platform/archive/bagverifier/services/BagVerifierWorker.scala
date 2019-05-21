@@ -5,10 +5,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
@@ -18,16 +15,16 @@ import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublish
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.Try
 
-class BagVerifierWorker(
+class BagVerifierWorker[IngestsDestination, OutgoingDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
-  ingestUpdater: IngestUpdater,
-  outgoingPublisher: OutgoingPublisher,
+  ingestUpdater: IngestUpdater[IngestsDestination],
+  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   verifier: BagVerifier
 )(implicit
   actorSystem: ActorSystem,
-  ec: ExecutionContext,
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends Runnable
@@ -37,16 +34,16 @@ class BagVerifierWorker(
   private val worker =
     AlpakkaSQSWorker[BagInformationPayload, VerificationSummary](
       alpakkaSQSWorkerConfig) {
-      processMessage
+      payload => Future.fromTry { processMessage(payload) }
     }
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
   def processMessage(
-    payload: BagInformationPayload): Future[Result[VerificationSummary]] =
+    payload: BagInformationPayload): Try[Result[VerificationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
-      summary <- Future.fromTry(verifier.verify(payload.bagRootLocation))
+      summary <- verifier.verify(payload.bagRootLocation)
       _ <- ingestUpdater.send(payload.ingestId, summary)
       _ <- outgoingPublisher.sendIfSuccessful(summary, payload)
     } yield toResult(summary)
