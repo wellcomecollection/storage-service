@@ -186,13 +186,13 @@ class NotifierFeatureTest
             CallbackNotification(ingestId, callbackUri, ingest)
           )
 
-          val sentMessages = messageSender.messages
-            .map { _.body }
-            .map { fromJson[IngestUpdate](_).get }
-
-          sentMessages should have size 1
-
           eventually {
+            val sentMessages = messageSender.messages
+              .map { _.body }
+              .map { fromJson[IngestUpdate](_).get }
+
+            sentMessages should have size 1
+
             inside(sentMessages.head) {
               case IngestCallbackStatusUpdate(
                   id,
