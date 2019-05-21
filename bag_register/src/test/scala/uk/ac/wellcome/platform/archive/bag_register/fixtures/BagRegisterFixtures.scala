@@ -14,7 +14,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStat
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestService, StorageManifestVHS}
-import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.StorageBackend
+import uk.ac.wellcome.storage.memory.MemoryStorageBackend
 
 trait BagRegisterFixtures
     extends RandomThings
@@ -22,13 +23,13 @@ trait BagRegisterFixtures
     with OperationFixtures
     with StorageManifestVHSFixture
     with MonitoringClientFixture
-    with IngestUpdateAssertions
-    with S3 {
+    with IngestUpdateAssertions {
 
   type Fixtures = (BagRegisterWorker[String, String], StorageManifestVHS, MemoryMessageSender, MemoryMessageSender, QueuePair)
 
   def withBagRegisterWorker[R](
-    storageManifestVHS: StorageManifestVHS = createStorageManifestVHS()
+    storageBackend: StorageBackend = new MemoryStorageBackend(),
+    vhs: StorageManifestVHS = createStorageManifestVHS()
   )(
     testWith: TestWith[Fixtures, R]): R =
     withActorSystem { implicit actorSystem =>
@@ -38,11 +39,11 @@ trait BagRegisterFixtures
 
         withLocalSqsQueueAndDlq { queuePair =>
           val storageManifestService =
-            new StorageManifestService()
+            new StorageManifestService()(storageBackend)
 
           val register = new Register(
             storageManifestService = storageManifestService,
-            storageManifestVHS = storageManifestVHS
+            storageManifestVHS = vhs
           )
 
           val ingestUpdater = new IngestUpdater[String](
@@ -64,14 +65,7 @@ trait BagRegisterFixtures
 
           service.run()
 
-          testWith(
-            (
-              service,
-              storageManifestVHS,
-              ingests,
-              outgoing,
-              queuePair)
-          )
+          testWith((service, vhs, ingests, outgoing, queuePair))
         }
       }
     }

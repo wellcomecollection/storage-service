@@ -10,6 +10,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, IngestOperationGenerators, PayloadGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.storage.memory.MemoryStorageBackend
 
 class BagRegisterFeatureTest
     extends FunSpec
@@ -22,84 +23,84 @@ class BagRegisterFeatureTest
     with PayloadGenerators {
 
   it("sends an update if it registers a bag") {
-    withBagRegisterWorker() {
+    val storageBackend = new MemoryStorageBackend()
+
+    withBagRegisterWorker(storageBackend) {
       case (_, vhs, ingests, _, queuePair) =>
-        withLocalS3Bucket { bucket =>
-          val createdAfterDate = Instant.now()
-          val bagInfo = createBagInfo
+        val createdAfterDate = Instant.now()
+        val bagInfo = createBagInfo
 
-          withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo) {
-            case (bagRootLocation, storageSpace) =>
-              val bagId = BagId(
-                space = storageSpace,
-                externalIdentifier = bagInfo.externalIdentifier
+        withBag(storageBackend, bagInfo = bagInfo) {
+          case (bagRootLocation, storageSpace) =>
+            val bagId = BagId(
+              space = storageSpace,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
+
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
+            )
+
+            sendNotificationToSQS(queuePair.queue, payload)
+
+            eventually {
+              val storageManifest = vhs.getRecord(bagId).get.get
+
+              storageManifest.space shouldBe bagId.space
+              storageManifest.info shouldBe bagInfo
+              storageManifest.manifest.files should have size 1
+
+              storageManifest.locations shouldBe List(
+                StorageLocation(
+                  provider = InfrequentAccessStorageProvider,
+                  location = bagRootLocation
+                )
               )
 
-              val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation,
-                storageSpace = storageSpace
+              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+
+              assertBagRegisterSucceeded(ingests)(
+                ingestId = payload.ingestId,
+                bagId = bagId
               )
 
-              sendNotificationToSQS(queuePair.queue, payload)
-
-              eventually {
-                val storageManifest = vhs.getRecord(bagId).get.get
-
-                storageManifest.space shouldBe bagId.space
-                storageManifest.info shouldBe bagInfo
-                storageManifest.manifest.files should have size 1
-
-                storageManifest.locations shouldBe List(
-                  StorageLocation(
-                    provider = InfrequentAccessStorageProvider,
-                    location = bagRootLocation
-                  )
-                )
-
-                storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
-
-                assertBagRegisterSucceeded(ingests)(
-                  ingestId = payload.ingestId,
-                  bagId = bagId
-                )
-
-                assertQueueEmpty(queuePair.queue)
-              }
-          }
+              assertQueueEmpty(queuePair.queue)
+            }
         }
     }
   }
 
   it("sends a failed update and discards the work on error") {
-    withBagRegisterWorker(createBrokenStorageManifestVHS) {
+    val storageBackend = new MemoryStorageBackend()
+
+    withBagRegisterWorker(storageBackend, vhs = createBrokenStorageManifestVHS) {
       case (_, _, ingests, _, queuePair) =>
-        withLocalS3Bucket { bucket =>
-          val bagInfo = createBagInfo
+        val bagInfo = createBagInfo
 
-          withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo) {
-            case (bagRootLocation, storageSpace) =>
-              val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation,
-                storageSpace = storageSpace
+        withBag(storageBackend, bagInfo = bagInfo) {
+          case (bagRootLocation, storageSpace) =>
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation,
+              storageSpace = storageSpace
+            )
+
+            sendNotificationToSQS(queuePair.queue, payload)
+
+            val bagId = BagId(
+              space = storageSpace,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
+
+            eventually {
+              assertBagRegisterFailed(ingests)(
+                ingestId = payload.ingestId,
+                bagId = bagId
               )
+            }
 
-              sendNotificationToSQS(queuePair.queue, payload)
-
-              val bagId = BagId(
-                space = storageSpace,
-                externalIdentifier = bagInfo.externalIdentifier
-              )
-
-              eventually {
-                assertBagRegisterFailed(ingests)(
-                  ingestId = payload.ingestId,
-                  bagId = bagId
-                )
-              }
-
-              assertQueueEmpty(queuePair.queue)
-              assertQueueEmpty(queuePair.dlq)
-          }
+            assertQueueEmpty(queuePair.queue)
+            assertQueueEmpty(queuePair.dlq)
         }
     }
   }
