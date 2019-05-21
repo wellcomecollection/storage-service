@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.common.operation.services
 import org.scalatest.FunSpec
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.IngestRequestPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{IngestOperationGenerators, PayloadGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -27,21 +28,18 @@ class OutgoingPublisherTest
         messageSender = messageSender
       )
 
-      val outgoing = createIngestRequestPayload
+      val outgoing: IngestRequestPayload = createIngestRequestPayload
 
       val sendingOperationNotice: Try[Unit] =
         outgoingPublisher.sendIfSuccessful(operation, outgoing)
 
       sendingOperationNotice shouldBe Success(())
 
-      println(messageSender.messages)
-      true shouldBe false
+      val receivedMessages = messageSender.messages
+        .map { _.body }
+        .map { fromJson[IngestRequestPayload](_).get }
 
-//          whenReady(sendingOperationNotice) { _ =>
-//            assertSnsReceivesOnly(outgoing, topic)
-//          }
-//        }
-//      }
+      receivedMessages shouldBe List(outgoing)
     }
   }
 
@@ -58,20 +56,10 @@ class OutgoingPublisherTest
 
     sendingOperationNotice shouldBe Success(())
 
-    println(messageSender.messages)
-    true shouldBe false
+    val receivedMessages = messageSender.messages
+      .map { _.body }
+      .map { fromJson[IngestRequestPayload](_).get }
 
-//    withLocalSnsTopic { topic =>
-//      withOutgoingPublisher(operationName, topic) { outgoingPublisher =>
-//        val outgoing = createIngestRequestPayload
-//
-//        val sendingOperationNotice =
-//          outgoingPublisher.sendIfSuccessful(createOperationFailure(), outgoing)
-//
-//        whenReady(sendingOperationNotice) { _ =>
-//          assertSnsReceivesNothing(topic)
-//        }
-//      }
-//    }
+    receivedMessages shouldBe empty
   }
 }
