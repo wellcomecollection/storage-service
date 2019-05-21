@@ -41,9 +41,7 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.messages
-                  .map { _.body }
-                  .map { fromJson[BagInformationPayload](_).get } shouldBe Seq(expectedPayload)
+                outgoing.getMessages[BagInformationPayload]() shouldBe Seq(expectedPayload)
 
                 assertReceivesIngestEvents(ingests)(
                   payload.ingestId,
@@ -91,9 +89,7 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.messages
-                  .map { _.body }
-                  .map { fromJson[BagInformationPayload](_).get } shouldBe Seq(expectedPayload)
+                outgoing.getMessages[BagInformationPayload]() shouldBe Seq(expectedPayload)
 
                 assertReceivesIngestEvents(ingests)(
                   payload.ingestId,

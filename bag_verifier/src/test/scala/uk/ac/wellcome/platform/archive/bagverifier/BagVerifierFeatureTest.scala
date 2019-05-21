@@ -44,9 +44,7 @@ class BagVerifierFeatureTest
                     )
                   )
 
-                  outgoing.messages
-                    .map { _.body }
-                    .map { fromJson[BagInformationPayload](_).get } shouldBe Seq(payload)
+                  outgoing.getMessages[BagInformationPayload]() shouldBe Seq(payload)
 
                   assertQueueEmpty(queue)
                   assertQueueEmpty(dlq)

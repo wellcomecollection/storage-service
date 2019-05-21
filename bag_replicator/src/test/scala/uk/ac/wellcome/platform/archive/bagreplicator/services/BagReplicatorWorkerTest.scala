@@ -47,10 +47,7 @@ class BagReplicatorWorkerTest
 
               service.processMessage(payload) shouldBe a[Success[_]]
 
-              val result = outgoing.messages
-                .map { _.body }
-                .map { fromJson[BagInformationPayload](_).get }
-                .head
+              val result = outgoing.getMessages[BagInformationPayload]()
 
               result.ingestId shouldBe payload.ingestId
 

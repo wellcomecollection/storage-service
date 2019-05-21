@@ -31,9 +31,7 @@ class IngestStarterTest
     tracker.ingests shouldBe Map(ingest.id -> ingest)
 
     val expectedPayload = IngestRequestPayload(ingest)
-    sender.messages
-      .map { _.body }
-      .map { fromJson[IngestRequestPayload](_).get } shouldBe Seq(expectedPayload)
+    sender.getMessages[IngestRequestPayload]() shouldBe Seq(expectedPayload)
   }
 
   it("returns a failed future if saving to the tracker fails") {

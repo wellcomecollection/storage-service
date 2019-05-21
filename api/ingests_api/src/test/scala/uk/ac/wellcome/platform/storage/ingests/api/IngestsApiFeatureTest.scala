@@ -291,9 +291,7 @@ class IngestsApiFeatureTest
                     ingestTracker.ingests shouldBe Map(expectedIngest.id -> expectedIngest)
 
                     val expectedPayload = IngestRequestPayload(expectedIngest)
-                    unpackerMessageSender.messages
-                      .map { _.body }
-                      .map { fromJson[IngestRequestPayload](_).get } shouldBe Seq(expectedPayload)
+                    unpackerMessageSender.getMessages[IngestRequestPayload]() shouldBe Seq(expectedPayload)
                 }
               }
 

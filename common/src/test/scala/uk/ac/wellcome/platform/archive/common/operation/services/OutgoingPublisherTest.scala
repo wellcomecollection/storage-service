@@ -35,11 +35,7 @@ class OutgoingPublisherTest
 
       sendingOperationNotice shouldBe Success(())
 
-      val receivedMessages = messageSender.messages
-        .map { _.body }
-        .map { fromJson[IngestRequestPayload](_).get }
-
-      receivedMessages shouldBe List(outgoing)
+      messageSender.getMessages[IngestRequestPayload]() shouldBe Seq(outgoing)
     }
   }
 
@@ -56,10 +52,6 @@ class OutgoingPublisherTest
 
     sendingOperationNotice shouldBe Success(())
 
-    val receivedMessages = messageSender.messages
-      .map { _.body }
-      .map { fromJson[IngestRequestPayload](_).get }
-
-    receivedMessages shouldBe empty
+    messageSender.messages shouldBe empty
   }
 }

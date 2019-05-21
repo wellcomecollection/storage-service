@@ -42,9 +42,7 @@ class CallbackNotificationServiceTest
           payload = ingest
         )
 
-        messageSender.messages
-          .map { _.body }
-          .map { fromJson[CallbackNotification](_).get } shouldBe Seq(expectedNotification)
+        messageSender.getMessages[CallbackNotification]()  shouldBe Seq(expectedNotification)
       }
     }
   }

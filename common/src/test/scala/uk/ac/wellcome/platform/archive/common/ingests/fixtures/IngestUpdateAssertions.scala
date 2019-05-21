@@ -11,12 +11,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import scala.util.Try
 
 trait IngestUpdateAssertions extends Inside with Logging { this: Matchers =>
-
   def assertReceivesIngestUpdates(messageSender: MemoryMessageSender)(ingestId: IngestID)(assert: Seq[IngestUpdate] => Assertion): Assertion = {
-    val ingestUpdates =
-      messageSender.messages
-        .map { _.body }
-        .map { fromJson[IngestUpdate](_).get }
+    val ingestUpdates = messageSender.getMessages[IngestUpdate]()
 
     assert(ingestUpdates)
   }

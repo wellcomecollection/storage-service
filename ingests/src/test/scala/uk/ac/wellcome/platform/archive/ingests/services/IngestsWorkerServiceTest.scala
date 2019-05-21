@@ -44,13 +44,7 @@ class IngestsWorkerServiceTest
           payload = expectedIngest
         )
 
-        messageSender.messages
-          .map {
-            _.body
-          }
-          .map {
-            fromJson[CallbackNotification](_).get
-          } shouldBe Seq(callbackNotification)
+        messageSender.getMessages[CallbackNotification]() shouldBe Seq(callbackNotification)
 
         assertIngestCreated(ingestTracker)(expectedIngest)
 

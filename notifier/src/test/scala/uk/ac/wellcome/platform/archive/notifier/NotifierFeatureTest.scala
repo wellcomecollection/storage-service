@@ -144,9 +144,7 @@ class NotifierFeatureTest
                     )).get))
                 )
 
-                val sentMessages = messageSender.messages
-                  .map { _.body }
-                  .map { fromJson[IngestUpdate](_).get }
+                val sentMessages = messageSender.getMessages[IngestUpdate]()
 
                 sentMessages should have size 1
 
@@ -187,9 +185,7 @@ class NotifierFeatureTest
           )
 
           eventually {
-            val sentMessages = messageSender.messages
-              .map { _.body }
-              .map { fromJson[IngestUpdate](_).get }
+            val sentMessages = messageSender.getMessages[IngestUpdate]()
 
             sentMessages should have size 1
 

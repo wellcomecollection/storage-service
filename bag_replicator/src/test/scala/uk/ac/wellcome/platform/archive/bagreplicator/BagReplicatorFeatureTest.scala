@@ -54,9 +54,7 @@ class BagReplicatorFeatureTest
                     bagRootLocation = expectedDst
                   )
 
-                  outgoing.messages
-                    .map { _.body }
-                    .map { fromJson[BagInformationPayload](_).get } shouldBe Seq(expectedPayload)
+                  outgoing.getMessages[BagInformationPayload]() shouldBe Seq(expectedPayload)
 
                   verifyBagCopied(
                     src = srcBagRootLocation,

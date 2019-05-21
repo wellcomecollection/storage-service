@@ -47,13 +47,7 @@ class BagVerifierWorkerTest
               )
             )
 
-            outgoing.messages
-              .map {
-                _.body
-              }
-              .map {
-                fromJson[BagInformationPayload](_).get
-              } shouldBe Seq(payload)
+            outgoing.getMessages[BagInformationPayload]() shouldBe Seq(payload)
         }
       }
     }

@@ -43,9 +43,7 @@ class UnpackerFeatureTest
               )
             )
 
-            outgoing.messages
-              .map { _.body }
-              .map { fromJson[UnpackedBagPayload](_).get } shouldBe Seq(expectedPayload)
+            outgoing.getMessages[UnpackedBagPayload]() shouldBe Seq(expectedPayload)
 
             assertReceivesIngestEvents(ingests)(
               ingestRequestPayload.ingestId,

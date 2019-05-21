@@ -37,9 +37,7 @@ class IngestsFeatureTest
             payload = expectedIngest
           )
 
-          messageSender.messages
-            .map { _.body }
-            .map { fromJson[CallbackNotification](_).get } shouldBe Seq(expectedMessage)
+          messageSender.getMessages[CallbackNotification]() shouldBe Seq(expectedMessage)
 
           assertIngestCreated(ingestTracker)(ingest)
 
