@@ -12,7 +12,6 @@ import uk.ac.wellcome.platform.archive.common.versioning.{DynamoIngestVersionMan
 import uk.ac.wellcome.platform.storage.bagauditor.services.{BagAuditor, BagAuditorWorker}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, LockingBuilder, S3Builder}
->>>>>>> 607bb6917b97736762d59a81ec2ae5cf08ebdba7
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
@@ -24,7 +23,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
-    implicit val materializer: ActorMaterializer =
+    implicit val mat: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
     implicit val s3Client: AmazonS3 = S3Builder.buildS3Client(config)
