@@ -4,18 +4,11 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SNSBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.sns.SNSConfig
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SNSBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.DynamoIngestTracker
-import uk.ac.wellcome.platform.archive.ingests.services.{
-  CallbackNotificationService,
-  IngestsWorker
-}
+import uk.ac.wellcome.platform.archive.ingests.services.{CallbackNotificationService, IngestsWorker}
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -42,8 +35,8 @@ object Main extends WellcomeTypesafeApp {
       dynamoConfig = DynamoBuilder.buildDynamoConfig(config)
     )
 
-    val callbackNotificationService = new CallbackNotificationService(
-      snsWriter = SNSBuilder.buildSNSWriter(config)
+    val callbackNotificationService = new CallbackNotificationService[SNSConfig](
+      messageSender = SNSBuilder.buildSNSMessageSender(config, subject = "Sent from the ingests service")
     )
 
     new IngestsWorker(

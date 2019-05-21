@@ -1,25 +1,19 @@
 package uk.ac.wellcome.platform.archive.ingests
 
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CallbackNotification,
-  IngestUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, IngestUpdate}
 import uk.ac.wellcome.platform.archive.ingests.fixtures._
 
 class IngestsFeatureTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
-    with IngestsFixtures
-    with IntegrationPatience {
+    with IngestsFixtures {
 
   it("updates an existing ingest status to Completed") {
     withConfiguredApp {
-      case (queue, topic, table) => {
+      case (queue, messageSender, table) =>
         withIngestTracker(table) { monitor =>
           withIngest(monitor) { ingest =>
             val someBagId = Some(createBagId)
@@ -44,7 +38,9 @@ class IngestsFeatureTest
                 payload = expectedIngest
               )
 
-              assertSnsReceivesOnly(expectedMessage, topic)
+              messageSender.messages
+                .map { _.body }
+                .map { fromJson[CallbackNotification](_).get } shouldBe Seq(expectedMessage)
 
               assertIngestCreated(ingest, table)
 
@@ -56,7 +52,6 @@ class IngestsFeatureTest
             }
           }
         }
-      }
     }
   }
 }

@@ -1,17 +1,14 @@
 package uk.ac.wellcome.platform.archive.ingests.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.fixtures.SNS
-import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.ingests.services.CallbackNotificationService
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 trait CallbackNotificationServiceFixture extends SNS {
-  def withCallbackNotificationService[R](topic: Topic)(
-    testWith: TestWith[CallbackNotificationService, R]): R =
-    withSNSWriter(topic) { snsWriter =>
-      val service = new CallbackNotificationService(snsWriter)
-      testWith(service)
-    }
+  def withCallbackNotificationService[R](messageSender: MessageSender[String])(
+    testWith: TestWith[CallbackNotificationService[String], R]): R = {
+    val service = new CallbackNotificationService(messageSender)
+    testWith(service)
+  }
 }
