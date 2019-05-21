@@ -140,7 +140,8 @@ class StorageManifestServiceTest
               val err = maybeManifest.left.value
 
               err shouldBe a[BagUnavailable]
-              err.msg shouldBe "Error loading manifest-sha256.txt"
+              err.msg should include("Error loading manifest-sha256.txt")
+              err.msg should include("Failed to parse: List(bleeergh!)")
             }
         }
 
@@ -187,7 +188,8 @@ class StorageManifestServiceTest
               val err = maybeManifest.left.value
 
               err shouldBe a[BagUnavailable]
-              err.msg shouldBe "Error loading tagmanifest-sha256.txt"
+              err.msg should include("Error loading tagmanifest-sha256.txt")
+              err.msg should include("Failed to parse: List(blaaargh!)")
             }
         }
       }

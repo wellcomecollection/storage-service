@@ -77,17 +77,16 @@ package object models {
       val bagFiles = bag.tagManifest.files ++ bag.manifest.files
       val fetchEntries = bag.fetch.toList.flatMap(_.files)
 
-
       matchBagLocation(bagFiles, fetchEntries) match {
         case Left(_) => List.empty[VerifiableLocation]
         case Right(matchedLocations) => matchedLocations map {
           case MatchedLocation(bagFile, Some(fetchEntry: BagLocation)) => {
-
             VerifiableLocation(ObjectLocation("namespace", "key"), bagFile.checksum)
-
           }
-          case MatchedLocation(bagFile, None) =>
+          case MatchedLocation(bagFile: BagFile, None) => {
+
             VerifiableLocation(ObjectLocation("namespace", "key"), bagFile.checksum)
+          }
         }
       }
     }

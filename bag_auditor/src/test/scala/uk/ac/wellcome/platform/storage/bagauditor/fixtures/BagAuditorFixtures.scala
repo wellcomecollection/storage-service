@@ -14,6 +14,7 @@ import uk.ac.wellcome.platform.storage.bagauditor.services.{
   BagAuditor,
   BagAuditorWorker
 }
+import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.fixtures.S3
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,15 +25,24 @@ trait BagAuditorFixtures
     with BagLocationFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
-    with MonitoringClientFixture {
+    with MonitoringClientFixture
+    with VersionPickerFixtures {
 
   private val defaultQueue = Queue(
     url = "default_q",
     arn = "arn::default_q"
   )
 
-  def withBagAuditor[R](testWith: TestWith[BagAuditor, R]): R = {
-    val bagAuditor = new BagAuditor()
+  def withBagAuditor[R](testWith: TestWith[BagAuditor, R]): R =
+    withVersionPicker { versionPicker =>
+      withBagAuditor(versionPicker) { bagAuditor =>
+        testWith(bagAuditor)
+      }
+    }
+
+  def withBagAuditor[R](versionPicker: VersionPicker)(
+    testWith: TestWith[BagAuditor, R]): R = {
+    val bagAuditor = new BagAuditor(versionPicker)
 
     testWith(bagAuditor)
   }

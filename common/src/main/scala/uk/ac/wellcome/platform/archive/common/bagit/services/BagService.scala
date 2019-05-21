@@ -41,13 +41,13 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
   private def loadOptional[T](root: ObjectLocation)(path: BagPath)(f: Stream[T]): Either[BagUnavailable, Option[T]] = for {
     maybeStream <- path.locateWith(root) match {
       case Right(o) => Right(o)
-      case Left(_) => Left(BagUnavailable(s"${path.value} is not available!"))
+      case Left(e) => Left(BagUnavailable(s"${path.value} is not available: ${e.msg}"))
     }
 
     maybeT <- maybeStream match {
       case Some(o) => f(o) match {
         case Success(r) => Right(Some(r))
-        case Failure(_) => Left(BagUnavailable(s"Error loading ${path.value}"))
+        case Failure(e) => Left(BagUnavailable(s"Error loading ${path.value}: ${e.getMessage}"))
       }
       case None => Right(None)
     }
@@ -56,7 +56,7 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
   private def loadRequired[T](root: ObjectLocation)(path: BagPath)(f: Stream[T]) = for {
     maybeStream <- path.locateWith(root) match {
       case Right(o) => Right(o)
-      case Left(_) => Left(BagUnavailable(s"${path.value} is not available!"))
+      case Left(e) => Left(BagUnavailable(s"${path.value} is not available: ${e.msg}"))
     }
 
     stream <- maybeStream match {
@@ -66,10 +66,10 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
 
     t <- f(stream) match {
       case Success(r) => Right(r)
-      case Failure(_) => Left(BagUnavailable(s"Error loading ${path.value}"))
+      case Failure(e) => Left(BagUnavailable(s"Error loading ${path.value}: ${e.getMessage}"))
     }
   } yield t
 
 }
 
-case class BagUnavailable(msg: String) extends Throwable
+case class BagUnavailable(msg: String) extends Throwable(msg)

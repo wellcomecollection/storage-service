@@ -1,8 +1,9 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult}
+import com.amazonaws.services.s3.model.PutObjectResult
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.VerifyFixture
+import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -20,9 +21,9 @@ class S3ObjectVerifierTest
     val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
 
     verifiedFailure.location shouldBe badVerifiableLocation
-    verifiedFailure.e shouldBe a[AmazonS3Exception]
+    verifiedFailure.e shouldBe a[LocationNotFound[_]]
     verifiedFailure.e.getMessage should startWith(
-      "The specified bucket does not exist"
+      "Failure while getting location"
     )
   }
 
@@ -37,9 +38,9 @@ class S3ObjectVerifierTest
       val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
 
       verifiedFailure.location shouldBe verifiableLocation
-      verifiedFailure.e shouldBe a[AmazonS3Exception]
+      verifiedFailure.e shouldBe a[LocationNotFound[_]]
       verifiedFailure.e.getMessage should startWith(
-        "The specified key does not exist"
+        "Location not found"
       )
     }
   }
@@ -61,7 +62,7 @@ class S3ObjectVerifierTest
       val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
 
       verifiedFailure.location shouldBe verifiableLocation
-      verifiedFailure.e shouldBe a[RuntimeException]
+      verifiedFailure.e shouldBe a[FailedChecksumNoMatch]
       verifiedFailure.e.getMessage should startWith(
         "Checksum values do not match"
       )

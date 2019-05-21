@@ -58,10 +58,17 @@ module "bag_auditor" {
     outgoing_topic_arn = "${module.bag_auditor_output_topic.arn}"
     metrics_namespace  = "${local.bag_auditor_service_name}"
     operation_name     = "auditing bag"
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_auditor_service_name}"
+
+    locking_table_name  = "${module.auditor_lock_table.table_name}"
+    locking_table_index = "${module.auditor_lock_table.index_name}"
+
+    versions_table_name  = "${local.auditor_versions_table_name}"
+    versions_table_index = "${local.auditor_versions_table_index}"
+
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_auditor_service_name}"
   }
 
-  env_vars_length = 6
+  env_vars_length = 10
 
   cpu    = 512
   memory = 1024
@@ -131,8 +138,8 @@ module "bag_replicator" {
     outgoing_topic_arn      = "${module.bag_replicator_output_topic.arn}"
     metrics_namespace       = "${local.bag_replicator_service_name}"
     operation_name          = "replicating to archive storage"
-    locking_table_name      = "${aws_dynamodb_table.replicator_lock_table.name}"
-    locking_table_index     = "${local.replicator_lock_table_index}"
+    locking_table_name      = "${module.replicator_lock_table.table_name}"
+    locking_table_index     = "${module.replicator_lock_table.index_name}"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
   }
 

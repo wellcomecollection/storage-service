@@ -98,6 +98,6 @@ object ChecksumValue extends Logging {
 }
 
 sealed trait FailedChecksum
-case class FailedChecksumCreation(algorithm: HashingAlgorithm, e: Throwable) extends Throwable with FailedChecksum
-case class FailedChecksumNoMatch(a: Checksum, b: Checksum) extends Throwable with FailedChecksum
-case class FailedChecksumLocationNotFound(location: VerifiableLocation) extends Throwable with FailedChecksum
+case class FailedChecksumCreation(algorithm: HashingAlgorithm, e: Throwable) extends Throwable(s"Could not vreate checksum: ${e.getMessage}") with FailedChecksum
+case class FailedChecksumNoMatch(a: Checksum, b: Checksum) extends Throwable("Checksum values do not match!") with FailedChecksum
+case class FailedChecksumLocationNotFound(location: VerifiableLocation) extends Throwable("VerifiableLocation not found!") with FailedChecksum

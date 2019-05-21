@@ -21,4 +21,4 @@ sealed trait LocateFailure[T] {
   val msg: String
 }
 
-case class LocationNotFound[T](t: T, msg: String) extends Throwable with LocateFailure[T]
+case class LocationNotFound[T](t: T, msg: String) extends Throwable(msg) with LocateFailure[T]

@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.storage.bagauditor.services
 
+import java.time.Instant
+
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
@@ -23,6 +25,8 @@ class BagAuditorTest
         case (bagRootLocation, storageSpace) =>
           withBagAuditor { bagAuditor =>
             val maybeAudit = bagAuditor.getAuditSummary(
+              ingestId = createIngestID,
+              ingestDate = Instant.now,
               unpackLocation = bagRootLocation,
               storageSpace = storageSpace
             )
@@ -45,6 +49,8 @@ class BagAuditorTest
         case (_, storageSpace) =>
           withBagAuditor { bagAuditor =>
             val maybeAudit = bagAuditor.getAuditSummary(
+              ingestId = createIngestID,
+              ingestDate = Instant.now,
               unpackLocation = createObjectLocationWith(bucket, key = "1/"),
               storageSpace = storageSpace
             )
@@ -70,6 +76,8 @@ class BagAuditorTest
             )
 
             val maybeAudit = bagAuditor.getAuditSummary(
+              ingestId = createIngestID,
+              ingestDate = Instant.now,
               unpackLocation = bagRootLocation,
               storageSpace = storageSpace
             )
