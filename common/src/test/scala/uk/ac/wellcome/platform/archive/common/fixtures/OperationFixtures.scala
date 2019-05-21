@@ -1,13 +1,11 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
 import uk.ac.wellcome.messaging.MessageSender
-import uk.ac.wellcome.messaging.fixtures.SNS
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 
-trait OperationFixtures extends SNS with MetricsSenderFixture with RandomThings {
+trait OperationFixtures extends RandomThings {
   type Destination = String
 
   def createStepName: String = randomAlphanumeric()
