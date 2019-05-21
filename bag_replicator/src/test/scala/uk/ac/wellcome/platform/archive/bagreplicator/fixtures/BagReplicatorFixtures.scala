@@ -38,34 +38,6 @@ trait BagReplicatorFixtures
     arn = "arn::default_q"
   )
 
-  def withBagReplicatorWorker[R](ingests: MemoryMessageSender, outgoing: MemoryMessageSender)(
-    testWith: TestWith[BagReplicatorWorker[String, String], R]
-  ): R =
-    withLocalS3Bucket { bucket =>
-      val config = createReplicatorDestinationConfigWith(bucket)
-      withBagReplicatorWorker(defaultQueue, ingests, outgoing, config) {
-        worker =>
-          testWith(worker)
-      }
-    }
-
-  def withBagReplicatorWorker[R](ingests: MemoryMessageSender,
-                                 outgoing: MemoryMessageSender,
-                                 lockServiceDao: LockDao[String, UUID])(
-    testWith: TestWith[BagReplicatorWorker[String, String], R]
-  ): R =
-    withLocalS3Bucket { bucket =>
-      val config = createReplicatorDestinationConfigWith(bucket)
-      withBagReplicatorWorker(
-        defaultQueue,
-        ingests,
-        outgoing,
-        config,
-        lockServiceDao) { worker =>
-        testWith(worker)
-      }
-    }
-
   def withBagReplicatorWorker[R](lockServiceDao: LockDao[String, UUID])(
     testWith: TestWith[BagReplicatorWorker[String, String], R]
   ): R =

@@ -223,19 +223,13 @@ class BagReplicatorWorkerTest
   it("only allows one worker to process a destination") {
     val lockServiceDao = new MemoryLockDao[String, UUID] {}
 
-    val ingests = createMessageSender
-    val outgoing = createMessageSender
-
     withLocalS3Bucket { bucket =>
       // We have to create a large bag to slow down the replicators, or the
       // first process finishes and releases the lock before the later
       // processes have started.
       withBag(storageBackend, namespace = bucket.name, dataFileCount = 250) {
         case (bagRootLocation, _) =>
-          withBagReplicatorWorker(
-            ingests = ingests,
-            outgoing = outgoing,
-            lockServiceDao = lockServiceDao) { worker =>
+          withBagReplicatorWorker(lockServiceDao = lockServiceDao) { worker =>
             val payload = createBagInformationPayloadWith(
               bagRootLocation = bagRootLocation
             )
