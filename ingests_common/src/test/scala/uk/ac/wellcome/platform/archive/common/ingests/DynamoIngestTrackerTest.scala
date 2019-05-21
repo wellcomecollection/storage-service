@@ -25,7 +25,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
 
-class IngestTrackerTest
+class DynamoIngestTrackerTest
     extends FunSpec
     with LocalDynamoDb
     with MockitoSugar

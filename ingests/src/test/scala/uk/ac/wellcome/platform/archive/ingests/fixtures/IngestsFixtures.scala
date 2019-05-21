@@ -8,7 +8,7 @@ import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.MonitoringClientFixture
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.DynamoIngestTracker
 import uk.ac.wellcome.platform.archive.ingests.services.IngestsWorker
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
@@ -46,7 +46,7 @@ trait IngestsFixtures
       }
     }
 
-  def withIngest[R](ingestTracker: IngestTracker)(
+  def withIngest[R](ingestTracker: DynamoIngestTracker)(
     testWith: TestWith[Ingest, R]): R = {
     val createdIngest = createIngest
 

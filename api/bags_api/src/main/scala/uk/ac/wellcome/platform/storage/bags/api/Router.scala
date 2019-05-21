@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBag
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class Router(vhs: StorageManifestVHS, contextURL: URL)(
   implicit val ec: ExecutionContext) {
@@ -34,7 +34,7 @@ class Router(vhs: StorageManifestVHS, contextURL: URL)(
         )
 
         get {
-          onSuccess(vhs.getRecord(bagId)) {
+          onSuccess(Future.fromTry { vhs.getRecord(bagId) }) {
             case Some(storageManifest) =>
               complete(DisplayBag(storageManifest, contextURL))
             case None =>

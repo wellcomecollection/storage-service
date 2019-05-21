@@ -18,15 +18,15 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.DynamoIngestTracker
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class IngestsWorker(
-  alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
-  ingestTracker: IngestTracker,
-  callbackNotificationService: CallbackNotificationService
+                     alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
+                     ingestTracker: DynamoIngestTracker,
+                     callbackNotificationService: CallbackNotificationService
 )(implicit
   actorSystem: ActorSystem,
   ec: ExecutionContext,

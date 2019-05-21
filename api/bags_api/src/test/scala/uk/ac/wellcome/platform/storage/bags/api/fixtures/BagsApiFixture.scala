@@ -7,16 +7,14 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  HttpFixtures,
-  RandomThings,
-  StorageManifestVHSFixture
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, RandomThings, StorageManifestVHSFixture}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -56,21 +54,19 @@ trait BagsApiFixture
     }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R =
-    withLocalS3Bucket { bucket =>
-      withLocalDynamoDbTable { table =>
-        withStorageManifestVHS(table, bucket) { vhs =>
-          withMockMetricsSender { metricsSender =>
-            withApp(metricsSender, vhs) { _ =>
-              testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
-            }
-          }
-        }
+    testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R = {
+    val vhs = createStorageManifestVHS()
+
+    withMockMetricsSender { metricsSender =>
+      withApp(metricsSender, vhs) { _ =>
+        testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
       }
     }
+  }
 
   def withBrokenApp[R](
     testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R = {
+
     val bucket = Bucket("does-not-exist")
     val table = Table("does-not-exist", index = "does-not-exist")
     withStorageManifestVHS(table, bucket) { vhs =>

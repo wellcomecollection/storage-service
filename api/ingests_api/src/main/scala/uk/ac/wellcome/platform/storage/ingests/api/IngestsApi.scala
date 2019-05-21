@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
 }
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.DynamoIngestTracker
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -29,7 +29,7 @@ class IngestsApi(
   mat: ActorMaterializer,
   ec: ExecutionContext)
     extends Runnable {
-  val ingestTracker = new IngestTracker(
+  val ingestTracker = new DynamoIngestTracker(
     dynamoDbClient = dynamoClient,
     dynamoConfig = dynamoConfig
   )

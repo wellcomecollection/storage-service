@@ -20,7 +20,7 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   UserErrorResponse
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.DynamoIngestTracker
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display.{
   DisplayIngestMinimal,
@@ -28,7 +28,7 @@ import uk.ac.wellcome.platform.archive.display.{
   ResponseDisplayIngest
 }
 
-class Router(ingestTracker: IngestTracker,
+class Router(ingestTracker: DynamoIngestTracker,
              ingestStarter: IngestStarter,
              httpServerConfig: HTTPServerConfig,
              contextURL: URL)

@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.IngestID._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.DynamoIngestTracker
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
@@ -23,8 +23,8 @@ trait IngestTrackerFixture
 
   def withIngestTracker[R](table: Table,
                            dynamoDbClient: AmazonDynamoDB = dynamoDbClient)(
-    testWith: TestWith[IngestTracker, R]): R = {
-    val ingestTracker = new IngestTracker(
+    testWith: TestWith[DynamoIngestTracker, R]): R = {
+    val ingestTracker = new DynamoIngestTracker(
       dynamoDbClient = dynamoDbClient,
       dynamoConfig = createDynamoConfigWith(table)
     )
