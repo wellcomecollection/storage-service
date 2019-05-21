@@ -13,7 +13,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-import scala.util.{Failure, Success}
+import scala.util.Success
 
 class UnpackerTest
     extends FunSpec
@@ -94,7 +94,7 @@ class UnpackerTest
         dstLocation = createObjectLocation
       )
 
-    result shouldBe a[Failure[_]]
+    result shouldBe a[Success[_]]
     val failure = result.get
     failure shouldBe a[IngestFailed[_]]
     failure.summary.fileCount shouldBe 0
@@ -118,12 +118,12 @@ class UnpackerTest
             dstLocation = dstLocation
           )
 
-        result shouldBe a[Failure[_]]
+        result shouldBe a[Success[_]]
         val failure = result.get
         failure shouldBe a[IngestFailed[_]]
         failure.summary.fileCount shouldBe 0
         failure.summary.bytesUnpacked shouldBe 0
-        val actualResult = result.asInstanceOf[IngestFailed[UnpackSummary]]
+        val actualResult = failure.asInstanceOf[IngestFailed[UnpackSummary]]
         actualResult.e shouldBe a[UnpackerArchiveEntryUploadException]
         actualResult.e.getMessage should startWith("upload failed")
       }
