@@ -1,25 +1,23 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
-import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances
+import uk.ac.wellcome.platform.archive.common.storage.services.StreamableInstances
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, StorageBackend}
 
 import scala.util.{Failure, Try}
 
-class BagService()(implicit s3Client: AmazonS3) extends Logging {
+class BagService()(implicit storageBackend: StorageBackend) extends Logging {
 
-  import S3StreamableInstances._
+  import StreamableInstances._
   import uk.ac.wellcome.platform.archive.common.bagit.models._
 
-  val checksumAlgorithm = SHA256
+  val checksumAlgorithm: HashingAlgorithm = SHA256
 
-  private def recoverable[T](tryT: Try[T])(message: String) = {
+  private def recoverable[T](tryT: Try[T])(message: String): Try[T] =
     tryT.recoverWith {
       case e => Failure(new RuntimeException(s"$message: ${e.getMessage}"))
     }
-  }
 
   def retrieve(root: ObjectLocation): Try[Bag] = {
     debug(s"BagService attempting to create Bag @ $root")

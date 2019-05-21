@@ -18,7 +18,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepResult,
   IngestStepSucceeded
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
+import uk.ac.wellcome.platform.archive.common.storage.services.StreamableInstances._
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.{ExecutionContext, Future}

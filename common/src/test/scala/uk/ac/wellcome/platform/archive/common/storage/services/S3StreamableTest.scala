@@ -14,7 +14,7 @@ class S3StreamableTest
     with TryValues
     with RandomThings {
 
-  import S3StreamableInstances._
+  import StreamableInstances._
 
   case class Thing(stuff: String)
 

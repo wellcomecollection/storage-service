@@ -9,7 +9,7 @@ import scala.util.{Failure, Success}
 class S3ObjectVerifier(implicit s3Client: AmazonS3)
     extends Verifier
     with Logging {
-  import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
+  import uk.ac.wellcome.platform.archive.common.storage.services.StreamableInstances._
 
   private def compareChecksum(a: Checksum, b: Checksum) = {
     debug(s"Comparing $a, $b")

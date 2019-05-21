@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
-import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
+import uk.ac.wellcome.platform.archive.common.storage.services.StreamableInstances._
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.ObjectLocation
 
