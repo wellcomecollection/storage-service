@@ -1,23 +1,20 @@
 package uk.ac.wellcome.platform.storage.ingests.api
 
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.SNSWriter
+import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.platform.archive.common.IngestRequestPayload
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.DynamoIngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
-class IngestStarter(
-                     ingestTracker: DynamoIngestTracker,
-                     unpackerSnsWriter: SNSWriter
-)(implicit ec: ExecutionContext) {
-  def initialise(ingest: Ingest): Future[Ingest] =
+class IngestStarter[Destination](
+  ingestTracker: IngestTracker,
+  unpackerMessageSender: MessageSender[Destination]
+) {
+  def initialise(ingest: Ingest): Try[Ingest] =
     for {
       ingest <- ingestTracker.initialise(ingest)
-      _ <- unpackerSnsWriter.writeMessage(
-        IngestRequestPayload(ingest),
-        subject = "ingest-created"
-      )
+      _ <- unpackerMessageSender.sendT(IngestRequestPayload(ingest))
     } yield ingest
 }

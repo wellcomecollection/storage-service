@@ -48,10 +48,7 @@ class Router(vhs: StorageManifestVHS, contextURL: URL)(
             case Failure(t) =>
               error(s"Error looking up storage manifest $bagId", t)
               complete(
-                StatusCodes.InternalServerError -> InternalServerErrorResponse(
-                  context = contextURL,
-                  statusCode = StatusCodes.InternalServerError
-                )
+                StatusCodes.InternalServerError -> InternalServerErrorResponse(contextURL)
               )
           }
         }

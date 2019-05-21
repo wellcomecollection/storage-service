@@ -18,7 +18,7 @@ import uk.ac.wellcome.storage.type_classes.IdGetter
 import scala.util.{Failure, Success, Try}
 
 class DynamoIngestTracker(
-  dynamoDbClient: AmazonDynamoDB,
+  dynamoClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig
 ) extends Logging with IngestTracker {
 
@@ -29,7 +29,7 @@ class DynamoIngestTracker(
   implicit val updateExpressionGenerator: UpdateExpressionGenerator[Ingest] = (t: Ingest) => throw new Throwable("This method should never be used")
 
   val underlying = new DynamoDao[IngestID, Ingest](
-    dynamoClient = dynamoDbClient,
+    dynamoClient = dynamoClient,
     dynamoConfig = dynamoConfig
   ) {
     override protected def buildGetKeyExpression(ident: IngestID): UniqueKey[_] =
@@ -108,7 +108,7 @@ class DynamoIngestTracker(
       .limit(30)
       .query(('bagIdIndex -> bagId.toString).descending)
 
-    val result: Seq[Either[DynamoReadError, BagIngest]] = Scanamo.exec(dynamoDbClient)(query)
+    val result: Seq[Either[DynamoReadError, BagIngest]] = Scanamo.exec(dynamoClient)(query)
 
     val ingests = result.collect { case Right(ingest) => ingest }
     val failures = result.collect { case Left(err) => err }

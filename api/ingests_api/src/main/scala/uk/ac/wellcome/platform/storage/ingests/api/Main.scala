@@ -7,6 +7,7 @@ import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.HTTPServerBuilder
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.DynamoIngestTracker
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -27,10 +28,16 @@ object Main extends WellcomeTypesafeApp {
       metricsSender = MetricsBuilder.buildMetricsSender(config)
     )
 
-    new IngestsApi(
+    val ingestTracker = new DynamoIngestTracker(
       dynamoClient = DynamoBuilder.buildDynamoClient(config),
       dynamoConfig = DynamoBuilder.buildDynamoConfig(config),
-      unpackerSnsWriter = SNSBuilder.buildSNSWriter(config, "unpacker"),
+    )
+
+    new IngestsApi(
+      ingestTracker = ingestTracker,
+      unpackerMessageSender = SNSBuilder.buildSNSMessageSender(
+        config, namespace = "unpacker", subject = "Sent from the ingests API"
+      ),
       httpMetrics = httpMetrics,
       httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
       contextURL = HTTPServerBuilder.buildContextURL(config)

@@ -8,43 +8,37 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.optics.JsonPath.root
 import io.circe.parser._
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.{IngestID, IngestRequestPayload}
-import uk.ac.wellcome.platform.archive.common.IngestID._
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
+import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
+import uk.ac.wellcome.platform.archive.common.{IngestID, IngestRequestPayload}
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.dynamo._
 
 class IngestsApiFeatureTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
-    with IngestTrackerFixture
     with IngestsApiFixture
-    with RandomThings
     with Inside
     with IntegrationPatience
-    with JsonAssertions {
+    with JsonAssertions
+    with TimeTestFixture {
 
   val contextUrl = "http://api.wellcomecollection.org/storage/v1/context.json"
   describe("GET /ingests/:id") {
     it("returns a ingest tracker when available") {
       withConfiguredApp {
-        case (table, _, metricsSender, baseUrl) =>
+        case (ingestTracker, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materializer =>
-            withIngestTracker(table) { ingestTracker =>
-              val ingest = createIngest
+            val ingest = createIngest
 
-              val expectedSourceLocationJson =
-                s"""{
+            val expectedSourceLocationJson =
+              s"""{
                   "provider": {
                     "id": "${StandardDisplayProvider.id}",
                     "type": "Provider"
@@ -54,8 +48,8 @@ class IngestsApiFeatureTest
                   "type": "Location"
                 }""".stripMargin
 
-              val expectedCallbackJson =
-                s"""{
+            val expectedCallbackJson =
+              s"""{
                   "url": "${ingest.callback.get.uri}",
                   "status": {
                     "id": "processing",
@@ -64,72 +58,74 @@ class IngestsApiFeatureTest
                   "type": "Callback"
                 }""".stripMargin
 
-              val expectedIngestTypeJson = s"""{
+            val expectedIngestTypeJson =
+              s"""{
                 "id": "create",
                 "type": "IngestType"
               }""".stripMargin
 
-              val expectedSpaceJson = s"""{
+            val expectedSpaceJson =
+              s"""{
                 "id": "${ingest.space.underlying}",
                 "type": "Space"
               }""".stripMargin
 
-              val expectedStatusJson = s"""{
+            val expectedStatusJson =
+              s"""{
                 "id": "accepted",
                 "type": "Status"
               }""".stripMargin
 
-              whenReady(ingestTracker.initialise(ingest)) { _ =>
-                whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") {
-                  result =>
-                    result.status shouldBe StatusCodes.OK
+            ingestTracker.initialise(ingest)
 
-                    withStringEntity(result.entity) { jsonString =>
-                      val json = parse(jsonString).right.get
-                      root.`@context`.string
-                        .getOption(json)
-                        .get shouldBe "http://api.wellcomecollection.org/storage/v1/context.json"
-                      root.id.string
-                        .getOption(json)
-                        .get shouldBe ingest.id.toString
+            whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") {
+              result =>
+                result.status shouldBe StatusCodes.OK
 
-                      assertJsonStringsAreEqual(
-                        root.sourceLocation.json.getOption(json).get.noSpaces,
-                        expectedSourceLocationJson)
+                withStringEntity(result.entity) { jsonString =>
+                  val json = parse(jsonString).right.get
+                  root.`@context`.string
+                    .getOption(json)
+                    .get shouldBe "http://api.wellcomecollection.org/storage/v1/context.json"
+                  root.id.string
+                    .getOption(json)
+                    .get shouldBe ingest.id.toString
 
-                      assertJsonStringsAreEqual(
-                        root.callback.json.getOption(json).get.noSpaces,
-                        expectedCallbackJson)
-                      assertJsonStringsAreEqual(
-                        root.ingestType.json.getOption(json).get.noSpaces,
-                        expectedIngestTypeJson)
-                      assertJsonStringsAreEqual(
-                        root.space.json.getOption(json).get.noSpaces,
-                        expectedSpaceJson)
-                      assertJsonStringsAreEqual(
-                        root.status.json.getOption(json).get.noSpaces,
-                        expectedStatusJson)
-                      assertJsonStringsAreEqual(
-                        root.events.json.getOption(json).get.noSpaces,
-                        "[]")
+                  assertJsonStringsAreEqual(
+                    root.sourceLocation.json.getOption(json).get.noSpaces,
+                    expectedSourceLocationJson)
 
-                      root.`type`.string.getOption(json).get shouldBe "Ingest"
+                  assertJsonStringsAreEqual(
+                    root.callback.json.getOption(json).get.noSpaces,
+                    expectedCallbackJson)
+                  assertJsonStringsAreEqual(
+                    root.ingestType.json.getOption(json).get.noSpaces,
+                    expectedIngestTypeJson)
+                  assertJsonStringsAreEqual(
+                    root.space.json.getOption(json).get.noSpaces,
+                    expectedSpaceJson)
+                  assertJsonStringsAreEqual(
+                    root.status.json.getOption(json).get.noSpaces,
+                    expectedStatusJson)
+                  assertJsonStringsAreEqual(
+                    root.events.json.getOption(json).get.noSpaces,
+                    "[]")
 
-                      assertRecent(
-                        Instant.parse(
-                          root.createdDate.string.getOption(json).get),
-                        25)
-                      assertRecent(
-                        Instant.parse(
-                          root.lastModifiedDate.string.getOption(json).get),
-                        25)
-                    }
+                  root.`type`.string.getOption(json).get shouldBe "Ingest"
 
-                    assertMetricSent(
-                      metricsSender,
-                      result = HttpMetricResults.Success)
+                  assertRecent(
+                    Instant.parse(
+                      root.createdDate.string.getOption(json).get),
+                    25)
+                  assertRecent(
+                    Instant.parse(
+                      root.lastModifiedDate.string.getOption(json).get),
+                    25)
                 }
-              }
+
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.Success)
             }
           }
       }
@@ -137,24 +133,21 @@ class IngestsApiFeatureTest
 
     it("does not output empty values") {
       withConfiguredApp {
-        case (table, _, metricsSender, baseUrl) =>
+        case (ingestTracker, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
-            withIngestTracker(table) { ingestTracker =>
-              val ingest = createIngestWith(callback = None)
-              whenReady(ingestTracker.initialise(ingest)) { _ =>
-                whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") {
-                  result =>
-                    result.status shouldBe StatusCodes.OK
-                    withStringEntity(result.entity) { jsonString =>
-                      val infoJson = parse(jsonString).right.get
-                      infoJson.findAllByKey("callback") shouldBe empty
-                    }
-
-                    assertMetricSent(
-                      metricsSender,
-                      result = HttpMetricResults.Success)
+            val ingest = createIngestWith(callback = None)
+            ingestTracker.initialise(ingest)
+            whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") {
+              result =>
+                result.status shouldBe StatusCodes.OK
+                withStringEntity(result.entity) { jsonString =>
+                  val infoJson = parse(jsonString).right.get
+                  infoJson.findAllByKey("callback") shouldBe empty
                 }
-              }
+
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.Success)
             }
           }
       }
@@ -200,7 +193,7 @@ class IngestsApiFeatureTest
   describe("POST /ingests") {
     it("creates an ingest") {
       withConfiguredApp {
-        case (table, unpackerTopic, metricsSender, baseUrl) =>
+        case (ingestTracker, unpackerMessageSender, metricsSender, baseUrl) =>
           withMaterializer { implicit mat =>
             val url = s"$baseUrl/ingests"
 
@@ -295,10 +288,12 @@ class IngestsApiFeatureTest
                       events = Nil
                     )
 
-                    assertTableOnlyHasItem[Ingest](expectedIngest, table)
+                    ingestTracker.ingests shouldBe Map(expectedIngest.id -> expectedIngest)
 
                     val expectedPayload = IngestRequestPayload(expectedIngest)
-                    assertSnsReceivesOnly(expectedPayload, unpackerTopic)
+                    unpackerMessageSender.messages
+                      .map { _.body }
+                      .map { fromJson[IngestRequestPayload](_).get } shouldBe Seq(expectedPayload)
                 }
               }
 
@@ -313,7 +308,7 @@ class IngestsApiFeatureTest
     describe("returns a 400 error for malformed requests") {
       it("if the ingest request doesn't have a sourceLocation") {
         withConfiguredApp {
-          case (_, unpackerTopic, metricsSender, baseUrl) =>
+          case (_, unpackerMessageSender, metricsSender, baseUrl) =>
             withMaterializer { implicit materializer =>
               val url = s"$baseUrl/ingests"
 
@@ -339,7 +334,7 @@ class IngestsApiFeatureTest
                     "Invalid value at .sourceLocation: required property not supplied."
                 )
 
-                assertSnsReceivesNothing(unpackerTopic)
+                unpackerMessageSender.messages shouldBe empty
 
                 assertMetricSent(
                   metricsSender,
@@ -351,7 +346,7 @@ class IngestsApiFeatureTest
 
       it("if the body of the request is not valid JSON") {
         withConfiguredApp {
-          case (_, unpackerTopic, metricsSender, baseUrl) =>
+          case (_, unpackerMessageSender, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/ingests"
 
@@ -367,7 +362,7 @@ class IngestsApiFeatureTest
                     "The request content was malformed:\nexpected json value got h (line 1, column 1)"
                 )
 
-                assertSnsReceivesNothing(unpackerTopic)
+                unpackerMessageSender.messages shouldBe empty
 
                 assertMetricSent(
                   metricsSender,
@@ -379,7 +374,7 @@ class IngestsApiFeatureTest
 
       it("if the Content-Type of the request is not an accepted type") {
         withConfiguredApp {
-          case (_, unpackerTopic, metricsSender, baseUrl) =>
+          case (_, unpackerMessageSender, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/ingests"
 
@@ -397,7 +392,7 @@ class IngestsApiFeatureTest
                   label = "Unsupported Media Type"
                 )
 
-                assertSnsReceivesNothing(unpackerTopic)
+                unpackerMessageSender.messages shouldBe empty
 
                 assertMetricSent(
                   metricsSender,
@@ -409,7 +404,7 @@ class IngestsApiFeatureTest
 
       it("if the ingest request doesn't have a sourceLocation or ingestType") {
         withConfiguredApp {
-          case (_, unpackerTopic, metricsSender, baseUrl) =>
+          case (_, unpackerMessageSender, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/ingests"
 
@@ -432,7 +427,7 @@ class IngestsApiFeatureTest
                        |Invalid value at .ingestType: required property not supplied.""".stripMargin
                 )
 
-                assertSnsReceivesNothing(unpackerTopic)
+                unpackerMessageSender.messages shouldBe empty
 
                 assertMetricSent(
                   metricsSender,
@@ -444,7 +439,7 @@ class IngestsApiFeatureTest
 
       it("if the sourceLocation doesn't have a bucket field") {
         withConfiguredApp {
-          case (_, unpackerTopic, metricsSender, baseUrl) =>
+          case (_, unpackerMessageSender, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/ingests"
 
@@ -478,7 +473,7 @@ class IngestsApiFeatureTest
                     "Invalid value at .sourceLocation.bucket: required property not supplied."
                 )
 
-                assertSnsReceivesNothing(unpackerTopic)
+                unpackerMessageSender.messages shouldBe empty
 
                 assertMetricSent(
                   metricsSender,
@@ -490,7 +485,7 @@ class IngestsApiFeatureTest
 
       it("if the sourceLocation has an invalid bucket field") {
         withConfiguredApp {
-          case (_, unpackerTopic, metricsSender, baseUrl) =>
+          case (_, unpackerMessageSender, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/ingests"
 
@@ -525,7 +520,7 @@ class IngestsApiFeatureTest
                     "Invalid value at .sourceLocation.bucket: should be a String."
                 )
 
-                assertSnsReceivesNothing(unpackerTopic)
+                unpackerMessageSender.messages shouldBe empty
 
                 assertMetricSent(
                   metricsSender,
@@ -537,7 +532,7 @@ class IngestsApiFeatureTest
 
       it("if the provider doesn't have a valid id field") {
         withConfiguredApp {
-          case (_, unpackerTopic, metricsSender, baseUrl) =>
+          case (_, unpackerMessageSender, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/ingests"
 
@@ -572,7 +567,7 @@ class IngestsApiFeatureTest
                     """Invalid value at .sourceLocation.provider.id: got "blipbloop", valid values are: aws-s3-standard, aws-s3-ia."""
                 )
 
-                assertSnsReceivesNothing(unpackerTopic)
+                unpackerMessageSender.messages shouldBe empty
 
                 assertMetricSent(
                   metricsSender,
@@ -584,7 +579,7 @@ class IngestsApiFeatureTest
 
       it("if the ingestType doesn't have a valid id field") {
         withConfiguredApp {
-          case (_, unpackerTopic, metricsSender, baseUrl) =>
+          case (_, unpackerMessageSender, metricsSender, baseUrl) =>
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/ingests"
 
@@ -619,7 +614,7 @@ class IngestsApiFeatureTest
                     """Invalid value at .ingestType.id: got "baboop", valid values are: create."""
                 )
 
-                assertSnsReceivesNothing(unpackerTopic)
+                unpackerMessageSender.messages shouldBe empty
 
                 assertMetricSent(
                   metricsSender,
@@ -677,39 +672,44 @@ class IngestsApiFeatureTest
   describe("GET /ingests/find-by-bag-id/:bag-id") {
     it("returns a list of ingests for the given bag id") {
       withConfiguredApp {
-        case (table, _, metricsSender, baseUrl) =>
+        case (ingestTracker, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
-            withIngestTracker(table) { ingestTracker =>
-              val ingest = createIngest
-              whenReady(ingestTracker.initialise(ingest)) { _ =>
-                val bagId = createBagId
-                val bagIngest = BagIngest(
-                  id = createIngestID,
-                  bagIdIndex = bagId.toString,
-                  createdDate = Instant.now
-                )
-                givenTableHasItem(bagIngest, table)
+            val ingest = createIngest
+            ingestTracker.initialise(ingest)
+            val bagId = createBagId
 
-                whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$bagId") {
-                  response =>
-                    response.status shouldBe StatusCodes.OK
-                    response.entity.contentType shouldBe ContentTypes.`application/json`
-                    val displayBagIngestFutures =
-                      Unmarshal(
-                        response.entity
-                      ).to[List[DisplayIngestMinimal]]
+            val storedIngest = ingestTracker.update(
+              IngestStatusUpdate(
+                id = ingest.id,
+                status = Ingest.Accepted,
+                affectedBag = Some(bagId)
+              )
+            ).get
 
-                    whenReady(displayBagIngestFutures) { displayBagIngests =>
-                      displayBagIngests shouldBe List(
-                        DisplayIngestMinimal(bagIngest))
-                    }
+            val bagIngest = BagIngest(
+              id = ingest.id,
+              bagIdIndex = bagId.toString,
+              createdDate = storedIngest.lastModifiedDate
+            )
 
-                    assertMetricSent(
-                      metricsSender,
-                      result = HttpMetricResults.Success
-                    )
+            whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$bagId") {
+              response =>
+                response.status shouldBe StatusCodes.OK
+                response.entity.contentType shouldBe ContentTypes.`application/json`
+                val displayBagIngestFutures =
+                  Unmarshal(
+                    response.entity
+                  ).to[List[DisplayIngestMinimal]]
+
+                whenReady(displayBagIngestFutures) { displayBagIngests =>
+                  displayBagIngests shouldBe List(
+                    DisplayIngestMinimal(bagIngest))
                 }
-              }
+
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.Success
+                )
             }
           }
       }
@@ -717,38 +717,42 @@ class IngestsApiFeatureTest
 
     it("returns a list of ingests for the given bag id with : separated parts") {
       withConfiguredApp {
-        case (table, _, metricsSender, baseUrl) =>
+        case (ingestTracker, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
-            withIngestTracker(table) { ingestTracker =>
-              val ingest = createIngest
-              whenReady(ingestTracker.initialise(ingest)) { _ =>
-                val bagId = createBagId
-                val bagIngest = BagIngest(
-                  id = createIngestID,
-                  bagIdIndex = bagId.toString,
-                  createdDate = Instant.now
-                )
-                givenTableHasItem(bagIngest, table)
+            val ingest = createIngest
+            ingestTracker.initialise(ingest)
+            val bagId = createBagId
+            val bagIngest = BagIngest(
+              id = ingest.id,
+              bagIdIndex = bagId.toString,
+              createdDate = Instant.now
+            )
 
-                whenGetRequestReady(
-                  s"$baseUrl/ingests/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}") {
-                  response =>
-                    response.status shouldBe StatusCodes.OK
-                    response.entity.contentType shouldBe ContentTypes.`application/json`
-                    val displayBagIngestFutures =
-                      Unmarshal(response.entity).to[List[DisplayIngestMinimal]]
+            ingestTracker.update(
+              IngestStatusUpdate(
+                id = ingest.id,
+                status = Ingest.Accepted,
+                affectedBag = Some(bagId)
+              )
+            )
 
-                    whenReady(displayBagIngestFutures) { displayBagIngests =>
-                      displayBagIngests shouldBe List(
-                        DisplayIngestMinimal(bagIngest))
+            whenGetRequestReady(
+              s"$baseUrl/ingests/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}") {
+              response =>
+                response.status shouldBe StatusCodes.OK
+                response.entity.contentType shouldBe ContentTypes.`application/json`
+                val displayBagIngestFutures =
+                  Unmarshal(response.entity).to[List[DisplayIngestMinimal]]
 
-                      assertMetricSent(
-                        metricsSender,
-                        result = HttpMetricResults.Success
-                      )
-                    }
+                whenReady(displayBagIngestFutures) { displayBagIngests =>
+                  displayBagIngests shouldBe List(
+                    DisplayIngestMinimal(bagIngest))
+
+                  assertMetricSent(
+                    metricsSender,
+                    result = HttpMetricResults.Success
+                  )
                 }
-              }
             }
           }
       }
@@ -773,7 +777,6 @@ class IngestsApiFeatureTest
                     metricsSender,
                     result = HttpMetricResults.UserError
                   )
-
                 }
             }
           }
