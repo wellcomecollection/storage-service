@@ -6,6 +6,7 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
+import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.verify.Verification._
 import uk.ac.wellcome.platform.archive.common.verify.Verifier
@@ -15,8 +16,9 @@ import scala.util.Try
 
 class BagVerifier()(
   implicit
-  bagService: BagService,
-  verifier: Verifier
+    bagService: BagService,
+    resolvable: Resolvable[ObjectLocation],
+    verifier: Verifier
 ) extends Logging {
 
   def verify(root: ObjectLocation) = Try {

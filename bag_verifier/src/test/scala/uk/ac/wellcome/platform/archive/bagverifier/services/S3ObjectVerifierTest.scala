@@ -13,6 +13,9 @@ class S3ObjectVerifierTest
     with EitherValues
     with VerifyFixture {
 
+    import uk.ac.wellcome.platform.archive.common.storage.Locatable._
+    import uk.ac.wellcome.platform.archive.common.storage.services.S3LocatableInstances._
+
   it("returns a failure if the bucket doesn't exist") {
     val badVerifiableLocation = verifiableLocation()
     val verifiedLocation = objectVerifier.verify(badVerifiableLocation)
@@ -52,7 +55,7 @@ class S3ObjectVerifierTest
         verifiableLocationWith(objectLocation, badChecksum)
 
       put(
-        verifiableLocation.objectLocation,
+        verifiableLocation.uri.locate.right.get,
         contents = "HelloWorld"
       )
 
@@ -84,7 +87,7 @@ class S3ObjectVerifierTest
       val verifiableLocation = verifiableLocationWith(objectLocation, checksum)
 
       put(
-        verifiableLocation.objectLocation,
+        verifiableLocation.uri.locate.right.get,
         contents = contentString
       )
 
@@ -112,7 +115,7 @@ class S3ObjectVerifierTest
       val verifiableLocation = verifiableLocationWith(objectLocation, checksum)
 
       put(
-        verifiableLocation.objectLocation,
+        verifiableLocation.uri.locate.right.get,
         contents = contentString
       )
 

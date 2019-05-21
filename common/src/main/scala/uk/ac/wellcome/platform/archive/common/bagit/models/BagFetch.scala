@@ -49,7 +49,7 @@ object BagFetch {
         FETCH_LINE_REGEX.findFirstMatchIn(line) match {
           case Some(m) =>
             BagFetchEntry(
-              url = new URI(m.group("url")),
+              uri = new URI(m.group("url")),
               length = decodeLength(m.group("length")),
               path = BagPath(decodeFilepath(m.group("filepath")))
             )
@@ -67,7 +67,7 @@ object BagFetch {
   def write(entries: Seq[BagFetchEntry]): String =
     entries
       .map { e =>
-        s"${e.url} ${encodeLength(e.length)} ${encodeFilepath(e.path.value)}"
+        s"${e.uri} ${encodeLength(e.length)} ${encodeFilepath(e.path.value)}"
       }
       .mkString("\n")
 

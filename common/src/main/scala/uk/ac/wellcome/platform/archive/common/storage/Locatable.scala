@@ -25,3 +25,4 @@ sealed trait LocateFailure[T] {
 }
 
 case class LocationNotFound[T](t: T, msg: String) extends Throwable(msg) with LocateFailure[T]
+case class LocationParsingError[T](t: T, msg: String) extends Throwable(msg) with LocateFailure[T]

@@ -67,7 +67,7 @@ object S3StreamableInstances {
     } yield streamed
 
 
-    def locate: Either[StreamUnavailable, Option[S3ObjectInputStream]] = {
+    def toInputStream: Either[StreamUnavailable, Option[S3ObjectInputStream]] = {
       debug(s"Attempting to locate Locatable $t")
       val result = locate(None)
       debug(s"Got: ${result}")

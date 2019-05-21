@@ -14,7 +14,7 @@ case class BagFile(
                   ) extends BagLocation
 
 case class BagFetchEntry(
-                          url: URI,
+                          uri: URI,
                           length: Option[Int],
                           path: BagPath
                         ) extends BagLocation

@@ -5,23 +5,12 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifier,
-  BagVerifierWorker,
-  S3ObjectVerifier
-}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.platform.archive.common.storage.services.{S3ObjectVerifier, S3Resolvable}
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -47,6 +36,8 @@ object Main extends WellcomeTypesafeApp {
       new S3ObjectVerifier()
     implicit val bagService =
       new BagService()
+    implicit val s3Resolvable =
+      new S3Resolvable()
 
     val verifier = new BagVerifier()
 
