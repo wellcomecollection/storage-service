@@ -25,12 +25,14 @@ trait VerifyFixture extends S3 with RandomThings {
     verifiableLocation(location = Some(location), checksum = None)
   def verifiableLocationWith(checksum: Checksum) =
     verifiableLocation(None, checksum = Some(checksum))
+
   def verifiableLocation(
     location: Option[ObjectLocation] = None,
     checksum: Option[Checksum] = None
-  ) =
+  ) = {
     VerifiableLocation(
       location.getOrElse(randomObjectLocation).resolve,
       checksum.getOrElse(randomChecksum)
     )
+  }
 }

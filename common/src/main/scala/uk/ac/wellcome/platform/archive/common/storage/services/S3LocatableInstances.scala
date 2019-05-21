@@ -12,7 +12,18 @@ object S3LocatableInstances {
   implicit val s3UriLocatable = new Locatable[URI] {
     override def locate(t: URI)(maybeRoot: Option[ObjectLocation]): Either[LocateFailure[URI], ObjectLocation] = Try { new AmazonS3URI(t) } match {
       case Success(s3Uri) => Right(ObjectLocation(s3Uri.getBucket, s3Uri.getKey))
-      case Failure(e) => Left(LocationParsingError(t, "Failed to parse S3 URI!"))
+
+      // We are not running in AWS - manually parse URL
+      case Failure(_) if t.getHost == "localhost" => t.getPath.split("/").toList match {
+        case _ :: head :: tail => Right(ObjectLocation(head, tail.mkString("/")))
+        case default => Left(LocationParsingError(t,
+          s"Failed to parse S3 URI: invalid path trying to parse local URL (${default.mkString("/")})"
+        ))
+      }
+
+      // We are running in AWS - fail as usual.
+      case Failure(e) => Left(LocationParsingError(t, s"Failed to parse S3 URI: ${e.getMessage}"))
+
     }
   }
 }

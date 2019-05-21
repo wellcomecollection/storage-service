@@ -9,6 +9,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.util.{Failure, Success}
 
 class BagVerifiable(root: ObjectLocation)(implicit resolvable: Resolvable[ObjectLocation]) extends Verifiable[Bag] with Logging {
+
   import Resolvable._
   import Locatable._
   import models._

@@ -44,16 +44,21 @@ object S3StreamableInstances {
     }
   }
 
+  // An object location can be resolved as itself
   implicit val locatableObjectLocation = new Locatable[ObjectLocation] {
     override def locate(t: ObjectLocation)(maybeRoot: Option[ObjectLocation]): Either[LocateFailure[ObjectLocation], ObjectLocation] = {
       maybeRoot match {
-        case Some(_) => Left(LocationNotFound(t, "Specifying a root location for an ObjectLocation is nonsensical!"))
+        case Some(_) => Left(
+          LocationNotFound(t,
+            "Specifying a root location for an ObjectLocation is nonsensical!"
+          )
+        )
         case None => Right(t)
       }
     }
   }
 
-  implicit class LocatableStreamable[T](t: T)(implicit s3Client: AmazonS3, locator: Locatable[T]) extends Logging {
+  implicit class S3StreamableOps[T](t: T)(implicit s3Client: AmazonS3, locator: Locatable[T]) extends Logging {
     private def locate(root: Option[ObjectLocation]) = for {
       located <- locator.locate(t)(root) match {
         case Left(f) => Left(StreamUnavailable(f.msg))

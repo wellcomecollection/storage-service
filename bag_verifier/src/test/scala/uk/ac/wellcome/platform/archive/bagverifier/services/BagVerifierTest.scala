@@ -142,7 +142,7 @@ class BagVerifierTest
             val error = location.e
 
             error shouldBe a[LocationNotFound[_]]
-            error.getMessage should startWith("Location not found")
+            error.getMessage should startWith("Location not available!")
           }
       }
     }
