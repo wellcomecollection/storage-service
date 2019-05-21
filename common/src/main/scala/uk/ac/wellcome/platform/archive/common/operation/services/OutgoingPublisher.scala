@@ -1,35 +1,23 @@
 package uk.ac.wellcome.platform.archive.common.operation.services
 
 import io.circe.Encoder
-import uk.ac.wellcome.messaging.sns.SNSWriter
+import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.platform.archive.common.storage.models._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Success, Try}
 
-class OutgoingPublisher(
+class OutgoingPublisher[Destination](
   operationName: String,
-  snsWriter: SNSWriter
+  messageSender: MessageSender[Destination]
 ) {
   def sendIfSuccessful[R, O](result: IngestStepResult[R], outgoing: => O)(
     implicit
-    ec: ExecutionContext,
-    enc: Encoder[O]): Future[Unit] = {
+    encoder: Encoder[O]): Try[Unit] = {
     result match {
       case IngestStepSucceeded(_) | IngestCompleted(_) =>
-        send(outgoing)
+        messageSender.sendT(outgoing)
       case IngestFailed(_, _, _) =>
-        Future.successful(())
+        Success(())
     }
-  }
-
-  private def send[O, R](outgoing: => O)(implicit
-                                         ec: ExecutionContext,
-                                         enc: Encoder[O]): Future[Unit] = {
-    snsWriter
-      .writeMessage(
-        outgoing,
-        subject = s"Sent by ${this.getClass.getSimpleName}"
-      )
-      .map(_ => ())
   }
 }
