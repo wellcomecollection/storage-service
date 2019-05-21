@@ -2,30 +2,31 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import java.nio.file.Paths
 
-import org.scalatest.{FunSpec, TryValues}
+import org.scalatest.{EitherValues, FunSpec, OptionValues}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.storage.Resolvable
+import uk.ac.wellcome.platform.archive.common.storage.{Locatable, LocateFailure}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
 class S3StreamableTest
     extends FunSpec
     with S3
-    with TryValues
+    with OptionValues
+    with EitherValues
     with RandomThings {
 
   import S3StreamableInstances._
 
   case class Thing(stuff: String)
 
-  implicit val thingResolver: Resolvable[Thing] = new Resolvable[Thing] {
-    override def resolve(root: ObjectLocation)(thing: Thing): ObjectLocation = {
-      val paths = Paths.get(root.key, thing.stuff)
-      root.copy(key = paths.toString)
+  implicit val thingResolver: Locatable[Thing] = new Locatable[Thing] {
+    override def locate(thing: Thing)(root: Option[ObjectLocation]): Either[LocateFailure[Thing], ObjectLocation] = {
+      val paths = Paths.get(root.get.key, thing.stuff)
+      Right(root.get.copy(key = paths.toString))
     }
   }
 
-  describe("converts to a Try[InputStream]") {
+  describe("converts to a Either[LocateFailure[Thing], ObjectLocation]") {
     it("produces a failure from an invalid root") {
 
       val invalidRoot = ObjectLocation(
@@ -35,13 +36,13 @@ class S3StreamableTest
 
       val myThing = Thing(randomAlphanumeric())
 
-      val myStream = myThing.from(invalidRoot)
+      val myStream = myThing.locateWith(invalidRoot)
 
-      myStream.failed.get.getMessage should include(
+      myStream.left.value.msg should include(
         "The specified bucket is not valid")
     }
 
-    it("produces a success from a valid ObjectLocation") {
+    it("produces a Right[Some[Thing]] from a valid ObjectLocation") {
       withLocalS3Bucket { bucket =>
         val key = randomAlphanumeric()
         val thingStuff = randomAlphanumeric()
@@ -55,7 +56,7 @@ class S3StreamableTest
 
         val myThing = Thing(thingStuff)
 
-        val inputStream = myThing.from(validRoot).get.get
+        val inputStream = myThing.locateWith(validRoot).right.value.get
 
         scala.io.Source
           .fromInputStream(inputStream)

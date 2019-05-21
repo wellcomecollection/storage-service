@@ -1,21 +1,17 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  FileEntry
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.verify.SHA256
 
 class StorageManifestServiceTest
     extends FunSpec
     with Matchers
+    with EitherValues
     with BagLocationFixtures {
 
   def withStorageManifestService[R](
@@ -33,7 +29,7 @@ class StorageManifestServiceTest
               storageSpace = storageSpace
             )
 
-            val storageManifest = maybeManifest.get
+            val storageManifest = maybeManifest.right.value
 
             storageManifest.space shouldBe storageSpace
             storageManifest.info shouldBe bagInfo
@@ -71,10 +67,10 @@ class StorageManifestServiceTest
             storageSpace = createStorageSpace
           )
 
-          val err = maybeManifest.failed.get
+          val err = maybeManifest.left.value
 
-          err shouldBe a[RuntimeException]
-          err.getMessage should include("The specified key does not exist.")
+          err shouldBe a[BagUnavailable]
+          err.msg should include("Error loading bag-info.txt")
         }
       }
     }
@@ -94,10 +90,10 @@ class StorageManifestServiceTest
                 storageSpace = storageSpace
               )
 
-              val err = maybeManifest.failed.get
+              val err = maybeManifest.left.value
 
-              err shouldBe a[RuntimeException]
-              err.getMessage should include("The specified key does not exist.")
+              err shouldBe a[BagUnavailable]
+              err.msg should include("Error loading bag-info.txt")
 
             }
         }
@@ -119,10 +115,10 @@ class StorageManifestServiceTest
                 storageSpace = storageSpace
               )
 
-              val err = maybeManifest.failed.get
+              val err = maybeManifest.left.value
 
-              err shouldBe a[RuntimeException]
-              err.getMessage should include("The specified key does not exist.")
+              err shouldBe a[BagUnavailable]
+              err.msg should include("Error loading manifest-sha256.txt")
             }
         }
       }
@@ -141,10 +137,10 @@ class StorageManifestServiceTest
                 storageSpace = storageSpace
               )
 
-              val err = maybeManifest.failed.get
+              val err = maybeManifest.left.value
 
-              err shouldBe a[RuntimeException]
-              err.getMessage shouldBe "Error getting file manifest: Failed to parse: List(bleeergh!)"
+              err shouldBe a[BagUnavailable]
+              err.msg shouldBe "Error loading manifest-sha256.txt"
             }
         }
 
@@ -166,10 +162,10 @@ class StorageManifestServiceTest
                 storageSpace = storageSpace
               )
 
-              val err = maybeManifest.failed.get
+              val err = maybeManifest.left.value
 
-              err shouldBe a[RuntimeException]
-              err.getMessage should include("The specified key does not exist.")
+              err shouldBe a[BagUnavailable]
+              err.msg should include("Error loading tagmanifest-sha256.txt")
             }
         }
       }
@@ -188,10 +184,10 @@ class StorageManifestServiceTest
                 storageSpace = storageSpace
               )
 
-              val err = maybeManifest.failed.get
+              val err = maybeManifest.left.value
 
-              err shouldBe a[RuntimeException]
-              err.getMessage shouldBe "Error getting tag manifest: Failed to parse: List(blaaargh!)"
+              err shouldBe a[BagUnavailable]
+              err.msg shouldBe "Error loading tagmanifest-sha256.txt"
             }
         }
       }

@@ -113,7 +113,7 @@ class BagFetchTest extends FunSpec with Matchers {
                                       |http://example.org/abc - example%0D%0A3%0D%0A.txt
        """.stripMargin)
 
-      BagFetch.create(contents).get.files.map { _.path } shouldBe Seq(
+      BagFetch.create(contents).get.files.map { _.path.toString } shouldBe Seq(
         "example\r1\r.txt",
         "example\n2\n.txt",
         "example\r\n3\r\n.txt"

@@ -8,14 +8,13 @@ import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInsta
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 class BagService()(implicit s3Client: AmazonS3) extends Logging {
 
   type Stream[T] = InputStream => Try[T]
 
   import S3StreamableInstances._
-  import uk.ac.wellcome.platform.archive.common.TryHard._
   import uk.ac.wellcome.platform.archive.common.bagit.models._
 
   private val bagFetch = BagPath("fetch.txt")
@@ -23,7 +22,7 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
   private val fileManifest = (a: HashingAlgorithm) => BagPath(s"manifest-${a.pathRepr}.txt")
   private val tagManifest = (a: HashingAlgorithm) => BagPath(s"tagmanifest-${a.pathRepr}.txt")
 
-  def retrieve(root: ObjectLocation): Try[Bag] = for {
+  def retrieve(root: ObjectLocation) = for {
 
       bagInfo <- loadRequired[BagInfo](root)(
         bagInfo)(BagInfo.create)
@@ -39,22 +38,38 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
 
     } yield Bag(bagInfo, fileManifest, tagManifest, bagFetch)
 
-  private def loadOptional[T](root: ObjectLocation)(path: BagPath)(f: Stream[T]) =
-    path.from(root).flatMap {
-      case Some(inputStream) =>
-        f(inputStream).map(Some(_))
+  private def loadOptional[T](root: ObjectLocation)(path: BagPath)(f: Stream[T]): Either[BagUnavailable, Option[T]] = for {
+    maybeStream <- path.locateWith(root) match {
+      case Right(o) => Right(o)
+      case Left(_) => Left(BagUnavailable(s"${path.value} is not available!"))
+    }
 
-      case None => Success(None)
-    } recoverWithMessage s"Error loading ${path.value}"
+    maybeT <- maybeStream match {
+      case Some(o) => f(o) match {
+        case Success(r) => Right(Some(r))
+        case Failure(_) => Left(BagUnavailable(s"Error loading ${path.value}"))
+      }
+      case None => Right(None)
+    }
+  } yield maybeT
 
-  private def loadRequired[T](root: ObjectLocation)(path: BagPath)(f: Stream[T]) = (for {
-    maybeStream <- path.from(root)
-    stream <- maybeStream
-      .unavailableWithMessage(
-        s"${path.value} is not available!"
-      )
-    o <- f(stream)
-  } yield o) recoverWithMessage s"Error loading ${path.value}"
+  private def loadRequired[T](root: ObjectLocation)(path: BagPath)(f: Stream[T]) = for {
+    maybeStream <- path.locateWith(root) match {
+      case Right(o) => Right(o)
+      case Left(_) => Left(BagUnavailable(s"${path.value} is not available!"))
+    }
+
+    stream <- maybeStream match {
+      case Some(stream) => Right(stream)
+      case None => Left(BagUnavailable(s"Error loading ${path.value}"))
+    }
+
+    t <- f(stream) match {
+      case Success(r) => Right(r)
+      case Failure(_) => Left(BagUnavailable(s"Error loading ${path.value}"))
+    }
+  } yield t
 
 }
 
+case class BagUnavailable(msg: String) extends Throwable

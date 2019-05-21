@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.common.bagit
 import java.nio.file.Paths
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagLocation
-import uk.ac.wellcome.platform.archive.common.storage.Resolvable
+import uk.ac.wellcome.platform.archive.common.storage.{Locatable, LocateFailure, LocationNotFound}
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -15,20 +15,28 @@ case class MatchedLocation[A <: BagLocation, B <: BagLocation](a: A, b: Option[B
 
 
 package object models {
-  import Resolvable._
+  // locatable
 
-  // resolvable
+  private def locateBagPath(root: ObjectLocation)(bagPath: BagPath) = {
+    val paths = Paths.get(root.key, bagPath.value)
+    root.copy(key = paths.toString)
+  }
 
-  implicit val bagPathResolver: Resolvable[BagPath] = new Resolvable[BagPath] {
-    override def resolve(root: ObjectLocation)(bagPath: BagPath): ObjectLocation = {
-      val paths = Paths.get(root.key, bagPath.value)
-      root.copy(key = paths.toString)
+  implicit val bagPathLocator: Locatable[BagPath] = new Locatable[BagPath] {
+    override def locate(bagPath: BagPath)(maybeRoot: Option[ObjectLocation]): Either[LocateFailure[BagPath], ObjectLocation] = {
+      maybeRoot match {
+        case None => Left(LocationNotFound(bagPath, s"No root specified!"))
+        case Some(root) => Right(locateBagPath(root)(bagPath))
+      }
     }
   }
 
-  implicit val bagFileResolver: Resolvable[BagFile] = new Resolvable[BagFile] {
-    override def resolve(root: ObjectLocation)(bagFile: BagFile): ObjectLocation = {
-      bagFile.path.resolve(root)
+  implicit val bagFileLocator: Locatable[BagFile] = new Locatable[BagFile] {
+    override def locate(bagFile: BagFile)(maybeRoot: Option[ObjectLocation]): Either[LocateFailure[BagFile], ObjectLocation] = {
+      maybeRoot match {
+        case None => Left(LocationNotFound(bagFile, s"No root specified!"))
+        case Some(root) => Right(locateBagPath(root)(bagFile.path))
+      }
     }
   }
 
@@ -82,17 +90,6 @@ package object models {
             VerifiableLocation(ObjectLocation("namespace", "key"), bagFile.checksum)
         }
       }
-
-//      for {
-//        matched <- matchBagLocation(bagFiles, fetchEntries)
-//
-//
-//      }
-//      matchBagLocation(bagFiles, fetchEntries).map(_.map {
-//        case MatchedLocation(bagFile: BagFile, fetchEntry: BagFetchEntry) => {
-//
-//        }
-//      })
     }
   }
 

@@ -96,3 +96,8 @@ object ChecksumValue extends Logging {
       toJson[ChecksumValue](_).get
     )
 }
+
+sealed trait FailedChecksum
+case class FailedChecksumCreation(algorithm: HashingAlgorithm, e: Throwable) extends Throwable with FailedChecksum
+case class FailedChecksumNoMatch(a: Checksum, b: Checksum) extends Throwable with FailedChecksum
+case class FailedChecksumLocationNotFound(location: VerifiableLocation) extends Throwable with FailedChecksum

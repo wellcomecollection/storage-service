@@ -14,9 +14,9 @@ import scala.util.{Failure, Success, Try}
   * This class tries to infer the root of the bag, using simple heuristics:
   *
   *   - If there's a bag-info.txt in the root of the archive, that's the
-  *     root of the bag
+  * root of the bag
   *   - If the archive has a single subdirectory and it contains a bag-info.txt,
-  *     the subdirectory is the root
+  * the subdirectory is the root
   *
   * Anything else is an error.
   *
@@ -34,6 +34,8 @@ import scala.util.{Failure, Success, Try}
   * SERIOUSLY, THINK CAREFULLY BEFORE YOU ADD COMPLEXITY HERE.
   *
   */
+
+
 class S3BagLocator(s3Client: AmazonS3) extends Logging {
   def locateBagInfo(objectLocation: ObjectLocation): Try[ObjectLocation] = {
     val bagInfoInRoot = findBagInfoInRoot(objectLocation)
@@ -77,7 +79,7 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     *
     */
   private def findBagInfoInDirectory(
-    objectLocation: ObjectLocation): Try[String] = Try {
+                                      objectLocation: ObjectLocation): Try[String] = Try {
     val listObjectsRequest = new ListObjectsV2Request()
       .withBucketName(objectLocation.namespace)
       .withPrefix(objectLocation.key + "/")
@@ -104,4 +106,5 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
 
   private def createBagInfoPath(prefix: String): String =
     prefix.stripSuffix("/") + "/bag-info.txt"
+
 }

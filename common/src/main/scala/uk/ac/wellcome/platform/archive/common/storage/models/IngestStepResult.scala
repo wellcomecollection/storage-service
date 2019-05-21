@@ -7,13 +7,13 @@ import uk.ac.wellcome.messaging.worker.models.{
 }
 import uk.ac.wellcome.platform.archive.common.IngestID
 
-sealed trait IngestStep[T]
+sealed trait IngestStep[+T]
 
 case class IngestStepStarted(
   id: IngestID
 ) extends IngestStep[IngestID]
 
-sealed trait IngestStepResult[T] extends IngestStep[T] {
+sealed trait IngestStepResult[+T] extends IngestStep[T] {
   val summary: T
 }
 

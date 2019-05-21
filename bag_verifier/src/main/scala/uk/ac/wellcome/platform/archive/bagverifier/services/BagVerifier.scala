@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.verify.Verification._
 import uk.ac.wellcome.platform.archive.common.verify.Verifier
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 class BagVerifier()(
   implicit
@@ -19,28 +19,25 @@ class BagVerifier()(
   verifier: Verifier
 ) extends Logging {
 
-  type IngestStep = Try[IngestStepResult[VerificationSummary]]
+  private def summarise(root: ObjectLocation, bag: Bag, startTime: Instant): IngestStepResult[VerificationSummary] = {
+    VerificationSummary.create(root, bag.verify, startTime) match {
+      case success@VerificationSuccessSummary(_, _, _, _) =>
+        IngestStepSucceeded(success)
+      case failure@VerificationFailureSummary(_, _, _, _) =>
+        IngestFailed(failure, new RuntimeException("Invalid bag!"))
+      case incomplete@VerificationIncompleteSummary(_, _, _, _) =>
+        IngestFailed(incomplete, new RuntimeException("Could not verify!"))
+    }
+  }
 
-  def verify(root: ObjectLocation): IngestStep = Try {
+  def verify(root: ObjectLocation) = Try {
     val startTime = Instant.now()
 
-    val verification = bagService.retrieve(root).map { bag =>
-      VerificationSummary.create(root, bag.verify, startTime)
-    } recover {
-      case e => VerificationSummary.incomplete(root, e, startTime)
+    val verification = bagService.retrieve(root) match {
+      case Left(e) => IngestFailed(VerificationSummary.incomplete(root, e, startTime), e)
+      case Right(bag) => summarise(root, bag, startTime)
     }
 
-    verification match {
-      case Success(success @ VerificationSuccessSummary(_, _, _, _)) =>
-        IngestStepSucceeded(success)
-      case Success(failure @ VerificationFailureSummary(_, _, _, _)) =>
-        IngestFailed(failure, new RuntimeException("Invalid bag!"))
-      case Success(failure @ VerificationIncompleteSummary(_, e, _, _)) =>
-        IngestFailed(failure, new RuntimeException("Could not verify!"))
-      case Failure(e) =>
-        IngestFailed(
-          VerificationSummary.incomplete(root, new UnknownError(), startTime),
-          e)
-    }
+    verification
   }
 }

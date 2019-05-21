@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
 
 import scala.util.{Failure, Success}
@@ -11,38 +12,28 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
     with Logging {
   import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 
-  import uk.ac.wellcome.platform.archive.common.TryHard._
+  def verify(location: VerifiableLocation): VerifiedLocation = {
+    debug(s"Attempting to verify: $location")
 
-  private def compareChecksum(a: Checksum, b: Checksum) = {
-    debug(s"Comparing $a, $b")
+    val algorithm = location.checksum.algorithm
 
-    val result = if (a.value == b.value && a.algorithm == b.algorithm) {
-      Success(())
-    } else {
-      Failure(
-        new RuntimeException(s"Checksum values do not match: $a != $b")
-      )
+    val result = location.objectLocation.locate match {
+      case Left(e) =>
+        VerifiedFailure(location, LocationNotFound(location, "Failure while getting location"))
+      case Right(None) =>
+        VerifiedFailure(location, LocationNotFound(location, "Location not found"))
+      case Right(Some(s)) => Checksum.create(s, algorithm) match {
+        case Failure(e) =>
+          VerifiedFailure(location, FailedChecksumCreation(algorithm, e))
+        case Success(checksum) => if (checksum != location.checksum) {
+          VerifiedFailure(location, FailedChecksumNoMatch(checksum, location.checksum))
+        } else {
+          VerifiedSuccess(location)
+        }
+      }
     }
 
     debug(s"Got: $result")
-
     result
-  }
-
-  def verify(location: VerifiableLocation): VerifiedLocation = {
-    debug(s"Attempting to verify: $location")
-    val tryVerify = for {
-      maybeInputStream <- location.objectLocation.toInputStream
-      inputStream <- maybeInputStream.unavailableWithMessage(
-        s"Location ${location.objectLocation} is unavailable"
-      )
-      checksum <- Checksum.create(inputStream, location.checksum.algorithm)
-      result <- compareChecksum(checksum, location.checksum)
-    } yield result
-
-    tryVerify
-      .map(_ => VerifiedSuccess(location))
-      .recover { case e => VerifiedFailure(location, e) }
-      .getOrElse(VerifiedFailure(location, new UnknownError()))
   }
 }
