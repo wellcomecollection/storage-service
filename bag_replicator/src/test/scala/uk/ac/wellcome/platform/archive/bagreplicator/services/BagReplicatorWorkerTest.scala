@@ -47,7 +47,7 @@ class BagReplicatorWorkerTest
 
               service.processMessage(payload) shouldBe a[Success[_]]
 
-              val result = outgoing.getMessages[BagInformationPayload]()
+              val result = outgoing.getMessages[BagInformationPayload]().head
 
               result.ingestId shouldBe payload.ingestId
 
