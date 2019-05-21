@@ -23,7 +23,7 @@ import uk.ac.wellcome.storage.{LockDao, LockFailure}
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.Success
+import scala.util.{Failure, Random, Success}
 
 class BagReplicatorWorkerTest
     extends FunSpec
@@ -227,25 +227,44 @@ class BagReplicatorWorkerTest
   }
 
   it("only allows one worker to process a destination") {
-    val lockServiceDao = new MemoryLockDao[String, UUID] {}
+    val lockServiceDao = new MemoryLockDao[String, UUID] {
+      override def lock(id: String, contextId: UUID): LockResult = {
+
+        // The memory LockDao isn't thread-safe >.<
+        // Introducing a bit of jitter ensures it doesn't assign multiple
+        // locks simultaneously.
+        Thread.sleep(Random.nextInt(20))
+        super.lock(id, contextId)
+      }
+    }
 
     withLocalS3Bucket { bucket =>
       // We have to create a large bag to slow down the replicators, or the
       // first process finishes and releases the lock before the later
       // processes have started.
-      withBag(storageBackend, namespace = bucket.name, dataFileCount = 250) {
+      withBag(storageBackend, namespace = bucket.name, dataFileCount = 500) {
         case (bagRootLocation, _) =>
           withBagReplicatorWorker(lockServiceDao = lockServiceDao) { worker =>
             val payload = createBagInformationPayloadWith(
               bagRootLocation = bagRootLocation
             )
 
-            val futures: Future[Seq[Result[ReplicationSummary]]] =
-              Future.sequence((1 to 5).map { _ =>
-                Future.fromTry {
-                  worker.processMessage(payload)
+            // This slightly convoluted construction is to ensure that the calls
+            // to processMessage() run in parallel.
+            //
+            // It returns a Try, but we can't just use Future.fromTry because
+            // that returns a completed Future -- so we'd be running the processes
+            // in sequence.
+            val futures: Future[Seq[Result[ReplicationSummary]]] = Future.sequence(
+              (1 to 5).map { i =>
+                Future(i).map { _ =>
+                  worker.processMessage(payload) match {
+                    case Success(result) => result
+                    case Failure(err) => throw err
+                  }
                 }
-              })
+              }
+            )
 
             whenReady(futures) { result =>
               result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
