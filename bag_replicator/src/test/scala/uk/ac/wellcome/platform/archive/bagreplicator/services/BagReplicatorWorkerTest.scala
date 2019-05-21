@@ -37,7 +37,7 @@ class BagReplicatorWorkerTest
     withLocalS3Bucket { ingestsBucket =>
       withLocalS3Bucket { archiveBucket =>
         withBagReplicatorWorker(
-          ingests, outgoing, bucket = archiveBucket) { service =>
+          ingests = ingests, outgoing = outgoing, bucket = archiveBucket) { service =>
           withBag(storageBackend, namespace = ingestsBucket.name) {
             case (srcBagRootLocation, storageSpace) =>
               val payload = createBagInformationPayloadWith(
@@ -232,28 +232,26 @@ class BagReplicatorWorkerTest
       // processes have started.
       withBag(storageBackend, namespace = bucket.name, dataFileCount = 250) {
         case (bagRootLocation, _) =>
-          withLocalSnsTopic { ingestTopic =>
-            withLocalSnsTopic { outgoingTopic =>
-              withBagReplicatorWorker(
-                ingests = ingests,
-                outgoing = outgoing,
-                lockServiceDao = lockServiceDao) { worker =>
-                val payload = createBagInformationPayloadWith(
-                  bagRootLocation = bagRootLocation
-                )
+          withBagReplicatorWorker(
+            ingests = ingests,
+            outgoing = outgoing,
+            lockServiceDao = lockServiceDao) { worker =>
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation
+            )
 
-                val futures: Future[Seq[Result[ReplicationSummary]]] =
-                  Future.sequence((1 to 5).map { _ =>
-                    Future.fromTry { worker.processMessage(payload) }
-                  })
-
-                whenReady(futures) { result =>
-                  result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
-                  result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
-
-                  lockServiceDao.history should have size 1
+            val futures: Future[Seq[Result[ReplicationSummary]]] =
+              Future.sequence((1 to 5).map { _ =>
+                Future.fromTry {
+                  worker.processMessage(payload)
                 }
-              }
+              })
+
+            whenReady(futures) { result =>
+              result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
+              result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
+
+              lockServiceDao.history should have size 1
             }
           }
       }

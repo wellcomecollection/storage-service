@@ -71,15 +71,13 @@ trait BagReplicatorFixtures
   ): R =
     withLocalS3Bucket { bucket =>
       val config = createReplicatorDestinationConfigWith(bucket)
-      withLocalSnsTopic { topic =>
-        withBagReplicatorWorker(
-          defaultQueue,
-          createMessageSender,
-          createMessageSender,
-          config,
-          lockServiceDao) { worker =>
-          testWith(worker)
-        }
+      withBagReplicatorWorker(
+        defaultQueue,
+        createMessageSender,
+        createMessageSender,
+        config,
+        lockServiceDao) { worker =>
+        testWith(worker)
       }
     }
 

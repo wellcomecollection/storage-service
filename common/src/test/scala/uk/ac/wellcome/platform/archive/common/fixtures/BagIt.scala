@@ -5,6 +5,7 @@ import java.time.LocalDate
 
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 
+import scala.collection.immutable
 import scala.util.Random
 
 trait BagIt extends RandomThings {
@@ -160,22 +161,14 @@ trait BagIt extends RandomThings {
       """.stripMargin.trim
   }
 
-  private def createDataFiles(dataFileCount: Int) = {
-    val subPathLength = Random.nextInt(3)
-    val subPathDirectories = (0 to subPathLength).map { _ =>
-      randomAlphanumericWithSpace()
-    }
-    val subPath = subPathDirectories.mkString("/")
-
-    (1 to dataFileCount).map { _ =>
-      val fileName = randomAlphanumericWithSpace()
-      val filePath = s"data/$subPath/$fileName.txt"
+  private def createDataFiles(dataFileCount: Int): immutable.Seq[FileEntry] =
+    (1 to dataFileCount).map { count =>
+      val filePath = s"data/$count.txt"
       val fileContents = Random.nextString(256)
       FileEntry(filePath, fileContents)
     }
-  }
 
-  def createValidDigest(string: String) =
+  def createValidDigest(string: String): String =
     MessageDigest
       .getInstance("SHA-256")
       .digest(string.getBytes)
