@@ -255,16 +255,17 @@ class BagReplicatorWorkerTest
             // It returns a Try, but we can't just use Future.fromTry because
             // that returns a completed Future -- so we'd be running the processes
             // in sequence.
-            val futures: Future[Seq[Result[ReplicationSummary]]] = Future.sequence(
-              (1 to 5).map { i =>
-                Future(i).map { _ =>
-                  worker.processMessage(payload) match {
-                    case Success(result) => result
-                    case Failure(err) => throw err
+            val futures: Future[Seq[Result[ReplicationSummary]]] =
+              Future.sequence(
+                (1 to 5).map { i =>
+                  Future(i).map { _ =>
+                    worker.processMessage(payload) match {
+                      case Success(result) => result
+                      case Failure(err)    => throw err
+                    }
                   }
                 }
-              }
-            )
+              )
 
             whenReady(futures) { result =>
               result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
