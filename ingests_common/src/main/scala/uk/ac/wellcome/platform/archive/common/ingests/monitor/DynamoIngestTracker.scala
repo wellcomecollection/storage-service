@@ -1,15 +1,17 @@
 package uk.ac.wellcome.platform.archive.common.ingests.monitor
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.gu.scanamo.{Scanamo, Table}
-import com.gu.scanamo.error.DynamoReadError
+import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
+import com.gu.scanamo.error.{ConditionNotMet, DynamoReadError, ScanamoError}
+import com.gu.scanamo.ops.ScanamoOps
 import com.gu.scanamo.query.UniqueKey
 import com.gu.scanamo.syntax._
+import com.gu.scanamo.{Scanamo, Table}
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.storage.dynamo.{DynamoConfig, DynamoDao, UpdateExpressionGenerator}
+import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.type_classes.IdGetter
 
 import scala.util.{Failure, Success, Try}
@@ -21,7 +23,9 @@ class DynamoIngestTracker(
 
   implicit val idGetter: IdGetter[Ingest] = (ingest: Ingest) => ingest.id.toString
 
-  implicit val updateExpressionGenerator: UpdateExpressionGenerator[Ingest] = UpdateExpressionGenerator[Ingest]
+  // We need this or we can't construct a DynamoDao, even though
+  // it's fiddly to do properly and we don't actually use it.
+  implicit val updateExpressionGenerator: UpdateExpressionGenerator[Ingest] = (t: Ingest) => throw new Throwable("This method should never be used")
 
   val underlying = new DynamoDao[IngestID, Ingest](
     dynamoClient = dynamoDbClient,
@@ -39,9 +43,13 @@ class DynamoIngestTracker(
   def initialise(ingest: Ingest): Try[Ingest] = {
     debug(s"initializing archive ingest tracker with $ingest")
 
-    val ops = underlying.table
+    val ops: ScanamoOps[Either[ScanamoError, Ingest]] = underlying.table
       .given(not(attributeExists('id)))
-      .update('id -> ingest.id.toString, underlying.buildUpdate(ingest).get)
+      .put(ingest)
+      .map {
+        case Right(_) => Right(ingest)
+        case Left(err: ConditionalCheckFailedException) => Left(ConditionNotMet(err))
+      }
 
     underlying.executeOps(id = ingest.id.toString, ops = ops)
   }
@@ -104,7 +112,7 @@ class DynamoIngestTracker(
     val ingests = result.collect { case Right(ingest) => ingest }
     val failures = result.collect { case Left(err) => err }
 
-    if (failures.isEmpty) {
+    if (failures.nonEmpty) {
       Failure(new RuntimeException(s"Errors reading from DynamoDB: $failures"))
     } else {
       Success(ingests)

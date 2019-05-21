@@ -3,11 +3,7 @@ package uk.ac.wellcome.platform.archive.common.ingests
 import java.time.Instant
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.{
-  GetItemRequest,
-  PutItemRequest,
-  UpdateItemRequest
-}
+import com.amazonaws.services.dynamodbv2.model.{ConditionalCheckFailedException, GetItemRequest, PutItemRequest, UpdateItemRequest}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.FunSpec
@@ -18,12 +14,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.util.Try
+import scala.collection.immutable
+import scala.util.{Failure, Success}
 
 class DynamoIngestTrackerTest
     extends FunSpec
@@ -37,11 +31,11 @@ class DynamoIngestTrackerTest
     it("creates an ingest") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          val futureIngest = ingestTracker.initialise(createIngest)
+          val result = ingestTracker.initialise(createIngest)
 
-          whenReady(futureIngest) { ingest =>
-            assertIngestCreated(ingest, table)
-          }
+          result shouldBe a[Success[_]]
+          val ingest = result.get
+          assertIngestCreated(ingest, table)
         }
       }
     }
@@ -51,16 +45,17 @@ class DynamoIngestTrackerTest
         withIngestTracker(table) { ingestTracker =>
           val ingest = createIngest
 
-          val monitors = List(ingest, ingest)
+          ingestTracker.initialise(ingest) shouldBe a[Success[_]]
 
-          val result = Future.sequence(monitors.map(ingestTracker.initialise))
-          whenReady(result.failed) { failedException =>
-            failedException shouldBe a[IdConstraintError]
-            failedException.getMessage should include(
-              s"There is already a ingest tracker with id:${ingest.id}")
+          val result = ingestTracker.initialise(ingest)
 
-            assertIngestCreated(ingest, table)
-          }
+          result shouldBe a[Failure[_]]
+          val err = result.failed.get
+
+          err shouldBe a[ConditionalCheckFailedException]
+          err.getMessage should startWith("The conditional request failed")
+
+          assertIngestCreated(ingest, table)
         }
       }
     }
@@ -77,10 +72,11 @@ class DynamoIngestTrackerTest
             val ingest = createIngest
 
             val result = ingestTracker.initialise(ingest)
-            whenReady(result.failed) { failedException =>
-              failedException shouldBe a[RuntimeException]
-              failedException shouldBe expectedException
-            }
+
+            result shouldBe a[Failure[_]]
+            val err = result.failed.get
+            err shouldBe a[RuntimeException]
+            err shouldBe expectedException
         }
       }
     }
@@ -90,14 +86,10 @@ class DynamoIngestTrackerTest
     it("retrieves ingest by id") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            assertIngestCreated(ingest, table)
+          val ingest = ingestTracker.initialise(createIngest).get
+          assertIngestCreated(ingest, table)
 
-            whenReady(ingestTracker.get(ingest.id)) { result =>
-              result shouldBe a[Some[_]]
-              result.get shouldBe ingest
-            }
-          }
+          ingestTracker.get(ingest.id) shouldBe Success(Some(ingest))
         }
       }
     }
@@ -105,9 +97,7 @@ class DynamoIngestTrackerTest
     it("returns None when no ingest matches id") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.get(createIngestID)) { result =>
-            result shouldBe None
-          }
+          ingestTracker.get(createIngestID) shouldBe Success(None)
         }
       }
     }
@@ -121,10 +111,9 @@ class DynamoIngestTrackerTest
 
         withIngestTracker(table, dynamoDbClient = mockDynamoDbClient) {
           ingestTracker =>
-            whenReady(ingestTracker.get(createIngestID).failed) {
-              failedException =>
-                failedException shouldBe expectedException
-            }
+            val result = ingestTracker.get(createIngestID)
+
+            result shouldBe Failure(expectedException)
         }
       }
     }
@@ -134,28 +123,27 @@ class DynamoIngestTrackerTest
     it("sets the bag id to a ingest with none") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val bagId = createBagId
+          val ingest = ingestTracker.initialise(createIngest).get
+          val bagId = createBagId
 
-            val ingestUpdate = IngestStatusUpdate(
-              ingest.id,
-              Ingest.Processing,
-              Some(bagId)
-            )
+          val ingestUpdate = IngestStatusUpdate(
+            ingest.id,
+            Ingest.Processing,
+            Some(bagId)
+          )
 
-            ingestTracker.update(ingestUpdate)
+          ingestTracker.update(ingestUpdate)
 
-            val storedIngest = getStoredIngest(ingest, table)
+          val storedIngest = getStoredIngest(ingest, table)
 
-            assertRecent(storedIngest.createdDate)
-            assertRecent(storedIngest.lastModifiedDate)
-            storedIngest.events.map(_.description) should contain theSameElementsAs ingestUpdate.events
-              .map(_.description)
-            storedIngest.events.foreach(event =>
-              assertRecent(event.createdDate))
+          assertRecent(storedIngest.createdDate)
+          assertRecent(storedIngest.lastModifiedDate)
+          storedIngest.events.map(_.description) should contain theSameElementsAs ingestUpdate.events
+            .map(_.description)
+          storedIngest.events.foreach(event =>
+            assertRecent(event.createdDate))
 
-            storedIngest.bag shouldBe ingestUpdate.affectedBag
-          }
+          storedIngest.bag shouldBe ingestUpdate.affectedBag
         }
       }
     }
@@ -163,22 +151,21 @@ class DynamoIngestTrackerTest
     it("adds a single event to a monitor with no events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val ingestUpdate = IngestEventUpdate(
-              id = ingest.id,
-              events = List(createIngestEvent)
-            )
+          val ingest = ingestTracker.initialise(createIngest).get
+          val ingestUpdate = IngestEventUpdate(
+            id = ingest.id,
+            events = List(createIngestEvent)
+          )
 
-            ingestTracker.update(ingestUpdate)
+          ingestTracker.update(ingestUpdate)
 
-            assertIngestCreated(ingest, table)
+          assertIngestCreated(ingest, table)
 
-            assertIngestRecordedRecentEvents(
-              id = ingestUpdate.id,
-              expectedEventDescriptions = ingestUpdate.events.map(_.description),
-              table = table
-            )
-          }
+          assertIngestRecordedRecentEvents(
+            id = ingestUpdate.id,
+            expectedEventDescriptions = ingestUpdate.events.map(_.description),
+            table = table
+          )
         }
       }
     }
@@ -186,30 +173,29 @@ class DynamoIngestTrackerTest
     it("adds a status update to a monitor with no events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val someBagId = Some(createBagId)
-            val ingestUpdate = IngestStatusUpdate(
-              ingest.id,
-              Ingest.Completed,
-              affectedBag = someBagId,
-              List(createIngestEvent)
-            )
+          val ingest = ingestTracker.initialise(createIngest).get
+          val someBagId = Some(createBagId)
+          val ingestUpdate = IngestStatusUpdate(
+            ingest.id,
+            Ingest.Completed,
+            affectedBag = someBagId,
+            List(createIngestEvent)
+          )
 
-            ingestTracker.update(ingestUpdate)
+          ingestTracker.update(ingestUpdate)
 
-            val actualIngest = assertIngestCreated(ingest, table)
+          val actualIngest = assertIngestCreated(ingest, table)
 
-            actualIngest.status shouldBe Ingest.Completed
-            actualIngest.bag shouldBe someBagId
+          actualIngest.status shouldBe Ingest.Completed
+          actualIngest.bag shouldBe someBagId
 
-            assertIngestRecordedRecentEvents(
-              id = ingestUpdate.id,
-              expectedEventDescriptions = ingestUpdate.events.map {
-                _.description
-              },
-              table = table
-            )
-          }
+          assertIngestRecordedRecentEvents(
+            id = ingestUpdate.id,
+            expectedEventDescriptions = ingestUpdate.events.map {
+              _.description
+            },
+            table = table
+          )
         }
       }
     }
@@ -217,28 +203,27 @@ class DynamoIngestTrackerTest
     it("adds a callback status update to a monitor with no events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val ingestUpdate = IngestCallbackStatusUpdate(
-              id = ingest.id,
-              callbackStatus = Callback.Succeeded,
-              events = List(createIngestEvent)
-            )
+          val ingest = ingestTracker.initialise(createIngest).get
+          val ingestUpdate = IngestCallbackStatusUpdate(
+            id = ingest.id,
+            callbackStatus = Callback.Succeeded,
+            events = List(createIngestEvent)
+          )
 
-            ingestTracker.update(ingestUpdate)
+          ingestTracker.update(ingestUpdate)
 
-            val actualIngest = assertIngestCreated(ingest, table)
+          val actualIngest = assertIngestCreated(ingest, table)
 
-            actualIngest.callback shouldBe defined
-            actualIngest.callback.get.status shouldBe Callback.Succeeded
+          actualIngest.callback shouldBe defined
+          actualIngest.callback.get.status shouldBe Callback.Succeeded
 
-            assertIngestRecordedRecentEvents(
-              id = ingestUpdate.id,
-              expectedEventDescriptions = ingestUpdate.events.map {
-                _.description
-              },
-              table = table
-            )
-          }
+          assertIngestRecordedRecentEvents(
+            id = ingestUpdate.id,
+            expectedEventDescriptions = ingestUpdate.events.map {
+              _.description
+            },
+            table = table
+          )
         }
       }
     }
@@ -246,21 +231,20 @@ class DynamoIngestTrackerTest
     it("adds an update with multiple events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val ingestUpdate = IngestEventUpdate(
-              ingest.id,
-              List(createIngestEvent, createIngestEvent)
-            )
+          val ingest = ingestTracker.initialise(createIngest).get
+          val ingestUpdate = IngestEventUpdate(
+            ingest.id,
+            List(createIngestEvent, createIngestEvent)
+          )
 
-            ingestTracker.update(ingestUpdate)
+          ingestTracker.update(ingestUpdate)
 
-            assertIngestCreated(ingest, table)
+          assertIngestCreated(ingest, table)
 
-            assertIngestRecordedRecentEvents(
-              ingestUpdate.id,
-              ingestUpdate.events.map(_.description),
-              table)
-          }
+          assertIngestRecordedRecentEvents(
+            ingestUpdate.id,
+            ingestUpdate.events.map(_.description),
+            table)
         }
       }
     }
@@ -268,21 +252,20 @@ class DynamoIngestTrackerTest
     it("adds multiple events to a monitor") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val updates = List(
-              createIngestEventUpdateWith(ingest.id),
-              createIngestEventUpdateWith(ingest.id)
-            )
+          val ingest = ingestTracker.initialise(createIngest).get
+          val updates = List(
+            createIngestEventUpdateWith(ingest.id),
+            createIngestEventUpdateWith(ingest.id)
+          )
 
-            updates.foreach(ingestTracker.update(_))
+          updates.foreach(ingestTracker.update(_))
 
-            assertIngestCreated(ingest, table)
+          assertIngestCreated(ingest, table)
 
-            assertIngestRecordedRecentEvents(
-              ingest.id,
-              updates.flatMap(_.events.map(_.description)),
-              table)
-          }
+          assertIngestRecordedRecentEvents(
+            ingest.id,
+            updates.flatMap(_.events.map(_.description)),
+            table)
         }
       }
     }
@@ -299,7 +282,7 @@ class DynamoIngestTrackerTest
           ingestTracker =>
             val update = createIngestEventUpdate
 
-            val result = Try(ingestTracker.update(update))
+            val result = ingestTracker.update(update)
 
             val failedException = result.failed.get
             failedException shouldBe a[RuntimeException]
@@ -317,48 +300,42 @@ class DynamoIngestTrackerTest
           val beforeTime = Instant.parse("2018-12-01T11:50:00.00Z")
           val time = Instant.parse("2018-12-01T12:00:00.00Z")
           val afterTime = Instant.parse("2018-12-01T12:10:00.00Z")
-          whenReady(
-            ingestTracker.initialise(
-              createIngestWith(createdDate = beforeTime))) { ingestA =>
-            whenReady(
-              ingestTracker.initialise(createIngestWith(createdDate = time))) {
-              ingestB =>
-                whenReady(ingestTracker.initialise(
-                  createIngestWith(createdDate = afterTime))) { ingestC =>
-                  val bagId = createBagId
 
-                  val ingestAUpdate =
-                    createIngestUpdateWith(ingestA.id, bagId)
-                  ingestTracker.update(ingestAUpdate)
-                  val ingestBUpdate =
-                    createIngestUpdateWith(ingestB.id, bagId)
-                  ingestTracker.update(ingestBUpdate)
-                  val ingestCUpdate =
-                    createIngestUpdateWith(ingestC.id, bagId)
-                  ingestTracker.update(ingestCUpdate)
+          val ingestA = ingestTracker.initialise(createIngestWith(createdDate = beforeTime)).get
+          val ingestB = ingestTracker.initialise(createIngestWith(createdDate = time)).get
+          val ingestC = ingestTracker.initialise(createIngestWith(createdDate = afterTime)).get
 
-                  val bagIngests = ingestTracker.findByBagId(bagId)
+          val bagId = createBagId
 
-                  bagIngests shouldBe List(
-                    BagIngest(
-                      id = ingestC.id,
-                      bagIdIndex = bagId.toString,
-                      createdDate = afterTime
-                    ),
-                    BagIngest(
-                      id = ingestB.id,
-                      bagIdIndex = bagId.toString,
-                      createdDate = time
-                    ),
-                    BagIngest(
-                      id = ingestA.id,
-                      bagIdIndex = bagId.toString,
-                      createdDate = beforeTime
-                    )
-                  ).map { Right(_) }
-                }
-            }
-          }
+          val ingestAUpdate =
+            createIngestUpdateWith(ingestA.id, bagId)
+          ingestTracker.update(ingestAUpdate)
+          val ingestBUpdate =
+            createIngestUpdateWith(ingestB.id, bagId)
+          ingestTracker.update(ingestBUpdate)
+          val ingestCUpdate =
+            createIngestUpdateWith(ingestC.id, bagId)
+          ingestTracker.update(ingestCUpdate)
+
+          val bagIngests = ingestTracker.findByBagId(bagId).get
+
+          bagIngests shouldBe List(
+            BagIngest(
+              id = ingestC.id,
+              bagIdIndex = bagId.toString,
+              createdDate = afterTime
+            ),
+            BagIngest(
+              id = ingestB.id,
+              bagIdIndex = bagId.toString,
+              createdDate = time
+            ),
+            BagIngest(
+              id = ingestA.id,
+              bagIdIndex = bagId.toString,
+              createdDate = beforeTime
+            )
+          )
         }
       }
     }
@@ -367,23 +344,21 @@ class DynamoIngestTrackerTest
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
           val start = Instant.parse("2018-12-01T12:00:00.00Z")
-          val eventualIngests: Seq[Future[Ingest]] =
-            for (i <- 0 to 33)
-              yield
-                ingestTracker.initialise(
-                  createIngestWith(createdDate = start.plusSeconds(i)))
+          val eventualIngests: immutable.Seq[Ingest] = (0 to 33).map { i =>
+            ingestTracker.initialise(
+              createIngestWith(createdDate = start.plusSeconds(i))).get
+          }
 
           val bagId = createBagId
 
-          eventualIngests.map(eventualIngest =>
-            eventualIngest.map { ingest =>
+          eventualIngests.map { ingest =>
               val ingestUpdate =
                 createIngestUpdateWith(ingest.id, bagId)
               ingestTracker.update(ingestUpdate)
-          })
+          }
 
           eventually {
-            val bagIngests = ingestTracker.findByBagId(bagId)
+            val bagIngests = ingestTracker.findByBagId(bagId).get
 
             bagIngests should have size 30
           }
