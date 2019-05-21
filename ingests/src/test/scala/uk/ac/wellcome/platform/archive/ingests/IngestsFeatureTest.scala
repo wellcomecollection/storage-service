@@ -3,13 +3,13 @@ package uk.ac.wellcome.platform.archive.ingests
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CallbackNotification,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.ingests.fixtures._
 
-class IngestsFeatureTest
-    extends FunSpec
-    with Matchers
-    with IngestsFixtures {
+class IngestsFeatureTest extends FunSpec with Matchers with IngestsFixtures {
 
   it("updates an existing ingest status to Completed") {
     withConfiguredApp {
@@ -37,7 +37,8 @@ class IngestsFeatureTest
             payload = expectedIngest
           )
 
-          messageSender.getMessages[CallbackNotification]() shouldBe Seq(expectedMessage)
+          messageSender.getMessages[CallbackNotification]() shouldBe Seq(
+            expectedMessage)
 
           assertIngestCreated(ingestTracker)(ingest)
 

@@ -20,19 +20,23 @@ import scala.util.{Failure, Success, Try}
 class DynamoIngestTracker(
   dynamoClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig
-) extends Logging with IngestTracker {
+) extends Logging
+    with IngestTracker {
 
-  implicit val idGetter: IdGetter[Ingest] = (ingest: Ingest) => ingest.id.toString
+  implicit val idGetter: IdGetter[Ingest] = (ingest: Ingest) =>
+    ingest.id.toString
 
   // We need this or we can't construct a DynamoDao, even though
   // it's fiddly to do properly and we don't actually use it.
-  implicit val updateExpressionGenerator: UpdateExpressionGenerator[Ingest] = (t: Ingest) => throw new Throwable("This method should never be used")
+  implicit val updateExpressionGenerator: UpdateExpressionGenerator[Ingest] =
+    (t: Ingest) => throw new Throwable("This method should never be used")
 
   val underlying = new DynamoDao[IngestID, Ingest](
     dynamoClient = dynamoClient,
     dynamoConfig = dynamoConfig
   ) {
-    override protected def buildGetKeyExpression(ident: IngestID): UniqueKey[_] =
+    override protected def buildGetKeyExpression(
+      ident: IngestID): UniqueKey[_] =
       'id -> ident.toString
 
     override protected def buildPutKeyExpression(ingest: Ingest): UniqueKey[_] =
@@ -49,7 +53,8 @@ class DynamoIngestTracker(
       .put(ingest)
       .map {
         case Right(_) => Right(ingest)
-        case Left(err: ConditionalCheckFailedException) => Left(ConditionNotMet(err))
+        case Left(err: ConditionalCheckFailedException) =>
+          Left(ConditionNotMet(err))
       }
 
     underlying.executeOps(id = ingest.id.toString, ops = ops)
@@ -108,10 +113,11 @@ class DynamoIngestTracker(
       .limit(30)
       .query(('bagIdIndex -> bagId.toString).descending)
 
-    val result: Seq[Either[DynamoReadError, BagIngest]] = Scanamo.exec(dynamoClient)(query)
+    val result: Seq[Either[DynamoReadError, BagIngest]] =
+      Scanamo.exec(dynamoClient)(query)
 
     val ingests = result.collect { case Right(ingest) => ingest }
-    val failures = result.collect { case Left(err) => err }
+    val failures = result.collect { case Left(err)    => err }
 
     if (failures.nonEmpty) {
       Failure(new RuntimeException(s"Errors reading from DynamoDB: $failures"))

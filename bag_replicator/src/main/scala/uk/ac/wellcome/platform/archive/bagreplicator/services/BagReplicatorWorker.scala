@@ -9,7 +9,10 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.amazonaws.services.sqs.model.{Message => SQSMessage}
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
 import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
@@ -44,7 +47,8 @@ class BagReplicatorWorker[IngestsDestination, OutgoingDestination](
     new AlpakkaSQSWorker[
       BagInformationPayload,
       ReplicationSummary,
-      MonitoringClient](alpakkaSQSWorkerConfig)(payload => Future.fromTry(processMessage(payload))) {
+      MonitoringClient](alpakkaSQSWorkerConfig)(payload =>
+      Future.fromTry(processMessage(payload))) {
 
       // TODO: This is hard-coded, read it from config!
       override val retryAction = (message: SQSMessage) =>
@@ -73,9 +77,8 @@ class BagReplicatorWorker[IngestsDestination, OutgoingDestination](
       result <- replicate(payload, destination)
     } yield result
 
-  def replicate(
-    payload: BagInformationPayload,
-    destination: ObjectLocation): Try[Result[ReplicationSummary]] =
+  def replicate(payload: BagInformationPayload,
+                destination: ObjectLocation): Try[Result[ReplicationSummary]] =
     lockingService
       .withLock(destination.toString) {
         for {

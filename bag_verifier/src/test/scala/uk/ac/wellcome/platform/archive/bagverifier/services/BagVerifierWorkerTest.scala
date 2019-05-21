@@ -7,7 +7,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  FileEntry
+}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
@@ -59,7 +62,10 @@ class BagVerifierWorkerTest
 
     withBagVerifierWorker(ingests, outgoing) { service =>
       withLocalS3Bucket { bucket =>
-        withBag(storageBackend, namespace = bucket.name, createDataManifest = dataManifestWithWrongChecksum) {
+        withBag(
+          storageBackend,
+          namespace = bucket.name,
+          createDataManifest = dataManifestWithWrongChecksum) {
           case (bagRootLocation, _) =>
             val payload = createBagInformationPayloadWith(
               bagRootLocation = bagRootLocation
@@ -85,14 +91,17 @@ class BagVerifierWorkerTest
 
   it("only updates the ingest monitor if it cannot perform the verification") {
     def dontCreateTheDataManifest(
-                                   dataFiles: List[(String, String)]): Option[FileEntry] = None
+      dataFiles: List[(String, String)]): Option[FileEntry] = None
 
     val ingests = createMessageSender
     val outgoing = createMessageSender
 
     withBagVerifierWorker(ingests, outgoing) { service =>
       withLocalS3Bucket { bucket =>
-        withBag(storageBackend, namespace = bucket.name, createDataManifest = dontCreateTheDataManifest) {
+        withBag(
+          storageBackend,
+          namespace = bucket.name,
+          createDataManifest = dontCreateTheDataManifest) {
           case (bagRootLocation, _) =>
             val payload = createBagInformationPayloadWith(
               bagRootLocation = bagRootLocation
@@ -123,7 +132,8 @@ class BagVerifierWorkerTest
       destination = randomAlphanumeric(),
       subject = randomAlphanumeric()
     ) {
-      override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] = Failure(new Throwable("BOOM!"))
+      override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
+        Failure(new Throwable("BOOM!"))
     }
 
     withBagVerifierWorker(ingests, outgoing) { service =>

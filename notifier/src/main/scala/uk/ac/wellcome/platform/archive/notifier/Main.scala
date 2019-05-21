@@ -5,10 +5,18 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.sns.SNSConfig
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SNSBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SNSBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.common.config.builders.HTTPServerBuilder
-import uk.ac.wellcome.platform.archive.notifier.services.{CallbackUrlService, NotifierWorker}
+import uk.ac.wellcome.platform.archive.notifier.services.{
+  CallbackUrlService,
+  NotifierWorker
+}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
@@ -36,7 +44,8 @@ object Main extends WellcomeTypesafeApp {
     new NotifierWorker[SNSConfig](
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
       callbackUrlService = callbackUrlService,
-      messageSender = SNSBuilder.buildSNSMessageSender(config, subject = "Sent from the notifier")
+      messageSender = SNSBuilder
+        .buildSNSMessageSender(config, subject = "Sent from the notifier")
     )
   }
 }

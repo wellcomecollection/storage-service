@@ -8,7 +8,10 @@ import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 
 class BagVerifierFeatureTest
     extends FunSpec
@@ -44,7 +47,8 @@ class BagVerifierFeatureTest
                     )
                   )
 
-                  outgoing.getMessages[BagInformationPayload]() shouldBe Seq(payload)
+                  outgoing.getMessages[BagInformationPayload]() shouldBe Seq(
+                    payload)
 
                   assertQueueEmpty(queue)
                   assertQueueEmpty(dlq)
@@ -59,7 +63,6 @@ class BagVerifierFeatureTest
     "deletes the SQS message if the bag can be verified but has incorrect checksums") {
     val ingests = createMessageSender
     val outgoing = createMessageSender
-
 
     withLocalSqsQueueAndDlq {
       case QueuePair(queue, dlq) =>
@@ -77,18 +80,18 @@ class BagVerifierFeatureTest
                 sendNotificationToSQS(queue, payload)
 
                 eventually {
-                  assertReceivesIngestUpdates(ingests)(
-                    payload.ingestId) { ingestUpdates =>
-                    ingestUpdates.size shouldBe 2
+                  assertReceivesIngestUpdates(ingests)(payload.ingestId) {
+                    ingestUpdates =>
+                      ingestUpdates.size shouldBe 2
 
-                    val ingestStart = ingestUpdates.head
-                    ingestStart.events.head.description shouldBe "Verification started"
+                      val ingestStart = ingestUpdates.head
+                      ingestStart.events.head.description shouldBe "Verification started"
 
-                    val ingestFailed =
-                      ingestUpdates.tail.head
-                        .asInstanceOf[IngestStatusUpdate]
-                    ingestFailed.status shouldBe Ingest.Failed
-                    ingestFailed.events.head.description shouldBe "Verification failed"
+                      val ingestFailed =
+                        ingestUpdates.tail.head
+                          .asInstanceOf[IngestStatusUpdate]
+                      ingestFailed.status shouldBe Ingest.Failed
+                      ingestFailed.events.head.description shouldBe "Verification failed"
                   }
 
                   outgoing.messages shouldBe empty

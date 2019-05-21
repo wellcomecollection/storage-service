@@ -2,8 +2,14 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  FileEntry
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.common.verify.SHA256
 import uk.ac.wellcome.storage.StorageBackend
 import uk.ac.wellcome.storage.fixtures.S3
@@ -17,7 +23,8 @@ class StorageManifestServiceTest
 
   def createBackend = new MemoryStorageBackend()
 
-  def createStorageManifestService(storageBackend: StorageBackend = createBackend): StorageManifestService =
+  def createStorageManifestService(
+    storageBackend: StorageBackend = createBackend): StorageManifestService =
     new StorageManifestService()(storageBackend)
 
   it("returns a StorageManifest if reading a bag location succeeds") {
@@ -81,7 +88,8 @@ class StorageManifestServiceTest
 
       withBag(backend) {
         case (bagRootLocation, storageSpace) =>
-          backend.storage = backend.storage - bagRootLocation.join("bag-info.txt")
+          backend.storage = backend.storage - bagRootLocation.join(
+            "bag-info.txt")
 
           val maybeManifest = service.retrieve(
             bagRootLocation = bagRootLocation,
@@ -102,7 +110,8 @@ class StorageManifestServiceTest
 
       withBag(backend) {
         case (bagRootLocation, storageSpace) =>
-          backend.storage = backend.storage - bagRootLocation.join("manifest-sha256.txt")
+          backend.storage = backend.storage - bagRootLocation.join(
+            "manifest-sha256.txt")
 
           val maybeManifest = service.retrieve(
             bagRootLocation = bagRootLocation,
@@ -112,7 +121,8 @@ class StorageManifestServiceTest
           val err = maybeManifest.failed.get
 
           err shouldBe a[RuntimeException]
-          err.getMessage should startWith("Error getting file manifest: Nothing at ")
+          err.getMessage should startWith(
+            "Error getting file manifest: Nothing at ")
           err.getMessage should endWith("/manifest-sha256.txt")
       }
     }
@@ -144,7 +154,8 @@ class StorageManifestServiceTest
 
       withBag(backend) {
         case (bagRootLocation, storageSpace) =>
-          backend.storage = backend.storage - bagRootLocation.join("tagmanifest-sha256.txt")
+          backend.storage = backend.storage - bagRootLocation.join(
+            "tagmanifest-sha256.txt")
 
           val maybeManifest = service.retrieve(
             bagRootLocation = bagRootLocation,
@@ -154,7 +165,8 @@ class StorageManifestServiceTest
           val err = maybeManifest.failed.get
 
           err shouldBe a[RuntimeException]
-          err.getMessage should startWith("Error getting tag manifest: Nothing at ")
+          err.getMessage should startWith(
+            "Error getting tag manifest: Nothing at ")
           err.getMessage should endWith("/tagmanifest-sha256.txt")
       }
     }

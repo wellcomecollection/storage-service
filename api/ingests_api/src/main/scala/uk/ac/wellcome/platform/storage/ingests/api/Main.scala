@@ -36,7 +36,9 @@ object Main extends WellcomeTypesafeApp {
     new IngestsApi(
       ingestTracker = ingestTracker,
       unpackerMessageSender = SNSBuilder.buildSNSMessageSender(
-        config, namespace = "unpacker", subject = "Sent from the ingests API"
+        config,
+        namespace = "unpacker",
+        subject = "Sent from the ingests API"
       ),
       httpMetrics = httpMetrics,
       httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),

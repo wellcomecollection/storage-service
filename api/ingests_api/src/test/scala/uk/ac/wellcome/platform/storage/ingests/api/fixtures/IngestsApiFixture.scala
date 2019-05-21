@@ -29,56 +29,76 @@ trait IngestsApiFixture
 
   val metricsName = "IngestsApiFixture"
 
-  private def withApp[R](
-    ingestTracker: MemoryIngestTracker,
-    unpackerMessageSender: MemoryMessageSender,
-    metricsSender: MetricsSender)(testWith: TestWith[IngestsApi[String], R]): R =
-      withActorSystem { implicit actorSystem =>
-        withMaterializer(actorSystem) { implicit materializer =>
-          val httpMetrics = new HttpMetrics(
-            name = metricsName,
-            metricsSender = metricsSender
-          )
+  private def withApp[R](ingestTracker: MemoryIngestTracker,
+                         unpackerMessageSender: MemoryMessageSender,
+                         metricsSender: MetricsSender)(
+    testWith: TestWith[IngestsApi[String], R]): R =
+    withActorSystem { implicit actorSystem =>
+      withMaterializer(actorSystem) { implicit materializer =>
+        val httpMetrics = new HttpMetrics(
+          name = metricsName,
+          metricsSender = metricsSender
+        )
 
-          val ingestsApi = new IngestsApi(
-            ingestTracker = ingestTracker,
-            unpackerMessageSender = unpackerMessageSender,
-            httpMetrics = httpMetrics,
-            httpServerConfig = httpServerConfig,
-            contextURL = contextURL
-          )
+        val ingestsApi = new IngestsApi(
+          ingestTracker = ingestTracker,
+          unpackerMessageSender = unpackerMessageSender,
+          httpMetrics = httpMetrics,
+          httpServerConfig = httpServerConfig,
+          contextURL = contextURL
+        )
 
-          ingestsApi.run()
+        ingestsApi.run()
 
-          testWith(ingestsApi)
-        }
+        testWith(ingestsApi)
       }
+    }
 
   def withBrokenApp[R](
-    testWith: TestWith[(MemoryIngestTracker, MemoryMessageSender, MetricsSender, String), R]): R = {
+    testWith: TestWith[(MemoryIngestTracker,
+                        MemoryMessageSender,
+                        MetricsSender,
+                        String),
+                       R]): R = {
     val brokenTracker = new MemoryIngestTracker() {
-      override def get(id: IngestID): Try[Option[Ingest]] = Failure(new Throwable("BOOM! get()"))
+      override def get(id: IngestID): Try[Option[Ingest]] =
+        Failure(new Throwable("BOOM! get()"))
 
-      override def initialise(ingest: Ingest): Try[Ingest] = Failure(new Throwable("BOOM! initialise()"))
+      override def initialise(ingest: Ingest): Try[Ingest] =
+        Failure(new Throwable("BOOM! initialise()"))
     }
 
     val messageSender = createMessageSender
 
     withMockMetricsSender { metricsSender =>
       withApp(brokenTracker, messageSender, metricsSender) { _ =>
-        testWith((brokenTracker, messageSender, metricsSender, httpServerConfig.externalBaseURL))
+        testWith(
+          (
+            brokenTracker,
+            messageSender,
+            metricsSender,
+            httpServerConfig.externalBaseURL))
       }
     }
   }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(MemoryIngestTracker, MemoryMessageSender, MetricsSender, String), R]): R = {
+    testWith: TestWith[(MemoryIngestTracker,
+                        MemoryMessageSender,
+                        MetricsSender,
+                        String),
+                       R]): R = {
     val tracker = createIngestTracker
     val messageSender = createMessageSender
 
     withMockMetricsSender { metricsSender =>
       withApp(tracker, messageSender, metricsSender) { _ =>
-        testWith((tracker, messageSender, metricsSender, httpServerConfig.externalBaseURL))
+        testWith(
+          (
+            tracker,
+            messageSender,
+            metricsSender,
+            httpServerConfig.externalBaseURL))
       }
     }
   }

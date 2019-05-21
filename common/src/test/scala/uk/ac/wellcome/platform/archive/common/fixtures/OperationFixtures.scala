@@ -15,7 +15,9 @@ trait OperationFixtures extends RandomThings {
     subject = randomAlphanumeric()
   )
 
-  def createIngestUpdater(stepName: String = createStepName, messageSender: MessageSender[Destination] = createMessageSender): IngestUpdater[Destination] =
+  def createIngestUpdater(stepName: String = createStepName,
+                          messageSender: MessageSender[Destination] =
+                            createMessageSender): IngestUpdater[Destination] =
     new IngestUpdater[String](
       stepName = stepName,
       messageSender = messageSender
@@ -23,7 +25,10 @@ trait OperationFixtures extends RandomThings {
 
   def createOperationName: String = randomAlphanumeric()
 
-  def createOutgoingPublisher(operationName: String = createOperationName, messageSender: MessageSender[Destination] = createMessageSender): OutgoingPublisher[Destination] =
+  def createOutgoingPublisher(operationName: String = createOperationName,
+                              messageSender: MessageSender[Destination] =
+                                createMessageSender)
+    : OutgoingPublisher[Destination] =
     new OutgoingPublisher[Destination](
       operationName = operationName,
       messageSender = messageSender

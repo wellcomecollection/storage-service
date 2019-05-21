@@ -6,7 +6,10 @@ import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
-import uk.ac.wellcome.platform.storage.bagauditor.models.{AuditFailureSummary, AuditSuccessSummary}
+import uk.ac.wellcome.platform.storage.bagauditor.models.{
+  AuditFailureSummary,
+  AuditSuccessSummary
+}
 
 class BagAuditorTest
     extends FunSpec
@@ -42,7 +45,10 @@ class BagAuditorTest
 
   it("errors if it cannot find the bag root") {
     withLocalS3Bucket { bucket =>
-      withBag(storageBackend, namespace = bucket.name, bagRootDirectory = Some("1/2/3")) {
+      withBag(
+        storageBackend,
+        namespace = bucket.name,
+        bagRootDirectory = Some("1/2/3")) {
         case (_, storageSpace) =>
           withBagAuditor { bagAuditor =>
             val maybeAudit = bagAuditor.getAuditSummary(

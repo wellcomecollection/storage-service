@@ -6,7 +6,11 @@ import java.util.UUID
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
@@ -37,7 +41,9 @@ class BagReplicatorWorkerTest
     withLocalS3Bucket { ingestsBucket =>
       withLocalS3Bucket { archiveBucket =>
         withBagReplicatorWorker(
-          ingests = ingests, outgoing = outgoing, bucket = archiveBucket) { service =>
+          ingests = ingests,
+          outgoing = outgoing,
+          bucket = archiveBucket) { service =>
           withBag(storageBackend, namespace = ingestsBucket.name) {
             case (srcBagRootLocation, storageSpace) =>
               val payload = createBagInformationPayloadWith(
@@ -100,7 +106,10 @@ class BagReplicatorWorkerTest
           val config = createReplicatorDestinationConfigWith(archiveBucket)
           withBagReplicatorWorker(config) { worker =>
             val bagInfo = createBagInfo
-            withBag(storageBackend, namespace = ingestsBucket.name, bagInfo = bagInfo) {
+            withBag(
+              storageBackend,
+              namespace = ingestsBucket.name,
+              bagInfo = bagInfo) {
               case (bagRootLocation, _) =>
                 val payload = createBagInformationPayloadWith(
                   bagRootLocation = bagRootLocation
@@ -265,7 +274,9 @@ class BagReplicatorWorkerTest
         case (bagRootLocation, _) =>
           withLocalSqsQueue { queue =>
             withBagReplicatorWorker(
-              queue, ingests, outgoing,
+              queue,
+              ingests,
+              outgoing,
               config = createReplicatorDestinationConfigWith(bucket),
               lockServiceDao = neverAllowLockDao) { _ =>
               val payload = createBagInformationPayloadWith(

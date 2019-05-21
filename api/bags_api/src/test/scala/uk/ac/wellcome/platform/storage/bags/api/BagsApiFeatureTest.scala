@@ -8,7 +8,11 @@ import io.circe.parser._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  BagInfoGenerators,
+  StorageManifestGenerators
+}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
@@ -54,10 +58,8 @@ class BagsApiFeatureTest
                  |  "locations": [
                  |    ${asList(storageManifest.locations, location)}
                  |  ],
-                 |  "createdDate": "${
-                DateTimeFormatter.ISO_INSTANT.format(
-                  storageManifest.createdDate)
-              }",
+                 |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                   storageManifest.createdDate)}",
                  |  "type": "Bag"
                  |}
                """.stripMargin

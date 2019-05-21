@@ -78,54 +78,52 @@ class IngestsApiFeatureTest
 
             ingestTracker.initialise(ingest)
 
-            whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") {
-              result =>
-                result.status shouldBe StatusCodes.OK
+            whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
+              result.status shouldBe StatusCodes.OK
 
-                withStringEntity(result.entity) { jsonString =>
-                  val json = parse(jsonString).right.get
-                  root.`@context`.string
-                    .getOption(json)
-                    .get shouldBe "http://api.wellcomecollection.org/storage/v1/context.json"
-                  root.id.string
-                    .getOption(json)
-                    .get shouldBe ingest.id.toString
+              withStringEntity(result.entity) { jsonString =>
+                val json = parse(jsonString).right.get
+                root.`@context`.string
+                  .getOption(json)
+                  .get shouldBe "http://api.wellcomecollection.org/storage/v1/context.json"
+                root.id.string
+                  .getOption(json)
+                  .get shouldBe ingest.id.toString
 
-                  assertJsonStringsAreEqual(
-                    root.sourceLocation.json.getOption(json).get.noSpaces,
-                    expectedSourceLocationJson)
+                assertJsonStringsAreEqual(
+                  root.sourceLocation.json.getOption(json).get.noSpaces,
+                  expectedSourceLocationJson)
 
-                  assertJsonStringsAreEqual(
-                    root.callback.json.getOption(json).get.noSpaces,
-                    expectedCallbackJson)
-                  assertJsonStringsAreEqual(
-                    root.ingestType.json.getOption(json).get.noSpaces,
-                    expectedIngestTypeJson)
-                  assertJsonStringsAreEqual(
-                    root.space.json.getOption(json).get.noSpaces,
-                    expectedSpaceJson)
-                  assertJsonStringsAreEqual(
-                    root.status.json.getOption(json).get.noSpaces,
-                    expectedStatusJson)
-                  assertJsonStringsAreEqual(
-                    root.events.json.getOption(json).get.noSpaces,
-                    "[]")
+                assertJsonStringsAreEqual(
+                  root.callback.json.getOption(json).get.noSpaces,
+                  expectedCallbackJson)
+                assertJsonStringsAreEqual(
+                  root.ingestType.json.getOption(json).get.noSpaces,
+                  expectedIngestTypeJson)
+                assertJsonStringsAreEqual(
+                  root.space.json.getOption(json).get.noSpaces,
+                  expectedSpaceJson)
+                assertJsonStringsAreEqual(
+                  root.status.json.getOption(json).get.noSpaces,
+                  expectedStatusJson)
+                assertJsonStringsAreEqual(
+                  root.events.json.getOption(json).get.noSpaces,
+                  "[]")
 
-                  root.`type`.string.getOption(json).get shouldBe "Ingest"
+                root.`type`.string.getOption(json).get shouldBe "Ingest"
 
-                  assertRecent(
-                    Instant.parse(
-                      root.createdDate.string.getOption(json).get),
-                    25)
-                  assertRecent(
-                    Instant.parse(
-                      root.lastModifiedDate.string.getOption(json).get),
-                    25)
-                }
+                assertRecent(
+                  Instant.parse(root.createdDate.string.getOption(json).get),
+                  25)
+                assertRecent(
+                  Instant.parse(
+                    root.lastModifiedDate.string.getOption(json).get),
+                  25)
+              }
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.Success)
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.Success)
             }
           }
       }
@@ -137,17 +135,16 @@ class IngestsApiFeatureTest
           withMaterializer { implicit materialiser =>
             val ingest = createIngestWith(callback = None)
             ingestTracker.initialise(ingest)
-            whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") {
-              result =>
-                result.status shouldBe StatusCodes.OK
-                withStringEntity(result.entity) { jsonString =>
-                  val infoJson = parse(jsonString).right.get
-                  infoJson.findAllByKey("callback") shouldBe empty
-                }
+            whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
+              result.status shouldBe StatusCodes.OK
+              withStringEntity(result.entity) { jsonString =>
+                val infoJson = parse(jsonString).right.get
+                infoJson.findAllByKey("callback") shouldBe empty
+              }
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.Success)
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.Success)
             }
           }
       }
@@ -288,10 +285,13 @@ class IngestsApiFeatureTest
                       events = Nil
                     )
 
-                    ingestTracker.ingests shouldBe Map(expectedIngest.id -> expectedIngest)
+                    ingestTracker.ingests shouldBe Map(
+                      expectedIngest.id -> expectedIngest)
 
                     val expectedPayload = IngestRequestPayload(expectedIngest)
-                    unpackerMessageSender.getMessages[IngestRequestPayload]() shouldBe Seq(expectedPayload)
+                    unpackerMessageSender
+                      .getMessages[IngestRequestPayload]() shouldBe Seq(
+                      expectedPayload)
                 }
               }
 
@@ -676,13 +676,15 @@ class IngestsApiFeatureTest
             ingestTracker.initialise(ingest)
             val bagId = createBagId
 
-            val storedIngest = ingestTracker.update(
-              IngestStatusUpdate(
-                id = ingest.id,
-                status = Ingest.Accepted,
-                affectedBag = Some(bagId)
+            val storedIngest = ingestTracker
+              .update(
+                IngestStatusUpdate(
+                  id = ingest.id,
+                  status = Ingest.Accepted,
+                  affectedBag = Some(bagId)
+                )
               )
-            ).get
+              .get
 
             val bagIngest = BagIngest(
               id = ingest.id,

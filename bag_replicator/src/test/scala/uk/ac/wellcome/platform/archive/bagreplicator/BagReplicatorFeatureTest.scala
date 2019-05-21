@@ -28,7 +28,11 @@ class BagReplicatorFeatureTest
         val outgoing = createMessageSender
 
         withLocalSqsQueue { queue =>
-          withBagReplicatorWorker(queue, ingests, outgoing, config = destination) { _ =>
+          withBagReplicatorWorker(
+            queue,
+            ingests,
+            outgoing,
+            config = destination) { _ =>
             withBag(storageBackend, namespace = ingestsBucket.name) {
               case (srcBagRootLocation, _) =>
                 val payload = createBagInformationPayloadWith(
@@ -54,7 +58,8 @@ class BagReplicatorFeatureTest
                     bagRootLocation = expectedDst
                   )
 
-                  outgoing.getMessages[BagInformationPayload]() shouldBe Seq(expectedPayload)
+                  outgoing.getMessages[BagInformationPayload]() shouldBe Seq(
+                    expectedPayload)
 
                   verifyBagCopied(
                     src = srcBagRootLocation,

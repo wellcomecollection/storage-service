@@ -38,7 +38,8 @@ class IngestStarterTest
     val sender = createMessageSender
 
     val tracker = new MemoryIngestTracker() {
-      override def initialise(ingest: Ingest): Try[Ingest] = Failure(new Throwable("BOOM!"))
+      override def initialise(ingest: Ingest): Try[Ingest] =
+        Failure(new Throwable("BOOM!"))
     }
 
     val starter = createIngestStarter(sender, tracker)
@@ -54,7 +55,8 @@ class IngestStarterTest
       destination = randomAlphanumeric(),
       subject = randomAlphanumeric()
     ) {
-      override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] = Failure(new Throwable("BOOM!"))
+      override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
+        Failure(new Throwable("BOOM!"))
     }
 
     val tracker = createIngestTracker

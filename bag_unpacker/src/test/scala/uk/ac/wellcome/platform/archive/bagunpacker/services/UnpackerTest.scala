@@ -5,21 +5,23 @@ import java.nio.file.Paths
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{ArchiveLocationException, UnpackerArchiveEntryUploadException}
+import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
+  ArchiveLocationException,
+  UnpackerArchiveEntryUploadException
+}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepSucceeded
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.util.Success
 
-class UnpackerTest
-    extends FunSpec
-    with Matchers
-    with CompressFixture
-    with S3 {
+class UnpackerTest extends FunSpec with Matchers with CompressFixture with S3 {
 
   val unpacker = Unpacker(s3Uploader = new S3Uploader())
 

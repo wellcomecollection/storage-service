@@ -6,7 +6,8 @@ import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 
 object OutgoingPublisherBuilder {
-  def build(config: Config, operationName: String): OutgoingPublisher[SNSConfig] =
+  def build(config: Config,
+            operationName: String): OutgoingPublisher[SNSConfig] =
     new OutgoingPublisher(
       operationName = operationName,
       messageSender = SNSBuilder.buildSNSMessageSender(

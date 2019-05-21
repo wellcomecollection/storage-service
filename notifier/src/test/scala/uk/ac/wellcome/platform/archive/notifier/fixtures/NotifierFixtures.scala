@@ -8,8 +8,15 @@ import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagIt, MonitoringClientFixture, OperationFixtures}
-import uk.ac.wellcome.platform.archive.notifier.services.{CallbackUrlService, NotifierWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagIt,
+  MonitoringClientFixture,
+  OperationFixtures
+}
+import uk.ac.wellcome.platform.archive.notifier.services.{
+  CallbackUrlService,
+  NotifierWorker
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

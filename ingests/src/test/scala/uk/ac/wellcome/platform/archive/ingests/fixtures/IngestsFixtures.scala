@@ -6,10 +6,16 @@ import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
+  OperationFixtures
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.{IngestTracker, MemoryIngestTracker}
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.{
+  IngestTracker,
+  MemoryIngestTracker
+}
 import uk.ac.wellcome.platform.archive.ingests.services.IngestsWorker
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 
@@ -24,7 +30,9 @@ trait IngestsFixtures
     with MonitoringClientFixture
     with OperationFixtures {
 
-  def withIngestWorker[R](queue: Queue, ingestTracker: IngestTracker, sender: MessageSender[String])(
+  def withIngestWorker[R](queue: Queue,
+                          ingestTracker: IngestTracker,
+                          sender: MessageSender[String])(
     testWith: TestWith[IngestsWorker[String], R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
@@ -54,7 +62,9 @@ trait IngestsFixtures
     testWith(createdIngest)
   }
 
-  def withConfiguredApp[R](testWith: TestWith[(Queue, MemoryMessageSender, MemoryIngestTracker), R]): R = {
+  def withConfiguredApp[R](
+    testWith: TestWith[(Queue, MemoryMessageSender, MemoryIngestTracker), R])
+    : R = {
     withLocalSqsQueue { queue =>
       val messageSender = createMessageSender
       val ingestTracker = new MemoryIngestTracker()

@@ -12,7 +12,8 @@ class MemoryIngestTracker extends IngestTracker {
 
   override def initialise(ingest: Ingest): Try[Ingest] =
     ingests.get(ingest.id) match {
-      case Some(_) => Failure(new Throwable(s"Ingest with ID ${ingest.id} already exists"))
+      case Some(_) =>
+        Failure(new Throwable(s"Ingest with ID ${ingest.id} already exists"))
       case None =>
         ingests = ingests ++ Map(ingest.id -> ingest)
         Success(ingest)
@@ -21,7 +22,8 @@ class MemoryIngestTracker extends IngestTracker {
   override def update(update: IngestUpdate): Try[Ingest] =
     ingests.get(update.id) match {
       case Some(existing: Ingest) =>
-        val updatedIngest = existing.copy(events = existing.events ++ update.events)
+        val updatedIngest =
+          existing.copy(events = existing.events ++ update.events)
 
         val newIngest = update match {
           case eventUpdate: IngestEventUpdate =>
@@ -42,18 +44,21 @@ class MemoryIngestTracker extends IngestTracker {
         ingests = ingests ++ Map(update.id -> newIngest)
         Success(newIngest)
       case None =>
-        Failure(new Throwable(s"Can't find an existing ingest with ID ${update.id}"))
+        Failure(
+          new Throwable(s"Can't find an existing ingest with ID ${update.id}"))
     }
 
   override def findByBagId(bagId: BagId): Try[Seq[BagIngest]] = Success(
     ingests.values
       .filter { _.bag.contains(bagId) }
-      .zipWithIndex.map { case (ingest, index) =>
-        BagIngest(
-          id = ingest.id,
-          bagIdIndex = index.toString,
-          createdDate = ingest.createdDate
-        )
+      .zipWithIndex
+      .map {
+        case (ingest, index) =>
+          BagIngest(
+            id = ingest.id,
+            bagIdIndex = index.toString,
+            createdDate = ingest.createdDate
+          )
       }
       .toSeq
   )

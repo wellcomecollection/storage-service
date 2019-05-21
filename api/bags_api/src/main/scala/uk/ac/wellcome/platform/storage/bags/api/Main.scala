@@ -27,7 +27,8 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildActorMaterializer()
 
     val vhs = new StorageManifestVHS(
-      underlying = VHSBuilder.buildVHS[String, StorageManifest, EmptyMetadata](config)
+      underlying =
+        VHSBuilder.buildVHS[String, StorageManifest, EmptyMetadata](config)
     )
 
     val httpMetrics = new HttpMetrics(

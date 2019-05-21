@@ -9,13 +9,23 @@ import akka.http.scaladsl.server._
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.platform.archive.common.IngestID
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.display.{DisplayIngestMinimal, RequestDisplayIngest, ResponseDisplayIngest}
+import uk.ac.wellcome.platform.archive.display.{
+  DisplayIngestMinimal,
+  RequestDisplayIngest,
+  ResponseDisplayIngest
+}
 
 import scala.util.{Failure, Success}
 
@@ -39,7 +49,10 @@ class Router[IngestStarterDestination](
           ingestStarter.initialise(requestDisplayIngest.toIngest) match {
             case Success(ingest) =>
               respondWithHeaders(List(createLocationHeader(ingest))) {
-                complete(StatusCodes.Created -> ResponseDisplayIngest(ingest, contextURL))
+                complete(
+                  StatusCodes.Created -> ResponseDisplayIngest(
+                    ingest,
+                    contextURL))
               }
             case Failure(err) =>
               error(s"Error initialising the ingest: $err")
@@ -52,17 +65,18 @@ class Router[IngestStarterDestination](
       } ~ path(JavaUUID) { id: UUID =>
         get {
           ingestTracker.get(IngestID(id)) match {
-            case Success(result) => result match {
-              case Some(ingest) =>
-                complete(ResponseDisplayIngest(ingest, contextURL))
-              case None =>
-                complete(
-                  StatusCodes.NotFound -> UserErrorResponse(
-                    context = contextURL,
-                    statusCode = StatusCodes.NotFound,
-                    description = s"Ingest $id not found"
-                  ))
-            }
+            case Success(result) =>
+              result match {
+                case Some(ingest) =>
+                  complete(ResponseDisplayIngest(ingest, contextURL))
+                case None =>
+                  complete(
+                    StatusCodes.NotFound -> UserErrorResponse(
+                      context = contextURL,
+                      statusCode = StatusCodes.NotFound,
+                      description = s"Ingest $id not found"
+                    ))
+              }
             case Failure(err) =>
               error(s"Error looking up ingest $id: $err")
               complete(

@@ -13,8 +13,15 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagReplicator,
+  BagReplicatorWorker
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  MonitoringClientFixture,
+  OperationFixtures
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.storage.fixtures.LockingServiceFixtures
@@ -69,8 +76,9 @@ trait BagReplicatorFixtures
       subject = randomAlphanumeric()
     )
 
-    withBagReplicatorWorker(defaultQueue, messageSender, messageSender, config) { worker =>
-      testWith(worker)
+    withBagReplicatorWorker(defaultQueue, messageSender, messageSender, config) {
+      worker =>
+        testWith(worker)
     }
   }
 
@@ -80,18 +88,17 @@ trait BagReplicatorFixtures
     testWith: TestWith[BagReplicatorWorker[String, String], R]
   ): R = {
     val config = createReplicatorDestinationConfigWith(bucket)
-    withBagReplicatorWorker(defaultQueue, ingests, outgoing, config) {
-      worker =>
-        testWith(worker)
+    withBagReplicatorWorker(defaultQueue, ingests, outgoing, config) { worker =>
+      testWith(worker)
     }
   }
 
-  def withBagReplicatorWorker[R](
-    queue: Queue,
-    ingests: MessageSender[String],
-    outgoing: MessageSender[String],
-    config: ReplicatorDestinationConfig,
-    lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {})(
+  def withBagReplicatorWorker[R](queue: Queue,
+                                 ingests: MessageSender[String],
+                                 outgoing: MessageSender[String],
+                                 config: ReplicatorDestinationConfig,
+                                 lockServiceDao: LockDao[String, UUID] =
+                                   new MemoryLockDao[String, UUID] {})(
     testWith: TestWith[BagReplicatorWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = new IngestUpdater[String](

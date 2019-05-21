@@ -7,7 +7,10 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.DeterministicFailure
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Completed, Processing}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+  Completed,
+  Processing
+}
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.MemoryIngestTracker
 import uk.ac.wellcome.platform.archive.ingests.fixtures.IngestsFixtures
 
@@ -44,7 +47,8 @@ class IngestsWorkerServiceTest
           payload = expectedIngest
         )
 
-        messageSender.getMessages[CallbackNotification]() shouldBe Seq(callbackNotification)
+        messageSender.getMessages[CallbackNotification]() shouldBe Seq(
+          callbackNotification)
 
         assertIngestCreated(ingestTracker)(expectedIngest)
 
@@ -135,7 +139,8 @@ class IngestsWorkerServiceTest
         destination = randomAlphanumeric(),
         subject = randomAlphanumeric()
       ) {
-        override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] = Failure(new Throwable("BOOM!"))
+        override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
+          Failure(new Throwable("BOOM!"))
       }
 
       withIngestWorker(queue, ingestTracker, brokenSender) { service =>

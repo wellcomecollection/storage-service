@@ -1,8 +1,14 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.storage.{ObjectLocation, StorageBackend}
 
 import scala.util.Try

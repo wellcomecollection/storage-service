@@ -6,7 +6,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 import scala.util.{Failure, Success}
 
-class MemoryIngestTrackerTest extends FunSpec with Matchers with IngestGenerators {
+class MemoryIngestTrackerTest
+    extends FunSpec
+    with Matchers
+    with IngestGenerators {
   describe("create") {
     it("creates an ingest") {
       val tracker = new MemoryIngestTracker()
@@ -53,13 +56,13 @@ class MemoryIngestTrackerTest extends FunSpec with Matchers with IngestGenerator
 
       tracker.ingests(ingest.id).bag shouldBe None
 
-          val bagId = createBagId
+      val bagId = createBagId
 
-          val ingestUpdate = IngestStatusUpdate(
-            id = ingest.id,
-            status = Ingest.Processing,
-            affectedBag = Some(bagId)
-          )
+      val ingestUpdate = IngestStatusUpdate(
+        id = ingest.id,
+        status = Ingest.Processing,
+        affectedBag = Some(bagId)
+      )
 
       val result = tracker.update(ingestUpdate)
       result shouldBe a[Success[_]]
@@ -153,12 +156,12 @@ class MemoryIngestTrackerTest extends FunSpec with Matchers with IngestGenerator
       val ingest = createIngest
       tracker.initialise(ingest)
 
-          val updates = List(
-            createIngestEventUpdateWith(ingest.id),
-            createIngestEventUpdateWith(ingest.id)
-          )
+      val updates = List(
+        createIngestEventUpdateWith(ingest.id),
+        createIngestEventUpdateWith(ingest.id)
+      )
 
-          updates.foreach { tracker.update(_) }
+      updates.foreach { tracker.update(_) }
 
       val storedIngest: Ingest = tracker.ingests(ingest.id)
       storedIngest.events shouldBe updates(0).events ++ updates(1).events
@@ -166,8 +169,7 @@ class MemoryIngestTrackerTest extends FunSpec with Matchers with IngestGenerator
   }
 
   describe("find ingest by BagId") {
-    it(
-      "finds ingests with a matching bag ID") {
+    it("finds ingests with a matching bag ID") {
       val tracker = new MemoryIngestTracker()
 
       val bagId1 = createBagId
@@ -180,17 +182,23 @@ class MemoryIngestTrackerTest extends FunSpec with Matchers with IngestGenerator
       val ingest2A = createIngestWith(maybeBag = Some(bagId2))
       val ingest2B = createIngestWith(maybeBag = Some(bagId2))
 
-      Seq(ingest0, ingest1A, ingest1B, ingest1C, ingest2A, ingest2B).map { ingest =>
-        tracker.initialise(ingest)
+      Seq(ingest0, ingest1A, ingest1B, ingest1C, ingest2A, ingest2B).map {
+        ingest =>
+          tracker.initialise(ingest)
       }
 
       val result1 = tracker.findByBagId(bagId1)
       result1 shouldBe a[Success[_]]
-      result1.get.map { _.id } should contain theSameElementsAs Seq(ingest1A, ingest1B, ingest1C).map { _.id }
+      result1.get.map { _.id } should contain theSameElementsAs Seq(
+        ingest1A,
+        ingest1B,
+        ingest1C).map { _.id }
 
       val result2 = tracker.findByBagId(bagId2)
       result2 shouldBe a[Success[_]]
-      result2.get.map { _.id } should contain theSameElementsAs Seq(ingest2A, ingest2B).map { _.id }
+      result2.get.map { _.id } should contain theSameElementsAs Seq(
+        ingest2A,
+        ingest2B).map { _.id }
     }
   }
 }

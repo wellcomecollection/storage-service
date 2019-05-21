@@ -3,9 +3,19 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, OptionValues, TryValues}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.bagverifier.models.{VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, FileEntry}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  VerificationFailureSummary,
+  VerificationIncompleteSummary,
+  VerificationSuccessSummary
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  FileEntry
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepSucceeded
+}
 import uk.ac.wellcome.storage.fixtures.S3
 
 class BagVerifierTest
@@ -29,7 +39,10 @@ class BagVerifierTest
 
   it("passes a bag with correct checksum values ") {
     withLocalS3Bucket { bucket =>
-      withBag(storageBackend, namespace = bucket.name, dataFileCount = dataFileCount) {
+      withBag(
+        storageBackend,
+        namespace = bucket.name,
+        dataFileCount = dataFileCount) {
         case (root, _) =>
           withVerifier { verifier =>
             val ingestStep = verifier.verify(root)
@@ -155,7 +168,10 @@ class BagVerifierTest
     def noDataManifest(files: StringTuple): Option[FileEntry] = None
 
     withLocalS3Bucket { bucket =>
-      withBag(storageBackend, namespace = bucket.name, createDataManifest = noDataManifest) {
+      withBag(
+        storageBackend,
+        namespace = bucket.name,
+        createDataManifest = noDataManifest) {
         case (root, _) =>
           withVerifier { verifier =>
             val ingestStep = verifier.verify(root)
@@ -179,7 +195,10 @@ class BagVerifierTest
     def noTagManifest(files: StringTuple): Option[FileEntry] = None
 
     withLocalS3Bucket { bucket =>
-      withBag(storageBackend, namespace = bucket.name, createTagManifest = noTagManifest) {
+      withBag(
+        storageBackend,
+        namespace = bucket.name,
+        createTagManifest = noTagManifest) {
         case (root, _) =>
           withVerifier { verifier =>
             val ingestStep = verifier.verify(root)

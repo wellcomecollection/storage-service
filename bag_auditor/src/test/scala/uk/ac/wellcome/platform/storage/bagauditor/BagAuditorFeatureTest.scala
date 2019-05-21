@@ -5,7 +5,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 
 class BagAuditorFeatureTest
@@ -41,7 +44,8 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.getMessages[BagInformationPayload]() shouldBe Seq(expectedPayload)
+                outgoing.getMessages[BagInformationPayload]() shouldBe Seq(
+                  expectedPayload)
 
                 assertReceivesIngestEvents(ingests)(
                   payload.ingestId,
@@ -63,7 +67,11 @@ class BagAuditorFeatureTest
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo, bagRootDirectory = Some("subdir")) {
+      withBag(
+        storageBackend,
+        namespace = bucket.name,
+        bagInfo = bagInfo,
+        bagRootDirectory = Some("subdir")) {
         case (unpackedBagLocation, storageSpace) =>
           val bagRootLocation = unpackedBagLocation.join("subdir")
 
@@ -89,7 +97,8 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.getMessages[BagInformationPayload]() shouldBe Seq(expectedPayload)
+                outgoing.getMessages[BagInformationPayload]() shouldBe Seq(
+                  expectedPayload)
 
                 assertReceivesIngestEvents(ingests)(
                   payload.ingestId,
@@ -110,7 +119,10 @@ class BagAuditorFeatureTest
 
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
-      withBag(storageBackend, namespace = bucket.name, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
+      withBag(
+        storageBackend,
+        namespace = bucket.name,
+        bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
         case (unpackedBagLocation, _) =>
           val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
@@ -126,17 +138,17 @@ class BagAuditorFeatureTest
 
                 outgoing.messages shouldBe empty
 
-                assertReceivesIngestUpdates(ingests)(
-                  payload.ingestId) { ingestUpdates =>
-                  ingestUpdates.size shouldBe 2
+                assertReceivesIngestUpdates(ingests)(payload.ingestId) {
+                  ingestUpdates =>
+                    ingestUpdates.size shouldBe 2
 
-                  val ingestStart = ingestUpdates.head
-                  ingestStart.events.head.description shouldBe "Auditing bag started"
+                    val ingestStart = ingestUpdates.head
+                    ingestStart.events.head.description shouldBe "Auditing bag started"
 
-                  val ingestFailed =
-                    ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-                  ingestFailed.status shouldBe Ingest.Failed
-                  ingestFailed.events.head.description shouldBe "Auditing bag failed"
+                    val ingestFailed =
+                      ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                    ingestFailed.status shouldBe Ingest.Failed
+                    ingestFailed.events.head.description shouldBe "Auditing bag failed"
                 }
               }
             }

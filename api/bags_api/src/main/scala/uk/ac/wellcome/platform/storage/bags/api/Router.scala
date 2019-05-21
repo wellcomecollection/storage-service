@@ -7,8 +7,14 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBag
@@ -17,7 +23,8 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class Router(vhs: StorageManifestVHS, contextURL: URL)(
-  implicit val ec: ExecutionContext) extends Logging {
+  implicit val ec: ExecutionContext)
+    extends Logging {
 
   def routes: Route = {
     import akka.http.scaladsl.server.Directives._
@@ -48,7 +55,8 @@ class Router(vhs: StorageManifestVHS, contextURL: URL)(
             case Failure(t) =>
               error(s"Error looking up storage manifest $bagId", t)
               complete(
-                StatusCodes.InternalServerError -> InternalServerErrorResponse(contextURL)
+                StatusCodes.InternalServerError -> InternalServerErrorResponse(
+                  contextURL)
               )
           }
         }

@@ -3,7 +3,12 @@ package uk.ac.wellcome.platform.archive.common.ingests
 import java.time.Instant
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.{ConditionalCheckFailedException, GetItemRequest, PutItemRequest, UpdateItemRequest}
+import com.amazonaws.services.dynamodbv2.model.{
+  ConditionalCheckFailedException,
+  GetItemRequest,
+  PutItemRequest,
+  UpdateItemRequest
+}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.FunSpec
@@ -136,8 +141,7 @@ class DynamoIngestTrackerTest
           assertRecent(storedIngest.lastModifiedDate)
           storedIngest.events.map(_.description) should contain theSameElementsAs ingestUpdate.events
             .map(_.description)
-          storedIngest.events.foreach(event =>
-            assertRecent(event.createdDate))
+          storedIngest.events.foreach(event => assertRecent(event.createdDate))
 
           storedIngest.bag shouldBe ingestUpdate.affectedBag
         }
@@ -297,9 +301,14 @@ class DynamoIngestTrackerTest
           val time = Instant.parse("2018-12-01T12:00:00.00Z")
           val afterTime = Instant.parse("2018-12-01T12:10:00.00Z")
 
-          val ingestA = ingestTracker.initialise(createIngestWith(createdDate = beforeTime)).get
-          val ingestB = ingestTracker.initialise(createIngestWith(createdDate = time)).get
-          val ingestC = ingestTracker.initialise(createIngestWith(createdDate = afterTime)).get
+          val ingestA = ingestTracker
+            .initialise(createIngestWith(createdDate = beforeTime))
+            .get
+          val ingestB =
+            ingestTracker.initialise(createIngestWith(createdDate = time)).get
+          val ingestC = ingestTracker
+            .initialise(createIngestWith(createdDate = afterTime))
+            .get
 
           val bagId = createBagId
 
@@ -341,16 +350,17 @@ class DynamoIngestTrackerTest
         withIngestTracker(table) { ingestTracker =>
           val start = Instant.parse("2018-12-01T12:00:00.00Z")
           val eventualIngests: immutable.Seq[Ingest] = (0 to 33).map { i =>
-            ingestTracker.initialise(
-              createIngestWith(createdDate = start.plusSeconds(i))).get
+            ingestTracker
+              .initialise(createIngestWith(createdDate = start.plusSeconds(i)))
+              .get
           }
 
           val bagId = createBagId
 
           eventualIngests.map { ingest =>
-              val ingestUpdate =
-                createIngestUpdateWith(ingest.id, bagId)
-              ingestTracker.update(ingestUpdate)
+            val ingestUpdate =
+              createIngestUpdateWith(ingest.id, bagId)
+            ingestTracker.update(ingestUpdate)
           }
 
           eventually {

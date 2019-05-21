@@ -5,15 +5,29 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.bag_register.services.{
+  BagRegisterWorker,
+  Register
+}
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures, RandomThings, StorageManifestVHSFixture}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
+  OperationFixtures,
+  RandomThings,
+  StorageManifestVHSFixture
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestService, StorageManifestVHS}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  StorageManifestService,
+  StorageManifestVHS
+}
 import uk.ac.wellcome.storage.StorageBackend
 import uk.ac.wellcome.storage.memory.MemoryStorageBackend
 
@@ -25,13 +39,16 @@ trait BagRegisterFixtures
     with MonitoringClientFixture
     with IngestUpdateAssertions {
 
-  type Fixtures = (BagRegisterWorker[String, String], StorageManifestVHS, MemoryMessageSender, MemoryMessageSender, QueuePair)
+  type Fixtures = (BagRegisterWorker[String, String],
+                   StorageManifestVHS,
+                   MemoryMessageSender,
+                   MemoryMessageSender,
+                   QueuePair)
 
   def withBagRegisterWorker[R](
     storageBackend: StorageBackend = new MemoryStorageBackend(),
     vhs: StorageManifestVHS = createStorageManifestVHS()
-  )(
-    testWith: TestWith[Fixtures, R]): R =
+  )(testWith: TestWith[Fixtures, R]): R =
     withActorSystem { implicit actorSystem =>
       withMonitoringClient { implicit monitoringClient =>
         val ingests = createMessageSender
@@ -70,8 +87,8 @@ trait BagRegisterFixtures
       }
     }
 
-  def assertBagRegisterSucceeded(ingests: MemoryMessageSender)(ingestId: IngestID,
-                                 bagId: BagId): Assertion =
+  def assertBagRegisterSucceeded(
+    ingests: MemoryMessageSender)(ingestId: IngestID, bagId: BagId): Assertion =
     assertReceivesIngestUpdates(ingests)(ingestId) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
@@ -85,8 +102,8 @@ trait BagRegisterFixtures
       ingestCompleted.events.head.description shouldBe "Register succeeded (completed)"
     }
 
-  def assertBagRegisterFailed(ingests: MemoryMessageSender)(ingestId: IngestID,
-                              bagId: BagId): Assertion =
+  def assertBagRegisterFailed(
+    ingests: MemoryMessageSender)(ingestId: IngestID, bagId: BagId): Assertion =
     assertReceivesIngestUpdates(ingests)(ingestId) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 

@@ -24,8 +24,9 @@ object StreamableInstances {
     }
   }
 
-  implicit class ResolvableStreamable[T](t: T)(implicit storageBackend: StorageBackend,
-                                               resolver: Resolvable[T])
+  implicit class ResolvableStreamable[T](t: T)(
+    implicit storageBackend: StorageBackend,
+    resolver: Resolvable[T])
       extends Logging {
     def from(root: ObjectLocation): Try[InputStream] = {
       debug(s"Attempting to resolve Streamable $t")

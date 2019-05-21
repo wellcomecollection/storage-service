@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.storage.bagauditor.fixtures
 import java.util.UUID
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManager, IngestVersionManagerDao, MemoryIngestVersionManagerDao}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManager,
+  IngestVersionManagerDao,
+  MemoryIngestVersionManagerDao
+}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.{LockDao, LockingService}
 import uk.ac.wellcome.storage.memory.MemoryLockDao
