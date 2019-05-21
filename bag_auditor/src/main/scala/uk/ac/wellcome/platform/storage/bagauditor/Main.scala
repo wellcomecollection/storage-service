@@ -16,15 +16,26 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  DynamoIngestVersionManagerDao,
+  IngestVersionManager,
+  IngestVersionManagerDao
+}
 import uk.ac.wellcome.platform.storage.bagauditor.services.{
   BagAuditor,
   BagAuditorWorker
 }
-import uk.ac.wellcome.storage.typesafe.S3Builder
+import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
+import uk.ac.wellcome.storage.typesafe.{
+  DynamoBuilder,
+  LockingBuilder,
+  S3Builder
+}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.util.Try
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -45,9 +56,25 @@ object Main extends WellcomeTypesafeApp {
     val operationName = OperationNameBuilder
       .getName(config, default = "auditing bag")
 
+    val lockingService =
+      LockingBuilder.buildDynamoLockingService[Int, Try](config)
+
+    val ingestVersionManagerDao = new DynamoIngestVersionManagerDao(
+      dynamoClient = DynamoBuilder.buildDynamoClient(config),
+      dynamoConfig =
+        DynamoBuilder.buildDynamoConfig(config, namespace = "versions")
+    )
+
+    val versionPicker = new VersionPicker(
+      lockingService = lockingService,
+      ingestVersionManager = new IngestVersionManager {
+        override val dao: IngestVersionManagerDao = ingestVersionManagerDao
+      }
+    )
+
     new BagAuditorWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
-      bagAuditor = new BagAuditor(),
+      bagAuditor = new BagAuditor(versionPicker = versionPicker),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
     )

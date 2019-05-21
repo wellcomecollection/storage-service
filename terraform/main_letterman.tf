@@ -13,8 +13,8 @@ module "stack_letterman" {
   domain_name      = "${local.domain_name}"
   cert_domain_name = "${local.cert_domain_name}"
 
-  desired_bagger_count  = 0 # 3
-  desired_ec2_instances = 0 # 1
+  desired_bagger_count  = 3 # 3
+  desired_ec2_instances = 1 # 1
 
   vpc_id   = "${local.vpc_id}"
   vpc_cidr = "${local.vpc_cidr}"
