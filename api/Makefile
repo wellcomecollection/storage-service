@@ -4,7 +4,7 @@ PROJECT_ID = storage
 
 STACK_ROOT 	= api
 
-SBT_APPS = 
+SBT_APPS =
 SBT_NO_DOCKER_APPS = bags_api ingests_api
 
 

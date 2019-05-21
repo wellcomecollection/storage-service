@@ -4,9 +4,8 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, StorageBackend}
 import uk.ac.wellcome.storage.SerialisationStrategy.stringStrategy
-import uk.ac.wellcome.storage.memory.MemoryStorageBackend
 
 trait BagLocationFixtures
     extends BagInfoGenerators
@@ -14,7 +13,8 @@ trait BagLocationFixtures
     with StorageSpaceGenerators {
 
   def withBag[R](
-    backend: MemoryStorageBackend,
+    backend: StorageBackend,
+    namespace: String = "BagLocationFixtures",
     bagInfo: BagInfo = createBagInfo,
     dataFileCount: Int = 1,
     storageSpace: StorageSpace = createStorageSpace,
@@ -37,7 +37,7 @@ trait BagLocationFixtures
     debug(s"fileEntries: $fileEntries")
 
     val storageSpaceRootLocation = ObjectLocation(
-      namespace = "BagLocationFixtures",
+      namespace = namespace,
       key = storageSpace.toString
     )
 
