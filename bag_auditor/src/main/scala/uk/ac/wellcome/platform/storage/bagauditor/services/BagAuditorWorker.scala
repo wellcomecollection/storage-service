@@ -10,10 +10,6 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 }
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.common.{
-  BagInformationPayload,
-  UnpackedBagPayload
-}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -21,22 +17,26 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   IngestStepWorker
 }
+import uk.ac.wellcome.platform.archive.common.{
+  BagInformationPayload,
+  UnpackedBagPayload
+}
 import uk.ac.wellcome.platform.storage.bagauditor.models.{
   AuditSuccessSummary,
   AuditSummary
 }
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.{Success, Try}
 
-class BagAuditorWorker(
+class BagAuditorWorker[IngestsDestination, OutgoingDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   bagAuditor: BagAuditor,
-  ingestUpdater: IngestUpdater,
-  outgoingPublisher: OutgoingPublisher
+  ingestUpdater: IngestUpdater[IngestsDestination],
+  outgoingPublisher: OutgoingPublisher[OutgoingDestination]
 )(implicit
   actorSystem: ActorSystem,
-  ec: ExecutionContext,
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends Runnable
@@ -44,22 +44,20 @@ class BagAuditorWorker(
     with IngestStepWorker {
   private val worker =
     AlpakkaSQSWorker[UnpackedBagPayload, AuditSummary](alpakkaSQSWorkerConfig) {
-      processMessage
+      payload =>
+        Future.fromTry { processMessage(payload) }
     }
 
-  def processMessage(
-    payload: UnpackedBagPayload): Future[Result[AuditSummary]] =
+  def processMessage(payload: UnpackedBagPayload): Try[Result[AuditSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
-      auditStep <- Future.fromTry {
-        bagAuditor.getAuditSummary(
-          ingestId = payload.ingestId,
-          ingestDate = payload.ingestDate,
-          unpackLocation = payload.unpackedBagLocation,
-          storageSpace = payload.storageSpace
-        )
-      }
+      auditStep <- bagAuditor.getAuditSummary(
+        ingestId = payload.ingestId,
+        ingestDate = payload.ingestDate,
+        unpackLocation = payload.unpackedBagLocation,
+        storageSpace = payload.storageSpace
+      )
 
       _ <- sendIngestInformation(payload)(auditStep)
       _ <- ingestUpdater.send(payload.ingestId, auditStep)
@@ -67,7 +65,7 @@ class BagAuditorWorker(
     } yield toResult(auditStep)
 
   private def sendIngestInformation(payload: UnpackedBagPayload)(
-    step: IngestStepResult[AuditSummary]): Future[Unit] =
+    step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
         ingestUpdater.sendEvent(
@@ -78,11 +76,11 @@ class BagAuditorWorker(
             s"Assigned bag version ${summary.audit.version}"
           )
         )
-      case _ => Future.successful(())
+      case _ => Success(())
     }
 
   private def sendSuccessful(payload: UnpackedBagPayload)(
-    step: IngestStepResult[AuditSummary]): Future[Unit] =
+    step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
         outgoingPublisher.sendIfSuccessful(
@@ -95,7 +93,7 @@ class BagAuditorWorker(
             version = summary.audit.version
           )
         )
-      case _ => Future.successful(())
+      case _ => Success(())
     }
 
   override def run(): Future[Any] = worker.start

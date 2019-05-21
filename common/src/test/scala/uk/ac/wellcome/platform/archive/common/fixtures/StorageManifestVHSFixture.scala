@@ -1,36 +1,64 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
-import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
-import uk.ac.wellcome.storage.fixtures.LocalVersionedHybridStore
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
-import uk.ac.wellcome.storage.vhs.EmptyMetadata
+import uk.ac.wellcome.storage.memory.{MemoryObjectStore, MemoryVersionedDao}
+import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry, VersionedHybridStore}
+import uk.ac.wellcome.storage.{ObjectStore, VersionedDao}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.util.{Failure, Try}
 
-trait StorageManifestVHSFixture extends LocalVersionedHybridStore {
-  def withStorageManifestVHS[R](table: Table, bucket: Bucket)(
-    testWith: TestWith[StorageManifestVHS, R]): R =
-    withTypeVHS[StorageManifest, EmptyMetadata, R](bucket, table) { vhs =>
-      val storageManifestVHS = new StorageManifestVHS(underlying = vhs)
-      testWith(storageManifestVHS)
-    }
+trait StorageManifestVHSFixture {
+  def createStorageManifestDao
+    : MemoryVersionedDao[String, Entry[String, EmptyMetadata]] =
+    MemoryVersionedDao[String, Entry[String, EmptyMetadata]]()
+
+  def createStorageManifestStore: MemoryObjectStore[StorageManifest] =
+    new MemoryObjectStore[StorageManifest]()
+
+  def createStorageManifestVHS(
+    dao: VersionedDao[String, Entry[String, EmptyMetadata]] =
+      createStorageManifestDao,
+    store: ObjectStore[StorageManifest] = createStorageManifestStore
+  ): StorageManifestVHS = {
+    val underlying =
+      new VersionedHybridStore[String, StorageManifest, EmptyMetadata] {
+        override protected val versionedDao: VersionedDao[String, VHSEntry] =
+          dao
+        override protected val objectStore: ObjectStore[StorageManifest] = store
+      }
+
+    new StorageManifestVHS(underlying)
+  }
+
+  def createBrokenStorageManifestVHS: StorageManifestVHS = {
+    val underlying =
+      new VersionedHybridStore[String, StorageManifest, EmptyMetadata] {
+        override protected val versionedDao: VersionedDao[String, VHSEntry] =
+          createStorageManifestDao
+        override protected val objectStore: ObjectStore[StorageManifest] =
+          createStorageManifestStore
+
+        override def update(id: String)(
+          ifNotExisting: => (StorageManifest, EmptyMetadata))(
+          ifExisting: (
+            StorageManifest,
+            EmptyMetadata) => (StorageManifest, EmptyMetadata)): Try[VHSEntry] =
+          Failure(new Throwable("BOOM! BrokenStorageManifestVHS.update()"))
+
+        override def get(id: String): Try[Option[StorageManifest]] =
+          Failure(new Throwable("BOOM! BrokenStorageManifestVHS.get()"))
+      }
+
+    new StorageManifestVHS(underlying)
+  }
 
   def storeSingleManifest(vhs: StorageManifestVHS,
-                          storageManifest: StorageManifest): Future[Unit] =
+                          storageManifest: StorageManifest): Try[Unit] =
     vhs.updateRecord(
       ifNotExisting = storageManifest
     )(
       ifExisting = _ => throw new RuntimeException("VHS should be empty!")
     )
-
-  def getStorageManifest(table: Table, id: BagId): StorageManifest = {
-    val hybridRecord = getHybridRecord(table, id.toString)
-    getObjectFromS3[StorageManifest](hybridRecord.location)
-  }
 }

@@ -22,6 +22,8 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
+import uk.ac.wellcome.storage.StorageBackend
+import uk.ac.wellcome.storage.s3.S3StorageBackend
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -45,6 +47,9 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
     implicit val s3ObjectVerifier =
       new S3ObjectVerifier()
+    implicit val s3StorageBackend: StorageBackend =
+      new S3StorageBackend(s3Client)
+
     implicit val bagService =
       new BagService()
 

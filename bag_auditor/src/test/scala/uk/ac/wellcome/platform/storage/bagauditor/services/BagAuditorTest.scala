@@ -21,7 +21,7 @@ class BagAuditorTest
   it("gets the audit information for a valid bag") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(bucket, bagInfo = bagInfo) {
+      withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
           withBagAuditor { bagAuditor =>
             val maybeAudit = bagAuditor.getAuditSummary(
@@ -45,7 +45,10 @@ class BagAuditorTest
 
   it("errors if it cannot find the bag root") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket, bagRootDirectory = Some("1/2/3")) {
+      withBag(
+        storageBackend,
+        namespace = bucket.name,
+        bagRootDirectory = Some("1/2/3")) {
         case (_, storageSpace) =>
           withBagAuditor { bagAuditor =>
             val maybeAudit = bagAuditor.getAuditSummary(
@@ -66,7 +69,7 @@ class BagAuditorTest
 
   it("errors if it cannot find the bag identifier") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket) {
+      withBag(storageBackend, namespace = bucket.name) {
         case (bagRootLocation, storageSpace) =>
           withBagAuditor { bagAuditor =>
             val bagInfoLocation = bagRootLocation.join("bag-info.txt")

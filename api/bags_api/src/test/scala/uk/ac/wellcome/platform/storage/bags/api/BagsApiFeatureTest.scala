@@ -7,6 +7,7 @@ import io.circe.optics.JsonPath._
 import io.circe.parser._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   BagInfoGenerators,
@@ -26,7 +27,8 @@ class BagsApiFeatureTest
     with BagsApiFixture
     with IntegrationPatience
     with StorageManifestGenerators
-    with DisplayJsonHelpers {
+    with DisplayJsonHelpers
+    with JsonAssertions {
 
   describe("GET /bags/:space/:id") {
     it("returns a bag when available") {
@@ -62,22 +64,21 @@ class BagsApiFeatureTest
                  |}
                """.stripMargin
 
-            val future = storeSingleManifest(vhs, storageManifest)
+            storeSingleManifest(vhs, storageManifest)
             val url =
               s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
-            whenReady(future) { _ =>
-              whenGetRequestReady(url) { response =>
-                response.status shouldBe StatusCodes.OK
 
-                withStringEntity(response.entity) { actualJson =>
-                  assertJsonStringsAreEqual(actualJson, expectedJson)
-                }
+            whenGetRequestReady(url) { response =>
+              response.status shouldBe StatusCodes.OK
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.Success
-                )
+              withStringEntity(response.entity) { actualJson =>
+                assertJsonStringsAreEqual(actualJson, expectedJson)
               }
+
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.Success
+              )
             }
           }
       }
@@ -90,25 +91,24 @@ class BagsApiFeatureTest
             val storageManifest = createStorageManifestWith(
               bagInfo = createBagInfoWith(externalDescription = None)
             )
-            val future = storeSingleManifest(vhs, storageManifest)
-            whenReady(future) { _ =>
-              whenGetRequestReady(
-                s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
-                response =>
-                  response.status shouldBe StatusCodes.OK
+            storeSingleManifest(vhs, storageManifest)
 
-                  withStringEntity(response.entity) { jsonString =>
-                    val infoJson =
-                      root.info.json
-                        .getOption(parse(jsonString).right.get)
-                        .get
-                    infoJson.findAllByKey("externalDescription") shouldBe empty
-                  }
+            whenGetRequestReady(
+              s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
+              response =>
+                response.status shouldBe StatusCodes.OK
 
-                  assertMetricSent(
-                    metricsSender,
-                    result = HttpMetricResults.Success)
-              }
+                withStringEntity(response.entity) { jsonString =>
+                  val infoJson =
+                    root.info.json
+                      .getOption(parse(jsonString).right.get)
+                      .get
+                  infoJson.findAllByKey("externalDescription") shouldBe empty
+                }
+
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.Success)
             }
           }
       }

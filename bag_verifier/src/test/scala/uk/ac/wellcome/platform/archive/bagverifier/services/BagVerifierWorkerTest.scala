@@ -1,17 +1,21 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
+import io.circe.Encoder
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SNS.Topic
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
+import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
 }
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+
+import scala.util.{Failure, Success, Try}
 
 class BagVerifierWorkerTest
     extends FunSpec
@@ -24,69 +28,62 @@ class BagVerifierWorkerTest
     with PayloadGenerators {
 
   it(
-    "updates the ingest monitor and sends an outgoing notification if verification succeeds") {
-    withLocalSnsTopic { ingestTopic =>
-      withLocalSnsTopic { outgoingTopic =>
-        withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
-          withLocalS3Bucket { bucket =>
-            withBag(bucket) {
-              case (bagRootLocation, _) =>
-                val payload = createBagInformationPayloadWith(
-                  bagRootLocation = bagRootLocation
-                )
+    "updates the ingests app and sends an outgoing notification if verification succeeds") {
+    val ingests = createMessageSender
+    val outgoing = createMessageSender
 
-                val future = service.processMessage(payload)
+    withBagVerifierWorker(ingests, outgoing) { service =>
+      withLocalS3Bucket { bucket =>
+        withBag(storageBackend, namespace = bucket.name) {
+          case (bagRootLocation, _) =>
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation
+            )
 
-                whenReady(future) { _ =>
-                  eventually {
-                    assertTopicReceivesIngestEvents(
-                      payload.ingestId,
-                      ingestTopic,
-                      expectedDescriptions = Seq(
-                        "Verification started",
-                        "Verification succeeded"
-                      )
-                    )
+            service.processMessage(payload) shouldBe a[Success[_]]
 
-                    assertSnsReceivesOnly(payload, topic = outgoingTopic)
-                  }
-                }
-            }
-          }
+            assertReceivesIngestEvents(ingests)(
+              payload.ingestId,
+              expectedDescriptions = Seq(
+                "Verification started",
+                "Verification succeeded"
+              )
+            )
+
+            outgoing.getMessages[BagInformationPayload]() shouldBe Seq(payload)
         }
       }
     }
   }
 
   it("only updates the ingest monitor if verification fails") {
-    withLocalSnsTopic { ingestTopic =>
-      withLocalSnsTopic { outgoingTopic =>
-        withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
-          withLocalS3Bucket { bucket =>
-            withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
-              case (bagRootLocation, _) =>
-                val payload = createBagInformationPayloadWith(
-                  bagRootLocation = bagRootLocation
-                )
+    val ingests = createMessageSender
+    val outgoing = createMessageSender
 
-                val future = service.processMessage(payload)
+    withBagVerifierWorker(ingests, outgoing) { service =>
+      withLocalS3Bucket { bucket =>
+        withBag(
+          storageBackend,
+          namespace = bucket.name,
+          createDataManifest = dataManifestWithWrongChecksum) {
+          case (bagRootLocation, _) =>
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation
+            )
 
-                whenReady(future) { _ =>
-                  assertSnsReceivesNothing(outgoingTopic)
+            service.processMessage(payload) shouldBe a[Success[_]]
 
-                  assertTopicReceivesIngestStatus(
-                    ingestId = payload.ingestId,
-                    ingestTopic = ingestTopic,
-                    status = Ingest.Failed
-                  ) { events =>
-                    val description = events.map {
-                      _.description
-                    }.head
-                    description should startWith("Verification failed")
-                  }
-                }
+            outgoing.messages shouldBe empty
+
+            assertReceivesIngestStatus(ingests)(
+              ingestId = payload.ingestId,
+              status = Ingest.Failed
+            ) { events =>
+              val description = events.map {
+                _.description
+              }.head
+              description should startWith("Verification failed")
             }
-          }
         }
       }
     }
@@ -96,65 +93,64 @@ class BagVerifierWorkerTest
     def dontCreateTheDataManifest(
       dataFiles: List[(String, String)]): Option[FileEntry] = None
 
-    withLocalSnsTopic { ingestTopic =>
-      withLocalSnsTopic { outgoingTopic =>
-        withBagVerifierWorker(ingestTopic, outgoingTopic) { service =>
-          withLocalS3Bucket { bucket =>
-            withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
-              case (bagRootLocation, _) =>
-                val payload = createBagInformationPayloadWith(
-                  bagRootLocation = bagRootLocation
-                )
+    val ingests = createMessageSender
+    val outgoing = createMessageSender
 
-                val future = service.processMessage(payload)
+    withBagVerifierWorker(ingests, outgoing) { service =>
+      withLocalS3Bucket { bucket =>
+        withBag(
+          storageBackend,
+          namespace = bucket.name,
+          createDataManifest = dontCreateTheDataManifest) {
+          case (bagRootLocation, _) =>
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation
+            )
 
-                whenReady(future) { _ =>
-                  eventually {
+            service.processMessage(payload) shouldBe a[Success[_]]
 
-                    assertSnsReceivesNothing(outgoingTopic)
+            outgoing.messages shouldBe empty
 
-                    assertTopicReceivesIngestStatus(
-                      ingestId = payload.ingestId,
-                      ingestTopic = ingestTopic,
-                      status = Ingest.Failed
-                    ) { events =>
-                      val description = events.map {
-                        _.description
-                      }.head
-                      description should startWith("Verification failed")
-                    }
-                  }
-                }
+            assertReceivesIngestStatus(ingests)(
+              ingestId = payload.ingestId,
+              status = Ingest.Failed
+            ) { events =>
+              val description = events.map {
+                _.description
+              }.head
+              description should startWith("Verification failed")
             }
-          }
         }
       }
     }
   }
 
   it("sends a ingest update before it sends an outgoing message") {
-    withLocalSnsTopic { ingestTopic =>
-      withBagVerifierWorker(ingestTopic, Topic("no-such-outgoing")) { service =>
-        withLocalS3Bucket { bucket =>
-          withBag(bucket) {
-            case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+    val ingests = createMessageSender
 
-              val future = service.processMessage(payload)
+    val outgoing = new MemoryMessageSender(
+      destination = randomAlphanumeric(),
+      subject = randomAlphanumeric()
+    ) {
+      override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
+        Failure(new Throwable("BOOM!"))
+    }
 
-              whenReady(future.failed) { _ =>
-                assertTopicReceivesIngestEvent(
-                  ingestId = payload.ingestId,
-                  ingestTopic = ingestTopic
-                ) { events =>
-                  events.map {
-                    _.description
-                  } shouldBe List("Verification succeeded")
-                }
-              }
-          }
+    withBagVerifierWorker(ingests, outgoing) { service =>
+      withLocalS3Bucket { bucket =>
+        withBag(storageBackend, namespace = bucket.name) {
+          case (bagRootLocation, _) =>
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation
+            )
+
+            service.processMessage(payload) shouldBe a[Failure[_]]
+
+            assertReceivesIngestEvent(ingests)(payload.ingestId) { events =>
+              events.map {
+                _.description
+              } shouldBe List("Verification succeeded")
+            }
         }
       }
     }

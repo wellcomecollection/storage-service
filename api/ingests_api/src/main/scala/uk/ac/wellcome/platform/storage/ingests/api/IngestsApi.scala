@@ -5,23 +5,20 @@ import java.net.URL
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import uk.ac.wellcome.messaging.sns.SNSWriter
+import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
 }
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
-import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class IngestsApi(
-  dynamoClient: AmazonDynamoDB,
-  dynamoConfig: DynamoConfig,
-  unpackerSnsWriter: SNSWriter,
+class IngestsApi[Destination](
+  ingestTracker: IngestTracker,
+  unpackerMessageSender: MessageSender[Destination],
   httpMetrics: HttpMetrics,
   httpServerConfig: HTTPServerConfig,
   contextURL: URL
@@ -29,16 +26,11 @@ class IngestsApi(
   mat: ActorMaterializer,
   ec: ExecutionContext)
     extends Runnable {
-  val ingestTracker = new IngestTracker(
-    dynamoDbClient = dynamoClient,
-    dynamoConfig = dynamoConfig
-  )
-
   val router = new Router(
     ingestTracker = ingestTracker,
-    ingestStarter = new IngestStarter(
+    ingestStarter = new IngestStarter[Destination](
       ingestTracker = ingestTracker,
-      unpackerSnsWriter = unpackerSnsWriter
+      unpackerMessageSender = unpackerMessageSender
     ),
     httpServerConfig = httpServerConfig,
     contextURL = contextURL

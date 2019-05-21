@@ -21,11 +21,14 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
+import uk.ac.wellcome.platform.archive.common.dynamo._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestService,
   StorageManifestVHS
 }
+import uk.ac.wellcome.storage.StorageBackend
+import uk.ac.wellcome.storage.s3.S3StorageBackend
 import uk.ac.wellcome.storage.typesafe.{S3Builder, VHSBuilder}
 import uk.ac.wellcome.storage.vhs.EmptyMetadata
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -50,10 +53,14 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
+    implicit val s3StorageBackend: StorageBackend =
+      new S3StorageBackend(s3Client)
+
     val storageManifestService = new StorageManifestService()
 
     val storageManifestVHS = new StorageManifestVHS(
-      underlying = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
+      underlying =
+        VHSBuilder.buildVHS[String, StorageManifest, EmptyMetadata](config)
     )
 
     val operationName = OperationNameBuilder

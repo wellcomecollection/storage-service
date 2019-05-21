@@ -6,6 +6,7 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders._
+import uk.ac.wellcome.platform.archive.common.dynamo._
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
@@ -26,7 +27,8 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildActorMaterializer()
 
     val vhs = new StorageManifestVHS(
-      underlying = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
+      underlying =
+        VHSBuilder.buildVHS[String, StorageManifest, EmptyMetadata](config)
     )
 
     val httpMetrics = new HttpMetrics(

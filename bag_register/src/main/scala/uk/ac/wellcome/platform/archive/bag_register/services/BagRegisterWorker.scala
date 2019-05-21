@@ -17,16 +17,16 @@ import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublish
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.Try
 
-class BagRegisterWorker(
+class BagRegisterWorker[IngestsDestination, OutgoingDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
-  ingestUpdater: IngestUpdater,
-  outgoingPublisher: OutgoingPublisher,
+  ingestUpdater: IngestUpdater[IngestsDestination],
+  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   register: Register
 )(implicit
   actorSystem: ActorSystem,
-  ec: ExecutionContext,
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends Runnable
@@ -35,12 +35,12 @@ class BagRegisterWorker(
 
   private val worker =
     AlpakkaSQSWorker[BagInformationPayload, RegistrationSummary](
-      alpakkaSQSWorkerConfig) {
-      processMessage
+      alpakkaSQSWorkerConfig) { payload =>
+      Future.fromTry { processMessage(payload) }
     }
 
   def processMessage(
-    payload: BagInformationPayload): Future[Result[RegistrationSummary]] =
+    payload: BagInformationPayload): Try[Result[RegistrationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 

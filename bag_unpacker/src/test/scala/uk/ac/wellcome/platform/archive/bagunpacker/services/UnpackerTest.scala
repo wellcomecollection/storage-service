@@ -4,7 +4,6 @@ import java.io.{File, FileInputStream}
 import java.nio.file.Paths
 
 import org.apache.commons.io.IOUtils
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
   ArchiveLocationException,
@@ -12,7 +11,6 @@ import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
 }
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepSucceeded
@@ -21,19 +19,11 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Success
 
-class UnpackerTest
-    extends FunSpec
-    with Matchers
-    with ScalaFutures
-    with CompressFixture
-    with RandomThings
-    with S3 {
+class UnpackerTest extends FunSpec with Matchers with CompressFixture with S3 {
 
-  val unpacker = Unpacker(
-    s3Uploader = new S3Uploader()
-  )
+  val unpacker = Unpacker(s3Uploader = new S3Uploader())
 
   it("unpacks a tgz archive") {
     withLocalS3Bucket { srcBucket =>
@@ -44,22 +34,23 @@ class UnpackerTest
           val dstLocation =
             ObjectLocation(dstBucket.name, dstKey)
 
-          val summaryResult = unpacker
+          val result = unpacker
             .unpack(
               randomUUID.toString,
               testArchive,
               dstLocation
             )
 
-          whenReady(summaryResult) { unpacked =>
-            unpacked shouldBe a[IngestStepSucceeded[_]]
+          result shouldBe a[Success[_]]
+          val unpacked = result.get
 
-            val summary = unpacked.summary
-            summary.fileCount shouldBe filesInArchive.size
-            summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
+          unpacked shouldBe a[IngestStepSucceeded[_]]
 
-            assertBucketContentsMatchFiles(dstBucket, dstKey, filesInArchive)
-          }
+          val summary = unpacked.summary
+          summary.fileCount shouldBe filesInArchive.size
+          summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
+
+          assertBucketContentsMatchFiles(dstBucket, dstKey, filesInArchive)
         }
       }
     }
@@ -75,22 +66,22 @@ class UnpackerTest
             ))
         withArchive(srcBucket, archiveFile) { testArchive =>
           val dstKey = "unpacked"
-          val summaryResult = unpacker
+          val result = unpacker
             .unpack(
               randomUUID.toString,
               testArchive,
               ObjectLocation(dstBucket.name, dstKey)
             )
 
-          whenReady(summaryResult) { unpacked =>
-            unpacked shouldBe a[IngestStepSucceeded[_]]
+          result shouldBe a[Success[_]]
+          val unpacked = result.get
+          unpacked shouldBe a[IngestStepSucceeded[_]]
 
-            val summary = unpacked.summary
-            summary.fileCount shouldBe filesInArchive.size
-            summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
+          val summary = unpacked.summary
+          summary.fileCount shouldBe filesInArchive.size
+          summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
 
-            assertBucketContentsMatchFiles(dstBucket, dstKey, filesInArchive)
-          }
+          assertBucketContentsMatchFiles(dstBucket, dstKey, filesInArchive)
         }
       }
     }
@@ -98,23 +89,23 @@ class UnpackerTest
 
   it("returns an IngestFailed if it cannot open the input stream") {
     val srcLocation = createObjectLocation
-    val future =
+    val result =
       unpacker.unpack(
         randomUUID.toString,
         srcLocation = srcLocation,
         dstLocation = createObjectLocation
       )
 
-    whenReady(future) { result =>
-      result shouldBe a[IngestFailed[_]]
-      result.summary.fileCount shouldBe 0
-      result.summary.bytesUnpacked shouldBe 0
-      val actualResult = result.asInstanceOf[IngestFailed[UnpackSummary]]
-      actualResult.e shouldBe a[ArchiveLocationException]
-      actualResult.e.getMessage should
-        startWith(
-          s"Error getting input stream for s3://$srcLocation: The specified bucket does not exist.")
-    }
+    result shouldBe a[Success[_]]
+    val failure = result.get
+    failure shouldBe a[IngestFailed[_]]
+    failure.summary.fileCount shouldBe 0
+    failure.summary.bytesUnpacked shouldBe 0
+    val actualResult = failure.asInstanceOf[IngestFailed[UnpackSummary]]
+    actualResult.e shouldBe a[ArchiveLocationException]
+    actualResult.e.getMessage should
+      startWith(
+        s"Error getting input stream for s3://$srcLocation: The specified bucket does not exist.")
   }
 
   it("returns an IngestFailed if it cannot write to the destination") {
@@ -122,21 +113,21 @@ class UnpackerTest
       val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
       withArchive(srcBucket, archiveFile) { testArchive =>
         val dstLocation = createObjectLocation
-        val future =
+        val result =
           unpacker.unpack(
             randomUUID.toString,
             srcLocation = testArchive,
             dstLocation = dstLocation
           )
 
-        whenReady(future) { result =>
-          result shouldBe a[IngestFailed[_]]
-          result.summary.fileCount shouldBe 0
-          result.summary.bytesUnpacked shouldBe 0
-          val actualResult = result.asInstanceOf[IngestFailed[UnpackSummary]]
-          actualResult.e shouldBe a[UnpackerArchiveEntryUploadException]
-          actualResult.e.getMessage should startWith("upload failed")
-        }
+        result shouldBe a[Success[_]]
+        val failure = result.get
+        failure shouldBe a[IngestFailed[_]]
+        failure.summary.fileCount shouldBe 0
+        failure.summary.bytesUnpacked shouldBe 0
+        val actualResult = failure.asInstanceOf[IngestFailed[UnpackSummary]]
+        actualResult.e shouldBe a[UnpackerArchiveEntryUploadException]
+        actualResult.e.getMessage should startWith("upload failed")
       }
     }
   }

@@ -6,7 +6,7 @@ import java.util.UUID
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
-import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
+import uk.ac.wellcome.storage.memory.MemoryLockDao
 import uk.ac.wellcome.storage.{LockDao, LockFailure, UnlockFailure}
 
 import scala.util.{Failure, Success}
@@ -104,7 +104,7 @@ class VersionPickerTest
   }
 
   it("locks around the ingest ID and external identifiers") {
-    val lockDao = new InMemoryLockDao()
+    val lockDao = new MemoryLockDao[String, UUID] {}
 
     withVersionPicker(lockDao) { picker =>
       val ingestId = createIngestID
