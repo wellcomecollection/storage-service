@@ -6,6 +6,7 @@ import com.gu.scanamo.error.{ConditionNotMet, DynamoReadError, ScanamoError}
 import com.gu.scanamo.ops.ScanamoOps
 import com.gu.scanamo.query.UniqueKey
 import com.gu.scanamo.syntax._
+import com.gu.scanamo.update.UpdateExpression
 import com.gu.scanamo.{Scanamo, Table}
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.IngestID
@@ -59,7 +60,7 @@ class DynamoIngestTracker(
 
     val eventsUpdate = appendAll('events -> update.events.toList)
 
-    val mergedUpdate = update match {
+    val mergedUpdate: UpdateExpression = update match {
       case _: IngestEventUpdate =>
         eventsUpdate
       case statusUpdate: IngestStatusUpdate =>

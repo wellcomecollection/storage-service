@@ -7,25 +7,21 @@ import com.amazonaws.services.dynamodbv2.model.{ConditionalCheckFailedException,
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.FunSpec
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 
 import scala.collection.immutable
 import scala.util.{Failure, Success}
 
 class DynamoIngestTrackerTest
     extends FunSpec
-    with LocalDynamoDb
     with MockitoSugar
     with IngestTrackerFixture
-    with IngestGenerators
-    with ScalaFutures {
+    with IngestGenerators {
 
   describe("create") {
     it("creates an ingest") {
@@ -148,7 +144,7 @@ class DynamoIngestTrackerTest
       }
     }
 
-    it("adds a single event to a monitor with no events") {
+    it("adds a single event to an Ingest with no events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
           val ingest = ingestTracker.initialise(createIngest).get
@@ -170,7 +166,7 @@ class DynamoIngestTrackerTest
       }
     }
 
-    it("adds a status update to a monitor with no events") {
+    it("adds a status update to an Ingest with no events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
           val ingest = ingestTracker.initialise(createIngest).get
@@ -200,7 +196,7 @@ class DynamoIngestTrackerTest
       }
     }
 
-    it("adds a callback status update to a monitor with no events") {
+    it("adds a callback status update to an Ingest with no events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
           val ingest = ingestTracker.initialise(createIngest).get
@@ -249,7 +245,7 @@ class DynamoIngestTrackerTest
       }
     }
 
-    it("adds multiple events to a monitor") {
+    it("adds multiple events to an Ingest") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
           val ingest = ingestTracker.initialise(createIngest).get
