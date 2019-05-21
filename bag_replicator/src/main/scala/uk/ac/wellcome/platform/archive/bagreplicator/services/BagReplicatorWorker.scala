@@ -4,15 +4,12 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs.MessageAction
-import cats.instances.future._
+import cats.instances.try_._
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.amazonaws.services.sqs.model.{Message => SQSMessage}
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
 import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
@@ -24,20 +21,20 @@ import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
 import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.Try
 
-class BagReplicatorWorker(
+class BagReplicatorWorker[IngestsDestination, OutgoingDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   bagReplicator: BagReplicator,
-  ingestUpdater: IngestUpdater,
-  outgoingPublisher: OutgoingPublisher,
+  ingestUpdater: IngestUpdater[IngestsDestination],
+  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   lockingService: LockingService[Result[ReplicationSummary],
-                                 Future,
+                                 Try,
                                  LockDao[String, UUID]],
   replicatorDestinationConfig: ReplicatorDestinationConfig
 )(implicit
   actorSystem: ActorSystem,
-  ec: ExecutionContext,
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends Runnable
@@ -47,7 +44,7 @@ class BagReplicatorWorker(
     new AlpakkaSQSWorker[
       BagInformationPayload,
       ReplicationSummary,
-      MonitoringClient](alpakkaSQSWorkerConfig)(processMessage) {
+      MonitoringClient](alpakkaSQSWorkerConfig)(payload => Future.fromTry(processMessage(payload))) {
 
       // TODO: This is hard-coded, read it from config!
       override val retryAction = (message: SQSMessage) =>
@@ -63,7 +60,7 @@ class BagReplicatorWorker(
 
   def processMessage(
     payload: BagInformationPayload,
-  ): Future[Result[ReplicationSummary]] =
+  ): Try[Result[ReplicationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
@@ -78,7 +75,7 @@ class BagReplicatorWorker(
 
   def replicate(
     payload: BagInformationPayload,
-    destination: ObjectLocation): Future[Result[ReplicationSummary]] =
+    destination: ObjectLocation): Try[Result[ReplicationSummary]] =
     lockingService
       .withLock(destination.toString) {
         for {

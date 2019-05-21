@@ -4,25 +4,19 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
-class BagReplicator(implicit s3Client: AmazonS3, ec: ExecutionContext) {
+class BagReplicator(implicit s3Client: AmazonS3) {
   val s3PrefixCopier = S3PrefixCopier(s3Client)
 
   def replicate(bagRootLocation: ObjectLocation,
                 storageSpace: StorageSpace,
                 destination: ObjectLocation)
-    : Future[IngestStepResult[ReplicationSummary]] = {
+    : Try[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,
@@ -37,7 +31,7 @@ class BagReplicator(implicit s3Client: AmazonS3, ec: ExecutionContext) {
           dstLocationPrefix = destination
         )
 
-    copyResult.transform {
+    copyResult match {
       case Success(_) =>
         Success(
           IngestStepSucceeded(
