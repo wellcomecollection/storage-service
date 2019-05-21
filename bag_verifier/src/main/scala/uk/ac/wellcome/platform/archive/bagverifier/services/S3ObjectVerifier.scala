@@ -13,7 +13,7 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
   import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 
   def verify(location: VerifiableLocation): VerifiedLocation = {
-    debug(s"Attempting to verify: $location")
+    debug(s"S3ObjectVerifier: Attempting to verify: $location")
 
     val algorithm = location.checksum.algorithm
 

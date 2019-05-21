@@ -11,8 +11,11 @@ object Locatable {
   implicit class LocatableOps[T](t: T)(
     implicit locator: Locatable[T]
   ) {
-    def locate(maybeRoot: Option[ObjectLocation] = None): Either[LocateFailure[T], ObjectLocation] =
-      locator.locate(t)(maybeRoot)
+    def locateWith(root: ObjectLocation): Either[LocateFailure[T], ObjectLocation] =
+      locator.locate(t)(Some(root))
+
+    def locate: Either[LocateFailure[T], ObjectLocation] =
+      locator.locate(t)(None)
   }
 }
 

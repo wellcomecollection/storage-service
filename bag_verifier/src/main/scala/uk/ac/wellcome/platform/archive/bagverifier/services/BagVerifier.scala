@@ -4,6 +4,7 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.models._
+import uk.ac.wellcome.platform.archive.common.bagit.BagVerifiable
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
 import uk.ac.wellcome.platform.archive.common.storage.models._
@@ -20,13 +21,16 @@ class BagVerifier()(
 ) extends Logging {
 
   private def summarise(root: ObjectLocation, bag: Bag, startTime: Instant): IngestStepResult[VerificationSummary] = {
+    implicit val bagVerifiable = new BagVerifiable(root)
+
     VerificationSummary.create(root, bag.verify, startTime) match {
       case success@VerificationSuccessSummary(_, _, _, _) =>
         IngestStepSucceeded(success)
       case failure@VerificationFailureSummary(_, _, _, _) =>
-        IngestFailed(failure, new RuntimeException("Invalid bag!"))
+        IngestFailed(failure, InvalidBag(bag))
       case incomplete@VerificationIncompleteSummary(_, _, _, _) =>
-        IngestFailed(incomplete, new RuntimeException("Could not verify!"))
+        IngestFailed(incomplete, incomplete.e)
+
     }
   }
 
@@ -41,3 +45,5 @@ class BagVerifier()(
     verification
   }
 }
+
+case class InvalidBag(bag: Bag) extends Throwable(s"Invalid bag: ${bag.info.externalIdentifier}")

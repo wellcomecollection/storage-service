@@ -64,8 +64,7 @@ class BagVerifierFeatureTest
     }
   }
 
-  it(
-    "deletes the SQS message if the bag can be verified but has incorrect checksums") {
+  it("deletes the message if the bag has incorrect checksum values") {
     withLocalSnsTopic { ingestTopic =>
       withLocalSnsTopic { outgoingTopic =>
         withLocalSqsQueueAndDlq {
@@ -86,6 +85,9 @@ class BagVerifierFeatureTest
                       assertTopicReceivesIngestUpdates(
                         payload.ingestId,
                         ingestTopic) { ingestUpdates =>
+
+                        debug(s"Got $ingestUpdates")
+
                         ingestUpdates.size shouldBe 2
 
                         val ingestStart = ingestUpdates.head
