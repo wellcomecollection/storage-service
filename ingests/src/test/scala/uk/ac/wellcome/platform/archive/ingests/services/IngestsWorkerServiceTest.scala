@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
+import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
 import io.circe.Encoder
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
@@ -131,9 +132,7 @@ class IngestsWorkerServiceTest
           err shouldBe a[DeterministicFailure[_]]
           err
             .asInstanceOf[DeterministicFailure[_]]
-            .failure shouldBe a[RuntimeException]
-          println(err)
-          true shouldBe false
+            .failure shouldBe a[ConditionalCheckFailedException]
         }
       }
     }
