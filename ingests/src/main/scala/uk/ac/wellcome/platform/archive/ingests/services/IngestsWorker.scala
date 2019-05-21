@@ -8,7 +8,7 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSW
 import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Result, Successful}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestUpdate}
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.DynamoIngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
@@ -16,7 +16,7 @@ import scala.util.{Failure, Success, Try}
 
 class IngestsWorker[MessageDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
-  ingestTracker: DynamoIngestTracker,
+  ingestTracker: IngestTracker,
   callbackNotificationService: CallbackNotificationService[MessageDestination]
 )(implicit
   actorSystem: ActorSystem,

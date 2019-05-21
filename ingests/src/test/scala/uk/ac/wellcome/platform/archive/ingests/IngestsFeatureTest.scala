@@ -13,44 +13,40 @@ class IngestsFeatureTest
 
   it("updates an existing ingest status to Completed") {
     withConfiguredApp {
-      case (queue, messageSender, table) =>
-        withIngestTracker(table) { monitor =>
-          withIngest(monitor) { ingest =>
-            val someBagId = Some(createBagId)
-            val ingestStatusUpdate =
-              createIngestStatusUpdateWith(
-                id = ingest.id,
-                status = Completed,
-                maybeBag = someBagId)
+      case (queue, messageSender, ingestTracker) =>
+        val ingest = ingestTracker.initialise(createIngest).get
+        val someBagId = Some(createBagId)
+        val ingestStatusUpdate =
+          createIngestStatusUpdateWith(
+            id = ingest.id,
+            status = Completed,
+            maybeBag = someBagId)
 
-            sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+        sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-            eventually {
-              val expectedIngest = ingest.copy(
-                status = Completed,
-                events = ingestStatusUpdate.events,
-                bag = someBagId
-              )
+        eventually {
+          val expectedIngest = ingest.copy(
+            status = Completed,
+            events = ingestStatusUpdate.events,
+            bag = someBagId
+          )
 
-              val expectedMessage = CallbackNotification(
-                ingestId = ingest.id,
-                callbackUri = ingest.callback.get.uri,
-                payload = expectedIngest
-              )
+          val expectedMessage = CallbackNotification(
+            ingestId = ingest.id,
+            callbackUri = ingest.callback.get.uri,
+            payload = expectedIngest
+          )
 
-              messageSender.messages
-                .map { _.body }
-                .map { fromJson[CallbackNotification](_).get } shouldBe Seq(expectedMessage)
+          messageSender.messages
+            .map { _.body }
+            .map { fromJson[CallbackNotification](_).get } shouldBe Seq(expectedMessage)
 
-              assertIngestCreated(ingest, table)
+          assertIngestCreated(ingestTracker)(ingest)
 
-              assertIngestRecordedRecentEvents(
-                ingestStatusUpdate.id,
-                ingestStatusUpdate.events.map(_.description),
-                table
-              )
-            }
-          }
+          assertIngestRecordedRecentEvents(ingestTracker)(
+            ingestStatusUpdate.id,
+            ingestStatusUpdate.events.map(_.description),
+          )
         }
     }
   }
