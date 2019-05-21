@@ -2,52 +2,45 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 
 import java.time.Instant
 
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagInfoGenerators,
-  PayloadGenerators
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, PayloadGenerators}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+
+import scala.util.Success
 
 class BagRegisterWorkerTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
     with BagInfoGenerators
     with BagLocationFixtures
     with BagRegisterFixtures
     with PayloadGenerators {
 
   it("sends a successful IngestUpdate upon registration") {
-    withBagRegisterWorker {
-      case (service, table, bucket, ingestTopic, _, _) =>
-        val createdAfterDate = Instant.now()
-        val bagInfo = createBagInfo
+    withLocalS3Bucket { bucket =>
+      withBagRegisterWorker() {
+        case (service, vhs, ingests, _, _) =>
+          val createdAfterDate = Instant.now()
+          val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) {
-          case (bagRootLocation, storageSpace) =>
-            val payload = createBagInformationPayloadWith(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
+          withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo) {
+            case (bagRootLocation, storageSpace) =>
+              val payload = createBagInformationPayloadWith(
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
+              )
 
-            val bagId = BagId(
-              space = storageSpace,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+              val bagId = BagId(
+                space = storageSpace,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
 
-            val future = service.processMessage(payload)
+              service.processMessage(payload) shouldBe a[Success[_]]
 
-            whenReady(future) { _ =>
-              val storageManifest = getStorageManifest(table, id = bagId)
+              val storageManifest = vhs.getRecord(id = bagId).get.get
 
               storageManifest.space shouldBe bagId.space
               storageManifest.info shouldBe bagInfo
@@ -62,42 +55,40 @@ class BagRegisterWorkerTest
 
               storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-              assertBagRegisterSucceeded(
+              assertBagRegisterSucceeded(ingests)(
                 ingestId = payload.ingestId,
-                ingestTopic = ingestTopic,
                 bagId = bagId
               )
-            }
-        }
+          }
+      }
     }
   }
 
   it("sends a failed IngestUpdate if storing fails") {
-    withBagRegisterWorkerAndBucket(Bucket("does-not-exist")) {
-      case (service, _, bucket, ingestTopic, _, _) =>
-        val bagInfo = createBagInfo
+    withBagRegisterWorker(createBrokenStorageManifestVHS) {
+      case (service, _, ingests, _, _) =>
+        withLocalS3Bucket { bucket =>
+          val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) {
-          case (bagRootLocation, storageSpace) =>
-            val payload = createBagInformationPayloadWith(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
+          withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo) {
+            case (bagRootLocation, storageSpace) =>
+              val payload = createBagInformationPayloadWith(
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
+              )
 
-            val bagId = BagId(
-              space = storageSpace,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+              val bagId = BagId(
+                space = storageSpace,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
 
-            val future = service.processMessage(payload)
+              service.processMessage(payload) shouldBe a[Success[_]]
 
-            whenReady(future) { _ =>
-              assertBagRegisterFailed(
+              assertBagRegisterFailed(ingests)(
                 ingestId = payload.ingestId,
-                ingestTopic = ingestTopic,
                 bagId = bagId
               )
-            }
+          }
         }
     }
   }

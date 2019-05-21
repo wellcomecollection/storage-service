@@ -8,16 +8,8 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagInfoGenerators,
-  IngestOperationGenerators,
-  PayloadGenerators
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, IngestOperationGenerators, PayloadGenerators}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 
 class BagRegisterFeatureTest
     extends FunSpec
@@ -30,82 +22,84 @@ class BagRegisterFeatureTest
     with PayloadGenerators {
 
   it("sends an update if it registers a bag") {
-    withBagRegisterWorker {
-      case (_, table, bucket, ingestTopic, _, queuePair) =>
-        val createdAfterDate = Instant.now()
-        val bagInfo = createBagInfo
+    withBagRegisterWorker() {
+      case (_, vhs, ingests, _, queuePair) =>
+        withLocalS3Bucket { bucket =>
+          val createdAfterDate = Instant.now()
+          val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) {
-          case (bagRootLocation, storageSpace) =>
-            val bagId = BagId(
-              space = storageSpace,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+          withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo) {
+            case (bagRootLocation, storageSpace) =>
+              val bagId = BagId(
+                space = storageSpace,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
 
-            val payload = createBagInformationPayloadWith(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
+              val payload = createBagInformationPayloadWith(
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
+              )
 
-            sendNotificationToSQS(queuePair.queue, payload)
+              sendNotificationToSQS(queuePair.queue, payload)
 
-            eventually {
-              val storageManifest = getStorageManifest(table, id = bagId)
+              eventually {
+                val storageManifest = vhs.getRecord(bagId).get.get
 
-              storageManifest.space shouldBe bagId.space
-              storageManifest.info shouldBe bagInfo
-              storageManifest.manifest.files should have size 1
+                storageManifest.space shouldBe bagId.space
+                storageManifest.info shouldBe bagInfo
+                storageManifest.manifest.files should have size 1
 
-              storageManifest.locations shouldBe List(
-                StorageLocation(
-                  provider = InfrequentAccessStorageProvider,
-                  location = bagRootLocation
+                storageManifest.locations shouldBe List(
+                  StorageLocation(
+                    provider = InfrequentAccessStorageProvider,
+                    location = bagRootLocation
+                  )
                 )
-              )
 
-              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+                storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-              assertBagRegisterSucceeded(
-                ingestId = payload.ingestId,
-                ingestTopic = ingestTopic,
-                bagId = bagId
-              )
+                assertBagRegisterSucceeded(ingests)(
+                  ingestId = payload.ingestId,
+                  bagId = bagId
+                )
 
-              assertQueueEmpty(queuePair.queue)
-            }
+                assertQueueEmpty(queuePair.queue)
+              }
+          }
         }
     }
   }
 
   it("sends a failed update and discards the work on error") {
-    withBagRegisterWorkerAndBucket(Bucket("does_not_exist")) {
-      case (_, _, bucket, ingestTopic, _, queuePair) =>
-        val bagInfo = createBagInfo
+    withBagRegisterWorker(createBrokenStorageManifestVHS) {
+      case (_, _, ingests, _, queuePair) =>
+        withLocalS3Bucket { bucket =>
+          val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) {
-          case (bagRootLocation, storageSpace) =>
-            val payload = createBagInformationPayloadWith(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
-
-            sendNotificationToSQS(queuePair.queue, payload)
-
-            val bagId = BagId(
-              space = storageSpace,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
-
-            eventually {
-              assertBagRegisterFailed(
-                ingestId = payload.ingestId,
-                ingestTopic = ingestTopic,
-                bagId = bagId
+          withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo) {
+            case (bagRootLocation, storageSpace) =>
+              val payload = createBagInformationPayloadWith(
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
               )
-            }
 
-            assertQueueEmpty(queuePair.queue)
-            assertQueueEmpty(queuePair.dlq)
+              sendNotificationToSQS(queuePair.queue, payload)
+
+              val bagId = BagId(
+                space = storageSpace,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
+
+              eventually {
+                assertBagRegisterFailed(ingests)(
+                  ingestId = payload.ingestId,
+                  bagId = bagId
+                )
+              }
+
+              assertQueueEmpty(queuePair.queue)
+              assertQueueEmpty(queuePair.dlq)
+          }
         }
     }
   }

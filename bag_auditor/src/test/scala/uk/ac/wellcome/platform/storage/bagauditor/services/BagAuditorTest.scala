@@ -7,7 +7,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 import uk.ac.wellcome.platform.storage.bagauditor.models.{AuditFailureSummary, AuditSuccessSummary}
-import uk.ac.wellcome.storage.s3.S3StorageBackend
 
 class BagAuditorTest
     extends FunSpec
@@ -16,12 +15,10 @@ class BagAuditorTest
     with BagLocationFixtures
     with BagAuditorFixtures {
 
-  val s3Backend: S3StorageBackend = new S3StorageBackend(s3Client)
-
   it("gets the audit information for a valid bag") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(s3Backend, namespace = bucket.name, bagInfo = bagInfo) {
+      withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
           withBagAuditor { bagAuditor =>
             val maybeAudit = bagAuditor.getAuditSummary(
@@ -45,7 +42,7 @@ class BagAuditorTest
 
   it("errors if it cannot find the bag root") {
     withLocalS3Bucket { bucket =>
-      withBag(s3Backend, namespace = bucket.name, bagRootDirectory = Some("1/2/3")) {
+      withBag(storageBackend, namespace = bucket.name, bagRootDirectory = Some("1/2/3")) {
         case (_, storageSpace) =>
           withBagAuditor { bagAuditor =>
             val maybeAudit = bagAuditor.getAuditSummary(
@@ -66,7 +63,7 @@ class BagAuditorTest
 
   it("errors if it cannot find the bag identifier") {
     withLocalS3Bucket { bucket =>
-      withBag(s3Backend, namespace = bucket.name) {
+      withBag(storageBackend, namespace = bucket.name) {
         case (bagRootLocation, storageSpace) =>
           withBagAuditor { bagAuditor =>
             val bagInfoLocation = bagRootLocation.join("bag-info.txt")

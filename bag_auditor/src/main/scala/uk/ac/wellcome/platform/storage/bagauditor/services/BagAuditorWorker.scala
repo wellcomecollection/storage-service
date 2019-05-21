@@ -17,11 +17,11 @@ import uk.ac.wellcome.typesafe.Runnable
 import scala.concurrent.Future
 import scala.util.{Success, Try}
 
-class BagAuditorWorker[IngestUpdaterDestination, OutgoingPublisherDestination](
+class BagAuditorWorker[IngestsDestination, OutgoingDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   bagAuditor: BagAuditor,
-  ingestUpdater: IngestUpdater[IngestUpdaterDestination],
-  outgoingPublisher: OutgoingPublisher[OutgoingPublisherDestination]
+  ingestUpdater: IngestUpdater[IngestsDestination],
+  outgoingPublisher: OutgoingPublisher[OutgoingDestination]
 )(implicit
   actorSystem: ActorSystem,
   mc: MonitoringClient,

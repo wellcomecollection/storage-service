@@ -6,26 +6,15 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.bag_register.services.{
-  BagRegisterWorker,
-  Register
-}
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.platform.archive.common.dynamo._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  StorageManifestService,
-  StorageManifestVHS
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestService, StorageManifestVHS}
+import uk.ac.wellcome.storage.StorageBackend
+import uk.ac.wellcome.storage.s3.S3StorageBackend
 import uk.ac.wellcome.storage.typesafe.{S3Builder, VHSBuilder}
 import uk.ac.wellcome.storage.vhs.EmptyMetadata
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -50,10 +39,12 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
+    implicit val s3StorageBackend: StorageBackend = new S3StorageBackend(s3Client)
+
     val storageManifestService = new StorageManifestService()
 
     val storageManifestVHS = new StorageManifestVHS(
-      underlying = VHSBuilder.buildVHS[StorageManifest, EmptyMetadata](config)
+      underlying = VHSBuilder.buildVHS[String, StorageManifest, EmptyMetadata](config)
     )
 
     val operationName = OperationNameBuilder

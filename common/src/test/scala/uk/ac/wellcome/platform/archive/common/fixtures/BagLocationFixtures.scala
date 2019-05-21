@@ -6,6 +6,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, Sto
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.{ObjectLocation, StorageBackend}
 import uk.ac.wellcome.storage.SerialisationStrategy.stringStrategy
+import uk.ac.wellcome.storage.memory.MemoryStorageBackend
 
 trait BagLocationFixtures
     extends BagInfoGenerators
@@ -13,7 +14,7 @@ trait BagLocationFixtures
     with StorageSpaceGenerators {
 
   def withBag[R](
-    backend: StorageBackend,
+    backend: StorageBackend = new MemoryStorageBackend(),
     namespace: String = "BagLocationFixtures",
     bagInfo: BagInfo = createBagInfo,
     dataFileCount: Int = 1,

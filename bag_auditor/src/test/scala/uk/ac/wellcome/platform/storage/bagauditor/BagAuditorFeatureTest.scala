@@ -7,7 +7,6 @@ import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
-import uk.ac.wellcome.storage.s3.S3StorageBackend
 
 class BagAuditorFeatureTest
     extends FunSpec
@@ -15,12 +14,10 @@ class BagAuditorFeatureTest
     with IngestUpdateAssertions
     with PayloadGenerators {
 
-  val s3Backend: S3StorageBackend = new S3StorageBackend(s3Client)
-
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(s3Backend, namespace = bucket.name, bagInfo = bagInfo) {
+      withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
           val payload = createUnpackedBagPayloadWith(
             unpackedBagLocation = bagRootLocation,
@@ -68,7 +65,7 @@ class BagAuditorFeatureTest
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(s3Backend, namespace = bucket.name, bagInfo = bagInfo, bagRootDirectory = Some("subdir")) {
+      withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo, bagRootDirectory = Some("subdir")) {
         case (unpackedBagLocation, storageSpace) =>
           val bagRootLocation = unpackedBagLocation.join("subdir")
 
@@ -117,7 +114,7 @@ class BagAuditorFeatureTest
 
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
-      withBag(s3Backend, namespace = bucket.name, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
+      withBag(storageBackend, namespace = bucket.name, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
         case (unpackedBagLocation, _) =>
           val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 

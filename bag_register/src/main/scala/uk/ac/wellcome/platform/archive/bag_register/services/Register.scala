@@ -3,33 +3,21 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  IngestFailed,
-  IngestStepResult,
-  StorageSpace
-}
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  StorageManifestService,
-  StorageManifestVHS
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepResult, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestService, StorageManifestVHS}
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 class Register(
   storageManifestService: StorageManifestService,
   storageManifestVHS: StorageManifestVHS
-)(implicit ec: ExecutionContext) {
-
-  type FutureSummary =
-    Future[IngestStepResult[RegistrationSummary]]
+) {
 
   def update(
     bagRootLocation: ObjectLocation,
     storageSpace: StorageSpace
-  ): FutureSummary = {
+  ): Try[IngestStepResult[RegistrationSummary]] = {
     val registration = RegistrationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,
@@ -37,19 +25,16 @@ class Register(
     )
 
     for {
-      manifest <- Future.fromTry {
-        storageManifestService
-          .retrieve(
-            bagRootLocation = bagRootLocation,
-            storageSpace = storageSpace
-          )
-      }
+      manifest <- storageManifestService
+        .retrieve(
+          bagRootLocation = bagRootLocation,
+          storageSpace = storageSpace
+        )
 
       registrationWithBagId = registration.copy(bagId = Some(manifest.id))
 
       completedRegistration <- storageManifestVHS
-        .updateRecord(manifest)(_ => manifest)
-        .transform {
+        .updateRecord(manifest)(_ => manifest) match {
           case Success(_) =>
             Success(IngestCompleted(registrationWithBagId.complete))
           case Failure(e) =>
