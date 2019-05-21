@@ -4,7 +4,6 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.models._
-import uk.ac.wellcome.platform.archive.common.bagit.BagVerifiable
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
 import uk.ac.wellcome.platform.archive.common.storage.models._
@@ -20,29 +19,21 @@ class BagVerifier()(
   verifier: Verifier
 ) extends Logging {
 
-  private def summarise(root: ObjectLocation, bag: Bag, startTime: Instant): IngestStepResult[VerificationSummary] = {
-    implicit val bagVerifiable = new BagVerifiable(root)
-
-    VerificationSummary.create(root, bag.verify, startTime) match {
-      case success@VerificationSuccessSummary(_, _, _, _) =>
-        IngestStepSucceeded(success)
-      case failure@VerificationFailureSummary(_, _, _, _) =>
-        IngestFailed(failure, InvalidBag(bag))
-      case incomplete@VerificationIncompleteSummary(_, _, _, _) =>
-        IngestFailed(incomplete, incomplete.e)
-
-    }
-  }
-
   def verify(root: ObjectLocation) = Try {
+    implicit val bagVerifiable = new BagVerifiable(root)
     val startTime = Instant.now()
 
-    val verification = bagService.retrieve(root) match {
+    bagService.retrieve(root) match {
       case Left(e) => IngestFailed(VerificationSummary.incomplete(root, e, startTime), e)
-      case Right(bag) => summarise(root, bag, startTime)
+      case Right(bag) => VerificationSummary.create(root, bag.verify, startTime) match {
+        case success@VerificationSuccessSummary(_, _, _, _) =>
+          IngestStepSucceeded(success)
+        case failure@VerificationFailureSummary(_, _, _, _) =>
+          IngestFailed(failure, InvalidBag(bag))
+        case incomplete@VerificationIncompleteSummary(_, _, _, _) =>
+          IngestFailed(incomplete, incomplete.e)
+      }
     }
-
-    verification
   }
 }
 

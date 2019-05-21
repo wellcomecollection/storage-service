@@ -10,6 +10,7 @@ import scala.util.{Failure, Success}
 class S3ObjectVerifier(implicit s3Client: AmazonS3)
     extends Verifier
     with Logging {
+
   import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 
   def verify(location: VerifiableLocation): VerifiedLocation = {
