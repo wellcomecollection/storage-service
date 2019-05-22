@@ -3,17 +3,10 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.StreamUnavailable
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
@@ -88,7 +81,11 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
     bagRootLocation: ObjectLocation): Try[ExternalIdentifier] =
     for {
       bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
-      inputStream <- bagInfoLocation.toInputStream
+      inputStream <- bagInfoLocation.toInputStream match {
+        case Left(e) => Failure(e)
+        case Right(None) => Failure(StreamUnavailable("No stream available!"))
+        case Right(Some(inputStream)) => Success(inputStream)
+      }
       bagInfo <- BagInfo.create(inputStream)
     } yield bagInfo.externalIdentifier
 }
