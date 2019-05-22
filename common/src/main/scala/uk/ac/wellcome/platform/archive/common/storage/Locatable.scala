@@ -8,7 +8,6 @@ trait Locatable[T] {
 }
 
 object Locatable {
-
   implicit class LocatableOps[T](t: T)(
     implicit locator: Locatable[T]
   ) {
@@ -26,6 +25,7 @@ sealed trait LocateFailure[T] {
   val msg: String
 }
 
+// TODO: Check these error
 case class LocationError[T](t: T, msg: String)
     extends Throwable(msg)
     with LocateFailure[T]

@@ -17,7 +17,8 @@ case class Checksum(
   algorithm: HashingAlgorithm,
   value: ChecksumValue
 )
-object Checksum extends Logging {
+
+case object Checksum extends Logging {
   def create(
     inputStream: InputStream,
     algorithm: HashingAlgorithm

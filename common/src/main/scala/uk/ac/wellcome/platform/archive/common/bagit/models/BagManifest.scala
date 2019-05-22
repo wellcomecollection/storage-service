@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 
 case class BagManifest(
   checksumAlgorithm: HashingAlgorithm,
-  files: List[BagFile]
+  files: Seq[BagFile]
 )
 
 object BagManifest {

@@ -2,13 +2,13 @@ package uk.ac.wellcome.platform.archive.common.verify
 
 trait Verifiable[T] {
   def create(
-    t: T): Either[VerifiableGenerationFailure, List[VerifiableLocation]]
+    t: T): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]]
 }
 
 object Verifiable {
   implicit class Convert[T](t: T)(implicit verifiable: Verifiable[T]) {
     def toVerifiable
-      : Either[VerifiableGenerationFailure, List[VerifiableLocation]] = {
+      : Either[VerifiableGenerationFailure, Seq[VerifiableLocation]] = {
       verifiable.create(t)
     }
   }

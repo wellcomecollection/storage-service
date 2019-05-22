@@ -7,7 +7,7 @@ import scala.util.Try
 import scala.util.matching.Regex
 
 case class BagFetch(
-  files: List[BagFetchEntry]
+  files: Seq[BagFetchEntry]
 )
 
 object BagFetch {
