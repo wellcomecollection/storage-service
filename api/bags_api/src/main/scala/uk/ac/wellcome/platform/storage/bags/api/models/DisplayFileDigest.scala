@@ -12,7 +12,7 @@ case class DisplayFileDigest(
 case object DisplayFileDigest {
   def apply(bagFile: BagFile): DisplayFileDigest =
     DisplayFileDigest(
-      checksum = bagFile.checksum.value,
+      checksum = bagFile.checksum.value.value,
       path = bagFile.path.toString
     )
 }

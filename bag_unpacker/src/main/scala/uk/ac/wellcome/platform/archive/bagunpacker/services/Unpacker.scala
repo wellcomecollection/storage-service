@@ -88,16 +88,23 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
 
   private def archiveDownloadStream(
     srcLocation: ObjectLocation): Try[InputStream] =
-    srcLocation.toInputStream
-      .recoverWith {
-        case ae: AmazonS3Exception =>
-          Failure(
-            new ArchiveLocationException(
-              objectLocation = srcLocation,
-              message =
-                s"Error getting input stream for s3://$srcLocation: ${ae.getMessage}",
-              ae))
-      }
+    srcLocation.toInputStream match {
+      case Right(Some(is)) => Success(is)
+      case Right(None) =>
+        Failure(
+          new ArchiveLocationException(
+            objectLocation = srcLocation,
+            message =
+              s"Error getting input stream for s3://$srcLocation: No such object"
+          )
+        )
+      case Left(err) =>
+        Failure(
+          new ArchiveLocationException(
+            objectLocation = srcLocation,
+            message =
+              s"Error getting input stream for s3://$srcLocation: ${err.getMessage}"))
+    }
 
   private def putArchiveEntry(dstLocation: ObjectLocation,
                               summary: UnpackSummary,
