@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixtures
 
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.storage.services.{S3ObjectVerifier, S3Resolvable}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  S3ObjectVerifier,
+  S3Resolvable
+}
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3

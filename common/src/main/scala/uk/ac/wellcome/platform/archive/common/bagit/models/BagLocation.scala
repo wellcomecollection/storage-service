@@ -9,19 +9,17 @@ sealed trait BagLocation {
 }
 
 case class BagFile(
-                    checksum: Checksum,
-                    path: BagPath
-                  ) extends BagLocation
+  checksum: Checksum,
+  path: BagPath
+) extends BagLocation
 
 case class BagFetchEntry(
-                          uri: URI,
-                          length: Option[Int],
-                          path: BagPath
-                        ) extends BagLocation
-
+  uri: URI,
+  length: Option[Int],
+  path: BagPath
+) extends BagLocation
 
 object BagFetchEntry {
-  def create(url: URI,
-            length: Option[Int],
-            path: String) = BagFetchEntry(url, length, BagPath(path))
+  def create(url: URI, length: Option[Int], path: String) =
+    BagFetchEntry(url, length, BagPath(path))
 }

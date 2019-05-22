@@ -190,5 +190,5 @@ trait BagIt extends RandomThings {
       }
 }
 
-case class FileRepr[T](t:T, entry: FileEntry)
+case class FileRepr[T](t: T, entry: FileEntry)
 case class FileEntry(name: String, contents: String)

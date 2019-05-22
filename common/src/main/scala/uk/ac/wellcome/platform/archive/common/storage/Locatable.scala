@@ -3,7 +3,8 @@ package uk.ac.wellcome.platform.archive.common.storage
 import uk.ac.wellcome.storage.ObjectLocation
 
 trait Locatable[T] {
-  def locate(t: T)(maybeRoot: Option[ObjectLocation]): Either[LocateFailure[T], ObjectLocation]
+  def locate(t: T)(
+    maybeRoot: Option[ObjectLocation]): Either[LocateFailure[T], ObjectLocation]
 }
 
 object Locatable {
@@ -11,7 +12,8 @@ object Locatable {
   implicit class LocatableOps[T](t: T)(
     implicit locator: Locatable[T]
   ) {
-    def locateWith(root: ObjectLocation): Either[LocateFailure[T], ObjectLocation] =
+    def locateWith(
+      root: ObjectLocation): Either[LocateFailure[T], ObjectLocation] =
       locator.locate(t)(Some(root))
 
     def locate: Either[LocateFailure[T], ObjectLocation] =
@@ -24,6 +26,12 @@ sealed trait LocateFailure[T] {
   val msg: String
 }
 
-case class LocationError[T](t: T, msg: String) extends Throwable(msg) with LocateFailure[T]
-case class LocationNotFound[T](t: T, msg: String) extends Throwable(msg) with LocateFailure[T]
-case class LocationParsingError[T](t: T, msg: String) extends Throwable(msg) with LocateFailure[T]
+case class LocationError[T](t: T, msg: String)
+    extends Throwable(msg)
+    with LocateFailure[T]
+case class LocationNotFound[T](t: T, msg: String)
+    extends Throwable(msg)
+    with LocateFailure[T]
+case class LocationParsingError[T](t: T, msg: String)
+    extends Throwable(msg)
+    with LocateFailure[T]

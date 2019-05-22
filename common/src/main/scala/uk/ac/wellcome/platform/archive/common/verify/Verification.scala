@@ -18,23 +18,25 @@ object Verification extends Logging {
         debug(s"Verification: Attempting to verify $container")
         verifiable.create(container) match {
           case Left(e) => VerificationIncomplete(e.msg)
-          case Right(verifiableLocations) => verifiableLocations.map(verifier.verify)
-            .foldLeft[VerificationResult](VerificationSuccess(Nil)) {
+          case Right(verifiableLocations) =>
+            verifiableLocations
+              .map(verifier.verify)
+              .foldLeft[VerificationResult](VerificationSuccess(Nil)) {
 
-            case (VerificationSuccess(sl), s@VerifiedSuccess(_)) =>
-              VerificationSuccess(s :: sl)
+                case (VerificationSuccess(sl), s @ VerifiedSuccess(_)) =>
+                  VerificationSuccess(s :: sl)
 
-            case (VerificationSuccess(sl), f@VerifiedFailure(_, _)) =>
-              VerificationFailure(List(f), sl)
+                case (VerificationSuccess(sl), f @ VerifiedFailure(_, _)) =>
+                  VerificationFailure(List(f), sl)
 
-            case (VerificationFailure(fl, sl), s@VerifiedSuccess(_)) =>
-              VerificationFailure(fl, s :: sl)
+                case (VerificationFailure(fl, sl), s @ VerifiedSuccess(_)) =>
+                  VerificationFailure(fl, s :: sl)
 
-            case (VerificationFailure(fl, sl), f@VerifiedFailure(_, _)) =>
-              VerificationFailure(f :: fl, sl)
+                case (VerificationFailure(fl, sl), f @ VerifiedFailure(_, _)) =>
+                  VerificationFailure(f :: fl, sl)
 
-            case (i@VerificationIncomplete(_), _) => i
-          }
+                case (i @ VerificationIncomplete(_), _) => i
+              }
         }
       }
     }

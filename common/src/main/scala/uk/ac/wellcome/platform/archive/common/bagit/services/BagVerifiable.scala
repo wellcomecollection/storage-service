@@ -2,44 +2,52 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.Bag
-import uk.ac.wellcome.platform.archive.common.bagit.{MatchedLocation, models}
+import uk.ac.wellcome.platform.archive.common.bagit.{models, MatchedLocation}
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, Resolvable}
-import uk.ac.wellcome.platform.archive.common.verify.{Verifiable, VerifiableGenerationFailed, VerifiableGenerationFailure, VerifiableLocation}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Verifiable,
+  VerifiableGenerationFailed,
+  VerifiableGenerationFailure,
+  VerifiableLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success}
 
 class BagVerifiable(root: ObjectLocation)(
   implicit resolvable: Resolvable[ObjectLocation]
-) extends Verifiable[Bag] with Logging {
+) extends Verifiable[Bag]
+    with Logging {
 
   import Locatable._
   import Resolvable._
   import models._
 
   protected def matchBagLocation(
-                                  bagFiles: List[BagFile],
-                                  fetchEntries: List[BagFetchEntry]
-                                ): Either[List[Throwable], List[MatchedLocation]] = {
+    bagFiles: List[BagFile],
+    fetchEntries: List[BagFetchEntry]
+  ): Either[List[Throwable], List[MatchedLocation]] = {
 
     val filtered = bagFiles.map { file =>
-
-      val matches = fetchEntries.collect { case entry if file.path == entry.path =>
-        MatchedLocation(file, Some(entry))
+      val matches = fetchEntries.collect {
+        case entry if file.path == entry.path =>
+          MatchedLocation(file, Some(entry))
       }
 
-      if(matches.isEmpty) List(MatchedLocation(file, None)) else matches
+      if (matches.isEmpty) List(MatchedLocation(file, None)) else matches
     }
 
     val matched = filtered.map {
-      case List(matched@MatchedLocation(_,_)) =>
+      case List(matched @ MatchedLocation(_, _)) =>
         Success(Some(matched))
 
       case Nil => Success(None)
 
-      case _ => Failure(new RuntimeException(
-        "Found multiple matches for fetch!"
-      ))
+      case _ =>
+        Failure(
+          new RuntimeException(
+            "Found multiple matches for fetch!"
+          ))
     }
 
     val successes = matched
@@ -52,7 +60,8 @@ class BagVerifiable(root: ObjectLocation)(
     Either.cond(failures.isEmpty, successes, failures)
   }
 
-  private def getVerifiableLocation(matched: MatchedLocation): Either[Throwable, VerifiableLocation] =
+  private def getVerifiableLocation(
+    matched: MatchedLocation): Either[Throwable, VerifiableLocation] =
     matched match {
       case MatchedLocation(bagFile: BagFile, Some(fetchEntry)) =>
         Right(VerifiableLocation(fetchEntry.uri, bagFile.checksum))
@@ -60,17 +69,20 @@ class BagVerifiable(root: ObjectLocation)(
       case MatchedLocation(bagFile: BagFile, None) =>
         bagFile.locateWith(root) match {
           case Left(e) => Left(VerifiableGenerationFailed(e.msg))
-          case Right(location) => Right(VerifiableLocation(
-            location.resolve,
-            bagFile.checksum
-          ))
+          case Right(location) =>
+            Right(
+              VerifiableLocation(
+                location.resolve,
+                bagFile.checksum
+              ))
         }
     }
 
   private def combine(errors: List[Throwable]) =
     VerifiableGenerationFailed(errors.map(_.getMessage).mkString("\n"))
 
-  override def create(bag: Bag): Either[VerifiableGenerationFailure, List[VerifiableLocation]] = {
+  override def create(
+    bag: Bag): Either[VerifiableGenerationFailure, List[VerifiableLocation]] = {
     debug(s"Attempting to create List[VerifiableLocation] for $bag")
 
     val bagFiles = bag.tagManifest.files ++ bag.manifest.files
@@ -88,7 +100,7 @@ class BagVerifiable(root: ObjectLocation)(
 
         val matches = matched.map(getVerifiableLocation)
 
-        val failures = matches collect { case Left(f) => f }
+        val failures = matches collect { case Left(f)           => f }
         val successes = matches collect { case Right(locations) => locations }
 
         debug(s"Got ($successes, $failures)")

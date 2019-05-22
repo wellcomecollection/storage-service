@@ -20,7 +20,8 @@ class S3StreamableTest
   case class Thing(stuff: String)
 
   implicit val thingResolver: Locatable[Thing] = new Locatable[Thing] {
-    override def locate(thing: Thing)(root: Option[ObjectLocation]): Either[LocateFailure[Thing], ObjectLocation] = {
+    override def locate(thing: Thing)(root: Option[ObjectLocation])
+      : Either[LocateFailure[Thing], ObjectLocation] = {
       val paths = Paths.get(root.get.key, thing.stuff)
       Right(root.get.copy(key = paths.toString))
     }

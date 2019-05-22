@@ -5,7 +5,10 @@ import java.time.LocalDate
 
 import cats.data.ValidatedNel
 import cats.implicits._
-import uk.ac.wellcome.platform.archive.common.bagit.models.error.{ArchiveError, InvalidBagInfo}
+import uk.ac.wellcome.platform.archive.common.bagit.models.error.{
+  ArchiveError,
+  InvalidBagInfo
+}
 
 import scala.util.Try
 
@@ -68,9 +71,9 @@ object BagInfo {
   }
 
   def parseBagInfo[T](
-                       t: T,
-                       inputStream: InputStream
-                     ): Either[ArchiveError[T], BagInfo] = {
+    t: T,
+    inputStream: InputStream
+  ): Either[ArchiveError[T], BagInfo] = {
 
     val validated = validate(inputStream)
 

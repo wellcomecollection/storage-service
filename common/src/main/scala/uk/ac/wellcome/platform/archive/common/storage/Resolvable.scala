@@ -14,4 +14,3 @@ object Resolvable {
       resolver.resolve(t)
   }
 }
-

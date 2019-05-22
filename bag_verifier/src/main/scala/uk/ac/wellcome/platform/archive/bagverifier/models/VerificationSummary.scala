@@ -3,7 +3,12 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.platform.archive.common.verify.{VerificationFailure, VerificationIncomplete, VerificationResult, VerificationSuccess}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  VerificationFailure,
+  VerificationIncomplete,
+  VerificationResult,
+  VerificationSuccess
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 sealed trait VerificationSummary extends Summary {

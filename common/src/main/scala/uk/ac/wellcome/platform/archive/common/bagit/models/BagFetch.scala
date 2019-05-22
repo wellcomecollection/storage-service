@@ -7,11 +7,11 @@ import scala.util.Try
 import scala.util.matching.Regex
 
 case class BagFetch(
-                     files: List[BagFetchEntry]
-                   )
-
+  files: List[BagFetchEntry]
+)
 
 object BagFetch {
+
   /** Read/write the contents of a Fetch File as defined by RFC 8493 § 2.2.3.
     *
     * Relevant notes:

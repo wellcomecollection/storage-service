@@ -33,11 +33,10 @@ object BagPath {
     path.replaceAll("/$", "")
   }
 
-  implicit val enc = Encoder.instance[BagPath](o =>
-    Json.fromString(o.toString))
+  implicit val enc = Encoder.instance[BagPath](o => Json.fromString(o.toString))
 
-  implicit val dec = Decoder.instance[BagPath](cursor =>
-    cursor.value.as[String].map(BagPath(_)))
+  implicit val dec =
+    Decoder.instance[BagPath](cursor => cursor.value.as[String].map(BagPath(_)))
 
   implicit def fmt =
     DynamoFormat.xmap[BagPath, String](

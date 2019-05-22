@@ -34,8 +34,6 @@ import scala.util.{Failure, Success, Try}
   * SERIOUSLY, THINK CAREFULLY BEFORE YOU ADD COMPLEXITY HERE.
   *
   */
-
-
 class S3BagLocator(s3Client: AmazonS3) extends Logging {
   def locateBagInfo(objectLocation: ObjectLocation): Try[ObjectLocation] = {
     val bagInfoInRoot = findBagInfoInRoot(objectLocation)
@@ -79,7 +77,7 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     *
     */
   private def findBagInfoInDirectory(
-                                      objectLocation: ObjectLocation): Try[String] = Try {
+    objectLocation: ObjectLocation): Try[String] = Try {
     val listObjectsRequest = new ListObjectsV2Request()
       .withBucketName(objectLocation.namespace)
       .withPrefix(objectLocation.key + "/")

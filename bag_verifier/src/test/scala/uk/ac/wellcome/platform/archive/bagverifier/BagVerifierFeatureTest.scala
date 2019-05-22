@@ -85,7 +85,6 @@ class BagVerifierFeatureTest
                       assertTopicReceivesIngestUpdates(
                         payload.ingestId,
                         ingestTopic) { ingestUpdates =>
-
                         debug(s"Got $ingestUpdates")
 
                         ingestUpdates.size shouldBe 2

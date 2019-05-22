@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import com.amazonaws.services.s3.model.PutObjectResult
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.VerifyFixture
-import uk.ac.wellcome.platform.archive.common.storage.{LocationError, LocationNotFound}
+import uk.ac.wellcome.platform.archive.common.storage.{
+  LocationError,
+  LocationNotFound
+}
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 

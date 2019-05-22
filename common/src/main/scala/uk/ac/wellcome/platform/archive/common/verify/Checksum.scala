@@ -14,14 +14,14 @@ import uk.ac.wellcome.json.JsonUtil.{fromJson, toJson}
 import scala.util.Try
 
 case class Checksum(
-                     algorithm: HashingAlgorithm,
-                     value: ChecksumValue
-                   )
+  algorithm: HashingAlgorithm,
+  value: ChecksumValue
+)
 object Checksum extends Logging {
   def create(
-              inputStream: InputStream,
-              algorithm: HashingAlgorithm
-            ): Try[Checksum] = {
+    inputStream: InputStream,
+    algorithm: HashingAlgorithm
+  ): Try[Checksum] = {
     debug(s"Creating Checksum for $inputStream with  $algorithm")
     val checksumValue = ChecksumValue.create(inputStream, algorithm)
     val checksum = checksumValue.map(Checksum(algorithm, _))
@@ -55,9 +55,9 @@ object ChecksumValue extends Logging {
   }
 
   def create(
-              inputStream: InputStream,
-              algorithm: HashingAlgorithm
-            ): Try[ChecksumValue] = {
+    inputStream: InputStream,
+    algorithm: HashingAlgorithm
+  ): Try[ChecksumValue] = {
     debug(s"Creating ChecksumValue from $inputStream, $algorithm")
 
     val checksumValue = Try {
@@ -92,6 +92,12 @@ object ChecksumValue extends Logging {
 }
 
 sealed trait FailedChecksum
-case class FailedChecksumCreation(algorithm: HashingAlgorithm, e: Throwable) extends Throwable(s"Could not create checksum: ${e.getMessage}") with FailedChecksum
-case class FailedChecksumNoMatch(a: Checksum, b: Checksum) extends Throwable("Checksum values do not match!") with FailedChecksum
-case class FailedChecksumLocationNotFound[T](location: VerifiableLocation) extends Throwable("VerifiableLocation not found!") with FailedChecksum
+case class FailedChecksumCreation(algorithm: HashingAlgorithm, e: Throwable)
+    extends Throwable(s"Could not create checksum: ${e.getMessage}")
+    with FailedChecksum
+case class FailedChecksumNoMatch(a: Checksum, b: Checksum)
+    extends Throwable("Checksum values do not match!")
+    with FailedChecksum
+case class FailedChecksumLocationNotFound[T](location: VerifiableLocation)
+    extends Throwable("VerifiableLocation not found!")
+    with FailedChecksum
