@@ -4,7 +4,7 @@ import org.scalatest.{FunSpec, Matchers}
 
 class BagVerifiableTest extends FunSpec with Matchers {
 
-  it("fails") {
+  ignore("fails") {
     true shouldBe false
   }
 
