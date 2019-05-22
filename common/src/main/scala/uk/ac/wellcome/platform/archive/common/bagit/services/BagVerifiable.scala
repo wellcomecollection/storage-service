@@ -18,7 +18,7 @@ class BagVerifiable(root: ObjectLocation)(
     with Logging {
 
   import Locatable._
-  
+
   override def create(
     bag: Bag): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]] = {
     debug(s"Attempting to create Seq[VerifiableLocation] for $bag")
@@ -52,7 +52,6 @@ class BagVerifiable(root: ObjectLocation)(
     fetchEntries: Seq[BagFetchEntry]
   ): Either[Seq[Throwable], Seq[MatchedLocation]] = {
 
-    // First we correlate all the information about the same path
     case class PathInfo(
       bagFiles: Seq[BagFile] = Seq.empty,
       fetchEntries: Seq[BagFetchEntry] = Seq.empty
