@@ -1,18 +1,11 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.bagit.models.Bag
-import uk.ac.wellcome.platform.archive.common.bagit.{models, MatchedLocation}
+import uk.ac.wellcome.platform.archive.common.bagit.MatchedLocation
+import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, Resolvable}
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Verifiable,
-  VerifiableGenerationFailed,
-  VerifiableGenerationFailure,
-  VerifiableLocation
-}
+import uk.ac.wellcome.platform.archive.common.verify.{Verifiable, VerifiableGenerationFailed, VerifiableGenerationFailure, VerifiableLocation}
 import uk.ac.wellcome.storage.ObjectLocation
-
-import scala.util.{Failure, Success}
 
 class BagVerifiable(root: ObjectLocation)(
   implicit resolvable: Resolvable[ObjectLocation]
@@ -20,78 +13,17 @@ class BagVerifiable(root: ObjectLocation)(
     with Logging {
 
   import Locatable._
-  import Resolvable._
-  import models._
 
-  protected def matchBagLocation(
-    bagFiles: List[BagFile],
-    fetchEntries: List[BagFetchEntry]
-  ): Either[List[Throwable], List[MatchedLocation]] = {
-
-    val filtered = bagFiles.map { file =>
-      val matches = fetchEntries.collect {
-        case entry if file.path == entry.path =>
-          MatchedLocation(file, Some(entry))
-      }
-
-      if (matches.isEmpty) List(MatchedLocation(file, None)) else matches
-    }
-
-    val matched = filtered.map {
-      case List(matched @ MatchedLocation(_, _)) =>
-        Success(Some(matched))
-
-      case Nil => Success(None)
-
-      case _ =>
-        Failure(
-          new RuntimeException(
-            "Found multiple matches for fetch!"
-          ))
-    }
-
-    val successes = matched
-      .collect { case Success(t) => t }
-      .collect { case Some(o) => o }
-
-    val failures = matched
-      .collect { case Failure(e: Throwable) => e }
-
-    Either.cond(failures.isEmpty, successes, failures)
-  }
-
-  private def getVerifiableLocation(
-    matched: MatchedLocation): Either[Throwable, VerifiableLocation] =
-    matched match {
-      case MatchedLocation(bagFile: BagFile, Some(fetchEntry)) =>
-        Right(VerifiableLocation(fetchEntry.uri, bagFile.checksum))
-
-      case MatchedLocation(bagFile: BagFile, None) =>
-        bagFile.locateWith(root) match {
-          case Left(e) => Left(VerifiableGenerationFailed(e.msg))
-          case Right(location) =>
-            Right(
-              VerifiableLocation(
-                location.resolve,
-                bagFile.checksum
-              ))
-        }
-    }
-
-  private def combine(errors: List[Throwable]) =
-    VerifiableGenerationFailed(errors.map(_.getMessage).mkString("\n"))
-
-  override def create(
-    bag: Bag): Either[VerifiableGenerationFailure, List[VerifiableLocation]] = {
+  override def create(bag: Bag): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]] = {
     debug(s"Attempting to create List[VerifiableLocation] for $bag")
 
     val bagFiles = bag.tagManifest.files ++ bag.manifest.files
-    val fetchEntries = bag.fetch.toList.flatMap(_.files)
+    val fetchEntries = bag.fetch.toSeq.flatMap { _.files }
 
-    debug(s"List[BagFile]: $bagFiles")
-    debug(s"List[BagFetchEntries]: $fetchEntries")
+    debug(s"bagFiles: $bagFiles")
+    debug(s"fetchEntries: $fetchEntries")
 
-    matchBagLocation(bagFiles, fetchEntries) match {
+    correlateFetchEntryToBagFile(bagFiles, fetchEntries) match {
       case Left(errors) =>
         debug(s"Left: $errors")
         Left(combine(errors))
@@ -108,4 +40,74 @@ class BagVerifiable(root: ObjectLocation)(
         Either.cond(failures.isEmpty, successes, combine(failures))
     }
   }
+
+  protected def correlateFetchEntryToBagFile(
+    bagFiles: Seq[BagFile],
+    fetchEntries: Seq[BagFetchEntry]
+  ): Either[Seq[Throwable], Seq[MatchedLocation]] = {
+
+    // First we correlate all the information about the same path
+    case class PathInfo(
+      bagFiles: Seq[BagFile] = Seq.empty,
+      fetchEntries: Seq[BagFetchEntry] = Seq.empty
+    )
+
+    var paths: Map[BagPath, PathInfo] = Map.empty.withDefault { _ => PathInfo() }
+
+    bagFiles.foreach { file =>
+      val existing = paths(file.path)
+      paths = paths ++ Map(file.path -> existing.copy(bagFiles = existing.bagFiles :+ file))
+    }
+
+    fetchEntries.foreach { fetchEntry =>
+      val existing = paths(fetchEntry.path)
+      paths = paths ++ Map(fetchEntry.path -> existing.copy(fetchEntries = existing.fetchEntries :+ fetchEntry))
+    }
+
+    val matchedLocations = paths.values.map { pathInfo =>
+      (pathInfo.bagFiles.distinct, pathInfo.fetchEntries.distinct) match {
+        case (Seq(bagFile), Seq()) =>
+          Right(MatchedLocation(bagFile = bagFile, fetchEntry = None))
+        case (Seq(bagFile), Seq(fetchEntry)) =>
+          Right(MatchedLocation(bagFile = bagFile, fetchEntry = Some(fetchEntry)))
+        case (Seq(), Seq(fetchEntry)) =>
+          Left(s"Fetch entry refers to a path that isn't in the bag: $fetchEntry")
+        case (Seq(), fetchEntriesForPath) =>
+          Left(s"Multiple fetch entries refers to a path that isn't in the bag: $fetchEntriesForPath")
+        case _ =>
+          Left(s"Multiple, ambiguous entries for the same path: $pathInfo")
+      }
+    }
+
+    val successes = matchedLocations
+      .collect { case Right(t) => t }
+      .toSeq
+
+    val failures = matchedLocations
+      .collect { case Left(err) => new Throwable(err) }
+      .toSeq
+
+    Either.cond(failures.isEmpty, successes, failures)
+  }
+
+  private def getVerifiableLocation(
+    matched: MatchedLocation): Either[Throwable, VerifiableLocation] =
+    matched match {
+      case MatchedLocation(bagFile: BagFile, Some(fetchEntry)) =>
+        Right(VerifiableLocation(fetchEntry.uri, bagFile.checksum))
+
+      case MatchedLocation(bagFile: BagFile, None) =>
+        bagFile.locateWith(root) match {
+          case Left(e) => Left(VerifiableGenerationFailed(e.msg))
+          case Right(location) =>
+            Right(
+              VerifiableLocation(
+                uri = resolvable.resolve(location),
+                checksum = bagFile.checksum
+              ))
+        }
+    }
+
+  private def combine(errors: Seq[Throwable]) =
+    VerifiableGenerationFailed(errors.map(_.getMessage).mkString("\n"))
 }

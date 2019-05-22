@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.storage.{
 }
 import uk.ac.wellcome.storage.ObjectLocation
 
-case class MatchedLocation(bagFile: BagFile, b: Option[BagFetchEntry])
+case class MatchedLocation(bagFile: BagFile, fetchEntry: Option[BagFetchEntry])
 
 package object models {
   private def locateBagPath(root: ObjectLocation)(bagPath: BagPath) = {
