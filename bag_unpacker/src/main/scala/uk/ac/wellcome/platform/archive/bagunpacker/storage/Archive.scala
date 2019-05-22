@@ -12,6 +12,7 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory
 import org.apache.commons.io.input.CloseShieldInputStream
 
 import scala.annotation.tailrec
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 object Archive extends Logging {
@@ -19,7 +20,8 @@ object Archive extends Logging {
     inputStream: InputStream
   )(init: T)(
     f: (T, InputStream, ArchiveEntry) => T
-  ): Try[T] = Try {
+  )(implicit ec: ExecutionContext): Future[T] = Future {
+
     val archiveReader = new ArchiveReader[T](inputStream)
 
     @tailrec

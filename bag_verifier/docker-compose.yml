@@ -3,6 +3,10 @@ sqs:
   ports:
     - "9324:9324"
     - "4789:9324"
+sns:
+  image: wellcome/fake-sns
+  ports:
+    - "9292:9292"
 s3:
   image: "zenko/cloudserver:8.1.8"
   environment:

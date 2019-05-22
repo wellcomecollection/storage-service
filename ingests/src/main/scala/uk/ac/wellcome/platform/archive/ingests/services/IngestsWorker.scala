@@ -21,36 +21,41 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.{ExecutionContext, Future}
 
-class IngestsWorker[MessageDestination](
+class IngestsWorker(
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   ingestTracker: IngestTracker,
-  callbackNotificationService: CallbackNotificationService[MessageDestination]
+  callbackNotificationService: CallbackNotificationService
 )(implicit
   actorSystem: ActorSystem,
+  ec: ExecutionContext,
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends Runnable
     with Logging {
 
   private val worker =
-    AlpakkaSQSWorker[IngestUpdate, Ingest](alpakkaSQSWorkerConfig) { update =>
-      Future.fromTry { processMessage(update) }
+    AlpakkaSQSWorker[IngestUpdate, Ingest](alpakkaSQSWorkerConfig) {
+      processMessage
     }
 
-  def processMessage(ingestUpdate: IngestUpdate): Try[Result[Ingest]] = Try {
-    val result = for {
-      ingest <- ingestTracker.update(ingestUpdate)
+  def processMessage(ingestUpdate: IngestUpdate): Future[Result[Ingest]] = {
+    val future = for {
+      ingest <- Future.fromTry(
+        ingestTracker.update(ingestUpdate)
+      )
       _ <- callbackNotificationService
         .sendNotification(ingest)
     } yield ingest
 
-    result match {
-      case Success(ingest) => Successful(Some(ingest))
-      case Failure(err)    => DeterministicFailure(err, summary = None)
-    }
+    future
+      .map { ingest =>
+        Successful(Some(ingest))
+      }
+      .recover {
+        case throwable => DeterministicFailure(throwable, summary = None)
+      }
   }
 
   override def run(): Future[Any] = worker.start

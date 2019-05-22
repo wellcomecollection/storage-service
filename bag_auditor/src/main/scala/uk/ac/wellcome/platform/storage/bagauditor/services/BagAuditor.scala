@@ -16,17 +16,14 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
-import uk.ac.wellcome.platform.archive.common.storage.services.StreamableInstances._
+import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.s3.S3StorageBackend
 
 import scala.util.{Failure, Success, Try}
 
 class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
   val s3BagLocator = new S3BagLocator(s3Client)
-
-  implicit val s3Backend: S3StorageBackend = new S3StorageBackend(s3Client)
 
   type IngestStep = Try[IngestStepResult[AuditSummary]]
 

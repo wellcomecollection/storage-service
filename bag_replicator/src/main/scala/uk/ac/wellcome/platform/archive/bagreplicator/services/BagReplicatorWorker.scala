@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs.MessageAction
-import cats.instances.try_._
+import cats.instances.future._
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.amazonaws.services.sqs.model.{Message => SQSMessage}
 import grizzled.slf4j.Logging
@@ -24,20 +24,20 @@ import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
 import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.Future
-import scala.util.Try
+import scala.concurrent.{ExecutionContext, Future}
 
-class BagReplicatorWorker[IngestsDestination, OutgoingDestination](
+class BagReplicatorWorker(
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   bagReplicator: BagReplicator,
-  ingestUpdater: IngestUpdater[IngestsDestination],
-  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
+  ingestUpdater: IngestUpdater,
+  outgoingPublisher: OutgoingPublisher,
   lockingService: LockingService[Result[ReplicationSummary],
-                                 Try,
+                                 Future,
                                  LockDao[String, UUID]],
   replicatorDestinationConfig: ReplicatorDestinationConfig
 )(implicit
   actorSystem: ActorSystem,
+  ec: ExecutionContext,
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends Runnable
@@ -47,8 +47,7 @@ class BagReplicatorWorker[IngestsDestination, OutgoingDestination](
     new AlpakkaSQSWorker[
       BagInformationPayload,
       ReplicationSummary,
-      MonitoringClient](alpakkaSQSWorkerConfig)(payload =>
-      Future.fromTry(processMessage(payload))) {
+      MonitoringClient](alpakkaSQSWorkerConfig)(processMessage) {
 
       // TODO: This is hard-coded, read it from config!
       override val retryAction = (message: SQSMessage) =>
@@ -64,7 +63,7 @@ class BagReplicatorWorker[IngestsDestination, OutgoingDestination](
 
   def processMessage(
     payload: BagInformationPayload,
-  ): Try[Result[ReplicationSummary]] =
+  ): Future[Result[ReplicationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
@@ -77,8 +76,9 @@ class BagReplicatorWorker[IngestsDestination, OutgoingDestination](
       result <- replicate(payload, destination)
     } yield result
 
-  def replicate(payload: BagInformationPayload,
-                destination: ObjectLocation): Try[Result[ReplicationSummary]] =
+  def replicate(
+    payload: BagInformationPayload,
+    destination: ObjectLocation): Future[Result[ReplicationSummary]] =
     lockingService
       .withLock(destination.toString) {
         for {

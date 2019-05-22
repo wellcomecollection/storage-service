@@ -1,36 +1,28 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
-import uk.ac.wellcome.messaging.MessageSender
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.messaging.fixtures.SNS
+import uk.ac.wellcome.messaging.fixtures.SNS.Topic
+import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 
-trait OperationFixtures extends RandomThings {
-  type Destination = String
+import scala.concurrent.ExecutionContext.Implicits.global
 
-  def createStepName: String = randomAlphanumeric()
+trait OperationFixtures extends SNS with MetricsSenderFixture {
+  def withIngestUpdater[R](stepName: String, topic: Topic)(
+    testWith: TestWith[IngestUpdater, R]): R =
+    withSNSWriter(topic) { snsWriter =>
+      val ingestNotifier = new IngestUpdater(stepName, snsWriter)
 
-  def createMessageSender: MemoryMessageSender = new MemoryMessageSender(
-    destination = randomAlphanumeric(),
-    subject = randomAlphanumeric()
-  )
+      testWith(ingestNotifier)
+    }
 
-  def createIngestUpdater(stepName: String = createStepName,
-                          messageSender: MessageSender[Destination] =
-                            createMessageSender): IngestUpdater[Destination] =
-    new IngestUpdater[String](
-      stepName = stepName,
-      messageSender = messageSender
-    )
+  def withOutgoingPublisher[R](operationName: String, topic: Topic)(
+    testWith: TestWith[OutgoingPublisher, R]): R =
+    withSNSWriter(topic) { snsWriter =>
+      val outgoingNotifier = new OutgoingPublisher(operationName, snsWriter)
 
-  def createOperationName: String = randomAlphanumeric()
-
-  def createOutgoingPublisher(operationName: String = createOperationName,
-                              messageSender: MessageSender[Destination] =
-                                createMessageSender)
-    : OutgoingPublisher[Destination] =
-    new OutgoingPublisher[Destination](
-      operationName = operationName,
-      messageSender = messageSender
-    )
+      testWith(outgoingNotifier)
+    }
 }

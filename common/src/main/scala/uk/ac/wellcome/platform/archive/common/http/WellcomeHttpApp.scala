@@ -119,7 +119,10 @@ class WellcomeHttpApp(routes: Route,
     ExceptionHandler {
       case err: Exception =>
         logger.error(s"Unexpected exception $err")
-        val error = InternalServerErrorResponse(contextURL)
+        val error = InternalServerErrorResponse(
+          context = contextURL,
+          statusCode = InternalServerError
+        )
         httpMetrics.sendMetricForStatus(InternalServerError)
         complete(InternalServerError -> error)
     }
@@ -130,7 +133,10 @@ class WellcomeHttpApp(routes: Route,
       .mapAsync(parallelism = 1)(data => {
         val description = data.utf8String
         if (statusCode.intValue() >= 500) {
-          val response = InternalServerErrorResponse(contextURL)
+          val response = InternalServerErrorResponse(
+            context = contextURL,
+            statusCode = statusCode
+          )
           Marshal(response).to[MessageEntity]
         } else {
           val response = UserErrorResponse(

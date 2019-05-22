@@ -4,6 +4,7 @@ import java.net.URL
 import java.util.UUID
 
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import grizzled.slf4j.Logging
@@ -27,13 +28,10 @@ import uk.ac.wellcome.platform.archive.display.{
   ResponseDisplayIngest
 }
 
-import scala.util.{Failure, Success}
-
-class Router[IngestStarterDestination](
-  ingestTracker: IngestTracker,
-  ingestStarter: IngestStarter[IngestStarterDestination],
-  httpServerConfig: HTTPServerConfig,
-  contextURL: URL)
+class Router(ingestTracker: IngestTracker,
+             ingestStarter: IngestStarter,
+             httpServerConfig: HTTPServerConfig,
+             contextURL: URL)
     extends Logging {
 
   import akka.http.scaladsl.server.Directives._
@@ -46,43 +44,25 @@ class Router[IngestStarterDestination](
     pathPrefix("ingests") {
       post {
         entity(as[RequestDisplayIngest]) { requestDisplayIngest =>
-          ingestStarter.initialise(requestDisplayIngest.toIngest) match {
-            case Success(ingest) =>
+          onSuccess(ingestStarter.initialise(requestDisplayIngest.toIngest)) {
+            ingest =>
               respondWithHeaders(List(createLocationHeader(ingest))) {
-                complete(
-                  StatusCodes.Created -> ResponseDisplayIngest(
-                    ingest,
-                    contextURL))
+                complete(Created -> ResponseDisplayIngest(ingest, contextURL))
               }
-            case Failure(err) =>
-              error(s"Error initialising the ingest: $err")
-              complete(
-                StatusCodes.InternalServerError ->
-                  InternalServerErrorResponse(contextURL)
-              )
           }
         }
       } ~ path(JavaUUID) { id: UUID =>
         get {
-          ingestTracker.get(IngestID(id)) match {
-            case Success(result) =>
-              result match {
-                case Some(ingest) =>
-                  complete(ResponseDisplayIngest(ingest, contextURL))
-                case None =>
-                  complete(
-                    StatusCodes.NotFound -> UserErrorResponse(
-                      context = contextURL,
-                      statusCode = StatusCodes.NotFound,
-                      description = s"Ingest $id not found"
-                    ))
-              }
-            case Failure(err) =>
-              error(s"Error looking up ingest $id: $err")
+          onSuccess(ingestTracker.get(IngestID(id))) {
+            case Some(ingest) =>
+              complete(ResponseDisplayIngest(ingest, contextURL))
+            case None =>
               complete(
-                StatusCodes.InternalServerError ->
-                  InternalServerErrorResponse(contextURL)
-              )
+                NotFound -> UserErrorResponse(
+                  context = contextURL,
+                  statusCode = StatusCodes.NotFound,
+                  description = s"Ingest $id not found"
+                ))
           }
         }
       } ~ path("find-by-bag-id" / Segment) { combinedId: String =>
@@ -105,19 +85,21 @@ class Router[IngestStarterDestination](
     }
 
   private def findIngest(bagId: BagId) = {
-    ingestTracker.findByBagId(bagId) match {
-      case Success(results) =>
-        if (results.nonEmpty) {
-          complete(StatusCodes.OK -> results.map { DisplayIngestMinimal(_) })
-        } else {
-          complete(StatusCodes.NotFound -> List[DisplayIngestMinimal]())
-        }
-      case Failure(err) =>
-        error(s"Error fetching ingests for $bagId: $err")
-        complete(
-          StatusCodes.InternalServerError ->
-            InternalServerErrorResponse(contextURL)
+    val results = ingestTracker.findByBagId(bagId)
+    if (results.nonEmpty && results.forall(_.isRight)) {
+      complete(OK -> results.collect {
+        case Right(ingest) => DisplayIngestMinimal(ingest)
+      })
+    } else if (results.isEmpty) {
+      complete(NotFound -> List[DisplayIngestMinimal]())
+    } else {
+      info(s"""errors fetching ingests for $bagId: ${results.mkString(" ")}""")
+      complete(
+        InternalServerError -> InternalServerErrorResponse(
+          context = contextURL,
+          statusCode = InternalServerError
         )
+      )
     }
   }
 

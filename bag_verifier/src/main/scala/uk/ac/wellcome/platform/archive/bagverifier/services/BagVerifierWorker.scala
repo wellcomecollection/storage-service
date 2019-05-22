@@ -18,16 +18,16 @@ import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublish
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.Future
-import scala.util.Try
+import scala.concurrent.{ExecutionContext, Future}
 
-class BagVerifierWorker[IngestsDestination, OutgoingDestination](
+class BagVerifierWorker(
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
-  ingestUpdater: IngestUpdater[IngestsDestination],
-  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
+  ingestUpdater: IngestUpdater,
+  outgoingPublisher: OutgoingPublisher,
   verifier: BagVerifier
 )(implicit
   actorSystem: ActorSystem,
+  ec: ExecutionContext,
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends Runnable
@@ -36,17 +36,17 @@ class BagVerifierWorker[IngestsDestination, OutgoingDestination](
 
   private val worker =
     AlpakkaSQSWorker[BagInformationPayload, VerificationSummary](
-      alpakkaSQSWorkerConfig) { payload =>
-      Future.fromTry { processMessage(payload) }
+      alpakkaSQSWorkerConfig) {
+      processMessage
     }
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
   def processMessage(
-    payload: BagInformationPayload): Try[Result[VerificationSummary]] =
+    payload: BagInformationPayload): Future[Result[VerificationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
-      summary <- verifier.verify(payload.bagRootLocation)
+      summary <- Future.fromTry(verifier.verify(payload.bagRootLocation))
       _ <- ingestUpdater.send(payload.ingestId, summary)
       _ <- outgoingPublisher.sendIfSuccessful(summary, payload)
     } yield toResult(summary)

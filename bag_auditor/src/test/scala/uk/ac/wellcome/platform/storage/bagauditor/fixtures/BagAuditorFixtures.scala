@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.storage.bagauditor.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.MessageSender
+import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.{
@@ -10,14 +10,14 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   OperationFixtures,
   RandomThings
 }
-import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.storage.bagauditor.services.{
   BagAuditor,
   BagAuditorWorker
 }
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.fixtures.S3
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagAuditorFixtures
     extends S3
@@ -49,32 +49,27 @@ trait BagAuditorFixtures
 
   def withAuditorWorker[R](
     queue: Queue = defaultQueue,
-    ingestsMessageSender: MessageSender[String],
-    outgoingMessageSender: MessageSender[String]
-  )(testWith: TestWith[BagAuditorWorker[String, String], R]): R =
+    ingestTopic: Topic,
+    outgoingTopic: Topic
+  )(testWith: TestWith[BagAuditorWorker, R]): R =
     withActorSystem { implicit actorSystem =>
-      val ingestUpdater = new IngestUpdater[String](
-        stepName = "auditing bag",
-        messageSender = ingestsMessageSender
-      )
+      withIngestUpdater("auditing bag", ingestTopic) { ingestUpdater =>
+        withOutgoingPublisher("auditing bag", outgoingTopic) {
+          outgoingPublisher =>
+            withMonitoringClient { implicit monitoringClient =>
+              withBagAuditor { bagAuditor =>
+                val worker = new BagAuditorWorker(
+                  alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+                  bagAuditor = bagAuditor,
+                  ingestUpdater = ingestUpdater,
+                  outgoingPublisher = outgoingPublisher
+                )
 
-      val outgoingPublisher = new OutgoingPublisher[String](
-        operationName = "auditing bag",
-        messageSender = outgoingMessageSender
-      )
+                worker.run()
 
-      withMonitoringClient { implicit monitoringClient =>
-        withBagAuditor { bagAuditor =>
-          val worker = new BagAuditorWorker(
-            alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-            bagAuditor = bagAuditor,
-            ingestUpdater = ingestUpdater,
-            outgoingPublisher = outgoingPublisher
-          )
-
-          worker.run()
-
-          testWith(worker)
+                testWith(worker)
+              }
+            }
         }
       }
     }
