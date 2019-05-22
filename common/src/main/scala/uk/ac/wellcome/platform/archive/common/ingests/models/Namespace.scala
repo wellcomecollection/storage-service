@@ -1,28 +1,21 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import com.gu.scanamo.DynamoFormat
-import com.gu.scanamo.error.TypeCoercionError
-import io.circe.{Decoder, Encoder, Json}
-import uk.ac.wellcome.json.JsonUtil.{fromJson, toJson}
+import io.circe.{Decoder, Encoder, HCursor, Json}
 
 case class Namespace(underlying: String) extends AnyVal {
   override def toString: String = underlying
 }
 
 object Namespace {
-  implicit val namespaceEnc =
-    Encoder.instance[Namespace] { space: Namespace =>
-      Json.fromString(space.toString)
-    }
+  implicit val encoder: Encoder[Namespace] = (value: Namespace) => Json.fromString(value.toString)
 
-  implicit val namespaceDec = Decoder.instance[Namespace](cursor =>
-    cursor.value.as[String].map(Namespace(_)))
+  implicit val decoder: Decoder[Namespace] = (cursor: HCursor) => cursor.value.as[String].map(Namespace(_))
 
-  implicit def fmtNamespace =
-    DynamoFormat.xmap[Namespace, String](
-      fromJson[Namespace](_)(namespaceDec).toEither.left
-        .map(TypeCoercionError)
+  implicit def evidence: DynamoFormat[Namespace] =
+    DynamoFormat.coercedXmap[Namespace, String, IllegalArgumentException](
+      Namespace(_)
     )(
-      toJson[Namespace](_).get
+      _.underlying
     )
 }

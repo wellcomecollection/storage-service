@@ -18,10 +18,10 @@ class BagVerifiable(root: ObjectLocation)(
     with Logging {
 
   import Locatable._
-
+  
   override def create(
     bag: Bag): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]] = {
-    debug(s"Attempting to create List[VerifiableLocation] for $bag")
+    debug(s"Attempting to create Seq[VerifiableLocation] for $bag")
 
     val bagFiles = bag.tagManifest.files ++ bag.manifest.files
     val fetchEntries = bag.fetch.toSeq.flatMap { _.files }
