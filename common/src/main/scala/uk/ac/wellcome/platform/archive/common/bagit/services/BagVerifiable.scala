@@ -1,6 +1,7 @@
-package uk.ac.wellcome.platform.archive.common.bagit.models
+package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.common.bagit.models.Bag
 import uk.ac.wellcome.platform.archive.common.bagit.{MatchedLocation, models}
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, Resolvable}
 import uk.ac.wellcome.platform.archive.common.verify.{Verifiable, VerifiableGenerationFailed, VerifiableGenerationFailure, VerifiableLocation}
@@ -12,8 +13,8 @@ class BagVerifiable(root: ObjectLocation)(
   implicit resolvable: Resolvable[ObjectLocation]
 ) extends Verifiable[Bag] with Logging {
 
-  import Resolvable._
   import Locatable._
+  import Resolvable._
   import models._
 
   protected def matchBagLocation(

@@ -1,11 +1,10 @@
-package uk.ac.wellcome.platform.archive.common.bagit.parsers
+package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import java.io.InputStream
 import java.net.URI
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetch, BagFetchEntry}
 
 class BagFetchTest extends FunSpec with Matchers {
 
