@@ -3,10 +3,22 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 import java.net.URI
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetch, BagFetchEntry, BagFile, BagManifest, BagPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagFetch,
+  BagFetchEntry,
+  BagFile,
+  BagManifest,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, SHA256, VerifiableLocation}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  SHA256,
+  VerifiableLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
@@ -160,29 +172,36 @@ class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
   describe("error cases") {
     it("there's a fetch entry for a file that isn't in the bag") {
       val fetchEntries = Seq(
-        createFetchEntryWith(uri = "s3://example/example.txt", path = BagPath("example.txt"))
+        createFetchEntryWith(
+          uri = "s3://example/example.txt",
+          path = BagPath("example.txt"))
       )
 
       val bag = createBagWith(fetchEntries = fetchEntries)
 
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith("Fetch entry refers to a path that isn't in the bag")
+      result.left.get.msg should startWith(
+        "Fetch entry refers to a path that isn't in the bag")
     }
 
     it("there's are multiple fetch entries for a file that isn't in the bag") {
       val fetchEntries = Seq(
-        createFetchEntryWith(uri = "s3://example/example.txt", path = BagPath("example.txt")),
-        createFetchEntryWith(uri = "s3://example/red.txt", path = BagPath("example.txt"))
+        createFetchEntryWith(
+          uri = "s3://example/example.txt",
+          path = BagPath("example.txt")),
+        createFetchEntryWith(
+          uri = "s3://example/red.txt",
+          path = BagPath("example.txt"))
       )
 
       val bag = createBagWith(fetchEntries = fetchEntries)
 
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith("Multiple fetch entries refers to a path that isn't in the bag")
+      result.left.get.msg should startWith(
+        "Multiple fetch entries refers to a path that isn't in the bag")
     }
-
 
     it("has multiple references to the same file with different checksums") {
       val manifestFiles = List(
@@ -194,7 +213,8 @@ class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
 
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith("Multiple, ambiguous entries for the same path")
+      result.left.get.msg should startWith(
+        "Multiple, ambiguous entries for the same path")
     }
 
     it("has multiple, differing fetch entries for the same file") {
@@ -203,8 +223,12 @@ class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
       )
 
       val fetchEntries = Seq(
-        createFetchEntryWith(uri = "s3://example/example.txt", path = BagPath("example.txt")),
-        createFetchEntryWith(uri = "https://example.net/example.txt", path = BagPath("example.txt"))
+        createFetchEntryWith(
+          uri = "s3://example/example.txt",
+          path = BagPath("example.txt")),
+        createFetchEntryWith(
+          uri = "https://example.net/example.txt",
+          path = BagPath("example.txt"))
       )
 
       val bag = createBagWith(
@@ -214,7 +238,8 @@ class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
 
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith("Multiple, ambiguous entries for the same path")
+      result.left.get.msg should startWith(
+        "Multiple, ambiguous entries for the same path")
     }
   }
 
@@ -226,7 +251,8 @@ class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
     Bag(
       info = createBagInfo,
       manifest = BagManifest(checksumAlgorithm = SHA256, files = manifestFiles),
-      tagManifest = BagManifest(checksumAlgorithm = SHA256, files = tagManifestFiles),
+      tagManifest =
+        BagManifest(checksumAlgorithm = SHA256, files = tagManifestFiles),
       fetch = if (fetchEntries.isEmpty) None else Some(BagFetch(fetchEntries))
     )
 
@@ -266,16 +292,20 @@ class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
   def getExpectedLocations(bagFiles: Seq[BagFile]): Seq[VerifiableLocation] =
     bagFiles.map { mf =>
       VerifiableLocation(
-        uri = new URI(s"example://${root.namespace}/${root.key}/${mf.path.toString}"),
+        uri = new URI(
+          s"example://${root.namespace}/${root.key}/${mf.path.toString}"),
         checksum = mf.checksum
       )
     }
 
-  def getExpectedLocations(bagFiles: Seq[BagFile], fetchEntries: Seq[BagFetchEntry]): Seq[VerifiableLocation] =
-    bagFiles.zip(fetchEntries).map { case (bagFile, fetchEntry) =>
-      VerifiableLocation(
-        uri = fetchEntry.uri,
-        checksum = bagFile.checksum
-      )
+  def getExpectedLocations(
+    bagFiles: Seq[BagFile],
+    fetchEntries: Seq[BagFetchEntry]): Seq[VerifiableLocation] =
+    bagFiles.zip(fetchEntries).map {
+      case (bagFile, fetchEntry) =>
+        VerifiableLocation(
+          uri = fetchEntry.uri,
+          checksum = bagFile.checksum
+        )
     }
 }

@@ -4,7 +4,12 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.MatchedLocation
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, Resolvable}
-import uk.ac.wellcome.platform.archive.common.verify.{Verifiable, VerifiableGenerationFailed, VerifiableGenerationFailure, VerifiableLocation}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Verifiable,
+  VerifiableGenerationFailed,
+  VerifiableGenerationFailure,
+  VerifiableLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 class BagVerifiable(root: ObjectLocation)(
@@ -14,7 +19,8 @@ class BagVerifiable(root: ObjectLocation)(
 
   import Locatable._
 
-  override def create(bag: Bag): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]] = {
+  override def create(
+    bag: Bag): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]] = {
     debug(s"Attempting to create List[VerifiableLocation] for $bag")
 
     val bagFiles = bag.tagManifest.files ++ bag.manifest.files
@@ -52,16 +58,21 @@ class BagVerifiable(root: ObjectLocation)(
       fetchEntries: Seq[BagFetchEntry] = Seq.empty
     )
 
-    var paths: Map[BagPath, PathInfo] = Map.empty.withDefault { _ => PathInfo() }
+    var paths: Map[BagPath, PathInfo] = Map.empty.withDefault { _ =>
+      PathInfo()
+    }
 
     bagFiles.foreach { file =>
       val existing = paths(file.path)
-      paths = paths ++ Map(file.path -> existing.copy(bagFiles = existing.bagFiles :+ file))
+      paths = paths ++ Map(
+        file.path -> existing.copy(bagFiles = existing.bagFiles :+ file))
     }
 
     fetchEntries.foreach { fetchEntry =>
       val existing = paths(fetchEntry.path)
-      paths = paths ++ Map(fetchEntry.path -> existing.copy(fetchEntries = existing.fetchEntries :+ fetchEntry))
+      paths = paths ++ Map(
+        fetchEntry.path -> existing.copy(
+          fetchEntries = existing.fetchEntries :+ fetchEntry))
     }
 
     val matchedLocations = paths.values.map { pathInfo =>
@@ -69,23 +80,24 @@ class BagVerifiable(root: ObjectLocation)(
         case (Seq(bagFile), Seq()) =>
           Right(MatchedLocation(bagFile = bagFile, fetchEntry = None))
         case (Seq(bagFile), Seq(fetchEntry)) =>
-          Right(MatchedLocation(bagFile = bagFile, fetchEntry = Some(fetchEntry)))
+          Right(
+            MatchedLocation(bagFile = bagFile, fetchEntry = Some(fetchEntry)))
         case (Seq(), Seq(fetchEntry)) =>
-          Left(s"Fetch entry refers to a path that isn't in the bag: $fetchEntry")
+          Left(
+            s"Fetch entry refers to a path that isn't in the bag: $fetchEntry")
         case (Seq(), fetchEntriesForPath) =>
-          Left(s"Multiple fetch entries refers to a path that isn't in the bag: $fetchEntriesForPath")
+          Left(
+            s"Multiple fetch entries refers to a path that isn't in the bag: $fetchEntriesForPath")
         case _ =>
           Left(s"Multiple, ambiguous entries for the same path: $pathInfo")
       }
     }
 
-    val successes = matchedLocations
-      .collect { case Right(t) => t }
-      .toSeq
+    val successes = matchedLocations.collect { case Right(t) => t }.toSeq
 
-    val failures = matchedLocations
-      .collect { case Left(err) => new Throwable(err) }
-      .toSeq
+    val failures = matchedLocations.collect {
+      case Left(err) => new Throwable(err)
+    }.toSeq
 
     Either.cond(failures.isEmpty, successes, failures)
   }
