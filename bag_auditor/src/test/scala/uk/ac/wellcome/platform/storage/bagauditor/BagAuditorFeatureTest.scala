@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.storage.bagauditor
 
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -20,7 +19,7 @@ class BagAuditorFeatureTest
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(storageBackend, namespace = bucket.name, bagInfo = bagInfo) {
+      withBag(bucket, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
           val payload = createUnpackedBagPayloadWith(
             unpackedBagLocation = bagRootLocation,
@@ -34,29 +33,30 @@ class BagAuditorFeatureTest
             externalIdentifier = bagInfo.externalIdentifier
           )
 
-          val ingests = createMessageSender
-          val outgoing = createMessageSender
-
           withLocalSqsQueue { queue =>
-            withAuditorWorker(queue, ingests, outgoing) { _ =>
-              sendNotificationToSQS(queue, payload)
+            withLocalSnsTopic { ingestTopic =>
+              withLocalSnsTopic { outgoingTopic =>
+                withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+                  sendNotificationToSQS(queue, payload)
 
-              eventually {
-                assertQueueEmpty(queue)
+                  eventually {
+                    assertQueueEmpty(queue)
 
-                outgoing.getMessages[BagInformationPayload]() shouldBe Seq(
-                  expectedPayload)
+                    assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
-                assertReceivesIngestEvents(ingests)(
-                  payload.ingestId,
-                  expectedDescriptions = Seq(
-                    "Auditing bag started",
-                    s"Detected bag root as $bagRootLocation",
-                    s"Detected bag identifier as ${bagInfo.externalIdentifier}",
-                    s"Assigned bag version 1",
-                    "Auditing bag succeeded"
-                  )
-                )
+                    assertTopicReceivesIngestEvents(
+                      payload.ingestId,
+                      ingestTopic,
+                      expectedDescriptions = Seq(
+                        "Auditing bag started",
+                        s"Detected bag root as $bagRootLocation",
+                        s"Detected bag identifier as ${bagInfo.externalIdentifier}",
+                        s"Assigned bag version 1",
+                        "Auditing bag succeeded"
+                      )
+                    )
+                  }
+                }
               }
             }
           }
@@ -67,11 +67,7 @@ class BagAuditorFeatureTest
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
       val bagInfo = createBagInfo
-      withBag(
-        storageBackend,
-        namespace = bucket.name,
-        bagInfo = bagInfo,
-        bagRootDirectory = Some("subdir")) {
+      withBag(bucket, bagInfo = bagInfo, bagRootDirectory = Some("subdir")) {
         case (unpackedBagLocation, storageSpace) =>
           val bagRootLocation = unpackedBagLocation.join("subdir")
 
@@ -87,29 +83,30 @@ class BagAuditorFeatureTest
             externalIdentifier = bagInfo.externalIdentifier
           )
 
-          val ingests = createMessageSender
-          val outgoing = createMessageSender
-
           withLocalSqsQueue { queue =>
-            withAuditorWorker(queue, ingests, outgoing) { _ =>
-              sendNotificationToSQS(queue, payload)
+            withLocalSnsTopic { ingestTopic =>
+              withLocalSnsTopic { outgoingTopic =>
+                withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+                  sendNotificationToSQS(queue, payload)
 
-              eventually {
-                assertQueueEmpty(queue)
+                  eventually {
+                    assertQueueEmpty(queue)
 
-                outgoing.getMessages[BagInformationPayload]() shouldBe Seq(
-                  expectedPayload)
+                    assertSnsReceivesOnly(expectedPayload, outgoingTopic)
 
-                assertReceivesIngestEvents(ingests)(
-                  payload.ingestId,
-                  expectedDescriptions = Seq(
-                    "Auditing bag started",
-                    s"Detected bag root as $bagRootLocation",
-                    s"Detected bag identifier as ${bagInfo.externalIdentifier}",
-                    s"Assigned bag version 1",
-                    "Auditing bag succeeded"
-                  )
-                )
+                    assertTopicReceivesIngestEvents(
+                      payload.ingestId,
+                      ingestTopic,
+                      expectedDescriptions = Seq(
+                        "Auditing bag started",
+                        s"Detected bag root as $bagRootLocation",
+                        s"Detected bag identifier as ${bagInfo.externalIdentifier}",
+                        s"Assigned bag version 1",
+                        "Auditing bag succeeded"
+                      )
+                    )
+                  }
+                }
               }
             }
           }
@@ -119,26 +116,60 @@ class BagAuditorFeatureTest
 
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
-      withBag(
-        storageBackend,
-        namespace = bucket.name,
-        bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
+      withBag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
         case (unpackedBagLocation, _) =>
           val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
-          val ingests = createMessageSender
-          val outgoing = createMessageSender
-
           withLocalSqsQueue { queue =>
-            withAuditorWorker(queue, ingests, outgoing) { _ =>
+            withLocalSnsTopic { ingestTopic =>
+              withLocalSnsTopic { outgoingTopic =>
+                withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+                  sendNotificationToSQS(queue, payload)
+
+                  eventually {
+                    assertQueueEmpty(queue)
+
+                    assertSnsReceivesNothing(outgoingTopic)
+
+                    assertTopicReceivesIngestUpdates(
+                      payload.ingestId,
+                      ingestTopic) { ingestUpdates =>
+                      ingestUpdates.size shouldBe 2
+
+                      val ingestStart = ingestUpdates.head
+                      ingestStart.events.head.description shouldBe "Auditing bag started"
+
+                      val ingestFailed =
+                        ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                      ingestFailed.status shouldBe Ingest.Failed
+                      ingestFailed.events.head.description shouldBe "Auditing bag failed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+      }
+    }
+  }
+
+  it("errors if it cannot find the bag") {
+    withLocalS3Bucket { bucket =>
+      val unpackedBagLocation = createObjectLocation
+      val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
+
+      withLocalSqsQueue { queue =>
+        withLocalSnsTopic { ingestTopic =>
+          withLocalSnsTopic { outgoingTopic =>
+            withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
               sendNotificationToSQS(queue, payload)
 
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.messages shouldBe empty
+                assertSnsReceivesNothing(outgoingTopic)
 
-                assertReceivesIngestUpdates(ingests)(payload.ingestId) {
+                assertTopicReceivesIngestUpdates(payload.ingestId, ingestTopic) {
                   ingestUpdates =>
                     ingestUpdates.size shouldBe 2
 
@@ -153,40 +184,6 @@ class BagAuditorFeatureTest
               }
             }
           }
-      }
-    }
-  }
-
-  it("errors if it cannot find the bag") {
-    withLocalS3Bucket { bucket =>
-      val unpackedBagLocation = createObjectLocation
-      val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
-
-      val ingests = createMessageSender
-      val outgoing = createMessageSender
-
-      withLocalSqsQueue { queue =>
-        withAuditorWorker(queue, ingests, outgoing) { _ =>
-          sendNotificationToSQS(queue, payload)
-
-          eventually {
-            assertQueueEmpty(queue)
-
-            outgoing.messages shouldBe empty
-
-            assertReceivesIngestUpdates(ingests)(payload.ingestId) {
-              ingestUpdates =>
-                ingestUpdates.size shouldBe 2
-
-                val ingestStart = ingestUpdates.head
-                ingestStart.events.head.description shouldBe "Auditing bag started"
-
-                val ingestFailed =
-                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-                ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe "Auditing bag failed"
-            }
-          }
         }
       }
     }
@@ -196,29 +193,30 @@ class BagAuditorFeatureTest
     val unpackedBagLocation = createObjectLocation
     val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
-    val ingests = createMessageSender
-    val outgoing = createMessageSender
-
     withLocalSqsQueue { queue =>
-      withAuditorWorker(queue, ingests, outgoing) { _ =>
-        sendNotificationToSQS(queue, payload)
+      withLocalSnsTopic { ingestTopic =>
+        withLocalSnsTopic { outgoingTopic =>
+          withAuditorWorker(queue, ingestTopic, outgoingTopic) { _ =>
+            sendNotificationToSQS(queue, payload)
 
-        eventually {
-          assertQueueEmpty(queue)
+            eventually {
+              assertQueueEmpty(queue)
 
-          outgoing.messages shouldBe empty
+              assertSnsReceivesNothing(outgoingTopic)
 
-          assertReceivesIngestUpdates(ingests)(payload.ingestId) {
-            ingestUpdates =>
-              ingestUpdates.size shouldBe 2
+              assertTopicReceivesIngestUpdates(payload.ingestId, ingestTopic) {
+                ingestUpdates =>
+                  ingestUpdates.size shouldBe 2
 
-              val ingestStart = ingestUpdates.head
-              ingestStart.events.head.description shouldBe "Auditing bag started"
+                  val ingestStart = ingestUpdates.head
+                  ingestStart.events.head.description shouldBe "Auditing bag started"
 
-              val ingestFailed =
-                ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-              ingestFailed.status shouldBe Ingest.Failed
-              ingestFailed.events.head.description shouldBe "Auditing bag failed"
+                  val ingestFailed =
+                    ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                  ingestFailed.status shouldBe Ingest.Failed
+                  ingestFailed.events.head.description shouldBe "Auditing bag failed"
+              }
+            }
           }
         }
       }

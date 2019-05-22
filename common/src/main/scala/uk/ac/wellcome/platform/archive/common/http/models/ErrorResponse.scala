@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.http.models
 
 import java.net.URL
 
-import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import akka.http.scaladsl.model.StatusCode
 import io.circe.generic.extras.JsonKey
 
 case class UserErrorResponse(
@@ -33,10 +33,10 @@ case class InternalServerErrorResponse(
 )
 
 case object InternalServerErrorResponse {
-  def apply(context: URL): InternalServerErrorResponse =
+  def apply(context: URL, statusCode: StatusCode): InternalServerErrorResponse =
     InternalServerErrorResponse(
       context = context.toString,
-      httpStatus = StatusCodes.InternalServerError.intValue,
-      label = StatusCodes.InternalServerError.reason
+      httpStatus = statusCode.intValue(),
+      label = statusCode.reason()
     )
 }

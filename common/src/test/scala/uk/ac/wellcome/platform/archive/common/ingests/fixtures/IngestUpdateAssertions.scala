@@ -1,31 +1,23 @@
 package uk.ac.wellcome.platform.archive.common.ingests.fixtures
 
 import grizzled.slf4j.Logging
-import org.scalatest.{Assertion, Inside, Matchers}
+import org.scalatest.{Assertion, Inside}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.messaging.fixtures.SNS
+import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 import scala.util.Try
 
-trait IngestUpdateAssertions extends Inside with Logging { this: Matchers =>
-  def assertReceivesIngestUpdates(messageSender: MemoryMessageSender)(
-    ingestId: IngestID)(assert: Seq[IngestUpdate] => Assertion): Assertion = {
-    val ingestUpdates = messageSender.getMessages[IngestUpdate]()
-
-    assert(ingestUpdates)
-  }
-
-  def assertReceivesIngestStatus[R](messageSender: MemoryMessageSender)(
-    ingestId: IngestID,
-    status: Ingest.Status,
-    expectedBag: Option[BagId] = None
-  )(
-    assert: Seq[IngestEvent] => R
-  ): Assertion =
-    assertReceivesIngestUpdates(messageSender)(ingestId) { ingestUpdates =>
+trait IngestUpdateAssertions extends SNS with Inside with Logging {
+  def assertTopicReceivesIngestStatus[R](ingestId: IngestID,
+                                         ingestTopic: SNS.Topic,
+                                         status: Ingest.Status,
+                                         expectedBag: Option[BagId] = None)(
+    assert: Seq[IngestEvent] => R): Assertion =
+    assertTopicReceivesIngestUpdates(ingestId, ingestTopic) { ingestUpdates =>
       ingestUpdates.size should be > 0
 
       val (success, failures) = ingestUpdates
@@ -48,13 +40,22 @@ trait IngestUpdateAssertions extends Inside with Logging { this: Matchers =>
       success should have size 1
     }
 
-  def assertReceivesIngestEvents(
-    messageSender: MemoryMessageSender
-  )(
+  def assertTopicReceivesIngestUpdates(
     ingestId: IngestID,
+    ingestTopic: Topic,
+  )(assert: Seq[IngestUpdate] => Assertion): Assertion = {
+    val ingestUpdates: Seq[IngestUpdate] =
+      listNotifications[IngestUpdate](ingestTopic).map { _.get }.distinct
+
+    assert(ingestUpdates)
+  }
+
+  def assertTopicReceivesIngestEvents(
+    ingestId: IngestID,
+    ingestTopic: Topic,
     expectedDescriptions: Seq[String]
   ): Assertion =
-    assertReceivesIngestUpdates(messageSender)(ingestId) { ingestUpdates =>
+    assertTopicReceivesIngestUpdates(ingestId, ingestTopic) { ingestUpdates =>
       val eventDescriptions: Seq[String] =
         ingestUpdates
           .flatMap { _.events }
@@ -64,14 +65,10 @@ trait IngestUpdateAssertions extends Inside with Logging { this: Matchers =>
       eventDescriptions should contain theSameElementsAs expectedDescriptions
     }
 
-  def assertReceivesIngestEvent(
-    messageSender: MemoryMessageSender
-  )(
-    ingestId: IngestID
-  )(
-    assert: Seq[IngestEvent] => Assertion
-  ): Assertion =
-    assertReceivesIngestUpdates(messageSender)(ingestId) { ingestUpdates =>
+  def assertTopicReceivesIngestEvent(
+    ingestId: IngestID,
+    ingestTopic: SNS.Topic)(assert: Seq[IngestEvent] => Assertion): Assertion =
+    assertTopicReceivesIngestUpdates(ingestId, ingestTopic) { ingestUpdates =>
       ingestUpdates.size should be > 0
 
       val (success, _) = ingestUpdates

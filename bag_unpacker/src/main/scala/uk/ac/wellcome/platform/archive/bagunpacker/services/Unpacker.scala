@@ -18,21 +18,19 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepResult,
   IngestStepSucceeded
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.StreamableInstances._
+import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.s3.S3StorageBackend
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
-
-  implicit val s3StorageBackend: S3StorageBackend = new S3StorageBackend(
-    s3Client)
+case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
+                                            ec: ExecutionContext) {
 
   def unpack(
     requestId: String,
     srcLocation: ObjectLocation,
-    dstLocation: ObjectLocation): Try[IngestStepResult[UnpackSummary]] = {
+    dstLocation: ObjectLocation): Future[IngestStepResult[UnpackSummary]] = {
 
     val unpackSummary =
       UnpackSummary(
@@ -42,11 +40,13 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
         startTime = Instant.now)
 
     val futureSummary = for {
-      archiveInputStream <- archiveDownloadStream(srcLocation)
+      archiveInputStream <- Future.fromTry {
+        archiveDownloadStream(srcLocation)
+      }
       unpackSummary <- unpack(unpackSummary, archiveInputStream, dstLocation)
     } yield unpackSummary
 
-    futureSummary match {
+    futureSummary.transform {
       case Success(summary) =>
         Success(IngestStepSucceeded(summary))
       case Failure(archiveLocationException: ArchiveLocationException) =>
@@ -60,7 +60,7 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
     }
   }
 
-  private def clientMessageFor(exception: ArchiveLocationException): String = {
+  private def clientMessageFor(exception: ArchiveLocationException) = {
     val cause = exception.getCause.asInstanceOf[AmazonS3Exception]
     val archiveLocation = exception.getObjectLocation
     cause.getStatusCode match {
@@ -72,7 +72,7 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
 
   private def unpack(unpackSummary: UnpackSummary,
                      packageInputStream: InputStream,
-                     dstLocation: ObjectLocation): Try[UnpackSummary] = {
+                     dstLocation: ObjectLocation) = {
     Archive
       .unpack[UnpackSummary](packageInputStream)(unpackSummary) {
         (summary: UnpackSummary,

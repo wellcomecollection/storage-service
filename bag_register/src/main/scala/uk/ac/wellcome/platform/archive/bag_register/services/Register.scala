@@ -15,17 +15,21 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
 }
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class Register(
   storageManifestService: StorageManifestService,
   storageManifestVHS: StorageManifestVHS
-) {
+)(implicit ec: ExecutionContext) {
+
+  type FutureSummary =
+    Future[IngestStepResult[RegistrationSummary]]
 
   def update(
     bagRootLocation: ObjectLocation,
     storageSpace: StorageSpace
-  ): Try[IngestStepResult[RegistrationSummary]] = {
+  ): FutureSummary = {
     val registration = RegistrationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,
@@ -33,21 +37,24 @@ class Register(
     )
 
     for {
-      manifest <- storageManifestService
-        .retrieve(
-          bagRootLocation = bagRootLocation,
-          storageSpace = storageSpace
-        )
+      manifest <- Future.fromTry {
+        storageManifestService
+          .retrieve(
+            bagRootLocation = bagRootLocation,
+            storageSpace = storageSpace
+          )
+      }
 
       registrationWithBagId = registration.copy(bagId = Some(manifest.id))
 
       completedRegistration <- storageManifestVHS
-        .updateRecord(manifest)(_ => manifest) match {
-        case Success(_) =>
-          Success(IngestCompleted(registrationWithBagId.complete))
-        case Failure(e) =>
-          Success(IngestFailed(registrationWithBagId.complete, e))
-      }
+        .updateRecord(manifest)(_ => manifest)
+        .transform {
+          case Success(_) =>
+            Success(IngestCompleted(registrationWithBagId.complete))
+          case Failure(e) =>
+            Success(IngestFailed(registrationWithBagId.complete, e))
+        }
 
     } yield completedRegistration
   }

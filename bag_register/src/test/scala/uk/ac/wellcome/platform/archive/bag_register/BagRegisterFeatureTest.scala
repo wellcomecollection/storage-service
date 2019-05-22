@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
-import uk.ac.wellcome.storage.memory.MemoryStorageBackend
+import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagRegisterFeatureTest
     extends FunSpec
@@ -30,14 +30,12 @@ class BagRegisterFeatureTest
     with PayloadGenerators {
 
   it("sends an update if it registers a bag") {
-    val storageBackend = new MemoryStorageBackend()
-
-    withBagRegisterWorker(storageBackend) {
-      case (_, vhs, ingests, _, queuePair) =>
+    withBagRegisterWorker {
+      case (_, table, bucket, ingestTopic, _, queuePair) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
-        withBag(storageBackend, bagInfo = bagInfo) {
+        withBag(bucket, bagInfo = bagInfo) {
           case (bagRootLocation, storageSpace) =>
             val bagId = BagId(
               space = storageSpace,
@@ -52,7 +50,7 @@ class BagRegisterFeatureTest
             sendNotificationToSQS(queuePair.queue, payload)
 
             eventually {
-              val storageManifest = vhs.getRecord(bagId).get.get
+              val storageManifest = getStorageManifest(table, id = bagId)
 
               storageManifest.space shouldBe bagId.space
               storageManifest.info shouldBe bagInfo
@@ -67,8 +65,9 @@ class BagRegisterFeatureTest
 
               storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-              assertBagRegisterSucceeded(ingests)(
+              assertBagRegisterSucceeded(
                 ingestId = payload.ingestId,
+                ingestTopic = ingestTopic,
                 bagId = bagId
               )
 
@@ -79,13 +78,11 @@ class BagRegisterFeatureTest
   }
 
   it("sends a failed update and discards the work on error") {
-    val storageBackend = new MemoryStorageBackend()
-
-    withBagRegisterWorker(storageBackend, vhs = createBrokenStorageManifestVHS) {
-      case (_, _, ingests, _, queuePair) =>
+    withBagRegisterWorkerAndBucket(Bucket("does_not_exist")) {
+      case (_, _, bucket, ingestTopic, _, queuePair) =>
         val bagInfo = createBagInfo
 
-        withBag(storageBackend, bagInfo = bagInfo) {
+        withBag(bucket, bagInfo = bagInfo) {
           case (bagRootLocation, storageSpace) =>
             val payload = createBagInformationPayloadWith(
               bagRootLocation = bagRootLocation,
@@ -100,8 +97,9 @@ class BagRegisterFeatureTest
             )
 
             eventually {
-              assertBagRegisterFailed(ingests)(
+              assertBagRegisterFailed(
                 ingestId = payload.ingestId,
+                ingestTopic = ingestTopic,
                 bagId = bagId
               )
             }

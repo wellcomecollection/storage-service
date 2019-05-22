@@ -27,8 +27,7 @@ import uk.ac.wellcome.storage.typesafe.{LockingBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
-import scala.concurrent.ExecutionContextExecutor
-import scala.util.Try
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -50,7 +49,7 @@ object Main extends WellcomeTypesafeApp {
       .getName(config, default = "replicating")
 
     val lockingService = LockingBuilder
-      .buildDynamoLockingService[Result[ReplicationSummary], Try](config)
+      .buildDynamoLockingService[Result[ReplicationSummary], Future](config)
 
     new BagReplicatorWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),

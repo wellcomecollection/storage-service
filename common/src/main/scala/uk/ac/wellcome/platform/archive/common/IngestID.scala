@@ -20,7 +20,7 @@ object IngestID {
   implicit val decoder: Decoder[IngestID] =
     Decoder.instance[IngestID](cursor => cursor.value.as[UUID].map(IngestID(_)))
 
-  implicit def evidence: DynamoFormat[IngestID] =
+  implicit def fmtSpace: DynamoFormat[IngestID] =
     DynamoFormat.coercedXmap[IngestID, String, IllegalArgumentException](
       id => IngestID(UUID.fromString(id))
     )(

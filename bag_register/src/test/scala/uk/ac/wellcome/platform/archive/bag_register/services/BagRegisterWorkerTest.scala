@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 
 import java.time.Instant
 
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
@@ -14,27 +15,24 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
-import uk.ac.wellcome.storage.memory.MemoryStorageBackend
-
-import scala.util.Success
+import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 class BagRegisterWorkerTest
     extends FunSpec
     with Matchers
+    with ScalaFutures
     with BagInfoGenerators
     with BagLocationFixtures
     with BagRegisterFixtures
     with PayloadGenerators {
 
   it("sends a successful IngestUpdate upon registration") {
-    val storageBackend = new MemoryStorageBackend()
-
-    withBagRegisterWorker(storageBackend) {
-      case (service, vhs, ingests, _, _) =>
+    withBagRegisterWorker {
+      case (service, table, bucket, ingestTopic, _, _) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
-        withBag(storageBackend, bagInfo = bagInfo) {
+        withBag(bucket, bagInfo = bagInfo) {
           case (bagRootLocation, storageSpace) =>
             val payload = createBagInformationPayloadWith(
               bagRootLocation = bagRootLocation,
@@ -46,39 +44,40 @@ class BagRegisterWorkerTest
               externalIdentifier = bagInfo.externalIdentifier
             )
 
-            service.processMessage(payload) shouldBe a[Success[_]]
+            val future = service.processMessage(payload)
 
-            val storageManifest = vhs.getRecord(id = bagId).get.get
+            whenReady(future) { _ =>
+              val storageManifest = getStorageManifest(table, id = bagId)
 
-            storageManifest.space shouldBe bagId.space
-            storageManifest.info shouldBe bagInfo
-            storageManifest.manifest.files should have size 1
+              storageManifest.space shouldBe bagId.space
+              storageManifest.info shouldBe bagInfo
+              storageManifest.manifest.files should have size 1
 
-            storageManifest.locations shouldBe List(
-              StorageLocation(
-                provider = InfrequentAccessStorageProvider,
-                location = bagRootLocation
+              storageManifest.locations shouldBe List(
+                StorageLocation(
+                  provider = InfrequentAccessStorageProvider,
+                  location = bagRootLocation
+                )
               )
-            )
 
-            storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-            assertBagRegisterSucceeded(ingests)(
-              ingestId = payload.ingestId,
-              bagId = bagId
-            )
+              assertBagRegisterSucceeded(
+                ingestId = payload.ingestId,
+                ingestTopic = ingestTopic,
+                bagId = bagId
+              )
+            }
         }
     }
   }
 
   it("sends a failed IngestUpdate if storing fails") {
-    val storageBackend = new MemoryStorageBackend()
-
-    withBagRegisterWorker(storageBackend, vhs = createBrokenStorageManifestVHS) {
-      case (service, _, ingests, _, _) =>
+    withBagRegisterWorkerAndBucket(Bucket("does-not-exist")) {
+      case (service, _, bucket, ingestTopic, _, _) =>
         val bagInfo = createBagInfo
 
-        withBag(storageBackend, bagInfo = bagInfo) {
+        withBag(bucket, bagInfo = bagInfo) {
           case (bagRootLocation, storageSpace) =>
             val payload = createBagInformationPayloadWith(
               bagRootLocation = bagRootLocation,
@@ -90,12 +89,15 @@ class BagRegisterWorkerTest
               externalIdentifier = bagInfo.externalIdentifier
             )
 
-            service.processMessage(payload) shouldBe a[Success[_]]
+            val future = service.processMessage(payload)
 
-            assertBagRegisterFailed(ingests)(
-              ingestId = payload.ingestId,
-              bagId = bagId
-            )
+            whenReady(future) { _ =>
+              assertBagRegisterFailed(
+                ingestId = payload.ingestId,
+                ingestTopic = ingestTopic,
+                bagId = bagId
+              )
+            }
         }
     }
   }

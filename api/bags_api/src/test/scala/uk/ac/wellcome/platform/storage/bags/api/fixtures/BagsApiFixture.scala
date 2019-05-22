@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.storage.bags.api.fixtures
 
 import java.net.URL
 
-import org.scalatest.Matchers
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
@@ -16,6 +15,8 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
+import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
+import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -25,7 +26,7 @@ trait BagsApiFixture
     with StorageManifestVHSFixture
     with HttpFixtures
     with MetricsSenderFixture
-    with Akka { this: Matchers =>
+    with Akka {
 
   val metricsName = "BagsApiFixture"
 
@@ -55,23 +56,28 @@ trait BagsApiFixture
     }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R = {
-    val vhs = createStorageManifestVHS()
-
-    withMockMetricsSender { metricsSender =>
-      withApp(metricsSender, vhs) { _ =>
-        testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
+    testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R =
+    withLocalS3Bucket { bucket =>
+      withLocalDynamoDbTable { table =>
+        withStorageManifestVHS(table, bucket) { vhs =>
+          withMockMetricsSender { metricsSender =>
+            withApp(metricsSender, vhs) { _ =>
+              testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
+            }
+          }
+        }
       }
     }
-  }
 
   def withBrokenApp[R](
     testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R = {
-    val vhs = createBrokenStorageManifestVHS
-
-    withMockMetricsSender { metricsSender =>
-      withApp(metricsSender, vhs) { _ =>
-        testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
+    val bucket = Bucket("does-not-exist")
+    val table = Table("does-not-exist", index = "does-not-exist")
+    withStorageManifestVHS(table, bucket) { vhs =>
+      withMockMetricsSender { metricsSender =>
+        withApp(metricsSender, vhs) { _ =>
+          testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
+        }
       }
     }
   }

@@ -2,20 +2,21 @@ package uk.ac.wellcome.platform.archive.common.ingests.services
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.MessageSender
+import uk.ac.wellcome.messaging.sns.SNSWriter
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models._
 
-import scala.util.Try
+import scala.concurrent.{ExecutionContext, Future}
 
-class IngestUpdater[Destination](
+class IngestUpdater(
   stepName: String,
-  messageSender: MessageSender[Destination]
-) extends Logging {
+  snsWriter: SNSWriter
+)(implicit ec: ExecutionContext)
+    extends Logging {
 
-  def start(ingestId: IngestID): Try[Unit] =
+  def start(ingestId: IngestID): Future[Unit] =
     send(
       ingestId = ingestId,
       step = IngestStepStarted(ingestId)
@@ -25,7 +26,7 @@ class IngestUpdater[Destination](
     ingestId: IngestID,
     step: IngestStep[R],
     bagId: Option[BagId] = None
-  ): Try[Unit] = {
+  ): Future[Unit] = {
     val update = step match {
       case IngestCompleted(_) =>
         IngestStatusUpdate(
@@ -64,10 +65,17 @@ class IngestUpdater[Destination](
         )
     }
 
-    messageSender.sendT[IngestUpdate](update)
+    snsWriter
+      .writeMessage[IngestUpdate](
+        update,
+        subject = s"Sent by ${this.getClass.getSimpleName}"
+      )
+      .map { _ =>
+        ()
+      }
   }
 
-  def sendEvent(ingestId: IngestID, messages: Seq[String]): Try[Unit] = {
+  def sendEvent(ingestId: IngestID, messages: Seq[String]): Future[Unit] = {
     val update: IngestUpdate = IngestEventUpdate(
       id = ingestId,
       events = messages.map { m: String =>
@@ -75,7 +83,14 @@ class IngestUpdater[Destination](
       }
     )
 
-    messageSender.sendT[IngestUpdate](update)
+    snsWriter
+      .writeMessage[IngestUpdate](
+        update,
+        subject = s"Sent by ${this.getClass.getSimpleName}"
+      )
+      .map { _ =>
+        ()
+      }
   }
 
   val descriptionMaxLength = 250

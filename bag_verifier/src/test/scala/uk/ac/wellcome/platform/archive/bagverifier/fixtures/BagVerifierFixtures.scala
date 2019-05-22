@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.MessageSender
+import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
@@ -15,43 +15,38 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
 }
-import uk.ac.wellcome.storage.fixtures.S3
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
     with SQS
     with OperationFixtures
-    with MonitoringClientFixture
-    with S3 {
-  def withBagVerifierWorker[R](ingests: MessageSender[String],
-                               outgoing: MessageSender[String],
+    with MonitoringClientFixture {
+  def withBagVerifierWorker[R](ingestTopic: Topic,
+                               outgoingTopic: Topic,
                                queue: Queue =
                                  Queue("fixture", arn = "arn::fixture"))(
-    testWith: TestWith[BagVerifierWorker[String, String], R]): R =
+    testWith: TestWith[BagVerifierWorker, R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         withMaterializer(actorSystem) { implicit mat =>
           withVerifier { verifier =>
-            val ingestUpdater = createIngestUpdater(
-              stepName = "verification",
-              messageSender = ingests
-            )
+            withIngestUpdater("verification", ingestTopic) { ingestUpdater =>
+              withOutgoingPublisher("verification", outgoingTopic) {
+                outgoingPublisher =>
+                  val service = new BagVerifierWorker(
+                    alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+                    ingestUpdater = ingestUpdater,
+                    outgoingPublisher = outgoingPublisher,
+                    verifier = verifier
+                  )
 
-            val outgoingPublisher = createOutgoingPublisher(
-              operationName = "verification",
-              messageSender = outgoing
-            )
+                  service.run()
 
-            val service = new BagVerifierWorker(
-              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-              ingestUpdater = ingestUpdater,
-              outgoingPublisher = outgoingPublisher,
-              verifier = verifier
-            )
-
-            service.run()
-
-            testWith(service)
+                  testWith(service)
+              }
+            }
           }
         }
       }

@@ -7,18 +7,18 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.{ObjectLocation, StorageBackend}
-import uk.ac.wellcome.storage.SerialisationStrategy.stringStrategy
-import uk.ac.wellcome.storage.memory.MemoryStorageBackend
+import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 trait BagLocationFixtures
-    extends BagInfoGenerators
+    extends S3
+    with BagInfoGenerators
     with BagIt
     with StorageSpaceGenerators {
 
   def withBag[R](
-    backend: StorageBackend = new MemoryStorageBackend(),
-    namespace: String = "BagLocationFixtures",
+    bucket: Bucket,
     bagInfo: BagInfo = createBagInfo,
     dataFileCount: Int = 1,
     storageSpace: StorageSpace = createStorageSpace,
@@ -40,8 +40,8 @@ trait BagLocationFixtures
 
     debug(s"fileEntries: $fileEntries")
 
-    val storageSpaceRootLocation = ObjectLocation(
-      namespace = namespace,
+    val storageSpaceRootLocation = createObjectLocationWith(
+      bucket = bucket,
       key = storageSpace.toString
     )
 
@@ -55,11 +55,12 @@ trait BagLocationFixtures
 
     fileEntries.map((entry: FileEntry) => {
       val entryLocation = unpackedBagLocation.join(entry.name)
-      backend.put(
-        location = entryLocation,
-        input = stringStrategy.toStream(entry.contents).inputStream,
-        metadata = Map.empty
-      )
+      s3Client
+        .putObject(
+          entryLocation.namespace,
+          entryLocation.key,
+          entry.contents
+        )
     })
 
     testWith((bagRootLocation, storageSpace))

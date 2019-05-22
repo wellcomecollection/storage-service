@@ -3,17 +3,13 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.StorageBackend
-import uk.ac.wellcome.storage.s3.S3StorageBackend
 
 import scala.util.{Failure, Success}
 
 class S3ObjectVerifier(implicit s3Client: AmazonS3)
     extends Verifier
     with Logging {
-  import uk.ac.wellcome.platform.archive.common.storage.services.StreamableInstances._
-
-  implicit val storageBackend: StorageBackend = new S3StorageBackend(s3Client)
+  import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 
   private def compareChecksum(a: Checksum, b: Checksum) = {
     debug(s"Comparing $a, $b")

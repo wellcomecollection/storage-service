@@ -10,13 +10,13 @@ import uk.ac.wellcome.platform.archive.common.versioning.{
 }
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.{LockDao, LockingService}
-import uk.ac.wellcome.storage.memory.MemoryLockDao
+import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
 
 import scala.util.Try
 
 trait VersionPickerFixtures {
   def withVersionPicker[R](testWith: TestWith[VersionPicker, R]): R =
-    withVersionPicker(new MemoryLockDao[String, UUID] {}) { picker =>
+    withVersionPicker(new InMemoryLockDao()) { picker =>
       testWith(picker)
     }
 
