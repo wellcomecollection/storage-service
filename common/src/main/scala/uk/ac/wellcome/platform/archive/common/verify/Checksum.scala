@@ -75,9 +75,11 @@ object ChecksumValue extends Logging {
     checksumValue
   }
 
-  implicit val encoder: Encoder[ChecksumValue] = (value: ChecksumValue) => Json.fromString(value.toString)
+  implicit val encoder: Encoder[ChecksumValue] = (value: ChecksumValue) =>
+    Json.fromString(value.toString)
 
-  implicit val decoder: Decoder[ChecksumValue] = (cursor: HCursor) => cursor.value.as[String].map(ChecksumValue(_))
+  implicit val decoder: Decoder[ChecksumValue] = (cursor: HCursor) =>
+    cursor.value.as[String].map(ChecksumValue(_))
 
   implicit def format: DynamoFormat[ChecksumValue] =
     DynamoFormat.coercedXmap[ChecksumValue, String, IllegalArgumentException](

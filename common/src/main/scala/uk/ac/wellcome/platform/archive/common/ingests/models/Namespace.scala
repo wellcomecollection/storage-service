@@ -8,9 +8,11 @@ case class Namespace(underlying: String) extends AnyVal {
 }
 
 object Namespace {
-  implicit val encoder: Encoder[Namespace] = (value: Namespace) => Json.fromString(value.toString)
+  implicit val encoder: Encoder[Namespace] = (value: Namespace) =>
+    Json.fromString(value.toString)
 
-  implicit val decoder: Decoder[Namespace] = (cursor: HCursor) => cursor.value.as[String].map(Namespace(_))
+  implicit val decoder: Decoder[Namespace] = (cursor: HCursor) =>
+    cursor.value.as[String].map(Namespace(_))
 
   implicit def evidence: DynamoFormat[Namespace] =
     DynamoFormat.coercedXmap[Namespace, String, IllegalArgumentException](

@@ -27,15 +27,17 @@ object BagPath {
   private def rTrimPath(path: String): String =
     path.replaceAll("/$", "")
 
-  implicit val encoder: Encoder[BagPath] = (value: BagPath) => Json.fromString(value.toString)
+  implicit val encoder: Encoder[BagPath] = (value: BagPath) =>
+    Json.fromString(value.toString)
 
-  implicit val decoder: Decoder[BagPath] = (cursor: HCursor) => cursor.value.as[String].map(BagPath(_))
+  implicit val decoder: Decoder[BagPath] = (cursor: HCursor) =>
+    cursor.value.as[String].map(BagPath(_))
 
   implicit def evidence: DynamoFormat[BagPath] =
     DynamoFormat
       .coercedXmap[BagPath, String, IllegalArgumentException](
-      BagPath(_)
-    )(
-      _.toString
-    )
+        BagPath(_)
+      )(
+        _.toString
+      )
 }

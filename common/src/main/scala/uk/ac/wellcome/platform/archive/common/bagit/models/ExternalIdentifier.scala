@@ -8,9 +8,11 @@ case class ExternalIdentifier(underlying: String) extends AnyVal {
 }
 
 object ExternalIdentifier {
-  implicit val encoder: Encoder[ExternalIdentifier] = (value: ExternalIdentifier) => Json.fromString(value.toString)
+  implicit val encoder: Encoder[ExternalIdentifier] =
+    (value: ExternalIdentifier) => Json.fromString(value.toString)
 
-  implicit val decoder: Decoder[ExternalIdentifier] = (cursor: HCursor) => cursor.value.as[String].map(ExternalIdentifier(_))
+  implicit val decoder: Decoder[ExternalIdentifier] = (cursor: HCursor) =>
+    cursor.value.as[String].map(ExternalIdentifier(_))
 
   implicit def evidence: DynamoFormat[ExternalIdentifier] =
     DynamoFormat

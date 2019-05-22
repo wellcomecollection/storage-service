@@ -99,11 +99,10 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
           )
         )
       case Left(err) =>
-        Failure(
-          new ArchiveLocationException(
-            objectLocation = srcLocation,
-            message =
-              s"Error getting input stream for s3://$srcLocation: ${err.getMessage}"))
+        Failure(new ArchiveLocationException(
+          objectLocation = srcLocation,
+          message =
+            s"Error getting input stream for s3://$srcLocation: ${err.getMessage}"))
     }
 
   private def putArchiveEntry(dstLocation: ObjectLocation,

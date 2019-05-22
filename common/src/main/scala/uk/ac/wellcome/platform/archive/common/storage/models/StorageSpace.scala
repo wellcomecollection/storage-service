@@ -8,9 +8,11 @@ case class StorageSpace(underlying: String) extends AnyVal {
 }
 
 object StorageSpace {
-  implicit val encoder: Encoder[StorageSpace] = (value: StorageSpace) => Json.fromString(value.toString)
+  implicit val encoder: Encoder[StorageSpace] = (value: StorageSpace) =>
+    Json.fromString(value.toString)
 
-  implicit val decoder: Decoder[StorageSpace] = (cursor: HCursor) => cursor.value.as[String].map(StorageSpace(_))
+  implicit val decoder: Decoder[StorageSpace] = (cursor: HCursor) =>
+    cursor.value.as[String].map(StorageSpace(_))
 
   implicit def evidence: DynamoFormat[StorageSpace] =
     DynamoFormat.coercedXmap[StorageSpace, String, IllegalArgumentException](
