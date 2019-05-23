@@ -34,8 +34,9 @@ trait VerifyFixture extends S3 with RandomThings {
     checksum: Option[Checksum] = None
   ) = {
     VerifiableLocation(
-      location.getOrElse(randomObjectLocation).resolve,
-      checksum.getOrElse(randomChecksum)
+      uri = location.getOrElse(randomObjectLocation).resolve,
+      checksum = checksum.getOrElse(randomChecksum),
+      length = None
     )
   }
 }

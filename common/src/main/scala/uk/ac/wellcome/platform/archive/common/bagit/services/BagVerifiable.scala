@@ -105,7 +105,11 @@ class BagVerifiable(root: ObjectLocation)(
     matched: MatchedLocation): Either[Throwable, VerifiableLocation] =
     matched match {
       case MatchedLocation(bagFile: BagFile, Some(fetchEntry)) =>
-        Right(VerifiableLocation(fetchEntry.uri, bagFile.checksum))
+        Right(VerifiableLocation(
+          uri = fetchEntry.uri,
+          checksum = bagFile.checksum,
+          length = fetchEntry.length
+        ))
 
       case MatchedLocation(bagFile: BagFile, None) =>
         bagFile.locateWith(root) match {
@@ -114,7 +118,8 @@ class BagVerifiable(root: ObjectLocation)(
             Right(
               VerifiableLocation(
                 uri = resolvable.resolve(location),
-                checksum = bagFile.checksum
+                checksum = bagFile.checksum,
+                length = None
               ))
         }
     }
