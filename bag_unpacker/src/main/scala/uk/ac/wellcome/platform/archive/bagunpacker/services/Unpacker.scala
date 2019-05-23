@@ -30,7 +30,8 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
   def unpack(
     requestId: String,
     srcLocation: ObjectLocation,
-    dstLocation: ObjectLocation): Future[IngestStepResult[UnpackSummary]] = {
+    dstLocation: ObjectLocation
+            ): Future[IngestStepResult[UnpackSummary]] = {
 
     val unpackSummary =
       UnpackSummary(
@@ -43,6 +44,7 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
       archiveInputStream <- Future.fromTry {
         archiveDownloadStream(srcLocation)
       }
+
       unpackSummary <- unpack(unpackSummary, archiveInputStream, dstLocation)
     } yield unpackSummary
 
@@ -61,13 +63,15 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
   }
 
   private def clientMessageFor(exception: ArchiveLocationException) = {
-    val cause = exception.getCause.asInstanceOf[AmazonS3Exception]
     val archiveLocation = exception.getObjectLocation
-    cause.getStatusCode match {
-      case 403 => s"access to $archiveLocation is denied"
-      case 404 => s"$archiveLocation does not exist"
-      case _   => s"$archiveLocation could not be downloaded"
-    }
+
+    s"$archiveLocation could not be downloaded"
+    
+//    cause.getStatusCode match {
+//      case 403 => s"access to $archiveLocation is denied"
+//      case 404 => s"$archiveLocation does not exist"
+//      case _   => s"$archiveLocation could not be downloaded"
+//    }
   }
 
   private def unpack(unpackSummary: UnpackSummary,

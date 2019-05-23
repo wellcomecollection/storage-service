@@ -86,7 +86,8 @@ class UnpackerFeatureTest
               val ingestFailed =
                 ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
               ingestFailed.status shouldBe Ingest.Failed
-              ingestFailed.events.head.description shouldBe s"Unpacker failed - ${payload.sourceLocation} does not exist"
+              ingestFailed.events.head.description shouldBe
+                s"Unpacker failed - ${payload.sourceLocation} could not be downloaded"
           }
         }
     }

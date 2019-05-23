@@ -4,9 +4,9 @@ import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagManifest
 
 case class DisplayBagManifest(
-  checksumAlgorithm: String,
-  files: Seq[DisplayFileDigest],
-  @JsonKey("type")
+                               checksumAlgorithm: String,
+                               files: Seq[DisplayBagFile],
+                               @JsonKey("type")
   ontologyType: String = "BagManifest"
 )
 
@@ -14,6 +14,6 @@ object DisplayBagManifest {
   def apply(bagManifest: BagManifest): DisplayBagManifest =
     DisplayBagManifest(
       checksumAlgorithm = bagManifest.checksumAlgorithm.value,
-      files = bagManifest.files.map { DisplayFileDigest.apply }
+      files = bagManifest.files.map { DisplayBagFile.apply }
     )
 }

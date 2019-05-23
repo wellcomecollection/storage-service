@@ -55,6 +55,7 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
         srcLocation = payload.sourceLocation,
         dstLocation = unpackedBagLocation
       )
+
       _ <- ingestUpdater.send(payload.ingestId, stepResult)
       outgoingPayload = UnpackedBagPayload(
         ingestRequestPayload = payload,

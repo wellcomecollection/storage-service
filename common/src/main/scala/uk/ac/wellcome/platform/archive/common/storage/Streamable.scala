@@ -16,4 +16,4 @@ object Streamable {
 }
 
 case class StreamUnavailable(msg: String, e: Option[Throwable] = None)
-    extends Throwable
+    extends Throwable(msg)
