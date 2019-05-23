@@ -66,6 +66,39 @@ class S3ObjectVerifierTest
     }
   }
 
+  it("fails if the checksum is correct but the expected length is wrong") {
+    withLocalS3Bucket { bucket =>
+      val contentHashingAlgorithm = MD5
+      val contentString = "HelloWorld"
+      // md5("HelloWorld")
+      val contentStringChecksum = ChecksumValue(
+        "68e109f0f40ca72a15e05cc22786f8e6"
+      )
+
+      val objectLocation = createObjectLocationWith(bucket)
+      val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
+
+      val verifiableLocation = createVerifiableLocationWith(
+        location = objectLocation,
+        checksum = checksum,
+        length = Some(contentString.getBytes().length - 1)
+      )
+
+      createObject(objectLocation, content = contentString)
+
+      val verifiedLocation = objectVerifier.verify(verifiableLocation)
+
+      verifiedLocation shouldBe a[VerifiedFailure]
+      val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
+
+      verifiedFailure.location shouldBe verifiableLocation
+      verifiedFailure.e shouldBe a[LocationNotFound[_]]
+      verifiedFailure.e.getMessage should include(
+        "Lengths do not match!"
+      )
+    }
+  }
+
   it("returns a success if the checksum is correct") {
     withLocalS3Bucket { bucket =>
       val contentHashingAlgorithm = MD5
