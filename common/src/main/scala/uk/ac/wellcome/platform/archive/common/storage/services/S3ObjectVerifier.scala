@@ -59,7 +59,8 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
       case Right(Some(inputStream)) =>
         verifiableLocation.length match {
           case Some(expectedLength) =>
-            debug("Location specifies an expected length, checking it's correct")
+            debug(
+              "Location specifies an expected length, checking it's correct")
 
             // Note: I'm assuming that `.available()` returns the correct
             // content-length for an S3 object input stream, even though I
@@ -99,7 +100,9 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
     result
   }
 
-  private def verifyChecksum(verifiableLocation: VerifiableLocation, inputStream: InputStream, algorithm: HashingAlgorithm): VerifiedLocation =
+  private def verifyChecksum(verifiableLocation: VerifiableLocation,
+                             inputStream: InputStream,
+                             algorithm: HashingAlgorithm): VerifiedLocation =
     Checksum.create(inputStream, algorithm) match {
       // Failure to create a checksum (parsing/algorithm)
       case Failure(e) =>

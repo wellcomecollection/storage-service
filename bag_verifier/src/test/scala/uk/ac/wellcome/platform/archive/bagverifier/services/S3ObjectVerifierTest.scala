@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.VerifyFixtures
-import uk.ac.wellcome.platform.archive.common.storage.{LocationError, LocationNotFound}
+import uk.ac.wellcome.platform.archive.common.storage.{
+  LocationError,
+  LocationNotFound
+}
 import uk.ac.wellcome.platform.archive.common.verify._
 
 class S3ObjectVerifierTest
@@ -28,7 +31,8 @@ class S3ObjectVerifierTest
   it("returns a failure if the object doesn't exist") {
     withLocalS3Bucket { bucket =>
       val badLocation = createObjectLocationWith(bucket)
-      val verifiableLocation = createVerifiableLocationWith(location = badLocation)
+      val verifiableLocation =
+        createVerifiableLocationWith(location = badLocation)
 
       val verifiedLocation = objectVerifier.verify(verifiableLocation)
 
