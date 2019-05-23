@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bagverifier.fixtures.VerifyFixture
+import uk.ac.wellcome.platform.archive.bagverifier.fixtures.VerifyFixtures
 import uk.ac.wellcome.platform.archive.common.storage.{LocationError, LocationNotFound}
 import uk.ac.wellcome.platform.archive.common.verify._
 
@@ -9,10 +9,10 @@ class S3ObjectVerifierTest
     extends FunSpec
     with Matchers
     with EitherValues
-    with VerifyFixture {
+    with VerifyFixtures {
 
   it("returns a failure if the bucket doesn't exist") {
-    val badVerifiableLocation = verifiableLocation()
+    val badVerifiableLocation = createVerifiableLocation
     val verifiedLocation = objectVerifier.verify(badVerifiableLocation)
 
     verifiedLocation shouldBe a[VerifiedFailure]
@@ -28,7 +28,7 @@ class S3ObjectVerifierTest
   it("returns a failure if the object doesn't exist") {
     withLocalS3Bucket { bucket =>
       val badLocation = createObjectLocationWith(bucket)
-      val verifiableLocation = verifiableLocationWith(badLocation)
+      val verifiableLocation = createVerifiableLocationWith(location = badLocation)
 
       val verifiedLocation = objectVerifier.verify(verifiableLocation)
 
@@ -46,8 +46,10 @@ class S3ObjectVerifierTest
   it("returns a failure if the checksum is incorrect") {
     withLocalS3Bucket { bucket =>
       val objectLocation = createObjectLocationWith(bucket)
-      val verifiableLocation =
-        verifiableLocationWith(objectLocation, badChecksum)
+      val verifiableLocation = createVerifiableLocationWith(
+        location = objectLocation,
+        checksum = badChecksum
+      )
 
       createObject(objectLocation, content = "HelloWorld")
 
@@ -76,7 +78,10 @@ class S3ObjectVerifierTest
       val objectLocation = createObjectLocationWith(bucket)
       val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-      val verifiableLocation = verifiableLocationWith(objectLocation, checksum)
+      val verifiableLocation = createVerifiableLocationWith(
+        location = objectLocation,
+        checksum = checksum
+      )
 
       createObject(objectLocation, content = contentString)
 
@@ -101,7 +106,10 @@ class S3ObjectVerifierTest
       val objectLocation = createObjectLocationWith(bucket)
       val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-      val verifiableLocation = verifiableLocationWith(objectLocation, checksum)
+      val verifiableLocation = createVerifiableLocationWith(
+        location = objectLocation,
+        checksum = checksum
+      )
 
       createObject(objectLocation, content = contentString)
 
