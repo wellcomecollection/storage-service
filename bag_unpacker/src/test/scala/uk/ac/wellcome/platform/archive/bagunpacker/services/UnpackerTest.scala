@@ -114,7 +114,7 @@ class UnpackerTest
       actualResult.e.getMessage should
         startWith(
           s"Error getting input stream for s3://$srcLocation: " +
-          "The specified bucket is not valid")
+            "The specified bucket is not valid")
     }
   }
 
