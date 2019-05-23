@@ -1,14 +1,9 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import com.amazonaws.services.s3.model.PutObjectResult
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.VerifyFixture
-import uk.ac.wellcome.platform.archive.common.storage.{
-  LocationError,
-  LocationNotFound
-}
+import uk.ac.wellcome.platform.archive.common.storage.{LocationError, LocationNotFound}
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.ObjectLocation
 
 class S3ObjectVerifierTest
     extends FunSpec
@@ -54,10 +49,7 @@ class S3ObjectVerifierTest
       val verifiableLocation =
         verifiableLocationWith(objectLocation, badChecksum)
 
-      put(
-        objectLocation,
-        contents = "HelloWorld"
-      )
+      createObject(objectLocation, content = "HelloWorld")
 
       val verifiedLocation = objectVerifier.verify(verifiableLocation)
 
@@ -86,10 +78,7 @@ class S3ObjectVerifierTest
 
       val verifiableLocation = verifiableLocationWith(objectLocation, checksum)
 
-      put(
-        objectLocation,
-        contents = contentString
-      )
+      createObject(objectLocation, content = contentString)
 
       val verifiedLocation = objectVerifier.verify(verifiableLocation)
 
@@ -114,10 +103,7 @@ class S3ObjectVerifierTest
 
       val verifiableLocation = verifiableLocationWith(objectLocation, checksum)
 
-      put(
-        objectLocation,
-        contents = contentString
-      )
+      createObject(objectLocation, content = contentString)
 
       val verifiedLocation = objectVerifier.verify(verifiableLocation)
 
@@ -127,9 +113,4 @@ class S3ObjectVerifierTest
       verifiedSuccess.location shouldBe verifiableLocation
     }
   }
-
-  def put(objectLocation: ObjectLocation,
-          contents: String = randomAlphanumeric()): PutObjectResult =
-    s3Client
-      .putObject(objectLocation.namespace, objectLocation.key, contents)
 }
