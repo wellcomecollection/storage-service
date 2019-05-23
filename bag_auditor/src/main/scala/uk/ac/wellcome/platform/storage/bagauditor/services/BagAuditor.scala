@@ -8,6 +8,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.IngestID
+import uk.ac.wellcome.platform.archive.common.storage.StreamUnavailable
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
@@ -88,7 +89,11 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
     bagRootLocation: ObjectLocation): Try[ExternalIdentifier] =
     for {
       bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
-      inputStream <- bagInfoLocation.toInputStream
+      inputStream <- bagInfoLocation.toInputStream match {
+        case Left(e)                  => Failure(e)
+        case Right(None)              => Failure(StreamUnavailable("No stream available!"))
+        case Right(Some(inputStream)) => Success(inputStream)
+      }
       bagInfo <- BagInfo.create(inputStream)
     } yield bagInfo.externalIdentifier
 }

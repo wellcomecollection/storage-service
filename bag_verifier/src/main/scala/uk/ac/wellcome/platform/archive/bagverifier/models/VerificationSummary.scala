@@ -5,6 +5,7 @@ import java.time.Instant
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 import uk.ac.wellcome.platform.archive.common.verify.{
   VerificationFailure,
+  VerificationIncomplete,
   VerificationResult,
   VerificationSuccess
 }
@@ -19,6 +20,11 @@ sealed trait VerificationSummary extends Summary {
   override def toString: String = {
 
     val status = verification match {
+      case Some(VerificationIncomplete(msg)) =>
+        f"""
+           |status=incomplete
+           |message=${msg}
+         """.stripMargin
       case Some(VerificationFailure(failed, succeeded)) =>
         f"""
            |status=failure
@@ -52,11 +58,19 @@ object VerificationSummary {
                  t: Instant): VerificationIncompleteSummary = {
     VerificationIncompleteSummary(root, e, t)
   }
+
   def create(
     root: ObjectLocation,
     v: VerificationResult,
     t: Instant
   ): VerificationSummary = v match {
+    case i @ VerificationIncomplete(_) =>
+      VerificationIncompleteSummary(
+        root,
+        i,
+        t,
+        Some(Instant.now())
+      )
     case f @ VerificationFailure(_, _) =>
       VerificationFailureSummary(
         root,

@@ -7,4 +7,9 @@ case class VerificationSuccess(locations: List[VerifiedSuccess])
 
 case class VerificationFailure(failure: List[VerifiedFailure],
                                success: List[VerifiedSuccess])
-    extends VerificationResult
+    extends Throwable("Verification failure!")
+    with VerificationResult
+
+case class VerificationIncomplete(msg: String)
+    extends Throwable(msg)
+    with VerificationResult

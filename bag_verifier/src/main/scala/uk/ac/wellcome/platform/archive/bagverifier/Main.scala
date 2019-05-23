@@ -13,14 +13,17 @@ import uk.ac.wellcome.messaging.typesafe.{
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifier,
-  BagVerifierWorker,
-  S3ObjectVerifier
+  BagVerifierWorker
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  S3ObjectVerifier,
+  S3Resolvable
 }
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -47,6 +50,8 @@ object Main extends WellcomeTypesafeApp {
       new S3ObjectVerifier()
     implicit val bagService =
       new BagService()
+    implicit val s3Resolvable =
+      new S3Resolvable()
 
     val verifier = new BagVerifier()
 

@@ -8,14 +8,17 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
   VerificationIncompleteSummary,
   VerificationSuccessSummary
 }
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
 }
+import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepSucceeded
 }
+import uk.ac.wellcome.platform.archive.common.verify.FailedChecksumNoMatch
 
 class BagVerifierTest
     extends FunSpec
@@ -80,8 +83,8 @@ class BagVerifierTest
             val location = verification.failure.head
             val error = location.e
 
-            error shouldBe a[RuntimeException]
-            error.getMessage should startWith("Checksum values do not match:")
+            error shouldBe a[FailedChecksumNoMatch]
+            error.getMessage should include("Checksum values do not match!")
           }
       }
     }
@@ -111,8 +114,8 @@ class BagVerifierTest
             val location = verification.failure.head
             val error = location.e
 
-            error shouldBe a[RuntimeException]
-            error.getMessage should startWith("Checksum values do not match:")
+            error shouldBe a[FailedChecksumNoMatch]
+            error.getMessage should include("Checksum values do not match!")
           }
       }
     }
@@ -148,9 +151,8 @@ class BagVerifierTest
             val location = verification.failure.head
             val error = location.e
 
-            error shouldBe a[RuntimeException]
-            error.getMessage should startWith(
-              "The specified key does not exist")
+            error shouldBe a[LocationNotFound[_]]
+            error.getMessage should startWith("Location not available!")
           }
       }
     }
@@ -173,8 +175,8 @@ class BagVerifierTest
               .asInstanceOf[VerificationIncompleteSummary]
             val error = summary.e
 
-            error shouldBe a[RuntimeException]
-            error.getMessage should startWith("Error getting file manifest")
+            error shouldBe a[BagUnavailable]
+            error.getMessage should include("Error loading manifest-sha256.txt")
           }
       }
     }
@@ -197,8 +199,9 @@ class BagVerifierTest
               .asInstanceOf[VerificationIncompleteSummary]
             val error = summary.e
 
-            error shouldBe a[RuntimeException]
-            error.getMessage should startWith("Error getting tag manifest")
+            error shouldBe a[BagUnavailable]
+            error.getMessage should include(
+              "Error loading tagmanifest-sha256.txt")
           }
       }
     }

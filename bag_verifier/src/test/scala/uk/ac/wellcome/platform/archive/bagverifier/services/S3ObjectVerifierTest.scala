@@ -1,8 +1,12 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult}
+import com.amazonaws.services.s3.model.PutObjectResult
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.VerifyFixture
+import uk.ac.wellcome.platform.archive.common.storage.{
+  LocationError,
+  LocationNotFound
+}
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -20,9 +24,9 @@ class S3ObjectVerifierTest
     val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
 
     verifiedFailure.location shouldBe badVerifiableLocation
-    verifiedFailure.e shouldBe a[AmazonS3Exception]
-    verifiedFailure.e.getMessage should startWith(
-      "The specified bucket does not exist"
+    verifiedFailure.e shouldBe a[LocationError[_]]
+    verifiedFailure.e.getMessage should include(
+      "The specified bucket is not valid"
     )
   }
 
@@ -37,9 +41,9 @@ class S3ObjectVerifierTest
       val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
 
       verifiedFailure.location shouldBe verifiableLocation
-      verifiedFailure.e shouldBe a[AmazonS3Exception]
-      verifiedFailure.e.getMessage should startWith(
-        "The specified key does not exist"
+      verifiedFailure.e shouldBe a[LocationNotFound[_]]
+      verifiedFailure.e.getMessage should include(
+        "Location not available!"
       )
     }
   }
@@ -51,7 +55,7 @@ class S3ObjectVerifierTest
         verifiableLocationWith(objectLocation, badChecksum)
 
       put(
-        verifiableLocation.objectLocation,
+        objectLocation,
         contents = "HelloWorld"
       )
 
@@ -61,7 +65,7 @@ class S3ObjectVerifierTest
       val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
 
       verifiedFailure.location shouldBe verifiableLocation
-      verifiedFailure.e shouldBe a[RuntimeException]
+      verifiedFailure.e shouldBe a[FailedChecksumNoMatch]
       verifiedFailure.e.getMessage should startWith(
         "Checksum values do not match"
       )
@@ -83,7 +87,7 @@ class S3ObjectVerifierTest
       val verifiableLocation = verifiableLocationWith(objectLocation, checksum)
 
       put(
-        verifiableLocation.objectLocation,
+        objectLocation,
         contents = contentString
       )
 
@@ -111,7 +115,7 @@ class S3ObjectVerifierTest
       val verifiableLocation = verifiableLocationWith(objectLocation, checksum)
 
       put(
-        verifiableLocation.objectLocation,
+        objectLocation,
         contents = contentString
       )
 

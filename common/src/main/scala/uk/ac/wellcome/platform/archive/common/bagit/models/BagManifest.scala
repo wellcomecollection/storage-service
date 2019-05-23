@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.common.bagit.models
 import java.io.{BufferedReader, InputStream, InputStreamReader}
 
 import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
   ChecksumValue,
   HashingAlgorithm
 }
@@ -12,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 
 case class BagManifest(
   checksumAlgorithm: HashingAlgorithm,
-  files: List[BagFile]
+  files: Seq[BagFile]
 )
 
 object BagManifest {
@@ -20,7 +21,7 @@ object BagManifest {
   // Intended to match BagIt `manifest-algorithm.txt` file format:
   // https://tools.ietf.org/html/draft-kunze-bagit-17#section-2.1.3
 
-  val lineRegex: Regex = """(.+?)\s+(.+)""".r
+  val LINE_REGEX: Regex = """(.+?)\s+(.+)""".r
 
   def create(inputStream: InputStream,
              algorithm: HashingAlgorithm): Try[BagManifest] = {
@@ -35,7 +36,7 @@ object BagManifest {
       .filter { _.nonEmpty }
       .toList
 
-    val eitherFiles = lines.map(createBagFile(_, None))
+    val eitherFiles = lines.map(createBagFile(_, None, algorithm))
 
     // Collect left
     val errorStrings = eitherFiles.collect {
@@ -56,12 +57,16 @@ object BagManifest {
 
   private def createBagFile(
     line: String,
-    maybeRoot: Option[String]
+    maybeRoot: Option[String],
+    algorithm: HashingAlgorithm
   ): Either[String, BagFile] = line match {
-    case lineRegex(checksumString, itemPathString) =>
+    case LINE_REGEX(checksumString, itemPathString) =>
       Right(
         BagFile(
-          ChecksumValue.create(checksumString),
+          Checksum(
+            algorithm,
+            ChecksumValue.create(checksumString)
+          ),
           BagPath.create(itemPathString)
         )
       )

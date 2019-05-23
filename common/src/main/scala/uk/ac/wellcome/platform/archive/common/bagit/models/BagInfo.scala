@@ -26,8 +26,8 @@ object BagInfo {
   // Intended to match BagIt `bag-info` file format:
   // https://tools.ietf.org/html/draft-kunze-bagit-17#section-2.2.2
 
-  private val bagInfoFieldRegex = """(.*?)\s*:\s*(.*)\s*""".r
-  private val payloadOxumRegex =
+  private val BAG_INFO_FIELD_REGEX = """(.*?)\s*:\s*(.*)\s*""".r
+  private val PAYLOAD_OXUM_REGEX =
     s"""${BagInfoKeys.payloadOxum}\\s*:\\s*([0-9]+)\\.([0-9]+)\\s*""".r
 
   def create(inputStream: InputStream): Try[BagInfo] = {
@@ -87,7 +87,7 @@ object BagInfo {
   private def extractPayloadOxum(bagInfoLines: Array[String]) =
     bagInfoLines
       .collectFirst {
-        case payloadOxumRegex(bytes, numberOfFiles) =>
+        case PAYLOAD_OXUM_REGEX(bytes, numberOfFiles) =>
           PayloadOxum(bytes.toLong, numberOfFiles.toInt)
       }
       .toValidNel(BagInfoKeys.payloadOxum)
@@ -128,7 +128,7 @@ object BagInfo {
                                    bagInfoKey: String) =
     bagInfoLines
       .collectFirst {
-        case bagInfoFieldRegex(key, value) if key == bagInfoKey =>
+        case BAG_INFO_FIELD_REGEX(key, value) if key == bagInfoKey =>
           value
       }
 }

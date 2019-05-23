@@ -1,9 +1,8 @@
-package uk.ac.wellcome.platform.archive.common.bagit.parsers
+package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.bagit.models.error.InvalidBagInfo
 import uk.ac.wellcome.platform.archive.common.fixtures.BagIt
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators

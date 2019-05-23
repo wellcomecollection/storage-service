@@ -30,7 +30,8 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
   def unpack(
     requestId: String,
     srcLocation: ObjectLocation,
-    dstLocation: ObjectLocation): Future[IngestStepResult[UnpackSummary]] = {
+    dstLocation: ObjectLocation
+  ): Future[IngestStepResult[UnpackSummary]] = {
 
     val unpackSummary =
       UnpackSummary(
@@ -43,6 +44,7 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
       archiveInputStream <- Future.fromTry {
         archiveDownloadStream(srcLocation)
       }
+
       unpackSummary <- unpack(unpackSummary, archiveInputStream, dstLocation)
     } yield unpackSummary
 
@@ -61,13 +63,15 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
   }
 
   private def clientMessageFor(exception: ArchiveLocationException) = {
-    val cause = exception.getCause.asInstanceOf[AmazonS3Exception]
     val archiveLocation = exception.getObjectLocation
-    cause.getStatusCode match {
-      case 403 => s"access to $archiveLocation is denied"
-      case 404 => s"$archiveLocation does not exist"
-      case _   => s"$archiveLocation could not be downloaded"
-    }
+
+    s"$archiveLocation could not be downloaded"
+
+//    cause.getStatusCode match {
+//      case 403 => s"access to $archiveLocation is denied"
+//      case 404 => s"$archiveLocation does not exist"
+//      case _   => s"$archiveLocation could not be downloaded"
+//    }
   }
 
   private def unpack(unpackSummary: UnpackSummary,
@@ -88,16 +92,22 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
 
   private def archiveDownloadStream(
     srcLocation: ObjectLocation): Try[InputStream] =
-    srcLocation.toInputStream
-      .recoverWith {
-        case ae: AmazonS3Exception =>
-          Failure(
-            new ArchiveLocationException(
-              objectLocation = srcLocation,
-              message =
-                s"Error getting input stream for s3://$srcLocation: ${ae.getMessage}",
-              ae))
-      }
+    srcLocation.toInputStream match {
+      case Right(Some(is)) => Success(is)
+      case Right(None) =>
+        Failure(
+          new ArchiveLocationException(
+            objectLocation = srcLocation,
+            message =
+              s"Error getting input stream for s3://$srcLocation: No such object"
+          )
+        )
+      case Left(err) =>
+        Failure(new ArchiveLocationException(
+          objectLocation = srcLocation,
+          message =
+            s"Error getting input stream for s3://$srcLocation: ${err.getMessage}"))
+    }
 
   private def putArchiveEntry(dstLocation: ObjectLocation,
                               summary: UnpackSummary,

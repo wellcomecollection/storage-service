@@ -113,7 +113,8 @@ class UnpackerTest
       actualResult.e shouldBe a[ArchiveLocationException]
       actualResult.e.getMessage should
         startWith(
-          s"Error getting input stream for s3://$srcLocation: The specified bucket does not exist.")
+          s"Error getting input stream for s3://$srcLocation: " +
+            "The specified bucket is not valid")
     }
   }
 

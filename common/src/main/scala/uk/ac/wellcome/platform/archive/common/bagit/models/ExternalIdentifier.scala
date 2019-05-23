@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import com.gu.scanamo.DynamoFormat
-import io.circe.{Decoder, Encoder, Json}
+import io.circe.{Decoder, Encoder, HCursor, Json}
 
 case class ExternalIdentifier(underlying: String) extends AnyVal {
   override def toString: String = underlying
@@ -9,13 +9,10 @@ case class ExternalIdentifier(underlying: String) extends AnyVal {
 
 object ExternalIdentifier {
   implicit val encoder: Encoder[ExternalIdentifier] =
-    Encoder.instance[ExternalIdentifier] { space: ExternalIdentifier =>
-      Json.fromString(space.toString)
-    }
+    (value: ExternalIdentifier) => Json.fromString(value.toString)
 
-  implicit val decoder: Decoder[ExternalIdentifier] =
-    Decoder.instance[ExternalIdentifier](cursor =>
-      cursor.value.as[String].map(ExternalIdentifier(_)))
+  implicit val decoder: Decoder[ExternalIdentifier] = (cursor: HCursor) =>
+    cursor.value.as[String].map(ExternalIdentifier(_))
 
   implicit def evidence: DynamoFormat[ExternalIdentifier] =
     DynamoFormat

@@ -2,76 +2,42 @@ package uk.ac.wellcome.platform.archive.common.bagit
 
 import java.nio.file.Paths
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagIt.verifyFileManifest
-import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.verify._
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFetchEntry,
+  BagFile
+}
+import uk.ac.wellcome.platform.archive.common.storage.{
+  Locatable,
+  LocateFailure,
+  LocationNotFound
+}
 import uk.ac.wellcome.storage.ObjectLocation
-import scala.language.implicitConversions
+
+case class MatchedLocation(bagFile: BagFile, fetchEntry: Option[BagFetchEntry])
 
 package object models {
-  import Resolvable._
-
-  // resolvers
-
-  implicit val bagPathResolver: Resolvable[BagPath] = new Resolvable[BagPath] {
-    override def resolve(root: ObjectLocation)(
-      bagPath: BagPath): ObjectLocation = {
-      val paths = Paths.get(root.key, bagPath.value)
-      root.copy(key = paths.toString)
-    }
+  private def locateBagPath(root: ObjectLocation)(bagPath: BagPath) = {
+    val paths = Paths.get(root.key, bagPath.value)
+    root.copy(key = paths.toString)
   }
 
-  implicit val bagFileResolver: Resolvable[BagFile] = new Resolvable[BagFile] {
-    override def resolve(root: ObjectLocation)(
-      bagFile: BagFile): ObjectLocation = {
-      bagFile.path.resolve(root)
-    }
-  }
-
-  implicit val bagManifest: Resolvable[BagManifest] =
-    new Resolvable[BagManifest] {
-      override def resolve(root: ObjectLocation)(
-        bag: BagManifest): ObjectLocation = {
-        root
-      }
-    }
-
-  implicit val bagResolver: Resolvable[Bag] = new Resolvable[Bag] {
-    override def resolve(root: ObjectLocation)(bag: Bag): ObjectLocation = {
-      root
-    }
-  }
-
-  // verifiables
-
-  implicit class ResolvedVerifiable[T](t: T)(
-    implicit
-    resolver: Resolvable[T],
-    f: ObjectLocation => T => List[VerifiableLocation]
-  ) {
-    def verifiable(
-      root: ObjectLocation
-    ) = {
-
-      new Verifiable[T] {
-        override def create(t: T): List[VerifiableLocation] = {
-          val resolved = resolver.resolve(root)(t)
-
-          f(resolved)(t)
-        }
+  implicit val bagPathLocator: Locatable[BagPath] = new Locatable[BagPath] {
+    override def locate(bagPath: BagPath)(maybeRoot: Option[ObjectLocation])
+      : Either[LocateFailure[BagPath], ObjectLocation] = {
+      maybeRoot match {
+        case None       => Left(LocationNotFound(bagPath, s"No root specified!"))
+        case Some(root) => Right(locateBagPath(root)(bagPath))
       }
     }
   }
 
-  // ObjectLocation => T => List[VerifiableLocation]
-
-  implicit def bagManifestVerifiable(root: ObjectLocation)(
-    manifest: BagManifest): List[VerifiableLocation] =
-    verifyFileManifest(manifest)(root)
-
-  implicit def bagVerifiable(root: ObjectLocation)(bag: Bag) = {
-    bagManifestVerifiable(root)(bag.manifest) ++ bagManifestVerifiable(root)(
-      bag.tagManifest)
+  implicit val bagFileLocator: Locatable[BagFile] = new Locatable[BagFile] {
+    override def locate(bagFile: BagFile)(maybeRoot: Option[ObjectLocation])
+      : Either[LocateFailure[BagFile], ObjectLocation] = {
+      maybeRoot match {
+        case None       => Left(LocationNotFound(bagFile, s"No root specified!"))
+        case Some(root) => Right(locateBagPath(root)(bagFile.path))
+      }
+    }
   }
-
 }

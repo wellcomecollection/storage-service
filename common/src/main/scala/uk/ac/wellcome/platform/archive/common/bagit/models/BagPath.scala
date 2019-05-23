@@ -1,9 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import com.gu.scanamo.DynamoFormat
-import com.gu.scanamo.error.TypeCoercionError
-import io.circe.{Decoder, Encoder, Json}
-import uk.ac.wellcome.json.JsonUtil._
+import io.circe.{Decoder, Encoder, HCursor, Json}
 
 case class BagPath(value: String) {
   override def toString: String = value
@@ -16,33 +14,30 @@ object BagPath {
   def apply(
     itemPath: String,
     maybeBagRootPath: Option[String] = None
-  ): BagPath = {
-
+  ): BagPath =
     maybeBagRootPath match {
       case None => BagPath(itemPath)
       case Some(bagRootPath) =>
         BagPath(f"${rTrimPath(bagRootPath)}/${lTrimPath(itemPath)}")
     }
-  }
 
-  private def lTrimPath(path: String): String = {
+  private def lTrimPath(path: String): String =
     path.replaceAll("^/", "")
-  }
 
-  private def rTrimPath(path: String): String = {
+  private def rTrimPath(path: String): String =
     path.replaceAll("/$", "")
-  }
 
-  implicit val enc = Encoder.instance[BagPath](o => Json.fromString(o.toString))
+  implicit val encoder: Encoder[BagPath] = (value: BagPath) =>
+    Json.fromString(value.toString)
 
-  implicit val dec =
-    Decoder.instance[BagPath](cursor => cursor.value.as[String].map(BagPath(_)))
+  implicit val decoder: Decoder[BagPath] = (cursor: HCursor) =>
+    cursor.value.as[String].map(BagPath(_))
 
-  implicit def fmt =
-    DynamoFormat.xmap[BagPath, String](
-      fromJson[BagPath](_)(dec).toEither.left
-        .map(TypeCoercionError)
-    )(
-      toJson[BagPath](_).get
-    )
+  implicit def evidence: DynamoFormat[BagPath] =
+    DynamoFormat
+      .coercedXmap[BagPath, String, IllegalArgumentException](
+        BagPath(_)
+      )(
+        _.toString
+      )
 }

@@ -7,13 +7,16 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifier,
-  BagVerifierWorker,
-  S3ObjectVerifier
+  BagVerifierWorker
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  S3ObjectVerifier,
+  S3Resolvable
 }
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -56,6 +59,7 @@ trait BagVerifierFixtures
     withMaterializer { implicit mat =>
       implicit val _bagService = new BagService()
       implicit val _s3ObjectVerifier = new S3ObjectVerifier()
+      implicit val _s3Resolvable = new S3Resolvable()
 
       val verifier = new BagVerifier()
 

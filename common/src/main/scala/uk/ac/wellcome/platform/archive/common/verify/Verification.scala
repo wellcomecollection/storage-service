@@ -1,10 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.verify
 
+import grizzled.slf4j.Logging
+
 trait Verification[T] {
   def verify(t: T): VerificationResult
 }
 
-object Verification {
+object Verification extends Logging {
 
   implicit def verification[Container](
     implicit
@@ -13,24 +15,29 @@ object Verification {
   ) =
     new Verification[Container] {
       override def verify(container: Container): VerificationResult = {
-        verifiable
-          .create(container)
-          .map(verifier.verify)
-          .foldLeft[VerificationResult](VerificationSuccess(Nil)) {
+        debug(s"Verification: Attempting to verify $container")
+        verifiable.create(container) match {
+          case Left(e) => VerificationIncomplete(e.msg)
+          case Right(verifiableLocations) =>
+            verifiableLocations
+              .map(verifier.verify)
+              .foldLeft[VerificationResult](VerificationSuccess(Nil)) {
 
-            case (VerificationSuccess(sl), s @ VerifiedSuccess(_)) =>
-              VerificationSuccess(s :: sl)
+                case (VerificationSuccess(sl), s @ VerifiedSuccess(_)) =>
+                  VerificationSuccess(s :: sl)
 
-            case (VerificationSuccess(sl), f @ VerifiedFailure(_, _)) =>
-              VerificationFailure(List(f), sl)
+                case (VerificationSuccess(sl), f @ VerifiedFailure(_, _)) =>
+                  VerificationFailure(List(f), sl)
 
-            case (VerificationFailure(fl, sl), s @ VerifiedSuccess(_)) =>
-              VerificationFailure(fl, s :: sl)
+                case (VerificationFailure(fl, sl), s @ VerifiedSuccess(_)) =>
+                  VerificationFailure(fl, s :: sl)
 
-            case (VerificationFailure(fl, sl), f @ VerifiedFailure(_, _)) =>
-              VerificationFailure(f :: fl, sl)
+                case (VerificationFailure(fl, sl), f @ VerifiedFailure(_, _)) =>
+                  VerificationFailure(f :: fl, sl)
 
-          }
+                case (i @ VerificationIncomplete(_), _) => i
+              }
+        }
       }
     }
 

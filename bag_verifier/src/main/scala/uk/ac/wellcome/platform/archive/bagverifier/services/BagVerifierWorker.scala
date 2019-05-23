@@ -34,6 +34,8 @@ class BagVerifierWorker(
     with Logging
     with IngestStepWorker {
 
+  type FutureSummary = Future[Result[VerificationSummary]]
+
   private val worker =
     AlpakkaSQSWorker[BagInformationPayload, VerificationSummary](
       alpakkaSQSWorkerConfig) {
@@ -42,8 +44,7 @@ class BagVerifierWorker(
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
-  def processMessage(
-    payload: BagInformationPayload): Future[Result[VerificationSummary]] =
+  def processMessage(payload: BagInformationPayload): FutureSummary =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
       summary <- Future.fromTry(verifier.verify(payload.bagRootLocation))

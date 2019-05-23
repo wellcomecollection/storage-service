@@ -23,15 +23,16 @@ trait BagIt extends RandomThings {
     createTagManifest: List[(String, String)] => Option[FileEntry] =
       createValidTagManifest,
     createBagItFile: => Option[FileEntry] = createValidBagItFile,
-    createBagInfoFile: (BagInfo) => Option[FileEntry] = createValidBagInfoFile)
-    : Seq[FileEntry] = {
+    createBagInfoFile: (BagInfo) => Option[FileEntry] = createValidBagInfoFile
+  ): Seq[FileEntry] = {
 
     val dataFiles = createDataFiles(dataFileCount)
+
     val filesAndDigest = dataFiles.map {
       case FileEntry(fileName, contents) => (fileName, createDigest(contents))
     }.toList
 
-    val dataManifest = createDataManifest(filesAndDigest)
+    val dataManifest: Option[FileEntry] = createDataManifest(filesAndDigest)
 
     val maybeBagItFile = createBagItFile
 
@@ -42,6 +43,7 @@ trait BagIt extends RandomThings {
     val tagManifestFileAndDigests = tagManifestFiles.map {
       case FileEntry(fileName, contents) => (fileName, createDigest(contents))
     }
+
     val metaManifest = createTagManifest(tagManifestFileAndDigests)
 
     dataFiles ++ tagManifestFiles ++ metaManifest.toList
@@ -188,4 +190,5 @@ trait BagIt extends RandomThings {
       }
 }
 
+case class FileRepr[T](t: T, entry: FileEntry)
 case class FileEntry(name: String, contents: String)

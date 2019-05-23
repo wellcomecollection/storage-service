@@ -1,63 +1,86 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
+import java.io.InputStream
+
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 class BagService()(implicit s3Client: AmazonS3) extends Logging {
+
+  type Stream[T] = InputStream => Try[T]
 
   import S3StreamableInstances._
   import uk.ac.wellcome.platform.archive.common.bagit.models._
 
-  val checksumAlgorithm = SHA256
+  private val bagFetch = BagPath("fetch.txt")
+  private val bagInfo = BagPath("bag-info.txt")
+  private val fileManifest = (a: HashingAlgorithm) =>
+    BagPath(s"manifest-${a.pathRepr}.txt")
+  private val tagManifest = (a: HashingAlgorithm) =>
+    BagPath(s"tagmanifest-${a.pathRepr}.txt")
 
-  private def recoverable[T](tryT: Try[T])(message: String) = {
-    tryT.recoverWith {
-      case e => Failure(new RuntimeException(s"$message: ${e.getMessage}"))
-    }
-  }
-
-  def retrieve(root: ObjectLocation): Try[Bag] = {
-    debug(s"BagService attempting to create Bag @ $root")
-
-    val bag = for {
-      bagInfo <- recoverable(createBagInfo(root))("Error getting bag info")
-      fileManifest <- recoverable(createFileManifest(root))(
-        "Error getting file manifest")
-      tagManifest <- recoverable(createTagManifest(root))(
-        "Error getting tag manifest")
-    } yield Bag(bagInfo, fileManifest, tagManifest)
-
-    debug(s"BagService got: $bag")
-
-    bag
-  }
-
-  def createBagInfo(root: ObjectLocation): Try[BagInfo] =
+  def retrieve(root: ObjectLocation) =
     for {
-      stream <- BagPath("bag-info.txt").from(root)
-      bagInfo <- BagInfo.create(stream)
-    } yield bagInfo
 
-  val fileManifest = (a: HashingAlgorithm) => s"manifest-${a.pathRepr}.txt"
-  val tagManifest = (a: HashingAlgorithm) => s"tagmanifest-${a.pathRepr}.txt"
+      bagInfo <- loadRequired[BagInfo](root)(bagInfo)(BagInfo.create)
 
-  def createFileManifest(root: ObjectLocation): Try[BagManifest] =
-    createManifest(fileManifest(checksumAlgorithm), root)
+      fileManifest <- loadRequired[BagManifest](root)(fileManifest(SHA256))(
+        BagManifest.create(_, SHA256))
 
-  def createTagManifest(root: ObjectLocation): Try[BagManifest] =
-    createManifest(tagManifest(checksumAlgorithm), root)
+      tagManifest <- loadRequired[BagManifest](root)(tagManifest(SHA256))(
+        BagManifest.create(_, SHA256))
 
-  private def createManifest(
-    name: String,
-    root: ObjectLocation
-  ): Try[BagManifest] =
+      bagFetch <- loadOptional[BagFetch](root)(bagFetch)(BagFetch.create)
+
+    } yield Bag(bagInfo, fileManifest, tagManifest, bagFetch)
+
+  private def loadOptional[T](root: ObjectLocation)(path: BagPath)(
+    f: Stream[T]): Either[BagUnavailable, Option[T]] =
     for {
-      stream <- BagPath(name).from(root)
-      manifest <- BagManifest.create(stream, checksumAlgorithm)
-    } yield manifest
+      maybeStream <- path.locateWith(root) match {
+        case Right(o) => Right(o)
+        case Left(e) =>
+          Left(BagUnavailable(s"${path.value} is not available: ${e.msg}"))
+      }
+
+      maybeT <- maybeStream match {
+        case Some(o) =>
+          f(o) match {
+            case Success(r) => Right(Some(r))
+            case Failure(e) =>
+              Left(
+                BagUnavailable(s"Error loading ${path.value}: ${e.getMessage}"))
+          }
+        case None => Right(None)
+      }
+    } yield maybeT
+
+  private def loadRequired[T](root: ObjectLocation)(path: BagPath)(
+    f: Stream[T]) =
+    for {
+      maybeStream <- path.locateWith(root) match {
+        case Right(o) => Right(o)
+        case Left(e) =>
+          Left(BagUnavailable(s"${path.value} is not available: ${e.msg}"))
+      }
+
+      stream <- maybeStream match {
+        case Some(stream) => Right(stream)
+        case None         => Left(BagUnavailable(s"Error loading ${path.value}"))
+      }
+
+      t <- f(stream) match {
+        case Success(r) => Right(r)
+        case Failure(e) =>
+          Left(BagUnavailable(s"Error loading ${path.value}: ${e.getMessage}"))
+      }
+    } yield t
+
 }
+
+case class BagUnavailable(msg: String) extends Throwable(msg)
