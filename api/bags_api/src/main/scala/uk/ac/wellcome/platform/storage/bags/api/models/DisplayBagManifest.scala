@@ -5,13 +5,15 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagManifest
 
 case class DisplayBagManifest(
   checksumAlgorithm: String,
-  files: List[DisplayFileDigest],
+  files: Seq[DisplayFileDigest],
   @JsonKey("type")
   ontologyType: String = "BagManifest"
 )
+
 object DisplayBagManifest {
   def apply(bagManifest: BagManifest): DisplayBagManifest =
     DisplayBagManifest(
-      bagManifest.checksumAlgorithm.value,
-      bagManifest.files.map(DisplayFileDigest.apply))
+      checksumAlgorithm = bagManifest.checksumAlgorithm.value,
+      files = bagManifest.files.map { DisplayFileDigest.apply }
+    )
 }
