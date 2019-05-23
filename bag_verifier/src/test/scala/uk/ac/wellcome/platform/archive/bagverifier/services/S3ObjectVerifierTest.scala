@@ -70,7 +70,7 @@ class S3ObjectVerifierTest
     withLocalS3Bucket { bucket =>
       val contentHashingAlgorithm = MD5
       val contentString = "HelloWorld"
-      // sha256("HelloWorld")
+      // md5("HelloWorld")
       val contentStringChecksum = ChecksumValue(
         "68e109f0f40ca72a15e05cc22786f8e6"
       )
@@ -94,11 +94,40 @@ class S3ObjectVerifierTest
     }
   }
 
+  it("succeeds if the checksum is correct and the lengths match") {
+    withLocalS3Bucket { bucket =>
+      val contentHashingAlgorithm = MD5
+      val contentString = "HelloWorld"
+      // md5("HelloWorld")
+      val contentStringChecksum = ChecksumValue(
+        "68e109f0f40ca72a15e05cc22786f8e6"
+      )
+
+      val objectLocation = createObjectLocationWith(bucket)
+      val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
+
+      val verifiableLocation = createVerifiableLocationWith(
+        location = objectLocation,
+        checksum = checksum,
+        length = Some(contentString.getBytes().length)
+      )
+
+      createObject(objectLocation, content = contentString)
+
+      val verifiedLocation = objectVerifier.verify(verifiableLocation)
+
+      verifiedLocation shouldBe a[VerifiedSuccess]
+      val verifiedSuccess = verifiedLocation.asInstanceOf[VerifiedSuccess]
+
+      verifiedSuccess.location shouldBe verifiableLocation
+    }
+  }
+
   it("supports different checksum algorithms") {
     withLocalS3Bucket { bucket =>
       val contentHashingAlgorithm = SHA256
       val contentString = "HelloWorld"
-      // md5("HelloWorld")
+      // sha256("HelloWorld")
       val contentStringChecksum = ChecksumValue(
         "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
       )
