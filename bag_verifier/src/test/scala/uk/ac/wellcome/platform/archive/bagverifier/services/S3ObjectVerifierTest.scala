@@ -92,9 +92,9 @@ class S3ObjectVerifierTest
       val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
 
       verifiedFailure.location shouldBe verifiableLocation
-      verifiedFailure.e shouldBe a[LocationNotFound[_]]
-      verifiedFailure.e.getMessage should include(
-        "Lengths do not match!"
+      verifiedFailure.e shouldBe a[Throwable]
+      verifiedFailure.e.getMessage should startWith(
+        "Lengths do not match:"
       )
     }
   }
