@@ -26,7 +26,7 @@ trait VerifyFixtures extends S3 with RandomThings {
   def createVerifiableLocationWith(
     location: ObjectLocation = createObjectLocation,
     checksum: Checksum = randomChecksum,
-    length: Option[Int] = None
+    length: Option[Long] = None
   ): VerifiableLocation = {
     VerifiableLocation(
       uri = location.resolve,
