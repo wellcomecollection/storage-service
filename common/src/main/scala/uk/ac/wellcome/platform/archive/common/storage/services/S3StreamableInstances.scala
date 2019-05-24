@@ -87,7 +87,8 @@ object S3StreamableInstances {
   implicit class S3StreamableOps[T](t: T)(implicit s3Client: AmazonS3,
                                           locator: Locatable[T])
       extends Logging {
-    private def locate(root: Option[ObjectLocation]): Either[StreamUnavailable, Option[S3ObjectStream]] =
+    private def locate(root: Option[ObjectLocation])
+      : Either[StreamUnavailable, Option[S3ObjectStream]] =
       for {
         located <- locator.locate(t)(root) match {
           case Left(f)         => Left(StreamUnavailable(f.msg))
@@ -107,7 +108,8 @@ object S3StreamableInstances {
       result
     }
 
-    def locateWith(root: ObjectLocation): Either[StreamUnavailable, Option[S3ObjectStream]] = {
+    def locateWith(root: ObjectLocation)
+      : Either[StreamUnavailable, Option[S3ObjectStream]] = {
       debug(s"Attempting to locate Locatable $t")
       val result = locate(Some(root))
       debug(s"Got: $result")
