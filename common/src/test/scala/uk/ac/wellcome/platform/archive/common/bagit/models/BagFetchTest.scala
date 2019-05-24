@@ -105,6 +105,21 @@ class BagFetchTest extends FunSpec with Matchers {
       BagFetch.create(contents).get.files shouldBe expected
     }
 
+    it("handles a file whose size is >Int.MaxValue") {
+      val contents = toInputStream(s"""
+           |http://example.org/ ${Int.MaxValue}0 example.txt
+       """.stripMargin)
+
+      val expected = Seq(
+        BagFetchEntry.create(
+          url = new URI("http://example.org/"),
+          length = Some(Int.MaxValue.toLong * 10),
+          path = "example.txt")
+      )
+
+      BagFetch.create(contents).get.files shouldBe expected
+    }
+
     it("correctly decodes a percent-encoded CR/LF/CRLF in the file path") {
       val contents = toInputStream(s"""
                                       |http://example.org/abc - example%0D1%0D.txt
