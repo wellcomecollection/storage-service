@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
+import java.io.FilterInputStream
+
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.S3ObjectInputStream
 import grizzled.slf4j.Logging
@@ -8,27 +10,44 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
+trait S3ObjectStream extends FilterInputStream {
+  def getContentLength(): Long
+}
+
 object S3StreamableInstances {
 
   class StreamableObjectLocation(implicit s3Client: AmazonS3)
-      extends Streamable[ObjectLocation, S3ObjectInputStream]
+      extends Streamable[ObjectLocation, S3ObjectStream]
       with Logging {
 
-    private def getObjectContent(location: ObjectLocation) =
-      Try {
-        s3Client
-          .getObject(
-            location.namespace,
-            location.key
-          )
-          .getObjectContent
-      } match {
-        case Success(inputStream) => Right(Some(inputStream))
-        case Failure(e)           => Left(StreamUnavailable(e.getMessage))
+    private def getObjectContent(location: ObjectLocation): Either[StreamUnavailable, Some[S3ObjectStream]] = {
+      val result = for {
+        s3Object <- Try {
+          s3Client
+            .getObject(
+              location.namespace,
+              location.key
+            )
+        }
+        objectLength <- Try {
+          s3Object.getObjectMetadata.getContentLength
+        }
+        inputStream <- Try {
+          s3Object.getObjectContent
+        }
+        stream = new S3ObjectStream(inputStream) {
+          def getContentLength(): Long = objectLength
+        }
+      } yield stream
+
+      result match {
+        case Success(stream) => Right(Some(stream))
+        case Failure(err) => Left(StreamUnavailable(err.getMessage))
       }
+    }
 
     def stream(location: ObjectLocation)
-      : Either[StreamUnavailable, Option[S3ObjectInputStream]] = {
+      : Either[StreamUnavailable, Option[S3ObjectStream]] = {
       debug(s"Converting $location to InputStream")
 
       val bucketExists = Try(s3Client.doesBucketExistV2(location.namespace))
@@ -83,11 +102,10 @@ object S3StreamableInstances {
         }
       } yield streamed
 
-    def toInputStream
-      : Either[StreamUnavailable, Option[S3ObjectInputStream]] = {
+    def toInputStream: Either[StreamUnavailable, Option[S3ObjectStream]] = {
       debug(s"Attempting to locate Locatable $t")
       val result = locate(root = None)
-      debug(s"Got: ${result}")
+      debug(s"Got: $result")
       result
     }
 
@@ -95,7 +113,7 @@ object S3StreamableInstances {
       : Either[StreamUnavailable, Option[S3ObjectInputStream]] = {
       debug(s"Attempting to locate Locatable $t")
       val result = locate(Some(root))
-      debug(s"Got: ${result}")
+      debug(s"Got: $result")
       result
     }
   }

@@ -62,18 +62,7 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
             debug(
               "Location specifies an expected length, checking it's correct")
 
-            // Note: I'm assuming that `.available()` returns the correct
-            // content-length for an S3 object input stream, even though I
-            // can't find mention of it anywhere in the docs...
-            //
-            // The alternative is getting an S3Object directly with `getObject()`
-            // and inspecting the Content-Length, but that's significantly
-            // more fiddly and bypasses our nice Streamable type classes.
-            //
-            // I'm going to leave this as-is for now, but we might need to
-            // revisit it if we start getting spurious verification failures.
-            //
-            if (expectedLength == inputStream.available()) {
+            if (expectedLength == inputStream.getContentLength()) {
               verifyChecksum(
                 verifiableLocation = verifiableLocation,
                 inputStream = inputStream,
