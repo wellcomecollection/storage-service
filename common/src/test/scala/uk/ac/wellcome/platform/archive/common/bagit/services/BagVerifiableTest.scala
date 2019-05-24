@@ -294,7 +294,8 @@ class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
       VerifiableLocation(
         uri = new URI(
           s"example://${root.namespace}/${root.key}/${mf.path.toString}"),
-        checksum = mf.checksum
+        checksum = mf.checksum,
+        length = None
       )
     }
 
@@ -305,7 +306,8 @@ class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
       case (bagFile, fetchEntry) =>
         VerifiableLocation(
           uri = fetchEntry.uri,
-          checksum = bagFile.checksum
+          checksum = bagFile.checksum,
+          length = fetchEntry.length
         )
     }
 }

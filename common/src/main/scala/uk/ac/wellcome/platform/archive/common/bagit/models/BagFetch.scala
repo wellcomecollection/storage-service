@@ -71,14 +71,14 @@ object BagFetch {
       }
       .mkString("\n")
 
-  private def encodeLength(length: Option[Int]): String =
+  private def encodeLength(length: Option[Long]): String =
     length match {
       case Some(i) => i.toString
       case None    => "-"
     }
 
-  private def decodeLength(ls: String): Option[Int] =
-    if (ls == "-") None else Some(ls.toInt)
+  private def decodeLength(ls: String): Option[Long] =
+    if (ls == "-") None else Some(ls.toLong)
 
   private def encodeFilepath(path: String): String =
     path.replaceAll("\n", "%0A").replaceAll("\r", "%0D")

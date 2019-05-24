@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 
-trait VerifyFixture extends S3 with RandomThings {
+trait VerifyFixtures extends S3 with RandomThings {
 
   implicit val objectVerifier = new S3ObjectVerifier()
 
@@ -20,22 +20,18 @@ trait VerifyFixture extends S3 with RandomThings {
   def randomChecksum = Checksum(SHA256, randomChecksumValue)
   def badChecksum = Checksum(MD5, randomChecksumValue)
 
-  def randomObjectLocation = createObjectLocation
+  def createVerifiableLocation: VerifiableLocation =
+    createVerifiableLocationWith()
 
-  def verifiableLocationWith(location: ObjectLocation, checksum: Checksum) =
-    verifiableLocation(location = Some(location), checksum = Some(checksum))
-  def verifiableLocationWith(location: ObjectLocation) =
-    verifiableLocation(location = Some(location), checksum = None)
-  def verifiableLocationWith(checksum: Checksum) =
-    verifiableLocation(None, checksum = Some(checksum))
-
-  def verifiableLocation(
-    location: Option[ObjectLocation] = None,
-    checksum: Option[Checksum] = None
-  ) = {
+  def createVerifiableLocationWith(
+    location: ObjectLocation = createObjectLocation,
+    checksum: Checksum = randomChecksum,
+    length: Option[Long] = None
+  ): VerifiableLocation = {
     VerifiableLocation(
-      location.getOrElse(randomObjectLocation).resolve,
-      checksum.getOrElse(randomChecksum)
+      uri = location.resolve,
+      checksum = checksum,
+      length = length
     )
   }
 }

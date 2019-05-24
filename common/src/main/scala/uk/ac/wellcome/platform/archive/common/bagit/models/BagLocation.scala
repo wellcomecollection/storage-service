@@ -15,11 +15,6 @@ case class BagFile(
 
 case class BagFetchEntry(
   uri: URI,
-  length: Option[Int],
+  length: Option[Long],
   path: BagPath
 ) extends BagLocation
-
-object BagFetchEntry {
-  def create(url: URI, length: Option[Int], path: String) =
-    BagFetchEntry(url, length, BagPath(path))
-}
