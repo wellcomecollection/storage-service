@@ -11,14 +11,15 @@ class BagFetchTest extends FunSpec with Matchers {
   describe("write") {
     it("writes the lines of a fetch.txt") {
       val entries = Seq(
-        BagFetchEntry.create(
-          url = new URI("http://example.org/"),
-          length = Some(25),
-          path = "example.txt"),
-        BagFetchEntry.create(
-          url = new URI("https://wellcome.ac.uk/"),
-          length = None,
-          path = "logo.png")
+        createBagFetchEntryWith(
+          uri = "http://example.org/",
+          length = 25,
+          path = "example.txt"
+        ),
+        createBagFetchEntryWith(
+          uri = "https://wellcome.ac.uk/",
+          path = "logo.png"
+        )
       )
 
       val expected =
@@ -35,21 +36,21 @@ class BagFetchTest extends FunSpec with Matchers {
         "example\rnumber\r1.txt",
         "example\nnumber\n2.txt",
         "example\r\nnumber\r\n3.txt").map { path =>
-        BagFetchEntry.create(
-          url = new URI("http://example.org/"),
-          length = None,
-          path = path)
+        createBagFetchEntryWith(
+          uri = "http://example.org/",
+          path = path
+        )
       }
 
       Seq(
-        BagFetchEntry.create(
-          url = new URI("http://example.org/"),
-          length = None,
-          path = "example.txt"),
-        BagFetchEntry.create(
-          url = new URI("https://wellcome.ac.uk/"),
-          length = None,
-          path = "logo.png")
+        createBagFetchEntryWith(
+          uri = "http://example.org/",
+          path = "example.txt"
+        ),
+        createBagFetchEntryWith(
+          uri = "https://wellcome.ac.uk/",
+          path = "logo.png"
+        )
       )
 
       val expected =
@@ -71,14 +72,15 @@ class BagFetchTest extends FunSpec with Matchers {
        """.stripMargin)
 
       val expected = Seq(
-        BagFetchEntry.create(
-          url = new URI("http://example.org/"),
-          length = Some(25),
-          path = "example.txt"),
-        BagFetchEntry.create(
-          url = new URI("https://wellcome.ac.uk/"),
-          length = None,
-          path = "logo.png")
+        createBagFetchEntryWith(
+          uri = "http://example.org/",
+          length = 25,
+          path = "example.txt"
+        ),
+        createBagFetchEntryWith(
+          uri = "https://wellcome.ac.uk/",
+          path = "logo.png"
+        )
       )
 
       BagFetch.create(contents).get.files shouldBe expected
@@ -92,14 +94,15 @@ class BagFetchTest extends FunSpec with Matchers {
        """.stripMargin)
 
       val expected = Seq(
-        BagFetchEntry.create(
-          url = new URI("http://example.org/"),
-          length = Some(25),
-          path = "example.txt"),
-        BagFetchEntry.create(
-          url = new URI("https://wellcome.ac.uk/"),
-          length = None,
-          path = "logo.png")
+        createBagFetchEntryWith(
+          uri = "http://example.org/",
+          length = 25,
+          path = "example.txt"
+        ),
+        createBagFetchEntryWith(
+          uri = "https://wellcome.ac.uk/",
+          path = "logo.png"
+        )
       )
 
       BagFetch.create(contents).get.files shouldBe expected
@@ -111,10 +114,11 @@ class BagFetchTest extends FunSpec with Matchers {
        """.stripMargin)
 
       val expected = Seq(
-        BagFetchEntry.create(
-          url = new URI("http://example.org/"),
-          length = Some(Int.MaxValue.toLong * 10),
-          path = "example.txt")
+        createBagFetchEntryWith(
+          uri = "http://example.org/",
+          length = Int.MaxValue.toLong * 10,
+          path = "example.txt"
+        )
       )
 
       BagFetch.create(contents).get.files shouldBe expected
@@ -146,6 +150,20 @@ class BagFetchTest extends FunSpec with Matchers {
       exc.getMessage shouldBe "Line <<NO NO NO>> is incorrectly formatted!"
     }
   }
+
+  def createBagFetchEntryWith(uri: String, path: String) =
+    BagFetchEntry(
+      uri = new URI(uri),
+      length = None,
+      path = BagPath(path)
+    )
+
+  def createBagFetchEntryWith(uri: String, length: Long, path: String) =
+    BagFetchEntry(
+      uri = new URI(uri),
+      length = Some(length),
+      path = BagPath(path)
+    )
 
   private def toInputStream(s: String): InputStream =
     IOUtils.toInputStream(s.trim, "UTF-8")

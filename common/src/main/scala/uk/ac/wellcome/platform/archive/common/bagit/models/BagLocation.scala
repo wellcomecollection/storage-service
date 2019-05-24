@@ -18,8 +18,3 @@ case class BagFetchEntry(
   length: Option[Long],
   path: BagPath
 ) extends BagLocation
-
-object BagFetchEntry {
-  def create(url: URI, length: Option[Long], path: String) =
-    BagFetchEntry(url, length, BagPath(path))
-}
