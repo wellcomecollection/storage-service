@@ -10,9 +10,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
-trait S3ObjectStream extends FilterInputStream {
-  def contentLength: Long
-}
+class S3ObjectStream(inputStream: S3ObjectInputStream, val contentLength: Long)
+  extends FilterInputStream(inputStream)
 
 object S3StreamableInstances {
 
@@ -29,15 +28,13 @@ object S3StreamableInstances {
               location.key
             )
         }
-        objectLength <- Try {
+        contentLength <- Try {
           s3Object.getObjectMetadata.getContentLength
         }
         inputStream <- Try {
           s3Object.getObjectContent
         }
-        stream = new S3ObjectStream(inputStream) {
-          def contentLength: Long = objectLength
-        }
+        stream = new S3ObjectStream(inputStream, contentLength = contentLength)
       } yield stream
 
       result match {
