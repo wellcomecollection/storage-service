@@ -11,7 +11,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.util.{Failure, Success, Try}
 
 trait S3ObjectStream extends FilterInputStream {
-  def getContentLength(): Long
+  def contentLength: Long
 }
 
 object S3StreamableInstances {
@@ -36,7 +36,7 @@ object S3StreamableInstances {
           s3Object.getObjectContent
         }
         stream = new S3ObjectStream(inputStream) {
-          def getContentLength(): Long = objectLength
+          def contentLength: Long = objectLength
         }
       } yield stream
 

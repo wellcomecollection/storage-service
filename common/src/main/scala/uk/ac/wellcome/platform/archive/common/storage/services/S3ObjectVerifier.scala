@@ -62,7 +62,7 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
             debug(
               "Location specifies an expected length, checking it's correct")
 
-            if (expectedLength == inputStream.getContentLength()) {
+            if (expectedLength == inputStream.contentLength) {
               verifyChecksum(
                 verifiableLocation = verifiableLocation,
                 inputStream = inputStream,
