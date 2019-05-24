@@ -11,7 +11,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.util.{Failure, Success, Try}
 
 class S3ObjectStream(inputStream: S3ObjectInputStream, val contentLength: Long)
-  extends FilterInputStream(inputStream)
+    extends FilterInputStream(inputStream)
 
 object S3StreamableInstances {
 
@@ -19,7 +19,8 @@ object S3StreamableInstances {
       extends Streamable[ObjectLocation, S3ObjectStream]
       with Logging {
 
-    private def getObjectContent(location: ObjectLocation): Either[StreamUnavailable, Some[S3ObjectStream]] = {
+    private def getObjectContent(location: ObjectLocation)
+      : Either[StreamUnavailable, Some[S3ObjectStream]] = {
       val result = for {
         s3Object <- Try {
           s3Client
@@ -39,7 +40,7 @@ object S3StreamableInstances {
 
       result match {
         case Success(stream) => Right(Some(stream))
-        case Failure(err) => Left(StreamUnavailable(err.getMessage))
+        case Failure(err)    => Left(StreamUnavailable(err.getMessage))
       }
     }
 
