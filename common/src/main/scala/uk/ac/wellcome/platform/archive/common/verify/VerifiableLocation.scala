@@ -5,5 +5,5 @@ import java.net.URI
 case class VerifiableLocation(
   uri: URI,
   checksum: Checksum,
-  length: Option[Int]
+  length: Option[Long]
 )
