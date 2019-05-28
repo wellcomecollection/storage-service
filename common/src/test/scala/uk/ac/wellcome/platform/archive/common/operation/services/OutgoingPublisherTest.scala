@@ -1,61 +1,49 @@
 package uk.ac.wellcome.platform.archive.common.operation.services
 
 import org.scalatest.FunSpec
-import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.IngestRequestPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{
-  IngestOperationGenerators,
-  PayloadGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.{IngestOperationGenerators, PayloadGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Success
 
 class OutgoingPublisherTest
-    extends FunSpec
-    with ScalaFutures
+  extends FunSpec
     with IngestUpdateAssertions
-    with Eventually
-    with IntegrationPatience
     with OperationFixtures
     with IngestOperationGenerators
     with PayloadGenerators {
-
-  val operationName: String = randomAlphanumeric()
 
   it("sends outgoing message if operation is successful") {
     val successfulOperations =
       Table("operation", createOperationSuccess(), createOperationCompleted())
     forAll(successfulOperations) { operation =>
-      withLocalSnsTopic { topic =>
-        withOutgoingPublisher(operationName, topic) { outgoingPublisher =>
-          val outgoing = createIngestRequestPayload
+      val messageSender = createMessageSender
+      withOutgoingPublisher(messageSender) { outgoingPublisher =>
+        val outgoing = createIngestRequestPayload
 
-          val sendingOperationNotice =
-            outgoingPublisher.sendIfSuccessful(operation, outgoing)
+        val notice = outgoingPublisher.sendIfSuccessful(operation, outgoing)
 
-          whenReady(sendingOperationNotice) { _ =>
-            assertSnsReceivesOnly(outgoing, topic)
-          }
-        }
+        notice shouldBe a[Success[_]]
+
+        messageSender.getMessages[IngestRequestPayload] shouldBe Seq(outgoing)
       }
     }
   }
 
   it("does not send outgoing if operation failed") {
-    withLocalSnsTopic { topic =>
-      withOutgoingPublisher(operationName, topic) { outgoingPublisher =>
-        val outgoing = createIngestRequestPayload
+    val messageSender = createMessageSender
+    withOutgoingPublisher(messageSender) { outgoingPublisher =>
+      val outgoing = createIngestRequestPayload
 
-        val sendingOperationNotice =
-          outgoingPublisher.sendIfSuccessful(createOperationFailure(), outgoing)
+      val notice = outgoingPublisher.sendIfSuccessful(createOperationFailure(), outgoing)
 
-        whenReady(sendingOperationNotice) { _ =>
-          assertSnsReceivesNothing(topic)
-        }
-      }
+      notice shouldBe a[Success[_]]
+
+      messageSender.messages shouldBe empty
     }
   }
 }

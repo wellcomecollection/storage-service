@@ -5,6 +5,7 @@ import java.nio.file.Paths
 import java.time.LocalDate
 import java.util.UUID
 
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
@@ -12,6 +13,13 @@ import uk.ac.wellcome.storage.fixtures.S3.Bucket
 import scala.util.Random
 
 trait RandomThings {
+  // TODO: This should exist in the messaging library
+  def createMessageSender =
+    new MemoryMessageSender(
+      destination = randomAlphanumeric(),
+      subject = randomAlphanumeric()
+    )
+
   def randomAlphanumeric(length: Int = 8) = {
     Random.alphanumeric take length mkString
   }
