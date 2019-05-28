@@ -22,28 +22,26 @@ class OutgoingPublisherTest
       Table("operation", createOperationSuccess(), createOperationCompleted())
     forAll(successfulOperations) { operation =>
       val messageSender = createMessageSender
-      withOutgoingPublisher(messageSender) { outgoingPublisher =>
-        val outgoing = createIngestRequestPayload
+      val outgoingPublisher = createOutgoingPublisherWith(messageSender)
+      val outgoing = createIngestRequestPayload
 
-        val notice = outgoingPublisher.sendIfSuccessful(operation, outgoing)
+      val notice = outgoingPublisher.sendIfSuccessful(operation, outgoing)
 
-        notice shouldBe a[Success[_]]
+      notice shouldBe a[Success[_]]
 
-        messageSender.getMessages[IngestRequestPayload] shouldBe Seq(outgoing)
-      }
+      messageSender.getMessages[IngestRequestPayload] shouldBe Seq(outgoing)
     }
   }
 
   it("does not send outgoing if operation failed") {
     val messageSender = createMessageSender
-    withOutgoingPublisher(messageSender) { outgoingPublisher =>
-      val outgoing = createIngestRequestPayload
+    val outgoingPublisher = createOutgoingPublisherWith(messageSender)
+    val outgoing = createIngestRequestPayload
 
-      val notice = outgoingPublisher.sendIfSuccessful(createOperationFailure(), outgoing)
+    val notice = outgoingPublisher.sendIfSuccessful(createOperationFailure(), outgoing)
 
-      notice shouldBe a[Success[_]]
+    notice shouldBe a[Success[_]]
 
-      messageSender.messages shouldBe empty
-    }
+    messageSender.messages shouldBe empty
   }
 }

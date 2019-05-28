@@ -27,7 +27,7 @@ class BagVerifierFeatureTest
     val outgoing = createMessageSender
 
     withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
-      withBagVerifierWorker(ingests, outgoing, queue) { _ =>
+      withBagVerifierWorker(ingests, outgoing, queue, stepName = "verification") { _ =>
         withLocalS3Bucket { bucket =>
           withBag(bucket) {
             case (bagRootLocation, _) =>
@@ -63,7 +63,7 @@ class BagVerifierFeatureTest
     val outgoing = createMessageSender
 
     withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
-      withBagVerifierWorker(ingests, outgoing, queue) { _ =>
+      withBagVerifierWorker(ingests, outgoing, queue, stepName = "verification") { _ =>
         withLocalS3Bucket { bucket =>
           withBag(
             bucket,

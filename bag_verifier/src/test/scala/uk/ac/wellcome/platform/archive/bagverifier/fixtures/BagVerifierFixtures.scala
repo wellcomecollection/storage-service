@@ -20,27 +20,25 @@ trait BagVerifierFixtures
   def withBagVerifierWorker[R](ingests: MemoryMessageSender,
                                outgoing: MemoryMessageSender,
                                queue: Queue =
-                                 Queue("fixture", arn = "arn::fixture"))(
+                                 Queue("fixture", arn = "arn::fixture"),
+                               stepName: String = randomAlphanumeric())(
     testWith: TestWith[BagVerifierWorker[String, String], R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         withMaterializer(actorSystem) { implicit mat =>
           withVerifier { verifier =>
-            withIngestUpdater("verification", ingests) { ingestUpdater =>
-              withOutgoingPublisher(outgoing) {
-                outgoingPublisher =>
-                  val service = new BagVerifierWorker(
-                    alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-                    ingestUpdater = ingestUpdater,
-                    outgoingPublisher = outgoingPublisher,
-                    verifier = verifier
-                  )
+            val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
+            val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+            val service = new BagVerifierWorker(
+              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+              ingestUpdater = ingestUpdater,
+              outgoingPublisher = outgoingPublisher,
+              verifier = verifier
+            )
 
-                  service.run()
+            service.run()
 
-                  testWith(service)
-              }
-            }
+            testWith(service)
           }
         }
       }

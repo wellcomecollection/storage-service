@@ -28,7 +28,7 @@ class BagVerifierWorkerTest
     val ingests = createMessageSender
     val outgoing = createMessageSender
 
-    withBagVerifierWorker(ingests, outgoing) { service =>
+    withBagVerifierWorker(ingests, outgoing, stepName = "verification") { service =>
       withLocalS3Bucket { bucket =>
         withBag(bucket) {
           case (bagRootLocation, _) =>
@@ -57,7 +57,7 @@ class BagVerifierWorkerTest
     val ingests = createMessageSender
     val outgoing = createMessageSender
 
-    withBagVerifierWorker(ingests, outgoing) { service =>
+    withBagVerifierWorker(ingests, outgoing, stepName = "verification") { service =>
       withLocalS3Bucket { bucket =>
         withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
           case (bagRootLocation, _) =>
@@ -91,7 +91,7 @@ class BagVerifierWorkerTest
     val ingests = createMessageSender
     val outgoing = createMessageSender
 
-    withBagVerifierWorker(ingests, outgoing) { service =>
+    withBagVerifierWorker(ingests, outgoing, stepName = "verification") { service =>
       withLocalS3Bucket { bucket =>
         withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
           case (bagRootLocation, _) =>
@@ -128,7 +128,7 @@ class BagVerifierWorkerTest
       override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] = Failure(new Throwable("BOOM!"))
     }
 
-    withBagVerifierWorker(ingests, outgoing) { service =>
+    withBagVerifierWorker(ingests, outgoing, stepName = "verification") { service =>
       withLocalS3Bucket { bucket =>
         withBag(bucket) {
           case (bagRootLocation, _) =>

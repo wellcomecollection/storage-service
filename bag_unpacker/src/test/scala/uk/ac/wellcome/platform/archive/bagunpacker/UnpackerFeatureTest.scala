@@ -23,7 +23,7 @@ class UnpackerFeatureTest
 
   it("receives and processes a notification") {
     val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
-    withBagUnpackerApp {
+    withBagUnpackerApp(stepName = "unpacker") {
       case (_, srcBucket, queue, ingests, outgoing) =>
         withArchive(srcBucket, archiveFile) { archiveLocation =>
           val ingestRequestPayload =
@@ -60,7 +60,7 @@ class UnpackerFeatureTest
   }
 
   it("sends a failed Ingest update if it cannot read the bag") {
-    withBagUnpackerApp {
+    withBagUnpackerApp(stepName = "unpacker") {
       case (_, _, queue, ingests, outgoing) =>
         val payload = createIngestRequestPayload
         sendNotificationToSQS(queue, payload)

@@ -37,26 +37,24 @@ trait BagAuditorFixtures
   def withAuditorWorker[R](
     queue: Queue = defaultQueue,
     ingests: MemoryMessageSender,
-    outgoing: MemoryMessageSender
+    outgoing: MemoryMessageSender,
+    stepName: String = randomAlphanumeric()
   )(testWith: TestWith[BagAuditorWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
-      withIngestUpdater("auditing bag", ingests) { ingestUpdater =>
-        withOutgoingPublisher(outgoing) {
-          outgoingPublisher =>
-            withMonitoringClient { implicit monitoringClient =>
-              withBagAuditor { bagAuditor =>
-                val worker = new BagAuditorWorker(
-                  alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-                  bagAuditor = bagAuditor,
-                  ingestUpdater = ingestUpdater,
-                  outgoingPublisher = outgoingPublisher
-                )
+      val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
+      val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+      withMonitoringClient { implicit monitoringClient =>
+        withBagAuditor { bagAuditor =>
+          val worker = new BagAuditorWorker(
+            alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+            bagAuditor = bagAuditor,
+            ingestUpdater = ingestUpdater,
+            outgoingPublisher = outgoingPublisher
+          )
 
-                worker.run()
+          worker.run()
 
-                testWith(worker)
-              }
-            }
+          testWith(worker)
         }
       }
     }

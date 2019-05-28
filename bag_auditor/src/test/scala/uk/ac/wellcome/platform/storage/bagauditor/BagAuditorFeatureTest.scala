@@ -37,7 +37,7 @@ class BagAuditorFeatureTest
           withLocalSqsQueue { queue =>
             val ingests = createMessageSender
             val outgoing = createMessageSender
-            withAuditorWorker(queue, ingests, outgoing) { _ =>
+            withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
               sendNotificationToSQS(queue, payload)
 
               eventually {
@@ -85,7 +85,7 @@ class BagAuditorFeatureTest
           withLocalSqsQueue { queue =>
             val ingests = createMessageSender
             val outgoing = createMessageSender
-            withAuditorWorker(queue, ingests, outgoing) { _ =>
+            withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
               sendNotificationToSQS(queue, payload)
 
               eventually {
@@ -120,7 +120,7 @@ class BagAuditorFeatureTest
           withLocalSqsQueue { queue =>
             val ingests = createMessageSender
             val outgoing = createMessageSender
-            withAuditorWorker(queue, ingests, outgoing) { _ =>
+            withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
               sendNotificationToSQS(queue, payload)
 
               eventually {
@@ -156,7 +156,7 @@ class BagAuditorFeatureTest
       withLocalSqsQueue { queue =>
         val ingests = createMessageSender
         val outgoing = createMessageSender
-        withAuditorWorker(queue, ingests, outgoing) { _ =>
+        withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
           sendNotificationToSQS(queue, payload)
 
           eventually {
@@ -189,7 +189,7 @@ class BagAuditorFeatureTest
     withLocalSqsQueue { queue =>
       val ingests = createMessageSender
       val outgoing = createMessageSender
-      withAuditorWorker(queue, ingests, outgoing) { _ =>
+      withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
         sendNotificationToSQS(queue, payload)
 
         eventually {

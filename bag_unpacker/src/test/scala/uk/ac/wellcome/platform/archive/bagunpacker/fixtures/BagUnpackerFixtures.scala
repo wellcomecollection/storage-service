@@ -23,29 +23,28 @@ trait BagUnpackerFixtures
     queue: Queue,
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
-    dstBucket: Bucket
+    dstBucket: Bucket,
+    stepName: String = randomAlphanumeric()
   )(testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
-      withIngestUpdater("unpacker", ingests) { ingestUpdater =>
-        withOutgoingPublisher(outgoing) { ongoingPublisher =>
-          withMonitoringClient { implicit monitoringClient =>
-            val bagUnpackerWorker = BagUnpackerWorker(
-              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-              bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
-              ingestUpdater = ingestUpdater,
-              outgoingPublisher = ongoingPublisher,
-              unpacker = Unpacker(new S3Uploader())
-            )
+      val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
+      val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+      withMonitoringClient { implicit monitoringClient =>
+        val bagUnpackerWorker = BagUnpackerWorker(
+          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
+          ingestUpdater = ingestUpdater,
+          outgoingPublisher = outgoingPublisher,
+          unpacker = Unpacker(new S3Uploader())
+        )
 
-            bagUnpackerWorker.run()
+        bagUnpackerWorker.run()
 
-            testWith(bagUnpackerWorker)
-          }
-        }
+        testWith(bagUnpackerWorker)
       }
     }
 
-  def withBagUnpackerApp[R](
+  def withBagUnpackerApp[R](stepName: String)(
     testWith: TestWith[(BagUnpackerWorker[String, String], Bucket, Queue, MemoryMessageSender, MemoryMessageSender), R])
     : R =
     withLocalS3Bucket { sourceBucket =>
@@ -56,7 +55,8 @@ trait BagUnpackerFixtures
           queue,
           ingests,
           outgoing,
-          sourceBucket
+          sourceBucket,
+          stepName = stepName
         )({ bagUnpackerProcess =>
           testWith(
             (
