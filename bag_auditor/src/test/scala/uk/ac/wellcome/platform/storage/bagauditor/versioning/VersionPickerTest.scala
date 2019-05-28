@@ -6,7 +6,6 @@ import java.util.UUID
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
-import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
 import uk.ac.wellcome.storage.{LockDao, LockFailure, UnlockFailure}
 
 import scala.util.{Failure, Success}
@@ -16,6 +15,7 @@ class VersionPickerTest
     with Matchers
     with ExternalIdentifierGenerators
     with VersionPickerFixtures {
+
   it("assigns version 1 if it hasn't seen this external ID before") {
     withVersionPicker { picker =>
       val result = picker.chooseVersion(
@@ -104,7 +104,7 @@ class VersionPickerTest
   }
 
   it("locks around the ingest ID and external identifiers") {
-    val lockDao = new InMemoryLockDao()
+    val lockDao = createLockDao
 
     withVersionPicker(lockDao) { picker =>
       val ingestId = createIngestID

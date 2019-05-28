@@ -1,16 +1,14 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
 import org.scalatest.EitherValues
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.storage.StorageError
 import uk.ac.wellcome.storage.memory.{MemoryObjectStore, MemoryVersionedDao}
-import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry, VersionedHybridStore}
-
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.storage.streaming.CodecInstances._
-
+import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry, VersionedHybridStore}
 
 trait StorageManifestVHSFixture extends EitherValues {
   type Dao = MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
