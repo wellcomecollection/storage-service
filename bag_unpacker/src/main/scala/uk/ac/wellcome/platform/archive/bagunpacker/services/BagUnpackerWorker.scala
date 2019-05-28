@@ -23,12 +23,14 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
-                             bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
-                             ingestUpdater: IngestUpdater,
-                             outgoingPublisher: OutgoingPublisher,
-                             unpacker: Unpacker)(
-  implicit actorSystem: ActorSystem,
+case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
+  alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
+  bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
+  ingestUpdater: IngestUpdater[IngestDestination],
+  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
+  unpacker: Unpacker)(
+  implicit
+  actorSystem: ActorSystem,
   ec: ExecutionContext,
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
@@ -48,7 +50,9 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
       unpackerWorkerConfig = bagUnpackerWorkerConfig
     )
     for {
-      _ <- ingestUpdater.start(payload.ingestId)
+      _ <- Future.fromTry {
+        ingestUpdater.start(payload.ingestId)
+      }
 
       stepResult <- unpacker.unpack(
         requestId = payload.ingestId.toString,
@@ -56,12 +60,16 @@ case class BagUnpackerWorker(alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
         dstLocation = unpackedBagLocation
       )
 
-      _ <- ingestUpdater.send(payload.ingestId, stepResult)
+      _ <- Future.fromTry {
+        ingestUpdater.send(payload.ingestId, stepResult)
+      }
       outgoingPayload = UnpackedBagPayload(
         ingestRequestPayload = payload,
         unpackedBagLocation = unpackedBagLocation
       )
-      _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
+      _ <- Future.fromTry {
+        outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
+      }
     } yield toResult(stepResult)
   }
 
