@@ -12,11 +12,11 @@ import scala.util.Try
 
 trait IngestUpdateAssertions extends Inside with Logging with Matchers {
   def assertTopicReceivesIngestStatus[R](ingestId: IngestID,
-                                         messageSender: MemoryMessageSender,
+                                         ingests: MemoryMessageSender,
                                          status: Ingest.Status,
                                          expectedBag: Option[BagId] = None)(
     assert: Seq[IngestEvent] => R): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, messageSender) { ingestUpdates =>
+    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size should be > 0
 
       val (success, failures) = ingestUpdates
@@ -41,16 +41,16 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
 
   def assertTopicReceivesIngestUpdates(
     ingestId: IngestID,
-    messageSender: MemoryMessageSender,
+    ingests: MemoryMessageSender,
   )(assert: Seq[IngestUpdate] => Assertion): Assertion =
-    assert(messageSender.getMessages[IngestUpdate])
+    assert(ingests.getMessages[IngestUpdate])
 
   def assertTopicReceivesIngestEvents(
     ingestId: IngestID,
-    messageSender: MemoryMessageSender,
+    ingests: MemoryMessageSender,
     expectedDescriptions: Seq[String]
   ): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, messageSender) { ingestUpdates =>
+    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       val eventDescriptions: Seq[String] =
         ingestUpdates
           .flatMap { _.events }
@@ -62,8 +62,8 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
 
   def assertTopicReceivesIngestEvent(
     ingestId: IngestID,
-    messageSender: MemoryMessageSender)(assert: Seq[IngestEvent] => Assertion): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, messageSender) { ingestUpdates =>
+    ingests: MemoryMessageSender)(assert: Seq[IngestEvent] => Assertion): Assertion =
+    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size should be > 0
 
       val (success, _) = ingestUpdates
