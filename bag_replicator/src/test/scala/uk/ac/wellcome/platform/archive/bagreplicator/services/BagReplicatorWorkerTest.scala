@@ -23,7 +23,7 @@ import uk.ac.wellcome.storage.{LockDao, LockFailure}
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.Success
+import scala.util.Try
 
 class BagReplicatorWorkerTest
     extends FunSpec
@@ -50,9 +50,8 @@ class BagReplicatorWorkerTest
                   storageSpace = storageSpace
                 )
 
-                service.processMessage(payload) shouldBe a[Success[_]]
-
-                println(outgoing.messages)
+                val serviceResult = service.processMessage(payload)
+                serviceResult.success.value shouldBe a[Successful[_]]
 
                 val receivedMessages =
                   outgoing.getMessages[BagInformationPayload]
@@ -94,6 +93,7 @@ class BagReplicatorWorkerTest
                 )
 
                 val result = worker.processMessage(payload).success.value
+                result shouldBe a[Successful[_]]
 
                 val destination = result.summary.get.destination
                 destination.namespace shouldBe archiveBucket.name
@@ -118,6 +118,7 @@ class BagReplicatorWorkerTest
                 )
 
                 val result = worker.processMessage(payload).success.value
+                result shouldBe a[Successful[_]]
 
                 val destination = result.summary.get.destination
                 val expectedKey =
@@ -148,6 +149,7 @@ class BagReplicatorWorkerTest
                 )
 
                 val result = worker.processMessage(payload).success.value
+                result shouldBe a[Successful[_]]
 
                 val destination = result.summary.get.destination
                 destination.key should endWith(
@@ -169,6 +171,7 @@ class BagReplicatorWorkerTest
                 )
 
                 val result = worker.processMessage(payload).success.value
+                result shouldBe a[Successful[_]]
 
                 val destination = result.summary.get.destination
                 destination.key should startWith(
@@ -190,6 +193,7 @@ class BagReplicatorWorkerTest
                 )
 
                 val result = worker.processMessage(payload).success.value
+                result shouldBe a[Successful[_]]
 
                 val destination = result.summary.get.destination
                 destination.key should startWith("rootprefix/")
@@ -206,6 +210,7 @@ class BagReplicatorWorkerTest
     withBagReplicatorWorker(lockServiceDao = lockServiceDao) { service =>
       val payload = createBagInformationPayload
       val result = service.processMessage(payload).success.value
+      result shouldBe a[Successful[_]]
 
       val destination = result.summary.get.destination
 
