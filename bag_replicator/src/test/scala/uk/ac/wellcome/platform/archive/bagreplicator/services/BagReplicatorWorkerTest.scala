@@ -41,7 +41,7 @@ class BagReplicatorWorkerTest
         val ingests = createMessageSender
         val outgoing = createMessageSender
 
-        withBagReplicatorWorker(ingests, outgoing, bucket = archiveBucket) {
+        withBagReplicatorWorker(bucket = archiveBucket, ingests = ingests, outgoing = outgoing) {
           service =>
             withBag(ingestsBucket) {
               case (srcBagRootLocation, storageSpace) =>
@@ -51,6 +51,8 @@ class BagReplicatorWorkerTest
                 )
 
                 service.processMessage(payload) shouldBe a[Success[_]]
+
+                println(outgoing.messages)
 
                 val receivedMessages =
                   outgoing.getMessages[BagInformationPayload]
@@ -84,7 +86,7 @@ class BagReplicatorWorkerTest
     it("copies the bag to the configured bucket") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          withBagReplicatorWorker(archiveBucket) { worker =>
+          withBagReplicatorWorker(bucket = archiveBucket) { worker =>
             withBag(ingestsBucket) {
               case (bagRootLocation, _) =>
                 val payload = createBagInformationPayloadWith(
@@ -104,8 +106,10 @@ class BagReplicatorWorkerTest
     it("constructs the correct key") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          val config = createReplicatorDestinationConfigWith(archiveBucket)
-          withBagReplicatorWorker(config) { worker =>
+          val rootPath = randomAlphanumeric()
+          withBagReplicatorWorker(
+            bucket = archiveBucket,
+            rootPath = Some(rootPath)) { worker =>
             val bagInfo = createBagInfo
             withBag(ingestsBucket, bagInfo = bagInfo) {
               case (bagRootLocation, _) =>
@@ -119,7 +123,7 @@ class BagReplicatorWorkerTest
                 val expectedKey =
                   Paths
                     .get(
-                      config.rootPath.get,
+                      rootPath,
                       payload.storageSpace.underlying,
                       payload.externalIdentifier.toString,
                       s"v${payload.version}"
@@ -135,7 +139,7 @@ class BagReplicatorWorkerTest
     it("key ends with the external identifier and version of the bag") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          withBagReplicatorWorker(archiveBucket) { worker =>
+          withBagReplicatorWorker(bucket = archiveBucket) { worker =>
             withBag(ingestsBucket) {
               case (bagRootLocation, _) =>
                 val payload = createBagInformationPayloadWith(
@@ -157,11 +161,7 @@ class BagReplicatorWorkerTest
     it("prefixes the key with the storage space if no root path is set") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          val config = createReplicatorDestinationConfigWith(
-            bucket = archiveBucket,
-            rootPath = None
-          )
-          withBagReplicatorWorker(config) { worker =>
+          withBagReplicatorWorker(bucket = archiveBucket) { worker =>
             withBag(ingestsBucket) {
               case (bagRootLocation, _) =>
                 val payload = createBagInformationPayloadWith(
@@ -182,11 +182,7 @@ class BagReplicatorWorkerTest
     it("prefixes the key with the root path if set") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          val config = createReplicatorDestinationConfigWith(
-            bucket = archiveBucket,
-            rootPath = Some("rootprefix")
-          )
-          withBagReplicatorWorker(config) { worker =>
+          withBagReplicatorWorker(bucket = archiveBucket, rootPath = Some("rootprefix")) { worker =>
             withBag(ingestsBucket) {
               case (bagRootLocation, _) =>
                 val payload = createBagInformationPayloadWith(
@@ -267,9 +263,9 @@ class BagReplicatorWorkerTest
           withLocalSqsQueue { queue =>
             withBagReplicatorWorker(
               queue = queue,
+              bucket = bucket,
               ingests = ingests,
               outgoing = outgoing,
-              config = createReplicatorDestinationConfigWith(bucket),
               lockServiceDao = neverAllowLockDao) { _ =>
               val payload = createBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
