@@ -27,7 +27,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-trait HttpFixtures extends Akka with ScalaFutures { this: Matchers =>
+trait HttpFixtures extends Akka with ScalaFutures with Matchers {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import uk.ac.wellcome.json.JsonUtil._
 

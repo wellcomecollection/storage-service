@@ -16,7 +16,7 @@ trait StorageManifestVHSFixture extends EitherValues {
 
   def createStore: Store = new MemoryObjectStore[StorageManifest]()
   def createDao: Dao = MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
-  def createStorageManifestVHS(dao: Dao, store: Store): StorageManifestVHS =
+  def createStorageManifestVHS(dao: Dao = createDao, store: Store = createStore): StorageManifestVHS =
     new StorageManifestVHS(
       new VersionedHybridStore[String, StorageManifest, EmptyMetadata] {
         override protected val versionedDao: Dao = dao

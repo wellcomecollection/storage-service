@@ -5,21 +5,20 @@ import java.net.URL
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Route
+import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagId,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.http.models.UserErrorResponse
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBag
+import uk.ac.wellcome.storage.DoesNotExistError
 
 import scala.concurrent.ExecutionContext
 
 class Router(vhs: StorageManifestVHS, contextURL: URL)(
-  implicit val ec: ExecutionContext) {
+  implicit val ec: ExecutionContext) extends Logging {
 
   def routes: Route = {
     import akka.http.scaladsl.server.Directives._
@@ -34,16 +33,27 @@ class Router(vhs: StorageManifestVHS, contextURL: URL)(
         )
 
         get {
-          onSuccess(vhs.getRecord(bagId)) {
-            case Some(storageManifest) =>
-              complete(DisplayBag(storageManifest, contextURL))
-            case None =>
+          vhs.getRecord(bagId) match {
+            case Right(storageManifest) =>
+              complete(
+                DisplayBag(storageManifest = storageManifest, contextUrl = contextURL)
+              )
+            case Left(e: DoesNotExistError) =>
+              error("Does not exist", e.e)
               complete(
                 NotFound -> UserErrorResponse(
                   context = contextURL,
                   statusCode = StatusCodes.NotFound,
                   description = s"Storage manifest $bagId not found"
                 ))
+            case Left(storageError) =>
+              error("Internal server error", storageError.e)
+              complete(
+                InternalServerError -> InternalServerErrorResponse(
+                  context = contextURL,
+                  statusCode = StatusCodes.InternalServerError
+                )
+              )
           }
         }
       }
