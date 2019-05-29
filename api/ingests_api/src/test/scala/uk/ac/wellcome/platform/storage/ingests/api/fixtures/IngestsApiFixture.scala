@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.storage.ingests.api.fixtures
 import java.net.URL
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.monitoring.MetricsSender
+import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
@@ -18,7 +18,7 @@ trait IngestsApiFixture
   extends IngestStarterFixture
   with IngestGenerators
   with HttpFixtures
-  with Messaging {
+  with MetricsSenderFixture {
 
   val contextURL = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
