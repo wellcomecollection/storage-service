@@ -22,7 +22,7 @@ class BagRegisterWorkerTest
     with PayloadGenerators {
 
   it("sends a successful IngestUpdate upon registration") {
-    withBagRegisterWorker() {
+    withBagRegisterWorker {
       case (service, dao, store, ingests, _, _) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
@@ -68,26 +68,18 @@ class BagRegisterWorkerTest
   }
 
   it("sends a failed IngestUpdate if storing fails") {
-    withBagRegisterWorker() {
+    withBagRegisterWorker {
       case (service, _, _, ingests, _, _) =>
-        val bagInfo = createBagInfo
-
         val payload = createBagInformationPayloadWith(
           bagRootLocation = createObjectLocation,
           storageSpace = createStorageSpace
-        )
-
-        val bagId = BagId(
-          space = payload.storageSpace,
-          externalIdentifier = bagInfo.externalIdentifier
         )
 
         service.processMessage(payload) shouldBe a[Success[_]]
 
         assertBagRegisterFailed(
           ingestId = payload.ingestId,
-          ingests = ingests,
-          bagId = bagId
+          ingests = ingests
         )
     }
   }

@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 class BagRegisterWorker[IngestDestination, OutgoingDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
@@ -41,14 +41,10 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
-      // TODO: This pattern is a bit icky, and should be tidied up
       registrationSummary <- register.update(
         bagRootLocation = payload.bagRootLocation,
         storageSpace = payload.storageSpace
-      ) match {
-        case Right(summary) => Success(summary)
-        case Left(err) => Failure(err)
-      }
+      )
 
       _ <- ingestUpdater.send(
         payload.ingestId,

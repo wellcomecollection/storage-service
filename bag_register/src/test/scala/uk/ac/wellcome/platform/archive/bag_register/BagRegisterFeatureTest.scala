@@ -18,7 +18,7 @@ class BagRegisterFeatureTest
     with PayloadGenerators {
 
   it("sends an update if it registers a bag") {
-    withBagRegisterWorker() {
+    withBagRegisterWorker {
       case (_, dao, store, ingests, _, queuePair) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
@@ -68,10 +68,8 @@ class BagRegisterFeatureTest
   }
 
   it("sends a failed update and discards the work on error") {
-    withBagRegisterWorker() {
+    withBagRegisterWorker {
       case (_, _, _, ingests, _, queuePair) =>
-        val bagInfo = createBagInfo
-
         val payload = createBagInformationPayloadWith(
           bagRootLocation = createObjectLocation,
           storageSpace = createStorageSpace
@@ -79,16 +77,10 @@ class BagRegisterFeatureTest
 
         sendNotificationToSQS(queuePair.queue, payload)
 
-        val bagId = BagId(
-          space = payload.storageSpace,
-          externalIdentifier = bagInfo.externalIdentifier
-        )
-
         eventually {
           assertBagRegisterFailed(
             ingestId = payload.ingestId,
-            ingests = ingests,
-            bagId = bagId
+            ingests = ingests
           )
         }
 

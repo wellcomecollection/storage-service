@@ -25,7 +25,7 @@ trait BagRegisterFixtures
 
   type Fixtures = (BagRegisterWorker[String, String], StorageManifestDao, StorageManifestStore, MemoryMessageSender, MemoryMessageSender, QueuePair)
 
-  def withBagRegisterWorker[R](stepName: String = randomAlphanumeric())(
+  def withBagRegisterWorker[R](
     testWith: TestWith[Fixtures, R]): R =
     withActorSystem { implicit actorSystem =>
       withMonitoringClient { implicit monitoringClient =>
@@ -48,7 +48,7 @@ trait BagRegisterFixtures
           val service = new BagRegisterWorker(
             alpakkaSQSWorkerConfig =
               createAlpakkaSQSWorkerConfig(queuePair.queue),
-            ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName),
+            ingestUpdater = createIngestUpdaterWith(ingests, stepName = "register"),
             outgoingPublisher = createOutgoingPublisherWith(outgoing),
             register = register
           )
@@ -80,7 +80,7 @@ trait BagRegisterFixtures
 
   def assertBagRegisterFailed(ingestId: IngestID,
                               ingests: MemoryMessageSender,
-                              bagId: BagId): Assertion =
+                              bagId: Option[BagId] = None): Assertion =
     assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
@@ -90,7 +90,7 @@ trait BagRegisterFixtures
       val ingestFailed =
         ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
       ingestFailed.status shouldBe Ingest.Failed
-      ingestFailed.affectedBag shouldBe Some(bagId)
+      ingestFailed.affectedBag shouldBe bagId
       ingestFailed.events.head.description shouldBe "Register failed"
     }
 }
