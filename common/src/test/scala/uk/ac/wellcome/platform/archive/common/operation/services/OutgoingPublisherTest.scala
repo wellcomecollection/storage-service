@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.common.operation.services
 import org.scalatest.FunSpec
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.IngestRequestPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{IngestOperationGenerators, PayloadGenerators}
@@ -21,7 +22,7 @@ class OutgoingPublisherTest
     val successfulOperations =
       Table("operation", createOperationSuccess(), createOperationCompleted())
     forAll(successfulOperations) { operation =>
-      val messageSender = createMessageSender
+      val messageSender = new MemoryMessageSender()
       val outgoingPublisher = createOutgoingPublisherWith(messageSender)
       val outgoing = createIngestRequestPayload
 
@@ -34,7 +35,7 @@ class OutgoingPublisherTest
   }
 
   it("does not send outgoing if operation failed") {
-    val messageSender = createMessageSender
+    val messageSender = new MemoryMessageSender()
     val outgoingPublisher = createOutgoingPublisherWith(messageSender)
     val outgoing = createIngestRequestPayload
 

@@ -46,10 +46,11 @@ trait NotifierFixtures
     }
 
   def withNotifier[R](testWith: TestWith[(Queue, MemoryMessageSender), R]): R =
-    withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 15) { queuePair =>
-      val messageSender = createMessageSender
-        withApp(queue = queuePair.queue, messageSender = messageSender) { _ =>
-          testWith((queuePair.queue, messageSender))
+    // TODO: Can this be a regular queue?
+    withLocalSqsQueue { queue =>
+      val messageSender = new MemoryMessageSender()
+        withApp(queue = queue, messageSender = messageSender) { _ =>
+          testWith((queue, messageSender))
         }
     }
 }

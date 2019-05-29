@@ -34,8 +34,8 @@ trait BagRegisterFixtures
         val store = createStore
         val storageManifestVHS = createStorageManifestVHS(dao, store)
 
-        val ingests = createMessageSender
-        val outgoing = createMessageSender
+        val ingests = new MemoryMessageSender()
+        val outgoing = new MemoryMessageSender()
 
         withLocalSqsQueueAndDlq { queuePair =>
           val storageManifestService = new StorageManifestService()

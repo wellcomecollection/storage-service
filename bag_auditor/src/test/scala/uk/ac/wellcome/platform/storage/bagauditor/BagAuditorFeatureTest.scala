@@ -2,13 +2,11 @@ package uk.ac.wellcome.platform.storage.bagauditor
 
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestStatusUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 
 class BagAuditorFeatureTest
@@ -35,8 +33,8 @@ class BagAuditorFeatureTest
           )
 
           withLocalSqsQueue { queue =>
-            val ingests = createMessageSender
-            val outgoing = createMessageSender
+            val ingests = new MemoryMessageSender()
+            val outgoing = new MemoryMessageSender()
             withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
               sendNotificationToSQS(queue, payload)
 
@@ -83,8 +81,8 @@ class BagAuditorFeatureTest
           )
 
           withLocalSqsQueue { queue =>
-            val ingests = createMessageSender
-            val outgoing = createMessageSender
+            val ingests = new MemoryMessageSender()
+            val outgoing = new MemoryMessageSender()
             withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
               sendNotificationToSQS(queue, payload)
 
@@ -118,8 +116,8 @@ class BagAuditorFeatureTest
           val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
           withLocalSqsQueue { queue =>
-            val ingests = createMessageSender
-            val outgoing = createMessageSender
+            val ingests = new MemoryMessageSender()
+            val outgoing = new MemoryMessageSender()
             withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
               sendNotificationToSQS(queue, payload)
 
@@ -154,8 +152,8 @@ class BagAuditorFeatureTest
       val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
       withLocalSqsQueue { queue =>
-        val ingests = createMessageSender
-        val outgoing = createMessageSender
+        val ingests = new MemoryMessageSender()
+        val outgoing = new MemoryMessageSender()
         withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
           sendNotificationToSQS(queue, payload)
 
@@ -187,8 +185,8 @@ class BagAuditorFeatureTest
     val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
     withLocalSqsQueue { queue =>
-      val ingests = createMessageSender
-      val outgoing = createMessageSender
+      val ingests = new MemoryMessageSender()
+      val outgoing = new MemoryMessageSender()
       withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
         sendNotificationToSQS(queue, payload)
 

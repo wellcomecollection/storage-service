@@ -34,8 +34,8 @@ trait BagReplicatorFixtures
     queue: Queue = Queue(randomAlphanumeric(), randomAlphanumeric()),
     bucket: Bucket = Bucket(randomAlphanumeric()),
     rootPath: Option[String] = None,
-    ingests: MemoryMessageSender = createMessageSender,
-    outgoing: MemoryMessageSender = createMessageSender,
+    ingests: MemoryMessageSender = new MemoryMessageSender(),
+    outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
     stepName: String = randomAlphanumeric())(
     testWith: TestWith[BagReplicatorWorker[String, String], R]

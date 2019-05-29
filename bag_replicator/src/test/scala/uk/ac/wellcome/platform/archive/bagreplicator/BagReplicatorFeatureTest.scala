@@ -5,6 +5,7 @@ import java.nio.file.Paths
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
@@ -25,57 +26,56 @@ class BagReplicatorFeatureTest
       withLocalS3Bucket { archiveBucket =>
         val rootPath = randomAlphanumeric()
 
-          val ingests = createMessageSender
-          val outgoing = createMessageSender
+        val ingests = new MemoryMessageSender()
+        val outgoing = new MemoryMessageSender()
 
-          withLocalSqsQueue { queue =>
-            withBagReplicatorWorker(queue, bucket = archiveBucket, rootPath = Some(rootPath), ingests, outgoing, stepName = "replicating") {
-              _ =>
-                withBag(ingestsBucket) {
-                  case (srcBagRootLocation, _) =>
-                    val payload = createBagInformationPayloadWith(
-                      bagRootLocation = srcBagRootLocation
+        withLocalSqsQueue { queue =>
+          withBagReplicatorWorker(queue, bucket = archiveBucket, rootPath = Some(rootPath), ingests, outgoing, stepName = "replicating") {
+            _ =>
+              withBag(ingestsBucket) {
+                case (srcBagRootLocation, _) =>
+                  val payload = createBagInformationPayloadWith(
+                    bagRootLocation = srcBagRootLocation
+                  )
+
+                  sendNotificationToSQS(queue, payload)
+
+                  eventually {
+                    val expectedDst = createObjectLocationWith(
+                      bucket = archiveBucket,
+                      key = Paths
+                        .get(
+                          rootPath,
+                          payload.storageSpace.toString,
+                          payload.externalIdentifier.toString,
+                          s"v${payload.version}"
+                        )
+                        .toString
                     )
 
-                    sendNotificationToSQS(queue, payload)
+                    val expectedPayload = payload.copy(
+                      bagRootLocation = expectedDst
+                    )
 
-                    eventually {
-                      val expectedDst = createObjectLocationWith(
-                        bucket = archiveBucket,
-                        key = Paths
-                          .get(
-                            rootPath,
-                            payload.storageSpace.toString,
-                            payload.externalIdentifier.toString,
-                            s"v${payload.version}"
-                          )
-                          .toString
+                    outgoing.getMessages[BagInformationPayload] shouldBe Seq(expectedPayload)
+
+                    verifyBagCopied(
+                      src = srcBagRootLocation,
+                      dst = expectedDst
+                    )
+
+                    assertTopicReceivesIngestEvents(
+                      payload.ingestId,
+                      ingests,
+                      expectedDescriptions = Seq(
+                        "Replicating started",
+                        "Replicating succeeded"
                       )
-
-                      val expectedPayload = payload.copy(
-                        bagRootLocation = expectedDst
-                      )
-
-                      println(outgoing.messages)
-                      outgoing.getMessages[BagInformationPayload] shouldBe Seq(expectedPayload)
-
-                      verifyBagCopied(
-                        src = srcBagRootLocation,
-                        dst = expectedDst
-                      )
-
-                      assertTopicReceivesIngestEvents(
-                        payload.ingestId,
-                        ingests,
-                        expectedDescriptions = Seq(
-                          "Replicating started",
-                          "Replicating succeeded"
-                        )
-                      )
-                    }
-                }
-            }
+                    )
+                  }
+              }
           }
+        }
       }
     }
   }

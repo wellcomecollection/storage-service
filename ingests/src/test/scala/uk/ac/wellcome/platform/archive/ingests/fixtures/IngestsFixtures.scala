@@ -43,7 +43,7 @@ trait IngestsFixtures
 
   def withConfiguredApp[R](testWith: TestWith[(Queue, MemoryMessageSender, Table), R]): R = {
     withLocalSqsQueue { queue =>
-      val messageSender = createMessageSender
+      val messageSender = new MemoryMessageSender()
       withIngestTrackerTable { table =>
         withIngestWorker(queue, table, messageSender) { _ =>
           testWith((queue, messageSender, table))

@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.ingests.services
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, CallbackNotification, Ingest}
 
@@ -23,7 +24,7 @@ class CallbackNotificationServiceTest
   it(
     "sends a notification if there's a pending callback and the ingest is complete") {
     forAll(sendsCallbackStatus) { (ingestStatus, callbackStatus) =>
-      val messageSender = createMessageSender
+      val messageSender = new MemoryMessageSender()
       val service = new CallbackNotificationService(messageSender)
 
       val ingest = createIngestWith(
@@ -61,7 +62,7 @@ class CallbackNotificationServiceTest
 
   it("doesn't send a notification if the callback has already been sent") {
     forAll(doesNotSendCallbackStatus) { (ingestStatus, callbackStatus) =>
-      val messageSender = createMessageSender
+      val messageSender = new MemoryMessageSender()
       val service = new CallbackNotificationService(messageSender)
 
       val ingest = createIngestWith(
@@ -76,7 +77,7 @@ class CallbackNotificationServiceTest
   }
 
   it("doesn't send a notification if there's no callback information") {
-    val messageSender = createMessageSender
+    val messageSender = new MemoryMessageSender()
     val service = new CallbackNotificationService(messageSender)
 
     val ingest = createIngestWith(

@@ -49,8 +49,8 @@ trait BagUnpackerFixtures
     : R =
     withLocalS3Bucket { sourceBucket =>
       withLocalSqsQueue { queue =>
-        val ingests = createMessageSender
-        val outgoing = createMessageSender
+        val ingests = new MemoryMessageSender()
+        val outgoing = new MemoryMessageSender()
         withBagUnpackerWorker(
           queue,
           ingests,

@@ -22,7 +22,7 @@ class IngestsWorkerServiceTest
   it("updates an existing ingest to Completed") {
     withLocalSqsQueue { queue =>
       withIngestTrackerTable { table =>
-        val messageSender = createMessageSender
+        val messageSender = new MemoryMessageSender()
         withIngestWorker(queue, table, messageSender) { service =>
           withIngestTracker(table) { ingestTracker =>
             val ingest = ingestTracker.initialise(createIngest).success.value
@@ -66,7 +66,7 @@ class IngestsWorkerServiceTest
   it("adds multiple events to an ingest") {
     withLocalSqsQueue { queue =>
       withIngestTrackerTable { table =>
-        val messageSender = createMessageSender
+        val messageSender = new MemoryMessageSender()
         withIngestWorker(queue, table, messageSender) { service =>
           withIngestTracker(table) { ingestTracker =>
             val ingest = ingestTracker.initialise(createIngest).success.value
@@ -113,7 +113,7 @@ class IngestsWorkerServiceTest
   it("fails if the ingest is not in the table") {
     withLocalSqsQueue { queue =>
       withIngestTrackerTable { table =>
-        val messageSender = createMessageSender
+        val messageSender = new MemoryMessageSender()
           withIngestWorker(queue, table, messageSender) { service =>
             val ingestStatusUpdate =
               createIngestStatusUpdateWith(
@@ -137,10 +137,7 @@ class IngestsWorkerServiceTest
       withIngestTrackerTable { table =>
         val exception = new Throwable("BOOM!")
 
-        val brokenSender = new MemoryMessageSender(
-          destination = randomAlphanumeric(),
-          subject = randomAlphanumeric()
-        ) {
+        val brokenSender = new MemoryMessageSender() {
           override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
             Failure(exception)
         }

@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.ingests.services
 
 import org.scalatest.FunSpec
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, IngestOperationGenerators}
@@ -23,7 +24,7 @@ class IngestUpdaterTest
   val summary: TestSummary = createTestSummary()
 
   it("sends an ingest update when successful") {
-    val messageSender = createMessageSender
+    val messageSender = new MemoryMessageSender()
     val ingestUpdater = createIngestUpdaterWith(
       stepName = stepName,
       messageSender = messageSender
@@ -41,7 +42,7 @@ class IngestUpdaterTest
 
 
   it("sends an ingest update when completed") {
-    val messageSender = createMessageSender
+    val messageSender = new MemoryMessageSender()
     val ingestUpdater = createIngestUpdaterWith(
       stepName = stepName,
       messageSender = messageSender
@@ -67,7 +68,7 @@ class IngestUpdaterTest
   }
 
   it("sends an ingest update when failed") {
-    val messageSender = createMessageSender
+    val messageSender = new MemoryMessageSender()
     val ingestUpdater = createIngestUpdaterWith(
       stepName = stepName,
       messageSender = messageSender
@@ -93,7 +94,7 @@ class IngestUpdaterTest
   }
 
   it("sends an ingest update when an ingest step starts") {
-    val messageSender = createMessageSender
+    val messageSender = new MemoryMessageSender()
     val ingestUpdater = createIngestUpdaterWith(
       stepName = stepName,
       messageSender = messageSender
@@ -113,7 +114,7 @@ class IngestUpdaterTest
   }
 
   it("sends an ingest update when failed with a failure message") {
-    val messageSender = createMessageSender
+    val messageSender = new MemoryMessageSender()
     val ingestUpdater = createIngestUpdaterWith(
       stepName = stepName,
       messageSender = messageSender

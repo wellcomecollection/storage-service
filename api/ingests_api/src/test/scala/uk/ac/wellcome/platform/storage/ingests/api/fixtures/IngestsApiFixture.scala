@@ -56,7 +56,7 @@ trait IngestsApiFixture
 
   def withBrokenApp[R](
     testWith: TestWith[(Table, MemoryMessageSender, MetricsSender, String), R]): R = {
-      val messageSender = createMessageSender
+      val messageSender = new MemoryMessageSender()
       val table = Table("does-not-exist", index = "does-not-exist")
       withMockMetricsSender { metricsSender =>
         withApp(table, messageSender, metricsSender) { _ =>
@@ -73,7 +73,7 @@ trait IngestsApiFixture
   def withConfiguredApp[R](
     testWith: TestWith[(Table, MemoryMessageSender, MetricsSender, String), R]): R =
     withIngestTrackerTable { table =>
-      val messageSender = createMessageSender
+      val messageSender = new MemoryMessageSender()
       withMockMetricsSender { metricsSender =>
         withApp(table, messageSender, metricsSender) { _ =>
           testWith(

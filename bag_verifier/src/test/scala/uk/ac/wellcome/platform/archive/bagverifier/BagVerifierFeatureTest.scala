@@ -4,6 +4,7 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
@@ -23,8 +24,8 @@ class BagVerifierFeatureTest
 
   it(
     "updates the ingests service and sends an outgoing notification if verification succeeds") {
-    val ingests = createMessageSender
-    val outgoing = createMessageSender
+    val ingests = new MemoryMessageSender()
+    val outgoing = new MemoryMessageSender()
 
     withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
       withBagVerifierWorker(ingests, outgoing, queue, stepName = "verification") { _ =>
@@ -59,8 +60,8 @@ class BagVerifierFeatureTest
   }
 
   it("deletes the message if the bag has incorrect checksum values") {
-    val ingests = createMessageSender
-    val outgoing = createMessageSender
+    val ingests = new MemoryMessageSender()
+    val outgoing = new MemoryMessageSender()
 
     withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
       withBagVerifierWorker(ingests, outgoing, queue, stepName = "verification") { _ =>

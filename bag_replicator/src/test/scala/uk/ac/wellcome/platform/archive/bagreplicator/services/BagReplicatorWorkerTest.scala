@@ -6,11 +6,8 @@ import java.util.UUID
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.worker.models.{
-  NonDeterministicFailure,
-  Result,
-  Successful
-}
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
@@ -37,8 +34,8 @@ class BagReplicatorWorkerTest
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { ingestsBucket =>
       withLocalS3Bucket { archiveBucket =>
-        val ingests = createMessageSender
-        val outgoing = createMessageSender
+        val ingests = new MemoryMessageSender()
+        val outgoing = new MemoryMessageSender()
 
         withBagReplicatorWorker(bucket = archiveBucket, ingests = ingests, outgoing = outgoing, stepName = "replicating") {
           service =>
@@ -276,8 +273,8 @@ class BagReplicatorWorkerTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, dataFileCount = 20) {
         case (bagRootLocation, _) =>
-          val ingests = createMessageSender
-          val outgoing = createMessageSender
+          val ingests = new MemoryMessageSender()
+          val outgoing = new MemoryMessageSender()
           withLocalSqsQueue { queue =>
             withBagReplicatorWorker(
               queue = queue,

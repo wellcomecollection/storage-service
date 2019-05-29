@@ -23,7 +23,7 @@ class IngestStarterTest
   val ingest: Ingest = createIngest
 
   it("saves an Ingest and sends a notification") {
-    val messageSender = createMessageSender
+    val messageSender = new MemoryMessageSender()
     withIngestTrackerTable { table =>
       withIngestStarter(table, messageSender) { ingestStarter =>
         val result = ingestStarter.initialise(ingest)
@@ -38,7 +38,7 @@ class IngestStarterTest
   }
 
   it("returns a failed future if saving to DynamoDB fails") {
-    val messageSender = createMessageSender
+    val messageSender = new MemoryMessageSender()
     val fakeTable = Table("does-not-exist", index = "does-not-exist")
 
     withIngestStarter(fakeTable, messageSender) { ingestStarter =>
@@ -52,10 +52,7 @@ class IngestStarterTest
 
   it("returns a failed future if sending a message fails") {
     withIngestTrackerTable { table =>
-      val brokenMessageSender = new MemoryMessageSender(
-        destination = randomAlphanumeric(),
-        subject = randomAlphanumeric()
-      ) {
+      val brokenMessageSender = new MemoryMessageSender() {
         override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
           Failure(new Throwable("BOOM!"))
       }

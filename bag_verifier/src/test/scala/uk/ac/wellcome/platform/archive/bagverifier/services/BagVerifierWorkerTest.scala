@@ -25,8 +25,8 @@ class BagVerifierWorkerTest
 
   it(
     "updates the ingest monitor and sends an outgoing notification if verification succeeds") {
-    val ingests = createMessageSender
-    val outgoing = createMessageSender
+    val ingests = new MemoryMessageSender()
+    val outgoing = new MemoryMessageSender()
 
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") { service =>
       withLocalS3Bucket { bucket =>
@@ -54,8 +54,8 @@ class BagVerifierWorkerTest
   }
 
   it("only updates the ingest monitor if verification fails") {
-    val ingests = createMessageSender
-    val outgoing = createMessageSender
+    val ingests = new MemoryMessageSender()
+    val outgoing = new MemoryMessageSender()
 
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") { service =>
       withLocalS3Bucket { bucket =>
@@ -88,8 +88,8 @@ class BagVerifierWorkerTest
     def dontCreateTheDataManifest(
       dataFiles: List[(String, String)]): Option[FileEntry] = None
 
-    val ingests = createMessageSender
-    val outgoing = createMessageSender
+    val ingests = new MemoryMessageSender()
+    val outgoing = new MemoryMessageSender()
 
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") { service =>
       withLocalS3Bucket { bucket =>
@@ -119,12 +119,9 @@ class BagVerifierWorkerTest
   }
 
   it("sends a ingest update before it sends an outgoing message") {
-    val ingests = createMessageSender
+    val ingests = new MemoryMessageSender()
 
-    val outgoing = new MemoryMessageSender(
-      destination = randomAlphanumeric(),
-      subject = randomAlphanumeric()
-    ) {
+    val outgoing = new MemoryMessageSender() {
       override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] = Failure(new Throwable("BOOM!"))
     }
 
