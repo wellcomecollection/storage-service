@@ -5,17 +5,15 @@ import java.net.URL
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, RandomThings, StorageManifestVHSFixture}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.memory.MemoryObjectStore
-import uk.ac.wellcome.storage.streaming.CodecInstances._
+import uk.ac.wellcome.storage.memory.{MemoryConditionalUpdateDao, MemoryVersionedDao}
+import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -68,17 +66,14 @@ trait BagsApiFixture
   def withBrokenApp[R](
     testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R = {
 
-    val brokenStore = new MemoryObjectStore[StorageManifest]() {
-      override def put(namespace: String)(
-        input: StorageManifest,
-        keyPrefix: KeyPrefix,
-        keySuffix: KeySuffix,
-        userMetadata: Map[String, String]
-      ): Either[WriteError, ObjectLocation] =
-        Left(BackendWriteError(new Throwable("BOOM!")))
+    val brokenDao = new MemoryVersionedDao[String, Entry[String, EmptyMetadata]](
+      underlying = MemoryConditionalUpdateDao[String, Entry[String, EmptyMetadata]]
+    ) {
+      override def get(id: String): scala.Either[ReadError, Entry[String, EmptyMetadata]] =
+        Left(DaoReadError(new Throwable("BOOM!")))
     }
 
-    val brokenVhs = createStorageManifestVHS(store = brokenStore)
+    val brokenVhs = createStorageManifestVHS(dao = brokenDao)
 
     withMockMetricsSender { metricsSender =>
       withApp(metricsSender, brokenVhs) { _ =>
