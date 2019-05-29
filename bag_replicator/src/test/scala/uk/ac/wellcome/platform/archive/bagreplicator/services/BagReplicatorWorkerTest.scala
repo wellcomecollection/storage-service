@@ -4,7 +4,7 @@ import java.nio.file.Paths
 import java.util.UUID
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.worker.models.{
   NonDeterministicFailure,
@@ -17,64 +17,64 @@ import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.storage.fixtures.InMemoryLockDao
+import uk.ac.wellcome.storage.memory.MemoryLockDao
 import uk.ac.wellcome.storage.{LockDao, LockFailure}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.Success
 
 class BagReplicatorWorkerTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
     with BagLocationFixtures
     with BagReplicatorFixtures
     with IngestUpdateAssertions
-    with PayloadGenerators {
+    with PayloadGenerators
+    with TryValues
+    with ScalaFutures {
 
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { ingestsBucket =>
       withLocalS3Bucket { archiveBucket =>
-        withLocalSnsTopic { ingestTopic =>
-          withLocalSnsTopic { outgoingTopic =>
-            withBagReplicatorWorker(
-              ingestTopic = ingestTopic,
-              outgoingTopic = outgoingTopic,
-              bucket = archiveBucket) { service =>
-              withBag(ingestsBucket) {
-                case (srcBagRootLocation, storageSpace) =>
-                  val payload = createBagInformationPayloadWith(
-                    bagRootLocation = srcBagRootLocation,
-                    storageSpace = storageSpace
+        val ingests = createMessageSender
+        val outgoing = createMessageSender
+
+        withBagReplicatorWorker(ingests, outgoing, bucket = archiveBucket) {
+          service =>
+            withBag(ingestsBucket) {
+              case (srcBagRootLocation, storageSpace) =>
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = srcBagRootLocation,
+                  storageSpace = storageSpace
+                )
+
+                service.processMessage(payload) shouldBe a[Success[_]]
+
+                val receivedMessages =
+                  outgoing.getMessages[BagInformationPayload]
+                receivedMessages.size shouldBe 1
+
+                val result = receivedMessages.head
+                result.ingestId shouldBe payload.ingestId
+
+                val dstBagRootLocation = result.bagRootLocation
+
+                verifyBagCopied(
+                  src = srcBagRootLocation,
+                  dst = dstBagRootLocation
+                )
+
+                assertTopicReceivesIngestEvents(
+                  payload.ingestId,
+                  ingests,
+                  expectedDescriptions = Seq(
+                    "Replicating started",
+                    "Replicating succeeded"
                   )
-
-                  val future = service.processMessage(payload)
-
-                  whenReady(future) { _ =>
-                    val result =
-                      notificationMessage[BagInformationPayload](outgoingTopic)
-                    result.ingestId shouldBe payload.ingestId
-
-                    val dstBagRootLocation = result.bagRootLocation
-
-                    verifyBagCopied(
-                      src = srcBagRootLocation,
-                      dst = dstBagRootLocation
-                    )
-
-                    assertTopicReceivesIngestEvents(
-                      payload.ingestId,
-                      ingestTopic,
-                      expectedDescriptions = Seq(
-                        "Replicating started",
-                        "Replicating succeeded"
-                      )
-                    )
-                  }
-              }
+                )
             }
-          }
         }
       }
     }
@@ -91,12 +91,10 @@ class BagReplicatorWorkerTest
                   bagRootLocation = bagRootLocation
                 )
 
-                val future = worker.processMessage(payload)
+                val result = worker.processMessage(payload).success.value
 
-                whenReady(future) { result =>
-                  val destination = result.summary.get.destination
-                  destination.namespace shouldBe archiveBucket.name
-                }
+                val destination = result.summary.get.destination
+                destination.namespace shouldBe archiveBucket.name
             }
           }
         }
@@ -115,21 +113,19 @@ class BagReplicatorWorkerTest
                   bagRootLocation = bagRootLocation
                 )
 
-                val future = worker.processMessage(payload)
+                val result = worker.processMessage(payload).success.value
 
-                whenReady(future) { result =>
-                  val destination = result.summary.get.destination
-                  val expectedKey =
-                    Paths
-                      .get(
-                        config.rootPath.get,
-                        payload.storageSpace.underlying,
-                        payload.externalIdentifier.toString,
-                        s"v${payload.version}"
-                      )
-                      .toString
-                  destination.key shouldBe expectedKey
-                }
+                val destination = result.summary.get.destination
+                val expectedKey =
+                  Paths
+                    .get(
+                      config.rootPath.get,
+                      payload.storageSpace.underlying,
+                      payload.externalIdentifier.toString,
+                      s"v${payload.version}"
+                    )
+                    .toString
+                destination.key shouldBe expectedKey
             }
           }
         }
@@ -147,13 +143,11 @@ class BagReplicatorWorkerTest
                   version = 3
                 )
 
-                val future = worker.processMessage(payload)
+                val result = worker.processMessage(payload).success.value
 
-                whenReady(future) { result =>
-                  val destination = result.summary.get.destination
-                  destination.key should endWith(
-                    s"/${payload.externalIdentifier.toString}/v3")
-                }
+                val destination = result.summary.get.destination
+                destination.key should endWith(
+                  s"/${payload.externalIdentifier.toString}/v3")
             }
           }
         }
@@ -174,13 +168,11 @@ class BagReplicatorWorkerTest
                   bagRootLocation = bagRootLocation
                 )
 
-                val future = worker.processMessage(payload)
+                val result = worker.processMessage(payload).success.value
 
-                whenReady(future) { result =>
-                  val destination = result.summary.get.destination
-                  destination.key should startWith(
-                    payload.storageSpace.underlying)
-                }
+                val destination = result.summary.get.destination
+                destination.key should startWith(
+                  payload.storageSpace.underlying)
             }
           }
         }
@@ -201,12 +193,10 @@ class BagReplicatorWorkerTest
                   bagRootLocation = bagRootLocation
                 )
 
-                val future = worker.processMessage(payload)
+                val result = worker.processMessage(payload).success.value
 
-                whenReady(future) { result =>
-                  val destination = result.summary.get.destination
-                  destination.key should startWith("rootprefix/")
-                }
+                val destination = result.summary.get.destination
+                destination.key should startWith("rootprefix/")
             }
           }
         }
@@ -215,23 +205,21 @@ class BagReplicatorWorkerTest
   }
 
   it("locks around the destination") {
-    val lockServiceDao = new InMemoryLockDao()
+    val lockServiceDao = new MemoryLockDao[String, UUID] {}
 
     withBagReplicatorWorker(lockServiceDao = lockServiceDao) { service =>
       val payload = createBagInformationPayload
-      val future = service.processMessage(payload)
+      val result = service.processMessage(payload).success.value
 
-      whenReady(future) { result: Result[ReplicationSummary] =>
-        val destination = result.summary.get.destination
+      val destination = result.summary.get.destination
 
-        lockServiceDao.history should have size 1
-        lockServiceDao.history.head.id shouldBe destination.toString
-      }
+      lockServiceDao.history should have size 1
+      lockServiceDao.history.head.id shouldBe destination.toString
     }
   }
 
   it("only allows one worker to process a destination") {
-    val lockServiceDao = new InMemoryLockDao()
+    val lockServiceDao = new MemoryLockDao[String, UUID] {}
 
     withLocalS3Bucket { bucket =>
       // We have to create a large bag to slow down the replicators, or the
@@ -239,28 +227,25 @@ class BagReplicatorWorkerTest
       // processes have started.
       withBag(bucket, dataFileCount = 250) {
         case (bagRootLocation, _) =>
-          withLocalSnsTopic { ingestTopic =>
-            withLocalSnsTopic { outgoingTopic =>
-              withBagReplicatorWorker(
-                ingestTopic = ingestTopic,
-                outgoingTopic = outgoingTopic,
-                lockServiceDao = lockServiceDao) { worker =>
-                val payload = createBagInformationPayloadWith(
-                  bagRootLocation = bagRootLocation
-                )
+          withBagReplicatorWorker(lockServiceDao = lockServiceDao) { worker =>
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation
+            )
 
-                val futures: Future[Seq[Result[ReplicationSummary]]] =
-                  Future.sequence((1 to 5).map { _ =>
-                    worker.processMessage(payload)
-                  })
-
-                whenReady(futures) { result =>
-                  result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
-                  result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
-
-                  lockServiceDao.history should have size 1
+            val futures: Future[Seq[Result[ReplicationSummary]]] =
+              Future.sequence(
+                (1 to 5).map { i =>
+                  Future.successful(i).flatMap { _ =>
+                    Future.fromTry { worker.processMessage(payload) }
+                  }
                 }
-              }
+              )
+
+            whenReady(futures) { result =>
+              result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
+              result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
+
+              lockServiceDao.history should have size 1
             }
           }
       }
@@ -277,40 +262,38 @@ class BagReplicatorWorkerTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, dataFileCount = 20) {
         case (bagRootLocation, _) =>
-          withLocalSnsTopic { ingestTopic =>
-            withLocalSnsTopic { outgoingTopic =>
-              withLocalSqsQueue { queue =>
-                withBagReplicatorWorker(
-                  queue = queue,
-                  ingestTopic = ingestTopic,
-                  outgoingTopic = outgoingTopic,
-                  config = createReplicatorDestinationConfigWith(bucket),
-                  lockServiceDao = neverAllowLockDao) { _ =>
-                  val payload = createBagInformationPayloadWith(
-                    bagRootLocation = bagRootLocation
-                  )
+          val ingests = createMessageSender
+          val outgoing = createMessageSender
+          withLocalSqsQueue { queue =>
+            withBagReplicatorWorker(
+              queue = queue,
+              ingests = ingests,
+              outgoing = outgoing,
+              config = createReplicatorDestinationConfigWith(bucket),
+              lockServiceDao = neverAllowLockDao) { _ =>
+              val payload = createBagInformationPayloadWith(
+                bagRootLocation = bagRootLocation
+              )
 
-                  sendNotificationToSQS(queue, payload)
+              sendNotificationToSQS(queue, payload)
 
-                  // Give the worker time to pick up the message, discover it
-                  // can't lock, and mark the message visibility timeout.
-                  Thread.sleep(2000)
+              // Give the worker time to pick up the message, discover it
+              // can't lock, and mark the message visibility timeout.
+              Thread.sleep(2000)
 
-                  eventually {
-                    val queueAttributes =
-                      sqsClient
-                        .getQueueAttributes(
-                          queue.url,
-                          List(
-                            "ApproximateNumberOfMessagesNotVisible",
-                            "ApproximateNumberOfMessages").asJava
-                        )
-                        .getAttributes
+              eventually {
+                val queueAttributes =
+                  sqsClient
+                    .getQueueAttributes(
+                      queue.url,
+                      List(
+                        "ApproximateNumberOfMessagesNotVisible",
+                        "ApproximateNumberOfMessages").asJava
+                    )
+                    .getAttributes
 
-                    queueAttributes.get("ApproximateNumberOfMessagesNotVisible") shouldBe "1"
-                    queueAttributes.get("ApproximateNumberOfMessages") shouldBe "0"
-                  }
-                }
+                queueAttributes.get("ApproximateNumberOfMessagesNotVisible") shouldBe "1"
+                queueAttributes.get("ApproximateNumberOfMessages") shouldBe "0"
               }
             }
           }

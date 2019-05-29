@@ -6,28 +6,21 @@ import com.amazonaws.services.s3.model.S3ObjectSummary
 import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.Messaging
-import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  MonitoringClientFixture,
-  OperationFixtures
-}
-import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
-import uk.ac.wellcome.storage.fixtures.{InMemoryLockDao, LockingServiceFixtures}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.storage.fixtures.LockingServiceFixtures
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.storage.memory.MemoryLockDao
+import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
 
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.util.Try
 
 trait BagReplicatorFixtures
     extends Messaging
@@ -42,28 +35,29 @@ trait BagReplicatorFixtures
     arn = "arn::default_q"
   )
 
-  def withBagReplicatorWorker[R](ingestTopic: Topic, outgoingTopic: Topic)(
-    testWith: TestWith[BagReplicatorWorker, R]
+  def withBagReplicatorWorker[R](ingests: MemoryMessageSender,
+                                 outgoing: MemoryMessageSender)(
+    testWith: TestWith[BagReplicatorWorker[String, String], R]
   ): R =
     withLocalS3Bucket { bucket =>
       val config = createReplicatorDestinationConfigWith(bucket)
-      withBagReplicatorWorker(defaultQueue, ingestTopic, outgoingTopic, config) {
+      withBagReplicatorWorker(defaultQueue, ingests, outgoing, config) {
         worker =>
           testWith(worker)
       }
     }
 
-  def withBagReplicatorWorker[R](ingestTopic: Topic,
-                                 outgoingTopic: Topic,
+  def withBagReplicatorWorker[R](ingests: MemoryMessageSender,
+                                 outgoing: MemoryMessageSender,
                                  lockServiceDao: LockDao[String, UUID])(
-    testWith: TestWith[BagReplicatorWorker, R]
+    testWith: TestWith[BagReplicatorWorker[String, String], R]
   ): R =
     withLocalS3Bucket { bucket =>
       val config = createReplicatorDestinationConfigWith(bucket)
       withBagReplicatorWorker(
         defaultQueue,
-        ingestTopic,
-        outgoingTopic,
+        ingests,
+        outgoing,
         config,
         lockServiceDao) { worker =>
         testWith(worker)
@@ -71,15 +65,17 @@ trait BagReplicatorFixtures
     }
 
   def withBagReplicatorWorker[R](lockServiceDao: LockDao[String, UUID])(
-    testWith: TestWith[BagReplicatorWorker, R]
+    testWith: TestWith[BagReplicatorWorker[String, String], R]
   ): R =
     withLocalS3Bucket { bucket =>
       val config = createReplicatorDestinationConfigWith(bucket)
+      val ingests = createMessageSender
+      val outgoing = createMessageSender
       withLocalSnsTopic { topic =>
         withBagReplicatorWorker(
           defaultQueue,
-          topic,
-          topic,
+          ingests,
+          outgoing,
           config,
           lockServiceDao) { worker =>
           testWith(worker)
@@ -88,7 +84,7 @@ trait BagReplicatorFixtures
     }
 
   def withBagReplicatorWorker[R](bucket: Bucket)(
-    testWith: TestWith[BagReplicatorWorker, R]): R = {
+    testWith: TestWith[BagReplicatorWorker[String, String], R]): R = {
     val config = createReplicatorDestinationConfigWith(bucket)
     withBagReplicatorWorker(config) { worker =>
       testWith(worker)
@@ -97,61 +93,60 @@ trait BagReplicatorFixtures
 
   def withBagReplicatorWorker[R](
     config: ReplicatorDestinationConfig
-  )(testWith: TestWith[BagReplicatorWorker, R]): R =
-    withLocalSnsTopic { topic =>
-      withBagReplicatorWorker(defaultQueue, topic, topic, config) { worker =>
-        testWith(worker)
-      }
+  )(testWith: TestWith[BagReplicatorWorker[String, String], R]): R = {
+    val ingests = createMessageSender
+    val outgoing = createMessageSender
+    withBagReplicatorWorker(defaultQueue, ingests, outgoing, config) { worker =>
+      testWith(worker)
     }
+  }
 
-  def withBagReplicatorWorker[R](ingestTopic: Topic,
-                                 outgoingTopic: Topic,
+  def withBagReplicatorWorker[R](ingests: MemoryMessageSender,
+                                 outgoing: MemoryMessageSender,
                                  bucket: Bucket)(
-    testWith: TestWith[BagReplicatorWorker, R]
+    testWith: TestWith[BagReplicatorWorker[String, String], R]
   ): R = {
     val config = createReplicatorDestinationConfigWith(bucket)
-    withBagReplicatorWorker(defaultQueue, ingestTopic, outgoingTopic, config) {
+    withBagReplicatorWorker(defaultQueue, ingests, outgoing, config) {
       worker =>
         testWith(worker)
     }
   }
 
   def withBagReplicatorWorker[R](queue: Queue,
-                                 ingestTopic: Topic,
-                                 outgoingTopic: Topic,
+                                 ingests: MemoryMessageSender,
+                                 outgoing: MemoryMessageSender,
                                  config: ReplicatorDestinationConfig,
                                  lockServiceDao: LockDao[String, UUID] =
-                                   new InMemoryLockDao())(
-    testWith: TestWith[BagReplicatorWorker, R]): R =
+                                   new MemoryLockDao[String, UUID] {},
+                                 stepName: String = randomAlphanumeric())(
+    testWith: TestWith[BagReplicatorWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
-      withIngestUpdater("replicating", ingestTopic) { ingestUpdater =>
-        withOutgoingPublisher("replicating", outgoingTopic) {
-          outgoingPublisher =>
-            withMonitoringClient { implicit monitoringClient =>
-              val lockingService = new LockingService[
-                Result[ReplicationSummary],
-                Future,
-                LockDao[String, UUID]] {
-                override implicit val lockDao: LockDao[String, UUID] =
-                  lockServiceDao
-                override protected def createContextId(): lockDao.ContextId =
-                  UUID.randomUUID()
-              }
-
-              val service = new BagReplicatorWorker(
-                alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-                bagReplicator = new BagReplicator(),
-                ingestUpdater = ingestUpdater,
-                outgoingPublisher = outgoingPublisher,
-                lockingService = lockingService,
-                replicatorDestinationConfig = config
-              )
-
-              service.run()
-
-              testWith(service)
-            }
+      val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
+      val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+      withMonitoringClient { implicit monitoringClient =>
+        val lockingService = new LockingService[
+          Result[ReplicationSummary],
+          Try,
+          LockDao[String, UUID]] {
+          override implicit val lockDao: LockDao[String, UUID] =
+            lockServiceDao
+          override protected def createContextId(): lockDao.ContextId =
+            UUID.randomUUID()
         }
+
+        val service = new BagReplicatorWorker(
+          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          bagReplicator = new BagReplicator(),
+          ingestUpdater = ingestUpdater,
+          outgoingPublisher = outgoingPublisher,
+          lockingService = lockingService,
+          replicatorDestinationConfig = config
+        )
+
+        service.run()
+
+        testWith(service)
       }
     }
 
