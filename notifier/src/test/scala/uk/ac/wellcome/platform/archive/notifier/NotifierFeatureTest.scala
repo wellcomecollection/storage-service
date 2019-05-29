@@ -2,31 +2,17 @@ package uk.ac.wellcome.platform.archive.notifier
 
 import java.net.URI
 
-import com.github.tomakehurst.wiremock.client.WireMock.{
-  equalToJson,
-  postRequestedFor,
-  urlPathEqualTo,
-  _
-}
+import com.github.tomakehurst.wiremock.client.WireMock.{equalToJson, postRequestedFor, urlPathEqualTo, _}
 import org.apache.http.HttpStatus
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Callback,
-  CallbackNotification,
-  IngestCallbackStatusUpdate,
-  IngestUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, CallbackNotification, IngestCallbackStatusUpdate, IngestUpdate}
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{
-  LocalWireMockFixture,
-  NotifierFixtures
-}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixtures}
 
 class NotifierFeatureTest
     extends FunSpec
@@ -37,9 +23,9 @@ class NotifierFeatureTest
     with LocalWireMockFixture
     with NotifierFixtures
     with Inside
-    with RandomThings
     with IngestGenerators
-    with TimeTestFixture {
+    with TimeTestFixture
+    with Eventually {
 
   describe("Making callbacks") {
     it("makes a POST request when it receives an Ingest with a callback") {
@@ -108,7 +94,7 @@ class NotifierFeatureTest
       forAll(successfulStatuscodes) { statusResponse: Int =>
         withLocalWireMockClient { wireMock =>
           withNotifier {
-            case (queue, topic) =>
+            case (queue, messageSender) =>
               val ingestID = createIngestID
 
               val callbackPath = s"/callback/$ingestID"
@@ -158,7 +144,11 @@ class NotifierFeatureTest
                     )).get))
                 )
 
-                inside(notificationMessage[IngestUpdate](topic)) {
+                val updates = messageSender.getMessages[IngestUpdate]
+                updates should have size 1
+                val receivedUpdate = updates.head
+
+                inside(receivedUpdate) {
                   case IngestCallbackStatusUpdate(
                       id,
                       callbackStatus,
@@ -177,7 +167,7 @@ class NotifierFeatureTest
     it(
       "sends an IngestUpdate when it receives an Ingest with a callback it cannot fulfill") {
       withNotifier {
-        case (queue, topic) =>
+        case (queue, messageSender) =>
           val ingestId = createIngestID
 
           val callbackUri = new URI(
@@ -195,7 +185,11 @@ class NotifierFeatureTest
           )
 
           eventually {
-            inside(notificationMessage[IngestUpdate](topic)) {
+            val updates = messageSender.getMessages[IngestUpdate]
+            updates should have size 1
+            val receivedUpdate = updates.head
+
+            inside(receivedUpdate) {
               case IngestCallbackStatusUpdate(
                   id,
                   callbackStatus,
