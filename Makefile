@@ -16,7 +16,7 @@ SBT_APPS = notifier \
            bag_verifier \
            bag_unpacker \
            bag_auditor
-
+SBT_NO_DOCKER_APPS =
 
 SBT_DOCKER_LIBRARIES    = common ingests_common
 SBT_NO_DOCKER_LIBRARIES = bags_common display
