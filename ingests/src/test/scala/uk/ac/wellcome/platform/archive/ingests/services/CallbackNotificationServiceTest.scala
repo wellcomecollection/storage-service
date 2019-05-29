@@ -1,22 +1,18 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
-import org.scalatest.FunSpec
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.TableDrivenPropertyChecks._
+import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Callback,
-  CallbackNotification,
-  Ingest
-}
-import uk.ac.wellcome.platform.archive.ingests.fixtures.CallbackNotificationServiceFixture
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, CallbackNotification, Ingest}
+
+import scala.util.Success
 
 class CallbackNotificationServiceTest
     extends FunSpec
-    with ScalaFutures
-    with CallbackNotificationServiceFixture
-    with IngestGenerators {
+    with Matchers
+    with IngestGenerators
+    with TryValues {
 
   val sendsCallbackStatus = Table(
     ("ingest-status", "callback-status"),
@@ -27,28 +23,25 @@ class CallbackNotificationServiceTest
   it(
     "sends a notification if there's a pending callback and the ingest is complete") {
     forAll(sendsCallbackStatus) { (ingestStatus, callbackStatus) =>
-      withLocalSnsTopic { topic =>
-        withCallbackNotificationService(topic) { service =>
-          val ingest = createIngestWith(
-            status = ingestStatus,
-            callback = Some(
-              createCallbackWith(status = callbackStatus)
-            )
-          )
+      val messageSender = createMessageSender
+      val service = new CallbackNotificationService(messageSender)
 
-          val future = service.sendNotification(ingest)
+      val ingest = createIngestWith(
+        status = ingestStatus,
+        callback = Some(
+          createCallbackWith(status = callbackStatus)
+        )
+      )
 
-          whenReady(future) { _ =>
-            val expectedNotification = CallbackNotification(
-              ingestId = ingest.id,
-              callbackUri = ingest.callback.get.uri,
-              payload = ingest
-            )
+      service.sendNotification(ingest) shouldBe Success(())
 
-            assertSnsReceivesOnly(expectedNotification, topic = topic)
-          }
-        }
-      }
+      val expectedNotification = CallbackNotification(
+        ingestId = ingest.id,
+        callbackUri = ingest.callback.get.uri,
+        payload = ingest
+      )
+
+      messageSender.getMessages[CallbackNotification] shouldBe Seq(expectedNotification)
     }
   }
 
@@ -68,44 +61,30 @@ class CallbackNotificationServiceTest
 
   it("doesn't send a notification if the callback has already been sent") {
     forAll(doesNotSendCallbackStatus) { (ingestStatus, callbackStatus) =>
-      withLocalSnsTopic { topic =>
-        withCallbackNotificationService(topic) { service =>
-          val ingest = createIngestWith(
-            status = ingestStatus,
-            callback = Some(createCallbackWith(status = callbackStatus))
-          )
+      val messageSender = createMessageSender
+      val service = new CallbackNotificationService(messageSender)
 
-          val future = service.sendNotification(ingest)
+      val ingest = createIngestWith(
+        status = ingestStatus,
+        callback = Some(createCallbackWith(status = callbackStatus))
+      )
 
-          // Sleep for half a second to be sure the message would have been
-          // sent if it was going to.
-          Thread.sleep(500)
+      service.sendNotification(ingest) shouldBe Success(())
 
-          whenReady(future) { _ =>
-            assertSnsReceivesNothing(topic)
-          }
-        }
-      }
+      messageSender.messages shouldBe empty
     }
   }
 
   it("doesn't send a notification if there's no callback information") {
-    withLocalSnsTopic { topic =>
-      withCallbackNotificationService(topic) { service =>
-        val ingest = createIngestWith(
-          callback = None
-        )
+    val messageSender = createMessageSender
+    val service = new CallbackNotificationService(messageSender)
 
-        val future = service.sendNotification(ingest)
+    val ingest = createIngestWith(
+      callback = None
+    )
 
-        // Sleep for half a second to be sure the message would have been
-        // sent if it was going to.
-        Thread.sleep(500)
+    service.sendNotification(ingest) shouldBe Success(())
 
-        whenReady(future) { _ =>
-          assertSnsReceivesNothing(topic)
-        }
-      }
-    }
+    messageSender.messages shouldBe empty
   }
 }

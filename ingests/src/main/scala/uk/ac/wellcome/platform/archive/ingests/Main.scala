@@ -43,7 +43,10 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val callbackNotificationService = new CallbackNotificationService(
-      snsWriter = SNSBuilder.buildSNSWriter(config)
+      messageSender = SNSBuilder.buildSNSMessageSender(
+        config,
+        subject = "Sent from the ingests service"
+      )
     )
 
     new IngestsWorker(
