@@ -28,10 +28,11 @@ import uk.ac.wellcome.platform.archive.display.{
   ResponseDisplayIngest
 }
 
-class Router(ingestTracker: IngestTracker,
-             ingestStarter: IngestStarter,
-             httpServerConfig: HTTPServerConfig,
-             contextURL: URL)
+class Router[UnpackerDestination](
+  ingestTracker: IngestTracker,
+  ingestStarter: IngestStarter[UnpackerDestination],
+  httpServerConfig: HTTPServerConfig,
+  contextURL: URL)
     extends Logging {
 
   import akka.http.scaladsl.server.Directives._
@@ -44,11 +45,20 @@ class Router(ingestTracker: IngestTracker,
     pathPrefix("ingests") {
       post {
         entity(as[RequestDisplayIngest]) { requestDisplayIngest =>
-          onSuccess(ingestStarter.initialise(requestDisplayIngest.toIngest)) {
-            ingest =>
+          // TODO: Do we have a test for the failure case?
+          ingestStarter.initialise(requestDisplayIngest.toIngest) match {
+            case scala.util.Success(ingest) =>
               respondWithHeaders(List(createLocationHeader(ingest))) {
                 complete(Created -> ResponseDisplayIngest(ingest, contextURL))
               }
+            case scala.util.Failure(err) =>
+              error(s"Unexpected error while creating an ingest $requestDisplayIngest", err)
+              complete(
+                InternalServerError -> InternalServerErrorResponse(
+                  contextURL,
+                  statusCode = StatusCodes.InternalServerError
+                )
+              )
           }
         }
       } ~ path(JavaUUID) { id: UUID =>
@@ -84,7 +94,7 @@ class Router(ingestTracker: IngestTracker,
       }
     }
 
-  private def findIngest(bagId: BagId) = {
+  private def findIngest(bagId: BagId): StandardRoute = {
     val results = ingestTracker.findByBagId(bagId)
     if (results.nonEmpty && results.forall(_.isRight)) {
       complete(OK -> results.collect {

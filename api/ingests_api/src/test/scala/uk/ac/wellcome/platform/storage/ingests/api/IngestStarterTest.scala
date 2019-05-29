@@ -1,100 +1,72 @@
 package uk.ac.wellcome.platform.storage.ingests.api
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.fixtures.TestWith
+import io.circe.Encoder
+import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.storage.dynamo._
-import uk.ac.wellcome.messaging.fixtures.SNS
-import uk.ac.wellcome.messaging.fixtures.SNS.Topic
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.IngestRequestPayload
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestStarterFixture
+import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Try}
 
 class IngestStarterTest
     extends FunSpec
-    with IngestTrackerFixture
-    with SNS
+    with Matchers
+    with IngestStarterFixture
     with IngestGenerators
-    with ScalaFutures
-    with Matchers {
+    with TryValues {
 
-  val ingest = createIngest
+  val ingest: Ingest = createIngest
 
   it("saves an Ingest and sends a notification") {
-    withLocalSnsTopic { unpackerTopic =>
-      withIngestTrackerTable { table =>
-        withIngestStarter(table, unpackerTopic) { ingestStarter =>
-          whenReady(ingestStarter.initialise(ingest)) { p =>
-            p shouldBe ingest
+    val messageSender = createMessageSender
+    withIngestTrackerTable { table =>
+      withIngestStarter(table, messageSender) { ingestStarter =>
+        val result = ingestStarter.initialise(ingest)
+        result.success.value shouldBe ingest
 
-            assertTableOnlyHasItem(ingest, table)
+        assertTableOnlyHasItem(ingest, table)
 
-            eventually {
-              val expectedPayload = IngestRequestPayload(ingest)
-
-              assertSnsReceivesOnly(expectedPayload, unpackerTopic)
-            }
-          }
-
-        }
+        val expectedPayload = IngestRequestPayload(ingest)
+        messageSender.getMessages[IngestRequestPayload] shouldBe Seq(expectedPayload)
       }
     }
   }
 
   it("returns a failed future if saving to DynamoDB fails") {
-    withLocalSnsTopic { unpackerTopic =>
-      val fakeTable = Table("does-not-exist", index = "does-not-exist")
+    val messageSender = createMessageSender
+    val fakeTable = Table("does-not-exist", index = "does-not-exist")
 
-      withIngestStarter(
-        fakeTable,
-        unpackerTopic
-      ) { ingestStarter =>
-        val future = ingestStarter.initialise(ingest)
+    withIngestStarter(fakeTable, messageSender) { ingestStarter =>
+      val result = ingestStarter.initialise(ingest)
 
-        whenReady(future.failed) { _ =>
-          assertSnsReceivesNothing(unpackerTopic)
-        }
-      }
+      result shouldBe a[Failure[_]]
+
+      messageSender.messages shouldBe empty
     }
-
   }
 
-  it("returns a failed future if publishing to SNS fails") {
+  it("returns a failed future if sending a message fails") {
     withIngestTrackerTable { table =>
-      val fakeUnpackerTopic = Topic("does-not-exist")
+      val brokenMessageSender = new MemoryMessageSender(
+        destination = randomAlphanumeric(),
+        subject = randomAlphanumeric()
+      ) {
+        override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
+          Failure(new Throwable("BOOM!"))
+      }
 
-      withIngestStarter(
-        table,
-        fakeUnpackerTopic
-      ) { ingestStarter =>
-        val future = ingestStarter.initialise(ingest)
+      withIngestStarter(table, brokenMessageSender) { ingestStarter =>
+        val result = ingestStarter.initialise(ingest)
 
-        whenReady(future.failed) { _ =>
-          assertTableOnlyHasItem(ingest, table)
-        }
+        result shouldBe a[Failure[_]]
+
+        assertTableOnlyHasItem(ingest, table)
       }
     }
   }
-
-  private def withIngestStarter[R](
-    table: Table,
-    unpackerTopic: Topic
-  )(
-    testWith: TestWith[IngestStarter, R]
-  ): R =
-    withSNSWriter(unpackerTopic) { unpackerSnsWriter =>
-      withIngestTracker(table) { ingestTracker =>
-        val ingestStarter = new IngestStarter(
-          ingestTracker = ingestTracker,
-          unpackerSnsWriter = unpackerSnsWriter
-        )
-
-        testWith(ingestStarter)
-      }
-    }
-
 }

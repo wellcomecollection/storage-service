@@ -38,7 +38,7 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
 
     val ingestTracker = new IngestTracker(
-      dynamoDbClient = DynamoBuilder.buildDynamoClient(config),
+      dynamoClient = DynamoBuilder.buildDynamoClient(config),
       dynamoConfig = DynamoBuilder.buildDynamoConfig(config)
     )
 

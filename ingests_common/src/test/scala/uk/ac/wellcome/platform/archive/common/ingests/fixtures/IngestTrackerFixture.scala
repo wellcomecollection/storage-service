@@ -25,7 +25,7 @@ trait IngestTrackerFixture
                            dynamoDbClient: AmazonDynamoDB = dynamoDbClient)(
     testWith: TestWith[IngestTracker, R]): R = {
     val ingestTracker = new IngestTracker(
-      dynamoDbClient = dynamoDbClient,
+      dynamoClient = dynamoDbClient,
       dynamoConfig = createDynamoConfigWith(table)
     )
     testWith(ingestTracker)

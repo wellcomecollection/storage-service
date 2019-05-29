@@ -3,27 +3,22 @@ package uk.ac.wellcome.platform.storage.ingests.api.fixtures
 import java.net.URL
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.Messaging
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.monitoring.MetricsSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  HttpFixtures,
-  RandomThings
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IngestsApiFixture
-    extends RandomThings
-    with IngestTrackerFixture
-    with IngestGenerators
-    with HttpFixtures
-    with Messaging {
+  extends IngestStarterFixture
+  with IngestGenerators
+  with HttpFixtures
+  with Messaging {
 
   val contextURL = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
@@ -32,42 +27,43 @@ trait IngestsApiFixture
 
   private def withApp[R](
     table: Table,
-    unpackerTopic: Topic,
-    metricsSender: MetricsSender)(testWith: TestWith[IngestsApi, R]): R =
-    withSNSWriter(unpackerTopic) { unpackerSnsWriter =>
-      withActorSystem { implicit actorSystem =>
-        withMaterializer(actorSystem) { implicit materializer =>
-          val httpMetrics = new HttpMetrics(
-            name = metricsName,
-            metricsSender = metricsSender
-          )
+    unpackerMessageSender: MemoryMessageSender,
+    metricsSender: MetricsSender)(testWith: TestWith[IngestsApi[String], R]): R =
+    withActorSystem { implicit actorSystem =>
+      withMaterializer(actorSystem) { implicit materializer =>
+        val httpMetrics = new HttpMetrics(
+          name = metricsName,
+          metricsSender = metricsSender
+        )
 
-          val ingestsApi = new IngestsApi(
-            dynamoClient = dynamoDbClient,
-            dynamoConfig = createDynamoConfigWith(table),
-            unpackerSnsWriter = unpackerSnsWriter,
-            httpMetrics = httpMetrics,
-            httpServerConfig = httpServerConfig,
-            contextURL = contextURL
-          )
+        withIngestTracker(table) { ingestTracker =>
+          withIngestStarter(table, unpackerMessageSender) { ingestStarter =>
+            val ingestsApi = new IngestsApi(
+              ingestTracker = ingestTracker,
+              ingestStarter = ingestStarter,
+              httpMetrics = httpMetrics,
+              httpServerConfig = httpServerConfig,
+              contextURL = contextURL
+            )
 
-          ingestsApi.run()
+            ingestsApi.run()
 
-          testWith(ingestsApi)
+            testWith(ingestsApi)
+          }
         }
       }
     }
 
   def withBrokenApp[R](
-    testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R =
-    withLocalSnsTopic { unpackerTopic =>
+    testWith: TestWith[(Table, MemoryMessageSender, MetricsSender, String), R]): R = {
+      val messageSender = createMessageSender
       val table = Table("does-not-exist", index = "does-not-exist")
       withMockMetricsSender { metricsSender =>
-        withApp(table, unpackerTopic, metricsSender) { _ =>
+        withApp(table, messageSender, metricsSender) { _ =>
           testWith(
             (
               table,
-              unpackerTopic,
+              messageSender,
               metricsSender,
               httpServerConfig.externalBaseURL))
         }
@@ -75,18 +71,17 @@ trait IngestsApiFixture
     }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(Table, Topic, MetricsSender, String), R]): R =
-    withLocalSnsTopic { unpackerTopic =>
-      withIngestTrackerTable { table =>
-        withMockMetricsSender { metricsSender =>
-          withApp(table, unpackerTopic, metricsSender) { _ =>
-            testWith(
-              (
-                table,
-                unpackerTopic,
-                metricsSender,
-                httpServerConfig.externalBaseURL))
-          }
+    testWith: TestWith[(Table, MemoryMessageSender, MetricsSender, String), R]): R =
+    withIngestTrackerTable { table =>
+      val messageSender = createMessageSender
+      withMockMetricsSender { metricsSender =>
+        withApp(table, messageSender, metricsSender) { _ =>
+          testWith(
+            (
+              table,
+              messageSender,
+              metricsSender,
+              httpServerConfig.externalBaseURL))
         }
       }
     }

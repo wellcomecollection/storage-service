@@ -16,14 +16,14 @@ import scala.concurrent.{blocking, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class IngestTracker(
-  dynamoDbClient: AmazonDynamoDB,
+  dynamoClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig
 )(implicit ec: ExecutionContext)
     extends Logging {
 
   def get(id: IngestID): Future[Option[Ingest]] = Future {
     Scanamo
-      .get[Ingest](dynamoDbClient)(dynamoConfig.table)('id -> id.toString)
+      .get[Ingest](dynamoClient)(dynamoConfig.table)('id -> id.toString)
       .map {
         case Right(ingest) => ingest
         case Left(err) =>
@@ -31,7 +31,7 @@ class IngestTracker(
       }
   }
 
-  def initialise(ingest: Ingest): Future[Ingest] = {
+  def initialise(ingest: Ingest): Try[Ingest] = {
     val ingestTable = Table[Ingest](dynamoConfig.table)
     debug(s"initializing archive ingest tracker with $ingest")
 
@@ -39,8 +39,8 @@ class IngestTracker(
       .given(not(attributeExists('id)))
       .put(ingest)
 
-    Future {
-      blocking(Scanamo.exec(dynamoDbClient)(ops)) match {
+    Try {
+      blocking(Scanamo.exec(dynamoClient)(ops)) match {
         case Left(e: ConditionalCheckFailedException) =>
           throw IdConstraintError(
             s"There is already a ingest tracker with id:${ingest.id}",
@@ -90,7 +90,7 @@ class IngestTracker(
       .given(attributeExists('id))
       .update('id -> update.id, mergedUpdate)
 
-    Scanamo.exec(dynamoDbClient)(ops) match {
+    Scanamo.exec(dynamoClient)(ops) match {
       case Left(ConditionNotMet(e: ConditionalCheckFailedException)) => {
         val idConstraintError =
           IdConstraintError(
@@ -129,7 +129,7 @@ class IngestTracker(
       .index(dynamoConfig.index)
       .limit(30)
       .query(('bagIdIndex -> bagId.toString).descending)
-    Scanamo.exec(dynamoDbClient)(query)
+    Scanamo.exec(dynamoClient)(query)
   }
 }
 
