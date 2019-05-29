@@ -12,16 +12,15 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.dynamo._
 
-import scala.concurrent.{blocking, ExecutionContext, Future}
+import scala.concurrent.blocking
 import scala.util.{Failure, Success, Try}
 
 class IngestTracker(
   dynamoClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig
-)(implicit ec: ExecutionContext)
-    extends Logging {
+) extends Logging {
 
-  def get(id: IngestID): Future[Option[Ingest]] = Future {
+  def get(id: IngestID): Try[Option[Ingest]] = Try {
     Scanamo
       .get[Ingest](dynamoClient)(dynamoConfig.table)('id -> id.toString)
       .map {

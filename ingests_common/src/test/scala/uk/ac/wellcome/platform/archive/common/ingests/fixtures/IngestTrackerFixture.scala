@@ -12,8 +12,6 @@ import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 trait IngestTrackerFixture
     extends IngestTrackerDynamoDb
     with IngestGenerators

@@ -63,16 +63,25 @@ class Router[UnpackerDestination](
         }
       } ~ path(JavaUUID) { id: UUID =>
         get {
-          onSuccess(ingestTracker.get(IngestID(id))) {
-            case Some(ingest) =>
+          // TODO: Do we have a test for the failure case?
+          ingestTracker.get(IngestID(id)) match {
+            case scala.util.Success(Some(ingest)) =>
               complete(ResponseDisplayIngest(ingest, contextURL))
-            case None =>
+            case scala.util.Success(None) =>
               complete(
                 NotFound -> UserErrorResponse(
                   context = contextURL,
                   statusCode = StatusCodes.NotFound,
                   description = s"Ingest $id not found"
                 ))
+            case scala.util.Failure(err) =>
+              error(s"Unexpected error while fetching ingest $id", err)
+              complete(
+                InternalServerError -> InternalServerErrorResponse(
+                  contextURL,
+                  statusCode = StatusCodes.InternalServerError
+                )
+              )
           }
         }
       } ~ path("find-by-bag-id" / Segment) { combinedId: String =>

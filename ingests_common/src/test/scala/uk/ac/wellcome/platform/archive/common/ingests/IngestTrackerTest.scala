@@ -87,14 +87,12 @@ class IngestTrackerTest
     it("retrieves ingest by id") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          val result = ingestTracker.initialise(createIngest)
-          val ingest = result.success.value
+          val initResult = ingestTracker.initialise(createIngest)
+          val ingest = initResult.success.value
           assertIngestCreated(ingest, table)
 
-          whenReady(ingestTracker.get(ingest.id)) { result =>
-            result shouldBe a[Some[_]]
-            result.get shouldBe ingest
-          }
+          val getResult = ingestTracker.get(ingest.id).success.value
+          getResult shouldBe Some(ingest)
         }
       }
     }
@@ -102,9 +100,8 @@ class IngestTrackerTest
     it("returns None when no ingest matches id") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.get(createIngestID)) { result =>
-            result shouldBe None
-          }
+          val getResult = ingestTracker.get(createIngestID).success.value
+          getResult shouldBe None
         }
       }
     }
@@ -118,10 +115,8 @@ class IngestTrackerTest
 
         withIngestTracker(table, dynamoDbClient = mockDynamoDbClient) {
           ingestTracker =>
-            whenReady(ingestTracker.get(createIngestID).failed) {
-              failedException =>
-                failedException shouldBe expectedException
-            }
+            val getResult = ingestTracker.get(createIngestID)
+            getResult.failed.get shouldBe expectedException
         }
       }
     }
