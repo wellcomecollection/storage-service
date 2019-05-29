@@ -15,7 +15,6 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -23,7 +22,6 @@ import scala.util.Try
 
 class IngestTrackerTest
     extends FunSpec
-    with LocalDynamoDb
     with MockitoSugar
     with IngestTrackerFixture
     with IngestGenerators

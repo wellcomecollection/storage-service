@@ -132,7 +132,7 @@ class IngestsWorkerServiceTest
     }
   }
 
-  it("fails if publishing to SNS fails") {
+  it("fails if publishing a message fails") {
     withLocalSqsQueue { queue =>
       withIngestTrackerTable { table =>
         val exception = new Throwable("BOOM!")

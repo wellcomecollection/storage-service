@@ -50,5 +50,4 @@ trait IngestTrackerFixture
     ingest.events.foreach(event =>
       assertRecent(event.createdDate, recentSeconds = 45))
   }
-
 }
