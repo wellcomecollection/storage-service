@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, Inge
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 class BagReplicator(implicit s3Client: AmazonS3) extends Logging {
   val s3PrefixCopier = S3PrefixCopier(s3Client)
@@ -32,19 +32,19 @@ class BagReplicator(implicit s3Client: AmazonS3) extends Logging {
         )
 
     copyResult match {
-      case Success(_) =>
+      case Right(_) =>
         Success(
           IngestStepSucceeded(
             replicationSummary.complete
           )
         )
 
-      case Failure(e) =>
-        error("Unexpected failure while replicating", e)
+      case Left(storageError) =>
+        error("Unexpected failure while replicating", storageError.e)
         Success(
           IngestFailed(
             replicationSummary.complete,
-            e
+            storageError.e
           ))
     }
   }
