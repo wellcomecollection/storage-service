@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.SNSWriter
+import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
@@ -24,10 +24,10 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NotifierWorker(
+class NotifierWorker[Destination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   callbackUrlService: CallbackUrlService,
-  snsWriter: SNSWriter
+  messageSender: MessageSender[Destination]
 )(implicit actorSystem: ActorSystem,
   ec: ExecutionContext,
   mc: MonitoringClient,
@@ -52,10 +52,9 @@ class NotifierWorker(
         httpResponse = httpResponse
       )
 
-      _ <- snsWriter.writeMessage[IngestUpdate](
-        ingestUpdate,
-        subject = s"Sent by ${this.getClass.getName}"
-      )
+      _ <- Future.fromTry {
+        messageSender.sendT[IngestUpdate](ingestUpdate)
+      }
     } yield ingestUpdate
 
     future

@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 
 import java.time.Instant
 
+import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestService,
@@ -11,53 +11,45 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
 }
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Success, Try}
 
 class Register(
   storageManifestService: StorageManifestService,
   storageManifestVHS: StorageManifestVHS
-)(implicit ec: ExecutionContext) {
-
-  type FutureSummary =
-    Future[IngestStepResult[RegistrationSummary]]
+) extends Logging {
 
   def update(
     bagRootLocation: ObjectLocation,
     storageSpace: StorageSpace
-  ): FutureSummary = {
+  ): Try[IngestStepResult[RegistrationSummary]] = {
     val registration = RegistrationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,
       storageSpace = storageSpace
     )
 
-    for {
-      manifest <- Future.fromTry {
-        val result: Either[BagUnavailable, StorageManifest] =
-          storageManifestService
-            .retrieve(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
-
-        result match {
-          case Right(storageManifest) => Success(storageManifest)
-          case Left(bagUnavailable)   => Failure(bagUnavailable)
-        }
-      }
+    val result = for {
+      manifest <- storageManifestService
+        .retrieve(
+          bagRootLocation = bagRootLocation,
+          storageSpace = storageSpace
+        )
 
       registrationWithBagId = registration.copy(bagId = Some(manifest.id))
 
       completedRegistration <- storageManifestVHS
-        .updateRecord(manifest)(_ => manifest)
-        .transform {
-          case Success(_) =>
-            Success(IngestCompleted(registrationWithBagId.complete))
-          case Failure(e) =>
-            Success(IngestFailed(registrationWithBagId.complete, e))
-        }
-
+        .updateRecord(manifest)(_ => manifest) match {
+        case Right(_) =>
+          Right(IngestCompleted(registrationWithBagId.complete))
+        case Left(storageError) =>
+          error("Unexpected error updating storage manifest", storageError.e)
+          Right(IngestFailed(registrationWithBagId.complete, storageError.e))
+      }
     } yield completedRegistration
+
+    result match {
+      case Right(stepResult) => Success(stepResult)
+      case Left(value)       => Success(IngestFailed(registration.complete, value))
+    }
   }
 }

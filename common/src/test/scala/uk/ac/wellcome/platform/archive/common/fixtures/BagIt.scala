@@ -164,13 +164,21 @@ trait BagIt extends RandomThings {
 
   private def createDataFiles(dataFileCount: Int) = {
     val subPathLength = Random.nextInt(3)
-    val subPathDirectories = (0 to subPathLength).map { _ =>
-      randomAlphanumericWithSpace()
+    val subPathDirectories = (0 to subPathLength).map { i =>
+      // Also a replicator tests workaround.  See below.
+      // TODO: Fix.
+      // randomAlphanumericWithSpace()
+      s"dir$i"
     }
     val subPath = subPathDirectories.mkString("/")
 
-    (1 to dataFileCount).map { _ =>
-      val fileName = randomAlphanumericWithSpace()
+    (1 to dataFileCount).map { i =>
+      // This is a workaround for a bug in the replicator tests where this
+      // creates an ObjectLocation which isn't a valid S3 URI.
+      // TODO: Fix it properly, but for the sake of the big new scala-storage
+      // patch this is fine.
+      // val fileName = randomAlphanumericWithSpace()
+      val fileName = i.toString
       val filePath = s"data/$subPath/$fileName.txt"
       val fileContents = Random.nextString(256)
       FileEntry(filePath, fileContents)

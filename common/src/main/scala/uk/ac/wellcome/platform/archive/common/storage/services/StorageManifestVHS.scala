@@ -2,25 +2,21 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.storage.ObjectStore
-import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
-
-import scala.concurrent.{ExecutionContext, Future}
+import uk.ac.wellcome.storage.{ReadError, StorageError}
 
 class StorageManifestVHS(
-  underlying: VersionedHybridStore[StorageManifest,
-                                   EmptyMetadata,
-                                   ObjectStore[StorageManifest]]
-)(implicit ec: ExecutionContext) {
+  underlying: VersionedHybridStore[String, StorageManifest, EmptyMetadata]
+) {
 
-  def getRecord(id: BagId): Future[Option[StorageManifest]] =
-    underlying.getRecord(id = id.toString)
+  def getRecord(id: BagId): Either[ReadError, StorageManifest] =
+    underlying.get(id = id.toString)
 
   def updateRecord(ifNotExisting: StorageManifest)(
-    ifExisting: StorageManifest => StorageManifest): Future[Unit] =
+    ifExisting: StorageManifest => StorageManifest)
+    : Either[StorageError, Unit] =
     underlying
-      .updateRecord(
+      .update(
         id = ifNotExisting.id.toString
       )(
         ifNotExisting = (ifNotExisting, EmptyMetadata())
@@ -35,6 +31,7 @@ class StorageManifestVHS(
         ()
       }
 
-  def insertRecord(storageManifest: StorageManifest): Future[Unit] =
+  def insertRecord(
+    storageManifest: StorageManifest): Either[StorageError, Unit] =
     updateRecord(storageManifest)(_ => storageManifest)
 }

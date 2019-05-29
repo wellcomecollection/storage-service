@@ -11,9 +11,7 @@ import uk.ac.wellcome.messaging.typesafe.{
 }
 import uk.ac.wellcome.messaging.typesafe.SQSBuilder.buildSQSAsyncClient
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.{
-  UnpackerWorkerConfigBuilder
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.UnpackerWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   BagUnpackerWorker,
   S3Uploader,

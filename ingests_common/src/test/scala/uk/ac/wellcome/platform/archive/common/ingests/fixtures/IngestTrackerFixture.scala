@@ -12,8 +12,6 @@ import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 trait IngestTrackerFixture
     extends IngestTrackerDynamoDb
     with IngestGenerators
@@ -25,7 +23,7 @@ trait IngestTrackerFixture
                            dynamoDbClient: AmazonDynamoDB = dynamoDbClient)(
     testWith: TestWith[IngestTracker, R]): R = {
     val ingestTracker = new IngestTracker(
-      dynamoDbClient = dynamoDbClient,
+      dynamoClient = dynamoDbClient,
       dynamoConfig = createDynamoConfigWith(table)
     )
     testWith(ingestTracker)
@@ -52,5 +50,4 @@ trait IngestTrackerFixture
     ingest.events.foreach(event =>
       assertRecent(event.createdDate, recentSeconds = 45))
   }
-
 }

@@ -3,15 +3,13 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 import java.time.{Duration, Instant}
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.common.verify.VerificationSuccess
-import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class VerificationSummaryTest
     extends FunSpec
     with Matchers
-    with RandomThings
-    with S3 {
+    with ObjectLocationGenerators {
 
   it("calculates duration once completed") {
     val location = createObjectLocation

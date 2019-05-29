@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.ingests
 
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.concurrent.Eventually
+import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -13,50 +13,49 @@ import uk.ac.wellcome.platform.archive.ingests.fixtures._
 class IngestsFeatureTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
+    with Eventually
     with IngestsFixtures
-    with IntegrationPatience {
+    with TryValues {
 
   it("updates an existing ingest status to Completed") {
     withConfiguredApp {
-      case (queue, topic, table) => {
-        withIngestTracker(table) { monitor =>
-          withIngest(monitor) { ingest =>
-            val someBagId = Some(createBagId)
-            val ingestStatusUpdate =
-              createIngestStatusUpdateWith(
-                id = ingest.id,
-                status = Completed,
-                maybeBag = someBagId)
+      case (queue, messageSender, table) =>
+        withIngestTracker(table) { ingestTracker =>
+          val ingest = ingestTracker.initialise(createIngest).success.value
+          val someBagId = Some(createBagId)
+          val ingestStatusUpdate =
+            createIngestStatusUpdateWith(
+              id = ingest.id,
+              status = Completed,
+              maybeBag = someBagId)
 
-            sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+          sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-            eventually {
-              val expectedIngest = ingest.copy(
-                status = Completed,
-                events = ingestStatusUpdate.events,
-                bag = someBagId
-              )
+          eventually {
+            val expectedIngest = ingest.copy(
+              status = Completed,
+              events = ingestStatusUpdate.events,
+              bag = someBagId
+            )
 
-              val expectedMessage = CallbackNotification(
-                ingestId = ingest.id,
-                callbackUri = ingest.callback.get.uri,
-                payload = expectedIngest
-              )
+            val expectedMessage = CallbackNotification(
+              ingestId = ingest.id,
+              callbackUri = ingest.callback.get.uri,
+              payload = expectedIngest
+            )
 
-              assertSnsReceivesOnly(expectedMessage, topic)
+            messageSender.getMessages[CallbackNotification] shouldBe Seq(
+              expectedMessage)
 
-              assertIngestCreated(ingest, table)
+            assertIngestCreated(ingest, table)
 
-              assertIngestRecordedRecentEvents(
-                ingestStatusUpdate.id,
-                ingestStatusUpdate.events.map(_.description),
-                table
-              )
-            }
+            assertIngestRecordedRecentEvents(
+              ingestStatusUpdate.id,
+              ingestStatusUpdate.events.map(_.description),
+              table
+            )
           }
         }
-      }
     }
   }
 }

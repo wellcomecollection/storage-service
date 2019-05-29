@@ -9,14 +9,14 @@ import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class DisplayIngestTest
     extends FunSpec
     with Matchers
     with BagIdGenerators
     with TimeTestFixture
-    with S3 {
+    with ObjectLocationGenerators {
 
   private val id = createIngestID
   private val callbackUrl = "http://www.example.com/callback"

@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
+import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
@@ -13,16 +14,15 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.s3.S3PrefixCopier
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Success, Try}
 
-class BagReplicator(implicit s3Client: AmazonS3, ec: ExecutionContext) {
+class BagReplicator(implicit s3Client: AmazonS3) extends Logging {
   val s3PrefixCopier = S3PrefixCopier(s3Client)
 
-  def replicate(bagRootLocation: ObjectLocation,
-                storageSpace: StorageSpace,
-                destination: ObjectLocation)
-    : Future[IngestStepResult[ReplicationSummary]] = {
+  def replicate(
+    bagRootLocation: ObjectLocation,
+    storageSpace: StorageSpace,
+    destination: ObjectLocation): Try[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,
@@ -37,19 +37,20 @@ class BagReplicator(implicit s3Client: AmazonS3, ec: ExecutionContext) {
           dstLocationPrefix = destination
         )
 
-    copyResult.transform {
-      case Success(_) =>
+    copyResult match {
+      case Right(_) =>
         Success(
           IngestStepSucceeded(
             replicationSummary.complete
           )
         )
 
-      case Failure(e) =>
+      case Left(storageError) =>
+        error("Unexpected failure while replicating", storageError.e)
         Success(
           IngestFailed(
             replicationSummary.complete,
-            e
+            storageError.e
           ))
     }
   }

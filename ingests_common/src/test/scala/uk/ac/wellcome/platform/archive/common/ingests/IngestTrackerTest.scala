@@ -10,7 +10,7 @@ import com.amazonaws.services.dynamodbv2.model.{
 }
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
-import org.scalatest.FunSpec
+import org.scalatest.{FunSpec, TryValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import uk.ac.wellcome.platform.archive.common.IngestID
@@ -19,7 +19,6 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -27,21 +26,20 @@ import scala.util.Try
 
 class IngestTrackerTest
     extends FunSpec
-    with LocalDynamoDb
     with MockitoSugar
     with IngestTrackerFixture
     with IngestGenerators
-    with ScalaFutures {
+    with ScalaFutures
+    with TryValues {
 
   describe("create") {
     it("creates an ingest") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          val futureIngest = ingestTracker.initialise(createIngest)
+          val result = ingestTracker.initialise(createIngest)
 
-          whenReady(futureIngest) { ingest =>
-            assertIngestCreated(ingest, table)
-          }
+          val ingest = result.success.value
+          assertIngestCreated(ingest, table)
         }
       }
     }
@@ -53,7 +51,8 @@ class IngestTrackerTest
 
           val monitors = List(ingest, ingest)
 
-          val result = Future.sequence(monitors.map(ingestTracker.initialise))
+          val result = Future.sequence(
+            monitors.map(i => Future.fromTry { ingestTracker.initialise(i) }))
           whenReady(result.failed) { failedException =>
             failedException shouldBe a[IdConstraintError]
             failedException.getMessage should include(
@@ -77,10 +76,9 @@ class IngestTrackerTest
             val ingest = createIngest
 
             val result = ingestTracker.initialise(ingest)
-            whenReady(result.failed) { failedException =>
-              failedException shouldBe a[RuntimeException]
-              failedException shouldBe expectedException
-            }
+
+            val failedException = result.failed.get
+            failedException shouldBe expectedException
         }
       }
     }
@@ -90,14 +88,12 @@ class IngestTrackerTest
     it("retrieves ingest by id") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            assertIngestCreated(ingest, table)
+          val initResult = ingestTracker.initialise(createIngest)
+          val ingest = initResult.success.value
+          assertIngestCreated(ingest, table)
 
-            whenReady(ingestTracker.get(ingest.id)) { result =>
-              result shouldBe a[Some[_]]
-              result.get shouldBe ingest
-            }
-          }
+          val getResult = ingestTracker.get(ingest.id).success.value
+          getResult shouldBe Some(ingest)
         }
       }
     }
@@ -105,9 +101,8 @@ class IngestTrackerTest
     it("returns None when no ingest matches id") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.get(createIngestID)) { result =>
-            result shouldBe None
-          }
+          val getResult = ingestTracker.get(createIngestID).success.value
+          getResult shouldBe None
         }
       }
     }
@@ -121,10 +116,8 @@ class IngestTrackerTest
 
         withIngestTracker(table, dynamoDbClient = mockDynamoDbClient) {
           ingestTracker =>
-            whenReady(ingestTracker.get(createIngestID).failed) {
-              failedException =>
-                failedException shouldBe expectedException
-            }
+            val getResult = ingestTracker.get(createIngestID)
+            getResult.failed.get shouldBe expectedException
         }
       }
     }
@@ -134,28 +127,28 @@ class IngestTrackerTest
     it("sets the bag id to a ingest with none") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val bagId = createBagId
+          val result = ingestTracker.initialise(createIngest)
+          val ingest = result.success.value
 
-            val ingestUpdate = IngestStatusUpdate(
-              ingest.id,
-              Ingest.Processing,
-              Some(bagId)
-            )
+          val bagId = createBagId
 
-            ingestTracker.update(ingestUpdate)
+          val ingestUpdate = IngestStatusUpdate(
+            ingest.id,
+            Ingest.Processing,
+            Some(bagId)
+          )
 
-            val storedIngest = getStoredIngest(ingest, table)
+          ingestTracker.update(ingestUpdate)
 
-            assertRecent(storedIngest.createdDate)
-            assertRecent(storedIngest.lastModifiedDate)
-            storedIngest.events.map(_.description) should contain theSameElementsAs ingestUpdate.events
-              .map(_.description)
-            storedIngest.events.foreach(event =>
-              assertRecent(event.createdDate))
+          val storedIngest = getStoredIngest(ingest, table)
 
-            storedIngest.bag shouldBe ingestUpdate.affectedBag
-          }
+          assertRecent(storedIngest.createdDate)
+          assertRecent(storedIngest.lastModifiedDate)
+          storedIngest.events.map(_.description) should contain theSameElementsAs ingestUpdate.events
+            .map(_.description)
+          storedIngest.events.foreach(event => assertRecent(event.createdDate))
+
+          storedIngest.bag shouldBe ingestUpdate.affectedBag
         }
       }
     }
@@ -163,22 +156,23 @@ class IngestTrackerTest
     it("adds a single event to a monitor with no events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val ingestUpdate = IngestEventUpdate(
-              id = ingest.id,
-              events = List(createIngestEvent)
-            )
+          val result = ingestTracker.initialise(createIngest)
+          val ingest = result.success.value
 
-            ingestTracker.update(ingestUpdate)
+          val ingestUpdate = IngestEventUpdate(
+            id = ingest.id,
+            events = List(createIngestEvent)
+          )
 
-            assertIngestCreated(ingest, table)
+          ingestTracker.update(ingestUpdate)
 
-            assertIngestRecordedRecentEvents(
-              id = ingestUpdate.id,
-              expectedEventDescriptions = ingestUpdate.events.map(_.description),
-              table = table
-            )
-          }
+          assertIngestCreated(ingest, table)
+
+          assertIngestRecordedRecentEvents(
+            id = ingestUpdate.id,
+            expectedEventDescriptions = ingestUpdate.events.map(_.description),
+            table = table
+          )
         }
       }
     }
@@ -186,30 +180,31 @@ class IngestTrackerTest
     it("adds a status update to a monitor with no events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val someBagId = Some(createBagId)
-            val ingestUpdate = IngestStatusUpdate(
-              ingest.id,
-              Ingest.Completed,
-              affectedBag = someBagId,
-              List(createIngestEvent)
-            )
+          val result = ingestTracker.initialise(createIngest)
+          val ingest = result.success.value
 
-            ingestTracker.update(ingestUpdate)
+          val someBagId = Some(createBagId)
+          val ingestUpdate = IngestStatusUpdate(
+            ingest.id,
+            Ingest.Completed,
+            affectedBag = someBagId,
+            List(createIngestEvent)
+          )
 
-            val actualIngest = assertIngestCreated(ingest, table)
+          ingestTracker.update(ingestUpdate)
 
-            actualIngest.status shouldBe Ingest.Completed
-            actualIngest.bag shouldBe someBagId
+          val actualIngest = assertIngestCreated(ingest, table)
 
-            assertIngestRecordedRecentEvents(
-              id = ingestUpdate.id,
-              expectedEventDescriptions = ingestUpdate.events.map {
-                _.description
-              },
-              table = table
-            )
-          }
+          actualIngest.status shouldBe Ingest.Completed
+          actualIngest.bag shouldBe someBagId
+
+          assertIngestRecordedRecentEvents(
+            id = ingestUpdate.id,
+            expectedEventDescriptions = ingestUpdate.events.map {
+              _.description
+            },
+            table = table
+          )
         }
       }
     }
@@ -217,28 +212,29 @@ class IngestTrackerTest
     it("adds a callback status update to a monitor with no events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val ingestUpdate = IngestCallbackStatusUpdate(
-              id = ingest.id,
-              callbackStatus = Callback.Succeeded,
-              events = List(createIngestEvent)
-            )
+          val result = ingestTracker.initialise(createIngest)
+          val ingest = result.success.value
 
-            ingestTracker.update(ingestUpdate)
+          val ingestUpdate = IngestCallbackStatusUpdate(
+            id = ingest.id,
+            callbackStatus = Callback.Succeeded,
+            events = List(createIngestEvent)
+          )
 
-            val actualIngest = assertIngestCreated(ingest, table)
+          ingestTracker.update(ingestUpdate)
 
-            actualIngest.callback shouldBe defined
-            actualIngest.callback.get.status shouldBe Callback.Succeeded
+          val actualIngest = assertIngestCreated(ingest, table)
 
-            assertIngestRecordedRecentEvents(
-              id = ingestUpdate.id,
-              expectedEventDescriptions = ingestUpdate.events.map {
-                _.description
-              },
-              table = table
-            )
-          }
+          actualIngest.callback shouldBe defined
+          actualIngest.callback.get.status shouldBe Callback.Succeeded
+
+          assertIngestRecordedRecentEvents(
+            id = ingestUpdate.id,
+            expectedEventDescriptions = ingestUpdate.events.map {
+              _.description
+            },
+            table = table
+          )
         }
       }
     }
@@ -246,21 +242,22 @@ class IngestTrackerTest
     it("adds an update with multiple events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val ingestUpdate = IngestEventUpdate(
-              ingest.id,
-              List(createIngestEvent, createIngestEvent)
-            )
+          val result = ingestTracker.initialise(createIngest)
+          val ingest = result.success.value
 
-            ingestTracker.update(ingestUpdate)
+          val ingestUpdate = IngestEventUpdate(
+            ingest.id,
+            List(createIngestEvent, createIngestEvent)
+          )
 
-            assertIngestCreated(ingest, table)
+          ingestTracker.update(ingestUpdate)
 
-            assertIngestRecordedRecentEvents(
-              ingestUpdate.id,
-              ingestUpdate.events.map(_.description),
-              table)
-          }
+          assertIngestCreated(ingest, table)
+
+          assertIngestRecordedRecentEvents(
+            ingestUpdate.id,
+            ingestUpdate.events.map(_.description),
+            table)
         }
       }
     }
@@ -268,21 +265,22 @@ class IngestTrackerTest
     it("adds multiple events to a monitor") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
-          whenReady(ingestTracker.initialise(createIngest)) { ingest =>
-            val updates = List(
-              createIngestEventUpdateWith(ingest.id),
-              createIngestEventUpdateWith(ingest.id)
-            )
+          val result = ingestTracker.initialise(createIngest)
+          val ingest = result.success.value
 
-            updates.foreach(ingestTracker.update(_))
+          val updates = List(
+            createIngestEventUpdateWith(ingest.id),
+            createIngestEventUpdateWith(ingest.id)
+          )
 
-            assertIngestCreated(ingest, table)
+          updates.foreach(ingestTracker.update(_))
 
-            assertIngestRecordedRecentEvents(
-              ingest.id,
-              updates.flatMap(_.events.map(_.description)),
-              table)
-          }
+          assertIngestCreated(ingest, table)
+
+          assertIngestRecordedRecentEvents(
+            ingest.id,
+            updates.flatMap(_.events.map(_.description)),
+            table)
         }
       }
     }
@@ -317,48 +315,50 @@ class IngestTrackerTest
           val beforeTime = Instant.parse("2018-12-01T11:50:00.00Z")
           val time = Instant.parse("2018-12-01T12:00:00.00Z")
           val afterTime = Instant.parse("2018-12-01T12:10:00.00Z")
-          whenReady(
-            ingestTracker.initialise(
-              createIngestWith(createdDate = beforeTime))) { ingestA =>
-            whenReady(
-              ingestTracker.initialise(createIngestWith(createdDate = time))) {
-              ingestB =>
-                whenReady(ingestTracker.initialise(
-                  createIngestWith(createdDate = afterTime))) { ingestC =>
-                  val bagId = createBagId
 
-                  val ingestAUpdate =
-                    createIngestUpdateWith(ingestA.id, bagId)
-                  ingestTracker.update(ingestAUpdate)
-                  val ingestBUpdate =
-                    createIngestUpdateWith(ingestB.id, bagId)
-                  ingestTracker.update(ingestBUpdate)
-                  val ingestCUpdate =
-                    createIngestUpdateWith(ingestC.id, bagId)
-                  ingestTracker.update(ingestCUpdate)
+          val resultA =
+            ingestTracker.initialise(createIngestWith(createdDate = beforeTime))
+          val ingestA = resultA.success.value
 
-                  val bagIngests = ingestTracker.findByBagId(bagId)
+          val resultB =
+            ingestTracker.initialise(createIngestWith(createdDate = time))
+          val ingestB = resultB.success.value
 
-                  bagIngests shouldBe List(
-                    BagIngest(
-                      id = ingestC.id,
-                      bagIdIndex = bagId.toString,
-                      createdDate = afterTime
-                    ),
-                    BagIngest(
-                      id = ingestB.id,
-                      bagIdIndex = bagId.toString,
-                      createdDate = time
-                    ),
-                    BagIngest(
-                      id = ingestA.id,
-                      bagIdIndex = bagId.toString,
-                      createdDate = beforeTime
-                    )
-                  ).map { Right(_) }
-                }
-            }
-          }
+          val resultC =
+            ingestTracker.initialise(createIngestWith(createdDate = afterTime))
+          val ingestC = resultC.success.value
+
+          val bagId = createBagId
+
+          val ingestAUpdate =
+            createIngestUpdateWith(ingestA.id, bagId)
+          ingestTracker.update(ingestAUpdate)
+          val ingestBUpdate =
+            createIngestUpdateWith(ingestB.id, bagId)
+          ingestTracker.update(ingestBUpdate)
+          val ingestCUpdate =
+            createIngestUpdateWith(ingestC.id, bagId)
+          ingestTracker.update(ingestCUpdate)
+
+          val bagIngests = ingestTracker.findByBagId(bagId)
+
+          bagIngests shouldBe List(
+            BagIngest(
+              id = ingestC.id,
+              bagIdIndex = bagId.toString,
+              createdDate = afterTime
+            ),
+            BagIngest(
+              id = ingestB.id,
+              bagIdIndex = bagId.toString,
+              createdDate = time
+            ),
+            BagIngest(
+              id = ingestA.id,
+              bagIdIndex = bagId.toString,
+              createdDate = beforeTime
+            )
+          ).map { Right(_) }
         }
       }
     }
@@ -367,7 +367,7 @@ class IngestTrackerTest
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
           val start = Instant.parse("2018-12-01T12:00:00.00Z")
-          val eventualIngests: Seq[Future[Ingest]] =
+          val eventualIngests: Seq[Try[Ingest]] =
             for (i <- 0 to 33)
               yield
                 ingestTracker.initialise(

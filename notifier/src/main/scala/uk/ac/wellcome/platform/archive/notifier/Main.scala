@@ -43,7 +43,10 @@ object Main extends WellcomeTypesafeApp {
     new NotifierWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
       callbackUrlService = callbackUrlService,
-      snsWriter = SNSBuilder.buildSNSWriter(config)
+      messageSender = SNSBuilder.buildSNSMessageSender(
+        config,
+        subject = "Sent from the notifier"
+      )
     )
   }
 }

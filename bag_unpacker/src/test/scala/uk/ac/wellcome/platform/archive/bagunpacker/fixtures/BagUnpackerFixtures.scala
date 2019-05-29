@@ -1,10 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.Messaging
-import uk.ac.wellcome.messaging.fixtures.SNS.Topic
+import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   BagUnpackerWorker,
@@ -14,16 +14,14 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   MonitoringClientFixture,
-  OperationFixtures,
-  RandomThings
+  OperationFixtures
 }
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagUnpackerFixtures
-    extends RandomThings
-    with Messaging
+    extends SQS
     with BagLocationFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
@@ -31,55 +29,57 @@ trait BagUnpackerFixtures
 
   def withBagUnpackerWorker[R](
     queue: Queue,
-    ingestTopic: Topic,
-    outgoingTopic: Topic,
-    dstBucket: Bucket
-  )(testWith: TestWith[BagUnpackerWorker, R]): R =
+    ingests: MemoryMessageSender,
+    outgoing: MemoryMessageSender,
+    dstBucket: Bucket,
+    stepName: String = randomAlphanumeric()
+  )(testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
-      withIngestUpdater("unpacker", ingestTopic) { ingestUpdater =>
-        withOutgoingPublisher("unpacker", outgoingTopic) { ongoingPublisher =>
-          withMonitoringClient { implicit monitoringClient =>
-            val bagUnpackerWorker = BagUnpackerWorker(
-              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-              bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
-              ingestUpdater = ingestUpdater,
-              outgoingPublisher = ongoingPublisher,
-              unpacker = Unpacker(new S3Uploader())
-            )
+      val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
+      val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+      withMonitoringClient { implicit monitoringClient =>
+        val bagUnpackerWorker = BagUnpackerWorker(
+          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
+          ingestUpdater = ingestUpdater,
+          outgoingPublisher = outgoingPublisher,
+          unpacker = Unpacker(new S3Uploader())
+        )
 
-            bagUnpackerWorker.run()
+        bagUnpackerWorker.run()
 
-            testWith(bagUnpackerWorker)
-          }
-        }
+        testWith(bagUnpackerWorker)
       }
     }
 
-  def withBagUnpackerApp[R](
-    testWith: TestWith[(BagUnpackerWorker, Bucket, Queue, Topic, Topic), R])
-    : R =
+  def withBagUnpackerApp[R](stepName: String)(
+    testWith: TestWith[(BagUnpackerWorker[String, String],
+                        Bucket,
+                        Queue,
+                        MemoryMessageSender,
+                        MemoryMessageSender),
+                       R]): R =
     withLocalS3Bucket { sourceBucket =>
       withLocalSqsQueue { queue =>
-        withLocalSnsTopic { ingestTopic =>
-          withLocalSnsTopic { outgoingTopic =>
-            withBagUnpackerWorker(
+        val ingests = new MemoryMessageSender()
+        val outgoing = new MemoryMessageSender()
+        withBagUnpackerWorker(
+          queue,
+          ingests,
+          outgoing,
+          sourceBucket,
+          stepName = stepName
+        )({ bagUnpackerProcess =>
+          testWith(
+            (
+              bagUnpackerProcess,
+              sourceBucket,
               queue,
-              ingestTopic,
-              outgoingTopic,
-              sourceBucket
-            )({ bagUnpackerProcess =>
-              testWith(
-                (
-                  bagUnpackerProcess,
-                  sourceBucket,
-                  queue,
-                  ingestTopic,
-                  outgoingTopic
-                )
-              )
-            })
-          }
-        }
+              ingests,
+              outgoing
+            )
+          )
+        })
       }
     }
 }

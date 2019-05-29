@@ -15,8 +15,12 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.memory.{
+  MemoryConditionalUpdateDao,
+  MemoryVersionedDao
+}
+import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -56,28 +60,34 @@ trait BagsApiFixture
     }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R =
-    withLocalS3Bucket { bucket =>
-      withLocalDynamoDbTable { table =>
-        withStorageManifestVHS(table, bucket) { vhs =>
-          withMockMetricsSender { metricsSender =>
-            withApp(metricsSender, vhs) { _ =>
-              testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
-            }
-          }
-        }
+    testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R = {
+    val vhs = createStorageManifestVHS()
+
+    withMockMetricsSender { metricsSender =>
+      withApp(metricsSender, vhs) { _ =>
+        testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
       }
     }
+  }
 
   def withBrokenApp[R](
     testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R = {
-    val bucket = Bucket("does-not-exist")
-    val table = Table("does-not-exist", index = "does-not-exist")
-    withStorageManifestVHS(table, bucket) { vhs =>
-      withMockMetricsSender { metricsSender =>
-        withApp(metricsSender, vhs) { _ =>
-          testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
-        }
+
+    val brokenDao =
+      new MemoryVersionedDao[String, Entry[String, EmptyMetadata]](
+        underlying =
+          MemoryConditionalUpdateDao[String, Entry[String, EmptyMetadata]]
+      ) {
+        override def get(
+          id: String): scala.Either[ReadError, Entry[String, EmptyMetadata]] =
+          Left(DaoReadError(new Throwable("BOOM!")))
+      }
+
+    val brokenVhs = createStorageManifestVHS(dao = brokenDao)
+
+    withMockMetricsSender { metricsSender =>
+      withApp(metricsSender, brokenVhs) { _ =>
+        testWith((brokenVhs, metricsSender, httpServerConfig.externalBaseURL))
       }
     }
   }

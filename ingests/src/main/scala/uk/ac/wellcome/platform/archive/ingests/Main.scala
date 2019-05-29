@@ -38,12 +38,15 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
 
     val ingestTracker = new IngestTracker(
-      dynamoDbClient = DynamoBuilder.buildDynamoClient(config),
+      dynamoClient = DynamoBuilder.buildDynamoClient(config),
       dynamoConfig = DynamoBuilder.buildDynamoConfig(config)
     )
 
     val callbackNotificationService = new CallbackNotificationService(
-      snsWriter = SNSBuilder.buildSNSWriter(config)
+      messageSender = SNSBuilder.buildSNSMessageSender(
+        config,
+        subject = "Sent from the ingests service"
+      )
     )
 
     new IngestsWorker(

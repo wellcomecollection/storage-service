@@ -22,12 +22,12 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   SHA256
 }
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 trait StorageManifestGenerators
     extends BagInfoGenerators
     with StorageSpaceGenerators
-    with S3 {
+    with ObjectLocationGenerators {
 
   val checksumAlgorithm = SHA256
   val checksumValue = ChecksumValue("a")

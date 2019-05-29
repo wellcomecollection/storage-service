@@ -6,12 +6,12 @@ import uk.ac.wellcome.platform.archive.common._
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
-    with S3 {
+    with ObjectLocationGenerators {
   def createIngestRequestPayloadWith(
     sourceLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace

@@ -15,7 +15,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+
+import scala.util.Success
 
 class BagRegisterWorkerTest
     extends FunSpec
@@ -28,26 +29,26 @@ class BagRegisterWorkerTest
 
   it("sends a successful IngestUpdate upon registration") {
     withBagRegisterWorker {
-      case (service, table, bucket, ingestTopic, _, _) =>
+      case (service, dao, store, ingests, _, _) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
-        withBag(bucket, bagInfo = bagInfo) {
-          case (bagRootLocation, storageSpace) =>
-            val payload = createBagInformationPayloadWith(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
+        withLocalS3Bucket { bucket =>
+          withBag(bucket, bagInfo = bagInfo) {
+            case (bagRootLocation, storageSpace) =>
+              val payload = createBagInformationPayloadWith(
+                bagRootLocation = bagRootLocation,
+                storageSpace = storageSpace
+              )
 
-            val bagId = BagId(
-              space = storageSpace,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+              val bagId = BagId(
+                space = storageSpace,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
 
-            val future = service.processMessage(payload)
+              service.processMessage(payload) shouldBe a[Success[_]]
 
-            whenReady(future) { _ =>
-              val storageManifest = getStorageManifest(table, id = bagId)
+              val storageManifest = getStorageManifest(dao, store, id = bagId)
 
               storageManifest.space shouldBe bagId.space
               storageManifest.info shouldBe bagInfo
@@ -64,41 +65,28 @@ class BagRegisterWorkerTest
 
               assertBagRegisterSucceeded(
                 ingestId = payload.ingestId,
-                ingestTopic = ingestTopic,
+                ingests = ingests,
                 bagId = bagId
               )
-            }
+          }
         }
     }
   }
 
   it("sends a failed IngestUpdate if storing fails") {
-    withBagRegisterWorkerAndBucket(Bucket("does-not-exist")) {
-      case (service, _, bucket, ingestTopic, _, _) =>
-        val bagInfo = createBagInfo
+    withBagRegisterWorker {
+      case (service, _, _, ingests, _, _) =>
+        val payload = createBagInformationPayloadWith(
+          bagRootLocation = createObjectLocation,
+          storageSpace = createStorageSpace
+        )
 
-        withBag(bucket, bagInfo = bagInfo) {
-          case (bagRootLocation, storageSpace) =>
-            val payload = createBagInformationPayloadWith(
-              bagRootLocation = bagRootLocation,
-              storageSpace = storageSpace
-            )
+        service.processMessage(payload) shouldBe a[Success[_]]
 
-            val bagId = BagId(
-              space = storageSpace,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
-
-            val future = service.processMessage(payload)
-
-            whenReady(future) { _ =>
-              assertBagRegisterFailed(
-                ingestId = payload.ingestId,
-                ingestTopic = ingestTopic,
-                bagId = bagId
-              )
-            }
-        }
+        assertBagRegisterFailed(
+          ingestId = payload.ingestId,
+          ingests = ingests
+        )
     }
   }
 }

@@ -1,7 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.ingests.services
 
 import org.scalatest.FunSpec
-import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
@@ -11,150 +12,139 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepStarted
 
+import scala.util.Success
+
 class IngestUpdaterTest
     extends FunSpec
-    with ScalaFutures
     with IngestUpdateAssertions
-    with Eventually
-    with IntegrationPatience
     with OperationFixtures
     with IngestOperationGenerators
     with BagIdGenerators {
 
   val stepName: String = randomAlphanumeric()
 
+  val ingestId: IngestID = createIngestID
+  val summary: TestSummary = createTestSummary()
+
   it("sends an ingest update when successful") {
-    withLocalSnsTopic { ingestTopic =>
-      withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
-        val ingestId = createIngestID
-        val summary = createTestSummary()
+    val messageSender = new MemoryMessageSender()
+    val ingestUpdater = createIngestUpdaterWith(
+      stepName = stepName,
+      messageSender = messageSender
+    )
 
-        val sendingOperationNotice =
-          ingestUpdater.send(ingestId, createOperationSuccessWith(summary))
+    val update =
+      ingestUpdater.send(ingestId, createOperationSuccessWith(summary))
 
-        whenReady(sendingOperationNotice) { _ =>
-          eventually {
-            assertTopicReceivesIngestEvent(ingestId, ingestTopic) { events =>
-              events should have size 1
-              events.head.description shouldBe s"${stepName.capitalize} succeeded"
-            }
-          }
-        }
+    update shouldBe a[Success[_]]
 
-      }
+    assertTopicReceivesIngestEvent(ingestId, messageSender) { events =>
+      events should have size 1
+      events.head.description shouldBe s"${stepName.capitalize} succeeded"
     }
   }
 
   it("sends an ingest update when completed") {
-    withLocalSnsTopic { ingestTopic =>
-      withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
-        val ingestId = createIngestID
-        val summary = createTestSummary()
+    val messageSender = new MemoryMessageSender()
+    val ingestUpdater = createIngestUpdaterWith(
+      stepName = stepName,
+      messageSender = messageSender
+    )
 
-        val bagId = createBagId
-        val sendingOperationNotice = ingestUpdater.send(
-          ingestId = ingestId,
-          step = createOperationCompletedWith(summary),
-          bagId = Some(bagId)
-        )
+    val bagId = createBagId
+    val update = ingestUpdater.send(
+      ingestId = ingestId,
+      step = createOperationCompletedWith(summary),
+      bagId = Some(bagId)
+    )
 
-        whenReady(sendingOperationNotice) { _ =>
-          eventually {
-            assertTopicReceivesIngestStatus(
-              ingestId,
-              ingestTopic,
-              Ingest.Completed,
-              Some(bagId)) { events =>
-              events should have size 1
-              events.head.description shouldBe s"${stepName.capitalize} succeeded (completed)"
-            }
-          }
-        }
-      }
+    update shouldBe a[Success[_]]
+
+    assertTopicReceivesIngestStatus(
+      ingestId,
+      messageSender,
+      Ingest.Completed,
+      Some(bagId)) { events =>
+      events should have size 1
+      events.head.description shouldBe s"${stepName.capitalize} succeeded (completed)"
     }
   }
 
   it("sends an ingest update when failed") {
-    withLocalSnsTopic { ingestTopic =>
-      withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
-        val ingestId = createIngestID
-        val summary = createTestSummary()
+    val messageSender = new MemoryMessageSender()
+    val ingestUpdater = createIngestUpdaterWith(
+      stepName = stepName,
+      messageSender = messageSender
+    )
 
-        val bagId = createBagId
-        val sendingOperationNotice = ingestUpdater.send(
-          ingestId = ingestId,
-          step = createIngestFailureWith(summary),
-          bagId = Some(bagId)
-        )
+    val bagId = createBagId
+    val update = ingestUpdater.send(
+      ingestId = ingestId,
+      step = createIngestFailureWith(summary),
+      bagId = Some(bagId)
+    )
 
-        whenReady(sendingOperationNotice) { _ =>
-          eventually {
-            assertTopicReceivesIngestStatus(
-              ingestId,
-              ingestTopic,
-              Ingest.Failed,
-              Some(bagId)) { events =>
-              events should have size 1
-              events.head.description shouldBe s"${stepName.capitalize} failed"
-            }
-          }
-        }
-      }
+    update shouldBe a[Success[_]]
+
+    assertTopicReceivesIngestStatus(
+      ingestId,
+      messageSender,
+      Ingest.Failed,
+      Some(bagId)) { events =>
+      events should have size 1
+      events.head.description shouldBe s"${stepName.capitalize} failed"
     }
   }
 
   it("sends an ingest update when an ingest step starts") {
-    withLocalSnsTopic { ingestTopic =>
-      withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
-        val ingestId = createIngestID
+    val messageSender = new MemoryMessageSender()
+    val ingestUpdater = createIngestUpdaterWith(
+      stepName = stepName,
+      messageSender = messageSender
+    )
 
-        val sendingOperationNotice = ingestUpdater.send(
-          ingestId = ingestId,
-          step = IngestStepStarted(ingestId)
-        )
+    val update = ingestUpdater.send(
+      ingestId = ingestId,
+      step = IngestStepStarted(ingestId)
+    )
 
-        whenReady(sendingOperationNotice) { _ =>
-          eventually {
-            assertTopicReceivesIngestEvent(ingestId, ingestTopic) { events =>
-              events should have size 1
-              events.head.description shouldBe s"${stepName.capitalize} started"
-            }
-          }
-        }
-      }
+    update shouldBe a[Success[_]]
+
+    assertTopicReceivesIngestEvent(ingestId, messageSender) { events =>
+      events should have size 1
+      events.head.description shouldBe s"${stepName.capitalize} started"
     }
   }
 
   it("sends an ingest update when failed with a failure message") {
-    withLocalSnsTopic { ingestTopic =>
-      withIngestUpdater(stepName, ingestTopic) { ingestUpdater =>
-        val ingestId = createIngestID
-        val summary = createTestSummary()
-        val failureMessage = randomAlphanumeric(length = 50)
+    val messageSender = new MemoryMessageSender()
+    val ingestUpdater = createIngestUpdaterWith(
+      stepName = stepName,
+      messageSender = messageSender
+    )
 
-        val bagId = createBagId
-        val sendingOperationNotice = ingestUpdater.send(
-          ingestId = ingestId,
-          step = createIngestFailureWith(
-            summary,
-            maybeFailureMessage = Some(failureMessage)
-          ),
-          bagId = Some(bagId)
-        )
+    val failureMessage = randomAlphanumeric(length = 50)
 
-        whenReady(sendingOperationNotice) { _ =>
-          eventually {
-            assertTopicReceivesIngestStatus(
-              ingestId,
-              ingestTopic,
-              Ingest.Failed,
-              Some(bagId)) { events =>
-              events should have size 1
-              events.head.description shouldBe s"${stepName.capitalize} failed - $failureMessage"
-            }
-          }
-        }
-      }
+    val bagId = createBagId
+
+    val update = ingestUpdater.send(
+      ingestId = ingestId,
+      step = createIngestFailureWith(
+        summary,
+        maybeFailureMessage = Some(failureMessage)
+      ),
+      bagId = Some(bagId)
+    )
+
+    update shouldBe a[Success[_]]
+
+    assertTopicReceivesIngestStatus(
+      ingestId,
+      messageSender,
+      Ingest.Failed,
+      Some(bagId)) { events =>
+      events should have size 1
+      events.head.description shouldBe s"${stepName.capitalize} failed - $failureMessage"
     }
   }
 }
