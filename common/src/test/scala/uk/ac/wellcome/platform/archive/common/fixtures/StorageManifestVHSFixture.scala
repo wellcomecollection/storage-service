@@ -11,16 +11,16 @@ import uk.ac.wellcome.storage.streaming.CodecInstances._
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry, VersionedHybridStore}
 
 trait StorageManifestVHSFixture extends EitherValues {
-  type Dao = MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
-  type Store = MemoryObjectStore[StorageManifest]
+  type StorageManifestDao = MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
+  type StorageManifestStore = MemoryObjectStore[StorageManifest]
 
-  def createStore: Store = new MemoryObjectStore[StorageManifest]()
-  def createDao: Dao = MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
-  def createStorageManifestVHS(dao: Dao = createDao, store: Store = createStore): StorageManifestVHS =
+  def createStore: StorageManifestStore = new MemoryObjectStore[StorageManifest]()
+  def createDao: StorageManifestDao = MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
+  def createStorageManifestVHS(dao: StorageManifestDao = createDao, store: StorageManifestStore = createStore): StorageManifestVHS =
     new StorageManifestVHS(
       new VersionedHybridStore[String, StorageManifest, EmptyMetadata] {
-        override protected val versionedDao: Dao = dao
-        override protected val objectStore: Store = store
+        override protected val versionedDao: StorageManifestDao = dao
+        override protected val objectStore: StorageManifestStore = store
       })
 
   def storeSingleManifest(vhs: StorageManifestVHS,
@@ -31,7 +31,7 @@ trait StorageManifestVHSFixture extends EitherValues {
       ifExisting = _ => throw new RuntimeException("VHS should be empty!")
     )
 
-  def getStorageManifest(dao: Dao, store: Store, id: BagId): StorageManifest = {
+  def getStorageManifest(dao: StorageManifestDao, store: StorageManifestStore, id: BagId): StorageManifest = {
     val entry: Entry[String, EmptyMetadata] =
       dao.entries(id.toString)
 

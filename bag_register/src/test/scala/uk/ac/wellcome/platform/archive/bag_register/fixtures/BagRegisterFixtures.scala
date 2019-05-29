@@ -2,31 +2,17 @@ package uk.ac.wellcome.platform.archive.bag_register.fixtures
 
 import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.SNS.Topic
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.platform.archive.bag_register.services.{
-  BagRegisterWorker,
-  Register
-}
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures,
-  RandomThings,
-  StorageManifestVHSFixture
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures, RandomThings, StorageManifestVHSFixture}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestStatusUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import uk.ac.wellcome.storage.fixtures.S3
 
 trait BagRegisterFixtures
     extends RandomThings
@@ -34,73 +20,52 @@ trait BagRegisterFixtures
     with OperationFixtures
     with StorageManifestVHSFixture
     with MonitoringClientFixture
-    with IngestUpdateAssertions {
+    with IngestUpdateAssertions
+    with S3 {
 
-  type Fixtures = (BagRegisterWorker, Table, Bucket, Topic, Topic, QueuePair)
+  type Fixtures = (BagRegisterWorker[String, String], StorageManifestDao, StorageManifestStore, MemoryMessageSender, MemoryMessageSender, QueuePair)
 
-  def withBagRegisterWorkerAndBucket[R](userBucket: Bucket)(
+  def withBagRegisterWorker[R](stepName: String = randomAlphanumeric())(
     testWith: TestWith[Fixtures, R]): R =
     withActorSystem { implicit actorSystem =>
       withMonitoringClient { implicit monitoringClient =>
-        withLocalDynamoDbTable { table =>
-          withLocalSnsTopic { ingestTopic =>
-            withLocalSnsTopic { outgoingTopic =>
-              withLocalSqsQueueAndDlq { queuePair =>
-                withLocalS3Bucket { bucket =>
-                  withStorageManifestVHS(table, userBucket) {
-                    storageManifestVHS =>
-                      val storageManifestService =
-                        new StorageManifestService()
 
-                      val register = new Register(
-                        storageManifestService,
-                        storageManifestVHS
-                      )
-                      withIngestUpdater("register", ingestTopic) {
-                        ingestUpdater =>
-                          withOutgoingPublisher("register", outgoingTopic) {
-                            outgoingPublisher =>
-                              val service = new BagRegisterWorker(
-                                alpakkaSQSWorkerConfig =
-                                  createAlpakkaSQSWorkerConfig(queuePair.queue),
-                                ingestUpdater = ingestUpdater,
-                                outgoingPublisher = outgoingPublisher,
-                                register = register
-                              )
+        val dao = createDao
+        val store = createStore
+        val storageManifestVHS = createStorageManifestVHS(dao, store)
 
-                              service.run()
+        val ingests = createMessageSender
+        val outgoing = createMessageSender
 
-                              testWith(
-                                (
-                                  service,
-                                  table,
-                                  bucket,
-                                  ingestTopic,
-                                  outgoingTopic,
-                                  queuePair)
-                              )
-                          }
-                      }
-                  }
-                }
-              }
-            }
-          }
+        withLocalSqsQueueAndDlq { queuePair =>
+          val storageManifestService = new StorageManifestService()
+
+          val register = new Register(
+            storageManifestService,
+            storageManifestVHS
+          )
+
+          val service = new BagRegisterWorker(
+            alpakkaSQSWorkerConfig =
+              createAlpakkaSQSWorkerConfig(queuePair.queue),
+            ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName),
+            outgoingPublisher = createOutgoingPublisherWith(outgoing),
+            register = register
+          )
+
+          service.run()
+
+          testWith(
+            (service, dao, store, ingests, outgoing, queuePair)
+          )
         }
       }
     }
 
-  def withBagRegisterWorker[R](testWith: TestWith[Fixtures, R]): R =
-    withLocalS3Bucket { bucket =>
-      withBagRegisterWorkerAndBucket(bucket) { fixtures =>
-        testWith(fixtures)
-      }
-    }
-
   def assertBagRegisterSucceeded(ingestId: IngestID,
-                                 ingestTopic: Topic,
+                                 ingests: MemoryMessageSender,
                                  bagId: BagId): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, ingestTopic) { ingestUpdates =>
+    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
       val ingestStart = ingestUpdates.head
@@ -114,9 +79,9 @@ trait BagRegisterFixtures
     }
 
   def assertBagRegisterFailed(ingestId: IngestID,
-                              ingestTopic: Topic,
+                              ingests: MemoryMessageSender,
                               bagId: BagId): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, ingestTopic) { ingestUpdates =>
+    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
       val ingestStart = ingestUpdates.head
