@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter
 import akka.http.scaladsl.model._
 import io.circe.optics.JsonPath._
 import io.circe.parser._
+import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.generators.{
@@ -25,7 +26,8 @@ class BagsApiFeatureTest
     with BagsApiFixture
     with StorageManifestGenerators
     with DisplayJsonHelpers
-    with JsonAssertions {
+    with JsonAssertions
+    with IntegrationPatience {
 
   describe("GET /bags/:space/:id") {
     it("returns a bag when available") {

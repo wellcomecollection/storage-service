@@ -23,6 +23,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestStatusUpdate
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
+import uk.ac.wellcome.storage.fixtures.S3
 
 trait BagRegisterFixtures
     extends RandomThings
@@ -30,7 +31,8 @@ trait BagRegisterFixtures
     with OperationFixtures
     with StorageManifestVHSFixture
     with MonitoringClientFixture
-    with IngestUpdateAssertions {
+    with IngestUpdateAssertions
+    with S3 {
 
   type Fixtures = (BagRegisterWorker[String, String],
                    StorageManifestDao,
