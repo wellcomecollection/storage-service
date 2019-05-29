@@ -41,7 +41,8 @@ class StorageManifestVHSTest
 
     // Update
 
-    val updateResult = vhs.updateRecord(newStorageManifest)(_ => newStorageManifest)
+    val updateResult =
+      vhs.updateRecord(newStorageManifest)(_ => newStorageManifest)
     updateResult shouldBe a[Right[_, _]]
 
     val getResultPostUpdate = vhs.getRecord(storageManifest.id)

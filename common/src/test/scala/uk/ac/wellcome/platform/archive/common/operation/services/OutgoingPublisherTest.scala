@@ -6,13 +6,16 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.IngestRequestPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{IngestOperationGenerators, PayloadGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  IngestOperationGenerators,
+  PayloadGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
 import scala.util.Success
 
 class OutgoingPublisherTest
-  extends FunSpec
+    extends FunSpec
     with IngestUpdateAssertions
     with OperationFixtures
     with IngestOperationGenerators
@@ -39,7 +42,8 @@ class OutgoingPublisherTest
     val outgoingPublisher = createOutgoingPublisherWith(messageSender)
     val outgoing = createIngestRequestPayload
 
-    val notice = outgoingPublisher.sendIfSuccessful(createOperationFailure(), outgoing)
+    val notice =
+      outgoingPublisher.sendIfSuccessful(createOperationFailure(), outgoing)
 
     notice shouldBe a[Success[_]]
 

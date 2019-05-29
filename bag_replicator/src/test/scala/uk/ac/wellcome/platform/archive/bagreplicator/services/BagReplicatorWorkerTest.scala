@@ -7,7 +7,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
@@ -37,41 +41,44 @@ class BagReplicatorWorkerTest
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
-        withBagReplicatorWorker(bucket = archiveBucket, ingests = ingests, outgoing = outgoing, stepName = "replicating") {
-          service =>
-            withBag(ingestsBucket) {
-              case (srcBagRootLocation, storageSpace) =>
-                val payload = createBagInformationPayloadWith(
-                  bagRootLocation = srcBagRootLocation,
-                  storageSpace = storageSpace
+        withBagReplicatorWorker(
+          bucket = archiveBucket,
+          ingests = ingests,
+          outgoing = outgoing,
+          stepName = "replicating") { service =>
+          withBag(ingestsBucket) {
+            case (srcBagRootLocation, storageSpace) =>
+              val payload = createBagInformationPayloadWith(
+                bagRootLocation = srcBagRootLocation,
+                storageSpace = storageSpace
+              )
+
+              val serviceResult = service.processMessage(payload)
+              serviceResult.success.value shouldBe a[Successful[_]]
+
+              val receivedMessages =
+                outgoing.getMessages[BagInformationPayload]
+              receivedMessages.size shouldBe 1
+
+              val result = receivedMessages.head
+              result.ingestId shouldBe payload.ingestId
+
+              val dstBagRootLocation = result.bagRootLocation
+
+              verifyBagCopied(
+                src = srcBagRootLocation,
+                dst = dstBagRootLocation
+              )
+
+              assertTopicReceivesIngestEvents(
+                payload.ingestId,
+                ingests,
+                expectedDescriptions = Seq(
+                  "Replicating started",
+                  "Replicating succeeded"
                 )
-
-                val serviceResult = service.processMessage(payload)
-                serviceResult.success.value shouldBe a[Successful[_]]
-
-                val receivedMessages =
-                  outgoing.getMessages[BagInformationPayload]
-                receivedMessages.size shouldBe 1
-
-                val result = receivedMessages.head
-                result.ingestId shouldBe payload.ingestId
-
-                val dstBagRootLocation = result.bagRootLocation
-
-                verifyBagCopied(
-                  src = srcBagRootLocation,
-                  dst = dstBagRootLocation
-                )
-
-                assertTopicReceivesIngestEvents(
-                  payload.ingestId,
-                  ingests,
-                  expectedDescriptions = Seq(
-                    "Replicating started",
-                    "Replicating succeeded"
-                  )
-                )
-            }
+              )
+          }
         }
       }
     }
@@ -181,7 +188,9 @@ class BagReplicatorWorkerTest
     it("prefixes the key with the root path if set") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          withBagReplicatorWorker(bucket = archiveBucket, rootPath = Some("rootprefix")) { worker =>
+          withBagReplicatorWorker(
+            bucket = archiveBucket,
+            rootPath = Some("rootprefix")) { worker =>
             withBag(ingestsBucket) {
               case (bagRootLocation, _) =>
                 val payload = createBagInformationPayloadWith(
@@ -204,21 +213,22 @@ class BagReplicatorWorkerTest
     val lockServiceDao = new MemoryLockDao[String, UUID] {}
 
     withLocalS3Bucket { bucket =>
-      withBagReplicatorWorker(bucket = bucket, lockServiceDao = lockServiceDao) { service =>
-        withBag(bucket) {
-          case (bagRootLocation, _) =>
-            val payload = createBagInformationPayloadWith(
-              bagRootLocation = bagRootLocation
-            )
+      withBagReplicatorWorker(bucket = bucket, lockServiceDao = lockServiceDao) {
+        service =>
+          withBag(bucket) {
+            case (bagRootLocation, _) =>
+              val payload = createBagInformationPayloadWith(
+                bagRootLocation = bagRootLocation
+              )
 
-            val result = service.processMessage(payload).success.value
-            result shouldBe a[Successful[_]]
+              val result = service.processMessage(payload).success.value
+              result shouldBe a[Successful[_]]
 
-            val destination = result.summary.get.destination
+              val destination = result.summary.get.destination
 
-            lockServiceDao.history should have size 1
-            lockServiceDao.history.head.id shouldBe destination.toString
-        }
+              lockServiceDao.history should have size 1
+              lockServiceDao.history.head.id shouldBe destination.toString
+          }
       }
     }
   }
@@ -232,7 +242,9 @@ class BagReplicatorWorkerTest
       // processes have started.
       withBag(bucket, dataFileCount = 250) {
         case (bagRootLocation, _) =>
-          withBagReplicatorWorker(bucket = bucket, lockServiceDao = lockServiceDao) { worker =>
+          withBagReplicatorWorker(
+            bucket = bucket,
+            lockServiceDao = lockServiceDao) { worker =>
             val payload = createBagInformationPayloadWith(
               bagRootLocation = bagRootLocation
             )
@@ -241,7 +253,6 @@ class BagReplicatorWorkerTest
               Future.sequence(
                 (1 to 5).map { i =>
                   Future.successful(i).flatMap { _ =>
-
                     // Introduce a tiny bit of fudge to cope with the fact that the memory
                     // locking service isn't thread-safe.
                     Thread.sleep(i * 150)

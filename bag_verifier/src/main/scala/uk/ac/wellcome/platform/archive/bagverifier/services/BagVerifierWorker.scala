@@ -5,7 +5,10 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
@@ -34,12 +37,13 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
   private val worker =
     AlpakkaSQSWorker[BagInformationPayload, VerificationSummary](
       alpakkaSQSWorkerConfig) { payload =>
-        Future.fromTry { processMessage(payload) }
+      Future.fromTry { processMessage(payload) }
     }
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
-  def processMessage(payload: BagInformationPayload): Try[Result[VerificationSummary]] =
+  def processMessage(
+    payload: BagInformationPayload): Try[Result[VerificationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
       summary <- verifier.verify(payload.bagRootLocation)

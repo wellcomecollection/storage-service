@@ -32,7 +32,8 @@ class IngestStarterTest
         assertTableOnlyHasItem(ingest, table)
 
         val expectedPayload = IngestRequestPayload(ingest)
-        messageSender.getMessages[IngestRequestPayload] shouldBe Seq(expectedPayload)
+        messageSender.getMessages[IngestRequestPayload] shouldBe Seq(
+          expectedPayload)
       }
     }
   }

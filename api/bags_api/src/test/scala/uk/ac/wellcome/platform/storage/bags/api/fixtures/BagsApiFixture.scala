@@ -7,12 +7,19 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
-import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, RandomThings, StorageManifestVHSFixture}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  HttpFixtures,
+  RandomThings,
+  StorageManifestVHSFixture
+}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.memory.{MemoryConditionalUpdateDao, MemoryVersionedDao}
+import uk.ac.wellcome.storage.memory.{
+  MemoryConditionalUpdateDao,
+  MemoryVersionedDao
+}
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -66,12 +73,15 @@ trait BagsApiFixture
   def withBrokenApp[R](
     testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R = {
 
-    val brokenDao = new MemoryVersionedDao[String, Entry[String, EmptyMetadata]](
-      underlying = MemoryConditionalUpdateDao[String, Entry[String, EmptyMetadata]]
-    ) {
-      override def get(id: String): scala.Either[ReadError, Entry[String, EmptyMetadata]] =
-        Left(DaoReadError(new Throwable("BOOM!")))
-    }
+    val brokenDao =
+      new MemoryVersionedDao[String, Entry[String, EmptyMetadata]](
+        underlying =
+          MemoryConditionalUpdateDao[String, Entry[String, EmptyMetadata]]
+      ) {
+        override def get(
+          id: String): scala.Either[ReadError, Entry[String, EmptyMetadata]] =
+          Left(DaoReadError(new Throwable("BOOM!")))
+      }
 
     val brokenVhs = createStorageManifestVHS(dao = brokenDao)
 

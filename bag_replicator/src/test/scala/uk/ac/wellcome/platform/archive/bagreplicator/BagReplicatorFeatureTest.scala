@@ -30,50 +30,56 @@ class BagReplicatorFeatureTest
         val outgoing = new MemoryMessageSender()
 
         withLocalSqsQueue { queue =>
-          withBagReplicatorWorker(queue, bucket = archiveBucket, rootPath = Some(rootPath), ingests, outgoing, stepName = "replicating") {
-            _ =>
-              withBag(ingestsBucket) {
-                case (srcBagRootLocation, _) =>
-                  val payload = createBagInformationPayloadWith(
-                    bagRootLocation = srcBagRootLocation
+          withBagReplicatorWorker(
+            queue,
+            bucket = archiveBucket,
+            rootPath = Some(rootPath),
+            ingests,
+            outgoing,
+            stepName = "replicating") { _ =>
+            withBag(ingestsBucket) {
+              case (srcBagRootLocation, _) =>
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = srcBagRootLocation
+                )
+
+                sendNotificationToSQS(queue, payload)
+
+                eventually {
+                  val expectedDst = createObjectLocationWith(
+                    bucket = archiveBucket,
+                    key = Paths
+                      .get(
+                        rootPath,
+                        payload.storageSpace.toString,
+                        payload.externalIdentifier.toString,
+                        s"v${payload.version}"
+                      )
+                      .toString
                   )
 
-                  sendNotificationToSQS(queue, payload)
+                  val expectedPayload = payload.copy(
+                    bagRootLocation = expectedDst
+                  )
 
-                  eventually {
-                    val expectedDst = createObjectLocationWith(
-                      bucket = archiveBucket,
-                      key = Paths
-                        .get(
-                          rootPath,
-                          payload.storageSpace.toString,
-                          payload.externalIdentifier.toString,
-                          s"v${payload.version}"
-                        )
-                        .toString
+                  outgoing.getMessages[BagInformationPayload] shouldBe Seq(
+                    expectedPayload)
+
+                  verifyBagCopied(
+                    src = srcBagRootLocation,
+                    dst = expectedDst
+                  )
+
+                  assertTopicReceivesIngestEvents(
+                    payload.ingestId,
+                    ingests,
+                    expectedDescriptions = Seq(
+                      "Replicating started",
+                      "Replicating succeeded"
                     )
-
-                    val expectedPayload = payload.copy(
-                      bagRootLocation = expectedDst
-                    )
-
-                    outgoing.getMessages[BagInformationPayload] shouldBe Seq(expectedPayload)
-
-                    verifyBagCopied(
-                      src = srcBagRootLocation,
-                      dst = expectedDst
-                    )
-
-                    assertTopicReceivesIngestEvents(
-                      payload.ingestId,
-                      ingests,
-                      expectedDescriptions = Seq(
-                        "Replicating started",
-                        "Replicating succeeded"
-                      )
-                    )
-                  }
-              }
+                  )
+                }
+            }
           }
         }
       }

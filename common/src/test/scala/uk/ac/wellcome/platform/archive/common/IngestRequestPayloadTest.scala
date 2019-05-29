@@ -4,7 +4,12 @@ import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, Namespace, StandardStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  Namespace,
+  StandardStorageProvider,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 

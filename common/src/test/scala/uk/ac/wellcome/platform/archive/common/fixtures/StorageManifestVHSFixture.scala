@@ -11,27 +11,35 @@ import uk.ac.wellcome.storage.streaming.CodecInstances._
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry, VersionedHybridStore}
 
 trait StorageManifestVHSFixture extends EitherValues {
-  type StorageManifestDao = MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
+  type StorageManifestDao =
+    MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
   type StorageManifestStore = MemoryObjectStore[StorageManifest]
 
-  def createStore: StorageManifestStore = new MemoryObjectStore[StorageManifest]()
-  def createDao: StorageManifestDao = MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
-  def createStorageManifestVHS(dao: StorageManifestDao = createDao, store: StorageManifestStore = createStore): StorageManifestVHS =
+  def createStore: StorageManifestStore =
+    new MemoryObjectStore[StorageManifest]()
+  def createDao: StorageManifestDao =
+    MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
+  def createStorageManifestVHS(
+    dao: StorageManifestDao = createDao,
+    store: StorageManifestStore = createStore): StorageManifestVHS =
     new StorageManifestVHS(
       new VersionedHybridStore[String, StorageManifest, EmptyMetadata] {
         override protected val versionedDao: StorageManifestDao = dao
         override protected val objectStore: StorageManifestStore = store
       })
 
-  def storeSingleManifest(vhs: StorageManifestVHS,
-                          storageManifest: StorageManifest): Either[StorageError, Unit] =
+  def storeSingleManifest(
+    vhs: StorageManifestVHS,
+    storageManifest: StorageManifest): Either[StorageError, Unit] =
     vhs.updateRecord(
       ifNotExisting = storageManifest
     )(
       ifExisting = _ => throw new RuntimeException("VHS should be empty!")
     )
 
-  def getStorageManifest(dao: StorageManifestDao, store: StorageManifestStore, id: BagId): StorageManifest = {
+  def getStorageManifest(dao: StorageManifestDao,
+                         store: StorageManifestStore,
+                         id: BagId): StorageManifest = {
     val entry: Entry[String, EmptyMetadata] =
       dao.entries(id.toString)
 

@@ -7,7 +7,10 @@ import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.fixtures.MonitoringClientFixture
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
-import uk.ac.wellcome.platform.archive.ingests.services.{CallbackNotificationService, IngestsWorker}
+import uk.ac.wellcome.platform.archive.ingests.services.{
+  CallbackNotificationService,
+  IngestsWorker
+}
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
@@ -18,7 +21,9 @@ trait IngestsFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture {
 
-  def withIngestWorker[R](queue: Queue, table: Table, messageSender: MemoryMessageSender)(
+  def withIngestWorker[R](queue: Queue,
+                          table: Table,
+                          messageSender: MemoryMessageSender)(
     testWith: TestWith[IngestsWorker[String], R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
@@ -41,7 +46,8 @@ trait IngestsFixtures
       }
     }
 
-  def withConfiguredApp[R](testWith: TestWith[(Queue, MemoryMessageSender, Table), R]): R = {
+  def withConfiguredApp[R](
+    testWith: TestWith[(Queue, MemoryMessageSender, Table), R]): R = {
     withLocalSqsQueue { queue =>
       val messageSender = new MemoryMessageSender()
       withIngestTrackerTable { table =>

@@ -48,8 +48,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
         Future.fromTry { processMessage(payload) }
     }
 
-  def processMessage(
-    payload: UnpackedBagPayload): Try[Result[AuditSummary]] =
+  def processMessage(payload: UnpackedBagPayload): Try[Result[AuditSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 

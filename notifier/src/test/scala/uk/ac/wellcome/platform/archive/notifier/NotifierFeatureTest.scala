@@ -2,7 +2,12 @@ package uk.ac.wellcome.platform.archive.notifier
 
 import java.net.URI
 
-import com.github.tomakehurst.wiremock.client.WireMock.{equalToJson, postRequestedFor, urlPathEqualTo, _}
+import com.github.tomakehurst.wiremock.client.WireMock.{
+  equalToJson,
+  postRequestedFor,
+  urlPathEqualTo,
+  _
+}
 import org.apache.http.HttpStatus
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
@@ -10,9 +15,17 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, CallbackNotification, IngestCallbackStatusUpdate, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Callback,
+  CallbackNotification,
+  IngestCallbackStatusUpdate,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixtures}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{
+  LocalWireMockFixture,
+  NotifierFixtures
+}
 
 class NotifierFeatureTest
     extends FunSpec

@@ -7,7 +7,10 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Successful}
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Completed, Processing}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+  Completed,
+  Processing
+}
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IdConstraintError
 import uk.ac.wellcome.platform.archive.ingests.fixtures.IngestsFixtures
 
@@ -32,7 +35,10 @@ class IngestsWorkerServiceTest
                 status = Completed
               )
 
-            service.processMessage(ingestStatusUpdate).success.value shouldBe a[Successful[_]]
+            service
+              .processMessage(ingestStatusUpdate)
+              .success
+              .value shouldBe a[Successful[_]]
 
             val expectedIngest = ingest.copy(
               status = Completed,
@@ -46,7 +52,8 @@ class IngestsWorkerServiceTest
               payload = expectedIngest
             )
 
-            messageSender.getMessages[CallbackNotification] shouldBe Seq(callbackNotification)
+            messageSender.getMessages[CallbackNotification] shouldBe Seq(
+              callbackNotification)
 
             assertIngestCreated(expectedIngest, table)
 
@@ -90,8 +97,14 @@ class IngestsWorkerServiceTest
               bag = ingestStatusUpdate1.affectedBag
             )
 
-            service.processMessage(ingestStatusUpdate1).success.value shouldBe a[Successful[_]]
-            service.processMessage(ingestStatusUpdate2).success.value shouldBe a[Successful[_]]
+            service
+              .processMessage(ingestStatusUpdate1)
+              .success
+              .value shouldBe a[Successful[_]]
+            service
+              .processMessage(ingestStatusUpdate2)
+              .success
+              .value shouldBe a[Successful[_]]
 
             assertIngestCreated(expectedIngest, table)
 
@@ -114,19 +127,18 @@ class IngestsWorkerServiceTest
     withLocalSqsQueue { queue =>
       withIngestTrackerTable { table =>
         val messageSender = new MemoryMessageSender()
-          withIngestWorker(queue, table, messageSender) { service =>
-            val ingestStatusUpdate =
-              createIngestStatusUpdateWith(
-                status = Completed
-              )
+        withIngestWorker(queue, table, messageSender) { service =>
+          val ingestStatusUpdate =
+            createIngestStatusUpdateWith(
+              status = Completed
+            )
 
-            val result = service.processMessage(ingestStatusUpdate)
-            result.success.value shouldBe a[DeterministicFailure[_]]
+          val result = service.processMessage(ingestStatusUpdate)
+          result.success.value shouldBe a[DeterministicFailure[_]]
 
-            result
-              .success.value
-              .asInstanceOf[DeterministicFailure[_]]
-              .failure shouldBe a[IdConstraintError]
+          result.success.value
+            .asInstanceOf[DeterministicFailure[_]]
+            .failure shouldBe a[IdConstraintError]
         }
       }
     }
@@ -154,8 +166,7 @@ class IngestsWorkerServiceTest
             val result = service.processMessage(ingestStatusUpdate)
 
             result.success.value shouldBe a[DeterministicFailure[_]]
-            result
-              .success.value
+            result.success.value
               .asInstanceOf[DeterministicFailure[_]]
               .failure shouldBe exception
           }

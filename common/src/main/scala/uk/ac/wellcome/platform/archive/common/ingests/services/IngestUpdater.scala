@@ -10,9 +10,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 
 import scala.util.Try
 
-class IngestUpdater[Destination](
-  stepName: String,
-  messageSender: MessageSender[Destination])
+class IngestUpdater[Destination](stepName: String,
+                                 messageSender: MessageSender[Destination])
     extends Logging {
 
   def start(ingestId: IngestID): Try[Unit] =

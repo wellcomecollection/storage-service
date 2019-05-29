@@ -4,7 +4,10 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CallbackNotification,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.ingests.fixtures._
 
 class IngestsFeatureTest
@@ -41,7 +44,8 @@ class IngestsFeatureTest
               payload = expectedIngest
             )
 
-            messageSender.getMessages[CallbackNotification] shouldBe Seq(expectedMessage)
+            messageSender.getMessages[CallbackNotification] shouldBe Seq(
+              expectedMessage)
 
             assertIngestCreated(ingest, table)
 

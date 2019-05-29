@@ -6,7 +6,10 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 
 class BagAuditorFeatureTest
@@ -35,13 +38,18 @@ class BagAuditorFeatureTest
           withLocalSqsQueue { queue =>
             val ingests = new MemoryMessageSender()
             val outgoing = new MemoryMessageSender()
-            withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
+            withAuditorWorker(
+              queue,
+              ingests,
+              outgoing,
+              stepName = "auditing bag") { _ =>
               sendNotificationToSQS(queue, payload)
 
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.getMessages[BagInformationPayload] shouldBe Seq(expectedPayload)
+                outgoing.getMessages[BagInformationPayload] shouldBe Seq(
+                  expectedPayload)
 
                 assertTopicReceivesIngestEvents(
                   payload.ingestId,
@@ -83,13 +91,18 @@ class BagAuditorFeatureTest
           withLocalSqsQueue { queue =>
             val ingests = new MemoryMessageSender()
             val outgoing = new MemoryMessageSender()
-            withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
+            withAuditorWorker(
+              queue,
+              ingests,
+              outgoing,
+              stepName = "auditing bag") { _ =>
               sendNotificationToSQS(queue, payload)
 
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.getMessages[BagInformationPayload] shouldBe Seq(expectedPayload)
+                outgoing.getMessages[BagInformationPayload] shouldBe Seq(
+                  expectedPayload)
 
                 assertTopicReceivesIngestEvents(
                   payload.ingestId,
@@ -118,7 +131,11 @@ class BagAuditorFeatureTest
           withLocalSqsQueue { queue =>
             val ingests = new MemoryMessageSender()
             val outgoing = new MemoryMessageSender()
-            withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
+            withAuditorWorker(
+              queue,
+              ingests,
+              outgoing,
+              stepName = "auditing bag") { _ =>
               sendNotificationToSQS(queue, payload)
 
               eventually {
@@ -126,18 +143,17 @@ class BagAuditorFeatureTest
 
                 outgoing.messages shouldBe empty
 
-                assertTopicReceivesIngestUpdates(
-                  payload.ingestId,
-                  ingests) { ingestUpdates =>
-                  ingestUpdates.size shouldBe 2
+                assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+                  ingestUpdates =>
+                    ingestUpdates.size shouldBe 2
 
-                  val ingestStart = ingestUpdates.head
-                  ingestStart.events.head.description shouldBe "Auditing bag started"
+                    val ingestStart = ingestUpdates.head
+                    ingestStart.events.head.description shouldBe "Auditing bag started"
 
-                  val ingestFailed =
-                    ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-                  ingestFailed.status shouldBe Ingest.Failed
-                  ingestFailed.events.head.description shouldBe "Auditing bag failed"
+                    val ingestFailed =
+                      ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                    ingestFailed.status shouldBe Ingest.Failed
+                    ingestFailed.events.head.description shouldBe "Auditing bag failed"
                 }
               }
             }
@@ -154,7 +170,42 @@ class BagAuditorFeatureTest
       withLocalSqsQueue { queue =>
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
-        withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
+        withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") {
+          _ =>
+            sendNotificationToSQS(queue, payload)
+
+            eventually {
+              assertQueueEmpty(queue)
+
+              outgoing.messages shouldBe empty
+
+              assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+                ingestUpdates =>
+                  ingestUpdates.size shouldBe 2
+
+                  val ingestStart = ingestUpdates.head
+                  ingestStart.events.head.description shouldBe "Auditing bag started"
+
+                  val ingestFailed =
+                    ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                  ingestFailed.status shouldBe Ingest.Failed
+                  ingestFailed.events.head.description shouldBe "Auditing bag failed"
+              }
+            }
+        }
+      }
+    }
+  }
+
+  it("errors if it gets an error from S3") {
+    val unpackedBagLocation = createObjectLocation
+    val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
+
+    withLocalSqsQueue { queue =>
+      val ingests = new MemoryMessageSender()
+      val outgoing = new MemoryMessageSender()
+      withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") {
+        _ =>
           sendNotificationToSQS(queue, payload)
 
           eventually {
@@ -175,39 +226,6 @@ class BagAuditorFeatureTest
                 ingestFailed.events.head.description shouldBe "Auditing bag failed"
             }
           }
-        }
-      }
-    }
-  }
-
-  it("errors if it gets an error from S3") {
-    val unpackedBagLocation = createObjectLocation
-    val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
-
-    withLocalSqsQueue { queue =>
-      val ingests = new MemoryMessageSender()
-      val outgoing = new MemoryMessageSender()
-      withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") { _ =>
-        sendNotificationToSQS(queue, payload)
-
-        eventually {
-          assertQueueEmpty(queue)
-
-          outgoing.messages shouldBe empty
-
-          assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
-            ingestUpdates =>
-              ingestUpdates.size shouldBe 2
-
-              val ingestStart = ingestUpdates.head
-              ingestStart.events.head.description shouldBe "Auditing bag started"
-
-              val ingestFailed =
-                ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-              ingestFailed.status shouldBe Ingest.Failed
-              ingestFailed.events.head.description shouldBe "Auditing bag failed"
-          }
-        }
       }
     }
   }

@@ -8,8 +8,14 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBag
@@ -18,7 +24,8 @@ import uk.ac.wellcome.storage.DoesNotExistError
 import scala.concurrent.ExecutionContext
 
 class Router(vhs: StorageManifestVHS, contextURL: URL)(
-  implicit val ec: ExecutionContext) extends Logging {
+  implicit val ec: ExecutionContext)
+    extends Logging {
 
   def routes: Route = {
     import akka.http.scaladsl.server.Directives._
@@ -36,7 +43,9 @@ class Router(vhs: StorageManifestVHS, contextURL: URL)(
           vhs.getRecord(bagId) match {
             case Right(storageManifest) =>
               complete(
-                DisplayBag(storageManifest = storageManifest, contextUrl = contextURL)
+                DisplayBag(
+                  storageManifest = storageManifest,
+                  contextUrl = contextURL)
               )
             case Left(e: DoesNotExistError) =>
               error("Does not exist", e.e)

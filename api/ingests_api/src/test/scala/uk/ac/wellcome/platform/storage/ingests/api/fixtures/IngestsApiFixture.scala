@@ -15,20 +15,20 @@ import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IngestsApiFixture
-  extends IngestStarterFixture
-  with IngestGenerators
-  with HttpFixtures
-  with MetricsSenderFixture {
+    extends IngestStarterFixture
+    with IngestGenerators
+    with HttpFixtures
+    with MetricsSenderFixture {
 
   val contextURL = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
   val metricsName = "IngestsApiFixture"
 
-  private def withApp[R](
-    table: Table,
-    unpackerMessageSender: MemoryMessageSender,
-    metricsSender: MetricsSender)(testWith: TestWith[IngestsApi[String], R]): R =
+  private def withApp[R](table: Table,
+                         unpackerMessageSender: MemoryMessageSender,
+                         metricsSender: MetricsSender)(
+    testWith: TestWith[IngestsApi[String], R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
         val httpMetrics = new HttpMetrics(
@@ -55,23 +55,25 @@ trait IngestsApiFixture
     }
 
   def withBrokenApp[R](
-    testWith: TestWith[(Table, MemoryMessageSender, MetricsSender, String), R]): R = {
-      val messageSender = new MemoryMessageSender()
-      val table = Table("does-not-exist", index = "does-not-exist")
-      withMockMetricsSender { metricsSender =>
-        withApp(table, messageSender, metricsSender) { _ =>
-          testWith(
-            (
-              table,
-              messageSender,
-              metricsSender,
-              httpServerConfig.externalBaseURL))
-        }
+    testWith: TestWith[(Table, MemoryMessageSender, MetricsSender, String), R])
+    : R = {
+    val messageSender = new MemoryMessageSender()
+    val table = Table("does-not-exist", index = "does-not-exist")
+    withMockMetricsSender { metricsSender =>
+      withApp(table, messageSender, metricsSender) { _ =>
+        testWith(
+          (
+            table,
+            messageSender,
+            metricsSender,
+            httpServerConfig.externalBaseURL))
       }
     }
+  }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(Table, MemoryMessageSender, MetricsSender, String), R]): R =
+    testWith: TestWith[(Table, MemoryMessageSender, MetricsSender, String), R])
+    : R =
     withIngestTrackerTable { table =>
       val messageSender = new MemoryMessageSender()
       withMockMetricsSender { metricsSender =>

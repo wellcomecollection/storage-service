@@ -6,8 +6,16 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, S3Uploader, Unpacker}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  BagUnpackerWorker,
+  S3Uploader,
+  Unpacker
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  MonitoringClientFixture,
+  OperationFixtures
+}
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -45,8 +53,12 @@ trait BagUnpackerFixtures
     }
 
   def withBagUnpackerApp[R](stepName: String)(
-    testWith: TestWith[(BagUnpackerWorker[String, String], Bucket, Queue, MemoryMessageSender, MemoryMessageSender), R])
-    : R =
+    testWith: TestWith[(BagUnpackerWorker[String, String],
+                        Bucket,
+                        Queue,
+                        MemoryMessageSender,
+                        MemoryMessageSender),
+                       R]): R =
     withLocalS3Bucket { sourceBucket =>
       withLocalSqsQueue { queue =>
         val ingests = new MemoryMessageSender()

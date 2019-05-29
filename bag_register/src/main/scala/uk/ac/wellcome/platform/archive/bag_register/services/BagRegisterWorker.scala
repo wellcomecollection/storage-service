@@ -4,7 +4,10 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
@@ -33,7 +36,7 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
   private val worker =
     AlpakkaSQSWorker[BagInformationPayload, RegistrationSummary](
       alpakkaSQSWorkerConfig) { payload =>
-        Future.fromTry { processMessage(payload) }
+      Future.fromTry { processMessage(payload) }
     }
 
   def processMessage(

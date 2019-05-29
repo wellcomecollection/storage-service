@@ -11,6 +11,7 @@ import uk.ac.wellcome.storage.vhs.EmptyMetadata
 object StorageManifestVHSBuilder {
   def build(config: Config): StorageManifestVHS =
     new StorageManifestVHS(
-      underlying = VHSBuilder.buildVHS[String, StorageManifest, EmptyMetadata](config)
+      underlying =
+        VHSBuilder.buildVHS[String, StorageManifest, EmptyMetadata](config)
     )
 }

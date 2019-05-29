@@ -5,11 +5,16 @@ import java.net.URI
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.platform.archive.common.ingests.models.Callback.Pending
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, CallbackNotification, Ingest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Callback,
+  CallbackNotification,
+  Ingest
+}
 
 import scala.util.{Success, Try}
 
-class CallbackNotificationService[Destination](messageSender: MessageSender[Destination]) {
+class CallbackNotificationService[Destination](
+  messageSender: MessageSender[Destination]) {
   def sendNotification(ingest: Ingest): Try[Unit] =
     ingest.callback match {
       case Some(Callback(callbackUri, Pending)) =>

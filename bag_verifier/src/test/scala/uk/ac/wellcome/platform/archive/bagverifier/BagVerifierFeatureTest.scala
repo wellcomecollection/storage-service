@@ -10,7 +10,10 @@ import uk.ac.wellcome.platform.archive.common.BagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 
 class BagVerifierFeatureTest
     extends FunSpec
@@ -27,35 +30,41 @@ class BagVerifierFeatureTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
-      withBagVerifierWorker(ingests, outgoing, queue, stepName = "verification") { _ =>
-        withLocalS3Bucket { bucket =>
-          withBag(bucket) {
-            case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
-
-              sendNotificationToSQS(queue, payload)
-
-              eventually {
-                assertTopicReceivesIngestEvents(
-                  payload.ingestId,
-                  ingests,
-                  expectedDescriptions = Seq(
-                    "Verification started",
-                    "Verification succeeded"
-                  )
+    withLocalSqsQueueAndDlq {
+      case QueuePair(queue, dlq) =>
+        withBagVerifierWorker(
+          ingests,
+          outgoing,
+          queue,
+          stepName = "verification") { _ =>
+          withLocalS3Bucket { bucket =>
+            withBag(bucket) {
+              case (bagRootLocation, _) =>
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation
                 )
 
-                outgoing.getMessages[BagInformationPayload] shouldBe Seq(payload)
+                sendNotificationToSQS(queue, payload)
 
-                assertQueueEmpty(queue)
-                assertQueueEmpty(dlq)
-              }
+                eventually {
+                  assertTopicReceivesIngestEvents(
+                    payload.ingestId,
+                    ingests,
+                    expectedDescriptions = Seq(
+                      "Verification started",
+                      "Verification succeeded"
+                    )
+                  )
+
+                  outgoing.getMessages[BagInformationPayload] shouldBe Seq(
+                    payload)
+
+                  assertQueueEmpty(queue)
+                  assertQueueEmpty(dlq)
+                }
+            }
           }
         }
-      }
     }
   }
 
@@ -63,45 +72,47 @@ class BagVerifierFeatureTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
-      withBagVerifierWorker(ingests, outgoing, queue, stepName = "verification") { _ =>
-        withLocalS3Bucket { bucket =>
-          withBag(
-            bucket,
-            createDataManifest = dataManifestWithWrongChecksum) {
-            case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+    withLocalSqsQueueAndDlq {
+      case QueuePair(queue, dlq) =>
+        withBagVerifierWorker(
+          ingests,
+          outgoing,
+          queue,
+          stepName = "verification") { _ =>
+          withLocalS3Bucket { bucket =>
+            withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
+              case (bagRootLocation, _) =>
+                val payload = createBagInformationPayloadWith(
+                  bagRootLocation = bagRootLocation
+                )
 
-              sendNotificationToSQS(queue, payload)
+                sendNotificationToSQS(queue, payload)
 
-              eventually {
-                assertTopicReceivesIngestUpdates(
-                  payload.ingestId,
-                  ingests) { ingestUpdates =>
-                  debug(s"Got $ingestUpdates")
+                eventually {
+                  assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+                    ingestUpdates =>
+                      debug(s"Got $ingestUpdates")
 
-                  ingestUpdates.size shouldBe 2
+                      ingestUpdates.size shouldBe 2
 
-                  val ingestStart = ingestUpdates.head
-                  ingestStart.events.head.description shouldBe "Verification started"
+                      val ingestStart = ingestUpdates.head
+                      ingestStart.events.head.description shouldBe "Verification started"
 
-                  val ingestFailed =
-                    ingestUpdates.tail.head
-                      .asInstanceOf[IngestStatusUpdate]
-                  ingestFailed.status shouldBe Ingest.Failed
-                  ingestFailed.events.head.description shouldBe "Verification failed"
+                      val ingestFailed =
+                        ingestUpdates.tail.head
+                          .asInstanceOf[IngestStatusUpdate]
+                      ingestFailed.status shouldBe Ingest.Failed
+                      ingestFailed.events.head.description shouldBe "Verification failed"
+                  }
+
+                  outgoing.messages shouldBe empty
+
+                  assertQueueEmpty(queue)
+                  assertQueueEmpty(dlq)
                 }
-
-                outgoing.messages shouldBe empty
-
-                assertQueueEmpty(queue)
-                assertQueueEmpty(dlq)
-              }
+            }
           }
         }
-      }
     }
   }
 }

@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.archive.common.ingests
 import java.time.Instant
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.{GetItemRequest, PutItemRequest, UpdateItemRequest}
+import com.amazonaws.services.dynamodbv2.model.{
+  GetItemRequest,
+  PutItemRequest,
+  UpdateItemRequest
+}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.{FunSpec, TryValues}
@@ -47,9 +51,8 @@ class IngestTrackerTest
 
           val monitors = List(ingest, ingest)
 
-          val result = Future.sequence(monitors.map( i =>
-            Future.fromTry { ingestTracker.initialise(i) }
-          ))
+          val result = Future.sequence(
+            monitors.map(i => Future.fromTry { ingestTracker.initialise(i) }))
           whenReady(result.failed) { failedException =>
             failedException shouldBe a[IdConstraintError]
             failedException.getMessage should include(
@@ -143,8 +146,7 @@ class IngestTrackerTest
           assertRecent(storedIngest.lastModifiedDate)
           storedIngest.events.map(_.description) should contain theSameElementsAs ingestUpdate.events
             .map(_.description)
-          storedIngest.events.foreach(event =>
-            assertRecent(event.createdDate))
+          storedIngest.events.foreach(event => assertRecent(event.createdDate))
 
           storedIngest.bag shouldBe ingestUpdate.affectedBag
         }
@@ -314,13 +316,16 @@ class IngestTrackerTest
           val time = Instant.parse("2018-12-01T12:00:00.00Z")
           val afterTime = Instant.parse("2018-12-01T12:10:00.00Z")
 
-          val resultA = ingestTracker.initialise(createIngestWith(createdDate = beforeTime))
+          val resultA =
+            ingestTracker.initialise(createIngestWith(createdDate = beforeTime))
           val ingestA = resultA.success.value
 
-          val resultB = ingestTracker.initialise(createIngestWith(createdDate = time))
+          val resultB =
+            ingestTracker.initialise(createIngestWith(createdDate = time))
           val ingestB = resultB.success.value
 
-          val resultC = ingestTracker.initialise(createIngestWith(createdDate = afterTime))
+          val resultC =
+            ingestTracker.initialise(createIngestWith(createdDate = afterTime))
           val ingestC = resultC.success.value
 
           val bagId = createBagId

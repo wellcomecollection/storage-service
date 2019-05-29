@@ -7,8 +7,14 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagIt, MonitoringClientFixture}
-import uk.ac.wellcome.platform.archive.notifier.services.{CallbackUrlService, NotifierWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagIt,
+  MonitoringClientFixture
+}
+import uk.ac.wellcome.platform.archive.notifier.services.{
+  CallbackUrlService,
+  NotifierWorker
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -49,8 +55,8 @@ trait NotifierFixtures
     // TODO: Can this be a regular queue?
     withLocalSqsQueue { queue =>
       val messageSender = new MemoryMessageSender()
-        withApp(queue = queue, messageSender = messageSender) { _ =>
-          testWith((queue, messageSender))
-        }
+      withApp(queue = queue, messageSender = messageSender) { _ =>
+        testWith((queue, messageSender))
+      }
     }
 }

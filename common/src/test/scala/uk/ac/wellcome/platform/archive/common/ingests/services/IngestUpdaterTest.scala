@@ -4,7 +4,10 @@ import org.scalatest.FunSpec
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, IngestOperationGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  IngestOperationGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepStarted
@@ -12,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepStarted
 import scala.util.Success
 
 class IngestUpdaterTest
-  extends FunSpec
+    extends FunSpec
     with IngestUpdateAssertions
     with OperationFixtures
     with IngestOperationGenerators
@@ -30,7 +33,8 @@ class IngestUpdaterTest
       messageSender = messageSender
     )
 
-    val update = ingestUpdater.send(ingestId, createOperationSuccessWith(summary))
+    val update =
+      ingestUpdater.send(ingestId, createOperationSuccessWith(summary))
 
     update shouldBe a[Success[_]]
 
@@ -39,7 +43,6 @@ class IngestUpdaterTest
       events.head.description shouldBe s"${stepName.capitalize} succeeded"
     }
   }
-
 
   it("sends an ingest update when completed") {
     val messageSender = new MemoryMessageSender()

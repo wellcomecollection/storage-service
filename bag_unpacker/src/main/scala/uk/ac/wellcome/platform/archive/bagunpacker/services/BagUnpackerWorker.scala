@@ -28,12 +28,11 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  unpacker: Unpacker)(
-  implicit
-  actorSystem: ActorSystem,
-  ec: ExecutionContext,
-  mc: MonitoringClient,
-  sc: AmazonSQSAsync)
+  unpacker: Unpacker)(implicit
+                      actorSystem: ActorSystem,
+                      ec: ExecutionContext,
+                      mc: MonitoringClient,
+                      sc: AmazonSQSAsync)
     extends Runnable
     with IngestStepWorker {
   private val worker =

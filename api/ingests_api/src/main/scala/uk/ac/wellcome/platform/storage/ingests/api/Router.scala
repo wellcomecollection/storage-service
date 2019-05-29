@@ -52,7 +52,9 @@ class Router[UnpackerDestination](
                 complete(Created -> ResponseDisplayIngest(ingest, contextURL))
               }
             case scala.util.Failure(err) =>
-              error(s"Unexpected error while creating an ingest $requestDisplayIngest", err)
+              error(
+                s"Unexpected error while creating an ingest $requestDisplayIngest",
+                err)
               complete(
                 InternalServerError -> InternalServerErrorResponse(
                   contextURL,

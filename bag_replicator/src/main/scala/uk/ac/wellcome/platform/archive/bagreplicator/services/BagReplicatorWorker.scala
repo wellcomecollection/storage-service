@@ -78,9 +78,8 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
       result <- replicate(payload, destination)
     } yield result
 
-  def replicate(
-    payload: BagInformationPayload,
-    destination: ObjectLocation): Try[Result[ReplicationSummary]] =
+  def replicate(payload: BagInformationPayload,
+                destination: ObjectLocation): Try[Result[ReplicationSummary]] =
     lockingService
       .withLock(destination.toString) {
         for {

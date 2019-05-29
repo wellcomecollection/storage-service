@@ -13,7 +13,8 @@ class StorageManifestVHS(
     underlying.get(id = id.toString)
 
   def updateRecord(ifNotExisting: StorageManifest)(
-    ifExisting: StorageManifest => StorageManifest): Either[StorageError, Unit] =
+    ifExisting: StorageManifest => StorageManifest)
+    : Either[StorageError, Unit] =
     underlying
       .update(
         id = ifNotExisting.id.toString
@@ -26,8 +27,11 @@ class StorageManifestVHS(
             ifExisting(existingStorageManifest: StorageManifest),
             existingMetadata: EmptyMetadata)
       )
-      .map { _ => () }
+      .map { _ =>
+        ()
+      }
 
-  def insertRecord(storageManifest: StorageManifest): Either[StorageError, Unit] =
+  def insertRecord(
+    storageManifest: StorageManifest): Either[StorageError, Unit] =
     updateRecord(storageManifest)(_ => storageManifest)
 }

@@ -60,9 +60,9 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
       eventDescriptions should contain theSameElementsAs expectedDescriptions
     }
 
-  def assertTopicReceivesIngestEvent(
-    ingestId: IngestID,
-    ingests: MemoryMessageSender)(assert: Seq[IngestEvent] => Assertion): Assertion =
+  def assertTopicReceivesIngestEvent(ingestId: IngestID,
+                                     ingests: MemoryMessageSender)(
+    assert: Seq[IngestEvent] => Assertion): Assertion =
     assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size should be > 0
 
