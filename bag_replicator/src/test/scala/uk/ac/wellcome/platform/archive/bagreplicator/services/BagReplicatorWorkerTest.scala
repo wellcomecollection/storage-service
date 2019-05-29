@@ -40,7 +40,7 @@ class BagReplicatorWorkerTest
         val ingests = createMessageSender
         val outgoing = createMessageSender
 
-        withBagReplicatorWorker(bucket = archiveBucket, ingests = ingests, outgoing = outgoing) {
+        withBagReplicatorWorker(bucket = archiveBucket, ingests = ingests, outgoing = outgoing, stepName = "replicating") {
           service =>
             withBag(ingestsBucket) {
               case (srcBagRootLocation, storageSpace) =>
@@ -206,15 +206,23 @@ class BagReplicatorWorkerTest
   it("locks around the destination") {
     val lockServiceDao = new MemoryLockDao[String, UUID] {}
 
-    withBagReplicatorWorker(lockServiceDao = lockServiceDao) { service =>
-      val payload = createBagInformationPayload
-      val result = service.processMessage(payload).success.value
-      result shouldBe a[Successful[_]]
+    withLocalS3Bucket { bucket =>
+      withBagReplicatorWorker(bucket = bucket, lockServiceDao = lockServiceDao) { service =>
+        withBag(bucket) {
+          case (bagRootLocation, _) =>
+            val payload = createBagInformationPayloadWith(
+              bagRootLocation = bagRootLocation
+            )
 
-      val destination = result.summary.get.destination
+            val result = service.processMessage(payload).success.value
+            result shouldBe a[Successful[_]]
 
-      lockServiceDao.history should have size 1
-      lockServiceDao.history.head.id shouldBe destination.toString
+            val destination = result.summary.get.destination
+
+            lockServiceDao.history should have size 1
+            lockServiceDao.history.head.id shouldBe destination.toString
+        }
+      }
     }
   }
 
@@ -227,7 +235,7 @@ class BagReplicatorWorkerTest
       // processes have started.
       withBag(bucket, dataFileCount = 250) {
         case (bagRootLocation, _) =>
-          withBagReplicatorWorker(lockServiceDao = lockServiceDao) { worker =>
+          withBagReplicatorWorker(bucket = bucket, lockServiceDao = lockServiceDao) { worker =>
             val payload = createBagInformationPayloadWith(
               bagRootLocation = bagRootLocation
             )
@@ -236,12 +244,18 @@ class BagReplicatorWorkerTest
               Future.sequence(
                 (1 to 5).map { i =>
                   Future.successful(i).flatMap { _ =>
+
+                    // Introduce a tiny bit of fudge to cope with the fact that the memory
+                    // locking service isn't thread-safe.
+                    Thread.sleep(i * 150)
+
                     Future.fromTry { worker.processMessage(payload) }
                   }
                 }
               )
 
             whenReady(futures) { result =>
+              println(result)
               result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
               result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
 
