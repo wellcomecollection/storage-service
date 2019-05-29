@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
-import com.amazonaws.services.sns.model.AmazonSNSException
 import io.circe.Encoder
 import org.scalatest.{FunSpec, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
@@ -136,13 +135,14 @@ class IngestsWorkerServiceTest
   it("fails if publishing to SNS fails") {
     withLocalSqsQueue { queue =>
       withIngestTrackerTable { table =>
+        val exception = new Throwable("BOOM!")
 
         val brokenSender = new MemoryMessageSender(
           destination = randomAlphanumeric(),
           subject = randomAlphanumeric()
         ) {
           override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
-            Failure(new Throwable("BOOM!"))
+            Failure(exception)
         }
 
         withIngestWorker(queue, table, brokenSender) { service =>
@@ -160,7 +160,7 @@ class IngestsWorkerServiceTest
             result
               .success.value
               .asInstanceOf[DeterministicFailure[_]]
-              .failure shouldBe a[AmazonSNSException]
+              .failure shouldBe exception
           }
         }
       }
