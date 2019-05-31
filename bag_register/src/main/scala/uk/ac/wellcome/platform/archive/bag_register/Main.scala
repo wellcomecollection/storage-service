@@ -68,7 +68,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new BagRegisterWorker(
-      alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
+      workerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       register = register

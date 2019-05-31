@@ -22,6 +22,7 @@ class Register(
 
   def update(
     bagRootLocation: ObjectLocation,
+    version: Int,
     storageSpace: StorageSpace
   ): Try[IngestStepResult[RegistrationSummary]] = {
 
@@ -38,6 +39,7 @@ class Register(
         root = bagRootLocation,
         space = storageSpace,
         bag = bag,
+        version = version,
         locations = List(
           StorageLocation(
             provider = InfrequentAccessStorageProvider,

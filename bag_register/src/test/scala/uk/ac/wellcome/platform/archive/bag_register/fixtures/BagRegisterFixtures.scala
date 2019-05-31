@@ -60,7 +60,7 @@ trait BagRegisterFixtures
           )
 
           val service = new BagRegisterWorker(
-            alpakkaSQSWorkerConfig =
+            workerConfig =
               createAlpakkaSQSWorkerConfig(queuePair.queue),
             ingestUpdater =
               createIngestUpdaterWith(ingests, stepName = "register"),

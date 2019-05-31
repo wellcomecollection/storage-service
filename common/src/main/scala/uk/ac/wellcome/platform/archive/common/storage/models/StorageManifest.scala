@@ -17,6 +17,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 case class StorageManifest(
   space: StorageSpace,
   info: BagInfo,
+  version: Int,
   manifest: BagManifest,
   tagManifest: BagManifest,
   locations: List[StorageLocation],
@@ -30,12 +31,14 @@ object StorageManifest {
     root: ObjectLocation,
     space: StorageSpace,
     bag: Bag,
+    version: Int,
     locations: List[StorageLocation]
   ): StorageManifest = {
 
     StorageManifest(
       space = space,
       info = bag.info,
+      version: Int,
       manifest = bag.manifest,
       tagManifest = bag.tagManifest,
       List(

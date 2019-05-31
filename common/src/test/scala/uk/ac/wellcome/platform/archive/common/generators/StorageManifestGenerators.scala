@@ -34,17 +34,27 @@ trait StorageManifestGenerators
 
   val bagItemPath = BagPath("bag-info.txt")
   val manifestFiles = List(
-    BagFile(Checksum(checksumAlgorithm, checksumValue), bagItemPath))
+    BagFile(
+      Checksum(
+      checksumAlgorithm,
+        checksumValue
+      ),
+      bagItemPath
+    )
+  )
+
   val emptyFiles = Nil
 
   def createStorageManifestWith(
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
+    version: Int = 1,
     locations: List[ObjectLocation] = List(createObjectLocation)
   ): StorageManifest =
     StorageManifest(
       space = space,
       info = bagInfo,
+      version = version,
       manifest = BagManifest(
         checksumAlgorithm,
         emptyFiles
