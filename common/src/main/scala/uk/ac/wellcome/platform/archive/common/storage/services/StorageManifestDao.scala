@@ -13,7 +13,8 @@ class StorageManifestDao(
   def put(storageManifest: StorageManifest): Either[StorageError, Unit] = {
 
     val ifNotExisting = (storageManifest, EmptyMetadata())
-    val ifExisting = (o: StorageManifest, m: EmptyMetadata) => (storageManifest, m)
+    val ifExisting = (o: StorageManifest, m: EmptyMetadata) =>
+      (storageManifest, m)
 
     vhs.update(s"${storageManifest.id}")(ifNotExisting)(ifExisting).map { _ =>
       ()
