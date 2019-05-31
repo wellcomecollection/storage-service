@@ -17,13 +17,13 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   UserErrorResponse
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBag
 import uk.ac.wellcome.storage.DoesNotExistError
 
 import scala.concurrent.ExecutionContext
 
-class Router(vhs: StorageManifestVHS, contextURL: URL)(
+class Router(vhs: StorageManifestDao, contextURL: URL)(
   implicit val ec: ExecutionContext)
     extends Logging {
 
@@ -40,7 +40,7 @@ class Router(vhs: StorageManifestVHS, contextURL: URL)(
         )
 
         get {
-          vhs.getRecord(bagId) match {
+          vhs.get(bagId) match {
             case Right(storageManifest) =>
               complete(
                 DisplayBag(
