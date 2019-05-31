@@ -21,7 +21,7 @@ import scala.concurrent.Future
 import scala.util.Try
 
 class BagRegisterWorker[IngestDestination, OutgoingDestination](
-  alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
+  workerConfig: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   register: Register
@@ -34,9 +34,9 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
     with IngestStepWorker {
 
   private val worker =
-    AlpakkaSQSWorker[BagInformationPayload, RegistrationSummary](
-      alpakkaSQSWorkerConfig) { payload =>
-      Future.fromTry { processMessage(payload) }
+    AlpakkaSQSWorker[BagInformationPayload, RegistrationSummary](workerConfig) {
+      payload =>
+        Future.fromTry(processMessage(payload))
     }
 
   def processMessage(
@@ -46,15 +46,21 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
 
       registrationSummary <- register.update(
         bagRootLocation = payload.bagRootLocation,
+        version = payload.version,
         storageSpace = payload.storageSpace
       )
 
       _ <- ingestUpdater.send(
-        payload.ingestId,
-        registrationSummary,
-        bagId = registrationSummary.summary.bagId)
+        ingestId = payload.ingestId,
+        step = registrationSummary,
+        bagId = registrationSummary.summary.bagId
+      )
 
-      _ <- outgoingPublisher.sendIfSuccessful(registrationSummary, payload)
+      _ <- outgoingPublisher.sendIfSuccessful(
+        result = registrationSummary,
+        outgoing = payload
+      )
+
     } yield toResult(registrationSummary)
 
   override def run(): Future[Any] = worker.start
