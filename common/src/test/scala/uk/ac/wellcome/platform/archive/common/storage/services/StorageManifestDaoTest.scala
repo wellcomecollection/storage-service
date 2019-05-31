@@ -42,8 +42,7 @@ class StorageManifestDaoTest
 
     // Update
 
-    val updateResult =
-      dao.update(newStorageManifest)(_ => newStorageManifest)
+    val updateResult = dao.put(newStorageManifest)
     updateResult shouldBe a[Right[_, _]]
 
     val getResultPostUpdate = dao.get(storageManifest.id)

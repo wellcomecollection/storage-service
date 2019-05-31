@@ -8,10 +8,9 @@ import uk.ac.wellcome.storage.streaming.CodecInstances._
 import uk.ac.wellcome.storage.typesafe.VHSBuilder
 import uk.ac.wellcome.storage.vhs.EmptyMetadata
 
-object StorageManifestVHSBuilder {
+object StorageManifestDaoBuilder {
   def build(config: Config): StorageManifestDao =
     new StorageManifestDao(
-      underlying =
-        VHSBuilder.buildVHS[String, StorageManifest, EmptyMetadata](config)
+      VHSBuilder.buildVHS[String, StorageManifest, EmptyMetadata](config)
     )
 }

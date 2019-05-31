@@ -20,7 +20,7 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder,
-  StorageManifestVHSBuilder
+  StorageManifestDaoBuilder
 }
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -47,7 +47,7 @@ object Main extends WellcomeTypesafeApp {
 
     val bagService = new BagDao()
 
-    val storageManifestVHS = StorageManifestVHSBuilder.build(config)
+    val storageManifestVHS = StorageManifestDaoBuilder.build(config)
 
     val operationName = OperationNameBuilder
       .getName(config, default = "register")
