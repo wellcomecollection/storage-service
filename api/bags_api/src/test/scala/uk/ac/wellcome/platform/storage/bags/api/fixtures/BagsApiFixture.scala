@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   StorageManifestVHSFixture
 }
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.memory.{
@@ -37,7 +37,7 @@ trait BagsApiFixture
   val contextURL = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
-  private def withApp[R](metricsSender: MetricsSender, vhs: StorageManifestVHS)(
+  private def withApp[R](metricsSender: MetricsSender, vhs: StorageManifestDao)(
     testWith: TestWith[BagsApi, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
@@ -60,8 +60,8 @@ trait BagsApiFixture
     }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R = {
-    val vhs = createStorageManifestVHS()
+    testWith: TestWith[(StorageManifestDao, MetricsSender, String), R]): R = {
+    val vhs = createStorageManifestDao()
 
     withMockMetricsSender { metricsSender =>
       withApp(metricsSender, vhs) { _ =>
@@ -71,7 +71,7 @@ trait BagsApiFixture
   }
 
   def withBrokenApp[R](
-    testWith: TestWith[(StorageManifestVHS, MetricsSender, String), R]): R = {
+    testWith: TestWith[(StorageManifestDao, MetricsSender, String), R]): R = {
 
     val brokenDao =
       new MemoryVersionedDao[String, Entry[String, EmptyMetadata]](
@@ -83,7 +83,7 @@ trait BagsApiFixture
           Left(DaoReadError(new Throwable("BOOM!")))
       }
 
-    val brokenVhs = createStorageManifestVHS(dao = brokenDao)
+    val brokenVhs = createStorageManifestDao(dao = brokenDao)
 
     withMockMetricsSender { metricsSender =>
       withApp(metricsSender, brokenVhs) { _ =>

@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifier,
   BagVerifierWorker
 }
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagService
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
@@ -56,7 +56,7 @@ trait BagVerifierFixtures
 
   def withVerifier[R](testWith: TestWith[BagVerifier, R]): R =
     withMaterializer { implicit mat =>
-      implicit val _bagService = new BagService()
+      implicit val _bagService = new BagDao()
       implicit val _s3ObjectVerifier = new S3ObjectVerifier()
       implicit val _s3Resolvable = new S3Resolvable()
 

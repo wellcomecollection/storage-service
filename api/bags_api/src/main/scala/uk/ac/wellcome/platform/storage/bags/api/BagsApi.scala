@@ -10,13 +10,13 @@ import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestVHS
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class BagsApi(
-  vhs: StorageManifestVHS,
+  vhs: StorageManifestDao,
   httpMetrics: HttpMetrics,
   httpServerConfig: HTTPServerConfig,
   contextURL: URL

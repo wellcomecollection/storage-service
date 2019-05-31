@@ -5,7 +5,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.storage.DoesNotExistError
 
-class StorageManifestVHSTest
+class StorageManifestDaoTest
     extends FunSpec
     with Matchers
     with EitherValues
@@ -21,31 +21,32 @@ class StorageManifestVHSTest
 
     storageManifest.id shouldBe newStorageManifest.id
 
-    val dao = createDao
+    val versionedDao = createDao
     val store = createStore
 
-    val vhs = createStorageManifestVHS(dao, store)
+    val dao: StorageManifestDao =
+      createStorageManifestDao(versionedDao, store)
 
     // Empty get
 
-    val getResultPreInsert = vhs.getRecord(storageManifest.id)
+    val getResultPreInsert = dao.get(storageManifest.id)
     getResultPreInsert.left.value shouldBe a[DoesNotExistError]
 
     // Insert
 
-    val insertResult = vhs.insertRecord(storageManifest)
+    val insertResult = dao.put(storageManifest)
     insertResult shouldBe a[Right[_, _]]
 
-    val getResultPostInsert = vhs.getRecord(storageManifest.id)
+    val getResultPostInsert = dao.get(storageManifest.id)
     getResultPostInsert.right.value shouldBe storageManifest
 
     // Update
 
     val updateResult =
-      vhs.updateRecord(newStorageManifest)(_ => newStorageManifest)
+      dao.update(newStorageManifest)(_ => newStorageManifest)
     updateResult shouldBe a[Right[_, _]]
 
-    val getResultPostUpdate = vhs.getRecord(storageManifest.id)
+    val getResultPostUpdate = dao.get(storageManifest.id)
     getResultPostUpdate.right.value shouldBe newStorageManifest
   }
 }

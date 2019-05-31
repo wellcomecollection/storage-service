@@ -53,6 +53,7 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
         payload.ingestId,
         registrationSummary,
         bagId = registrationSummary.summary.bagId)
+
       _ <- outgoingPublisher.sendIfSuccessful(registrationSummary, payload)
     } yield toResult(registrationSummary)
 

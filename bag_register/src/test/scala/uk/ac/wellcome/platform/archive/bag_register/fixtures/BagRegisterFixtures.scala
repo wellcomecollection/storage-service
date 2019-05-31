@@ -11,6 +11,7 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
 }
 import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures,
@@ -22,7 +23,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestStatusUpdate
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.fixtures.S3
 
 trait BagRegisterFixtures
@@ -35,7 +35,7 @@ trait BagRegisterFixtures
     with S3 {
 
   type Fixtures = (BagRegisterWorker[String, String],
-                   StorageManifestDao,
+                   StorageManifestVersionedDao,
                    StorageManifestStore,
                    MemoryMessageSender,
                    MemoryMessageSender,
@@ -46,16 +46,16 @@ trait BagRegisterFixtures
       withMonitoringClient { implicit monitoringClient =>
         val dao = createDao
         val store = createStore
-        val storageManifestVHS = createStorageManifestVHS(dao, store)
+        val storageManifestVHS = createStorageManifestDao(dao, store)
 
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
         withLocalSqsQueueAndDlq { queuePair =>
-          val storageManifestService = new StorageManifestService()
+          val bagService = new BagDao()
 
           val register = new Register(
-            storageManifestService,
+            bagService,
             storageManifestVHS
           )
 

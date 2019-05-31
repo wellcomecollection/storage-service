@@ -10,7 +10,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
-class BagService()(implicit s3Client: AmazonS3) extends Logging {
+class BagDao()(implicit s3Client: AmazonS3) extends Logging {
 
   type Stream[T] = InputStream => Try[T]
 
@@ -24,7 +24,7 @@ class BagService()(implicit s3Client: AmazonS3) extends Logging {
   private val tagManifest = (a: HashingAlgorithm) =>
     BagPath(s"tagmanifest-${a.pathRepr}.txt")
 
-  def retrieve(root: ObjectLocation) =
+  def get(root: ObjectLocation): Either[BagUnavailable, Bag] =
     for {
 
       bagInfo <- loadRequired[BagInfo](root)(bagInfo)(BagInfo.create)

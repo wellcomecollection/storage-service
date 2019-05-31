@@ -5,14 +5,14 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
 import uk.ac.wellcome.storage.{ReadError, StorageError}
 
-class StorageManifestVHS(
+class StorageManifestDao(
   underlying: VersionedHybridStore[String, StorageManifest, EmptyMetadata]
 ) {
 
-  def getRecord(id: BagId): Either[ReadError, StorageManifest] =
+  def get(id: BagId): Either[ReadError, StorageManifest] =
     underlying.get(id = id.toString)
 
-  def updateRecord(ifNotExisting: StorageManifest)(
+  def update(ifNotExisting: StorageManifest)(
     ifExisting: StorageManifest => StorageManifest)
     : Either[StorageError, Unit] =
     underlying
@@ -31,7 +31,6 @@ class StorageManifestVHS(
         ()
       }
 
-  def insertRecord(
-    storageManifest: StorageManifest): Either[StorageError, Unit] =
-    updateRecord(storageManifest)(_ => storageManifest)
+  def put(storageManifest: StorageManifest): Either[StorageError, Unit] =
+    update(storageManifest)(_ => storageManifest)
 }

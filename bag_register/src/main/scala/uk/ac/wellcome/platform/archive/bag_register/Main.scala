@@ -15,13 +15,13 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder,
   StorageManifestVHSBuilder
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -34,7 +34,7 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildActorSystem()
     implicit val ec: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
-    implicit val materializer: ActorMaterializer =
+    implicit val mat: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
     implicit val s3Client: AmazonS3 = S3Builder.buildS3Client(config)
@@ -45,7 +45,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val storageManifestService = new StorageManifestService()
+    val bagService = new BagDao()
 
     val storageManifestVHS = StorageManifestVHSBuilder.build(config)
 
@@ -58,7 +58,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val register = new Register(
-      storageManifestService,
+      bagService,
       storageManifestVHS
     )
 
