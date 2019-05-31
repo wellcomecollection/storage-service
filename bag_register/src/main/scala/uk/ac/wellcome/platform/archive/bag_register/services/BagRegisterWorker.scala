@@ -39,7 +39,8 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
       Future.fromTry { processMessage(payload) }
     }
 
-  def processMessage(payload: BagInformationPayload): Try[Result[RegistrationSummary]] =
+  def processMessage(
+    payload: BagInformationPayload): Try[Result[RegistrationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 

@@ -37,8 +37,9 @@ trait BagsApiFixture
   val contextURL = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
-  private def withApp[R](metricsSender: MetricsSender, vhs: StorageManifestVersionedDao)(
-    testWith: TestWith[BagsApi, R]): R =
+  private def withApp[R](
+    metricsSender: MetricsSender,
+    vhs: StorageManifestVersionedDao)(testWith: TestWith[BagsApi, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
         val httpMetrics = new HttpMetrics(
@@ -60,7 +61,8 @@ trait BagsApiFixture
     }
 
   def withConfiguredApp[R](
-    testWith: TestWith[(StorageManifestVersionedDao, MetricsSender, String), R]): R = {
+    testWith: TestWith[(StorageManifestVersionedDao, MetricsSender, String), R])
+    : R = {
     val vhs = createStorageManifestDao()
 
     withMockMetricsSender { metricsSender =>
@@ -71,7 +73,8 @@ trait BagsApiFixture
   }
 
   def withBrokenApp[R](
-    testWith: TestWith[(StorageManifestVersionedDao, MetricsSender, String), R]): R = {
+    testWith: TestWith[(StorageManifestVersionedDao, MetricsSender, String), R])
+    : R = {
 
     val brokenDao =
       new MemoryVersionedDao[String, Entry[String, EmptyMetadata]](

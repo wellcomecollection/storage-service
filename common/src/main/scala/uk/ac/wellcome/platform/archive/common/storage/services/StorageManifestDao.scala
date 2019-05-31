@@ -31,7 +31,6 @@ class StorageManifestDao(
         ()
       }
 
-  def put(
-    storageManifest: StorageManifest): Either[StorageError, Unit] =
+  def put(storageManifest: StorageManifest): Either[StorageError, Unit] =
     update(storageManifest)(_ => storageManifest)
 }

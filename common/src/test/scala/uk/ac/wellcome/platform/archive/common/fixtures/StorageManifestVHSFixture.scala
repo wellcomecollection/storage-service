@@ -20,8 +20,8 @@ trait StorageManifestVHSFixture extends EitherValues {
   def createDao: StorageManifestVersionedDao =
     MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
   def createStorageManifestDao(
-                                dao: StorageManifestVersionedDao = createDao,
-                                store: StorageManifestStore = createStore): StorageManifestDao =
+    dao: StorageManifestVersionedDao = createDao,
+    store: StorageManifestStore = createStore): StorageManifestDao =
     new StorageManifestDao(
       new VersionedHybridStore[String, StorageManifest, EmptyMetadata] {
         override protected val versionedDao: StorageManifestVersionedDao = dao
@@ -29,8 +29,8 @@ trait StorageManifestVHSFixture extends EitherValues {
       })
 
   def storeSingleManifest(
-                           vhs: StorageManifestDao,
-                           storageManifest: StorageManifest): Either[StorageError, Unit] =
+    vhs: StorageManifestDao,
+    storageManifest: StorageManifest): Either[StorageError, Unit] =
     vhs.update(
       ifNotExisting = storageManifest
     )(

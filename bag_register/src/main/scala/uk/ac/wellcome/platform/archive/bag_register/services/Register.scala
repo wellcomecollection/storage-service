@@ -5,7 +5,10 @@ import java.time.Instant
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.ObjectLocation
@@ -13,8 +16,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.util.{Success, Try}
 
 class Register(
-                bagService: BagDao,
-                storageManifestVHS: StorageManifestDao
+  bagService: BagDao,
+  storageManifestVHS: StorageManifestDao
 ) extends Logging {
 
   def update(
