@@ -17,7 +17,7 @@ import scala.util.{Success, Try}
 
 class Register(
   bagService: BagDao,
-  storageManifestVHS: StorageManifestDao
+  storageManifestDao: StorageManifestDao
 ) extends Logging {
 
   def update(
@@ -50,8 +50,7 @@ class Register(
 
       registrationWithBagId = registration.copy(bagId = Some(manifest.id))
 
-      completedRegistration <- storageManifestVHS
-        .update(manifest)(_ => manifest) match {
+      completedRegistration <- storageManifestDao.put(manifest) match {
         case Right(_) =>
           Right(IngestCompleted(registrationWithBagId.complete))
         case Left(storageError) =>

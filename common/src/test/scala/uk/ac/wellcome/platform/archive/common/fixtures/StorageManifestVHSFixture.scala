@@ -31,11 +31,7 @@ trait StorageManifestVHSFixture extends EitherValues {
   def storeSingleManifest(
     vhs: StorageManifestDao,
     storageManifest: StorageManifest): Either[StorageError, Unit] =
-    vhs.update(
-      ifNotExisting = storageManifest
-    )(
-      ifExisting = _ => throw new RuntimeException("VHS should be empty!")
-    )
+    vhs.put(storageManifest)
 
   def getStorageManifest(dao: StorageManifestVersionedDao,
                          store: StorageManifestStore,

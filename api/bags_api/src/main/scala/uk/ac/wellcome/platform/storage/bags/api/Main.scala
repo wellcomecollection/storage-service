@@ -20,7 +20,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val materializer: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
-    val vhs = StorageManifestVHSBuilder.build(config)
+    val vhs = StorageManifestDaoBuilder.build(config)
 
     val httpMetrics = new HttpMetrics(
       name = "BagsApi",
