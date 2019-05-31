@@ -37,14 +37,8 @@ trait BagsApiFixture
   val contextURL = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
-<<<<<<< HEAD
-  private def withApp[R](
-    metricsSender: MetricsSender,
-    vhs: StorageManifestVersionedDao)(testWith: TestWith[BagsApi, R]): R =
-=======
   private def withApp[R](metricsSender: MetricsSender, vhs: StorageManifestDao)(
     testWith: TestWith[BagsApi, R]): R =
->>>>>>> fix some naming errors in bags_api
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
         val httpMetrics = new HttpMetrics(
