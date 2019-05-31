@@ -16,8 +16,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.util.{Success, Try}
 
 class Register(
-                bagService: BagDao,
-                storageManifestDao: StorageManifestDao
+  bagService: BagDao,
+  storageManifestDao: StorageManifestDao
 ) extends Logging {
 
   def update(
