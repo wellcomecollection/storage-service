@@ -36,7 +36,7 @@ trait StorageManifestGenerators
   val manifestFiles = List(
     BagFile(
       Checksum(
-      checksumAlgorithm,
+        checksumAlgorithm,
         checksumValue
       ),
       bagItemPath

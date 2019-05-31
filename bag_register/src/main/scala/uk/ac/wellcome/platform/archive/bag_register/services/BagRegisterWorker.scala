@@ -34,8 +34,10 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
     with IngestStepWorker {
 
   private val worker =
-    AlpakkaSQSWorker[BagInformationPayload, RegistrationSummary](
-      workerConfig) { payload => Future.fromTry(processMessage(payload)) }
+    AlpakkaSQSWorker[BagInformationPayload, RegistrationSummary](workerConfig) {
+      payload =>
+        Future.fromTry(processMessage(payload))
+    }
 
   def processMessage(
     payload: BagInformationPayload): Try[Result[RegistrationSummary]] =
