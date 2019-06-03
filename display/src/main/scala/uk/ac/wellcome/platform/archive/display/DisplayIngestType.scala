@@ -1,7 +1,11 @@
 package uk.ac.wellcome.platform.archive.display
 
 import io.circe.{Decoder, Encoder, HCursor, Json}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, IngestType, UpdateIngestType}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  IngestType,
+  UpdateIngestType
+}
 
 sealed trait DisplayIngestType { val id: String }
 
@@ -22,14 +26,16 @@ object DisplayIngestType {
 
   implicit val decoder: Decoder[DisplayIngestType] =
     (cursor: HCursor) =>
-      Decoder[IngestType].apply(cursor)
+      Decoder[IngestType]
+        .apply(cursor)
         .map {
           DisplayIngestType(_)
-        }
+      }
 
   implicit val encoder: Encoder[DisplayIngestType] =
-    (ingestType: DisplayIngestType) => Json.obj(
-      "id" -> Json.fromString(ingestType.id),
-      "type" -> Json.fromString("IngestType")
+    (ingestType: DisplayIngestType) =>
+      Json.obj(
+        "id" -> Json.fromString(ingestType.id),
+        "type" -> Json.fromString("IngestType")
     )
 }
