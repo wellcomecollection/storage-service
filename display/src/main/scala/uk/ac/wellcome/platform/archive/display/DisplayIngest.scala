@@ -49,7 +49,7 @@ object ResponseDisplayIngest {
       sourceLocation = DisplayLocation(ingest.sourceLocation),
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),
-      ingestType = CreateDisplayIngestType,
+      ingestType = DisplayIngestType(id = "create"),
       bag = ingest.bag.map { ResponseDisplayIngestBag(_) },
       status = DisplayStatus(ingest.status),
       events = ingest.events

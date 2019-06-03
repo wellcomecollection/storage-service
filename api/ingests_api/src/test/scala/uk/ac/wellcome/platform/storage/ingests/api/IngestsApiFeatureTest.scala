@@ -256,7 +256,7 @@ class IngestsApiFeatureTest
                           actualCallbackUrl,
                           Some(DisplayStatus(actualCallbackStatus, "Status")),
                           "Callback")),
-                      CreateDisplayIngestType,
+                      DisplayIngestType(_, _),
                       DisplayStorageSpace(actualSpaceId, "Space"),
                       DisplayStatus("accepted", "Status"),
                       None,

@@ -99,15 +99,15 @@ class DisplayIngestTest
       val bucket = "ingest-bucket"
       val path = "bag.zip"
       val ingestCreateRequest = RequestDisplayIngest(
-        DisplayLocation(displayProvider, bucket, path),
-        Some(
+        sourceLocation = DisplayLocation(displayProvider, bucket, path),
+        callback = Some(
           DisplayCallback(
             url = "http://www.wellcomecollection.org/callback/ok",
             status = None
           )
         ),
-        CreateDisplayIngestType,
-        DisplayStorageSpace("space-id")
+        ingestType = DisplayIngestType("create"),
+        space = DisplayStorageSpace("space-id")
       )
 
       val ingest = ingestCreateRequest.toIngest
