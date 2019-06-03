@@ -256,7 +256,7 @@ class IngestsApiFeatureTest
                           actualCallbackUrl,
                           Some(DisplayStatus(actualCallbackStatus, "Status")),
                           "Callback")),
-                      DisplayIngestType(_, _),
+                      CreateDisplayIngestType,
                       DisplayStorageSpace(actualSpaceId, "Space"),
                       DisplayStatus("accepted", "Status"),
                       None,
@@ -614,7 +614,7 @@ class IngestsApiFeatureTest
                 assertIsUserErrorResponse(
                   response = response,
                   description =
-                    """Invalid value at .ingestType.id: got "baboop", valid values are: create."""
+                    """Invalid value at .ingestType.id: got "baboop", valid values are: create, update."""
                 )
 
                 messageSender.messages shouldBe empty

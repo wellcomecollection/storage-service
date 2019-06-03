@@ -123,7 +123,7 @@ class DisplayIngestTest
             status = None
           )
         ),
-        ingestType = DisplayIngestType("create"),
+        ingestType = CreateDisplayIngestType,
         space = DisplayStorageSpace("space-id")
       )
 
@@ -143,7 +143,7 @@ class DisplayIngestTest
 
     it("sets an ingest type of 'create'") {
       val displayRequest = createRequestDisplayIngestWith(
-        ingestType = DisplayIngestType("create")
+        ingestType = CreateDisplayIngestType
       )
 
       displayRequest.toIngest.ingestType shouldBe CreateIngestType
@@ -151,7 +151,7 @@ class DisplayIngestTest
 
     it("sets an ingest type of 'update'") {
       val displayRequest = createRequestDisplayIngestWith(
-        ingestType = DisplayIngestType("update")
+        ingestType = UpdateDisplayIngestType
       )
 
       displayRequest.toIngest.ingestType shouldBe UpdateIngestType
@@ -165,7 +165,7 @@ class DisplayIngestTest
       path = randomAlphanumeric
     ),
     callback: Option[DisplayCallback] = None,
-    ingestType: DisplayIngestType = DisplayIngestType("create"),
+    ingestType: DisplayIngestType = CreateDisplayIngestType,
     space: DisplayStorageSpace = DisplayStorageSpace(randomAlphanumeric)
   ): RequestDisplayIngest =
     RequestDisplayIngest(
