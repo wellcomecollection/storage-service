@@ -9,7 +9,6 @@ import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import grizzled.slf4j.Logging
 import io.circe.Printer
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
   ExternalIdentifier
@@ -19,7 +18,10 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   InternalServerErrorResponse,
   UserErrorResponse
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID
+}
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display.{

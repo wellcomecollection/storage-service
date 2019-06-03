@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.archive.common.versioning
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 
 import scala.util.{Success, Try}
 

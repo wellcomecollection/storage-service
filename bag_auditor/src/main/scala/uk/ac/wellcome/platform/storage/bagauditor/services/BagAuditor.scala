@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.IngestID
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.StreamUnavailable
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,

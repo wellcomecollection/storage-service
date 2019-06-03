@@ -4,8 +4,8 @@ import java.time.Instant
 import java.util.UUID
 
 import cats.implicits._
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManager
 import uk.ac.wellcome.storage.{FailedProcess, LockDao, LockingService}
 

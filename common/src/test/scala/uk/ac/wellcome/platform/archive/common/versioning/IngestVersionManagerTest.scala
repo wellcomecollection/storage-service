@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.archive.common.versioning
 import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 
 import scala.util.{Failure, Success, Try}
 

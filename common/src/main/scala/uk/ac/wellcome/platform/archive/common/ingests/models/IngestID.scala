@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common
+package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.util.UUID
 

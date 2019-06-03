@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 
 case class Ingest(

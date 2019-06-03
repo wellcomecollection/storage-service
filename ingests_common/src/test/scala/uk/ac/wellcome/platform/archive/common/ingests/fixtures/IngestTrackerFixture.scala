@@ -2,11 +2,10 @@ package uk.ac.wellcome.platform.archive.common.ingests.fixtures
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.IngestID
-import uk.ac.wellcome.platform.archive.common.IngestID._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb

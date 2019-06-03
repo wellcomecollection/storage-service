@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.archive.common.versioning
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 
 trait VersionRecordGenerators extends ExternalIdentifierGenerators {
   def createVersionRecordWith(
