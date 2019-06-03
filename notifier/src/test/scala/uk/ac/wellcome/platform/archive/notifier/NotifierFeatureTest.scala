@@ -72,7 +72,7 @@ class NotifierFeatureTest
                       ingest.sourceLocation.location.namespace,
                       ingest.sourceLocation.location.key),
                     ingest.callback.map(DisplayCallback(_)),
-                    DisplayIngestType("create"),
+                    CreateDisplayIngestType,
                     DisplayStorageSpace(ingest.space.underlying),
                     DisplayStatus(ingest.status.toString),
                     ingest.bag.map(bagId =>
