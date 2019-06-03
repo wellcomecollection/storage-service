@@ -20,6 +20,7 @@ trait IngestGenerators extends BagIdGenerators {
     new URI("http://www.wellcomecollection.org/callback/ok")
 
   def createIngestWith(id: IngestID = createIngestID,
+                       ingestType: IngestType = CreateIngestType,
                        sourceLocation: StorageLocation = storageLocation,
                        callback: Option[Callback] = Some(createCallback()),
                        space: Namespace = createSpace,
@@ -29,6 +30,7 @@ trait IngestGenerators extends BagIdGenerators {
                        events: List[IngestEvent] = List.empty): Ingest =
     Ingest(
       id = id,
+      ingestType = ingestType,
       sourceLocation = sourceLocation,
       callback = callback,
       space = space,

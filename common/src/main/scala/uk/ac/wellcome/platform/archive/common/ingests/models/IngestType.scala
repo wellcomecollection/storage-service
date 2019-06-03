@@ -3,6 +3,8 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 import io.circe.CursorOp.DownField
 import io.circe._
 
+import scala.util.{Failure, Success, Try}
+
 sealed trait IngestType { val id: String }
 
 object CreateIngestType extends IngestType {
@@ -14,16 +16,20 @@ object UpdateIngestType extends IngestType {
 }
 
 object IngestType {
+  def create(id: String): IngestType =
+    id match {
+      case CreateIngestType.id => CreateIngestType
+      case UpdateIngestType.id => UpdateIngestType
+      case invalidId => throw new Throwable(s"""got "$invalidId", valid values are: ${CreateIngestType.id}, ${UpdateIngestType.id}.""")
+    }
+
   implicit val decoder: Decoder[IngestType] = (cursor: HCursor) =>
     for {
       id <- cursor.downField("id").as[String]
-      ingestType <- id match {
-        case CreateIngestType.id => Right(CreateIngestType)
-        case UpdateIngestType.id => Right(UpdateIngestType)
-        case invalidId => val fields = DownField("id") +: cursor.history
-          Left(DecodingFailure(
-            s"""got "$invalidId", valid values are: ${CreateIngestType.id}, ${UpdateIngestType.id}.""",
-            fields))
+      ingestType <- Try { create(id) } match {
+        case Success(ingestType) => Right(ingestType)
+        case Failure(err) => val fields = DownField("id") +: cursor.history
+          Left(DecodingFailure(err.getMessage, fields))
       }
     } yield ingestType
 

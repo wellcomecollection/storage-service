@@ -276,6 +276,7 @@ class IngestsApiFeatureTest
 
                     val expectedIngest = Ingest(
                       id = IngestID(id),
+                      ingestType = CreateIngestType,
                       sourceLocation = StorageLocation(
                         StandardStorageProvider,
                         ObjectLocation(bucketName, s3key)

@@ -6,6 +6,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 
 case class Ingest(
   id: IngestID,
+  ingestType: IngestType,
   sourceLocation: StorageLocation,
   space: Namespace,
   callback: Option[Callback],
@@ -18,6 +19,7 @@ case class Ingest(
 
 case object Ingest {
   def apply(id: IngestID,
+            ingestType: IngestType,
             sourceLocation: StorageLocation,
             space: Namespace,
             callback: Option[Callback] = None,
@@ -27,6 +29,7 @@ case object Ingest {
             events: Seq[IngestEvent] = Seq.empty): Ingest =
     Ingest(
       id = id,
+      ingestType = ingestType,
       sourceLocation = sourceLocation,
       space = space,
       callback = callback,

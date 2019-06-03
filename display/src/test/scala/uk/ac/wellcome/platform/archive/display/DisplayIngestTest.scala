@@ -32,6 +32,7 @@ class DisplayIngestTest
       val bagId = createBagId
       val ingest: Ingest = Ingest(
         id = id,
+        ingestType = CreateIngestType,
         sourceLocation = StorageLocation(
           provider = StandardStorageProvider,
           location = ObjectLocation("bukkit", "key.txt")
@@ -91,6 +92,22 @@ class DisplayIngestTest
         "Event 5"
       )
     }
+
+    it("sets an ingestType of 'create'") {
+      val ingest = createIngestWith(ingestType = CreateIngestType)
+
+      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+
+      displayIngest.ingestType.id shouldBe "create"
+    }
+
+    it("sets an ingestType of 'update'") {
+      val ingest = createIngestWith(ingestType = UpdateIngestType)
+
+      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+
+      displayIngest.ingestType.id shouldBe "update"
+    }
   }
 
   describe("RequestDisplayIngest") {
@@ -123,11 +140,45 @@ class DisplayIngestTest
       assertRecent(ingest.lastModifiedDate)
       ingest.events shouldBe List.empty
     }
+
+    it("sets an ingest type of 'create'") {
+      val displayRequest = createRequestDisplayIngestWith(
+        ingestType = DisplayIngestType("create")
+      )
+
+      displayRequest.toIngest.ingestType shouldBe CreateIngestType
+    }
+
+    it("sets an ingest type of 'update'") {
+      val displayRequest = createRequestDisplayIngestWith(
+        ingestType = DisplayIngestType("update")
+      )
+
+      displayRequest.toIngest.ingestType shouldBe UpdateIngestType
+    }
   }
 
-  def createIngestWith(events: Seq[IngestEvent]): Ingest =
+  def createRequestDisplayIngestWith(
+    sourceLocation: DisplayLocation = DisplayLocation(
+      provider = InfrequentAccessDisplayProvider,
+      bucket = randomAlphanumeric,
+      path = randomAlphanumeric
+    ),
+    callback: Option[DisplayCallback] = None,
+    ingestType: DisplayIngestType = DisplayIngestType("create"),
+    space: DisplayStorageSpace = DisplayStorageSpace(randomAlphanumeric)
+  ): RequestDisplayIngest =
+    RequestDisplayIngest(
+      sourceLocation = sourceLocation,
+      callback = callback,
+      ingestType = ingestType,
+      space = space
+    )
+
+  def createIngestWith(events: Seq[IngestEvent] = Seq.empty, ingestType: IngestType = CreateIngestType): Ingest =
     Ingest(
       id = createIngestID,
+      ingestType = ingestType,
       sourceLocation = StorageLocation(
         provider = StandardStorageProvider,
         location = createObjectLocation

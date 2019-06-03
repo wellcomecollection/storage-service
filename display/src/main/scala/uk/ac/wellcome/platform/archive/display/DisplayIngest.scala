@@ -18,6 +18,7 @@ case class RequestDisplayIngest(sourceLocation: DisplayLocation,
   def toIngest: Ingest =
     Ingest(
       id = IngestID.random,
+      ingestType = IngestType.create(ingestType.id),
       sourceLocation = sourceLocation.toStorageLocation,
       callback = Callback(
         callback.map(displayCallback => URI.create(displayCallback.url))),
@@ -49,7 +50,7 @@ object ResponseDisplayIngest {
       sourceLocation = DisplayLocation(ingest.sourceLocation),
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),
-      ingestType = DisplayIngestType(id = "create"),
+      ingestType = DisplayIngestType(ingest.ingestType),
       bag = ingest.bag.map { ResponseDisplayIngestBag(_) },
       status = DisplayStatus(ingest.status),
       events = ingest.events
