@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
+import com.gu.scanamo.DynamoFormat
 import io.circe.CursorOp.DownField
 import io.circe._
 
@@ -38,4 +39,11 @@ object IngestType {
 
   implicit val encoder: Encoder[IngestType] =
     (ingestType: IngestType) => Json.obj("id" -> Json.fromString(ingestType.id))
+
+  implicit def format: DynamoFormat[IngestType] =
+    DynamoFormat.coercedXmap[IngestType, String, IllegalArgumentException](
+      id => IngestType.create(id)
+    )(
+      _.id
+    )
 }

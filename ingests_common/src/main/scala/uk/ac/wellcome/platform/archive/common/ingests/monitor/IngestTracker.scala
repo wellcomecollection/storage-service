@@ -9,6 +9,7 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestType._
 import uk.ac.wellcome.storage.dynamo._
 
 import scala.concurrent.blocking
