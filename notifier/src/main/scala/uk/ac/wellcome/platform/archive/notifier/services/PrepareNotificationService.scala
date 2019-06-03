@@ -7,7 +7,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.Callback.{
   Succeeded
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestCallbackStatusUpdate
-import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestCallbackStatusUpdate, IngestID}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestCallbackStatusUpdate,
+  IngestID
+}
 
 import scala.util.{Failure, Success, Try}
 

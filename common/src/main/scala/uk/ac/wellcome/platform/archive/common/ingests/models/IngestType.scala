@@ -20,7 +20,9 @@ object IngestType {
     id match {
       case CreateIngestType.id => CreateIngestType
       case UpdateIngestType.id => UpdateIngestType
-      case invalidId => throw new Throwable(s"""got "$invalidId", valid values are: ${CreateIngestType.id}, ${UpdateIngestType.id}.""")
+      case invalidId =>
+        throw new Throwable(
+          s"""got "$invalidId", valid values are: ${CreateIngestType.id}, ${UpdateIngestType.id}.""")
     }
 
   implicit val decoder: Decoder[IngestType] = (cursor: HCursor) =>
@@ -28,7 +30,8 @@ object IngestType {
       id <- cursor.downField("id").as[String]
       ingestType <- Try { create(id) } match {
         case Success(ingestType) => Right(ingestType)
-        case Failure(err) => val fields = DownField("id") +: cursor.history
+        case Failure(err) =>
+          val fields = DownField("id") +: cursor.history
           Left(DecodingFailure(err.getMessage, fields))
       }
     } yield ingestType

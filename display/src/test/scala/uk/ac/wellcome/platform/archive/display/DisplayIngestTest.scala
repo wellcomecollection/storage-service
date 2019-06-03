@@ -175,7 +175,8 @@ class DisplayIngestTest
       space = space
     )
 
-  def createIngestWith(events: Seq[IngestEvent] = Seq.empty, ingestType: IngestType = CreateIngestType): Ingest =
+  def createIngestWith(events: Seq[IngestEvent] = Seq.empty,
+                       ingestType: IngestType = CreateIngestType): Ingest =
     Ingest(
       id = createIngestID,
       ingestType = ingestType,
