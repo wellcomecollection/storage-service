@@ -12,7 +12,7 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.BagRootPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
@@ -35,15 +35,14 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
     with IngestStepWorker {
 
   private val worker =
-    AlpakkaSQSWorker[EnrichedBagInformationPayload, VerificationSummary](
+    AlpakkaSQSWorker[BagRootPayload, VerificationSummary](
       alpakkaSQSWorkerConfig) { payload =>
       Future.fromTry { processMessage(payload) }
     }
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
-  def processMessage(
-    payload: EnrichedBagInformationPayload): Try[Result[VerificationSummary]] =
+  def processMessage(payload: BagRootPayload): Try[Result[VerificationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
       summary <- verifier.verify(payload.bagRootLocation)

@@ -46,7 +46,7 @@ case object UnpackedBagPayload {
     )
 }
 
-trait BagRootPayload extends PipelinePayload {
+sealed trait BagRootPayload extends PipelinePayload {
   val bagRootLocation: ObjectLocation
 }
 
@@ -54,7 +54,7 @@ case class BagInformationPayload(
   ingestId: IngestID,
   storageSpace: StorageSpace,
   bagRootLocation: ObjectLocation
-) extends PipelinePayload
+) extends BagRootPayload
 
 case class EnrichedBagInformationPayload(
   ingestId: IngestID,
