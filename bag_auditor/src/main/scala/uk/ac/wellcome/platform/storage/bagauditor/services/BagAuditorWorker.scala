@@ -18,7 +18,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepWorker
 }
 import uk.ac.wellcome.platform.archive.common.{
-  BagInformationPayload,
+  EnrichedBagInformationPayload,
   UnpackedBagPayload
 }
 import uk.ac.wellcome.platform.storage.bagauditor.models.{
@@ -85,7 +85,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
         outgoingPublisher.sendIfSuccessful(
           step,
-          BagInformationPayload(
+          EnrichedBagInformationPayload(
             ingestId = payload.ingestId,
             storageSpace = payload.storageSpace,
             bagRootLocation = summary.audit.root,

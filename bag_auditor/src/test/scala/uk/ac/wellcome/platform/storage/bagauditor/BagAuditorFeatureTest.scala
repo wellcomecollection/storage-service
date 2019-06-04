@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.storage.bagauditor
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.BagInformationPayload
+import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -48,7 +48,7 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.getMessages[BagInformationPayload] shouldBe Seq(
+                outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
                   expectedPayload)
 
                 assertTopicReceivesIngestEvents(
@@ -101,7 +101,7 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.getMessages[BagInformationPayload] shouldBe Seq(
+                outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
                   expectedPayload)
 
                 assertTopicReceivesIngestEvents(

@@ -6,7 +6,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.common.BagInformationPayload
+import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
@@ -51,7 +51,7 @@ class BagVerifierWorkerTest
                 )
               )
 
-              outgoing.getMessages[BagInformationPayload] shouldBe Seq(payload)
+              outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(payload)
           }
         }
     }

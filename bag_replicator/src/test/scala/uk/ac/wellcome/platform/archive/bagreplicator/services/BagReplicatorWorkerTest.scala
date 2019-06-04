@@ -14,7 +14,7 @@ import uk.ac.wellcome.messaging.worker.models.{
 }
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.common.BagInformationPayload
+import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -57,7 +57,7 @@ class BagReplicatorWorkerTest
               serviceResult.success.value shouldBe a[Successful[_]]
 
               val receivedMessages =
-                outgoing.getMessages[BagInformationPayload]
+                outgoing.getMessages[EnrichedBagInformationPayload]
               receivedMessages.size shouldBe 1
 
               val result = receivedMessages.head

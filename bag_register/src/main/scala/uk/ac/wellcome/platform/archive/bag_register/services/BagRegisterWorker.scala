@@ -11,7 +11,7 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.BagInformationPayload
+import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
@@ -34,13 +34,13 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
     with IngestStepWorker {
 
   private val worker =
-    AlpakkaSQSWorker[BagInformationPayload, RegistrationSummary](workerConfig) {
+    AlpakkaSQSWorker[EnrichedBagInformationPayload, RegistrationSummary](workerConfig) {
       payload =>
         Future.fromTry(processMessage(payload))
     }
 
   def processMessage(
-    payload: BagInformationPayload): Try[Result[RegistrationSummary]] =
+    payload: EnrichedBagInformationPayload): Try[Result[RegistrationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 

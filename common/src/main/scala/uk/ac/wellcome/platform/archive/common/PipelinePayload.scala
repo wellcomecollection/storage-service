@@ -50,7 +50,7 @@ trait BagRootPayload extends PipelinePayload {
   val bagRootLocation: ObjectLocation
 }
 
-case class BagInformationPayload(
+case class EnrichedBagInformationPayload(
   ingestId: IngestID,
   storageSpace: StorageSpace,
   bagRootLocation: ObjectLocation,
