@@ -5,9 +5,9 @@ import com.amazonaws.services.dynamodbv2.util.TableUtils.waitUntilActive
 import com.gu.scanamo.Scanamo
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier._
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table

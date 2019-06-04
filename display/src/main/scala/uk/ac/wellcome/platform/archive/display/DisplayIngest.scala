@@ -4,7 +4,6 @@ import java.net.{URI, URL}
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 sealed trait DisplayIngest
@@ -19,6 +18,7 @@ case class RequestDisplayIngest(sourceLocation: DisplayLocation,
   def toIngest: Ingest =
     Ingest(
       id = IngestID.random,
+      ingestType = IngestType.create(ingestType.id),
       sourceLocation = sourceLocation.toStorageLocation,
       callback = Callback(
         callback.map(displayCallback => URI.create(displayCallback.url))),
@@ -50,7 +50,7 @@ object ResponseDisplayIngest {
       sourceLocation = DisplayLocation(ingest.sourceLocation),
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),
-      ingestType = CreateDisplayIngestType,
+      ingestType = DisplayIngestType(ingest.ingestType),
       bag = ingest.bag.map { ResponseDisplayIngestBag(_) },
       status = DisplayStatus(ingest.status),
       events = ingest.events

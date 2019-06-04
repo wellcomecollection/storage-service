@@ -4,7 +4,6 @@ import java.net.{URI, URL}
 import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
@@ -33,6 +32,7 @@ class DisplayIngestTest
       val bagId = createBagId
       val ingest: Ingest = Ingest(
         id = id,
+        ingestType = CreateIngestType,
         sourceLocation = StorageLocation(
           provider = StandardStorageProvider,
           location = ObjectLocation("bukkit", "key.txt")
@@ -92,6 +92,22 @@ class DisplayIngestTest
         "Event 5"
       )
     }
+
+    it("sets an ingestType of 'create'") {
+      val ingest = createIngestWith(ingestType = CreateIngestType)
+
+      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+
+      displayIngest.ingestType.id shouldBe "create"
+    }
+
+    it("sets an ingestType of 'update'") {
+      val ingest = createIngestWith(ingestType = UpdateIngestType)
+
+      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+
+      displayIngest.ingestType.id shouldBe "update"
+    }
   }
 
   describe("RequestDisplayIngest") {
@@ -100,15 +116,15 @@ class DisplayIngestTest
       val bucket = "ingest-bucket"
       val path = "bag.zip"
       val ingestCreateRequest = RequestDisplayIngest(
-        DisplayLocation(displayProvider, bucket, path),
-        Some(
+        sourceLocation = DisplayLocation(displayProvider, bucket, path),
+        callback = Some(
           DisplayCallback(
             url = "http://www.wellcomecollection.org/callback/ok",
             status = None
           )
         ),
-        CreateDisplayIngestType,
-        DisplayStorageSpace("space-id")
+        ingestType = CreateDisplayIngestType,
+        space = DisplayStorageSpace("space-id")
       )
 
       val ingest = ingestCreateRequest.toIngest
@@ -124,11 +140,46 @@ class DisplayIngestTest
       assertRecent(ingest.lastModifiedDate)
       ingest.events shouldBe List.empty
     }
+
+    it("sets an ingest type of 'create'") {
+      val displayRequest = createRequestDisplayIngestWith(
+        ingestType = CreateDisplayIngestType
+      )
+
+      displayRequest.toIngest.ingestType shouldBe CreateIngestType
+    }
+
+    it("sets an ingest type of 'update'") {
+      val displayRequest = createRequestDisplayIngestWith(
+        ingestType = UpdateDisplayIngestType
+      )
+
+      displayRequest.toIngest.ingestType shouldBe UpdateIngestType
+    }
   }
 
-  def createIngestWith(events: Seq[IngestEvent]): Ingest =
+  def createRequestDisplayIngestWith(
+    sourceLocation: DisplayLocation = DisplayLocation(
+      provider = InfrequentAccessDisplayProvider,
+      bucket = randomAlphanumeric,
+      path = randomAlphanumeric
+    ),
+    callback: Option[DisplayCallback] = None,
+    ingestType: DisplayIngestType = CreateDisplayIngestType,
+    space: DisplayStorageSpace = DisplayStorageSpace(randomAlphanumeric)
+  ): RequestDisplayIngest =
+    RequestDisplayIngest(
+      sourceLocation = sourceLocation,
+      callback = callback,
+      ingestType = ingestType,
+      space = space
+    )
+
+  def createIngestWith(events: Seq[IngestEvent] = Seq.empty,
+                       ingestType: IngestType = CreateIngestType): Ingest =
     Ingest(
       id = createIngestID,
+      ingestType = ingestType,
       sourceLocation = StorageLocation(
         provider = StandardStorageProvider,
         location = createObjectLocation

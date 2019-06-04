@@ -15,7 +15,7 @@ import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.{IngestID, IngestRequestPayload}
+import uk.ac.wellcome.platform.archive.common.IngestRequestPayload
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import uk.ac.wellcome.storage.ObjectLocation
@@ -276,6 +276,7 @@ class IngestsApiFeatureTest
 
                     val expectedIngest = Ingest(
                       id = IngestID(id),
+                      ingestType = CreateIngestType,
                       sourceLocation = StorageLocation(
                         StandardStorageProvider,
                         ObjectLocation(bucketName, s3key)
@@ -613,7 +614,7 @@ class IngestsApiFeatureTest
                 assertIsUserErrorResponse(
                   response = response,
                   description =
-                    """Invalid value at .ingestType.id: got "baboop", valid values are: create."""
+                    """Invalid value at .ingestType.id: got "baboop", valid values are: create, update."""
                 )
 
                 messageSender.messages shouldBe empty

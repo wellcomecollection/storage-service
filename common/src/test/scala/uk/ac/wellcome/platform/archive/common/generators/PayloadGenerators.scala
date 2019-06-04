@@ -4,6 +4,7 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common._
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators

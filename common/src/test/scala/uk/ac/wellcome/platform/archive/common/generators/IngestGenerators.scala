@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.net.URI
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Status
 import uk.ac.wellcome.platform.archive.common.ingests.models._
@@ -21,6 +20,7 @@ trait IngestGenerators extends BagIdGenerators {
     new URI("http://www.wellcomecollection.org/callback/ok")
 
   def createIngestWith(id: IngestID = createIngestID,
+                       ingestType: IngestType = CreateIngestType,
                        sourceLocation: StorageLocation = storageLocation,
                        callback: Option[Callback] = Some(createCallback()),
                        space: Namespace = createSpace,
@@ -30,6 +30,7 @@ trait IngestGenerators extends BagIdGenerators {
                        events: List[IngestEvent] = List.empty): Ingest =
     Ingest(
       id = id,
+      ingestType = ingestType,
       sourceLocation = sourceLocation,
       callback = callback,
       space = space,

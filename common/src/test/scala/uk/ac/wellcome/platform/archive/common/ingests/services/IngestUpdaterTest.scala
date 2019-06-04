@@ -2,14 +2,13 @@ package uk.ac.wellcome.platform.archive.common.ingests.services
 
 import org.scalatest.FunSpec
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   IngestOperationGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepStarted
 
 import scala.util.Success

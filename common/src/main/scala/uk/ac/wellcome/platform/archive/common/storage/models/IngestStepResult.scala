@@ -5,7 +5,7 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.platform.archive.common.IngestID
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 
 sealed trait IngestStep[+T]
 

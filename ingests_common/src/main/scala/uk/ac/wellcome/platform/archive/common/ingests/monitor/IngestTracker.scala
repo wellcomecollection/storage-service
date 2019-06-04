@@ -6,10 +6,10 @@ import com.gu.scanamo._
 import com.gu.scanamo.error.{ConditionNotMet, DynamoReadError}
 import com.gu.scanamo.syntax._
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.IngestID
-import uk.ac.wellcome.platform.archive.common.IngestID._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestType._
 import uk.ac.wellcome.storage.dynamo._
 
 import scala.concurrent.blocking

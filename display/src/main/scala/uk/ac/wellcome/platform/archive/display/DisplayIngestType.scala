@@ -1,7 +1,11 @@
 package uk.ac.wellcome.platform.archive.display
 
-import io.circe.CursorOp.DownField
-import io.circe.{Decoder, DecodingFailure, Encoder, Json}
+import io.circe.{Decoder, Encoder, HCursor, Json}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  IngestType,
+  UpdateIngestType
+}
 
 sealed trait DisplayIngestType { val id: String }
 
@@ -9,28 +13,29 @@ object CreateDisplayIngestType extends DisplayIngestType {
   override val id: String = "create"
 }
 
-object DisplayIngestType {
+object UpdateDisplayIngestType extends DisplayIngestType {
+  override val id: String = "update"
+}
 
-  implicit val decoder
-    : Decoder[DisplayIngestType] = Decoder.instance[DisplayIngestType](cursor =>
-    for {
-      id <- cursor.downField("id").as[String]
-      ingestType <- id match {
-        case CreateDisplayIngestType.id => Right(CreateDisplayIngestType)
-        case invalidId =>
-          val fields = DownField("id") +: cursor.history
-          Left(DecodingFailure(
-            s"""got "$invalidId", valid values are: ${CreateDisplayIngestType.id}.""",
-            fields))
+object DisplayIngestType {
+  def apply(ingestType: IngestType): DisplayIngestType =
+    ingestType match {
+      case CreateIngestType => CreateDisplayIngestType
+      case UpdateIngestType => UpdateDisplayIngestType
+    }
+
+  implicit val decoder: Decoder[DisplayIngestType] =
+    (cursor: HCursor) =>
+      Decoder[IngestType]
+        .apply(cursor)
+        .map {
+          DisplayIngestType(_)
       }
-    } yield {
-      ingestType
-  })
 
   implicit val encoder: Encoder[DisplayIngestType] =
-    Encoder.instance[DisplayIngestType] { ingestType =>
+    (ingestType: DisplayIngestType) =>
       Json.obj(
         "id" -> Json.fromString(ingestType.id),
-        "type" -> Json.fromString("IngestType"))
-    }
+        "type" -> Json.fromString("IngestType")
+    )
 }

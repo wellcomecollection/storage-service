@@ -2,12 +2,15 @@ package uk.ac.wellcome.platform.archive.notifier.services
 
 import akka.http.scaladsl.model.HttpResponse
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.models.Callback.{
   Failed,
   Succeeded
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestCallbackStatusUpdate
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestCallbackStatusUpdate,
+  IngestID
+}
 
 import scala.util.{Failure, Success, Try}
 
