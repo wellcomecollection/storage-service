@@ -38,7 +38,7 @@ trait PayloadGenerators
       unpackedBagLocation = unpackedBagLocation
     )
 
-  def createBagInformationPayloadWith(
+  def createEnrichedBagInformationPayload(
     ingestId: IngestID = createIngestID,
     bagRootLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace,
@@ -52,6 +52,6 @@ trait PayloadGenerators
       version = version
     )
 
-  def createBagInformationPayload: EnrichedBagInformationPayload =
-    createBagInformationPayloadWith()
+  def createEnrichedBagInformationPayload: EnrichedBagInformationPayload =
+    createEnrichedBagInformationPayload()
 }

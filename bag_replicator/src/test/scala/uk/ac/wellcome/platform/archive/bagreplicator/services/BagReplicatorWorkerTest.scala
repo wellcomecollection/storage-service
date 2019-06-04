@@ -48,7 +48,7 @@ class BagReplicatorWorkerTest
           stepName = "replicating") { service =>
           withBag(ingestsBucket) {
             case (srcBagRootLocation, storageSpace) =>
-              val payload = createBagInformationPayloadWith(
+              val payload = createEnrichedBagInformationPayload(
                 bagRootLocation = srcBagRootLocation,
                 storageSpace = storageSpace
               )
@@ -91,7 +91,7 @@ class BagReplicatorWorkerTest
           withBagReplicatorWorker(bucket = archiveBucket) { worker =>
             withBag(ingestsBucket) {
               case (bagRootLocation, _) =>
-                val payload = createBagInformationPayloadWith(
+                val payload = createEnrichedBagInformationPayload(
                   bagRootLocation = bagRootLocation
                 )
 
@@ -116,7 +116,7 @@ class BagReplicatorWorkerTest
             val bagInfo = createBagInfo
             withBag(ingestsBucket, bagInfo = bagInfo) {
               case (bagRootLocation, _) =>
-                val payload = createBagInformationPayloadWith(
+                val payload = createEnrichedBagInformationPayload(
                   bagRootLocation = bagRootLocation
                 )
 
@@ -146,7 +146,7 @@ class BagReplicatorWorkerTest
           withBagReplicatorWorker(bucket = archiveBucket) { worker =>
             withBag(ingestsBucket) {
               case (bagRootLocation, _) =>
-                val payload = createBagInformationPayloadWith(
+                val payload = createEnrichedBagInformationPayload(
                   bagRootLocation = bagRootLocation,
                   version = 3
                 )
@@ -169,7 +169,7 @@ class BagReplicatorWorkerTest
           withBagReplicatorWorker(bucket = archiveBucket) { worker =>
             withBag(ingestsBucket) {
               case (bagRootLocation, _) =>
-                val payload = createBagInformationPayloadWith(
+                val payload = createEnrichedBagInformationPayload(
                   bagRootLocation = bagRootLocation
                 )
 
@@ -193,7 +193,7 @@ class BagReplicatorWorkerTest
             rootPath = Some("rootprefix")) { worker =>
             withBag(ingestsBucket) {
               case (bagRootLocation, _) =>
-                val payload = createBagInformationPayloadWith(
+                val payload = createEnrichedBagInformationPayload(
                   bagRootLocation = bagRootLocation
                 )
 
@@ -217,7 +217,7 @@ class BagReplicatorWorkerTest
         service =>
           withBag(bucket) {
             case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
+              val payload = createEnrichedBagInformationPayload(
                 bagRootLocation = bagRootLocation
               )
 
@@ -245,7 +245,7 @@ class BagReplicatorWorkerTest
           withBagReplicatorWorker(
             bucket = bucket,
             lockServiceDao = lockServiceDao) { worker =>
-            val payload = createBagInformationPayloadWith(
+            val payload = createEnrichedBagInformationPayload(
               bagRootLocation = bagRootLocation
             )
 
@@ -293,7 +293,7 @@ class BagReplicatorWorkerTest
               ingests = ingests,
               outgoing = outgoing,
               lockServiceDao = neverAllowLockDao) { _ =>
-              val payload = createBagInformationPayloadWith(
+              val payload = createEnrichedBagInformationPayload(
                 bagRootLocation = bagRootLocation
               )
 
