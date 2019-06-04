@@ -48,7 +48,8 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                outgoing
+                  .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
                   expectedPayload)
 
                 assertTopicReceivesIngestEvents(
@@ -101,7 +102,8 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                outgoing
+                  .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
                   expectedPayload)
 
                 assertTopicReceivesIngestEvents(

@@ -56,7 +56,8 @@ class BagVerifierFeatureTest
                     )
                   )
 
-                  outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                  outgoing
+                    .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
                     payload)
 
                   assertQueueEmpty(queue)

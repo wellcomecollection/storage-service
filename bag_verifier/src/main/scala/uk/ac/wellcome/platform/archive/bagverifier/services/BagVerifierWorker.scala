@@ -42,7 +42,8 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
 
   val algorithm: String = MessageDigestAlgorithms.SHA_256
 
-  def processMessage(payload: BagRootPayload): Try[Result[VerificationSummary]] =
+  def processMessage(
+    payload: BagRootPayload): Try[Result[VerificationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
       summary <- verifier.verify(payload.bagRootLocation)

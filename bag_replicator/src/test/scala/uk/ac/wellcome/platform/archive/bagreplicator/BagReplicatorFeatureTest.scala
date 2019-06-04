@@ -62,7 +62,8 @@ class BagReplicatorFeatureTest
                     bagRootLocation = expectedDst
                   )
 
-                  outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                  outgoing
+                    .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
                     expectedPayload)
 
                   verifyBagCopied(

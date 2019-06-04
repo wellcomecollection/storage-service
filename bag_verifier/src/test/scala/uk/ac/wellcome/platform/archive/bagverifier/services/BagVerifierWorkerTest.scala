@@ -54,7 +54,8 @@ class BagVerifierWorkerTest
                 )
               )
 
-              outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(payload)
+              outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                payload)
           }
         }
     }
@@ -67,14 +68,16 @@ class BagVerifierWorkerTest
 
       withBagVerifierWorker(ingests, outgoing) { service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket) { case (bagRootLocation, _) =>
-            val payload = createEnrichedBagInformationPayload(
-              bagRootLocation = bagRootLocation
-            )
+          withBag(bucket) {
+            case (bagRootLocation, _) =>
+              val payload = createEnrichedBagInformationPayload(
+                bagRootLocation = bagRootLocation
+              )
 
-            service.processMessage(payload) shouldBe a[Success[_]]
+              service.processMessage(payload) shouldBe a[Success[_]]
 
-            outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(payload)
+              outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                payload)
           }
         }
       }
@@ -86,12 +89,13 @@ class BagVerifierWorkerTest
 
       withBagVerifierWorker(ingests, outgoing) { service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket) { case (bagRootLocation, _) =>
-            val payload = createBagInformationPayloadWith(bagRootLocation)
+          withBag(bucket) {
+            case (bagRootLocation, _) =>
+              val payload = createBagInformationPayloadWith(bagRootLocation)
 
-            service.processMessage(payload) shouldBe a[Success[_]]
+              service.processMessage(payload) shouldBe a[Success[_]]
 
-            outgoing.getMessages[BagInformationPayload] shouldBe Seq(payload)
+              outgoing.getMessages[BagInformationPayload] shouldBe Seq(payload)
           }
         }
       }
