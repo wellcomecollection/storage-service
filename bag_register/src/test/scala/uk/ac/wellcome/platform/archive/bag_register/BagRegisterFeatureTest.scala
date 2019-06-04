@@ -34,7 +34,7 @@ class BagRegisterFeatureTest
                 externalIdentifier = bagInfo.externalIdentifier
               )
 
-              val payload = createBagInformationPayloadWith(
+              val payload = createEnrichedBagInformationPayload(
                 bagRootLocation = bagRootLocation,
                 storageSpace = storageSpace
               )
@@ -73,7 +73,7 @@ class BagRegisterFeatureTest
   it("sends a failed update and discards the work on error") {
     withBagRegisterWorker {
       case (_, _, _, ingests, _, queuePair) =>
-        val payload = createBagInformationPayloadWith(
+        val payload = createEnrichedBagInformationPayload(
           bagRootLocation = createObjectLocation,
           storageSpace = createStorageSpace
         )

@@ -6,7 +6,10 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.common.BagInformationPayload
+import uk.ac.wellcome.platform.archive.common.{
+  BagInformationPayload,
+  EnrichedBagInformationPayload
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagLocationFixtures,
   FileEntry
@@ -36,7 +39,7 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket) {
             case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
+              val payload = createEnrichedBagInformationPayload(
                 bagRootLocation = bagRootLocation
               )
 
@@ -51,9 +54,51 @@ class BagVerifierWorkerTest
                 )
               )
 
+              outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                payload)
+          }
+        }
+    }
+  }
+
+  describe("passes through the original payload, unmodified") {
+    it("EnrichedBagInformationPayload") {
+      val ingests = new MemoryMessageSender()
+      val outgoing = new MemoryMessageSender()
+
+      withBagVerifierWorker(ingests, outgoing) { service =>
+        withLocalS3Bucket { bucket =>
+          withBag(bucket) {
+            case (bagRootLocation, _) =>
+              val payload = createEnrichedBagInformationPayload(
+                bagRootLocation = bagRootLocation
+              )
+
+              service.processMessage(payload) shouldBe a[Success[_]]
+
+              outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                payload)
+          }
+        }
+      }
+    }
+
+    it("BagInformationPayload") {
+      val ingests = new MemoryMessageSender()
+      val outgoing = new MemoryMessageSender()
+
+      withBagVerifierWorker(ingests, outgoing) { service =>
+        withLocalS3Bucket { bucket =>
+          withBag(bucket) {
+            case (bagRootLocation, _) =>
+              val payload = createBagInformationPayloadWith(bagRootLocation)
+
+              service.processMessage(payload) shouldBe a[Success[_]]
+
               outgoing.getMessages[BagInformationPayload] shouldBe Seq(payload)
           }
         }
+      }
     }
   }
 
@@ -66,7 +111,7 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
             case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
+              val payload = createEnrichedBagInformationPayload(
                 bagRootLocation = bagRootLocation
               )
 
@@ -101,7 +146,7 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
             case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
+              val payload = createEnrichedBagInformationPayload(
                 bagRootLocation = bagRootLocation
               )
 
@@ -137,7 +182,7 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket) {
             case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(
+              val payload = createEnrichedBagInformationPayload(
                 bagRootLocation = bagRootLocation
               )
 

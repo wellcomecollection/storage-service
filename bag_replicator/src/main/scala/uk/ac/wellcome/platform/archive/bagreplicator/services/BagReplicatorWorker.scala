@@ -17,7 +17,7 @@ import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.common.BagInformationPayload
+import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
@@ -45,7 +45,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
     with IngestStepWorker {
   private val worker =
     new AlpakkaSQSWorker[
-      BagInformationPayload,
+      EnrichedBagInformationPayload,
       ReplicationSummary,
       MonitoringClient](alpakkaSQSWorkerConfig)(
       payload => Future.fromTry { processMessage(payload) }
@@ -64,7 +64,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   )
 
   def processMessage(
-    payload: BagInformationPayload,
+    payload: EnrichedBagInformationPayload,
   ): Try[Result[ReplicationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
@@ -78,7 +78,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
       result <- replicate(payload, destination)
     } yield result
 
-  def replicate(payload: BagInformationPayload,
+  def replicate(payload: EnrichedBagInformationPayload,
                 destination: ObjectLocation): Try[Result[ReplicationSummary]] =
     lockingService
       .withLock(destination.toString) {
