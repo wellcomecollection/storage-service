@@ -1,67 +1,59 @@
-package uk.ac.wellcome.platform.storage.bagauditor
+package uk.ac.wellcome.platform.storage.bag_root_finder
 
 import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.BagInformationPayload
+import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestStatusUpdate
-}
-import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.storage.bag_root_finder.fixtures.BagRootFinderFixtures
 
-class BagAuditorFeatureTest
+class BagRootFinderFeatureTest
     extends FunSpec
-    with BagAuditorFixtures
+    with BagRootFinderFixtures
     with IngestUpdateAssertions
-    with PayloadGenerators {
+    with PayloadGenerators
+    with BagLocationFixtures {
 
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      val bagInfo = createBagInfo
-      withBag(bucket, bagInfo = bagInfo) {
+      withBag(bucket) {
         case (bagRootLocation, storageSpace) =>
-          val payload = createUnpackedBagLocationPayloadWith(
+          val payload = createUnpackedBagPayloadWith(
             unpackedBagLocation = bagRootLocation,
             storageSpace = storageSpace
           )
 
-          val expectedPayload = createEnrichedBagInformationPayload(
+          val expectedPayload = createBagInformationPayloadWith(
             ingestId = payload.ingestId,
-            ingestDate = payload.ingestDate,
             bagRootLocation = bagRootLocation,
-            storageSpace = storageSpace,
-            externalIdentifier = bagInfo.externalIdentifier
+            storageSpace = storageSpace
           )
 
           withLocalSqsQueue { queue =>
             val ingests = new MemoryMessageSender()
             val outgoing = new MemoryMessageSender()
-            withAuditorWorker(
+            withWorkerService(
               queue,
               ingests,
               outgoing,
-              stepName = "auditing bag") { _ =>
+              stepName = "finding bag root") { _ =>
               sendNotificationToSQS(queue, payload)
 
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing
-                  .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-                  expectedPayload)
+                outgoing.getMessages[BagInformationPayload] shouldBe Seq(expectedPayload)
 
                 assertTopicReceivesIngestEvents(
                   payload.ingestId,
                   ingests,
                   expectedDescriptions = Seq(
-                    "Auditing bag started",
+                    "Finding bag root started",
                     s"Detected bag root as $bagRootLocation",
-                    s"Detected bag identifier as ${bagInfo.externalIdentifier}",
-                    s"Assigned bag version 1",
-                    "Auditing bag succeeded"
+                    "Finding bag root succeeded"
                   )
                 )
               }
@@ -73,49 +65,45 @@ class BagAuditorFeatureTest
 
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      val bagInfo = createBagInfo
-      withBag(bucket, bagInfo = bagInfo, bagRootDirectory = Some("subdir")) {
+      withBag(bucket, bagRootDirectory = Some("subdir")) {
         case (unpackedBagLocation, storageSpace) =>
           val bagRootLocation = unpackedBagLocation.join("subdir")
 
-          val payload = createUnpackedBagLocationPayloadWith(
+          val payload = createUnpackedBagPayloadWith(
             unpackedBagLocation = unpackedBagLocation,
             storageSpace = storageSpace
           )
 
-          val expectedPayload = createEnrichedBagInformationPayload(
+          val expectedPayload = createBagInformationPayloadWith(
             ingestId = payload.ingestId,
             bagRootLocation = bagRootLocation,
-            storageSpace = storageSpace,
-            externalIdentifier = bagInfo.externalIdentifier
+            storageSpace = storageSpace
           )
 
           withLocalSqsQueue { queue =>
             val ingests = new MemoryMessageSender()
             val outgoing = new MemoryMessageSender()
-            withAuditorWorker(
+            withWorkerService(
               queue,
               ingests,
               outgoing,
-              stepName = "auditing bag") { _ =>
+              stepName = "finding bag root") { _ =>
               sendNotificationToSQS(queue, payload)
 
               eventually {
                 assertQueueEmpty(queue)
 
                 outgoing
-                  .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                  .getMessages[BagInformationPayload] shouldBe Seq(
                   expectedPayload)
 
                 assertTopicReceivesIngestEvents(
                   payload.ingestId,
                   ingests,
                   expectedDescriptions = Seq(
-                    "Auditing bag started",
+                    "Finding bag root started",
                     s"Detected bag root as $bagRootLocation",
-                    s"Detected bag identifier as ${bagInfo.externalIdentifier}",
-                    s"Assigned bag version 1",
-                    "Auditing bag succeeded"
+                    "Finding bag root succeeded"
                   )
                 )
               }
@@ -129,17 +117,16 @@ class BagAuditorFeatureTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
         case (unpackedBagLocation, _) =>
-          val payload =
-            createUnpackedBagLocationPayloadWith(unpackedBagLocation)
+          val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
           withLocalSqsQueue { queue =>
             val ingests = new MemoryMessageSender()
             val outgoing = new MemoryMessageSender()
-            withAuditorWorker(
+            withWorkerService(
               queue,
               ingests,
               outgoing,
-              stepName = "auditing bag") { _ =>
+              stepName = "finding bag root") { _ =>
               sendNotificationToSQS(queue, payload)
 
               eventually {
@@ -152,12 +139,12 @@ class BagAuditorFeatureTest
                     ingestUpdates.size shouldBe 2
 
                     val ingestStart = ingestUpdates.head
-                    ingestStart.events.head.description shouldBe "Auditing bag started"
+                    ingestStart.events.head.description shouldBe "Finding bag root started"
 
                     val ingestFailed =
                       ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                     ingestFailed.status shouldBe Ingest.Failed
-                    ingestFailed.events.head.description shouldBe "Auditing bag failed"
+                    ingestFailed.events.head.description shouldBe s"Finding bag root failed - Unable to find root of the bag at $unpackedBagLocation"
                 }
               }
             }
@@ -168,12 +155,12 @@ class BagAuditorFeatureTest
 
   it("errors if it cannot find the bag") {
     val unpackedBagLocation = createObjectLocation
-    val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
+    val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
-      withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") {
+      withWorkerService(queue, ingests, outgoing, stepName = "finding bag root") {
         _ =>
           sendNotificationToSQS(queue, payload)
 
@@ -187,12 +174,12 @@ class BagAuditorFeatureTest
                 ingestUpdates.size shouldBe 2
 
                 val ingestStart = ingestUpdates.head
-                ingestStart.events.head.description shouldBe "Auditing bag started"
+                ingestStart.events.head.description shouldBe "Finding bag root started"
 
                 val ingestFailed =
                   ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                 ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe "Auditing bag failed"
+                ingestFailed.events.head.description shouldBe s"Finding bag root failed - Unable to find root of the bag at $unpackedBagLocation"
             }
           }
       }
@@ -201,12 +188,12 @@ class BagAuditorFeatureTest
 
   it("errors if it gets an error from S3") {
     val unpackedBagLocation = createObjectLocation
-    val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
+    val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
 
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
-      withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") {
+      withWorkerService(queue, ingests, outgoing, stepName = "finding bag root") {
         _ =>
           sendNotificationToSQS(queue, payload)
 
@@ -220,18 +207,15 @@ class BagAuditorFeatureTest
                 ingestUpdates.size shouldBe 2
 
                 val ingestStart = ingestUpdates.head
-                ingestStart.events.head.description shouldBe "Auditing bag started"
+                ingestStart.events.head.description shouldBe "Finding bag root started"
 
                 val ingestFailed =
                   ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                 ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe "Auditing bag failed"
+                ingestFailed.events.head.description shouldBe s"Finding bag root failed - Unable to find root of the bag at $unpackedBagLocation"
             }
           }
       }
     }
   }
-
-  // TODO: When we pass an ingest type in the bag auditor payload, check it sends
-  // an appropriate user-facing message in the ingests app.
 }
