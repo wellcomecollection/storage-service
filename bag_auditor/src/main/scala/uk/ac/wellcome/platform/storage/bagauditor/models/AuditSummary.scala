@@ -7,13 +7,13 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
 sealed trait AuditSummary extends Summary {
-  val location: ObjectLocation
+  val root: ObjectLocation
   val space: StorageSpace
   val startTime: Instant
 }
 
 case class AuditIncompleteSummary(
-  location: ObjectLocation,
+  root: ObjectLocation,
   space: StorageSpace,
   e: Throwable,
   startTime: Instant,
@@ -21,14 +21,14 @@ case class AuditIncompleteSummary(
 ) extends AuditSummary
 
 case class AuditFailureSummary(
-  location: ObjectLocation,
+  root: ObjectLocation,
   space: StorageSpace,
   startTime: Instant,
   endTime: Option[Instant]
 ) extends AuditSummary
 
 case class AuditSuccessSummary(
-  location: ObjectLocation,
+  root: ObjectLocation,
   space: StorageSpace,
   startTime: Instant,
   audit: AuditSuccess,
@@ -36,12 +36,12 @@ case class AuditSuccessSummary(
 ) extends AuditSummary
 
 case object AuditSummary {
-  def incomplete(location: ObjectLocation,
+  def incomplete(root: ObjectLocation,
                  space: StorageSpace,
                  e: Throwable,
                  t: Instant): AuditIncompleteSummary =
     AuditIncompleteSummary(
-      location = location,
+      root = root,
       space = space,
       e = e,
       startTime = t,
@@ -49,21 +49,21 @@ case object AuditSummary {
     )
 
   def create(
-    location: ObjectLocation,
-    space: StorageSpace,
-    audit: Audit,
-    t: Instant
+              root: ObjectLocation,
+              space: StorageSpace,
+              audit: Audit,
+              t: Instant
   ): AuditSummary = audit match {
     case f @ AuditFailure(e) =>
       AuditFailureSummary(
-        location = location,
+        root = root,
         space = space,
         startTime = t,
         endTime = Some(Instant.now())
       )
-    case s @ AuditSuccess(_, _, _) =>
+    case s @ AuditSuccess(_, _) =>
       AuditSuccessSummary(
-        location = location,
+        root = root,
         space = space,
         startTime = t,
         audit = s,

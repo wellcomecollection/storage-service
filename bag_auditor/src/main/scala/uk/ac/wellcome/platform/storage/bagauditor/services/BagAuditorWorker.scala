@@ -56,7 +56,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       auditStep <- bagAuditor.getAuditSummary(
         ingestId = payload.ingestId,
         ingestDate = payload.ingestDate,
-        unpackLocation = payload.unpackedBagLocation,
+        root = payload.unpackedBagLocation,
         storageSpace = payload.storageSpace
       )
 
@@ -72,7 +72,6 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
         ingestUpdater.sendEvent(
           ingestId = payload.ingestId,
           messages = Seq(
-            s"Detected bag root as ${summary.audit.root}",
             s"Detected bag identifier as ${summary.audit.externalIdentifier}",
             s"Assigned bag version ${summary.audit.version}"
           )
@@ -88,7 +87,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
           step,
           EnrichedBagInformationPayload(
             context = payload.context,
-            bagRootLocation = summary.audit.root,
+            bagRootLocation = summary.root,
             externalIdentifier = summary.audit.externalIdentifier,
             version = summary.audit.version
           )
