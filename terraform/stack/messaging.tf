@@ -8,6 +8,7 @@ module "ingests_topic" {
   role_names = [
     "${module.bag_register.task_role_name}",
     "${module.bag_replicator.task_role_name}",
+    "${module.bag_root_finder.task_role_name}",
     "${module.bag_verifier_pre_replication.task_role_name}",
     "${module.bag_verifier_post_replication.task_role_name}",
     "${module.bag_unpacker.task_role_name}",
