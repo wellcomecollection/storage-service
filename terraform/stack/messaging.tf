@@ -173,7 +173,7 @@ module "bag_verifier_pre_replicate_queue" {
 
   name = "${var.namespace}_bag_verifier_pre_replicate_input"
 
-  topic_names = ["${module.bag_auditor_output_topic.name}"]
+  topic_names = ["${module.bag_root_finder_output_topic.name}"]
 
   role_names = ["${module.bag_verifier_pre_replication.task_role_name}"]
 

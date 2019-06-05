@@ -57,7 +57,7 @@ module "bag_root_finder" {
     ingest_topic_arn   = "${module.ingests_topic.arn}"
     outgoing_topic_arn = "${module.bag_root_finder_output_topic.arn}"
     metrics_namespace  = "${local.bag_root_finder_service_name}"
-    operation_name     = "finding bag root"
+    operation_name     = "detecting bag root"
 
     JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_root_finder_service_name}"
   }
