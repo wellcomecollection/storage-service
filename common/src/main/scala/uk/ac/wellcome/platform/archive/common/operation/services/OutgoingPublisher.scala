@@ -15,8 +15,10 @@ class OutgoingPublisher[Destination](
     debug(s"Sending outgoing message for result $result")
     result match {
       case IngestStepSucceeded(_) | IngestCompleted(_) =>
+        debug(s"Ingest success/completed: sending an outgoing message $outgoing")
         messageSender.sendT(outgoing)
       case IngestFailed(_, _, _) =>
+        debug(s"Ingest failed: not sending a message")
         Success(())
     }
   }
