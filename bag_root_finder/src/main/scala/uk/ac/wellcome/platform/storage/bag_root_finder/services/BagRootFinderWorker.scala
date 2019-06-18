@@ -10,7 +10,7 @@ import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
-import uk.ac.wellcome.platform.archive.common.{BagInformationPayload, UnpackedBagPayload}
+import uk.ac.wellcome.platform.archive.common.{BagInformationPayload, BagRootPayload, UnpackedBagPayload}
 import uk.ac.wellcome.platform.storage.bag_root_finder.models.{RootFinderSuccessSummary, RootFinderSummary}
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -67,14 +67,12 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
     step: IngestStepResult[RootFinderSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: RootFinderSuccessSummary) =>
-        outgoingPublisher.sendIfSuccessful(
-          step,
-          BagInformationPayload(
-            ingestId = payload.ingestId,
-            storageSpace = payload.storageSpace,
-            bagRootLocation = summary.bagRootLocation,
-          )
+        val outgoingPayload: BagRootPayload = BagInformationPayload(
+          ingestId = payload.ingestId,
+          storageSpace = payload.storageSpace,
+          bagRootLocation = summary.bagRootLocation,
         )
+        outgoingPublisher.sendIfSuccessful(step, outgoingPayload)
       case _ => Success(())
     }
 
