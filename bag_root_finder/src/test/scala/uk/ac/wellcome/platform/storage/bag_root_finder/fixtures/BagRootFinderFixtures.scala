@@ -4,8 +4,14 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
-import uk.ac.wellcome.platform.storage.bag_root_finder.services.{BagRootFinder, BagRootFinderWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
+  OperationFixtures
+}
+import uk.ac.wellcome.platform.storage.bag_root_finder.services.{
+  BagRootFinder,
+  BagRootFinderWorker
+}
 import uk.ac.wellcome.storage.fixtures.S3
 
 trait BagRootFinderFixtures

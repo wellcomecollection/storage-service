@@ -49,10 +49,10 @@ case object AuditSummary {
     )
 
   def create(
-              root: ObjectLocation,
-              space: StorageSpace,
-              audit: Audit,
-              t: Instant
+    root: ObjectLocation,
+    space: StorageSpace,
+    audit: Audit,
+    t: Instant
   ): AuditSummary = audit match {
     case f @ AuditFailure(e) =>
       AuditFailureSummary(

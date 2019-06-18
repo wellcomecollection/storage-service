@@ -4,14 +4,28 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
-import uk.ac.wellcome.platform.archive.common.{BagInformationPayload, BagRootPayload, UnpackedBagPayload}
-import uk.ac.wellcome.platform.storage.bag_root_finder.models.{RootFinderSuccessSummary, RootFinderSummary}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepSucceeded,
+  IngestStepWorker
+}
+import uk.ac.wellcome.platform.archive.common.{
+  BagInformationPayload,
+  BagRootPayload,
+  UnpackedBagPayload
+}
+import uk.ac.wellcome.platform.storage.bag_root_finder.models.{
+  RootFinderSuccessSummary,
+  RootFinderSummary
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
@@ -30,12 +44,13 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
     with Logging
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[UnpackedBagPayload, RootFinderSummary](alpakkaSQSWorkerConfig) {
-      payload: UnpackedBagPayload =>
-        Future.fromTry { processMessage(payload) }
+    AlpakkaSQSWorker[UnpackedBagPayload, RootFinderSummary](
+      alpakkaSQSWorkerConfig) { payload: UnpackedBagPayload =>
+      Future.fromTry { processMessage(payload) }
     }
 
-  def processMessage(payload: UnpackedBagPayload): Try[Result[RootFinderSummary]] =
+  def processMessage(
+    payload: UnpackedBagPayload): Try[Result[RootFinderSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
