@@ -5,11 +5,17 @@ import java.nio.file.Paths
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{BagUnpackerFixtures, CompressFixture}
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
+  BagUnpackerFixtures,
+  CompressFixture
+}
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackerOutput
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 
 class UnpackerFeatureTest
     extends FunSpec
@@ -44,8 +50,7 @@ class UnpackerFeatureTest
               )
             )
 
-            outgoing.getMessages[UnpackerOutput] shouldBe Seq(
-              expectedPayload)
+            outgoing.getMessages[UnpackerOutput] shouldBe Seq(expectedPayload)
 
             assertTopicReceivesIngestEvents(
               ingestRequestPayload.ingestId,

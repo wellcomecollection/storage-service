@@ -9,8 +9,8 @@ import scala.util.{Success, Try}
 class OutgoingPublisher[Destination](
   messageSender: MessageSender[Destination]
 ) {
-  def sendIfSuccessful[R, O](result: IngestStepResult[R],
-                             outgoing: => O)(implicit encoder: Encoder[O]): Try[Unit] = {
+  def sendIfSuccessful[R, O](result: IngestStepResult[R], outgoing: => O)(
+    implicit encoder: Encoder[O]): Try[Unit] = {
     result match {
       case IngestStepSucceeded(_) | IngestCompleted(_) =>
         messageSender.sendT(outgoing)

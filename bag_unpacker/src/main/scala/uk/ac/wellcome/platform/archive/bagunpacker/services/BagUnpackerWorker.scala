@@ -38,9 +38,8 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
     with IngestStepWorker
     with JsonPayloadWorker {
   private val worker =
-    AlpakkaSQSWorker[Json, UnpackSummary](
-      alpakkaSQSWorkerConfig) {
-      json => Future.fromTry { processMessage(json) }
+    AlpakkaSQSWorker[Json, UnpackSummary](alpakkaSQSWorkerConfig) { json =>
+      Future.fromTry { processMessage(json) }
     }
 
   def processMessage(json: Json): Try[Result[UnpackSummary]] =
@@ -63,7 +62,9 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       _ <- ingestUpdater.send(payload.ingestId, stepResult)
 
-      outgoingPayload = addField(json)("unpackedBagLocation", unpackedBagLocation)
+      outgoingPayload = addField(json)(
+        "unpackedBagLocation",
+        unpackedBagLocation)
 
       _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
     } yield toResult(stepResult)
