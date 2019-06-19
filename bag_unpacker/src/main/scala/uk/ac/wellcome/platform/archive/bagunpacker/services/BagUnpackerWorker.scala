@@ -9,23 +9,16 @@ import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
+import uk.ac.wellcome.platform.archive.bagunpacker.models.{BagUnpackerPayload, UnpackSummary}
 import uk.ac.wellcome.platform.archive.common.JsonPayloadWorker
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepWorker, StorageSpace}
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
 import scala.util.Try
 
-case class BagUnpackerPayload(
-  ingestId: IngestID,
-  sourceLocation: ObjectLocation,
-  storageSpace: StorageSpace
-)
 
 case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
