@@ -6,7 +6,10 @@ import org.scalatest.FunSpec
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{IngestOperationGenerators, PayloadGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  IngestOperationGenerators,
+  PayloadGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
 import scala.util.Success

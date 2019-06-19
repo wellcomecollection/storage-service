@@ -9,7 +9,8 @@ import scala.util.{Success, Try}
 class OutgoingPublisher[Destination](
   messageSender: MessageSender[Destination]
 ) {
-  def sendIfSuccessful[R](result: IngestStepResult[R], outgoing: Json): Try[Unit] = {
+  def sendIfSuccessful[R](result: IngestStepResult[R],
+                          outgoing: Json): Try[Unit] = {
     result match {
       case IngestStepSucceeded(_) | IngestCompleted(_) =>
         messageSender.sendT(outgoing)
