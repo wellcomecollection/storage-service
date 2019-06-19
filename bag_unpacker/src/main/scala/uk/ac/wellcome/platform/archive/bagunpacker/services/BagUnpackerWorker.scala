@@ -2,27 +2,31 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
+import io.circe.Json
+import io.circe.syntax._
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
+import uk.ac.wellcome.platform.archive.common.JsonPayloadWorker
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
-import uk.ac.wellcome.platform.archive.common.{
-  IngestRequestPayload,
-  UnpackedBagPayload
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepWorker, StorageSpace}
+import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
 import scala.util.Try
+
+case class BagUnpackerPayload(
+  ingestId: IngestID,
+  sourceLocation: ObjectLocation,
+  storageSpace: StorageSpace
+)
 
 case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
@@ -34,23 +38,25 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
                       mc: MonitoringClient,
                       sc: AmazonSQSAsync)
     extends Runnable
-    with IngestStepWorker {
+    with IngestStepWorker
+    with JsonPayloadWorker {
   private val worker =
-    AlpakkaSQSWorker[IngestRequestPayload, UnpackSummary](
-      alpakkaSQSWorkerConfig) { msg =>
-      Future.fromTry { processMessage(msg) }
+    AlpakkaSQSWorker[Json, UnpackSummary](
+      alpakkaSQSWorkerConfig) {
+      msg => Future.fromTry { processMessage(msg) }
     }
 
-  def processMessage(
-    payload: IngestRequestPayload): Try[Result[UnpackSummary]] =
+  def processMessage(json: Json): Try[Result[UnpackSummary]] =
     for {
-      _ <- ingestUpdater.start(payload.ingestId)
+      payload <- asPayload[BagUnpackerPayload](json)
 
       unpackedBagLocation = BagLocationBuilder.build(
         ingestId = payload.ingestId,
         storageSpace = payload.storageSpace,
         unpackerWorkerConfig = bagUnpackerWorkerConfig
       )
+
+      _ <- ingestUpdater.start(payload.ingestId)
 
       stepResult <- unpacker.unpack(
         requestId = payload.ingestId.toString,
@@ -60,10 +66,9 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       _ <- ingestUpdater.send(payload.ingestId, stepResult)
 
-      outgoingPayload = UnpackedBagPayload(
-        ingestRequestPayload = payload,
-        unpackedBagLocation = unpackedBagLocation
-      )
+      outgoingPayload =
+        json.deepMerge(Json.obj(("unpackedBagLocation", unpackedBagLocation.asJson)))
+
       _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
     } yield toResult(stepResult)
 
