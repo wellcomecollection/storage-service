@@ -61,18 +61,9 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
         dstLocation = unpackedBagLocation
       )
 
-<<<<<<< HEAD
       _ <- ingestUpdater.send(payload.ingestId, stepResult)
 
       outgoingPayload = addField(json)("unpackedBagLocation", unpackedBagLocation)
-=======
-      _ <- Future.fromTry {
-        ingestUpdater.send(payload.ingestId, stepResult)
-      }
-      outgoingPayload = addField(json)(
-        "unpackedBagLocation",
-        unpackedBagLocation)
->>>>>>> Apply auto-formatting rules
 
       _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
     } yield toResult(stepResult)
