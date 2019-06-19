@@ -4,19 +4,17 @@ import java.io.{File, FileInputStream, FileOutputStream, InputStream}
 
 import org.apache.commons.compress.archivers.ArchiveEntry
 import org.apache.commons.compress.utils.IOUtils
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
-import scala.concurrent.ExecutionContext.Implicits.global
 
-import scala.concurrent.Future
+import scala.util.Try
 
 class ArchiveTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
     with CompressFixture
+    with TryValues
     with RandomThings {
 
   it("should unpack a tar.gz file") {
@@ -39,42 +37,41 @@ class ArchiveTest
       entries + entry
     }
 
-    val unpack: Future[Set[ArchiveEntry]] =
+    val archiveResult: Try[Set[ArchiveEntry]] =
       Archive.unpack(
         inputStream
       )(
         Set.empty[ArchiveEntry]
       )(fold)
 
-    whenReady(unpack) { unpacked =>
-      unpacked.diff(expectedEntries) shouldBe Set.empty
+    val unpacked = archiveResult.success.value
+    unpacked.diff(expectedEntries) shouldBe Set.empty
 
-      val expectedFiles = files
-        .map(file => relativeToTmpDir(file) -> file)
-        .toMap
+    val expectedFiles = files
+      .map(file => relativeToTmpDir(file) -> file)
+      .toMap
 
-      val actualFiles = unpacked
-        .map(entry => entry.getName -> new File(tmp, entry.getName))
-        .toMap
+    val actualFiles = unpacked
+      .map(entry => entry.getName -> new File(tmp, entry.getName))
+      .toMap
 
-      expectedFiles.foreach {
-        case (key, expectedFile) => {
-          val maybeActualFile = actualFiles.get(key)
-          maybeActualFile shouldBe a[Some[_]]
+    expectedFiles.foreach {
+      case (key, expectedFile) => {
+        val maybeActualFile = actualFiles.get(key)
+        maybeActualFile shouldBe a[Some[_]]
 
-          val actualFile = maybeActualFile.get
+        val actualFile = maybeActualFile.get
 
-          actualFile.exists() shouldBe true
+        actualFile.exists() shouldBe true
 
-          val actualFis = new FileInputStream(actualFile)
-          val actualBytes = IOUtils.toByteArray(actualFis)
+        val actualFis = new FileInputStream(actualFile)
+        val actualBytes = IOUtils.toByteArray(actualFis)
 
-          val expectedFis = new FileInputStream(expectedFile)
-          val expectedBytes = IOUtils.toByteArray(expectedFis)
+        val expectedFis = new FileInputStream(expectedFile)
+        val expectedBytes = IOUtils.toByteArray(expectedFis)
 
-          actualBytes.length shouldBe expectedBytes.length
-          actualBytes shouldEqual expectedBytes
-        }
+        actualBytes.length shouldBe expectedBytes.length
+        actualBytes shouldEqual expectedBytes
       }
     }
   }
