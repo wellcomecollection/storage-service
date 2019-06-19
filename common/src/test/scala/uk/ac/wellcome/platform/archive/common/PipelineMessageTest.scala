@@ -1,12 +1,12 @@
 package uk.ac.wellcome.platform.archive.common
 
-import org.scalatest.{FunSpec, Matchers, TryValues}
-import PipelineMessage._
 import io.circe.Json
+import io.circe.parser.parse
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 
-class PipelineMessageTest extends FunSpec with Matchers with TryValues with JsonAssertions {
+class PipelineMessageTest extends FunSpec with Matchers with EitherValues with JsonAssertions {
   case class Person(name: String)
 
   it("can decode a PipelineMessage for a case class") {
@@ -18,34 +18,13 @@ class PipelineMessageTest extends FunSpec with Matchers with TryValues with Json
          |}
        """.stripMargin
 
-    val result = fromJson[PipelineMessage[Person]](jsonString)
+    val result = PipelineMessage.fromJson[Person](parse(jsonString).right.value)
 
-    val message = result.success.value
+    val message = result.right.value
     message.payload shouldBe Person(name = "henry")
     message.json shouldBe Json.obj(
       ("name", Json.fromString("henry")),
       ("age", Json.fromInt(82))
-    )
-  }
-
-  it("encodes a PipelineMessage as the underlying JSON") {
-    val message = PipelineMessage(
-      json = Json.obj(
-        ("name", Json.fromString("silas")),
-        ("age", Json.fromInt(48))
-      ),
-      payload = Person(name = "silas")
-    )
-
-    val jsonString = toJson(message).success.value
-    assertJsonStringsAreEqual(
-      jsonString,
-      """
-        |{
-        |  "name": "silas",
-        |  "age": 48
-        |}
-      """.stripMargin
     )
   }
 
@@ -60,7 +39,7 @@ class PipelineMessageTest extends FunSpec with Matchers with TryValues with Json
 
     val updatedMessage = message.addField("birthplace", "new york")
 
-    val jsonString = toJson(updatedMessage).success.value
+    val jsonString = updatedMessage.json.noSpaces
     assertJsonStringsAreEqual(
       jsonString,
       """

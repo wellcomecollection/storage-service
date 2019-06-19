@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common
 
-import io.circe.{Decoder, Encoder, HCursor, Json}
+import io.circe._
 import io.circe.syntax._
 
 case class PipelineMessage[T](
@@ -16,13 +16,10 @@ case class PipelineMessage[T](
     )
 }
 
-object PipelineMessage {
-  implicit def decoder[T](implicit circeDecoder: Decoder[T]): Decoder[PipelineMessage[T]] =
-    (cursor: HCursor) => for {
-      json <- cursor.as[Json]
+case object PipelineMessage {
+  def fromJson[T](json: Json)(implicit decoder: Decoder[T]): Either[DecodingFailure, PipelineMessage[T]] =
+    for {
       payload <- json.as[T]
     } yield PipelineMessage(json, payload)
-
-  implicit def encoder[T]: Encoder[PipelineMessage[T]] =
-    (message: PipelineMessage[T]) => message.json
 }
+
