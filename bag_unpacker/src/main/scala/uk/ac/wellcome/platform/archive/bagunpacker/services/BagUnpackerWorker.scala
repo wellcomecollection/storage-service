@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Json
-import io.circe.syntax._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
 import uk.ac.wellcome.messaging.worker.models.Result
@@ -66,8 +65,7 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       _ <- ingestUpdater.send(payload.ingestId, stepResult)
 
-      outgoingPayload =
-        json.deepMerge(Json.obj(("unpackedBagLocation", unpackedBagLocation.asJson)))
+      outgoingPayload = addField(json)("unpackedBagLocation", unpackedBagLocation)
 
       _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
     } yield toResult(stepResult)
