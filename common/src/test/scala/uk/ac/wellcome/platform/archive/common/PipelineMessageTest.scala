@@ -48,4 +48,28 @@ class PipelineMessageTest extends FunSpec with Matchers with TryValues with Json
       """.stripMargin
     )
   }
+
+  it("puts added fields in the new JSON") {
+    val message = PipelineMessage(
+      json = Json.obj(
+        ("name", Json.fromString("silas")),
+        ("age", Json.fromInt(48))
+      ),
+      payload = Person(name = "silas")
+    )
+
+    val updatedMessage = message.addField("birthplace", "new york")
+
+    val jsonString = toJson(updatedMessage).success.value
+    assertJsonStringsAreEqual(
+      jsonString,
+      """
+        |{
+        |  "name": "silas",
+        |  "age": 48,
+        |  "birthplace": "new york"
+        |}
+      """.stripMargin
+    )
+  }
 }
