@@ -7,31 +7,22 @@ import java.time.Instant
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.commons.compress.archivers.ArchiveEntry
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
-  ArchiveLocationException,
-  UnpackerArchiveEntryUploadException
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{ArchiveLocationException, UnpackerArchiveEntryUploadException}
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
-                                            ec: ExecutionContext) {
+case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
 
   def unpack(
     requestId: String,
     srcLocation: ObjectLocation,
     dstLocation: ObjectLocation
-  ): Future[IngestStepResult[UnpackSummary]] = {
+  ): Try[IngestStepResult[UnpackSummary]] = {
 
     val unpackSummary =
       UnpackSummary(
@@ -40,15 +31,12 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
         dstLocation,
         startTime = Instant.now)
 
-    val futureSummary = for {
-      archiveInputStream <- Future.fromTry {
-        archiveDownloadStream(srcLocation)
-      }
-
+    val result = for {
+      archiveInputStream <- archiveDownloadStream(srcLocation)
       unpackSummary <- unpack(unpackSummary, archiveInputStream, dstLocation)
     } yield unpackSummary
 
-    futureSummary.transform {
+    result match {
       case Success(summary) =>
         Success(IngestStepSucceeded(summary))
       case Failure(archiveLocationException: ArchiveLocationException) =>
@@ -76,7 +64,7 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
 
   private def unpack(unpackSummary: UnpackSummary,
                      packageInputStream: InputStream,
-                     dstLocation: ObjectLocation) = {
+                     dstLocation: ObjectLocation): Try[UnpackSummary] =
     Archive
       .unpack[UnpackSummary](packageInputStream)(unpackSummary) {
         (summary: UnpackSummary,
@@ -88,7 +76,6 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3,
             summary
           }
       }
-  }
 
   private def archiveDownloadStream(
     srcLocation: ObjectLocation): Try[InputStream] =

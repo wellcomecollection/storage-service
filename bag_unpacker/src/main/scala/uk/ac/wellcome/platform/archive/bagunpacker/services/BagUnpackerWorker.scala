@@ -12,16 +12,14 @@ import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.{
-  IngestRequestPayload,
-  UnpackedBagPayload
-}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
+import uk.ac.wellcome.platform.archive.common.{IngestRequestPayload, UnpackedBagPayload}
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.Try
 
 case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
@@ -30,7 +28,6 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   unpacker: Unpacker)(implicit
                       actorSystem: ActorSystem,
-                      ec: ExecutionContext,
                       mc: MonitoringClient,
                       sc: AmazonSQSAsync)
     extends Runnable
@@ -38,20 +35,19 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   private val worker =
     AlpakkaSQSWorker[IngestRequestPayload, UnpackSummary](
       alpakkaSQSWorkerConfig) {
-      processMessage
+      msg => Future.fromTry { processMessage(msg) }
     }
 
   def processMessage(
-    payload: IngestRequestPayload): Future[Result[UnpackSummary]] = {
-    val unpackedBagLocation = BagLocationBuilder.build(
-      ingestId = payload.ingestId,
-      storageSpace = payload.storageSpace,
-      unpackerWorkerConfig = bagUnpackerWorkerConfig
-    )
+    payload: IngestRequestPayload): Try[Result[UnpackSummary]] =
     for {
-      _ <- Future.fromTry {
-        ingestUpdater.start(payload.ingestId)
-      }
+      _ <- ingestUpdater.start(payload.ingestId)
+
+      unpackedBagLocation = BagLocationBuilder.build(
+        ingestId = payload.ingestId,
+        storageSpace = payload.storageSpace,
+        unpackerWorkerConfig = bagUnpackerWorkerConfig
+      )
 
       stepResult <- unpacker.unpack(
         requestId = payload.ingestId.toString,
@@ -59,18 +55,14 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
         dstLocation = unpackedBagLocation
       )
 
-      _ <- Future.fromTry {
-        ingestUpdater.send(payload.ingestId, stepResult)
-      }
+      _ <- ingestUpdater.send(payload.ingestId, stepResult)
+
       outgoingPayload = UnpackedBagPayload(
         ingestRequestPayload = payload,
         unpackedBagLocation = unpackedBagLocation
       )
-      _ <- Future.fromTry {
-        outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
-      }
+      _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
     } yield toResult(stepResult)
-  }
 
   override def run(): Future[Any] = worker.start
 }

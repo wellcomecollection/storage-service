@@ -18,8 +18,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 trait BagUnpackerFixtures
     extends SQS
     with BagLocationFixtures
