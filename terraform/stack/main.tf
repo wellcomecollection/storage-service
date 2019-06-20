@@ -236,7 +236,7 @@ module "bag_register" {
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
-  service_name = "${var.namespace}-bags"
+  service_name = "${var.namespace}-bag_register"
 
   env_vars = {
     queue_url         = "${module.bag_register_input_queue.url}"
