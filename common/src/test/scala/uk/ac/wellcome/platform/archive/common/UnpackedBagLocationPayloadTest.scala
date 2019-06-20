@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.common
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 
-class UnpackedBagPayloadTest
+class UnpackedBagLocationPayloadTest
     extends FunSpec
     with Matchers
     with PayloadGenerators {
@@ -12,18 +12,21 @@ class UnpackedBagPayloadTest
     val unpackedBagLocation = createObjectLocation
     val storageSpace = createStorageSpace
 
-    val ingestRequestPayload = createSourceLocationPayloadWith(
+    val sourceLocationPayload = createSourceLocationPayloadWith(
       sourceLocation = sourceLocation,
       storageSpace = storageSpace
     )
 
-    val expectedPayload = UnpackedBagPayload(
-      ingestId = ingestRequestPayload.ingestId,
-      ingestDate = ingestRequestPayload.ingestDate,
-      storageSpace = storageSpace,
+    val expectedPayload = UnpackedBagLocationPayload(
+      context = PipelineContext(
+        ingestId = sourceLocationPayload.ingestId,
+        ingestType = sourceLocationPayload.ingestType,
+        storageSpace = storageSpace,
+        ingestDate = sourceLocationPayload.ingestDate
+      ),
       unpackedBagLocation = unpackedBagLocation
     )
 
-    UnpackedBagPayload(ingestRequestPayload, unpackedBagLocation) shouldBe expectedPayload
+    UnpackedBagLocationPayload(sourceLocationPayload, unpackedBagLocation) shouldBe expectedPayload
   }
 }

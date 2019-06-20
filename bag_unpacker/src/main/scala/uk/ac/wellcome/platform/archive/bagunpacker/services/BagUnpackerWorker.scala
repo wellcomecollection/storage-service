@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
 import uk.ac.wellcome.platform.archive.common.{
   SourceLocationPayload,
-  UnpackedBagPayload
+  UnpackedBagLocationPayload
 }
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -60,7 +60,7 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       _ <- ingestUpdater.send(payload.ingestId, stepResult)
 
-      outgoingPayload = UnpackedBagPayload(
+      outgoingPayload = UnpackedBagLocationPayload(
         sourceLocationPayload = payload,
         unpackedBagLocation = unpackedBagLocation
       )

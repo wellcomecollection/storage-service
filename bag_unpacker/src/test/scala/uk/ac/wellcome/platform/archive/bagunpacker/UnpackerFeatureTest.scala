@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   BagUnpackerFixtures,
   CompressFixture
 }
-import uk.ac.wellcome.platform.archive.common.UnpackedBagPayload
+import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -37,7 +37,7 @@ class UnpackerFeatureTest
           sendNotificationToSQS(queue, ingestRequestPayload)
 
           eventually {
-            val expectedPayload = UnpackedBagPayload(
+            val expectedPayload = UnpackedBagLocationPayload(
               sourceLocationPayload = ingestRequestPayload,
               unpackedBagLocation = createObjectLocationWith(
                 bucket = srcBucket,
@@ -50,7 +50,7 @@ class UnpackerFeatureTest
               )
             )
 
-            outgoing.getMessages[UnpackedBagPayload] shouldBe Seq(
+            outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
               expectedPayload)
 
             assertTopicReceivesIngestEvents(

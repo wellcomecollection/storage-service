@@ -23,7 +23,7 @@ class BagAuditorFeatureTest
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
-          val payload = createUnpackedBagPayloadWith(
+          val payload = createUnpackedBagLocationPayloadWith(
             unpackedBagLocation = bagRootLocation,
             storageSpace = storageSpace
           )
@@ -77,7 +77,7 @@ class BagAuditorFeatureTest
         case (unpackedBagLocation, storageSpace) =>
           val bagRootLocation = unpackedBagLocation.join("subdir")
 
-          val payload = createUnpackedBagPayloadWith(
+          val payload = createUnpackedBagLocationPayloadWith(
             unpackedBagLocation = unpackedBagLocation,
             storageSpace = storageSpace
           )
@@ -128,7 +128,7 @@ class BagAuditorFeatureTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
         case (unpackedBagLocation, _) =>
-          val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
+          val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
 
           withLocalSqsQueue { queue =>
             val ingests = new MemoryMessageSender()
@@ -167,7 +167,7 @@ class BagAuditorFeatureTest
   it("errors if it cannot find the bag") {
     withLocalS3Bucket { bucket =>
       val unpackedBagLocation = createObjectLocation
-      val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
+      val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
 
       withLocalSqsQueue { queue =>
         val ingests = new MemoryMessageSender()
@@ -201,7 +201,7 @@ class BagAuditorFeatureTest
 
   it("errors if it gets an error from S3") {
     val unpackedBagLocation = createObjectLocation
-    val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
+    val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
 
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()

@@ -38,14 +38,14 @@ trait PayloadGenerators
   def createSourceLocation: SourceLocationPayload =
     createSourceLocationPayloadWith()
 
-  def createUnpackedBagPayloadWith(
+  def createUnpackedBagLocationPayloadWith(
     unpackedBagLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace
-  ): UnpackedBagPayload =
-    UnpackedBagPayload(
-      ingestId = createIngestID,
-      ingestDate = Instant.now(),
-      storageSpace = storageSpace,
+  ): UnpackedBagLocationPayload =
+    UnpackedBagLocationPayload(
+      context = createPipelineContextWith(
+        storageSpace = storageSpace
+      ),
       unpackedBagLocation = unpackedBagLocation
     )
 
