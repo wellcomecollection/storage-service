@@ -23,8 +23,8 @@ class BagAuditorFeatureTest
       val bagInfo = createBagInfo
       withBag(bucket, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
-          val payload = createUnpackedBagLocationPayloadWith(
-            unpackedBagLocation = bagRootLocation,
+          val payload = createBagRootLocationPayloadWith(
+            bagRootLocation = bagRootLocation,
             storageSpace = storageSpace
           )
 
@@ -71,41 +71,7 @@ class BagAuditorFeatureTest
   }
 
   it("errors if it cannot find the bag") {
-    val unpackedBagLocation = createObjectLocation
-    val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
-
-    withLocalSqsQueue { queue =>
-      val ingests = new MemoryMessageSender()
-      val outgoing = new MemoryMessageSender()
-      withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") {
-        _ =>
-          sendNotificationToSQS(queue, payload)
-
-          eventually {
-            assertQueueEmpty(queue)
-
-            outgoing.messages shouldBe empty
-
-            assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
-              ingestUpdates =>
-                ingestUpdates.size shouldBe 2
-
-                val ingestStart = ingestUpdates.head
-                ingestStart.events.head.description shouldBe "Auditing bag started"
-
-                val ingestFailed =
-                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-                ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe "Auditing bag failed"
-            }
-          }
-      }
-    }
-  }
-
-  it("errors if it gets an error from S3") {
-    val unpackedBagLocation = createObjectLocation
-    val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
+    val payload = createBagRootLocationPayload
 
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()

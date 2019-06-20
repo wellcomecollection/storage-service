@@ -80,11 +80,16 @@ trait PayloadGenerators
 
   def createBagRootLocationPayloadWith(
     ingestId: IngestID = createIngestID,
-    bagRootLocation: ObjectLocation): BagRootLocationPayload =
+    bagRootLocation: ObjectLocation = createObjectLocation,
+    storageSpace: StorageSpace = createStorageSpace): BagRootLocationPayload =
     BagRootLocationPayload(
       context = createPipelineContextWith(
-        ingestId = ingestId
+        ingestId = ingestId,
+        storageSpace = storageSpace
       ),
       bagRootLocation = bagRootLocation
     )
+
+  def createBagRootLocationPayload: BagRootLocationPayload =
+    createBagRootLocationPayloadWith()
 }

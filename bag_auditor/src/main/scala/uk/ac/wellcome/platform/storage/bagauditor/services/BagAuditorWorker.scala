@@ -4,27 +4,14 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestStepResult,
-  IngestStepSucceeded,
-  IngestStepWorker
-}
-import uk.ac.wellcome.platform.archive.common.{
-  EnrichedBagInformationPayload,
-  UnpackedBagLocationPayload
-}
-import uk.ac.wellcome.platform.storage.bagauditor.models.{
-  AuditSuccessSummary,
-  AuditSummary
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
+import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, EnrichedBagInformationPayload}
+import uk.ac.wellcome.platform.storage.bagauditor.models.{AuditSuccessSummary, AuditSummary}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
@@ -43,20 +30,20 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
     with Logging
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[UnpackedBagLocationPayload, AuditSummary](
-      alpakkaSQSWorkerConfig) { payload: UnpackedBagLocationPayload =>
+    AlpakkaSQSWorker[BagRootLocationPayload, AuditSummary](
+      alpakkaSQSWorkerConfig) { payload: BagRootLocationPayload =>
       Future.fromTry { processMessage(payload) }
     }
 
   def processMessage(
-    payload: UnpackedBagLocationPayload): Try[Result[AuditSummary]] =
+    payload: BagRootLocationPayload): Try[Result[AuditSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
       auditStep <- bagAuditor.getAuditSummary(
         ingestId = payload.ingestId,
         ingestDate = payload.ingestDate,
-        root = payload.unpackedBagLocation,
+        root = payload.bagRootLocation,
         storageSpace = payload.storageSpace
       )
 
@@ -65,7 +52,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       _ <- sendSuccessful(payload)(auditStep)
     } yield toResult(auditStep)
 
-  private def sendIngestInformation(payload: UnpackedBagLocationPayload)(
+  private def sendIngestInformation(payload: BagRootLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
@@ -79,7 +66,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       case _ => Success(())
     }
 
-  private def sendSuccessful(payload: UnpackedBagLocationPayload)(
+  private def sendSuccessful(payload: BagRootLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
