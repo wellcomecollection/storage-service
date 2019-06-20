@@ -19,13 +19,14 @@ trait PayloadGenerators
 
   def createPipelineContextWith(
     ingestId: IngestID = createIngestID,
+    ingestDate: Instant = Instant.now(),
     storageSpace: StorageSpace = createStorageSpace
   ): PipelineContext =
     PipelineContext(
-      ingestId = createIngestID,
+      ingestId = ingestId,
       ingestType = CreateIngestType,
       storageSpace = storageSpace,
-      ingestDate = Instant.now()
+      ingestDate = ingestDate
     )
 
   def createPipelineContext: PipelineContext =
@@ -58,6 +59,7 @@ trait PayloadGenerators
 
   def createEnrichedBagInformationPayload(
     ingestId: IngestID = createIngestID,
+    ingestDate: Instant = Instant.now,
     bagRootLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
@@ -65,6 +67,7 @@ trait PayloadGenerators
     EnrichedBagInformationPayload(
       context = createPipelineContextWith(
         ingestId = ingestId,
+        ingestDate = ingestDate,
         storageSpace = storageSpace
       ),
       bagRootLocation = bagRootLocation,
