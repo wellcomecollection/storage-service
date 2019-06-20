@@ -8,10 +8,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
 sealed trait PipelinePayload {
-  def ingestId: IngestID
-}
-
-sealed trait BetterPipelinePayload extends PipelinePayload {
   val context: PipelineContext
 
   def ingestId: IngestID = context.ingestId
@@ -23,7 +19,7 @@ sealed trait BetterPipelinePayload extends PipelinePayload {
 case class SourceLocationPayload(
   context: PipelineContext,
   sourceLocation: ObjectLocation
-) extends BetterPipelinePayload
+) extends PipelinePayload
 
 case object SourceLocationPayload {
   def apply(ingest: Ingest): SourceLocationPayload =
@@ -36,10 +32,10 @@ case object SourceLocationPayload {
 case class UnpackedBagLocationPayload(
   context: PipelineContext,
   unpackedBagLocation: ObjectLocation
-) extends BetterPipelinePayload
+) extends PipelinePayload
 
 case object UnpackedBagLocationPayload {
-  def apply(payload: BetterPipelinePayload,
+  def apply(payload: PipelinePayload,
             unpackedBagLocation: ObjectLocation): UnpackedBagLocationPayload =
     UnpackedBagLocationPayload(
       context = payload.context,
@@ -47,7 +43,7 @@ case object UnpackedBagLocationPayload {
     )
 }
 
-sealed trait BagRootPayload extends BetterPipelinePayload {
+sealed trait BagRootPayload extends PipelinePayload {
   val bagRootLocation: ObjectLocation
 }
 
