@@ -15,7 +15,7 @@ import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.IngestRequestPayload
+import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import uk.ac.wellcome.storage.ObjectLocation
@@ -293,9 +293,9 @@ class IngestsApiFeatureTest
 
                     assertTableOnlyHasItem[Ingest](expectedIngest, table)
 
-                    val expectedPayload = IngestRequestPayload(expectedIngest)
+                    val expectedPayload = SourceLocationPayload(expectedIngest)
                     messageSender
-                      .getMessages[IngestRequestPayload] shouldBe Seq(
+                      .getMessages[SourceLocationPayload] shouldBe Seq(
                       expectedPayload)
                 }
               }

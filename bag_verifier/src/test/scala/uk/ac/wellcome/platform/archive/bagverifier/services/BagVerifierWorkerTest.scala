@@ -7,7 +7,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.{
-  BagInformationPayload,
+  BagRootLocationPayload,
   EnrichedBagInformationPayload
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
@@ -91,11 +91,11 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket) {
             case (bagRootLocation, _) =>
-              val payload = createBagInformationPayloadWith(bagRootLocation)
+              val payload = createBagRootLocationPayloadWith(bagRootLocation)
 
               service.processMessage(payload) shouldBe a[Success[_]]
 
-              outgoing.getMessages[BagInformationPayload] shouldBe Seq(payload)
+              outgoing.getMessages[BagRootLocationPayload] shouldBe Seq(payload)
           }
         }
       }

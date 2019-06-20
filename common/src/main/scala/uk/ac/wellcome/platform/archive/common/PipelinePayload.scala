@@ -3,45 +3,46 @@ package uk.ac.wellcome.platform.archive.common
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID,
+  IngestType
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
 sealed trait PipelinePayload {
-  val ingestId: IngestID
+  val context: PipelineContext
+
+  def ingestId: IngestID = context.ingestId
+  def ingestType: IngestType = context.ingestType
+  def storageSpace: StorageSpace = context.storageSpace
+  def ingestDate: Instant = context.ingestDate
 }
 
-case class IngestRequestPayload(
-  ingestId: IngestID,
-  ingestDate: Instant,
-  storageSpace: StorageSpace,
+case class SourceLocationPayload(
+  context: PipelineContext,
   sourceLocation: ObjectLocation
 ) extends PipelinePayload
 
-case object IngestRequestPayload {
-  def apply(ingest: Ingest): IngestRequestPayload =
-    IngestRequestPayload(
-      ingestId = ingest.id,
-      ingestDate = ingest.createdDate,
-      storageSpace = StorageSpace(ingest.space.underlying),
+case object SourceLocationPayload {
+  def apply(ingest: Ingest): SourceLocationPayload =
+    SourceLocationPayload(
+      context = PipelineContext(ingest),
       sourceLocation = ingest.sourceLocation.location
     )
 }
 
-case class UnpackedBagPayload(
-  ingestId: IngestID,
-  ingestDate: Instant,
-  storageSpace: StorageSpace,
+case class UnpackedBagLocationPayload(
+  context: PipelineContext,
   unpackedBagLocation: ObjectLocation
 ) extends PipelinePayload
 
-case object UnpackedBagPayload {
-  def apply(ingestRequestPayload: IngestRequestPayload,
-            unpackedBagLocation: ObjectLocation): UnpackedBagPayload =
-    UnpackedBagPayload(
-      ingestId = ingestRequestPayload.ingestId,
-      ingestDate = ingestRequestPayload.ingestDate,
-      storageSpace = ingestRequestPayload.storageSpace,
+case object UnpackedBagLocationPayload {
+  def apply(payload: PipelinePayload,
+            unpackedBagLocation: ObjectLocation): UnpackedBagLocationPayload =
+    UnpackedBagLocationPayload(
+      context = payload.context,
       unpackedBagLocation = unpackedBagLocation
     )
 }
@@ -50,15 +51,13 @@ sealed trait BagRootPayload extends PipelinePayload {
   val bagRootLocation: ObjectLocation
 }
 
-case class BagInformationPayload(
-  ingestId: IngestID,
-  storageSpace: StorageSpace,
+case class BagRootLocationPayload(
+  context: PipelineContext,
   bagRootLocation: ObjectLocation
 ) extends BagRootPayload
 
 case class EnrichedBagInformationPayload(
-  ingestId: IngestID,
-  storageSpace: StorageSpace,
+  context: PipelineContext,
   bagRootLocation: ObjectLocation,
   externalIdentifier: ExternalIdentifier,
   version: Int

@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
-class IngestRequestPayloadTest
+class SourceLocationPayloadTest
     extends FunSpec
     with Matchers
     with RandomThings
@@ -16,13 +16,14 @@ class IngestRequestPayloadTest
 
   it("creates a payload from an ingest") {
     val ingestId = createIngestID
+    val ingestType = CreateIngestType
     val sourceLocation = createObjectLocation
     val space = randomAlphanumeric()
     val ingestDate = Instant.now()
 
     val ingest = Ingest(
       id = ingestId,
-      ingestType = CreateIngestType,
+      ingestType = ingestType,
       sourceLocation = StorageLocation(
         provider = StandardStorageProvider,
         location = sourceLocation
@@ -31,13 +32,16 @@ class IngestRequestPayloadTest
       createdDate = ingestDate
     )
 
-    val expectedPayload = IngestRequestPayload(
-      ingestId = ingestId,
-      ingestDate = ingestDate,
-      storageSpace = StorageSpace(space),
+    val expectedPayload = SourceLocationPayload(
+      context = PipelineContext(
+        ingestId = ingestId,
+        ingestType = ingestType,
+        storageSpace = StorageSpace(space),
+        ingestDate = ingestDate
+      ),
       sourceLocation = sourceLocation
     )
 
-    IngestRequestPayload(ingest) shouldBe expectedPayload
+    SourceLocationPayload(ingest) shouldBe expectedPayload
   }
 }

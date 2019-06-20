@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   BagUnpackerFixtures,
   CompressFixture
 }
-import uk.ac.wellcome.platform.archive.common.UnpackedBagPayload
+import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -32,29 +32,29 @@ class UnpackerFeatureTest
     withBagUnpackerApp(stepName = "unpacker") {
       case (_, srcBucket, queue, ingests, outgoing) =>
         withArchive(srcBucket, archiveFile) { archiveLocation =>
-          val ingestRequestPayload =
-            createIngestRequestPayloadWith(archiveLocation)
-          sendNotificationToSQS(queue, ingestRequestPayload)
+          val sourceLocationPayload =
+            createSourceLocationPayloadWith(archiveLocation)
+          sendNotificationToSQS(queue, sourceLocationPayload)
 
           eventually {
-            val expectedPayload = UnpackedBagPayload(
-              ingestRequestPayload = ingestRequestPayload,
+            val expectedPayload = UnpackedBagLocationPayload(
+              payload = sourceLocationPayload,
               unpackedBagLocation = createObjectLocationWith(
                 bucket = srcBucket,
                 key = Paths
                   .get(
-                    ingestRequestPayload.storageSpace.toString,
-                    ingestRequestPayload.ingestId.toString
+                    sourceLocationPayload.storageSpace.toString,
+                    sourceLocationPayload.ingestId.toString
                   )
                   .toString
               )
             )
 
-            outgoing.getMessages[UnpackedBagPayload] shouldBe Seq(
+            outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
               expectedPayload)
 
             assertTopicReceivesIngestEvents(
-              ingestRequestPayload.ingestId,
+              sourceLocationPayload.ingestId,
               ingests,
               expectedDescriptions = Seq(
                 "Unpacker started",
@@ -69,7 +69,7 @@ class UnpackerFeatureTest
   it("sends a failed Ingest update if it cannot read the bag") {
     withBagUnpackerApp(stepName = "unpacker") {
       case (_, _, queue, ingests, outgoing) =>
-        val payload = createIngestRequestPayload
+        val payload = createSourceLocation
         sendNotificationToSQS(queue, payload)
 
         eventually {

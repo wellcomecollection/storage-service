@@ -19,7 +19,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.{
   EnrichedBagInformationPayload,
-  UnpackedBagPayload
+  UnpackedBagLocationPayload
 }
 import uk.ac.wellcome.platform.storage.bagauditor.models.{
   AuditSuccessSummary,
@@ -43,12 +43,13 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
     with Logging
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[UnpackedBagPayload, AuditSummary](alpakkaSQSWorkerConfig) {
-      payload: UnpackedBagPayload =>
-        Future.fromTry { processMessage(payload) }
+    AlpakkaSQSWorker[UnpackedBagLocationPayload, AuditSummary](
+      alpakkaSQSWorkerConfig) { payload: UnpackedBagLocationPayload =>
+      Future.fromTry { processMessage(payload) }
     }
 
-  def processMessage(payload: UnpackedBagPayload): Try[Result[AuditSummary]] =
+  def processMessage(
+    payload: UnpackedBagLocationPayload): Try[Result[AuditSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
@@ -64,7 +65,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       _ <- sendSuccessful(payload)(auditStep)
     } yield toResult(auditStep)
 
-  private def sendIngestInformation(payload: UnpackedBagPayload)(
+  private def sendIngestInformation(payload: UnpackedBagLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
@@ -79,15 +80,14 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       case _ => Success(())
     }
 
-  private def sendSuccessful(payload: UnpackedBagPayload)(
+  private def sendSuccessful(payload: UnpackedBagLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
         outgoingPublisher.sendIfSuccessful(
           step,
           EnrichedBagInformationPayload(
-            ingestId = payload.ingestId,
-            storageSpace = payload.storageSpace,
+            context = payload.context,
             bagRootLocation = summary.audit.root,
             externalIdentifier = summary.audit.externalIdentifier,
             version = summary.audit.version
