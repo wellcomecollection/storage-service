@@ -12,7 +12,7 @@ class UnpackedBagPayloadTest
     val unpackedBagLocation = createObjectLocation
     val storageSpace = createStorageSpace
 
-    val ingestRequestPayload = createIngestRequestPayloadWith(
+    val ingestRequestPayload = createSourceLocationPayloadWith(
       sourceLocation = sourceLocation,
       storageSpace = storageSpace
     )

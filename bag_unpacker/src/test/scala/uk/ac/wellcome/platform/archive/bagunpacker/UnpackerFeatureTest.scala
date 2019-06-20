@@ -33,7 +33,7 @@ class UnpackerFeatureTest
       case (_, srcBucket, queue, ingests, outgoing) =>
         withArchive(srcBucket, archiveFile) { archiveLocation =>
           val ingestRequestPayload =
-            createIngestRequestPayloadWith(archiveLocation)
+            createSourceLocationPayloadWith(archiveLocation)
           sendNotificationToSQS(queue, ingestRequestPayload)
 
           eventually {
@@ -69,7 +69,7 @@ class UnpackerFeatureTest
   it("sends a failed Ingest update if it cannot read the bag") {
     withBagUnpackerApp(stepName = "unpacker") {
       case (_, _, queue, ingests, outgoing) =>
-        val payload = createIngestRequestPayload
+        val payload = createSourceLocation
         sendNotificationToSQS(queue, payload)
 
         eventually {

@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
 import uk.ac.wellcome.platform.archive.common.{
-  IngestRequestPayload,
+  SourceLocationPayload,
   UnpackedBagPayload
 }
 import uk.ac.wellcome.typesafe.Runnable
@@ -36,13 +36,13 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
     extends Runnable
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[IngestRequestPayload, UnpackSummary](
+    AlpakkaSQSWorker[SourceLocationPayload, UnpackSummary](
       alpakkaSQSWorkerConfig) { msg =>
       Future.fromTry { processMessage(msg) }
     }
 
   def processMessage(
-    payload: IngestRequestPayload): Try[Result[UnpackSummary]] =
+    payload: SourceLocationPayload): Try[Result[UnpackSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 

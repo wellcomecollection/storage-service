@@ -11,16 +11,16 @@ sealed trait PipelinePayload {
   val ingestId: IngestID
 }
 
-case class IngestRequestPayload(
+case class SourceLocationPayload(
   ingestId: IngestID,
   ingestDate: Instant,
   storageSpace: StorageSpace,
   sourceLocation: ObjectLocation
 ) extends PipelinePayload
 
-case object IngestRequestPayload {
-  def apply(ingest: Ingest): IngestRequestPayload =
-    IngestRequestPayload(
+case object SourceLocationPayload {
+  def apply(ingest: Ingest): SourceLocationPayload =
+    SourceLocationPayload(
       ingestId = ingest.id,
       ingestDate = ingest.createdDate,
       storageSpace = StorageSpace(ingest.space.underlying),
@@ -36,12 +36,12 @@ case class UnpackedBagPayload(
 ) extends PipelinePayload
 
 case object UnpackedBagPayload {
-  def apply(ingestRequestPayload: IngestRequestPayload,
+  def apply(sourceLocationPayload: SourceLocationPayload,
             unpackedBagLocation: ObjectLocation): UnpackedBagPayload =
     UnpackedBagPayload(
-      ingestId = ingestRequestPayload.ingestId,
-      ingestDate = ingestRequestPayload.ingestDate,
-      storageSpace = ingestRequestPayload.storageSpace,
+      ingestId = sourceLocationPayload.ingestId,
+      ingestDate = sourceLocationPayload.ingestDate,
+      storageSpace = sourceLocationPayload.storageSpace,
       unpackedBagLocation = unpackedBagLocation
     )
 }

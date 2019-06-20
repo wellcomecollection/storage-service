@@ -13,19 +13,19 @@ trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
     with ObjectLocationGenerators {
-  def createIngestRequestPayloadWith(
+  def createSourceLocationPayloadWith(
     sourceLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace
-  ): IngestRequestPayload =
-    IngestRequestPayload(
+  ): SourceLocationPayload =
+    SourceLocationPayload(
       ingestId = createIngestID,
       ingestDate = Instant.now(),
       storageSpace = storageSpace,
       sourceLocation = sourceLocation
     )
 
-  def createIngestRequestPayload: IngestRequestPayload =
-    createIngestRequestPayloadWith()
+  def createSourceLocation: SourceLocationPayload =
+    createSourceLocationPayloadWith()
 
   def createUnpackedBagPayloadWith(
     unpackedBagLocation: ObjectLocation = createObjectLocation,

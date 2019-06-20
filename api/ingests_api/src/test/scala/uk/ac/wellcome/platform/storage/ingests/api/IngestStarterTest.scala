@@ -4,7 +4,7 @@ import io.circe.Encoder
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.IngestRequestPayload
+import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestStarterFixture
@@ -31,8 +31,8 @@ class IngestStarterTest
 
         assertTableOnlyHasItem(ingest, table)
 
-        val expectedPayload = IngestRequestPayload(ingest)
-        messageSender.getMessages[IngestRequestPayload] shouldBe Seq(
+        val expectedPayload = SourceLocationPayload(ingest)
+        messageSender.getMessages[SourceLocationPayload] shouldBe Seq(
           expectedPayload)
       }
     }
