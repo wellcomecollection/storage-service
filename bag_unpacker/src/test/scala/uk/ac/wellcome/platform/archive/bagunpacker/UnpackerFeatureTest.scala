@@ -38,7 +38,7 @@ class UnpackerFeatureTest
 
           eventually {
             val expectedPayload = UnpackedBagLocationPayload(
-              payload = sourceLocationPayload,
+              context = sourceLocationPayload.context,
               unpackedBagLocation = createObjectLocationWith(
                 bucket = srcBucket,
                 key = Paths

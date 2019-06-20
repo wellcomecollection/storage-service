@@ -61,7 +61,7 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
       _ <- ingestUpdater.send(payload.ingestId, stepResult)
 
       outgoingPayload = UnpackedBagLocationPayload(
-        payload = payload,
+        context = payload.context,
         unpackedBagLocation = unpackedBagLocation
       )
       _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)

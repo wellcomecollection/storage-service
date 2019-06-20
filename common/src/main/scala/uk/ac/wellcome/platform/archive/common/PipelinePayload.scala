@@ -38,15 +38,6 @@ case class UnpackedBagLocationPayload(
   unpackedBagLocation: ObjectLocation
 ) extends PipelinePayload
 
-case object UnpackedBagLocationPayload {
-  def apply(payload: PipelinePayload,
-            unpackedBagLocation: ObjectLocation): UnpackedBagLocationPayload =
-    UnpackedBagLocationPayload(
-      context = payload.context,
-      unpackedBagLocation = unpackedBagLocation
-    )
-}
-
 sealed trait BagRootPayload extends PipelinePayload {
   val bagRootLocation: ObjectLocation
 }
