@@ -5,7 +5,7 @@ import java.util.UUID
 
 import cats.implicits._
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, IngestID, IngestType}
 import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManager
 import uk.ac.wellcome.storage.{FailedProcess, LockDao, LockingService}
 
@@ -18,6 +18,7 @@ class VersionPicker(
   def chooseVersion(
     externalIdentifier: ExternalIdentifier,
     ingestId: IngestID,
+    ingestType: IngestType = CreateIngestType,
     ingestDate: Instant
   ): Try[Int] =
     lockingService

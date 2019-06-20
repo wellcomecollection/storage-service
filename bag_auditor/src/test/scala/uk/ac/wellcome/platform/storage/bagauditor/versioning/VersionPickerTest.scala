@@ -5,6 +5,7 @@ import java.util.UUID
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.CreateIngestType
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
 import uk.ac.wellcome.storage.{LockDao, LockFailure, UnlockFailure}
 
@@ -145,6 +146,49 @@ class VersionPickerTest
       result shouldBe a[Failure[_]]
       result.failed.get shouldBe a[RuntimeException]
       result.failed.get.getMessage should startWith("Locking error:")
+    }
+  }
+
+  describe("checking the ingest type") {
+    it("only allows ingest type 'create' once") {
+      val externalIdentifier = createExternalIdentifier
+
+      withVersionPicker { picker =>
+        picker.chooseVersion(
+          externalIdentifier = externalIdentifier,
+          ingestId = createIngestID,
+          ingestType = CreateIngestType,
+          ingestDate = Instant.now()
+        )
+
+        val result = picker.chooseVersion(
+          externalIdentifier = externalIdentifier,
+          ingestId = createIngestID,
+          ingestType = CreateIngestType,
+          ingestDate = Instant.now()
+        )
+
+        result shouldBe a[Failure[_]]
+        result.failed.get shouldBe a[IllegalVersionAssignment]
+        result.failed.get.getMessage should startWith("Ingest type 'create' is not allowed")
+      }
+    }
+
+    it("only allows ingest type 'update' on an already-existing bag") {
+      val externalIdentifier = createExternalIdentifier
+
+      withVersionPicker { picker =>
+        val result = picker.chooseVersion(
+          externalIdentifier = externalIdentifier,
+          ingestId = createIngestID,
+          ingestType = CreateIngestType,
+          ingestDate = Instant.now()
+        )
+
+        result shouldBe a[Failure[_]]
+        result.failed.get shouldBe a[IllegalVersionAssignment]
+        result.failed.get.getMessage should startWith("Ingest type 'update' is not allowed")
+      }
     }
   }
 }
