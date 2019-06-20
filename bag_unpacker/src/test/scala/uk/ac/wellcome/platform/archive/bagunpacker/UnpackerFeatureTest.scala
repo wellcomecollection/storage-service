@@ -32,19 +32,19 @@ class UnpackerFeatureTest
     withBagUnpackerApp(stepName = "unpacker") {
       case (_, srcBucket, queue, ingests, outgoing) =>
         withArchive(srcBucket, archiveFile) { archiveLocation =>
-          val ingestRequestPayload =
+          val sourceLocationPayload =
             createSourceLocationPayloadWith(archiveLocation)
-          sendNotificationToSQS(queue, ingestRequestPayload)
+          sendNotificationToSQS(queue, sourceLocationPayload)
 
           eventually {
             val expectedPayload = UnpackedBagLocationPayload(
-              sourceLocationPayload = ingestRequestPayload,
+              payload = sourceLocationPayload,
               unpackedBagLocation = createObjectLocationWith(
                 bucket = srcBucket,
                 key = Paths
                   .get(
-                    ingestRequestPayload.storageSpace.toString,
-                    ingestRequestPayload.ingestId.toString
+                    sourceLocationPayload.storageSpace.toString,
+                    sourceLocationPayload.ingestId.toString
                   )
                   .toString
               )
@@ -54,7 +54,7 @@ class UnpackerFeatureTest
               expectedPayload)
 
             assertTopicReceivesIngestEvents(
-              ingestRequestPayload.ingestId,
+              sourceLocationPayload.ingestId,
               ingests,
               expectedDescriptions = Seq(
                 "Unpacker started",
