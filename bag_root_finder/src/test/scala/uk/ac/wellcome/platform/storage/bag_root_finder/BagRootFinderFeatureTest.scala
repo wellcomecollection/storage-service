@@ -121,7 +121,8 @@ class BagRootFinderFeatureTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
         case (unpackedBagLocation, _) =>
-          val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
+          val payload =
+            createUnpackedBagLocationPayloadWith(unpackedBagLocation)
 
           withLocalSqsQueue { queue =>
             val ingests = new MemoryMessageSender()
