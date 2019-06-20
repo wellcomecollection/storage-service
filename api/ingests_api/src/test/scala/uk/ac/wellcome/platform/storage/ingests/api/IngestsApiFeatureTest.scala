@@ -16,6 +16,7 @@ import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
+import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import uk.ac.wellcome.storage.ObjectLocation
@@ -31,7 +32,8 @@ class IngestsApiFeatureTest
     with IngestsApiFixture
     with Inside
     with IntegrationPatience
-    with JsonAssertions {
+    with JsonAssertions
+    with RandomThings {
 
   val contextUrl = "http://api.wellcomecollection.org/storage/v1/context.json"
   describe("GET /ingests/:id") {
@@ -192,6 +194,39 @@ class IngestsApiFeatureTest
     }
   }
 
+  def createRequestWith(
+    ingestType: String = "create",
+    bucket: String = randomAlphanumeric(),
+    key: String = randomAlphanumeric(),
+    space: String = randomAlphanumeric()
+  ): RequestEntity =
+    HttpEntity(
+      ContentTypes.`application/json`,
+      s"""|{
+          |  "type": "Ingest",
+          |  "ingestType": {
+          |    "id": "$ingestType",
+          |    "type": "IngestType"
+          |  },
+          |  "sourceLocation":{
+          |    "type": "Location",
+          |    "provider": {
+          |      "type": "Provider",
+          |      "id": "${StandardDisplayProvider.id}"
+          |    },
+          |    "bucket": "$bucket",
+          |    "path": "$key"
+          |  },
+          |  "space": {
+          |    "id": "$space",
+          |    "type": "Space"
+          |  },
+          |  "callback": {
+          |    "url": "${testCallbackUri.toString}"
+          |  }
+          |}""".stripMargin
+    )
+
   describe("POST /ingests") {
     it("creates an ingest") {
       withConfiguredApp {
@@ -203,31 +238,10 @@ class IngestsApiFeatureTest
             val s3key = "key.txt"
             val spaceName = "somespace"
 
-            val entity = HttpEntity(
-              ContentTypes.`application/json`,
-              s"""|{
-                 |  "type": "Ingest",
-                 |  "ingestType": {
-                 |    "id": "create",
-                 |    "type": "IngestType"
-                 |  },
-                 |  "sourceLocation":{
-                 |    "type": "Location",
-                 |    "provider": {
-                 |      "type": "Provider",
-                 |      "id": "${StandardDisplayProvider.id}"
-                 |    },
-                 |    "bucket": "$bucketName",
-                 |    "path": "$s3key"
-                 |  },
-                 |  "space": {
-                 |    "id": "$spaceName",
-                 |    "type": "Space"
-                 |  },
-                 |  "callback": {
-                 |    "url": "${testCallbackUri.toString}"
-                 |  }
-                 |}""".stripMargin
+            val entity = createRequestWith(
+              bucket = bucketName,
+              key = s3key,
+              space = spaceName
             )
 
             val expectedLocationR = s"$baseUrl/(.+)".r
@@ -305,6 +319,60 @@ class IngestsApiFeatureTest
                 result = HttpMetricResults.Success)
             }
           }
+      }
+    }
+
+    it("allows requesting an ingestType 'create'") {
+      withConfiguredApp { case (_, _, metricsSender, baseUrl) =>
+        withMaterializer { implicit materializer =>
+          val url = s"$baseUrl/ingests"
+
+          val entity = createRequestWith(
+            ingestType = "create"
+          )
+
+          whenPostRequestReady(url, entity) { response: HttpResponse =>
+            response.status shouldBe StatusCodes.Created
+
+            val ingestFuture =
+              Unmarshal(response.entity).to[ResponseDisplayIngest]
+
+            whenReady(ingestFuture) { actualIngest =>
+              actualIngest.ingestType.id shouldBe "create"
+
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.Success)
+            }
+          }
+        }
+      }
+    }
+
+    it("allows requesting an ingestType 'update'") {
+      withConfiguredApp { case (_, _, metricsSender, baseUrl) =>
+        withMaterializer { implicit materializer =>
+          val url = s"$baseUrl/ingests"
+
+          val entity = createRequestWith(
+            ingestType = "update"
+          )
+
+          whenPostRequestReady(url, entity) { response: HttpResponse =>
+            response.status shouldBe StatusCodes.Created
+
+            val ingestFuture =
+              Unmarshal(response.entity).to[ResponseDisplayIngest]
+
+            whenReady(ingestFuture) { actualIngest =>
+              actualIngest.ingestType.id shouldBe "update"
+
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.Success)
+            }
+          }
+        }
       }
     }
 
@@ -586,28 +654,8 @@ class IngestsApiFeatureTest
             withMaterializer { implicit materialiser =>
               val url = s"$baseUrl/ingests"
 
-              val entity = HttpEntity(
-                ContentTypes.`application/json`,
-                """|{
-                   |  "type": "Ingest",
-                   |  "ingestType": {
-                   |    "id": "baboop",
-                   |    "type": "IngestType"
-                   |  },
-                   |  "sourceLocation":{
-                   |    "type": "Location",
-                   |    "provider": {
-                   |      "type": "Provider",
-                   |      "id": "aws-s3-standard"
-                   |    },
-                   |    "bucket": "bucket",
-                   |    "path": "b22454408.zip"
-                   |  },
-                   |  "space": {
-                   |    "id": "bcnfgh",
-                   |    "type": "Space"
-                   |  }
-                   |}""".stripMargin
+              val entity = createRequestWith(
+                ingestType = "baboop"
               )
 
               whenPostRequestReady(url, entity) { response: HttpResponse =>
