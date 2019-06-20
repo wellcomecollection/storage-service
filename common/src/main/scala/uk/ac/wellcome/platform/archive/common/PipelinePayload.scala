@@ -38,18 +38,14 @@ sealed trait BetterPipelinePayload extends PipelinePayload {
 }
 
 case class SourceLocationPayload(
-  ingestId: IngestID,
-  ingestDate: Instant,
-  storageSpace: StorageSpace,
+  context: PipelineContext,
   sourceLocation: ObjectLocation
-) extends PipelinePayload
+) extends BetterPipelinePayload
 
 case object SourceLocationPayload {
   def apply(ingest: Ingest): SourceLocationPayload =
     SourceLocationPayload(
-      ingestId = ingest.id,
-      ingestDate = ingest.createdDate,
-      storageSpace = StorageSpace(ingest.space.underlying),
+      context = PipelineContext(ingest),
       sourceLocation = ingest.sourceLocation.location
     )
 }

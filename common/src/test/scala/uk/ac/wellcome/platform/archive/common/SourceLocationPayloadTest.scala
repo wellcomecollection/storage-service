@@ -16,13 +16,14 @@ class SourceLocationPayloadTest
 
   it("creates a payload from an ingest") {
     val ingestId = createIngestID
+    val ingestType = CreateIngestType
     val sourceLocation = createObjectLocation
     val space = randomAlphanumeric()
     val ingestDate = Instant.now()
 
     val ingest = Ingest(
       id = ingestId,
-      ingestType = CreateIngestType,
+      ingestType = ingestType,
       sourceLocation = StorageLocation(
         provider = StandardStorageProvider,
         location = sourceLocation
@@ -32,9 +33,12 @@ class SourceLocationPayloadTest
     )
 
     val expectedPayload = SourceLocationPayload(
-      ingestId = ingestId,
-      ingestDate = ingestDate,
-      storageSpace = StorageSpace(space),
+      context = PipelineContext(
+        ingestId = ingestId,
+        ingestType = ingestType,
+        storageSpace = StorageSpace(space),
+        ingestDate = ingestDate
+      ),
       sourceLocation = sourceLocation
     )
 

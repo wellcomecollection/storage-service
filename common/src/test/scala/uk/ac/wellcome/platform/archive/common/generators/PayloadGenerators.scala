@@ -4,7 +4,7 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common._
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, IngestID}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
@@ -13,14 +13,25 @@ trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
     with ObjectLocationGenerators {
+
+  def createPipelineContextWith(
+    storageSpace: StorageSpace = createStorageSpace
+  ): PipelineContext =
+    PipelineContext(
+      ingestId = createIngestID,
+      ingestType = CreateIngestType,
+      storageSpace = storageSpace,
+      ingestDate = Instant.now()
+    )
+
   def createSourceLocationPayloadWith(
     sourceLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace
   ): SourceLocationPayload =
     SourceLocationPayload(
-      ingestId = createIngestID,
-      ingestDate = Instant.now(),
-      storageSpace = storageSpace,
+      context = createPipelineContextWith(
+        storageSpace = storageSpace
+      ),
       sourceLocation = sourceLocation
     )
 
