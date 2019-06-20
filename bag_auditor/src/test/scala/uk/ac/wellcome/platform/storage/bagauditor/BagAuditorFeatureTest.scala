@@ -231,4 +231,7 @@ class BagAuditorFeatureTest
       }
     }
   }
+
+  // TODO: When we pass an ingest type in the bag auditor payload, check it sends
+  // an appropriate user-facing message in the ingests app.
 }
