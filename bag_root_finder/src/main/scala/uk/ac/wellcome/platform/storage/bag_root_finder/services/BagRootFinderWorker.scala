@@ -12,20 +12,9 @@ import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestStepResult,
-  IngestStepSucceeded,
-  IngestStepWorker
-}
-import uk.ac.wellcome.platform.archive.common.{
-  BagInformationPayload,
-  BagRootPayload,
-  UnpackedBagPayload
-}
-import uk.ac.wellcome.platform.storage.bag_root_finder.models.{
-  RootFinderSuccessSummary,
-  RootFinderSummary
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
+import uk.ac.wellcome.platform.archive.common._
+import uk.ac.wellcome.platform.storage.bag_root_finder.models.{RootFinderSuccessSummary, RootFinderSummary}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
@@ -44,13 +33,13 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
     with Logging
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[UnpackedBagPayload, RootFinderSummary](
-      alpakkaSQSWorkerConfig) { payload: UnpackedBagPayload =>
+    AlpakkaSQSWorker[UnpackedBagLocationPayload, RootFinderSummary](
+      alpakkaSQSWorkerConfig) { payload: UnpackedBagLocationPayload =>
       Future.fromTry { processMessage(payload) }
     }
 
   def processMessage(
-    payload: UnpackedBagPayload): Try[Result[RootFinderSummary]] =
+    payload: UnpackedBagLocationPayload): Try[Result[RootFinderSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
@@ -65,7 +54,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
       _ <- sendSuccessful(payload)(summary)
     } yield toResult(summary)
 
-  private def sendIngestInformation(payload: UnpackedBagPayload)(
+  private def sendIngestInformation(payload: UnpackedBagLocationPayload)(
     step: IngestStepResult[RootFinderSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: RootFinderSuccessSummary) =>
@@ -78,13 +67,12 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
       case _ => Success(())
     }
 
-  private def sendSuccessful(payload: UnpackedBagPayload)(
+  private def sendSuccessful(payload: PipelinePayload)(
     step: IngestStepResult[RootFinderSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: RootFinderSuccessSummary) =>
-        val outgoingPayload: BagRootPayload = BagInformationPayload(
-          ingestId = payload.ingestId,
-          storageSpace = payload.storageSpace,
+        val outgoingPayload: BagRootPayload = BagRootLocationPayload(
+          context = payload.context,
           bagRootLocation = summary.bagRootLocation,
         )
         outgoingPublisher.sendIfSuccessful(step, outgoingPayload)

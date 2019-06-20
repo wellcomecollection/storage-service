@@ -78,13 +78,16 @@ trait PayloadGenerators
   def createEnrichedBagInformationPayload: EnrichedBagInformationPayload =
     createEnrichedBagInformationPayload()
 
+  // TODO: Just pass the context directly.
   def createBagRootLocationPayloadWith(
     ingestId: IngestID = createIngestID,
+    ingestDate: Instant = Instant.now(),
     bagRootLocation: ObjectLocation = createObjectLocation,
     storageSpace: StorageSpace = createStorageSpace): BagRootLocationPayload =
     BagRootLocationPayload(
       context = createPipelineContextWith(
         ingestId = ingestId,
+        ingestDate = ingestDate,
         storageSpace = storageSpace
       ),
       bagRootLocation = bagRootLocation

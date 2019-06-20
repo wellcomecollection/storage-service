@@ -24,13 +24,14 @@ class BagRootFinderFeatureTest
     withLocalS3Bucket { bucket =>
       withBag(bucket) {
         case (bagRootLocation, storageSpace) =>
-          val payload = createUnpackedBagPayloadWith(
+          val payload = createUnpackedBagLocationPayloadWith(
             unpackedBagLocation = bagRootLocation,
             storageSpace = storageSpace
           )
 
-          val expectedPayload = createBagInformationPayloadWith(
+          val expectedPayload = createBagRootLocationPayloadWith(
             ingestId = payload.ingestId,
+            ingestDate = payload.ingestDate,
             bagRootLocation = bagRootLocation,
             storageSpace = storageSpace
           )
@@ -73,12 +74,12 @@ class BagRootFinderFeatureTest
         case (unpackedBagLocation, storageSpace) =>
           val bagRootLocation = unpackedBagLocation.join("subdir")
 
-          val payload = createUnpackedBagPayloadWith(
+          val payload = createUnpackedBagLocationPayloadWith(
             unpackedBagLocation = unpackedBagLocation,
             storageSpace = storageSpace
           )
 
-          val expectedPayload = createBagInformationPayloadWith(
+          val expectedPayload = createBagRootLocationPayloadWith(
             ingestId = payload.ingestId,
             bagRootLocation = bagRootLocation,
             storageSpace = storageSpace
@@ -120,7 +121,7 @@ class BagRootFinderFeatureTest
     withLocalS3Bucket { bucket =>
       withBag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
         case (unpackedBagLocation, _) =>
-          val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
+          val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
 
           withLocalSqsQueue { queue =>
             val ingests = new MemoryMessageSender()
@@ -158,40 +159,7 @@ class BagRootFinderFeatureTest
 
   it("errors if it cannot find the bag") {
     val unpackedBagLocation = createObjectLocation
-    val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
-
-    withLocalSqsQueue { queue =>
-      val ingests = new MemoryMessageSender()
-      val outgoing = new MemoryMessageSender()
-      withWorkerService(queue, ingests, outgoing, stepName = "finding bag root") {
-        _ =>
-          sendNotificationToSQS(queue, payload)
-
-          eventually {
-            assertQueueEmpty(queue)
-
-            outgoing.messages shouldBe empty
-
-            assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
-              ingestUpdates =>
-                ingestUpdates.size shouldBe 2
-
-                val ingestStart = ingestUpdates.head
-                ingestStart.events.head.description shouldBe "Finding bag root started"
-
-                val ingestFailed =
-                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-                ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe s"Finding bag root failed - Unable to find root of the bag at $unpackedBagLocation"
-            }
-          }
-      }
-    }
-  }
-
-  it("errors if it gets an error from S3") {
-    val unpackedBagLocation = createObjectLocation
-    val payload = createUnpackedBagPayloadWith(unpackedBagLocation)
+    val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
 
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()
