@@ -35,11 +35,9 @@ class BagAuditorFeatureTest
             storageSpace = storageSpace
           )
 
-          val expectedPayload = createEnrichedBagInformationPayload(
-            ingestId = payload.ingestId,
-            ingestDate = payload.ingestDate,
+          val expectedPayload = createEnrichedBagInformationPayloadWith(
+            context = payload.context,
             bagRootLocation = bagRootLocation,
-            storageSpace = storageSpace,
             externalIdentifier = bagInfo.externalIdentifier
           )
 

@@ -36,9 +36,11 @@ class BagRegisterWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket, bagInfo = bagInfo) {
             case (bagRootLocation, storageSpace) =>
-              val payload = createEnrichedBagInformationPayload(
-                bagRootLocation = bagRootLocation,
-                storageSpace = storageSpace
+              val payload = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  storageSpace = storageSpace
+                ),
+                bagRootLocation = bagRootLocation
               )
 
               val bagId = BagId(
@@ -76,10 +78,7 @@ class BagRegisterWorkerTest
   it("sends a failed IngestUpdate if storing fails") {
     withBagRegisterWorker {
       case (service, _, _, ingests, _, _) =>
-        val payload = createEnrichedBagInformationPayload(
-          bagRootLocation = createObjectLocation,
-          storageSpace = createStorageSpace
-        )
+        val payload = createEnrichedBagInformationPayload
 
         service.processMessage(payload) shouldBe a[Success[_]]
 

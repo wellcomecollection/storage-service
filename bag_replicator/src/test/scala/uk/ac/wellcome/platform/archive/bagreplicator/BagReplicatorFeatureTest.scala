@@ -39,7 +39,7 @@ class BagReplicatorFeatureTest
             stepName = "replicating") { _ =>
             withBag(ingestsBucket) {
               case (srcBagRootLocation, _) =>
-                val payload = createEnrichedBagInformationPayload(
+                val payload = createEnrichedBagInformationPayloadWith(
                   bagRootLocation = srcBagRootLocation
                 )
 
