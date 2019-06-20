@@ -86,8 +86,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
         outgoingPublisher.sendIfSuccessful(
           step,
           EnrichedBagInformationPayload(
-            ingestId = payload.ingestId,
-            storageSpace = payload.storageSpace,
+            context = payload.context,
             bagRootLocation = summary.audit.root,
             externalIdentifier = summary.audit.externalIdentifier,
             version = summary.audit.version
