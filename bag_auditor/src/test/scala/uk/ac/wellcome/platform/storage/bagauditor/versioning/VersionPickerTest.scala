@@ -5,7 +5,10 @@ import java.util.UUID
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  UpdateIngestType
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
 import uk.ac.wellcome.storage.{LockDao, LockFailure, UnlockFailure}
 
@@ -186,7 +189,8 @@ class VersionPickerTest
 
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[IllegalVersionAssignment]
-        result.failed.get.getMessage should startWith("Ingest type 'create' is not allowed")
+        result.failed.get.getMessage should startWith(
+          "Ingest type 'create' is not allowed")
       }
     }
 
@@ -203,7 +207,8 @@ class VersionPickerTest
 
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[IllegalVersionAssignment]
-        result.failed.get.getMessage should startWith("Ingest type 'update' is not allowed")
+        result.failed.get.getMessage should startWith(
+          "Ingest type 'update' is not allowed")
       }
     }
   }
