@@ -323,62 +323,66 @@ class IngestsApiFeatureTest
     }
 
     it("allows requesting an ingestType 'create'") {
-      withConfiguredApp { case (_, messageSender, metricsSender, baseUrl) =>
-        withMaterializer { implicit materializer =>
-          val url = s"$baseUrl/ingests"
+      withConfiguredApp {
+        case (_, messageSender, metricsSender, baseUrl) =>
+          withMaterializer { implicit materializer =>
+            val url = s"$baseUrl/ingests"
 
-          val entity = createRequestWith(
-            ingestType = "create"
-          )
+            val entity = createRequestWith(
+              ingestType = "create"
+            )
 
-          whenPostRequestReady(url, entity) { response: HttpResponse =>
-            response.status shouldBe StatusCodes.Created
+            whenPostRequestReady(url, entity) { response: HttpResponse =>
+              response.status shouldBe StatusCodes.Created
 
-            val ingestFuture =
-              Unmarshal(response.entity).to[ResponseDisplayIngest]
+              val ingestFuture =
+                Unmarshal(response.entity).to[ResponseDisplayIngest]
 
-            whenReady(ingestFuture) { actualIngest =>
-              actualIngest.ingestType.id shouldBe "create"
+              whenReady(ingestFuture) { actualIngest =>
+                actualIngest.ingestType.id shouldBe "create"
 
-              val payload = messageSender.getMessages[SourceLocationPayload].head
-              payload.context.ingestType shouldBe CreateIngestType
+                val payload =
+                  messageSender.getMessages[SourceLocationPayload].head
+                payload.context.ingestType shouldBe CreateIngestType
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.Success)
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.Success)
+              }
             }
           }
-        }
       }
     }
 
     it("allows requesting an ingestType 'update'") {
-      withConfiguredApp { case (_, messageSender, metricsSender, baseUrl) =>
-        withMaterializer { implicit materializer =>
-          val url = s"$baseUrl/ingests"
+      withConfiguredApp {
+        case (_, messageSender, metricsSender, baseUrl) =>
+          withMaterializer { implicit materializer =>
+            val url = s"$baseUrl/ingests"
 
-          val entity = createRequestWith(
-            ingestType = "update"
-          )
+            val entity = createRequestWith(
+              ingestType = "update"
+            )
 
-          whenPostRequestReady(url, entity) { response: HttpResponse =>
-            response.status shouldBe StatusCodes.Created
+            whenPostRequestReady(url, entity) { response: HttpResponse =>
+              response.status shouldBe StatusCodes.Created
 
-            val ingestFuture =
-              Unmarshal(response.entity).to[ResponseDisplayIngest]
+              val ingestFuture =
+                Unmarshal(response.entity).to[ResponseDisplayIngest]
 
-            whenReady(ingestFuture) { actualIngest =>
-              actualIngest.ingestType.id shouldBe "update"
+              whenReady(ingestFuture) { actualIngest =>
+                actualIngest.ingestType.id shouldBe "update"
 
-              val payload = messageSender.getMessages[SourceLocationPayload].head
-              payload.context.ingestType shouldBe UpdateIngestType
+                val payload =
+                  messageSender.getMessages[SourceLocationPayload].head
+                payload.context.ingestType shouldBe UpdateIngestType
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.Success)
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.Success)
+              }
             }
           }
-        }
       }
     }
 
