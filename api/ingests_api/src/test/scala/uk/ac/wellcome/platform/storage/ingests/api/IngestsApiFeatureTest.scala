@@ -323,7 +323,7 @@ class IngestsApiFeatureTest
     }
 
     it("allows requesting an ingestType 'create'") {
-      withConfiguredApp { case (_, _, metricsSender, baseUrl) =>
+      withConfiguredApp { case (_, messageSender, metricsSender, baseUrl) =>
         withMaterializer { implicit materializer =>
           val url = s"$baseUrl/ingests"
 
@@ -340,6 +340,9 @@ class IngestsApiFeatureTest
             whenReady(ingestFuture) { actualIngest =>
               actualIngest.ingestType.id shouldBe "create"
 
+              val payload = messageSender.getMessages[SourceLocationPayload].head
+              payload.context.ingestType shouldBe CreateIngestType
+
               assertMetricSent(
                 metricsSender,
                 result = HttpMetricResults.Success)
@@ -350,7 +353,7 @@ class IngestsApiFeatureTest
     }
 
     it("allows requesting an ingestType 'update'") {
-      withConfiguredApp { case (_, _, metricsSender, baseUrl) =>
+      withConfiguredApp { case (_, messageSender, metricsSender, baseUrl) =>
         withMaterializer { implicit materializer =>
           val url = s"$baseUrl/ingests"
 
@@ -366,6 +369,9 @@ class IngestsApiFeatureTest
 
             whenReady(ingestFuture) { actualIngest =>
               actualIngest.ingestType.id shouldBe "update"
+
+              val payload = messageSender.getMessages[SourceLocationPayload].head
+              payload.context.ingestType shouldBe UpdateIngestType
 
               assertMetricSent(
                 metricsSender,
