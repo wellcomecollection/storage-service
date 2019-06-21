@@ -26,28 +26,3 @@ case class AuditSuccessSummary(
   audit: AuditSuccess,
   endTime: Option[Instant]
 ) extends AuditSummary
-
-case object AuditSummary {
-  def create(
-    root: ObjectLocation,
-    space: StorageSpace,
-    audit: Audit,
-    t: Instant
-  ): AuditSummary = audit match {
-    case f @ AuditFailure(e) =>
-      AuditFailureSummary(
-        root = root,
-        space = space,
-        startTime = t,
-        endTime = Some(Instant.now())
-      )
-    case s @ AuditSuccess(_, _) =>
-      AuditSuccessSummary(
-        root = root,
-        space = space,
-        startTime = t,
-        audit = s,
-        endTime = Some(Instant.now())
-      )
-  }
-}
