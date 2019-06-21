@@ -3,18 +3,10 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, IngestID, IngestType}
 import uk.ac.wellcome.platform.archive.common.storage.StreamUnavailable
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
@@ -30,6 +22,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
 
   def getAuditSummary(ingestId: IngestID,
                       ingestDate: Instant,
+                      ingestType: IngestType = CreateIngestType,
                       root: ObjectLocation,
                       storageSpace: StorageSpace): IngestStep =
     Try {
@@ -40,6 +33,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
         version <- versionPicker.chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
+          ingestType = ingestType,
           ingestDate = ingestDate
         )
         auditSuccess = AuditSuccess(
@@ -83,6 +77,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
   private def createUserFacingMessage(auditError: AuditError): Option[String] =
     auditError match {
       case CannotFindExternalIdentifier(_) => Some("Unable to find an external identifier")
+      case IngestTypeUpdateForNewBag()     => Some("This bag has never been ingested before, but was sent with ingestType update")
       case _                               => None
     }
 

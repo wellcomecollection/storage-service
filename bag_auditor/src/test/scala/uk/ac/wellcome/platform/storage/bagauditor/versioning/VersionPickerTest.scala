@@ -22,6 +22,7 @@ class VersionPickerTest
       val result = picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
         ingestId = createIngestID,
+        ingestType = CreateIngestType,
         ingestDate = Instant.now()
       )
 
@@ -102,6 +103,7 @@ class VersionPickerTest
       picker.chooseVersion(
         externalIdentifier = externalIdentifier,
         ingestId = createIngestID,
+        ingestType = CreateIngestType,
         ingestDate = Instant.now()
       )
 
@@ -109,6 +111,7 @@ class VersionPickerTest
         val result = picker.chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
+          ingestType = UpdateIngestType,
           ingestDate = Instant.ofEpochSecond(t)
         )
 
@@ -130,6 +133,7 @@ class VersionPickerTest
       picker.chooseVersion(
         externalIdentifier = externalIdentifier,
         ingestId = ingestId,
+        ingestType = CreateIngestType,
         ingestDate = Instant.now()
       )
 
@@ -156,6 +160,7 @@ class VersionPickerTest
       val result: Either[VersionPickerError, Int] = picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
         ingestId = createIngestID,
+        ingestType = CreateIngestType,
         ingestDate = Instant.now()
       )
 
@@ -173,12 +178,14 @@ class VersionPickerTest
       picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
         ingestId = ingestId,
+        ingestType = CreateIngestType,
         ingestDate = Instant.now()
       )
 
       val result = picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
         ingestId = ingestId,
+        ingestType = UpdateIngestType,
         ingestDate = Instant.now()
       )
 

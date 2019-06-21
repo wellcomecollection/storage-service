@@ -19,7 +19,7 @@ class VersionPicker(
   def chooseVersion(
     externalIdentifier: ExternalIdentifier,
     ingestId: IngestID,
-    ingestType: IngestType = CreateIngestType,
+    ingestType: IngestType,
     ingestDate: Instant
   ): Either[VersionPickerError, Int] = {
     val tryVersion: Try[lockingService.Process] = lockingService
