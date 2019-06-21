@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
+import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, IngestID, IngestType}
 import uk.ac.wellcome.platform.archive.common.storage.StreamUnavailable
@@ -15,7 +16,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
-class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
+class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) extends Logging {
   val s3BagLocator = new S3BagLocator(s3Client)
 
   type IngestStep = Try[IngestStepResult[AuditSummary]]
@@ -63,7 +64,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
               endTime = Some(Instant.now())
             ),
             e = getUnderlyingThrowable(auditError),
-            maybeUserFacingMessage = createUserFacingMessage(auditError)
+            maybeUserFacingMessage = createUserFacingMessage(ingestId, auditError)
           )
       }
     }
@@ -74,12 +75,20 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
       case _ => new Throwable()
     }
 
-  private def createUserFacingMessage(auditError: AuditError): Option[String] =
+  private def createUserFacingMessage(ingestId: IngestID, auditError: AuditError): Option[String] =
     auditError match {
-      case CannotFindExternalIdentifier(_)  => Some("Unable to find an external identifier")
-      case IngestTypeUpdateForNewBag()      => Some("This bag has never been ingested before, but was sent with ingestType update")
-      case IngestTypeCreateForExistingBag() => Some("This bag has already been ingested, but was sent with ingestType create")
-      case _                                => None
+      case CannotFindExternalIdentifier(err) =>
+        info(s"$ingestId: unable to find an external identifier. Error: $err")
+        Some("Unable to find an external identifier")
+
+      case IngestTypeUpdateForNewBag() =>
+        info(s"$ingestId: ingestType = 'update' but no existing version")
+        Some("This bag has never been ingested before, but was sent with ingestType update")
+
+      case IngestTypeCreateForExistingBag() =>
+        Some("This bag has already been ingested, but was sent with ingestType create")
+
+      case _ => None
     }
 
   private def getBagIdentifier(
