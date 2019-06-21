@@ -3,17 +3,15 @@ package uk.ac.wellcome.platform.storage.bagauditor.versioning
 import java.time.Instant
 import java.util.UUID
 
-import cats.implicits._
+import cats.{Id, Monad, MonadError}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, IngestID, IngestType, UpdateIngestType}
-import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManager
-import uk.ac.wellcome.platform.storage.bagauditor.models.{IngestTypeCreateForExistingBag, IngestTypeUpdateForNewBag, InternalVersionPickerError, VersionPickerError}
+import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManager, IngestVersionManagerError}
+import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.storage.{FailedProcess, LockDao, LockingService}
 
-import scala.util.{Failure, Success, Try}
-
 class VersionPicker(
-  lockingService: LockingService[Int, Try, LockDao[String, UUID]],
+  lockingService: LockingService[Either[IngestVersionManagerError, Int], Id, LockDao[String, UUID]],
   ingestVersionManager: IngestVersionManager
 ) {
   def chooseVersion(
@@ -22,7 +20,7 @@ class VersionPicker(
     ingestType: IngestType,
     ingestDate: Instant
   ): Either[VersionPickerError, Int] = {
-    val tryVersion: Try[lockingService.Process] = lockingService
+    val assignedVersion: Id[lockingService.Process] = lockingService
       .withLocks(Set(s"ingest:$ingestId", s"external:$externalIdentifier")) {
         ingestVersionManager.assignVersion(
           externalIdentifier = externalIdentifier,
@@ -31,11 +29,16 @@ class VersionPicker(
         )
       }
 
-    tryVersion match {
-      case Success(Right(version))              => checkVersionIsAllowed(ingestType, assignedVersion = version)
-      case Success(Left(FailedProcess(_, err))) => Left(InternalVersionPickerError(err))
-      case Success(Left(err))                   => Left(InternalVersionPickerError(new Throwable(s"Locking error: $err")))
-      case Failure(err)                         => Left(InternalVersionPickerError(err))
+    // This is a double Either: the outer Either defines the result of the locking
+    // service operation, the inner Either is the version assignment.
+    assignedVersion match {
+      case Right(Right(version))       => checkVersionIsAllowed(ingestType, assignedVersion = version)
+
+      case Right(Left(ingestVersionManagerError))
+                                       => Left(UnableToAssignVersion(ingestVersionManagerError))
+
+      case Left(FailedProcess(_, err)) => Left(InternalVersionPickerError(err))
+      case Left(err)                   => Left(InternalVersionPickerError(new Throwable(s"Locking error: $err")))
     }
   }
 
@@ -47,5 +50,25 @@ class VersionPicker(
       Left(IngestTypeUpdateForNewBag())
     } else {
       Right(assignedVersion)
+    }
+
+  // Annoyingly, cats doesn't seem to provide an Implicit for the Id monad, so we have
+  // to implement one ourselves.
+  implicit def idMonad(implicit I: Monad[Id]): MonadError[Id, Throwable] =
+    new MonadError[Id, Throwable] {
+      override def raiseError[A](e: Throwable): Id[A] = throw e
+
+      override def handleErrorWith[A](fa: Id[A])(f: Throwable => Id[A]): Id[A] =
+        try {
+          fa
+        } catch {
+          case t: Throwable => f(t)
+        }
+
+      override def pure[A](x: A): Id[A] = x
+
+      override def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = I.flatMap(fa)(f)
+
+      override def tailRecM[A, B](a: A)(f: A => Id[Either[A, B]]): Id[B] = I.tailRecM(a)(f)
     }
 }

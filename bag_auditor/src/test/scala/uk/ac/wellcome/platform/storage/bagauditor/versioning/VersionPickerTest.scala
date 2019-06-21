@@ -6,8 +6,9 @@ import java.util.UUID
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
+import uk.ac.wellcome.platform.archive.common.versioning.{ExternalIdentifiersMismatch, NewerIngestAlreadyExists}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
-import uk.ac.wellcome.platform.storage.bagauditor.models.{IngestTypeCreateForExistingBag, IngestTypeUpdateForNewBag, InternalVersionPickerError, VersionPickerError}
+import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.storage.{LockDao, LockFailure, UnlockFailure}
 
 class VersionPickerTest
@@ -115,10 +116,10 @@ class VersionPickerTest
           ingestDate = Instant.ofEpochSecond(t)
         )
 
-        result.left.value shouldBe a[InternalVersionPickerError]
+        result.left.value shouldBe a[UnableToAssignVersion]
 
-        val err = result.left.value.asInstanceOf[InternalVersionPickerError]
-        err.e.getMessage should startWith("Latest version has a newer ingest date")
+        val err = result.left.value.asInstanceOf[UnableToAssignVersion]
+        err.e shouldBe a[NewerIngestAlreadyExists]
       }
     }
   }
@@ -189,10 +190,10 @@ class VersionPickerTest
         ingestDate = Instant.now()
       )
 
-      result.left.value shouldBe a[InternalVersionPickerError]
+      result.left.value shouldBe a[UnableToAssignVersion]
 
-      val err = result.left.value.asInstanceOf[InternalVersionPickerError]
-      err.e.getMessage should startWith("External identifiers don't match")
+      val err = result.left.value.asInstanceOf[UnableToAssignVersion]
+      err.e shouldBe a[ExternalIdentifiersMismatch]
     }
   }
 
