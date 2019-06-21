@@ -48,37 +48,25 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
         )
       } yield auditSuccess
 
-      auditTry recover {
-        case e => AuditFailure(e)
-      } match {
-        case Success(audit @ AuditSuccess(_, _)) =>
+      auditTry match {
+        case Success(auditSuccess) =>
           IngestStepSucceeded(
             AuditSummary.create(
               root = root,
               space = storageSpace,
-              audit = audit,
+              audit = auditSuccess,
               t = startTime
             )
           )
-        case Success(audit @ AuditFailure(e)) =>
+        case Failure(err) =>
           IngestFailed(
             summary = AuditSummary.create(
               root = root,
               space = storageSpace,
-              audit = audit,
+              audit = AuditFailure(err),
               t = startTime
             ),
-            e
-          )
-        case Failure(e) =>
-          IngestFailed(
-            summary = AuditSummary.incomplete(
-              root = root,
-              space = storageSpace,
-              e = e,
-              t = startTime
-            ),
-            e
+            err
           )
       }
     }
