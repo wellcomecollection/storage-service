@@ -43,20 +43,18 @@ class BagAuditorTest
   }
 
   it("errors if it cannot find the bag") {
-    withLocalS3Bucket { bucket =>
-      withBagAuditor { bagAuditor =>
-        val maybeAudit = bagAuditor.getAuditSummary(
-          ingestId = createIngestID,
-          ingestDate = Instant.now,
-          root = createObjectLocationWith(bucket),
-          storageSpace = createStorageSpace
-        )
+    withBagAuditor { bagAuditor =>
+      val maybeAudit = bagAuditor.getAuditSummary(
+        ingestId = createIngestID,
+        ingestDate = Instant.now,
+        root = createObjectLocation,
+        storageSpace = createStorageSpace
+      )
 
-        val result = maybeAudit.success.get
+      val result = maybeAudit.success.get
 
-        result shouldBe a[IngestFailed[_]]
-        result.summary shouldBe a[AuditFailureSummary]
-      }
+      result shouldBe a[IngestFailed[_]]
+      result.summary shouldBe a[AuditFailureSummary]
     }
   }
 
