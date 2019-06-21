@@ -27,7 +27,7 @@ class BagAuditorTest
             val maybeAudit = bagAuditor.getAuditSummary(
               ingestId = createIngestID,
               ingestDate = Instant.now,
-              unpackLocation = bagRootLocation,
+              root = bagRootLocation,
               storageSpace = storageSpace
             )
 
@@ -35,7 +35,6 @@ class BagAuditorTest
             val summary = result.summary
               .asInstanceOf[AuditSuccessSummary]
 
-            summary.audit.root shouldBe bagRootLocation
             summary.audit.externalIdentifier shouldBe bagInfo.externalIdentifier
             summary.audit.version shouldBe 1
           }
@@ -43,24 +42,19 @@ class BagAuditorTest
     }
   }
 
-  it("errors if it cannot find the bag root") {
-    withLocalS3Bucket { bucket =>
-      withBag(bucket, bagRootDirectory = Some("1/2/3")) {
-        case (_, storageSpace) =>
-          withBagAuditor { bagAuditor =>
-            val maybeAudit = bagAuditor.getAuditSummary(
-              ingestId = createIngestID,
-              ingestDate = Instant.now,
-              unpackLocation = createObjectLocationWith(bucket, key = "1/"),
-              storageSpace = storageSpace
-            )
+  it("errors if it cannot find the bag") {
+    withBagAuditor { bagAuditor =>
+      val maybeAudit = bagAuditor.getAuditSummary(
+        ingestId = createIngestID,
+        ingestDate = Instant.now,
+        root = createObjectLocation,
+        storageSpace = createStorageSpace
+      )
 
-            val result = maybeAudit.success.get
+      val result = maybeAudit.success.get
 
-            result shouldBe a[IngestFailed[_]]
-            result.summary shouldBe a[AuditFailureSummary]
-          }
-      }
+      result shouldBe a[IngestFailed[_]]
+      result.summary shouldBe a[AuditFailureSummary]
     }
   }
 
@@ -78,7 +72,7 @@ class BagAuditorTest
             val maybeAudit = bagAuditor.getAuditSummary(
               ingestId = createIngestID,
               ingestDate = Instant.now,
-              unpackLocation = bagRootLocation,
+              root = bagRootLocation,
               storageSpace = storageSpace
             )
 

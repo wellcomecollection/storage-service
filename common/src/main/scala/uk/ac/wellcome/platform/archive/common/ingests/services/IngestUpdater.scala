@@ -24,6 +24,7 @@ class IngestUpdater[Destination](stepName: String,
     step: IngestStep[R],
     bagId: Option[BagId] = None
   ): Try[Unit] = {
+    debug(s"Sending an ingest update for ID=$ingestId step=$step bagId=$bagId")
     val update = step match {
       case IngestCompleted(_) =>
         IngestStatusUpdate(
@@ -66,6 +67,7 @@ class IngestUpdater[Destination](stepName: String,
   }
 
   def sendEvent(ingestId: IngestID, messages: Seq[String]): Try[Unit] = {
+    debug(s"Sending an ingest event for ID=$ingestId messages=$messages")
     val update: IngestUpdate = IngestEventUpdate(
       id = ingestId,
       events = messages.map { m: String =>

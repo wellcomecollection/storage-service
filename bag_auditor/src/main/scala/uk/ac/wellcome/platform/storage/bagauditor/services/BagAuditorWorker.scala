@@ -18,8 +18,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepWorker
 }
 import uk.ac.wellcome.platform.archive.common.{
-  EnrichedBagInformationPayload,
-  UnpackedBagLocationPayload
+  BagRootLocationPayload,
+  EnrichedBagInformationPayload
 }
 import uk.ac.wellcome.platform.storage.bagauditor.models.{
   AuditSuccessSummary,
@@ -43,20 +43,20 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
     with Logging
     with IngestStepWorker {
   private val worker =
-    AlpakkaSQSWorker[UnpackedBagLocationPayload, AuditSummary](
-      alpakkaSQSWorkerConfig) { payload: UnpackedBagLocationPayload =>
+    AlpakkaSQSWorker[BagRootLocationPayload, AuditSummary](
+      alpakkaSQSWorkerConfig) { payload: BagRootLocationPayload =>
       Future.fromTry { processMessage(payload) }
     }
 
   def processMessage(
-    payload: UnpackedBagLocationPayload): Try[Result[AuditSummary]] =
+    payload: BagRootLocationPayload): Try[Result[AuditSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
       auditStep <- bagAuditor.getAuditSummary(
         ingestId = payload.ingestId,
         ingestDate = payload.ingestDate,
-        unpackLocation = payload.unpackedBagLocation,
+        root = payload.bagRootLocation,
         storageSpace = payload.storageSpace
       )
 
@@ -65,14 +65,13 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       _ <- sendSuccessful(payload)(auditStep)
     } yield toResult(auditStep)
 
-  private def sendIngestInformation(payload: UnpackedBagLocationPayload)(
+  private def sendIngestInformation(payload: BagRootLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
         ingestUpdater.sendEvent(
           ingestId = payload.ingestId,
           messages = Seq(
-            s"Detected bag root as ${summary.audit.root}",
             s"Detected bag identifier as ${summary.audit.externalIdentifier}",
             s"Assigned bag version ${summary.audit.version}"
           )
@@ -80,7 +79,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       case _ => Success(())
     }
 
-  private def sendSuccessful(payload: UnpackedBagLocationPayload)(
+  private def sendSuccessful(payload: BagRootLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: AuditSuccessSummary) =>
@@ -88,7 +87,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
           step,
           EnrichedBagInformationPayload(
             context = payload.context,
-            bagRootLocation = summary.audit.root,
+            bagRootLocation = summary.root,
             externalIdentifier = summary.audit.externalIdentifier,
             version = summary.audit.version
           )

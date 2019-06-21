@@ -30,13 +30,12 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
 
   def getAuditSummary(ingestId: IngestID,
                       ingestDate: Instant,
-                      unpackLocation: ObjectLocation,
+                      root: ObjectLocation,
                       storageSpace: StorageSpace): IngestStep =
     Try {
       val startTime = Instant.now()
 
       val auditTry: Try[AuditSuccess] = for {
-        root <- s3BagLocator.locateBagRoot(unpackLocation)
         externalIdentifier <- getBagIdentifier(root)
         version <- versionPicker.chooseVersion(
           externalIdentifier = externalIdentifier,
@@ -44,7 +43,6 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
           ingestDate = ingestDate
         )
         auditSuccess = AuditSuccess(
-          root = root,
           externalIdentifier = externalIdentifier,
           version = version
         )
@@ -53,10 +51,10 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
       auditTry recover {
         case e => AuditFailure(e)
       } match {
-        case Success(audit @ AuditSuccess(_, _, _)) =>
+        case Success(audit @ AuditSuccess(_, _)) =>
           IngestStepSucceeded(
             AuditSummary.create(
-              location = unpackLocation,
+              root = root,
               space = storageSpace,
               audit = audit,
               t = startTime
@@ -65,7 +63,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
         case Success(audit @ AuditFailure(e)) =>
           IngestFailed(
             summary = AuditSummary.create(
-              location = unpackLocation,
+              root = root,
               space = storageSpace,
               audit = audit,
               t = startTime
@@ -75,7 +73,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
         case Failure(e) =>
           IngestFailed(
             summary = AuditSummary.incomplete(
-              location = unpackLocation,
+              root = root,
               space = storageSpace,
               e = e,
               t = startTime

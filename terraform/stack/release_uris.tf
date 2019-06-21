@@ -13,6 +13,7 @@ module "images" {
     "bag_auditor",
     "bag_register",
     "bag_replicator",
+    "bag_root_finder",
     "bag_verifier",
     "bag_unpacker",
   ]

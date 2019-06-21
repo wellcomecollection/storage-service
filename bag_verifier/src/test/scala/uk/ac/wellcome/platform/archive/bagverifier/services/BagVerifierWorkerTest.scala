@@ -91,7 +91,9 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket) {
             case (bagRootLocation, _) =>
-              val payload = createBagRootLocationPayloadWith(bagRootLocation)
+              val payload = createBagRootLocationPayloadWith(
+                bagRootLocation = bagRootLocation
+              )
 
               service.processMessage(payload) shouldBe a[Success[_]]
 
