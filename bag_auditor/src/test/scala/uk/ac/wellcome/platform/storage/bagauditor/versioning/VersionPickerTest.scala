@@ -5,8 +5,14 @@ import java.util.UUID
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
-import uk.ac.wellcome.platform.archive.common.versioning.{ExternalIdentifiersMismatch, NewerIngestAlreadyExists}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  UpdateIngestType
+}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  ExternalIdentifiersMismatch,
+  NewerIngestAlreadyExists
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.storage.{LockDao, LockFailure, UnlockFailure}
@@ -80,20 +86,26 @@ class VersionPickerTest
     withVersionPicker { picker =>
       val externalIdentifier = createExternalIdentifier
 
-      picker.chooseVersion(
-        externalIdentifier = externalIdentifier,
-        ingestId = createIngestID,
-        ingestType = CreateIngestType,
-        ingestDate = Instant.ofEpochSecond(1)
-      ).right.value shouldBe 1
-
-      (2 to 5).map { t =>
-        picker.chooseVersion(
+      picker
+        .chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
-          ingestType = UpdateIngestType,
-          ingestDate = Instant.ofEpochSecond(t)
-        ).right.value shouldBe t
+          ingestType = CreateIngestType,
+          ingestDate = Instant.ofEpochSecond(1)
+        )
+        .right
+        .value shouldBe 1
+
+      (2 to 5).map { t =>
+        picker
+          .chooseVersion(
+            externalIdentifier = externalIdentifier,
+            ingestId = createIngestID,
+            ingestType = UpdateIngestType,
+            ingestDate = Instant.ofEpochSecond(t)
+          )
+          .right
+          .value shouldBe t
       }
     }
   }

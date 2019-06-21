@@ -9,4 +9,5 @@ case class AuditSuccess(
   version: Int
 ) extends Audit
 
-case class AuditFailure(e: Throwable, userMessage: Option[String] = None) extends Audit
+case class AuditFailure(e: Throwable, userMessage: Option[String] = None)
+    extends Audit

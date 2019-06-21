@@ -4,20 +4,36 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestID, IngestType}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestID,
+  IngestType
+}
 import uk.ac.wellcome.platform.archive.common.storage.StreamUnavailable
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
-import uk.ac.wellcome.platform.archive.common.versioning.{ExternalIdentifiersMismatch, InternalVersionManagerError, NewerIngestAlreadyExists}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  ExternalIdentifiersMismatch,
+  InternalVersionManagerError,
+  NewerIngestAlreadyExists
+}
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
-class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) extends Logging {
+class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3)
+    extends Logging {
   val s3BagLocator = new S3BagLocator(s3Client)
 
   type IngestStep = Try[IngestStepResult[AuditSummary]]
@@ -65,7 +81,8 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) exte
               endTime = Some(Instant.now())
             ),
             e = getUnderlyingThrowable(auditError),
-            maybeUserFacingMessage = createUserFacingMessage(ingestId, auditError)
+            maybeUserFacingMessage =
+              createUserFacingMessage(ingestId, auditError)
           )
       }
     }
@@ -73,25 +90,30 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) exte
   private def getUnderlyingThrowable(auditError: AuditError): Throwable =
     auditError match {
       case CannotFindExternalIdentifier(e) => e
-      case UnableToAssignVersion(internalError: InternalVersionManagerError)
-                                           => internalError.e
-      case err                             => new Throwable(s"Unexpected error in the auditor: $err")
+      case UnableToAssignVersion(internalError: InternalVersionManagerError) =>
+        internalError.e
+      case err => new Throwable(s"Unexpected error in the auditor: $err")
     }
 
-  private def createUserFacingMessage(ingestId: IngestID, auditError: AuditError): Option[String] =
+  private def createUserFacingMessage(ingestId: IngestID,
+                                      auditError: AuditError): Option[String] =
     auditError match {
       case CannotFindExternalIdentifier(err) =>
-        info(s"Unable to find an external identifier for $ingestId. Error: $err")
+        info(
+          s"Unable to find an external identifier for $ingestId. Error: $err")
         Some("Unable to find an external identifier")
 
       case IngestTypeUpdateForNewBag() =>
-        Some("This bag has never been ingested before, but was sent with ingestType update")
+        Some(
+          "This bag has never been ingested before, but was sent with ingestType update")
 
       case IngestTypeCreateForExistingBag() =>
-        Some("This bag has already been ingested, but was sent with ingestType create")
+        Some(
+          "This bag has already been ingested, but was sent with ingestType create")
 
       case UnableToAssignVersion(e: NewerIngestAlreadyExists) =>
-        Some(s"Another version of this bag was ingested at ${e.stored}, which is newer than the current ingest ${e.request}")
+        Some(
+          s"Another version of this bag was ingested at ${e.stored}, which is newer than the current ingest ${e.request}")
 
       // This should be impossible, and it strongly points to an error somewhere in
       // the pipeline -- an ingest ID should be used once, and the underlying bag
@@ -104,8 +126,8 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) exte
       case _ => None
     }
 
-  private def getBagIdentifier(
-    bagRootLocation: ObjectLocation): Either[CannotFindExternalIdentifier, ExternalIdentifier] = {
+  private def getBagIdentifier(bagRootLocation: ObjectLocation)
+    : Either[CannotFindExternalIdentifier, ExternalIdentifier] = {
 
     val tryExternalIdentifier =
       for {

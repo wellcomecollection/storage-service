@@ -25,10 +25,11 @@ trait IngestVersionManager {
             newVersion = existingRecord.version + 1
           )
         else
-          Left(NewerIngestAlreadyExists(
-            stored = existingRecord.ingestDate,
-            request = ingestDate
-          ))
+          Left(
+            NewerIngestAlreadyExists(
+              stored = existingRecord.ingestDate,
+              request = ingestDate
+            ))
 
       case Success(None) =>
         storeNewVersion(
@@ -70,10 +71,11 @@ trait IngestVersionManager {
         if (existingRecord.externalIdentifier == externalIdentifier)
           Right(existingRecord.version)
         else
-          Left(ExternalIdentifiersMismatch(
-            stored = existingRecord.externalIdentifier,
-            request = externalIdentifier
-          ))
+          Left(
+            ExternalIdentifiersMismatch(
+              stored = existingRecord.externalIdentifier,
+              request = externalIdentifier
+            ))
 
       case Success(None) =>
         createNewVersionFor(

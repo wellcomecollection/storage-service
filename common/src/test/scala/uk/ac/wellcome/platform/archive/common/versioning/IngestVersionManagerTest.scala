@@ -46,11 +46,14 @@ class IngestVersionManagerTest
   it("assigns version 1 if it hasn't seen this external ID before") {
     val manager = new MemoryIngestVersionManager()
 
-    manager.assignVersion(
-      externalIdentifier = createExternalIdentifier,
-      ingestId = createIngestID,
-      ingestDate = Instant.now
-    ).right.value shouldBe 1
+    manager
+      .assignVersion(
+        externalIdentifier = createExternalIdentifier,
+        ingestId = createIngestID,
+        ingestDate = Instant.now
+      )
+      .right
+      .value shouldBe 1
   }
 
   it("assigns increasing versions if it sees newer ingest dates each time") {
@@ -59,11 +62,14 @@ class IngestVersionManagerTest
     val externalIdentifier = createExternalIdentifier
 
     (1 to 5).map { version =>
-      manager.assignVersion(
-        externalIdentifier = externalIdentifier,
-        ingestId = createIngestID,
-        ingestDate = Instant.ofEpochSecond(version)
-      ).right.value shouldBe version
+      manager
+        .assignVersion(
+          externalIdentifier = externalIdentifier,
+          ingestId = createIngestID,
+          ingestDate = Instant.ofEpochSecond(version)
+        )
+        .right
+        .value shouldBe version
     }
   }
 
@@ -84,18 +90,22 @@ class IngestVersionManagerTest
             ingestId = ingestId,
             ingestDate = Instant.ofEpochSecond(idx)
           )
-          .right.value
+          .right
+          .value
 
         (idx, ingestId, version)
     }
 
     assignedVersions.foreach {
       case (idx, ingestId, version) =>
-        manager.assignVersion(
-          externalIdentifier = externalIdentifier,
-          ingestId = ingestId,
-          ingestDate = Instant.ofEpochSecond(idx)
-        ).right.value shouldBe version
+        manager
+          .assignVersion(
+            externalIdentifier = externalIdentifier,
+            ingestId = ingestId,
+            ingestDate = Instant.ofEpochSecond(idx)
+          )
+          .right
+          .value shouldBe version
     }
   }
 

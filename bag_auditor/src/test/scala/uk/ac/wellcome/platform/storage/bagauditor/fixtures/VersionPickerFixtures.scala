@@ -4,7 +4,12 @@ import java.util.UUID
 
 import cats.Id
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManager, IngestVersionManagerDao, IngestVersionManagerError, MemoryIngestVersionManagerDao}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManager,
+  IngestVersionManagerDao,
+  IngestVersionManagerError,
+  MemoryIngestVersionManagerDao
+}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.{LockDao, LockingService}
 import uk.ac.wellcome.storage.memory.MemoryLockDao
@@ -20,7 +25,10 @@ trait VersionPickerFixtures {
 
   def withVersionPicker[R](dao: LockDao[String, UUID])(
     testWith: TestWith[VersionPicker, R]): R = {
-    val lockingService = new LockingService[Either[IngestVersionManagerError, Int], Id, LockDao[String, UUID]] {
+    val lockingService = new LockingService[
+      Either[IngestVersionManagerError, Int],
+      Id,
+      LockDao[String, UUID]] {
       override implicit val lockDao: LockDao[String, UUID] = dao
 
       override protected def createContextId(): UUID = UUID.randomUUID()

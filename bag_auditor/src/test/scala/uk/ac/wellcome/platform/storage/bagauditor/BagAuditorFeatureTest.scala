@@ -7,8 +7,16 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, Ingest, IngestStatusUpdate, UpdateIngestType}
-import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, EnrichedBagInformationPayload}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  Ingest,
+  IngestStatusUpdate,
+  UpdateIngestType
+}
+import uk.ac.wellcome.platform.archive.common.{
+  BagRootLocationPayload,
+  EnrichedBagInformationPayload
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 
 class BagAuditorFeatureTest
@@ -128,20 +136,19 @@ class BagAuditorFeatureTest
           val outgoing = new MemoryMessageSender()
 
           withLocalSqsQueue { queue =>
-
             withAuditorWorker(
               queue,
               ingests,
               outgoing,
               stepName = "auditing bag") { _ =>
-
               // Send the initial payload with "create" and check it completes
               sendNotificationToSQS(queue, payload1)
 
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.getMessages[EnrichedBagInformationPayload] should have size 1
+                outgoing
+                  .getMessages[EnrichedBagInformationPayload] should have size 1
 
                 assertTopicReceivesIngestEvents(
                   payload1.ingestId,
@@ -161,7 +168,8 @@ class BagAuditorFeatureTest
               eventually {
                 assertQueueEmpty(queue)
 
-                outgoing.getMessages[EnrichedBagInformationPayload] should have size 2
+                outgoing
+                  .getMessages[EnrichedBagInformationPayload] should have size 2
 
                 assertTopicReceivesIngestEvents(
                   payload1.ingestId,
