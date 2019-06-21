@@ -205,14 +205,14 @@ class VersionPickerTest
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
           ingestType = CreateIngestType,
-          ingestDate = Instant.now()
+          ingestDate = Instant.ofEpochSecond(1)
         )
 
         val result = picker.chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
           ingestType = CreateIngestType,
-          ingestDate = Instant.now()
+          ingestDate = Instant.ofEpochSecond(2)
         )
 
         result.left.value shouldBe IngestTypeCreateForExistingBag()
