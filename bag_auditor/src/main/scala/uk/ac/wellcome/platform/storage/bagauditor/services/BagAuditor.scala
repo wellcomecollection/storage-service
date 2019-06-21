@@ -76,9 +76,10 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
 
   private def createUserFacingMessage(auditError: AuditError): Option[String] =
     auditError match {
-      case CannotFindExternalIdentifier(_) => Some("Unable to find an external identifier")
-      case IngestTypeUpdateForNewBag()     => Some("This bag has never been ingested before, but was sent with ingestType update")
-      case _                               => None
+      case CannotFindExternalIdentifier(_)  => Some("Unable to find an external identifier")
+      case IngestTypeUpdateForNewBag()      => Some("This bag has never been ingested before, but was sent with ingestType update")
+      case IngestTypeCreateForExistingBag() => Some("This bag has already been ingested, but was sent with ingestType create")
+      case _                                => None
     }
 
   private def getBagIdentifier(

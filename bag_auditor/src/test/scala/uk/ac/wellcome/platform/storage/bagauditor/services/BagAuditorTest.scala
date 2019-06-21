@@ -4,7 +4,7 @@ import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.ingests.models.UpdateIngestType
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 import uk.ac.wellcome.platform.storage.bagauditor.models.{AuditFailureSummary, AuditSuccessSummary}
@@ -106,6 +106,39 @@ class BagAuditorTest
             val ingestFailed = result.asInstanceOf[IngestFailed[_]]
             ingestFailed.summary shouldBe a[AuditFailureSummary]
             ingestFailed.maybeUserFacingMessage shouldBe Some("This bag has never been ingested before, but was sent with ingestType update")
+          }
+      }
+    }
+  }
+
+  it("fails if you ask for ingestType 'create' on an existing bag") {
+    withLocalS3Bucket { bucket =>
+      withBag(bucket) {
+        case (bagRootLocation, storageSpace) =>
+          withBagAuditor { bagAuditor =>
+            bagAuditor.getAuditSummary(
+              ingestId = createIngestID,
+              ingestDate = Instant.ofEpochSecond(1),
+              ingestType = CreateIngestType,
+              root = bagRootLocation,
+              storageSpace = storageSpace
+            )
+
+            val maybeAudit = bagAuditor.getAuditSummary(
+              ingestId = createIngestID,
+              ingestDate = Instant.ofEpochSecond(2),
+              ingestType = CreateIngestType,
+              root = bagRootLocation,
+              storageSpace = storageSpace
+            )
+
+            val result = maybeAudit.success.get
+
+            result shouldBe a[IngestFailed[_]]
+
+            val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+            ingestFailed.summary shouldBe a[AuditFailureSummary]
+            ingestFailed.maybeUserFacingMessage shouldBe Some("This bag has already been ingested, but was sent with ingestType create")
           }
       }
     }
