@@ -5,13 +5,13 @@ import java.time.Instant
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, IngestID, IngestType}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestID, IngestType}
 import uk.ac.wellcome.platform.archive.common.storage.StreamUnavailable
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
-import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.platform.archive.common.versioning.{ExternalIdentifiersMismatch, InternalVersionManagerError, NewerIngestAlreadyExists}
+import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -24,7 +24,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) exte
 
   def getAuditSummary(ingestId: IngestID,
                       ingestDate: Instant,
-                      ingestType: IngestType = CreateIngestType,
+                      ingestType: IngestType,
                       root: ObjectLocation,
                       storageSpace: StorageSpace): IngestStep =
     Try {
@@ -75,7 +75,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) exte
       case CannotFindExternalIdentifier(e) => e
       case UnableToAssignVersion(internalError: InternalVersionManagerError)
                                            => internalError.e
-      case _                               => new Throwable()
+      case err                             => new Throwable(s"Unexpected error in the auditor: $err")
     }
 
   private def createUserFacingMessage(ingestId: IngestID, auditError: AuditError): Option[String] =

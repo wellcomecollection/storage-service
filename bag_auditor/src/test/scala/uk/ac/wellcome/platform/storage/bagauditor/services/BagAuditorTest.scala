@@ -25,6 +25,7 @@ class BagAuditorTest
             val maybeAudit = bagAuditor.getAuditSummary(
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               root = bagRootLocation,
               storageSpace = storageSpace
             )
@@ -45,6 +46,7 @@ class BagAuditorTest
       val maybeAudit = bagAuditor.getAuditSummary(
         ingestId = createIngestID,
         ingestDate = Instant.now,
+        ingestType = CreateIngestType,
         root = createObjectLocation,
         storageSpace = createStorageSpace
       )
@@ -70,6 +72,7 @@ class BagAuditorTest
             val maybeAudit = bagAuditor.getAuditSummary(
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               root = bagRootLocation,
               storageSpace = storageSpace
             )

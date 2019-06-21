@@ -56,6 +56,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       auditStep <- bagAuditor.getAuditSummary(
         ingestId = payload.ingestId,
         ingestDate = payload.ingestDate,
+        ingestType = payload.ingestType,
         root = payload.bagRootLocation,
         storageSpace = payload.storageSpace
       )
