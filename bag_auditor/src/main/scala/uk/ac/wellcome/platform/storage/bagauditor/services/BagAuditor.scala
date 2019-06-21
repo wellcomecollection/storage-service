@@ -11,6 +11,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, Inge
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
+import uk.ac.wellcome.platform.archive.common.versioning.{ExternalIdentifiersMismatch, InternalVersionManagerError, NewerIngestAlreadyExists}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -72,21 +73,33 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) exte
   private def getUnderlyingThrowable(auditError: AuditError): Throwable =
     auditError match {
       case CannotFindExternalIdentifier(e) => e
-      case _ => new Throwable()
+      case UnableToAssignVersion(internalError: InternalVersionManagerError)
+                                           => internalError.e
+      case _                               => new Throwable()
     }
 
   private def createUserFacingMessage(ingestId: IngestID, auditError: AuditError): Option[String] =
     auditError match {
       case CannotFindExternalIdentifier(err) =>
-        info(s"$ingestId: unable to find an external identifier. Error: $err")
+        info(s"Unable to find an external identifier for $ingestId. Error: $err")
         Some("Unable to find an external identifier")
 
       case IngestTypeUpdateForNewBag() =>
-        info(s"$ingestId: ingestType = 'update' but no existing version")
         Some("This bag has never been ingested before, but was sent with ingestType update")
 
       case IngestTypeCreateForExistingBag() =>
         Some("This bag has already been ingested, but was sent with ingestType create")
+
+      case UnableToAssignVersion(e: NewerIngestAlreadyExists) =>
+        Some(s"Another version of this bag was ingested at ${e.stored}, which is newer than the current ingest ${e.request}")
+
+      // This should be impossible, and it strongly points to an error somewhere in
+      // the pipeline -- an ingest ID should be used once, and the underlying bag
+      // shouldn't change!  We don't bubble up an error because it's an internal failure,
+      // and there's nothing the user can do about it.
+      case UnableToAssignVersion(e: ExternalIdentifiersMismatch) =>
+        warn(s"External identifiers mismatch for $ingestId: $e")
+        None
 
       case _ => None
     }
