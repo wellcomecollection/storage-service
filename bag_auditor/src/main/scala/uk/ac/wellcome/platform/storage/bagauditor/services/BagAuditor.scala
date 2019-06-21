@@ -48,10 +48,13 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
         )
       } yield auditSuccess
 
+      val audit = auditTry match {
+        case Success(auditSuccess) => auditSuccess
+        case Failure(err) => AuditFailure(err)
+      }
 
-
-      auditTry match {
-        case Success(auditSuccess) =>
+      audit match {
+        case auditSuccess @ AuditSuccess(_, _) =>
           IngestStepSucceeded(
             AuditSuccessSummary(
               root = root,
@@ -61,7 +64,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
               endTime = Some(Instant.now())
             )
           )
-        case Failure(err) =>
+        case AuditFailure(err, userMessage) =>
           IngestFailed(
             AuditFailureSummary(
               root = root,
@@ -69,7 +72,8 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
               startTime = startTime,
               endTime = Some(Instant.now())
             ),
-            err
+            err,
+            maybeUserFacingMessage = userMessage
           )
       }
     }
