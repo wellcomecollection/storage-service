@@ -58,7 +58,7 @@ class BagAuditorTest
     }
   }
 
-  it("errors if it cannot find the bag identifier") {
+  it("errors if it cannot find the external identifier") {
     withLocalS3Bucket { bucket =>
       withBag(bucket) {
         case (bagRootLocation, storageSpace) =>
@@ -79,7 +79,10 @@ class BagAuditorTest
             val result = maybeAudit.success.get
 
             result shouldBe a[IngestFailed[_]]
-            result.summary shouldBe a[AuditFailureSummary]
+
+            val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+            ingestFailed.summary shouldBe a[AuditFailureSummary]
+            ingestFailed.maybeUserFacingMessage shouldBe Some("Unable to find an external identifier")
           }
       }
     }

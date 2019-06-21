@@ -35,7 +35,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
     Try {
       val startTime = Instant.now()
 
-      val auditTry: Try[AuditSuccess] = for {
+      val audit: Either[AuditError, AuditSuccess] = for {
         externalIdentifier <- getBagIdentifier(root)
         version <- versionPicker.chooseVersion(
           externalIdentifier = externalIdentifier,
@@ -48,13 +48,8 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
         )
       } yield auditSuccess
 
-      val audit = auditTry match {
-        case Success(auditSuccess) => auditSuccess
-        case Failure(err) => AuditFailure(err)
-      }
-
       audit match {
-        case auditSuccess @ AuditSuccess(_, _) =>
+        case Right(auditSuccess) =>
           IngestStepSucceeded(
             AuditSuccessSummary(
               root = root,
@@ -64,7 +59,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
               endTime = Some(Instant.now())
             )
           )
-        case AuditFailure(err, userMessage) =>
+        case Left(auditError) =>
           IngestFailed(
             AuditFailureSummary(
               root = root,
@@ -72,21 +67,28 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
               startTime = startTime,
               endTime = Some(Instant.now())
             ),
-            err,
-            maybeUserFacingMessage = userMessage
+            new Throwable()
           )
       }
     }
 
   private def getBagIdentifier(
-    bagRootLocation: ObjectLocation): Try[ExternalIdentifier] =
-    for {
-      bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
-      inputStream <- bagInfoLocation.toInputStream match {
-        case Left(e)                  => Failure(e)
-        case Right(None)              => Failure(StreamUnavailable("No stream available!"))
-        case Right(Some(inputStream)) => Success(inputStream)
-      }
-      bagInfo <- BagInfo.create(inputStream)
-    } yield bagInfo.externalIdentifier
+    bagRootLocation: ObjectLocation): Either[CannotFindExternalIdentifier, ExternalIdentifier] = {
+
+    val tryExternalIdentifier =
+      for {
+        bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
+        inputStream <- bagInfoLocation.toInputStream match {
+          case Left(e) => Failure(e)
+          case Right(None) => Failure(StreamUnavailable("No stream available!"))
+          case Right(Some(inputStream)) => Success(inputStream)
+        }
+        bagInfo <- BagInfo.create(inputStream)
+      } yield bagInfo.externalIdentifier
+
+    tryExternalIdentifier match {
+      case Success(externalIdentifier) => Right(externalIdentifier)
+      case Failure(err)                => Left(CannotFindExternalIdentifier(err))
+    }
+  }
 }

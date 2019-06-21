@@ -5,19 +5,12 @@ import java.util.UUID
 
 import cats.implicits._
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CreateIngestType,
-  IngestID,
-  IngestType,
-  UpdateIngestType
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, IngestID, IngestType, UpdateIngestType}
 import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManager
+import uk.ac.wellcome.platform.storage.bagauditor.models.{IngestTypeCreateForExistingBag, IngestTypeUpdateForNewBag, InternalVersionPickerError, VersionPickerError}
 import uk.ac.wellcome.storage.{FailedProcess, LockDao, LockingService}
 
-import scala.util.Try
-
-class IllegalVersionAssignment(message: String)
-    extends RuntimeException(message)
+import scala.util.{Failure, Success, Try}
 
 class VersionPicker(
   lockingService: LockingService[Int, Try, LockDao[String, UUID]],
@@ -28,8 +21,8 @@ class VersionPicker(
     ingestId: IngestID,
     ingestType: IngestType = CreateIngestType,
     ingestDate: Instant
-  ): Try[Int] =
-    lockingService
+  ): Either[VersionPickerError, Int] = {
+    val tryVersion: Try[lockingService.Process] = lockingService
       .withLocks(Set(s"ingest:$ingestId", s"external:$externalIdentifier")) {
         ingestVersionManager.assignVersion(
           externalIdentifier = externalIdentifier,
@@ -37,23 +30,22 @@ class VersionPicker(
           ingestDate = ingestDate
         )
       }
-      .map {
-        case Right(version) =>
-          checkVersionIsAllowed(ingestType, assignedVersion = version)
-          version
 
-        case Left(FailedProcess(_, err)) => throw err
-        case Left(err)                   => throw new RuntimeException(s"Locking error: $err")
-      }
-
-  private def checkVersionIsAllowed(ingestType: IngestType,
-                                    assignedVersion: Int): Unit = {
-    if (ingestType == CreateIngestType && assignedVersion > 1) {
-      throw new IllegalVersionAssignment(
-        "Ingest type 'create' is not allowed for a bag that already exists")
-    } else if (ingestType == UpdateIngestType && assignedVersion == 1) {
-      throw new IllegalVersionAssignment(
-        "Ingest type 'update' is not allowed unless a bag already exists")
+    tryVersion match {
+      case Success(Right(version))              => checkVersionIsAllowed(ingestType, assignedVersion = version)
+      case Success(Left(FailedProcess(_, err))) => Left(InternalVersionPickerError(err))
+      case Success(Left(err))                   => Left(InternalVersionPickerError(new Throwable(s"Locking error: $err")))
+      case Failure(err)                         => Left(InternalVersionPickerError(err))
     }
   }
+
+  private def checkVersionIsAllowed(ingestType: IngestType,
+                                    assignedVersion: Int): Either[VersionPickerError, Int] =
+    if (ingestType == CreateIngestType && assignedVersion > 1) {
+      Left(IngestTypeCreateForExistingBag())
+    } else if (ingestType == UpdateIngestType && assignedVersion == 1) {
+      Left(IngestTypeUpdateForNewBag())
+    } else {
+      Right(assignedVersion)
+    }
 }
