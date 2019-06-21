@@ -59,6 +59,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
               endTime = Some(Instant.now())
             )
           )
+
         case Left(auditError) =>
           IngestFailed(
             AuditFailureSummary(
@@ -67,9 +68,22 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
               startTime = startTime,
               endTime = Some(Instant.now())
             ),
-            new Throwable()
+            e = getUnderlyingThrowable(auditError),
+            maybeUserFacingMessage = createUserFacingMessage(auditError)
           )
       }
+    }
+
+  private def getUnderlyingThrowable(auditError: AuditError): Throwable =
+    auditError match {
+      case CannotFindExternalIdentifier(e) => e
+      case _ => new Throwable()
+    }
+
+  private def createUserFacingMessage(auditError: AuditError): Option[String] =
+    auditError match {
+      case CannotFindExternalIdentifier(_) => Some("Unable to find an external identifier")
+      case _                               => None
     }
 
   private def getBagIdentifier(
@@ -79,8 +93,8 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
       for {
         bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
         inputStream <- bagInfoLocation.toInputStream match {
-          case Left(e) => Failure(e)
-          case Right(None) => Failure(StreamUnavailable("No stream available!"))
+          case Left(e)                  => Failure(e)
+          case Right(None)              => Failure(StreamUnavailable("No stream available!"))
           case Right(Some(inputStream)) => Success(inputStream)
         }
         bagInfo <- BagInfo.create(inputStream)

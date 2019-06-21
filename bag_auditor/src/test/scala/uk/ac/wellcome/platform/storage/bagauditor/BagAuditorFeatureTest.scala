@@ -95,7 +95,7 @@ class BagAuditorFeatureTest
                 val ingestFailed =
                   ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                 ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe "Auditing bag failed"
+                ingestFailed.events.head.description shouldBe "Auditing bag failed - Unable to find an external identifier"
             }
           }
       }
