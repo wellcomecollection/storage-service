@@ -167,7 +167,26 @@ class VersionPickerTest
   }
 
   it("errors if there's an existing ingest with the wrong external identifier") {
-    true shouldBe false
+    withVersionPicker { picker =>
+      val ingestId = createIngestID
+
+      picker.chooseVersion(
+        externalIdentifier = createExternalIdentifier,
+        ingestId = ingestId,
+        ingestDate = Instant.now()
+      )
+
+      val result = picker.chooseVersion(
+        externalIdentifier = createExternalIdentifier,
+        ingestId = ingestId,
+        ingestDate = Instant.now()
+      )
+
+      result.left.value shouldBe a[InternalVersionPickerError]
+
+      val err = result.left.value.asInstanceOf[InternalVersionPickerError]
+      err.e.getMessage should startWith("External identifiers don't match")
+    }
   }
 
   describe("checking the ingest type") {
