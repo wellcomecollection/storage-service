@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   ExternalIdentifier
@@ -32,8 +31,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
-class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3)
-    extends Logging {
+class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
   val s3BagLocator = new S3BagLocator(s3Client)
 
   type IngestStep = Try[IngestStepResult[AuditSummary]]
