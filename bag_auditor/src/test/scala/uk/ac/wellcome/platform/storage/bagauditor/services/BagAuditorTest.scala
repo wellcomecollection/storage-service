@@ -90,7 +90,7 @@ class BagAuditorTest
             val ingestFailed = result.asInstanceOf[IngestFailed[_]]
             ingestFailed.summary shouldBe a[AuditFailureSummary]
             ingestFailed.maybeUserFacingMessage shouldBe Some(
-              "Unable to find an external identifier")
+              "An external identifier was not found in the bag info")
           }
       }
     }
@@ -116,7 +116,7 @@ class BagAuditorTest
             val ingestFailed = result.asInstanceOf[IngestFailed[_]]
             ingestFailed.summary shouldBe a[AuditFailureSummary]
             ingestFailed.maybeUserFacingMessage shouldBe Some(
-              "This bag has never been ingested before, but was sent with ingestType update")
+              "Cannot update existing bag: a bag with the supplied external identifier does not exist in this space")
           }
       }
     }
@@ -150,7 +150,7 @@ class BagAuditorTest
             val ingestFailed = result.asInstanceOf[IngestFailed[_]]
             ingestFailed.summary shouldBe a[AuditFailureSummary]
             ingestFailed.maybeUserFacingMessage shouldBe Some(
-              "This bag has already been ingested, but was sent with ingestType create")
+              "Cannot create new bag: a bag with the supplied external identifier already exists in this space")
           }
       }
     }
