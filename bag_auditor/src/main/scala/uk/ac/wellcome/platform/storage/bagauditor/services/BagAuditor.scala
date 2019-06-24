@@ -18,7 +18,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.platform.archive.common.versioning.InternalVersionManagerError
 import uk.ac.wellcome.platform.storage.bagauditor.models._
@@ -28,8 +27,6 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.util.{Failure, Success, Try}
 
 class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
-  val s3BagLocator = new S3BagLocator(s3Client)
-
   type IngestStep = Try[IngestStepResult[AuditSummary]]
 
   def getAuditSummary(ingestId: IngestID,
@@ -91,10 +88,10 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
 
   private def getBagIdentifier(bagRootLocation: ObjectLocation)
     : Either[CannotFindExternalIdentifier, ExternalIdentifier] = {
+    val bagInfoLocation = bagRootLocation.join("bag-info.txt")
 
     val tryExternalIdentifier =
       for {
-        bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
         inputStream <- bagInfoLocation.toInputStream match {
           case Left(e)                  => Failure(e)
           case Right(None)              => Failure(StreamUnavailable("No stream available!"))
