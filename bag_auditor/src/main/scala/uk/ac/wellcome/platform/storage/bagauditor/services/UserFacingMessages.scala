@@ -2,11 +2,15 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.versioning.{ExternalIdentifiersMismatch, NewerIngestAlreadyExists}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  ExternalIdentifiersMismatch,
+  NewerIngestAlreadyExists
+}
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 
 object UserFacingMessages extends Logging {
-  def createMessage(ingestId: IngestID, auditError: AuditError): Option[String] =
+  def createMessage(ingestId: IngestID,
+                    auditError: AuditError): Option[String] =
     auditError match {
       case CannotFindExternalIdentifier(err) =>
         info(
