@@ -7,7 +7,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestID,
+  IngestType
+}
 import uk.ac.wellcome.platform.archive.common.storage.StreamUnavailable
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
@@ -15,9 +18,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
-import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
+import uk.ac.wellcome.platform.archive.common.versioning.InternalVersionManagerError
+import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -30,16 +34,18 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
 
   def getAuditSummary(ingestId: IngestID,
                       ingestDate: Instant,
+                      ingestType: IngestType,
                       root: ObjectLocation,
                       storageSpace: StorageSpace): IngestStep =
     Try {
       val startTime = Instant.now()
 
-      val auditTry: Try[AuditSuccess] = for {
+      val audit: Either[AuditError, AuditSuccess] = for {
         externalIdentifier <- getBagIdentifier(root)
         version <- versionPicker.chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
+          ingestType = ingestType,
           ingestDate = ingestDate
         )
         auditSuccess = AuditSuccess(
@@ -48,50 +54,58 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
         )
       } yield auditSuccess
 
-      auditTry recover {
-        case e => AuditFailure(e)
-      } match {
-        case Success(audit @ AuditSuccess(_, _)) =>
+      audit match {
+        case Right(auditSuccess) =>
           IngestStepSucceeded(
-            AuditSummary.create(
+            AuditSuccessSummary(
               root = root,
               space = storageSpace,
-              audit = audit,
-              t = startTime
+              startTime = startTime,
+              audit = auditSuccess,
+              endTime = Some(Instant.now())
             )
           )
-        case Success(audit @ AuditFailure(e)) =>
+
+        case Left(auditError) =>
           IngestFailed(
-            summary = AuditSummary.create(
+            AuditFailureSummary(
               root = root,
               space = storageSpace,
-              audit = audit,
-              t = startTime
+              startTime = startTime,
+              endTime = Some(Instant.now())
             ),
-            e
-          )
-        case Failure(e) =>
-          IngestFailed(
-            summary = AuditSummary.incomplete(
-              root = root,
-              space = storageSpace,
-              e = e,
-              t = startTime
-            ),
-            e
+            e = getUnderlyingThrowable(auditError),
+            maybeUserFacingMessage =
+              UserFacingMessages.createMessage(ingestId, auditError)
           )
       }
     }
 
-  private def getBagIdentifier(
-    bagRootLocation: ObjectLocation): Try[ExternalIdentifier] =
-    for {
-      bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
-      inputStream <- bagInfoLocation.toInputStream match {
-        case Left(e)                  => Failure(e)
-        case Right(None)              => Failure(StreamUnavailable("No stream available!"))
-        case Right(Some(inputStream)) => Success(inputStream)
-      }
-      bagInfo <- BagInfo.create(inputStream)
-    } yield bagInfo.externalIdentifier
+  private def getUnderlyingThrowable(auditError: AuditError): Throwable =
+    auditError match {
+      case CannotFindExternalIdentifier(e) => e
+      case UnableToAssignVersion(internalError: InternalVersionManagerError) =>
+        internalError.e
+      case err => new Throwable(s"Unexpected error in the auditor: $err")
+    }
+
+  private def getBagIdentifier(bagRootLocation: ObjectLocation)
+    : Either[CannotFindExternalIdentifier, ExternalIdentifier] = {
+
+    val tryExternalIdentifier =
+      for {
+        bagInfoLocation <- s3BagLocator.locateBagInfo(bagRootLocation)
+        inputStream <- bagInfoLocation.toInputStream match {
+          case Left(e)                  => Failure(e)
+          case Right(None)              => Failure(StreamUnavailable("No stream available!"))
+          case Right(Some(inputStream)) => Success(inputStream)
+        }
+        bagInfo <- BagInfo.create(inputStream)
+      } yield bagInfo.externalIdentifier
+
+    tryExternalIdentifier match {
+      case Success(externalIdentifier) => Right(externalIdentifier)
+      case Failure(err)                => Left(CannotFindExternalIdentifier(err))
+    }
+  }
 }

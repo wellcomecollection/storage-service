@@ -2,12 +2,12 @@ package uk.ac.wellcome.platform.archive.common.versioning
 
 import java.time.Instant
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 class MemoryIngestVersionManagerDao extends IngestVersionManagerDao {
   private var versions: List[VersionRecord] = List.empty
@@ -41,15 +41,19 @@ class MemoryIngestVersionManager extends IngestVersionManager {
 class IngestVersionManagerTest
     extends FunSpec
     with Matchers
+    with EitherValues
     with ExternalIdentifierGenerators {
   it("assigns version 1 if it hasn't seen this external ID before") {
     val manager = new MemoryIngestVersionManager()
 
-    manager.assignVersion(
-      externalIdentifier = createExternalIdentifier,
-      ingestId = createIngestID,
-      ingestDate = Instant.now
-    ) shouldBe Success(1)
+    manager
+      .assignVersion(
+        externalIdentifier = createExternalIdentifier,
+        ingestId = createIngestID,
+        ingestDate = Instant.now
+      )
+      .right
+      .value shouldBe 1
   }
 
   it("assigns increasing versions if it sees newer ingest dates each time") {
@@ -58,11 +62,14 @@ class IngestVersionManagerTest
     val externalIdentifier = createExternalIdentifier
 
     (1 to 5).map { version =>
-      manager.assignVersion(
-        externalIdentifier = externalIdentifier,
-        ingestId = createIngestID,
-        ingestDate = Instant.ofEpochSecond(version)
-      ) shouldBe Success(version)
+      manager
+        .assignVersion(
+          externalIdentifier = externalIdentifier,
+          ingestId = createIngestID,
+          ingestDate = Instant.ofEpochSecond(version)
+        )
+        .right
+        .value shouldBe version
     }
   }
 
@@ -83,18 +90,22 @@ class IngestVersionManagerTest
             ingestId = ingestId,
             ingestDate = Instant.ofEpochSecond(idx)
           )
-          .get
+          .right
+          .value
 
         (idx, ingestId, version)
     }
 
     assignedVersions.foreach {
       case (idx, ingestId, version) =>
-        manager.assignVersion(
-          externalIdentifier = externalIdentifier,
-          ingestId = ingestId,
-          ingestDate = Instant.ofEpochSecond(idx)
-        ) shouldBe Success(version)
+        manager
+          .assignVersion(
+            externalIdentifier = externalIdentifier,
+            ingestId = ingestId,
+            ingestDate = Instant.ofEpochSecond(idx)
+          )
+          .right
+          .value shouldBe version
     }
   }
 
@@ -103,21 +114,26 @@ class IngestVersionManagerTest
 
     val ingestId = createIngestID
 
+    val storedExternalIdentifier = createExternalIdentifier
+
     manager.assignVersion(
-      externalIdentifier = createExternalIdentifier,
+      externalIdentifier = storedExternalIdentifier,
       ingestId = ingestId,
       ingestDate = Instant.now
     )
+
+    val newExternalIdentifier = createExternalIdentifier
 
     val result = manager.assignVersion(
-      externalIdentifier = createExternalIdentifier,
+      externalIdentifier = newExternalIdentifier,
       ingestId = ingestId,
       ingestDate = Instant.now
     )
 
-    result shouldBe a[Failure[_]]
-    result.failed.get.getMessage should startWith(
-      "External identifiers don't match:")
+    result.left.value shouldBe ExternalIdentifiersMismatch(
+      stored = storedExternalIdentifier,
+      request = newExternalIdentifier
+    )
   }
 
   it("doesn't assign a new version if the ingest date is older") {
@@ -137,8 +153,9 @@ class IngestVersionManagerTest
       ingestDate = Instant.ofEpochSecond(50)
     )
 
-    result shouldBe a[Failure[_]]
-    result.failed.get.getMessage should startWith(
-      "Latest version has a newer ingest date:")
+    result.left.value shouldBe NewerIngestAlreadyExists(
+      stored = Instant.ofEpochSecond(100),
+      request = Instant.ofEpochSecond(50)
+    )
   }
 }

@@ -3,32 +3,37 @@ package uk.ac.wellcome.platform.storage.bagauditor.versioning
 import java.time.Instant
 import java.util.UUID
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   CreateIngestType,
   UpdateIngestType
 }
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  ExternalIdentifiersMismatch,
+  NewerIngestAlreadyExists
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
+import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.storage.{LockDao, LockFailure, UnlockFailure}
-
-import scala.util.{Failure, Success}
 
 class VersionPickerTest
     extends FunSpec
     with Matchers
     with ExternalIdentifierGenerators
-    with VersionPickerFixtures {
+    with VersionPickerFixtures
+    with EitherValues {
 
   it("assigns version 1 if it hasn't seen this external ID before") {
     withVersionPicker { picker =>
       val result = picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
         ingestId = createIngestID,
+        ingestType = CreateIngestType,
         ingestDate = Instant.now()
       )
 
-      result shouldBe Success(1)
+      result.right.value shouldBe 1
     }
   }
 
@@ -81,20 +86,26 @@ class VersionPickerTest
     withVersionPicker { picker =>
       val externalIdentifier = createExternalIdentifier
 
-      picker.chooseVersion(
-        externalIdentifier = externalIdentifier,
-        ingestId = createIngestID,
-        ingestType = CreateIngestType,
-        ingestDate = Instant.ofEpochSecond(1)
-      ) shouldBe Success(1)
-
-      (2 to 5).map { t =>
-        picker.chooseVersion(
+      picker
+        .chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
-          ingestType = UpdateIngestType,
-          ingestDate = Instant.ofEpochSecond(t)
-        ) shouldBe Success(t)
+          ingestType = CreateIngestType,
+          ingestDate = Instant.ofEpochSecond(1)
+        )
+        .right
+        .value shouldBe 1
+
+      (2 to 5).map { t =>
+        picker
+          .chooseVersion(
+            externalIdentifier = externalIdentifier,
+            ingestId = createIngestID,
+            ingestType = UpdateIngestType,
+            ingestDate = Instant.ofEpochSecond(t)
+          )
+          .right
+          .value shouldBe t
       }
     }
   }
@@ -105,6 +116,7 @@ class VersionPickerTest
       picker.chooseVersion(
         externalIdentifier = externalIdentifier,
         ingestId = createIngestID,
+        ingestType = CreateIngestType,
         ingestDate = Instant.now()
       )
 
@@ -112,13 +124,14 @@ class VersionPickerTest
         val result = picker.chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
+          ingestType = UpdateIngestType,
           ingestDate = Instant.ofEpochSecond(t)
         )
 
-        result shouldBe a[Failure[_]]
-        result.failed.get shouldBe a[RuntimeException]
-        result.failed.get.getMessage should startWith(
-          "Latest version has a newer ingest date")
+        result.left.value shouldBe a[UnableToAssignVersion]
+
+        val err = result.left.value.asInstanceOf[UnableToAssignVersion]
+        err.e shouldBe a[NewerIngestAlreadyExists]
       }
     }
   }
@@ -133,6 +146,7 @@ class VersionPickerTest
       picker.chooseVersion(
         externalIdentifier = externalIdentifier,
         ingestId = ingestId,
+        ingestType = CreateIngestType,
         ingestDate = Instant.now()
       )
 
@@ -156,15 +170,42 @@ class VersionPickerTest
     }
 
     withVersionPicker(lockDao) { picker =>
-      val result = picker.chooseVersion(
+      val result: Either[VersionPickerError, Int] = picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
         ingestId = createIngestID,
+        ingestType = CreateIngestType,
         ingestDate = Instant.now()
       )
 
-      result shouldBe a[Failure[_]]
-      result.failed.get shouldBe a[RuntimeException]
-      result.failed.get.getMessage should startWith("Locking error:")
+      result.left.value shouldBe a[InternalVersionPickerError]
+
+      val err = result.left.value.asInstanceOf[InternalVersionPickerError]
+      err.e.getMessage should startWith("Locking error:")
+    }
+  }
+
+  it("errors if there's an existing ingest with the wrong external identifier") {
+    withVersionPicker { picker =>
+      val ingestId = createIngestID
+
+      picker.chooseVersion(
+        externalIdentifier = createExternalIdentifier,
+        ingestId = ingestId,
+        ingestType = CreateIngestType,
+        ingestDate = Instant.now()
+      )
+
+      val result = picker.chooseVersion(
+        externalIdentifier = createExternalIdentifier,
+        ingestId = ingestId,
+        ingestType = UpdateIngestType,
+        ingestDate = Instant.now()
+      )
+
+      result.left.value shouldBe a[UnableToAssignVersion]
+
+      val err = result.left.value.asInstanceOf[UnableToAssignVersion]
+      err.e shouldBe a[ExternalIdentifiersMismatch]
     }
   }
 
@@ -177,20 +218,17 @@ class VersionPickerTest
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
           ingestType = CreateIngestType,
-          ingestDate = Instant.now()
+          ingestDate = Instant.ofEpochSecond(1)
         )
 
         val result = picker.chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
           ingestType = CreateIngestType,
-          ingestDate = Instant.now()
+          ingestDate = Instant.ofEpochSecond(2)
         )
 
-        result shouldBe a[Failure[_]]
-        result.failed.get shouldBe a[IllegalVersionAssignment]
-        result.failed.get.getMessage should startWith(
-          "Ingest type 'create' is not allowed")
+        result.left.value shouldBe IngestTypeCreateForExistingBag()
       }
     }
 
@@ -205,10 +243,7 @@ class VersionPickerTest
           ingestDate = Instant.now()
         )
 
-        result shouldBe a[Failure[_]]
-        result.failed.get shouldBe a[IllegalVersionAssignment]
-        result.failed.get.getMessage should startWith(
-          "Ingest type 'update' is not allowed")
+        result.left.value shouldBe IngestTypeUpdateForNewBag()
       }
     }
   }

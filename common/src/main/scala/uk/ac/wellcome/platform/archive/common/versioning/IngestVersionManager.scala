@@ -5,7 +5,7 @@ import java.time.Instant
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success}
 
 trait IngestVersionManager {
   val dao: IngestVersionManagerDao
@@ -14,50 +14,76 @@ trait IngestVersionManager {
     externalIdentifier: ExternalIdentifier,
     ingestId: IngestID,
     ingestDate: Instant
-  ): Try[Int] =
-    dao.lookupLatestVersionFor(externalIdentifier).flatMap { maybeRecord =>
-      Try {
-        val newVersion: Int = maybeRecord match {
-          case Some(existingRecord) =>
-            if (existingRecord.ingestDate.isBefore(ingestDate))
-              existingRecord.version + 1
-            else
-              throw new RuntimeException(
-                s"Latest version has a newer ingest date: ${existingRecord.ingestDate} (stored) > $ingestDate (request)")
-          case None => 1
-        }
+  ): Either[IngestVersionManagerError, Int] =
+    dao.lookupLatestVersionFor(externalIdentifier) match {
+      case Success(Some(existingRecord)) =>
+        if (existingRecord.ingestDate.isBefore(ingestDate))
+          storeNewVersion(
+            externalIdentifier = externalIdentifier,
+            ingestId = ingestId,
+            ingestDate = ingestDate,
+            newVersion = existingRecord.version + 1
+          )
+        else
+          Left(
+            NewerIngestAlreadyExists(
+              stored = existingRecord.ingestDate,
+              request = ingestDate
+            ))
 
-        val newRecord = VersionRecord(
+      case Success(None) =>
+        storeNewVersion(
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
           ingestDate = ingestDate,
-          version = newVersion
+          newVersion = 1
         )
 
-        dao.storeNewVersion(newRecord)
-
-        newVersion
-      }
+      case Failure(err) => Left(InternalVersionManagerError(err))
     }
+
+  private def storeNewVersion(
+    externalIdentifier: ExternalIdentifier,
+    ingestId: IngestID,
+    ingestDate: Instant,
+    newVersion: Int
+  ): Either[InternalVersionManagerError, Int] = {
+    val newRecord = VersionRecord(
+      externalIdentifier = externalIdentifier,
+      ingestId = ingestId,
+      ingestDate = ingestDate,
+      version = newVersion
+    )
+
+    dao.storeNewVersion(newRecord) match {
+      case Success(_)   => Right(newVersion)
+      case Failure(err) => Left(InternalVersionManagerError(err))
+    }
+  }
 
   def assignVersion(
     externalIdentifier: ExternalIdentifier,
     ingestId: IngestID,
     ingestDate: Instant
-  ): Try[Int] =
-    dao.lookupExistingVersion(ingestId).flatMap {
-      case Some(existingRecord) =>
+  ): Either[IngestVersionManagerError, Int] =
+    dao.lookupExistingVersion(ingestId) match {
+      case Success(Some(existingRecord)) =>
         if (existingRecord.externalIdentifier == externalIdentifier)
-          Success(existingRecord.version)
+          Right(existingRecord.version)
         else
-          throw new RuntimeException(
-            s"External identifiers don't match: ${existingRecord.externalIdentifier} (stored) != $externalIdentifier (request)")
+          Left(
+            ExternalIdentifiersMismatch(
+              stored = existingRecord.externalIdentifier,
+              request = externalIdentifier
+            ))
 
-      case None =>
+      case Success(None) =>
         createNewVersionFor(
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
           ingestDate = ingestDate
         )
+
+      case Failure(err) => Left(InternalVersionManagerError(err))
     }
 }

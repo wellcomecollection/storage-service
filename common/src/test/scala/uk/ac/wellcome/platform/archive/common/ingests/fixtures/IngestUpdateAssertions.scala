@@ -56,7 +56,7 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
           .map { _.description }
           .distinct
 
-      eventDescriptions should contain theSameElementsAs expectedDescriptions
+      eventDescriptions should contain theSameElementsAs expectedDescriptions.distinct
     }
 
   def assertTopicReceivesIngestEvent(ingestId: IngestID,

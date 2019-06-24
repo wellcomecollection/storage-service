@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.storage.bagauditor
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import cats.Id
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
@@ -19,7 +20,8 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
 import uk.ac.wellcome.platform.archive.common.versioning.{
   DynamoIngestVersionManagerDao,
   IngestVersionManager,
-  IngestVersionManagerDao
+  IngestVersionManagerDao,
+  IngestVersionManagerError
 }
 import uk.ac.wellcome.platform.storage.bagauditor.services.{
   BagAuditor,
@@ -35,7 +37,6 @@ import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
 import scala.concurrent.ExecutionContextExecutor
-import scala.util.Try
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -57,7 +58,9 @@ object Main extends WellcomeTypesafeApp {
       .getName(config, default = "auditing bag")
 
     val lockingService =
-      LockingBuilder.buildDynamoLockingService[Int, Try](config)
+      LockingBuilder
+        .buildDynamoLockingService[Either[IngestVersionManagerError, Int], Id](
+          config)
 
     val ingestVersionManagerDao = new DynamoIngestVersionManagerDao(
       dynamoClient = DynamoBuilder.buildDynamoClient(config),
