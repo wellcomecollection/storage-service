@@ -65,8 +65,8 @@ class VersionPicker(
       Right(assignedVersion)
     }
 
-  // Annoyingly, cats doesn't seem to provide an Implicit for the Id monad, so we have
-  // to implement one ourselves.
+  // Annoyingly, cats doesn't provide an Implicit for MonadError[Id, Throwable],
+  // so we have to implement one ourselves.
   implicit def idMonad(implicit I: Monad[Id]): MonadError[Id, Throwable] =
     new MonadError[Id, Throwable] {
       override def raiseError[A](e: Throwable): Id[A] = throw e
