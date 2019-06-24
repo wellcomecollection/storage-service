@@ -54,8 +54,7 @@ object Main extends WellcomeTypesafeApp {
     val unpackerWorkerConfig =
       UnpackerWorkerConfigBuilder.build(config)
 
-    val operationName = OperationNameBuilder
-      .getName(config, default = "unpacking")
+    val operationName = OperationNameBuilder.getName(config)
 
     val ingestUpdater =
       IngestUpdaterBuilder.build(config, operationName = operationName)
