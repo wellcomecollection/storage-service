@@ -23,7 +23,10 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
     storageSpace: StorageSpace): Try[Option[VersionRecord]] = Try {
     val matchingVersions =
       records
-        .filter { _.externalIdentifier == externalIdentifier }
+        .filter { record =>
+          record.externalIdentifier == externalIdentifier &&
+          record.storageSpace == storageSpace
+        }
 
     if (matchingVersions.isEmpty)
       None

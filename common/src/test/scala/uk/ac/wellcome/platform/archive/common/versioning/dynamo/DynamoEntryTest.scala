@@ -38,6 +38,6 @@ class DynamoEntryTest extends FunSpec with Matchers with VersionRecordGenerators
       version = 1
     )
 
-    entry.toVersionRecord.failure.get shouldBe a[IllegalArgumentException]
+    entry.toVersionRecord.failure.exception shouldBe a[IllegalArgumentException]
   }
 }

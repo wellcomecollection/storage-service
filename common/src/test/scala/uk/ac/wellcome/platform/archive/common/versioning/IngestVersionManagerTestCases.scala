@@ -207,14 +207,14 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = externalIdentifier,
               ingestId = ingestId,
               ingestDate = Instant.now,
-              storageSpace = createStorageSpace
+              storageSpace = storedStorageSpace
             )
 
             val result = manager.assignVersion(
               externalIdentifier = externalIdentifier,
               ingestId = ingestId,
               ingestDate = Instant.now,
-              storageSpace = createStorageSpace
+              storageSpace = newStorageSpace
             )
 
             result.left.value shouldBe StorageSpaceMismatch(
