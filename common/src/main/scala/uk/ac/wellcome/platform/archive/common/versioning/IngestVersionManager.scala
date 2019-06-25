@@ -4,6 +4,7 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 import scala.util.{Failure, Success}
 
@@ -64,7 +65,8 @@ trait IngestVersionManager {
   def assignVersion(
     externalIdentifier: ExternalIdentifier,
     ingestId: IngestID,
-    ingestDate: Instant
+    ingestDate: Instant,
+    storageSpace: StorageSpace
   ): Either[IngestVersionManagerError, Int] =
     dao.lookupExistingVersion(ingestId) match {
       case Success(Some(existingRecord)) =>
