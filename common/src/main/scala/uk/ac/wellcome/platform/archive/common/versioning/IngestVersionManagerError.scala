@@ -6,7 +6,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 
 sealed trait IngestVersionManagerError
 
-case class InternalVersionManagerError(e: Throwable)
+case class IngestVersionManagerDaoError(e: Throwable)
     extends IngestVersionManagerError
 
 case class ExternalIdentifiersMismatch(stored: ExternalIdentifier,

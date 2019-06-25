@@ -1,11 +1,14 @@
-package uk.ac.wellcome.platform.archive.common.versioning
+package uk.ac.wellcome.platform.archive.common.versioning.dynamo
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.gu.scanamo.syntax._
 import com.gu.scanamo.{Scanamo, Table}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManagerDao,
+  VersionRecord
+}
 import uk.ac.wellcome.storage.dynamo._
 
 import scala.util.Try

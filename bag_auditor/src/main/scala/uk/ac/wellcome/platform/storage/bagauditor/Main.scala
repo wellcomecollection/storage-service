@@ -17,12 +17,11 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.platform.archive.common.versioning.{
-  DynamoIngestVersionManagerDao,
-  IngestVersionManager,
-  IngestVersionManagerDao,
-  IngestVersionManagerError
+import uk.ac.wellcome.platform.archive.common.versioning.dynamo.{
+  DynamoIngestVersionManager,
+  DynamoIngestVersionManagerDao
 }
+import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerError
 import uk.ac.wellcome.platform.storage.bagauditor.services.{
   BagAuditor,
   BagAuditorWorker
@@ -69,9 +68,8 @@ object Main extends WellcomeTypesafeApp {
 
     val versionPicker = new VersionPicker(
       lockingService = lockingService,
-      ingestVersionManager = new IngestVersionManager {
-        override val dao: IngestVersionManagerDao = ingestVersionManagerDao
-      }
+      ingestVersionManager =
+        new DynamoIngestVersionManager(ingestVersionManagerDao)
     )
 
     new BagAuditorWorker(

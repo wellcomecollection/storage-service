@@ -19,7 +19,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
-import uk.ac.wellcome.platform.archive.common.versioning.InternalVersionManagerError
+import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerDaoError
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.ObjectLocation
@@ -81,7 +81,7 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
   private def getUnderlyingThrowable(auditError: AuditError): Throwable =
     auditError match {
       case CannotFindExternalIdentifier(e) => e
-      case UnableToAssignVersion(internalError: InternalVersionManagerError) =>
+      case UnableToAssignVersion(internalError: IngestVersionManagerDaoError) =>
         internalError.e
       case err => new Throwable(s"Unexpected error in the auditor: $err")
     }
