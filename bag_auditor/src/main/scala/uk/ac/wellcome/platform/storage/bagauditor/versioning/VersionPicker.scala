@@ -25,8 +25,6 @@ class VersionPicker(
     ingestDate: Instant,
     storageSpace: StorageSpace
   ): Either[VersionPickerError, Int] = {
-
-    // This
     val assignedVersion: Id[lockingService.Process] = lockingService
       .withLocks(Set(s"ingest:$ingestId", s"external:${DynamoID.createId(storageSpace, externalIdentifier)}")) {
         ingestVersionManager.assignVersion(
