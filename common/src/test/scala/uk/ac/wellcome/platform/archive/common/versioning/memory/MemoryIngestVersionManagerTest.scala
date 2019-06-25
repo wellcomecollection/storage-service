@@ -26,6 +26,12 @@ class MemoryIngestVersionManagerTest extends IngestVersionManagerTestCases[Memor
         Failure(new Throwable("BOOM!"))
     })
 
+  override def withBrokenStoreNewVersionDao[R](testWith: TestWith[MemoryIngestVersionManagerDao, R])(implicit context: MemoryIngestVersionManagerDao): R =
+    testWith(new MemoryIngestVersionManagerDao() {
+      override def storeNewVersion(record: VersionRecord): Try[Unit] =
+        Failure(new Throwable("BOOM!"))
+    })
+
   override def withManager[R](dao: MemoryIngestVersionManagerDao)(testWith: TestWith[IngestVersionManager, R])(implicit context: MemoryIngestVersionManagerDao): R =
     testWith(
       new MemoryIngestVersionManager(dao)

@@ -39,6 +39,17 @@ class DynamoIngestVersionManagerTest extends IngestVersionManagerTestCases[Dynam
       }
     )
 
+  override def withBrokenStoreNewVersionDao[R](testWith: TestWith[DynamoIngestVersionManagerDao, R])(implicit table: Table): R =
+    testWith(
+      new DynamoIngestVersionManagerDao(
+        dynamoClient = dynamoDbClient,
+        dynamoConfig = createDynamoConfigWith(table)
+      ){
+        override def storeNewVersion(record: VersionRecord): Try[Unit] =
+          Failure(new Throwable("BOOM!"))
+      }
+    )
+
   override def withManager[R](dao: DynamoIngestVersionManagerDao)(testWith: TestWith[IngestVersionManager, R])(implicit context: Table): R =
     testWith(
       new DynamoIngestVersionManager(dao)

@@ -13,6 +13,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context] extends FunSpec with Match
 
   def withBrokenLookupExistingVersionDao[R](testWith: TestWith[DaoImpl, R])(implicit context: Context): R
   def withBrokenLookupLatestVersionForDao[R](testWith: TestWith[DaoImpl, R])(implicit context: Context): R
+  def withBrokenStoreNewVersionDao[R](testWith: TestWith[DaoImpl, R])(implicit context: Context): R
 
   def withManager[R](dao: DaoImpl)(testWith: TestWith[IngestVersionManager, R])(implicit context: Context): R
 
@@ -171,6 +172,20 @@ trait IngestVersionManagerTestCases[DaoImpl, Context] extends FunSpec with Match
       it("if lookupLatestVersionFor has an error") {
         withContext { implicit context =>
           withBrokenLookupLatestVersionForDao { dao =>
+            withManager(dao) { manager =>
+              manager.assignVersion(
+                externalIdentifier = createExternalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.now
+              ).left.value shouldBe an[IngestVersionManagerDaoError]
+            }
+          }
+        }
+      }
+
+      it("if storeNewVersion has an error") {
+        withContext { implicit context =>
+          withBrokenStoreNewVersionDao { dao =>
             withManager(dao) { manager =>
               manager.assignVersion(
                 externalIdentifier = createExternalIdentifier,
