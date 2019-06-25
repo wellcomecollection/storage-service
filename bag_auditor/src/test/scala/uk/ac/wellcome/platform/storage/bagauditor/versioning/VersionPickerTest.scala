@@ -181,7 +181,7 @@ class VersionPickerTest
       lockDao.getCurrentLocks shouldBe empty
       lockDao.history.map { _.id } should contain theSameElementsAs List(
         s"ingest:$ingestId",
-        s"external:$storageSpace/$externalIdentifier"
+        s"external:$storageSpace:$externalIdentifier"
       )
     }
   }
@@ -205,7 +205,7 @@ class VersionPickerTest
       lockDao.getCurrentLocks shouldBe empty
       lockDao.history.map { _.id } should contain theSameElementsAs List(
         s"ingest:$ingestId",
-        s"external:a%3Ab/x%3Ay"
+        s"external:a%3Ab:x%3Ay"
       )
     }
   }
