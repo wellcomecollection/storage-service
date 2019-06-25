@@ -18,6 +18,7 @@ trait VersionRecordGenerators extends ExternalIdentifierGenerators with StorageS
       externalIdentifier = externalIdentifier,
       ingestId = ingestId,
       ingestDate = Instant.now,
+      storageSpace = storageSpace,
       version = version
     )
 
