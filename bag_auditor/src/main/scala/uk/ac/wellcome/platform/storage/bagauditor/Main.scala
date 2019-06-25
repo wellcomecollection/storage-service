@@ -17,8 +17,8 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
+import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoIngestVersionManagerDao
 import uk.ac.wellcome.platform.archive.common.versioning.{
-  DynamoIngestVersionManagerDao,
   IngestVersionManager,
   IngestVersionManagerDao,
   IngestVersionManagerError
