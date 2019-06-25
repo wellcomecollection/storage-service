@@ -99,12 +99,7 @@ trait IngestVersionManagerDaoTestCases[Context] extends FunSpec with Matchers wi
 
       withContext { implicit context =>
         withDao(initialRecords = Seq(record1, record2)) { dao =>
-          val result = dao.lookupExistingVersion(ingestId)
-
-          result shouldBe a[Failure[_]]
-          result.failed.get shouldBe a[RuntimeException]
-          result.failed.get.getMessage should startWith(
-            "Did not find exactly one row with ingest ID")
+          dao.lookupExistingVersion(ingestId) shouldBe a[Failure[_]]
         }
       }
     }

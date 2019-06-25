@@ -3,36 +3,8 @@ package uk.ac.wellcome.platform.archive.common.versioning
 import java.time.Instant
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-
-import scala.util.Try
-
-class MemoryIngestVersionManagerDao extends IngestVersionManagerDao {
-  private var versions: List[VersionRecord] = List.empty
-
-  override def lookupExistingVersion(
-    ingestID: IngestID): Try[Option[VersionRecord]] = Try {
-    versions.find { _.ingestId == ingestID }
-  }
-
-  override def lookupLatestVersionFor(
-    externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] = Try {
-    val matchingVersions =
-      versions
-        .filter { _.externalIdentifier == externalIdentifier }
-
-    if (matchingVersions.isEmpty)
-      None
-    else
-      Some(matchingVersions.maxBy { _.version })
-  }
-
-  override def storeNewVersion(record: VersionRecord): Try[Unit] = Try {
-    versions = versions :+ record
-  }
-}
+import uk.ac.wellcome.platform.archive.common.versioning.memory.MemoryIngestVersionManagerDao
 
 class MemoryIngestVersionManager extends IngestVersionManager {
   val dao = new MemoryIngestVersionManagerDao()
