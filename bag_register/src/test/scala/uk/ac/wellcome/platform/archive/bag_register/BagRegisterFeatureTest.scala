@@ -34,9 +34,11 @@ class BagRegisterFeatureTest
                 externalIdentifier = bagInfo.externalIdentifier
               )
 
-              val payload = createEnrichedBagInformationPayload(
-                bagRootLocation = bagRootLocation,
-                storageSpace = storageSpace
+              val payload = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  storageSpace = storageSpace
+                ),
+                bagRootLocation = bagRootLocation
               )
 
               sendNotificationToSQS(queuePair.queue, payload)
@@ -73,10 +75,7 @@ class BagRegisterFeatureTest
   it("sends a failed update and discards the work on error") {
     withBagRegisterWorker {
       case (_, _, _, ingests, _, queuePair) =>
-        val payload = createEnrichedBagInformationPayload(
-          bagRootLocation = createObjectLocation,
-          storageSpace = createStorageSpace
-        )
+        val payload = createEnrichedBagInformationPayload
 
         sendNotificationToSQS(queuePair.queue, payload)
 

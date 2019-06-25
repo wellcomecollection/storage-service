@@ -39,7 +39,7 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket) {
             case (bagRootLocation, _) =>
-              val payload = createEnrichedBagInformationPayload(
+              val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
 
@@ -70,7 +70,7 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket) {
             case (bagRootLocation, _) =>
-              val payload = createEnrichedBagInformationPayload(
+              val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
 
@@ -113,7 +113,7 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
             case (bagRootLocation, _) =>
-              val payload = createEnrichedBagInformationPayload(
+              val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
 
@@ -148,7 +148,7 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
             case (bagRootLocation, _) =>
-              val payload = createEnrichedBagInformationPayload(
+              val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
 
@@ -184,7 +184,7 @@ class BagVerifierWorkerTest
         withLocalS3Bucket { bucket =>
           withBag(bucket) {
             case (bagRootLocation, _) =>
-              val payload = createEnrichedBagInformationPayload(
+              val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
 

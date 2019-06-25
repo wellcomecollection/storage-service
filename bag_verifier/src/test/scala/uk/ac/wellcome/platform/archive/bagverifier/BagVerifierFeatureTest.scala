@@ -43,7 +43,7 @@ class BagVerifierFeatureTest
           withLocalS3Bucket { bucket =>
             withBag(bucket) {
               case (bagRootLocation, _) =>
-                val payload = createEnrichedBagInformationPayload(
+                val payload = createEnrichedBagInformationPayloadWith(
                   bagRootLocation = bagRootLocation
                 )
 
@@ -86,7 +86,7 @@ class BagVerifierFeatureTest
           withLocalS3Bucket { bucket =>
             withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
               case (bagRootLocation, _) =>
-                val payload = createEnrichedBagInformationPayload(
+                val payload = createEnrichedBagInformationPayloadWith(
                   bagRootLocation = bagRootLocation
                 )
 
