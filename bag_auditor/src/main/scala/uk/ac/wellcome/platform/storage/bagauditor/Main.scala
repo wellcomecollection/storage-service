@@ -54,8 +54,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val operationName = OperationNameBuilder
-      .getName(config, default = "auditing bag")
+    val operationName = OperationNameBuilder.getName(config)
 
     val lockingService =
       LockingBuilder

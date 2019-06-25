@@ -49,8 +49,7 @@ object Main extends WellcomeTypesafeApp {
 
     val storageManifestVHS = StorageManifestDaoBuilder.build(config)
 
-    val operationName = OperationNameBuilder
-      .getName(config, default = "register")
+    val operationName = OperationNameBuilder.getName(config)
 
     val ingestUpdater = IngestUpdaterBuilder.build(
       config,

@@ -42,8 +42,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val operationName = OperationNameBuilder
-      .getName(config, default = "finding bag root")
+    val operationName = OperationNameBuilder.getName(config)
 
     new BagRootFinderWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),

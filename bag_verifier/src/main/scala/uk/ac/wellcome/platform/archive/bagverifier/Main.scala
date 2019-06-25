@@ -55,8 +55,7 @@ object Main extends WellcomeTypesafeApp {
 
     val verifier = new BagVerifier()
 
-    val operationName = OperationNameBuilder
-      .getName(config, default = "verification")
+    val operationName = OperationNameBuilder.getName(config)
 
     val ingestUpdater = IngestUpdaterBuilder.build(config, operationName)
 
