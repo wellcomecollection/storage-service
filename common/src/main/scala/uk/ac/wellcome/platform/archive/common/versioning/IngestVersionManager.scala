@@ -17,7 +17,7 @@ trait IngestVersionManager {
     ingestDate: Instant,
     storageSpace: StorageSpace
   ): Either[IngestVersionManagerError, Int] =
-    dao.lookupLatestVersionFor(externalIdentifier) match {
+    dao.lookupLatestVersionFor(externalIdentifier, storageSpace) match {
       case Success(Some(existingRecord)) =>
         if (existingRecord.ingestDate.isBefore(ingestDate))
           storeNewVersion(

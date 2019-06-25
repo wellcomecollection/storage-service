@@ -79,7 +79,10 @@ class DynamoIngestVersionManagerDaoTest
       implicit val badTable: Table = Table("does-not-exist", "does-not-exist")
 
       withDao(initialRecords = Seq.empty) { dao =>
-        val result = dao.lookupLatestVersionFor(createExternalIdentifier)
+        val result = dao.lookupLatestVersionFor(
+          externalIdentifier = createExternalIdentifier,
+          storageSpace = createStorageSpace
+        )
 
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[ResourceNotFoundException]

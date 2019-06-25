@@ -2,10 +2,8 @@ package uk.ac.wellcome.platform.archive.common.versioning.memory
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.versioning.{
-  IngestVersionManagerDao,
-  VersionRecord
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManagerDao, VersionRecord}
 
 import scala.util.{Failure, Success, Try}
 
@@ -21,7 +19,8 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
     }
 
   override def lookupLatestVersionFor(
-    externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] = Try {
+    externalIdentifier: ExternalIdentifier,
+    storageSpace: StorageSpace): Try[Option[VersionRecord]] = Try {
     val matchingVersions =
       records
         .filter { _.externalIdentifier == externalIdentifier }
