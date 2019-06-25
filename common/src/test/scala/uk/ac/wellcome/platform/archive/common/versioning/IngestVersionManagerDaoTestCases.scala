@@ -71,6 +71,22 @@ trait IngestVersionManagerDaoTestCases[Context] extends FunSpec with Matchers wi
     }
   }
 
+  it("persists records") {
+    val record = createVersionRecord
+
+    withContext { implicit context =>
+      withDao(initialRecords = Seq.empty) { dao1 =>
+        dao1.storeNewVersion(record) shouldBe Success(())
+      }
+
+      withDao(initialRecords = Seq.empty) { dao2 =>
+        dao2.lookupExistingVersion(record.ingestId) shouldBe Success(Some(record))
+
+        dao2.lookupLatestVersionFor(record.externalIdentifier) shouldBe Success(Some(record))
+      }
+    }
+  }
+
   describe("look up an existing version") {
     it("returns None if there are no existing records") {
       withContext { implicit context =>
