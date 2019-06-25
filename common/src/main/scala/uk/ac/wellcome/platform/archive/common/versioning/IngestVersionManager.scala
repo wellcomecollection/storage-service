@@ -39,7 +39,7 @@ trait IngestVersionManager {
           newVersion = 1
         )
 
-      case Failure(err) => Left(InternalVersionManagerError(err))
+      case Failure(err) => Left(IngestVersionManagerDaoError(err))
     }
 
   private def storeNewVersion(
@@ -47,7 +47,7 @@ trait IngestVersionManager {
     ingestId: IngestID,
     ingestDate: Instant,
     newVersion: Int
-  ): Either[InternalVersionManagerError, Int] = {
+  ): Either[IngestVersionManagerDaoError, Int] = {
     val newRecord = VersionRecord(
       externalIdentifier = externalIdentifier,
       ingestId = ingestId,
@@ -57,7 +57,7 @@ trait IngestVersionManager {
 
     dao.storeNewVersion(newRecord) match {
       case Success(_)   => Right(newVersion)
-      case Failure(err) => Left(InternalVersionManagerError(err))
+      case Failure(err) => Left(IngestVersionManagerDaoError(err))
     }
   }
 
@@ -84,6 +84,6 @@ trait IngestVersionManager {
           ingestDate = ingestDate
         )
 
-      case Failure(err) => Left(InternalVersionManagerError(err))
+      case Failure(err) => Left(IngestVersionManagerDaoError(err))
     }
 }
