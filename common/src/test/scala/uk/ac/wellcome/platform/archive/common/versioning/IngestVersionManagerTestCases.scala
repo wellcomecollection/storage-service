@@ -210,10 +210,8 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               storageSpace = createStorageSpace
             )
 
-            val newExternalIdentifier = createExternalIdentifier
-
             val result = manager.assignVersion(
-              externalIdentifier = newExternalIdentifier,
+              externalIdentifier = externalIdentifier,
               ingestId = ingestId,
               ingestDate = Instant.now,
               storageSpace = createStorageSpace

@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common.versioning.dynamo
 import com.amazonaws.services.dynamodbv2.model._
 import com.gu.scanamo.{Scanamo, Table => ScanamoTable}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.versioning.{
   IngestVersionManagerDao,
@@ -22,7 +21,7 @@ class DynamoIngestVersionManagerDaoTest
     testWith: TestWith[IngestVersionManagerDao, R])(
     implicit table: Table): R = {
     Scanamo.exec(dynamoDbClient)(
-      ScanamoTable[VersionRecord](table.name).putAll(initialRecords.toSet))
+      ScanamoTable[DynamoEntry](table.name).putAll(initialRecords.map { DynamoEntry(_) }.toSet))
 
     testWith(
       new DynamoIngestVersionManagerDao(
@@ -49,13 +48,13 @@ class DynamoIngestVersionManagerDaoTest
     it("fails if the DynamoDB table format is wrong") {
       withLocalDynamoDbTable { implicit table =>
         case class BadRecord(
-          externalIdentifier: ExternalIdentifier,
+          id: String,
           ingestId: IngestID,
           version: Int
         )
 
         val record = BadRecord(
-          externalIdentifier = createExternalIdentifier,
+          id = randomAlphanumeric(),
           ingestId = createIngestID,
           version = 1
         )

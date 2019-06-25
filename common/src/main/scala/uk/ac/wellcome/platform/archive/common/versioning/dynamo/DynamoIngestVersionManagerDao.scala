@@ -34,11 +34,13 @@ class DynamoIngestVersionManagerDao(
     Try { Scanamo.exec(dynamoClient)(ops) } match {
       case Success(List(Right(record))) => record.toVersionRecord.map { Some(_) }
       case Success(Nil)                 => Success(None)
-      case result => Failure(
+      case Success(result) => Failure(
         new RuntimeException(
           s"Did not find exactly one row with ingest ID $ingestId, got $result"
         )
       )
+
+      case Failure(err) => Failure(err)
     }
   }
 
