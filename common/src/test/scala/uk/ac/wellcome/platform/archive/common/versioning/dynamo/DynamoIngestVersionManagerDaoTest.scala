@@ -5,15 +5,24 @@ import com.gu.scanamo.{Scanamo, Table => ScanamoTable}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManagerDao, IngestVersionManagerDaoTestCases, VersionRecord}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManagerDao,
+  IngestVersionManagerDaoTestCases,
+  VersionRecord
+}
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
 import scala.util.Failure
 
-class DynamoIngestVersionManagerDaoTest extends IngestVersionManagerDaoTestCases[Table] with IngestVersionManagerTable {
-  override def withDao[R](initialRecords: Seq[VersionRecord])(testWith: TestWith[IngestVersionManagerDao, R])(implicit table: Table): R = {
-    Scanamo.exec(dynamoDbClient)(ScanamoTable[VersionRecord](table.name).putAll(initialRecords.toSet))
+class DynamoIngestVersionManagerDaoTest
+    extends IngestVersionManagerDaoTestCases[Table]
+    with IngestVersionManagerTable {
+  override def withDao[R](initialRecords: Seq[VersionRecord])(
+    testWith: TestWith[IngestVersionManagerDao, R])(
+    implicit table: Table): R = {
+    Scanamo.exec(dynamoDbClient)(
+      ScanamoTable[VersionRecord](table.name).putAll(initialRecords.toSet))
 
     testWith(
       new DynamoIngestVersionManagerDao(

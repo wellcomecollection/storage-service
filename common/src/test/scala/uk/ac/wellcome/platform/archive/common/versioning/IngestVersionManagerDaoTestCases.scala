@@ -6,10 +6,16 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 
 import scala.util.{Failure, Success}
 
-trait IngestVersionManagerDaoTestCases[Context] extends FunSpec with Matchers with EitherValues with VersionRecordGenerators {
+trait IngestVersionManagerDaoTestCases[Context]
+    extends FunSpec
+    with Matchers
+    with EitherValues
+    with VersionRecordGenerators {
   def withContext[R](testWith: TestWith[Context, R]): R
 
-  def withDao[R](initialRecords: Seq[VersionRecord])(testWith: TestWith[IngestVersionManagerDao, R])(implicit context: Context): R
+  def withDao[R](initialRecords: Seq[VersionRecord])(
+    testWith: TestWith[IngestVersionManagerDao, R])(
+    implicit context: Context): R
 
   it("is internally consistent") {
     val recordA1 = createVersionRecordWith(
@@ -80,9 +86,11 @@ trait IngestVersionManagerDaoTestCases[Context] extends FunSpec with Matchers wi
       }
 
       withDao(initialRecords = Seq.empty) { dao2 =>
-        dao2.lookupExistingVersion(record.ingestId) shouldBe Success(Some(record))
+        dao2.lookupExistingVersion(record.ingestId) shouldBe Success(
+          Some(record))
 
-        dao2.lookupLatestVersionFor(record.externalIdentifier) shouldBe Success(Some(record))
+        dao2.lookupLatestVersionFor(record.externalIdentifier) shouldBe Success(
+          Some(record))
       }
     }
   }

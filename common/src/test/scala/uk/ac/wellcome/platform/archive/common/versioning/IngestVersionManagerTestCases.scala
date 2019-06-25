@@ -6,16 +6,24 @@ import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 
-trait IngestVersionManagerTestCases[DaoImpl, Context] extends FunSpec with Matchers with EitherValues with ExternalIdentifierGenerators {
+trait IngestVersionManagerTestCases[DaoImpl, Context]
+    extends FunSpec
+    with Matchers
+    with EitherValues
+    with ExternalIdentifierGenerators {
   def withContext[R](testWith: TestWith[Context, R]): R
 
   def withDao[R](testWith: TestWith[DaoImpl, R])(implicit context: Context): R
 
-  def withBrokenLookupExistingVersionDao[R](testWith: TestWith[DaoImpl, R])(implicit context: Context): R
-  def withBrokenLookupLatestVersionForDao[R](testWith: TestWith[DaoImpl, R])(implicit context: Context): R
-  def withBrokenStoreNewVersionDao[R](testWith: TestWith[DaoImpl, R])(implicit context: Context): R
+  def withBrokenLookupExistingVersionDao[R](testWith: TestWith[DaoImpl, R])(
+    implicit context: Context): R
+  def withBrokenLookupLatestVersionForDao[R](testWith: TestWith[DaoImpl, R])(
+    implicit context: Context): R
+  def withBrokenStoreNewVersionDao[R](testWith: TestWith[DaoImpl, R])(
+    implicit context: Context): R
 
-  def withManager[R](dao: DaoImpl)(testWith: TestWith[IngestVersionManager, R])(implicit context: Context): R
+  def withManager[R](dao: DaoImpl)(testWith: TestWith[IngestVersionManager, R])(
+    implicit context: Context): R
 
   describe("behaves as an ingest version manager") {
     it("assigns version 1 if it hasn't seen this external ID before") {
@@ -159,11 +167,14 @@ trait IngestVersionManagerTestCases[DaoImpl, Context] extends FunSpec with Match
         withContext { implicit context =>
           withBrokenLookupExistingVersionDao { dao =>
             withManager(dao) { manager =>
-              manager.assignVersion(
-                externalIdentifier = createExternalIdentifier,
-                ingestId = createIngestID,
-                ingestDate = Instant.now
-              ).left.value shouldBe an[IngestVersionManagerDaoError]
+              manager
+                .assignVersion(
+                  externalIdentifier = createExternalIdentifier,
+                  ingestId = createIngestID,
+                  ingestDate = Instant.now
+                )
+                .left
+                .value shouldBe an[IngestVersionManagerDaoError]
             }
           }
         }
@@ -173,11 +184,14 @@ trait IngestVersionManagerTestCases[DaoImpl, Context] extends FunSpec with Match
         withContext { implicit context =>
           withBrokenLookupLatestVersionForDao { dao =>
             withManager(dao) { manager =>
-              manager.assignVersion(
-                externalIdentifier = createExternalIdentifier,
-                ingestId = createIngestID,
-                ingestDate = Instant.now
-              ).left.value shouldBe an[IngestVersionManagerDaoError]
+              manager
+                .assignVersion(
+                  externalIdentifier = createExternalIdentifier,
+                  ingestId = createIngestID,
+                  ingestDate = Instant.now
+                )
+                .left
+                .value shouldBe an[IngestVersionManagerDaoError]
             }
           }
         }
@@ -187,11 +201,14 @@ trait IngestVersionManagerTestCases[DaoImpl, Context] extends FunSpec with Match
         withContext { implicit context =>
           withBrokenStoreNewVersionDao { dao =>
             withManager(dao) { manager =>
-              manager.assignVersion(
-                externalIdentifier = createExternalIdentifier,
-                ingestId = createIngestID,
-                ingestDate = Instant.now
-              ).left.value shouldBe an[IngestVersionManagerDaoError]
+              manager
+                .assignVersion(
+                  externalIdentifier = createExternalIdentifier,
+                  ingestId = createIngestID,
+                  ingestDate = Instant.now
+                )
+                .left
+                .value shouldBe an[IngestVersionManagerDaoError]
             }
           }
         }
