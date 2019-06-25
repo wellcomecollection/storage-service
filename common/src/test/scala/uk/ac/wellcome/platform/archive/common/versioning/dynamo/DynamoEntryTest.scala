@@ -30,6 +30,15 @@ class DynamoEntryTest extends FunSpec with Matchers with VersionRecordGenerators
     DynamoEntry(versionRecord).toVersionRecord.success.value shouldBe versionRecord
   }
 
+  it("creates human-readable IDs") {
+    val versionRecord = createVersionRecordWith(
+      externalIdentifier = ExternalIdentifier("x:y"),
+      storageSpace = StorageSpace("a:b")
+    )
+
+    DynamoEntry(versionRecord).id shouldBe "a%3Ab:x%3Ay"
+  }
+
   it("throws an exception if the ID is malformed") {
     val entry = DynamoEntry(
       id = "1234",
