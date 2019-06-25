@@ -4,11 +4,16 @@ import java.time.Instant
 import java.util.UUID
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   CreateIngestType,
   UpdateIngestType
 }
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.versioning.{
   ExternalIdentifiersMismatch,
   NewerIngestAlreadyExists
@@ -22,15 +27,18 @@ class VersionPickerTest
     with Matchers
     with ExternalIdentifierGenerators
     with VersionPickerFixtures
+    with StorageSpaceGenerators
     with EitherValues {
 
-  it("assigns version 1 if it hasn't seen this external ID before") {
+  it(
+    "assigns version 1 if it hasn't seen this external ID/storage space before") {
     withVersionPicker { picker =>
       val result = picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
         ingestId = createIngestID,
         ingestType = CreateIngestType,
-        ingestDate = Instant.now()
+        ingestDate = Instant.now(),
+        storageSpace = createStorageSpace
       )
 
       result.right.value shouldBe 1
@@ -40,6 +48,7 @@ class VersionPickerTest
   it("always picks the same version for a given ingest ID") {
     withVersionPicker { picker =>
       val externalIdentifier = createExternalIdentifier
+      val storageSpace = createStorageSpace
       val ingestId = createIngestID
 
       // Pick an initial version
@@ -47,7 +56,8 @@ class VersionPickerTest
         externalIdentifier = externalIdentifier,
         ingestId = createIngestID,
         ingestType = CreateIngestType,
-        ingestDate = Instant.ofEpochSecond(1)
+        ingestDate = Instant.ofEpochSecond(1),
+        storageSpace = storageSpace
       )
 
       // Now assign some more versions with different
@@ -57,7 +67,8 @@ class VersionPickerTest
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
           ingestType = UpdateIngestType,
-          ingestDate = Instant.ofEpochSecond(t)
+          ingestDate = Instant.ofEpochSecond(t),
+          storageSpace = storageSpace
         )
       }
 
@@ -66,7 +77,8 @@ class VersionPickerTest
         externalIdentifier = externalIdentifier,
         ingestId = ingestId,
         ingestType = UpdateIngestType,
-        ingestDate = Instant.ofEpochSecond(100)
+        ingestDate = Instant.ofEpochSecond(100),
+        storageSpace = storageSpace
       )
 
       // If we keep asking for a version with the same ingest ID, we
@@ -76,8 +88,29 @@ class VersionPickerTest
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
           ingestType = UpdateIngestType,
-          ingestDate = Instant.ofEpochSecond(100)
+          ingestDate = Instant.ofEpochSecond(100),
+          storageSpace = storageSpace
         ) shouldBe result
+      }
+    }
+  }
+
+  it(
+    "assigns independent versions for the same external ID in different storage spaces") {
+    withVersionPicker { picker =>
+      val externalIdentifier = createExternalIdentifier
+
+      (1 to 5).map { _ =>
+        picker
+          .chooseVersion(
+            externalIdentifier = externalIdentifier,
+            ingestId = createIngestID,
+            ingestType = CreateIngestType,
+            ingestDate = Instant.now(),
+            storageSpace = createStorageSpace
+          )
+          .right
+          .value shouldBe 1
       }
     }
   }
@@ -85,13 +118,15 @@ class VersionPickerTest
   it("picks monotonically increasing versions for an external identifier") {
     withVersionPicker { picker =>
       val externalIdentifier = createExternalIdentifier
+      val storageSpace = createStorageSpace
 
       picker
         .chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
           ingestType = CreateIngestType,
-          ingestDate = Instant.ofEpochSecond(1)
+          ingestDate = Instant.ofEpochSecond(1),
+          storageSpace = storageSpace
         )
         .right
         .value shouldBe 1
@@ -102,7 +137,8 @@ class VersionPickerTest
             externalIdentifier = externalIdentifier,
             ingestId = createIngestID,
             ingestType = UpdateIngestType,
-            ingestDate = Instant.ofEpochSecond(t)
+            ingestDate = Instant.ofEpochSecond(t),
+            storageSpace = storageSpace
           )
           .right
           .value shouldBe t
@@ -113,11 +149,14 @@ class VersionPickerTest
   it("fails if the ingest date goes backwards") {
     withVersionPicker { picker =>
       val externalIdentifier = createExternalIdentifier
+      val storageSpace = createStorageSpace
+
       picker.chooseVersion(
         externalIdentifier = externalIdentifier,
         ingestId = createIngestID,
         ingestType = CreateIngestType,
-        ingestDate = Instant.now()
+        ingestDate = Instant.now(),
+        storageSpace = storageSpace
       )
 
       (1 to 3).map { t =>
@@ -125,7 +164,8 @@ class VersionPickerTest
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
           ingestType = UpdateIngestType,
-          ingestDate = Instant.ofEpochSecond(t)
+          ingestDate = Instant.ofEpochSecond(t),
+          storageSpace = storageSpace
         )
 
         result.left.value shouldBe a[UnableToAssignVersion]
@@ -136,24 +176,50 @@ class VersionPickerTest
     }
   }
 
-  it("locks around the ingest ID and external identifiers") {
+  it("locks around the ingest ID, external identifier and storage space") {
     val lockDao = createLockDao
 
     withVersionPicker(lockDao) { picker =>
       val ingestId = createIngestID
       val externalIdentifier = createExternalIdentifier
+      val storageSpace = createStorageSpace
 
       picker.chooseVersion(
         externalIdentifier = externalIdentifier,
         ingestId = ingestId,
         ingestType = CreateIngestType,
-        ingestDate = Instant.now()
+        ingestDate = Instant.now(),
+        storageSpace = storageSpace
       )
 
       lockDao.getCurrentLocks shouldBe empty
       lockDao.history.map { _.id } should contain theSameElementsAs List(
         s"ingest:$ingestId",
-        s"external:$externalIdentifier"
+        s"external:$storageSpace:$externalIdentifier"
+      )
+    }
+  }
+
+  it("escape the lock names") {
+    val lockDao = createLockDao
+
+    withVersionPicker(lockDao) { picker =>
+      val ingestId = createIngestID
+      val externalIdentifier = ExternalIdentifier("x:y")
+      val storageSpace = StorageSpace("a:b")
+
+      picker.chooseVersion(
+        externalIdentifier = externalIdentifier,
+        ingestId = ingestId,
+        ingestType = CreateIngestType,
+        ingestDate = Instant.now(),
+        storageSpace = storageSpace
+      )
+
+      lockDao.getCurrentLocks shouldBe empty
+      lockDao.history.map { _.id } should contain theSameElementsAs List(
+        s"ingest:$ingestId",
+        s"external:a%3Ab:x%3Ay"
       )
     }
   }
@@ -174,7 +240,8 @@ class VersionPickerTest
         externalIdentifier = createExternalIdentifier,
         ingestId = createIngestID,
         ingestType = CreateIngestType,
-        ingestDate = Instant.now()
+        ingestDate = Instant.now(),
+        storageSpace = createStorageSpace
       )
 
       result.left.value shouldBe a[InternalVersionPickerError]
@@ -192,14 +259,16 @@ class VersionPickerTest
         externalIdentifier = createExternalIdentifier,
         ingestId = ingestId,
         ingestType = CreateIngestType,
-        ingestDate = Instant.now()
+        ingestDate = Instant.now(),
+        storageSpace = createStorageSpace
       )
 
       val result = picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
         ingestId = ingestId,
         ingestType = UpdateIngestType,
-        ingestDate = Instant.now()
+        ingestDate = Instant.now(),
+        storageSpace = createStorageSpace
       )
 
       result.left.value shouldBe a[UnableToAssignVersion]
@@ -212,20 +281,23 @@ class VersionPickerTest
   describe("checking the ingest type") {
     it("only allows ingest type 'create' once") {
       val externalIdentifier = createExternalIdentifier
+      val storageSpace = createStorageSpace
 
       withVersionPicker { picker =>
         picker.chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
           ingestType = CreateIngestType,
-          ingestDate = Instant.ofEpochSecond(1)
+          ingestDate = Instant.ofEpochSecond(1),
+          storageSpace = storageSpace
         )
 
         val result = picker.chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
           ingestType = CreateIngestType,
-          ingestDate = Instant.ofEpochSecond(2)
+          ingestDate = Instant.ofEpochSecond(2),
+          storageSpace = storageSpace
         )
 
         result.left.value shouldBe IngestTypeCreateForExistingBag()
@@ -234,13 +306,15 @@ class VersionPickerTest
 
     it("only allows ingest type 'update' on an already-existing bag") {
       val externalIdentifier = createExternalIdentifier
+      val storageSpace = createStorageSpace
 
       withVersionPicker { picker =>
         val result = picker.chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = createIngestID,
           ingestType = UpdateIngestType,
-          ingestDate = Instant.now()
+          ingestDate = Instant.now(),
+          storageSpace = storageSpace
         )
 
         result.left.value shouldBe IngestTypeUpdateForNewBag()

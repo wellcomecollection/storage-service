@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.common.versioning.memory
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.versioning.{
   IngestVersionManager,
   IngestVersionManagerTestCases,
@@ -37,7 +38,8 @@ class MemoryIngestVersionManagerTest
     implicit context: MemoryIngestVersionManagerDao): R =
     testWith(new MemoryIngestVersionManagerDao() {
       override def lookupLatestVersionFor(
-        externalIdentifier: ExternalIdentifier): Try[Option[VersionRecord]] =
+        externalIdentifier: ExternalIdentifier,
+        storageSpace: StorageSpace): Try[Option[VersionRecord]] =
         Failure(new Throwable("BOOM!"))
     })
 

@@ -6,22 +6,20 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 
-import scala.collection.JavaConverters._
-
 trait IngestVersionManagerTable extends LocalDynamoDb {
   override def createTable(table: LocalDynamoDb.Table): LocalDynamoDb.Table = {
     dynamoDbClient.createTable(
       new CreateTableRequest()
         .withTableName(table.name)
         .withKeySchema(new KeySchemaElement()
-          .withAttributeName("externalIdentifier")
+          .withAttributeName("id")
           .withKeyType(KeyType.HASH))
         .withKeySchema(new KeySchemaElement()
           .withAttributeName("version")
           .withKeyType(KeyType.RANGE))
         .withAttributeDefinitions(
           new AttributeDefinition()
-            .withAttributeName("externalIdentifier")
+            .withAttributeName("id")
             .withAttributeType("S"),
           new AttributeDefinition()
             .withAttributeName("ingestId")
@@ -35,13 +33,7 @@ trait IngestVersionManagerTable extends LocalDynamoDb {
             .withIndexName(table.index)
             .withProjection(
               new Projection()
-                .withProjectionType(ProjectionType.INCLUDE)
-                .withNonKeyAttributes(
-                  List(
-                    "externalIdentifier",
-                    "ingestId",
-                    "version",
-                    "ingestDate").asJava)
+                .withProjectionType(ProjectionType.ALL)
             )
             .withKeySchema(
               new KeySchemaElement()
