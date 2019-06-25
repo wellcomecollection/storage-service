@@ -6,33 +6,21 @@ import cats.Id
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoIngestVersionManagerDao
-import uk.ac.wellcome.platform.archive.common.versioning.{
-  IngestVersionManager,
-  IngestVersionManagerDao,
-  IngestVersionManagerError
+import uk.ac.wellcome.platform.archive.common.versioning.dynamo.{
+  DynamoIngestVersionManager,
+  DynamoIngestVersionManagerDao
 }
-import uk.ac.wellcome.platform.storage.bagauditor.services.{
-  BagAuditor,
-  BagAuditorWorker
-}
+import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerError
+import uk.ac.wellcome.platform.storage.bagauditor.services.{BagAuditor, BagAuditorWorker}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
-import uk.ac.wellcome.storage.typesafe.{
-  DynamoBuilder,
-  LockingBuilder,
-  S3Builder
-}
+import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, LockingBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
@@ -70,9 +58,7 @@ object Main extends WellcomeTypesafeApp {
 
     val versionPicker = new VersionPicker(
       lockingService = lockingService,
-      ingestVersionManager = new IngestVersionManager {
-        override val dao: IngestVersionManagerDao = ingestVersionManagerDao
-      }
+      ingestVersionManager = new DynamoIngestVersionManager(ingestVersionManagerDao)
     )
 
     new BagAuditorWorker(
