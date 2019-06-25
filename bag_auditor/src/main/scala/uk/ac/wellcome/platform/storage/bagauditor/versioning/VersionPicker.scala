@@ -5,10 +5,18 @@ import java.util.UUID
 
 import cats.{Id, Monad, MonadError}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, IngestID, IngestType, UpdateIngestType}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  IngestID,
+  IngestType,
+  UpdateIngestType
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManager, IngestVersionManagerError}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManager,
+  IngestVersionManagerError
+}
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.storage.{FailedProcess, LockDao, LockingService}
 
@@ -26,7 +34,10 @@ class VersionPicker(
     storageSpace: StorageSpace
   ): Either[VersionPickerError, Int] = {
     val assignedVersion: Id[lockingService.Process] = lockingService
-      .withLocks(Set(s"ingest:$ingestId", s"external:${DynamoID.createId(storageSpace, externalIdentifier)}")) {
+      .withLocks(
+        Set(
+          s"ingest:$ingestId",
+          s"external:${DynamoID.createId(storageSpace, externalIdentifier)}")) {
         ingestVersionManager.assignVersion(
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,

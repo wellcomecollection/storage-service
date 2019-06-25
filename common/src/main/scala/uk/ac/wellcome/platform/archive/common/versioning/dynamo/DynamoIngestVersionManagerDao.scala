@@ -6,7 +6,10 @@ import com.gu.scanamo.{Scanamo, Table}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManagerDao, VersionRecord}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManagerDao,
+  VersionRecord
+}
 import uk.ac.wellcome.storage.dynamo._
 
 import scala.util.{Failure, Success, Try}
@@ -32,13 +35,15 @@ class DynamoIngestVersionManagerDao(
     val ops = index.query('ingestId -> ingestId)
 
     Try { Scanamo.exec(dynamoClient)(ops) } match {
-      case Success(List(Right(record))) => record.toVersionRecord.map { Some(_) }
-      case Success(Nil)                 => Success(None)
-      case Success(result) => Failure(
-        new RuntimeException(
-          s"Did not find exactly one row with ingest ID $ingestId, got $result"
+      case Success(List(Right(record))) =>
+        record.toVersionRecord.map { Some(_) }
+      case Success(Nil) => Success(None)
+      case Success(result) =>
+        Failure(
+          new RuntimeException(
+            s"Did not find exactly one row with ingest ID $ingestId, got $result"
+          )
         )
-      )
 
       case Failure(err) => Failure(err)
     }
@@ -58,7 +63,7 @@ class DynamoIngestVersionManagerDao(
           Some(_)
         }
       case Success(None) => Success(None)
-      case Failure(err) => Failure(err)
+      case Failure(err)  => Failure(err)
     }
   }
 

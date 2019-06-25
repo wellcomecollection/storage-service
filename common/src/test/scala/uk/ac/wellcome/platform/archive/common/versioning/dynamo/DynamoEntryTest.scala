@@ -7,7 +7,11 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.versioning.VersionRecordGenerators
 
-class DynamoEntryTest extends FunSpec with Matchers with VersionRecordGenerators with TryValues {
+class DynamoEntryTest
+    extends FunSpec
+    with Matchers
+    with VersionRecordGenerators
+    with TryValues {
   it("converts from a VersionRecord to a DynamoEntry and back") {
     val versionRecord = createVersionRecord
 

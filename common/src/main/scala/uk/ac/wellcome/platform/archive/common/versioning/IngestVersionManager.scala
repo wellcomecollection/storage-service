@@ -75,10 +75,8 @@ trait IngestVersionManager {
   ): Either[IngestVersionManagerError, Int] =
     dao.lookupExistingVersion(ingestId) match {
       case Success(Some(existingRecord)) =>
-        if (
-          existingRecord.externalIdentifier == externalIdentifier &&
-          existingRecord.storageSpace == storageSpace
-        )
+        if (existingRecord.externalIdentifier == externalIdentifier &&
+            existingRecord.storageSpace == storageSpace)
           Right(existingRecord.version)
         else if (existingRecord.externalIdentifier != externalIdentifier)
           Left(

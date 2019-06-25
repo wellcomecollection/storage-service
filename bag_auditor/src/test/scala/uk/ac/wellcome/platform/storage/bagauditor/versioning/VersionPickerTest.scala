@@ -5,10 +5,19 @@ import java.util.UUID
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  UpdateIngestType
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.versioning.{ExternalIdentifiersMismatch, NewerIngestAlreadyExists}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  ExternalIdentifiersMismatch,
+  NewerIngestAlreadyExists
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.storage.{LockDao, LockFailure, UnlockFailure}
@@ -21,7 +30,8 @@ class VersionPickerTest
     with StorageSpaceGenerators
     with EitherValues {
 
-  it("assigns version 1 if it hasn't seen this external ID/storage space before") {
+  it(
+    "assigns version 1 if it hasn't seen this external ID/storage space before") {
     withVersionPicker { picker =>
       val result = picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
@@ -85,18 +95,22 @@ class VersionPickerTest
     }
   }
 
-  it("assigns independent versions for the same external ID in different storage spaces") {
+  it(
+    "assigns independent versions for the same external ID in different storage spaces") {
     withVersionPicker { picker =>
       val externalIdentifier = createExternalIdentifier
 
       (1 to 5).map { _ =>
-        picker.chooseVersion(
-          externalIdentifier = externalIdentifier,
-          ingestId = createIngestID,
-          ingestType = CreateIngestType,
-          ingestDate = Instant.now(),
-          storageSpace = createStorageSpace
-        ).right.value shouldBe 1
+        picker
+          .chooseVersion(
+            externalIdentifier = externalIdentifier,
+            ingestId = createIngestID,
+            ingestType = CreateIngestType,
+            ingestDate = Instant.now(),
+            storageSpace = createStorageSpace
+          )
+          .right
+          .value shouldBe 1
       }
     }
   }

@@ -4,7 +4,10 @@ import java.time.Instant
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
 
 trait IngestVersionManagerTestCases[DaoImpl, Context]
     extends FunSpec
@@ -111,49 +114,63 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
       }
     }
 
-    it("assigns independent versions to different external IDs in the same space") {
+    it(
+      "assigns independent versions to different external IDs in the same space") {
       withContext { implicit context =>
         withDao { dao =>
           withManager(dao) { manager =>
             val storageSpace = createStorageSpace
 
-            manager.assignVersion(
-              externalIdentifier = createExternalIdentifier,
-              ingestId = createIngestID,
-              ingestDate = Instant.now,
-              storageSpace = storageSpace
-            ).right.value shouldBe 1
+            manager
+              .assignVersion(
+                externalIdentifier = createExternalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.now,
+                storageSpace = storageSpace
+              )
+              .right
+              .value shouldBe 1
 
-            manager.assignVersion(
-              externalIdentifier = createExternalIdentifier,
-              ingestId = createIngestID,
-              ingestDate = Instant.now,
-              storageSpace = storageSpace
-            ).right.value shouldBe 1
+            manager
+              .assignVersion(
+                externalIdentifier = createExternalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.now,
+                storageSpace = storageSpace
+              )
+              .right
+              .value shouldBe 1
           }
         }
       }
     }
 
-    it("assigns independent versions to the same external ID in different spaces") {
+    it(
+      "assigns independent versions to the same external ID in different spaces") {
       withContext { implicit context =>
         withDao { dao =>
           withManager(dao) { manager =>
             val externalIdentifier = createExternalIdentifier
 
-            manager.assignVersion(
-              externalIdentifier = externalIdentifier,
-              ingestId = createIngestID,
-              ingestDate = Instant.now,
-              storageSpace = createStorageSpace
-            ).right.value shouldBe 1
+            manager
+              .assignVersion(
+                externalIdentifier = externalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.now,
+                storageSpace = createStorageSpace
+              )
+              .right
+              .value shouldBe 1
 
-            manager.assignVersion(
-              externalIdentifier = externalIdentifier,
-              ingestId = createIngestID,
-              ingestDate = Instant.now,
-              storageSpace = createStorageSpace
-            ).right.value shouldBe 1
+            manager
+              .assignVersion(
+                externalIdentifier = externalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.now,
+                storageSpace = createStorageSpace
+              )
+              .right
+              .value shouldBe 1
           }
         }
       }

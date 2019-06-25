@@ -4,7 +4,11 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManager, IngestVersionManagerTestCases, VersionRecord}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManager,
+  IngestVersionManagerTestCases,
+  VersionRecord
+}
 
 import scala.util.{Failure, Try}
 

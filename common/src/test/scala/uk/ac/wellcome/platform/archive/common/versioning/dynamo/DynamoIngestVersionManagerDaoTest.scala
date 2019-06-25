@@ -21,7 +21,9 @@ class DynamoIngestVersionManagerDaoTest
     testWith: TestWith[IngestVersionManagerDao, R])(
     implicit table: Table): R = {
     Scanamo.exec(dynamoDbClient)(
-      ScanamoTable[DynamoEntry](table.name).putAll(initialRecords.map { DynamoEntry(_) }.toSet))
+      ScanamoTable[DynamoEntry](table.name).putAll(initialRecords.map {
+        DynamoEntry(_)
+      }.toSet))
 
     testWith(
       new DynamoIngestVersionManagerDao(
