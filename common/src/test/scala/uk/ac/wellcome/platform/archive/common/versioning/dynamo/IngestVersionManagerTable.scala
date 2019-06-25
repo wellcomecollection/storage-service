@@ -12,14 +12,14 @@ trait IngestVersionManagerTable extends LocalDynamoDb {
       new CreateTableRequest()
         .withTableName(table.name)
         .withKeySchema(new KeySchemaElement()
-          .withAttributeName("externalIdentifier")
+          .withAttributeName("id")
           .withKeyType(KeyType.HASH))
         .withKeySchema(new KeySchemaElement()
           .withAttributeName("version")
           .withKeyType(KeyType.RANGE))
         .withAttributeDefinitions(
           new AttributeDefinition()
-            .withAttributeName("externalIdentifier")
+            .withAttributeName("id")
             .withAttributeType("S"),
           new AttributeDefinition()
             .withAttributeName("ingestId")
