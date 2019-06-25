@@ -43,7 +43,8 @@ class BagAuditor(versionPicker: VersionPicker)(implicit s3Client: AmazonS3) {
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
           ingestType = ingestType,
-          ingestDate = ingestDate
+          ingestDate = ingestDate,
+          storageSpace = storageSpace
         )
         auditSuccess = AuditSuccess(
           externalIdentifier = externalIdentifier,
