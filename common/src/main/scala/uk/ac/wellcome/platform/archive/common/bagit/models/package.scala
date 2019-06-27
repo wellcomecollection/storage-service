@@ -1,16 +1,9 @@
-package uk.ac.wellcome.platform.archive.common.bagit.models
+package uk.ac.wellcome.platform.archive.common.bagit
 
 import java.nio.file.Paths
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFetchEntry,
-  BagFile
-}
-import uk.ac.wellcome.platform.archive.common.storage.{
-  Locatable,
-  LocateFailure,
-  LocationNotFound
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchEntry, BagFile}
+import uk.ac.wellcome.platform.archive.common.storage.{Locatable, LocateFailure, LocationNotFound}
 import uk.ac.wellcome.storage.ObjectLocation
 
 case class MatchedLocation(bagFile: BagFile, fetchEntry: Option[BagFetchEntry])
