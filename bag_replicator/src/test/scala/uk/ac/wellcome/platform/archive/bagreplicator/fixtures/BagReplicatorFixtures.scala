@@ -12,19 +12,12 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  MonitoringClientFixture,
-  OperationFixtures
-}
-import uk.ac.wellcome.storage.fixtures.LockingServiceFixtures
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
-import uk.ac.wellcome.storage.memory.MemoryLockDao
-import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
+import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -35,7 +28,7 @@ trait BagReplicatorFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture
-    with LockingServiceFixtures {
+    with MemoryLockDaoFixtures {
 
   def withBagReplicatorWorker[R](
     queue: Queue = Queue(randomAlphanumericWithLength(), randomAlphanumericWithLength()),
@@ -101,7 +94,7 @@ trait BagReplicatorFixtures
   private def getObjectSummaries(
     objectLocation: ObjectLocation): List[S3ObjectSummary] =
     s3Client
-      .listObjects(objectLocation.namespace, objectLocation.key)
+      .listObjects(objectLocation.namespace, objectLocation.path)
       .getObjectSummaries
       .asScala
       .toList
