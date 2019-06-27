@@ -2,7 +2,9 @@ package uk.ac.wellcome.platform.archive.common.ingests.monitor
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
-import org.scanamo._
+import org.scanamo.auto._
+import org.scanamo.time.JavaTimeFormats._
+import org.scanamo.{Scanamo, Table => ScanamoTable}
 import org.scanamo.error.{ConditionNotMet, DynamoReadError}
 import org.scanamo.syntax._
 import grizzled.slf4j.Logging
@@ -20,9 +22,11 @@ class IngestTracker(
   dynamoConfig: DynamoConfig
 ) extends Logging {
 
+  private val scanamo = Scanamo(dynamoClient)
+  private val scanamoTable = ScanamoTable[Ingest](dynamoConfig.tableName)
+
   def get(id: IngestID): Try[Option[Ingest]] = Try {
-    Scanamo
-      .get[Ingest](dynamoClient)(dynamoConfig.table)('id -> id.toString)
+    scanamo.exec(scanamoTable.get('id -> id.toString))
       .map {
         case Right(ingest) => ingest
         case Left(err) =>
@@ -31,15 +35,14 @@ class IngestTracker(
   }
 
   def initialise(ingest: Ingest): Try[Ingest] = {
-    val ingestTable = Table[Ingest](dynamoConfig.table)
     debug(s"initializing archive ingest tracker with $ingest")
 
-    val ops = ingestTable
+    val ops = scanamoTable
       .given(not(attributeExists('id)))
       .put(ingest)
 
     Try {
-      blocking(Scanamo.exec(dynamoClient)(ops)) match {
+      blocking(scanamo.exec(ops)) match {
         case Left(e: ConditionalCheckFailedException) =>
           throw IdConstraintError(
             s"There is already a ingest tracker with id:${ingest.id}",
@@ -72,12 +75,11 @@ class IngestTracker(
           'callback \ 'status -> callbackStatusUpdate.callbackStatus)
     }
 
-    val ingestTable = Table[Ingest](dynamoConfig.table)
-    val ops = ingestTable
+    val ops = scanamoTable
       .given(attributeExists('id))
       .update('id -> update.id, mergedUpdate)
 
-    Scanamo.exec(dynamoClient)(ops) match {
+    scanamo.exec(ops) match {
       case Left(ConditionNotMet(e: ConditionalCheckFailedException)) => {
         val idConstraintError =
           IdConstraintError(

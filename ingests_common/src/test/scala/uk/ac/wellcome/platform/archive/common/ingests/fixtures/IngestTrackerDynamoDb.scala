@@ -2,21 +2,22 @@ package uk.ac.wellcome.platform.archive.common.ingests.fixtures
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model._
-import com.amazonaws.services.dynamodbv2.util.TableUtils.waitUntilActive
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 
+import scala.collection.JavaConverters._
 import scala.util.Random
 
-trait IngestTrackerDynamoDb extends LocalDynamoDb {
+trait IngestTrackerDynamoDb extends DynamoFixtures {
   private def createIngestTrackerTable(
     dynamoDbClient: AmazonDynamoDB): Table = {
     val tableName = Random.alphanumeric.take(10).mkString
     val tableIndex = Random.alphanumeric.take(10).mkString
     val table = Table(tableName, tableIndex)
 
-    dynamoDbClient.createTable(
+    createTableFromRequest(
+      table,
       new CreateTableRequest()
         .withTableName(table.name)
         .withKeySchema(new KeySchemaElement()
@@ -56,10 +57,6 @@ trait IngestTrackerDynamoDb extends LocalDynamoDb {
           .withReadCapacityUnits(1L)
           .withWriteCapacityUnits(1L))
     )
-    eventually {
-      waitUntilActive(dynamoDbClient, table.name)
-    }
-    table
   }
 
   def withIngestTrackerTable[R](testWith: TestWith[Table, R]): R =

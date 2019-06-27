@@ -6,6 +6,7 @@ import uk.ac.wellcome.storage.store.{HybridStoreEntry, VersionedStore}
 import uk.ac.wellcome.storage.{ReadError, WriteError}
 
 // TODO: Do we need this wrapper at all now?
+// TODO: This could be a Store!
 class StorageManifestDao(
   vhs: VersionedStore[BagId,
                       Int,
