@@ -26,7 +26,7 @@ object S3StreamableInstances {
           s3Client
             .getObject(
               location.namespace,
-              location.key
+              location.path
             )
         }
         contentLength <- Try {

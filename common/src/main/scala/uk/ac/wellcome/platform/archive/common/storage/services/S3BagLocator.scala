@@ -80,7 +80,7 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     objectLocation: ObjectLocation): Try[String] = Try {
     val listObjectsRequest = new ListObjectsV2Request()
       .withBucketName(objectLocation.namespace)
-      .withPrefix(objectLocation.key + "/")
+      .withPrefix(objectLocation.path + "/")
       .withDelimiter("/")
 
     val directoriesInBag =
@@ -88,7 +88,7 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
 
     if (directoriesInBag.size == 1) {
       val directoryLocation = objectLocation.copy(
-        key = directoriesInBag.head
+        path = directoriesInBag.head
       )
 
       findBagInfoInRoot(directoryLocation) match {

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.bagit
+package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import java.nio.file.Paths
 
@@ -17,8 +17,8 @@ case class MatchedLocation(bagFile: BagFile, fetchEntry: Option[BagFetchEntry])
 
 package object models {
   private def locateBagPath(root: ObjectLocation)(bagPath: BagPath) = {
-    val paths = Paths.get(root.key, bagPath.value)
-    root.copy(key = paths.toString)
+    val paths = Paths.get(root.path, bagPath.value)
+    root.copy(path = paths.toString)
   }
 
   implicit val bagPathLocator: Locatable[BagPath] = new Locatable[BagPath] {
