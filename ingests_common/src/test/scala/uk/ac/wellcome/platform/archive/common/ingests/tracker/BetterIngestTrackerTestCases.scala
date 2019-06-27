@@ -7,11 +7,8 @@ import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest, IngestID}
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]] extends FunSpec with Matchers with EitherValues with IngestGenerators with TableDrivenPropertyChecks {
   def withStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
