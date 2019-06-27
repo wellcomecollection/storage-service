@@ -151,19 +151,72 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
 
     describe("IngestStatusUpdate") {
       it("adds an event to an ingest") {
-        true shouldBe false
+        val ingest = createIngestWith(events = List.empty)
+
+        val event = createIngestEvent
+        val update = createIngestStatusUpdateWith(
+          id = ingest.id,
+          events = List(event)
+        )
+
+        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+          val result = tracker.update(update)
+          result.right.value.identifiedT.events shouldBe Seq(event)
+
+          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+          storedIngest.events shouldBe Seq(event)
+        }
       }
 
       it("adds multiple events to an ingest") {
-        true shouldBe false
+        val ingest = createIngestWith(events = List.empty)
+
+        val events = List(createIngestEvent, createIngestEvent, createIngestEvent)
+        val update = createIngestStatusUpdateWith(
+          id = ingest.id,
+          events = events
+        )
+
+        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+          val result = tracker.update(update)
+          result.right.value.identifiedT.events shouldBe events
+
+          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+          storedIngest.events shouldBe events
+        }
       }
 
       it("preserves the existing events on an ingest") {
-        true shouldBe false
+        val existingEvents = List(createIngestEvent, createIngestEvent)
+        val ingest = createIngestWith(events = existingEvents)
+
+        val newEvents = List(createIngestEvent, createIngestEvent)
+        val update = createIngestStatusUpdateWith(
+          id = ingest.id,
+          events = newEvents
+        )
+
+        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+          val result = tracker.update(update)
+          result.right.value.identifiedT.events shouldBe existingEvents ++ newEvents
+
+          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+          storedIngest.events shouldBe existingEvents ++ newEvents
+        }
       }
 
       it("updates the status of an ingest") {
-        true shouldBe false
+        val ingest = createIngestWith(status = Ingest.Accepted)
+
+        val update = createIngestStatusUpdateWith(
+          id = ingest.id,
+          status = Ingest.Completed
+        )
+
+        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+          val result = tracker.update(update)
+          result.right.value.identifiedT.status shouldBe Ingest.Completed
+        }
       }
 
       it("updates the bag ID on an ingest") {
