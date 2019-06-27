@@ -6,17 +6,9 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  BagUnpackerWorker,
-  S3Uploader,
-  Unpacker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  MonitoringClientFixture,
-  OperationFixtures
-}
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, S3Uploader, Unpacker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 trait BagUnpackerFixtures
     extends SQS

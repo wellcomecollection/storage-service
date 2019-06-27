@@ -3,30 +3,23 @@ package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 import java.io.{File, _}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{
-  ArchiveEntry,
-  ArchiveOutputStream,
-  ArchiveStreamFactory
-}
-import org.apache.commons.compress.compressors.{
-  CompressorOutputStream,
-  CompressorStreamFactory
-}
+import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveOutputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.compressors.{CompressorOutputStream, CompressorStreamFactory}
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
-trait CompressFixture extends StorageRandomThings with S3 with Logging {
+trait CompressFixture extends StorageRandomThings with S3Fixtures with Logging {
 
   val defaultFileCount = 10
 
   def withArchive[R](
     bucket: Bucket,
     archiveFile: File
-  )(testWith: TestWith[ObjectLocation, R]) = {
+  )(testWith: TestWith[ObjectLocation, R]): R = {
 
     val srcKey = archiveFile.getName
     s3Client.putObject(bucket.name, srcKey, archiveFile)
@@ -41,7 +34,7 @@ trait CompressFixture extends StorageRandomThings with S3 with Logging {
   def createTgzArchiveWithRandomFiles(fileCount: Int = 10,
                                       maxDepth: Int = 4,
                                       minSize: Int = 265,
-                                      maxSize: Int = 1024) =
+                                      maxSize: Int = 1024): (File, Seq[File], Set[ArchiveEntry]) =
     createTgzArchiveWithFiles(
       randomFilesInDirs(
         fileCount = fileCount,
@@ -52,18 +45,18 @@ trait CompressFixture extends StorageRandomThings with S3 with Logging {
       )
     )
 
-  def createTgzArchiveWithFiles(files: List[File]) =
+  def createTgzArchiveWithFiles(files: Seq[File]): (File, Seq[File], Set[ArchiveEntry]) =
     createArchiveWith(
-      "tar",
-      "gz",
-      files
+      archiverName = "tar",
+      compressorName = "gz",
+      files = files
     )
 
   def createArchiveWithRandomFiles(
     archiverName: String,
     compressorName: String,
     fileCount: Int = 10
-  ) =
+  ): (File, Seq[File], Set[ArchiveEntry]) =
     createArchiveWith(
       archiverName,
       compressorName,
@@ -76,8 +69,8 @@ trait CompressFixture extends StorageRandomThings with S3 with Logging {
   def createArchiveWith(
     archiverName: String,
     compressorName: String,
-    files: List[File]
-  ) = {
+    files: Seq[File]
+  ): (File, Seq[File], Set[ArchiveEntry]) = {
     val archiveFile = File.createTempFile(
       randomUUID.toString,
       ".test"
@@ -94,7 +87,7 @@ trait CompressFixture extends StorageRandomThings with S3 with Logging {
 
     val entries = files.map { file =>
       val entryName = relativeToTmpDir(file)
-      debug(s"Archiving ${file.getAbsolutePath} in ${entryName}")
+      debug(s"Archiving ${file.getAbsolutePath} in $entryName")
       archive.addFile(
         file,
         entryName

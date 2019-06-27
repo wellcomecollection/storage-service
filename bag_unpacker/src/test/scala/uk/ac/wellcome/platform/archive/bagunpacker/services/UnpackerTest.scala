@@ -4,21 +4,15 @@ import java.io.{File, FileInputStream}
 import java.nio.file.Paths
 
 import org.apache.commons.io.IOUtils
-import org.scalatest.{FunSpec, Matchers, TryValues}
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
-  ArchiveLocationException,
-  UnpackerArchiveEntryUploadException
-}
+import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
+import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{ArchiveLocationException, UnpackerArchiveEntryUploadException}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 class UnpackerTest
     extends FunSpec
@@ -26,7 +20,7 @@ class UnpackerTest
     with CompressFixture
     with StorageRandomThings
     with TryValues
-    with S3 {
+    with S3Fixtures {
 
   val unpacker = Unpacker(
     s3Uploader = new S3Uploader()
@@ -141,7 +135,7 @@ class UnpackerTest
   private def assertBucketContentsMatchFiles(
     bucket: Bucket,
     keyStripPrefix: String,
-    expectedFiles: List[File]): List[Any] = {
+    expectedFiles: Seq[File]): Seq[Assertion] = {
     val keys = listKeysInBucket(bucket)
     val locations = keys.map(ObjectLocation(bucket.name, _))
     val bucketFileMap = objectToContentMap(locations, keyStripPrefix)
@@ -170,12 +164,12 @@ class UnpackerTest
     stripKeyPrefix: String): Map[String, Array[Byte]] = {
     objectLocations.map { objectLocation: ObjectLocation =>
       val s3Object =
-        s3Client.getObject(objectLocation.namespace, objectLocation.key)
+        s3Client.getObject(objectLocation.namespace, objectLocation.path)
 
       val content = IOUtils
         .toByteArray(s3Object.getObjectContent)
 
-      val name = objectLocation.key
+      val name = objectLocation.path
         .replaceFirst(
           s"$stripKeyPrefix/",
           ""
@@ -187,7 +181,7 @@ class UnpackerTest
     }.toMap
   }
 
-  private def totalBytes(files: List[File]) = {
+  private def totalBytes(files: Seq[File]): Long = {
     files
       .foldLeft(0L)((n, file) => {
         n + file.length()

@@ -131,7 +131,7 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
     destination: ObjectLocation
   ): Long = {
     val uploadLocation = destination.copy(
-      key = normalizeKey(destination.key, archiveEntry.getName)
+      path = normalizeKey(destination.path, archiveEntry.getName)
     )
 
     val archiveEntrySize = archiveEntry.getSize
