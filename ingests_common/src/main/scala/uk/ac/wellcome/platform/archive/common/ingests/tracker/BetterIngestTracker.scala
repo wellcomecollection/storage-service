@@ -63,7 +63,8 @@ trait BetterIngestTracker {
             ingest.copy(
               callback = ingest.callback.map { cb =>
                 cb.copy(status = callbackStatusUpdate.callbackStatus)
-              }
+              },
+              events = ingest.events ++ update.events
           )
       }
 
