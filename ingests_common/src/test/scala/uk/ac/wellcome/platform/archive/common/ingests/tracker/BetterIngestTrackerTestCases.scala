@@ -1,10 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
+import java.net.URI
+
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.{Identified, StoreReadError, StoreWriteError, Version}
@@ -281,6 +283,8 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
           (Ingest.Accepted, Ingest.Failed),
           (Ingest.Processing, Ingest.Completed),
           (Ingest.Processing, Ingest.Failed),
+          (Ingest.Completed, Ingest.Completed),
+          (Ingest.Failed, Ingest.Failed),
         )
 
         it("updates the status of an ingest") {
@@ -345,7 +349,7 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
           val ingest = createIngestWith(events = List.empty)
 
           val event = createIngestEvent
-          val update = createIngestCallbackStatusWith(
+          val update = createIngestCallbackStatusUpdateWith(
             id = ingest.id,
             events = List(event)
           )
@@ -363,7 +367,7 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
           val ingest = createIngestWith(events = List.empty)
 
           val events = List(createIngestEvent, createIngestEvent, createIngestEvent)
-          val update = createIngestCallbackStatusWith(
+          val update = createIngestCallbackStatusUpdateWith(
             id = ingest.id,
             events = events
           )
@@ -382,7 +386,7 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
           val ingest = createIngestWith(events = existingEvents)
 
           val newEvents = List(createIngestEvent, createIngestEvent)
-          val update = createIngestCallbackStatusWith(
+          val update = createIngestCallbackStatusUpdateWith(
             id = ingest.id,
             events = newEvents
           )
@@ -398,16 +402,66 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
       }
 
       describe("updating the callback status") {
-        it("adds a callback status to an ingest") {
-          true shouldBe false
+        val allowedCallbackStatusUpdates = Table(
+          ("initial", "update"),
+          (Callback.Pending, Callback.Pending),
+          (Callback.Pending, Callback.Succeeded),
+          (Callback.Pending, Callback.Failed),
+          (Callback.Succeeded, Callback.Succeeded),
+          (Callback.Failed, Callback.Failed),
+        )
+
+        it("updates the status of a callback") {
+          forAll(allowedCallbackStatusUpdates) {
+            case (initialStatus: Callback.CallbackStatus, updatedStatus: Callback.CallbackStatus) =>
+              val ingest = createIngestWith(
+                callback = Some(Callback(
+                  uri = new URI("https://example.org/callback"),
+                  status = initialStatus
+                ))
+              )
+
+              val update = createIngestCallbackStatusUpdateWith(
+                id = ingest.id,
+                callbackStatus = updatedStatus
+              )
+
+              withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+                val result = tracker.update(update)
+                val ingest = result.right.value.identifiedT
+                ingest.callback.get.status shouldBe updatedStatus
+              }
+          }
         }
 
-        it("passes if the status is already set and matches the update") {
-          true shouldBe false
-        }
+        val disallowedCallbackStatusUpdates = Table(
+          ("initial", "update"),
+          (Callback.Succeeded, Callback.Pending),
+          (Callback.Succeeded, Callback.Failed),
+          (Callback.Failed, Callback.Pending),
+          (Callback.Failed, Callback.Succeeded),
+        )
 
-        it("errors if the status is already set and is different") {
-          true shouldBe false
+        it("does not allow the callback status to go backwards") {
+          forAll(disallowedCallbackStatusUpdates) {
+            case (initialStatus: Callback.CallbackStatus, updatedStatus: Callback.CallbackStatus) =>
+              val ingest = createIngestWith(
+                callback = Some(Callback(
+                  uri = new URI("https://example.org/callback"),
+                  status = initialStatus
+                ))
+              )
+
+              val update = createIngestCallbackStatusUpdateWith(
+                id = ingest.id,
+                callbackStatus = updatedStatus
+              )
+
+              withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+                val result = tracker.update(update)
+                result.left.value shouldBe IngestCallbackStatusGoingBackwards(initialStatus, updatedStatus)
+              }
+          }
         }
 
         it("errors if the ingest does not have a callback") {
@@ -416,7 +470,7 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
       }
 
       it("errors if there is no existing ingest with this ID") {
-        val update = createIngestCallbackStatus
+        val update = createIngestCallbackStatusUpdate
 
         withIngestTrackerFixtures() { tracker =>
           tracker.update(update).left.value shouldBe a[UpdateNonExistentIngestError]

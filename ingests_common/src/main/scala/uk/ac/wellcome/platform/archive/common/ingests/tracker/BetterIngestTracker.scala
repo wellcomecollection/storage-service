@@ -13,6 +13,9 @@ private class IngestStatusGoingBackwardsException(val existing: Ingest.Status, v
 private class MismatchedBagIdException(val existing: BagId, val update: BagId)
   extends RuntimeException(s"Received bag ID $update, but ingest already has bag ID $existing")
 
+private class CallbackStatusGoingBackwardsException(val existing: Callback.CallbackStatus, val update: Callback.CallbackStatus)
+  extends RuntimeException(s"Received callback status update $update, but ingest already has status $existing")
+
 trait BetterIngestTracker {
   val underlying: VersionedStore[IngestID, Int, Ingest]
 
@@ -58,14 +61,22 @@ trait BetterIngestTracker {
 
 
         case callbackStatusUpdate: IngestCallbackStatusUpdate =>
-          (ingest: Ingest) =>
+          (ingest: Ingest) => {
+            if (!callbackStatusUpdateIsAllowed(ingest.callback.get.status, callbackStatusUpdate.callbackStatus)) {
+              throw new CallbackStatusGoingBackwardsException(
+                ingest.callback.get.status,
+                callbackStatusUpdate.callbackStatus
+              )
+            }
+
             // TODO: What if there's no status?
             ingest.copy(
               callback = ingest.callback.map { cb =>
                 cb.copy(status = callbackStatusUpdate.callbackStatus)
               },
               events = ingest.events ++ update.events
-          )
+            )
+          }
       }
 
     Try { underlying.update(update.id)(updateCallback) } match {
@@ -78,6 +89,9 @@ trait BetterIngestTracker {
 
       case Failure(err: MismatchedBagIdException) =>
         Left(MismatchedBagIdError(err.existing, err.update))
+
+      case Failure(err: CallbackStatusGoingBackwardsException) =>
+        Left(IngestCallbackStatusGoingBackwards(err.existing, err.update))
 
       case Failure(err)       => throw err
       case Success(Left(err)) => throw err.e
@@ -97,9 +111,20 @@ trait BetterIngestTracker {
 
   private def statusUpdateIsAllowed(initial: Ingest.Status, update: Ingest.Status): Boolean =
     initial match {
+      case status if status == update => true
+
       case Ingest.Accepted   => true
       case Ingest.Processing => update != Ingest.Accepted
       case Ingest.Completed  => false
       case Ingest.Failed     => false
+    }
+
+  private def callbackStatusUpdateIsAllowed(initial: Callback.CallbackStatus, update: Callback.CallbackStatus): Boolean =
+    initial match {
+      case status if status == update => true
+
+      case Callback.Pending   => true
+      case Callback.Succeeded => false
+      case Callback.Failed    => false
     }
 }

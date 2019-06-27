@@ -66,7 +66,7 @@ trait IngestGenerators extends BagIdGenerators {
       events = events
     )
 
-  def createIngestCallbackStatusWith(
+  def createIngestCallbackStatusUpdateWith(
     id: IngestID = createIngestID,
     callbackStatus: Callback.CallbackStatus = Callback.Pending,
     events: Seq[IngestEvent] = Seq.empty
@@ -77,8 +77,8 @@ trait IngestGenerators extends BagIdGenerators {
       events = events
     )
 
-  def createIngestCallbackStatus: IngestCallbackStatusUpdate =
-    createIngestCallbackStatusWith()
+  def createIngestCallbackStatusUpdate: IngestCallbackStatusUpdate =
+    createIngestCallbackStatusUpdateWith()
 
   def createIngestStatusUpdate: IngestStatusUpdate =
     createIngestStatusUpdateWith()
