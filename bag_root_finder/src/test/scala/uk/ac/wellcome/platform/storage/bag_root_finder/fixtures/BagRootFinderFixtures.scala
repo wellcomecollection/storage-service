@@ -24,7 +24,7 @@ trait BagRootFinderFixtures
     queue: Queue,
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
-    stepName: String = randomAlphanumeric()
+    stepName: String = randomAlphanumericWithLength()
   )(testWith: TestWith[BagRootFinderWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)

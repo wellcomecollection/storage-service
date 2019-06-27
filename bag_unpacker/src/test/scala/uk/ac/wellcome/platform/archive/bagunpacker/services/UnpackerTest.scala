@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
 }
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepSucceeded
@@ -24,7 +24,7 @@ class UnpackerTest
     extends FunSpec
     with Matchers
     with CompressFixture
-    with RandomThings
+    with StorageRandomThings
     with TryValues
     with S3 {
 

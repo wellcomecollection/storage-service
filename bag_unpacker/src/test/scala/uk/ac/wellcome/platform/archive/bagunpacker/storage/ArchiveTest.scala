@@ -6,7 +6,7 @@ import org.apache.commons.compress.archivers.ArchiveEntry
 import org.apache.commons.compress.utils.IOUtils
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 
 import scala.util.Try
 
@@ -15,7 +15,7 @@ class ArchiveTest
     with Matchers
     with CompressFixture
     with TryValues
-    with RandomThings {
+    with StorageRandomThings {
 
   it("should unpack a tar.gz file") {
     val (archiveFile, files, expectedEntries) =

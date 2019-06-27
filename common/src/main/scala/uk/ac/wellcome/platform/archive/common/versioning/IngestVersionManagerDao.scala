@@ -12,7 +12,7 @@ trait IngestVersionManagerDao {
 
   def lookupLatestVersionFor(
     externalIdentifier: ExternalIdentifier,
-    storageSpace: StorageSpace): Either[MaximaError, Int]
+    storageSpace: StorageSpace): Either[MaximaError, VersionRecord]
 
   def storeNewVersion(record: VersionRecord): Try[Unit]
 }

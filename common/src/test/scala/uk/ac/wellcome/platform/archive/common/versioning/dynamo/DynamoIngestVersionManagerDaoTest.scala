@@ -21,8 +21,8 @@ class DynamoIngestVersionManagerDaoTest
     testWith: TestWith[IngestVersionManagerDao, R])(
     implicit table: Table): R = {
     Scanamo.exec(dynamoDbClient)(
-      ScanamoTable[DynamoEntry](table.name).putAll(initialRecords.map {
-        DynamoEntry(_)
+      ScanamoTable[DynamoVersionRecord](table.name).putAll(initialRecords.map {
+        DynamoVersionRecord(_)
       }.toSet))
 
     testWith(
@@ -56,7 +56,7 @@ class DynamoIngestVersionManagerDaoTest
         )
 
         val record = BadRecord(
-          id = randomAlphanumeric(),
+          id = randomAlphanumericWithLength(),
           ingestId = createIngestID,
           version = 1
         )

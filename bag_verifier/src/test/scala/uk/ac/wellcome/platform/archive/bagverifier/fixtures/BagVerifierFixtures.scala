@@ -30,7 +30,7 @@ trait BagVerifierFixtures
                                outgoing: MemoryMessageSender,
                                queue: Queue =
                                  Queue("fixture", arn = "arn::fixture"),
-                               stepName: String = randomAlphanumeric())(
+                               stepName: String = randomAlphanumericWithLength())(
     testWith: TestWith[BagVerifierWorker[String, String], R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>

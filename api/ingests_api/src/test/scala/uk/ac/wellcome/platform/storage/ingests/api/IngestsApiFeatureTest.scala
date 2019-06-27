@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixt
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
@@ -35,7 +35,7 @@ class IngestsApiFeatureTest
     with Inside
     with IntegrationPatience
     with JsonAssertions
-    with RandomThings {
+    with StorageRandomThings {
 
   val contextUrl = "http://api.wellcomecollection.org/storage/v1/context.json"
   describe("GET /ingests/:id") {

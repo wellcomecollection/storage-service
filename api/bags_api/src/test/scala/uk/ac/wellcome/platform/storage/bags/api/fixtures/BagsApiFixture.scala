@@ -9,7 +9,7 @@ import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
-  RandomThings,
+  StorageRandomThings,
   StorageManifestVHSFixture
 }
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
@@ -25,7 +25,7 @@ import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagsApiFixture
-    extends RandomThings
+    extends StorageRandomThings
     with ScalaFutures
     with StorageManifestVHSFixture
     with HttpFixtures

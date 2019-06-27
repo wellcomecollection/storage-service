@@ -38,13 +38,13 @@ trait BagReplicatorFixtures
     with LockingServiceFixtures {
 
   def withBagReplicatorWorker[R](
-    queue: Queue = Queue(randomAlphanumeric(), randomAlphanumeric()),
-    bucket: Bucket = Bucket(randomAlphanumeric()),
+    queue: Queue = Queue(randomAlphanumericWithLength(), randomAlphanumericWithLength()),
+    bucket: Bucket = Bucket(randomAlphanumericWithLength()),
     rootPath: Option[String] = None,
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
-    stepName: String = randomAlphanumeric())(
+    stepName: String = randomAlphanumericWithLength())(
     testWith: TestWith[BagReplicatorWorker[String, String], R]
   ): R =
     withActorSystem { implicit actorSystem =>

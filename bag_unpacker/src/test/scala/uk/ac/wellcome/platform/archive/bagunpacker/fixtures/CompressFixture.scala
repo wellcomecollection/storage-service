@@ -14,12 +14,12 @@ import org.apache.commons.compress.compressors.{
 }
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3
 import uk.ac.wellcome.storage.fixtures.S3.Bucket
 
-trait CompressFixture extends RandomThings with S3 with Logging {
+trait CompressFixture extends StorageRandomThings with S3 with Logging {
 
   val defaultFileCount = 10
 

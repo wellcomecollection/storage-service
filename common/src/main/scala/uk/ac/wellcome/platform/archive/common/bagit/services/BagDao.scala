@@ -14,7 +14,6 @@ class BagDao()(implicit s3Client: AmazonS3) extends Logging {
 
   type Stream[T] = InputStream => Try[T]
 
-  import uk.ac.wellcome.platform.archive.common.storage.Locatable._
   import S3StreamableInstances._
   import uk.ac.wellcome.platform.archive.common.bagit.models._
 

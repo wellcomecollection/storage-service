@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures,
-  RandomThings,
+  StorageRandomThings,
   StorageManifestVHSFixture
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -25,7 +25,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.storage.fixtures.S3
 
 trait BagRegisterFixtures
-    extends RandomThings
+    extends StorageRandomThings
     with AlpakkaSQSWorkerFixtures
     with OperationFixtures
     with StorageManifestVHSFixture

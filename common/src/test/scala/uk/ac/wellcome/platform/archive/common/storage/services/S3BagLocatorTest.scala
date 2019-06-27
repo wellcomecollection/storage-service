@@ -2,12 +2,12 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 import scala.util.Success
 
-class S3BagLocatorTest extends FunSpec with Matchers with S3 {
+class S3BagLocatorTest extends FunSpec with Matchers with S3Fixtures {
   describe("locateBagInfo") {
     it("locates a bag-info.txt file in the root") {
       withLocalS3Bucket { bucket =>

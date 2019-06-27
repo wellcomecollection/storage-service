@@ -111,7 +111,7 @@ class BagReplicatorWorkerTest
     it("constructs the correct key") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          val rootPath = randomAlphanumeric()
+          val rootPath = randomAlphanumericWithLength()
           withBagReplicatorWorker(
             bucket = archiveBucket,
             rootPath = Some(rootPath)) { worker =>

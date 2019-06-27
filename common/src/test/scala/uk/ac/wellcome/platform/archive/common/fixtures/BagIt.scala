@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models._
 
 import scala.util.Random
 
-trait BagIt extends RandomThings {
+trait BagIt extends StorageRandomThings {
   private val bagItFileContents = {
     """BagIt-Version: 0.97
       |Tag-File-Character-Encoding: UTF-8

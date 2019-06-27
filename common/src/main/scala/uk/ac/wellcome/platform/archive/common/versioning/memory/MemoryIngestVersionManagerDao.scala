@@ -21,7 +21,7 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
 
   override def lookupLatestVersionFor(
     externalIdentifier: ExternalIdentifier,
-    storageSpace: StorageSpace): Either[NoMaximaValueError, Int] = {
+    storageSpace: StorageSpace): Either[NoMaximaValueError, VersionRecord] = {
     val matchingVersions =
       records
         .filter { record =>
@@ -32,7 +32,7 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
     if (matchingVersions.isEmpty)
       Left(NoMaximaValueError())
     else
-      Right(matchingVersions.maxBy { _.version }.version)
+      Right(matchingVersions.maxBy { _.version })
   }
 
   override def storeNewVersion(record: VersionRecord): Try[Unit] = Try {

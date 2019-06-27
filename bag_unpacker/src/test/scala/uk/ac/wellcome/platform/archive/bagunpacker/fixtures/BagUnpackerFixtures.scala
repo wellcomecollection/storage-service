@@ -30,7 +30,7 @@ trait BagUnpackerFixtures
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
     dstBucket: Bucket,
-    stepName: String = randomAlphanumeric()
+    stepName: String = randomAlphanumericWithLength()
   )(testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
