@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.archive.common.ingests.monitor
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException
-import com.gu.scanamo._
-import com.gu.scanamo.error.{ConditionNotMet, DynamoReadError}
-import com.gu.scanamo.syntax._
+import org.scanamo._
+import org.scanamo.error.{ConditionNotMet, DynamoReadError}
+import org.scanamo.syntax._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._

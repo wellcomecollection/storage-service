@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import com.gu.scanamo.DynamoFormat
+import org.scanamo.DynamoFormat
 import io.circe.{Decoder, Encoder, HCursor, Json}
 
 case class StorageSpace(underlying: String) extends AnyVal {
@@ -15,7 +15,7 @@ object StorageSpace {
     cursor.value.as[String].map(StorageSpace(_))
 
   implicit def evidence: DynamoFormat[StorageSpace] =
-    DynamoFormat.coercedXmap[StorageSpace, String, IllegalArgumentException](
+    DynamoFormat.iso[StorageSpace, String](
       StorageSpace(_)
     )(
       _.underlying

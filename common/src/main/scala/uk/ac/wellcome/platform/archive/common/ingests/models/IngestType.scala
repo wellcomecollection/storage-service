@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
-import com.gu.scanamo.DynamoFormat
+import org.scanamo.DynamoFormat
 import io.circe.CursorOp.DownField
 import io.circe._
 

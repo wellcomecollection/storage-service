@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.verify
 
 import java.io.InputStream
 
-import com.gu.scanamo.DynamoFormat
+import org.scanamo.DynamoFormat
 import grizzled.slf4j.Logging
 import io.circe.{Decoder, Encoder, HCursor, Json}
 import org.apache.commons.codec.binary.Hex
@@ -82,7 +82,7 @@ object ChecksumValue extends Logging {
     cursor.value.as[String].map(ChecksumValue(_))
 
   implicit def format: DynamoFormat[ChecksumValue] =
-    DynamoFormat.coercedXmap[ChecksumValue, String, IllegalArgumentException](
+    DynamoFormat.iso[ChecksumValue, String](
       ChecksumValue(_)
     )(
       _.toString

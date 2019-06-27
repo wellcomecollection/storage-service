@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.versioning.dynamo
 
 import com.amazonaws.services.dynamodbv2.model._
-import com.gu.scanamo.{Scanamo, Table => ScanamoTable}
+import org.scanamo.{Scanamo, Table => ScanamoTable}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.versioning.{

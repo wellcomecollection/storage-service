@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
-import com.gu.scanamo.DynamoFormat
+import org.scanamo.DynamoFormat
 import io.circe.{Decoder, Encoder, HCursor, Json}
 
 case class ExternalIdentifier(underlying: String) extends AnyVal {
@@ -15,10 +15,9 @@ object ExternalIdentifier {
     cursor.value.as[String].map(ExternalIdentifier(_))
 
   implicit def evidence: DynamoFormat[ExternalIdentifier] =
-    DynamoFormat
-      .coercedXmap[ExternalIdentifier, String, IllegalArgumentException](
-        ExternalIdentifier(_)
-      )(
-        _.underlying
-      )
+    DynamoFormat.iso[ExternalIdentifier, String](
+      ExternalIdentifier(_)
+    )(
+      _.underlying
+    )
 }
