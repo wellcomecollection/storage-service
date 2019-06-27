@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common.versioning.dynamo
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import org.scanamo.auto._
 import org.scanamo.syntax._
-import org.scanamo.time.JavaTimeFormats._
 import org.scanamo.{DynamoFormat, Scanamo, Table => ScanamoTable}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
@@ -19,15 +18,20 @@ import scala.util.{Failure, Success, Try}
 class DynamoIngestVersionManagerDao(
   dynamoClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig
+)(
+  implicit
+  formatString: DynamoFormat[String],
+  formatInt: DynamoFormat[Int],
+  formatVersionRecord: DynamoFormat[DynamoVersionRecord]
 ) extends IngestVersionManagerDao {
 
   private val scanamoTable = ScanamoTable[DynamoVersionRecord](dynamoConfig.tableName)
   private val index = scanamoTable.index(dynamoConfig.indexName)
 
   val maxima = new DynamoHashRangeMaxima[String, Int, DynamoVersionRecord] {
-    override protected implicit val formatHashKey: DynamoFormat[String] = DynamoFormat[String]
-    override protected implicit val formatRangeKey: DynamoFormat[Int] = DynamoFormat[Int]
-    override protected implicit val format: DynamoFormat[DynamoVersionRecord] = DynamoFormat[DynamoVersionRecord]
+    override protected implicit val formatHashKey: DynamoFormat[String] = formatString
+    override protected implicit val formatRangeKey: DynamoFormat[Int] =formatInt
+    override protected implicit val format: DynamoFormat[DynamoVersionRecord] = formatVersionRecord
     override protected val client: AmazonDynamoDB = dynamoClient
     override protected val table: ScanamoTable[DynamoVersionRecord] = scanamoTable
   }
