@@ -40,6 +40,7 @@ object IngestType {
   implicit val encoder: Encoder[IngestType] =
     (ingestType: IngestType) => Json.obj("id" -> Json.fromString(ingestType.id))
 
+  // TODO: This won't catch the Throwable above; fix it and test it
   implicit def format: DynamoFormat[IngestType] =
     DynamoFormat.coercedXmap[IngestType, String, IllegalArgumentException](
       id => IngestType.create(id)
