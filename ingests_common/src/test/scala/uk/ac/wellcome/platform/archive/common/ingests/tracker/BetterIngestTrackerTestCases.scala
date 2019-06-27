@@ -151,129 +151,190 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
     }
 
     describe("IngestStatusUpdate") {
-      it("adds an event to an ingest") {
-        val ingest = createIngestWith(events = List.empty)
+      describe("updating the events") {
+        it("adds an event to an ingest") {
+          val ingest = createIngestWith(events = List.empty)
 
-        val event = createIngestEvent
-        val update = createIngestStatusUpdateWith(
-          id = ingest.id,
-          events = List(event)
-        )
+          val event = createIngestEvent
+          val update = createIngestStatusUpdateWith(
+            id = ingest.id,
+            events = List(event)
+          )
 
-        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-          val result = tracker.update(update)
-          result.right.value.identifiedT.events shouldBe Seq(event)
+          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+            val result = tracker.update(update)
+            result.right.value.identifiedT.events shouldBe Seq(event)
 
-          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
-          storedIngest.events shouldBe Seq(event)
+            val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+            storedIngest.events shouldBe Seq(event)
+          }
+        }
+
+        it("adds multiple events to an ingest") {
+          val ingest = createIngestWith(events = List.empty)
+
+          val events = List(createIngestEvent, createIngestEvent, createIngestEvent)
+          val update = createIngestStatusUpdateWith(
+            id = ingest.id,
+            events = events
+          )
+
+          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+            val result = tracker.update(update)
+            result.right.value.identifiedT.events shouldBe events
+
+            val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+            storedIngest.events shouldBe events
+          }
+        }
+
+        it("preserves the existing events on an ingest") {
+          val existingEvents = List(createIngestEvent, createIngestEvent)
+          val ingest = createIngestWith(events = existingEvents)
+
+          val newEvents = List(createIngestEvent, createIngestEvent)
+          val update = createIngestStatusUpdateWith(
+            id = ingest.id,
+            events = newEvents
+          )
+
+          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+            val result = tracker.update(update)
+            result.right.value.identifiedT.events shouldBe existingEvents ++ newEvents
+
+            val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+            storedIngest.events shouldBe existingEvents ++ newEvents
+          }
         }
       }
 
-      it("adds multiple events to an ingest") {
-        val ingest = createIngestWith(events = List.empty)
+      describe("updating the bag ID") {
+        it("adds the bag ID if there isn't one already") {
+          val ingest = createIngestWith(maybeBag = None)
+          val bagId = createBagId
 
-        val events = List(createIngestEvent, createIngestEvent, createIngestEvent)
-        val update = createIngestStatusUpdateWith(
-          id = ingest.id,
-          events = events
-        )
+          val update = createIngestStatusUpdateWith(
+            id = ingest.id,
+            maybeBag = Some(bagId)
+          )
 
-        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-          val result = tracker.update(update)
-          result.right.value.identifiedT.events shouldBe events
+          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+            val result = tracker.update(update)
+            result.right.value.identifiedT.bag shouldBe Some(bagId)
+          }
+        }
 
-          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
-          storedIngest.events shouldBe events
+        it("does not remove an existing bag ID") {
+          val bagId = createBagId
+          val ingest = createIngestWith(maybeBag = Some(bagId))
+
+          val update = createIngestStatusUpdateWith(
+            id = ingest.id,
+            maybeBag = None
+          )
+
+          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+            val result = tracker.update(update)
+            result.right.value.identifiedT.bag shouldBe Some(bagId)
+          }
+        }
+
+        it("updates if the bag ID is already set and matches the update") {
+          val bagId = createBagId
+          val ingest = createIngestWith(maybeBag = Some(bagId))
+
+          val update = createIngestStatusUpdateWith(
+            id = ingest.id,
+            maybeBag = Some(bagId)
+          )
+
+          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+            val result = tracker.update(update)
+            result.right.value.identifiedT.bag shouldBe Some(bagId)
+          }
+        }
+
+        it("errors if the existing bag ID is set and is different") {
+          val ingest = createIngestWith(maybeBag = Some(createBagId))
+
+          val update = createIngestStatusUpdateWith(
+            id = ingest.id,
+            maybeBag = Some(createBagId)
+          )
+
+          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+            val result = tracker.update(update)
+            result.left.value shouldBe MismatchedBagIdError(
+              stored = ingest.bag.get,
+              update = update.affectedBag.get
+            )
+          }
         }
       }
 
-      it("preserves the existing events on an ingest") {
-        val existingEvents = List(createIngestEvent, createIngestEvent)
-        val ingest = createIngestWith(events = existingEvents)
-
-        val newEvents = List(createIngestEvent, createIngestEvent)
-        val update = createIngestStatusUpdateWith(
-          id = ingest.id,
-          events = newEvents
+      describe("updating the status") {
+        val allowedStatusUpdates = Table(
+          ("initial", "update"),
+          (Ingest.Accepted, Ingest.Accepted),
+          (Ingest.Accepted, Ingest.Processing),
+          (Ingest.Accepted, Ingest.Completed),
+          (Ingest.Accepted, Ingest.Failed),
+          (Ingest.Processing, Ingest.Completed),
+          (Ingest.Processing, Ingest.Failed),
         )
 
-        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-          val result = tracker.update(update)
-          result.right.value.identifiedT.events shouldBe existingEvents ++ newEvents
+        it("updates the status of an ingest") {
+          forAll(allowedStatusUpdates) {
+            case (initialStatus: Ingest.Status, updatedStatus: Ingest.Status) =>
+              val ingest = createIngestWith(status = initialStatus)
 
-          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
-          storedIngest.events shouldBe existingEvents ++ newEvents
+              val update = createIngestStatusUpdateWith(
+                id = ingest.id,
+                status = updatedStatus
+              )
+
+              withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+                val result = tracker.update(update)
+                result.right.value.identifiedT.status shouldBe updatedStatus
+              }
+          }
         }
-      }
 
-      it("updates the bag ID on an ingest") {
-        true shouldBe false
-      }
+        val disallowedStatusUpdates = Table(
+          ("initial", "update"),
+          (Ingest.Failed, Ingest.Completed),
+          (Ingest.Failed, Ingest.Processing),
+          (Ingest.Failed, Ingest.Accepted),
+          (Ingest.Completed, Ingest.Failed),
+          (Ingest.Completed, Ingest.Processing),
+          (Ingest.Completed, Ingest.Accepted),
+          (Ingest.Processing, Ingest.Accepted),
+        )
 
-      it("updates if the bag ID is already set and matches the update") {
-        true shouldBe false
+        it("does not allow the status to go backwards") {
+          forAll(disallowedStatusUpdates) {
+            case (initialStatus: Ingest.Status, updatedStatus: Ingest.Status) =>
+              val ingest = createIngestWith(status = initialStatus)
+
+              val update = createIngestStatusUpdateWith(
+                id = ingest.id,
+                status = updatedStatus
+              )
+
+              withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+                val result = tracker.update(update)
+                result.left.value shouldBe a[IngestStatusGoingBackwards]
+              }
+          }
+        }
       }
 
       it("errors if there is no existing ingest with this ID") {
-        true shouldBe false
-      }
+        val update = createIngestStatusUpdate
 
-      it("errors if the existing bag ID is set and is different") {
-        true shouldBe false
-      }
-
-      val allowedStatusUpdates = Table(
-        ("initial", "update"),
-        (Ingest.Accepted, Ingest.Accepted),
-        (Ingest.Accepted, Ingest.Processing),
-        (Ingest.Accepted, Ingest.Completed),
-        (Ingest.Accepted, Ingest.Failed),
-        (Ingest.Processing, Ingest.Completed),
-        (Ingest.Processing, Ingest.Failed),
-      )
-
-      it("updates the status of an ingest") {
-        forAll(allowedStatusUpdates) {
-          case (initialStatus: Ingest.Status, updatedStatus: Ingest.Status) =>
-            val ingest = createIngestWith(status = initialStatus)
-
-            val update = createIngestStatusUpdateWith(
-              id = ingest.id,
-              status = updatedStatus
-            )
-
-            withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-              val result = tracker.update(update)
-              result.right.value.identifiedT.status shouldBe updatedStatus
-            }
-        }
-      }
-
-      val disallowedStatusUpdates = Table(
-        ("initial", "update"),
-        (Ingest.Failed, Ingest.Completed),
-        (Ingest.Failed, Ingest.Processing),
-        (Ingest.Failed, Ingest.Accepted),
-        (Ingest.Completed, Ingest.Failed),
-        (Ingest.Completed, Ingest.Processing),
-        (Ingest.Completed, Ingest.Accepted),
-        (Ingest.Processing, Ingest.Accepted),
-      )
-
-      it("does not allow the status to go backwards") {
-        forAll(disallowedStatusUpdates) {
-          case (initialStatus: Ingest.Status, updatedStatus: Ingest.Status) =>
-            val ingest = createIngestWith(status = initialStatus)
-
-            val update = createIngestStatusUpdateWith(
-              id = ingest.id,
-              status = updatedStatus
-            )
-
-            withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-              val result = tracker.update(update)
-              result.left.value shouldBe a[IngestStatusGoingBackwards]
-            }
+        withIngestTrackerFixtures() { tracker =>
+          val result = tracker.update(update)
+          result.left.value shouldBe a[UpdateNonExistentIngestError]
         }
       }
     }

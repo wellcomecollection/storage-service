@@ -1,13 +1,17 @@
 package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
 
 import scala.util.{Failure, Success, Try}
 
-class IngestStatusGoingBackwardsException(val existing: Ingest.Status, val update: Ingest.Status)
+private class IngestStatusGoingBackwardsException(val existing: Ingest.Status, val update: Ingest.Status)
   extends RuntimeException(s"Received status update $update, but ingest already has status $existing")
+
+private class MismatchedBagIdException(val existing: BagId, val update: BagId)
+  extends RuntimeException(s"Received bag ID $update, but ingest already has bag ID $existing")
 
 trait BetterIngestTracker {
   val underlying: VersionedStore[IngestID, Int, Ingest]
@@ -43,8 +47,10 @@ trait BetterIngestTracker {
               throw new IngestStatusGoingBackwardsException(ingest.status, statusUpdate.status)
             }
 
+            val newBagId = getNewBagId(ingest.bag, statusUpdate.affectedBag)
+
             ingest.copy(
-              bag = statusUpdate.affectedBag,
+              bag = newBagId,
               status = statusUpdate.status,
               events = ingest.events ++ update.events
             )
@@ -69,12 +75,24 @@ trait BetterIngestTracker {
       case Failure(err: IngestStatusGoingBackwardsException) =>
         Left(IngestStatusGoingBackwards(err.existing, err.update))
 
+      case Failure(err: MismatchedBagIdException) =>
+        Left(MismatchedBagIdError(err.existing, err.update))
+
       case Failure(err)       => throw err
       case Success(Left(err)) => throw err.e
-
-
     }
   }
+
+  private def getNewBagId(initial: Option[BagId], update: Option[BagId]): Option[BagId] =
+    (initial, update) match {
+      case (Some(storedId), Some(newId)) if storedId == newId => Some(storedId)
+      case (Some(storedId), Some(newId)) =>
+        throw new MismatchedBagIdException(storedId, newId)
+
+      case (Some(storedId), None) => Some(storedId)
+      case (None, Some(newId))    => Some(newId)
+      case (None, None)           => None
+    }
 
   private def statusUpdateIsAllowed(initial: Ingest.Status, update: Ingest.Status): Boolean =
     initial match {
