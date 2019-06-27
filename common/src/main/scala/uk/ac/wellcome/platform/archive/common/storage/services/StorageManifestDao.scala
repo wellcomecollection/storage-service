@@ -5,7 +5,9 @@ import uk.ac.wellcome.storage.ReadError
 import uk.ac.wellcome.storage.store.{HybridStoreEntry, VersionedStore}
 
 class StorageManifestDao(
-  vhs: VersionedStore[String, Int, HybridStoreEntry[StorageManifest, Map[String, String]]]
+  vhs: VersionedStore[String,
+                      Int,
+                      HybridStoreEntry[StorageManifest, Map[String, String]]]
 ) {
   def get(id: String): Either[ReadError, StorageManifest] =
     vhs.getLatest(id.toString).map { _.identifiedT.t }
