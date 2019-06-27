@@ -5,25 +5,17 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import org.scanamo.auto._
+import org.scanamo.time.JavaTimeFormats._
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
-}
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
-import uk.ac.wellcome.storage.typesafe.{LockingBuilder, S3Builder}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.storage.locking.dynamo.{DynamoLockDao, DynamoLockDaoConfig, DynamoLockingService}
+import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
@@ -48,8 +40,15 @@ object Main extends WellcomeTypesafeApp {
 
     val operationName = OperationNameBuilder.getName(config)
 
-    val lockingService = LockingBuilder
-      .buildDynamoLockingService[Result[ReplicationSummary], Try](config)
+    // TODO: There should be a builder for this
+    implicit val lockDao: DynamoLockDao = new DynamoLockDao(
+      client = DynamoBuilder.buildDynamoClient(config),
+      config = DynamoLockDaoConfig(
+        DynamoBuilder.buildDynamoConfig(config, namespace = "locking")
+      )
+    )
+
+    val lockingService = new DynamoLockingService[Result[ReplicationSummary], Try]()
 
     new BagReplicatorWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),

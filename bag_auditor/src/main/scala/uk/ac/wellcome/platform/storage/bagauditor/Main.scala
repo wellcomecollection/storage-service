@@ -5,6 +5,8 @@ import akka.stream.ActorMaterializer
 import cats.Id
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
+import org.scanamo.auto._
+import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.common.config.builders.{
