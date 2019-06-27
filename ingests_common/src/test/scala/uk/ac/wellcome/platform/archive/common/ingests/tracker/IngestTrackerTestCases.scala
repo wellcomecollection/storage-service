@@ -10,12 +10,12 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest, 
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
 
-trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]] extends FunSpec with Matchers with EitherValues with IngestGenerators with TableDrivenPropertyChecks {
+trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]] extends FunSpec with Matchers with EitherValues with IngestGenerators with TableDrivenPropertyChecks {
   def withStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
 
-  def withIngestTracker[R](initialIngests: Seq[Ingest] = Seq.empty)(testWith: TestWith[BetterIngestTracker, R])(implicit store: StoreImpl): R
+  def withIngestTracker[R](initialIngests: Seq[Ingest] = Seq.empty)(testWith: TestWith[IngestTracker, R])(implicit store: StoreImpl): R
 
-  private def withIngestTrackerFixtures[R](initialIngests: Seq[Ingest] = Seq.empty)(testWith: TestWith[BetterIngestTracker, R]): R =
+  private def withIngestTrackerFixtures[R](initialIngests: Seq[Ingest] = Seq.empty)(testWith: TestWith[IngestTracker, R]): R =
     withStoreImpl { implicit store =>
       withIngestTracker(initialIngests) { tracker =>
         testWith(tracker)

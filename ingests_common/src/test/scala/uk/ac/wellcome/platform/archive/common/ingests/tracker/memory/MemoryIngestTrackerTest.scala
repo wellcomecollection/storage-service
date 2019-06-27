@@ -2,12 +2,14 @@ package uk.ac.wellcome.platform.archive.common.ingests.tracker.memory
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{BetterIngestTracker, BetterIngestTrackerTestCases}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestTracker,
+  IngestTrackerTestCases}
 import uk.ac.wellcome.storage.{StoreReadError, StoreWriteError, UpdateWriteError, Version}
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
-class MemoryIngestTrackerTest extends BetterIngestTrackerTestCases[MemoryVersionedStore[IngestID, Int, Ingest]] {
+class MemoryIngestTrackerTest extends IngestTrackerTestCases[MemoryVersionedStore[IngestID, Int, Ingest]] {
   private def createMemoryStore =
     new MemoryStore[Version[IngestID, Int], Ingest](initialEntries = Map.empty) with MemoryMaxima[IngestID, Ingest]
 
@@ -15,7 +17,7 @@ class MemoryIngestTrackerTest extends BetterIngestTrackerTestCases[MemoryVersion
     testWith(new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore))
 
   override def withIngestTracker[R](initialIngests: Seq[Ingest])(
-    testWith: TestWith[BetterIngestTracker, R])(
+    testWith: TestWith[IngestTracker, R])(
                                      implicit store: MemoryVersionedStore[IngestID, Int, Ingest]): R = {
 
     initialIngests

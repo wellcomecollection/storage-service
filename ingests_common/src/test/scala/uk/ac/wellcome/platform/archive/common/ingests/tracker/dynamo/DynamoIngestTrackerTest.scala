@@ -6,14 +6,16 @@ import org.scanamo.auto._
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{BetterIngestTracker, BetterIngestTrackerTestCases}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestTracker,
+  IngestTrackerTestCases}
 import uk.ac.wellcome.storage.{StoreReadError, StoreWriteError, UpdateWriteError, Version}
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
-class DynamoIngestTrackerTest extends BetterIngestTrackerTestCases[VersionedStore[IngestID, Int, Ingest]] with DynamoFixtures {
+class DynamoIngestTrackerTest extends IngestTrackerTestCases[VersionedStore[IngestID, Int, Ingest]] with DynamoFixtures {
   def createIngestTrackerTable(table: Table): Table =
     createTableFromRequest(
       table,
@@ -63,7 +65,7 @@ class DynamoIngestTrackerTest extends BetterIngestTrackerTestCases[VersionedStor
     }
 
   // TODO: This can be commonised
-  override def withIngestTracker[R](initialIngests: Seq[Ingest])(testWith: TestWith[BetterIngestTracker, R])(
+  override def withIngestTracker[R](initialIngests: Seq[Ingest])(testWith: TestWith[IngestTracker, R])(
     implicit store: VersionedStore[IngestID, Int, Ingest]): R = {
     initialIngests.foreach { ingest =>
       store.init(ingest.id)(ingest)

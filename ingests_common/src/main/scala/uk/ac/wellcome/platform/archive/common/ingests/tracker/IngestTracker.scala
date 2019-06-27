@@ -19,7 +19,7 @@ private class CallbackStatusGoingBackwardsException(val existing: Callback.Callb
 private class NoCallbackException
   extends RuntimeException("Received callback status update, but ingest doesn't have a callback")
 
-trait BetterIngestTracker {
+trait IngestTracker {
   val underlying: VersionedStore[IngestID, Int, Ingest]
 
   type Result = Either[IngestTrackerError, Identified[Version[IngestID, Int], Ingest]]
