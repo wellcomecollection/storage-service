@@ -6,7 +6,7 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
-import uk.ac.wellcome.storage.{Identified, StoreWriteError, Version}
+import uk.ac.wellcome.storage.{Identified, StoreReadError, StoreWriteError, Version}
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
@@ -23,6 +23,7 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
     }
 
   def withBrokenInitStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
+  def withBrokenGetStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
 
   describe("init()") {
     it("creates an ingest") {
@@ -49,10 +50,34 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
       }
     }
 
-    it("catches an init() error from the underlying store") {
+    it("wraps an init() error from the underlying store") {
       withBrokenInitStoreImpl { implicit store =>
         withIngestTracker() { tracker =>
           tracker.init(createIngest).left.value shouldBe a[IngestTrackerStoreError]
+        }
+      }
+    }
+  }
+
+  describe("get()") {
+    it("finds an ingest") {
+      val ingest = createIngest
+
+      withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+        tracker.get(ingest.id).right.value shouldBe Identified(Version(ingest.id, 0), ingest)
+      }
+    }
+
+    it("returns an IngestNotFound if the ingest doesn't exist") {
+      withIngestTrackerFixtures() { tracker =>
+        tracker.get(createIngestID).left.value shouldBe a[IngestDoesNotExistError]
+      }
+    }
+
+    it("wraps a get() error from the underlying store") {
+      withBrokenGetStoreImpl { implicit store =>
+        withIngestTracker() { tracker =>
+          tracker.get(createIngestID).left.value shouldBe a[IngestTrackerStoreError]
         }
       }
     }
@@ -80,6 +105,13 @@ class MemoryIngestTrackerTest extends BetterIngestTrackerTestCases[MemoryVersion
     testWith(
       new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
         override def init(id: IngestID)(t: Ingest) = Left(StoreWriteError(new Throwable("BOOM!")))
+      }
+    )
+
+  override def withBrokenGetStoreImpl[R](testWith: TestWith[MemoryVersionedStore[IngestID, Int, Ingest], R]): R =
+    testWith(
+      new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
+        override def getLatest(id: IngestID) = Left(StoreReadError(new Throwable("BOOM!")))
       }
     )
 }
