@@ -6,11 +6,11 @@ import org.scalatest.{EitherValues, FunSpec, OptionValues}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, LocateFailure}
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 class S3StreamableTest
     extends FunSpec
-    with S3
+    with S3Fixtures
     with OptionValues
     with EitherValues
     with StorageRandomThings {
@@ -22,8 +22,8 @@ class S3StreamableTest
   implicit val thingResolver: Locatable[Thing] = new Locatable[Thing] {
     override def locate(thing: Thing)(root: Option[ObjectLocation])
       : Either[LocateFailure[Thing], ObjectLocation] = {
-      val paths = Paths.get(root.get.key, thing.stuff)
-      Right(root.get.copy(key = paths.toString))
+      val paths = Paths.get(root.get.path, thing.stuff)
+      Right(root.get.copy(path = paths.toString))
     }
   }
 

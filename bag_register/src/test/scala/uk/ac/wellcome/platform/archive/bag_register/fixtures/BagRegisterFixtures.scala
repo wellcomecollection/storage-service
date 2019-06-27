@@ -34,7 +34,7 @@ trait BagRegisterFixtures
     with S3 {
 
   type Fixtures = (BagRegisterWorker[String, String],
-                   StorageManifestVersionedDao,
+                   StorageManifestIndex,
                    StorageManifestStore,
                    MemoryMessageSender,
                    MemoryMessageSender,

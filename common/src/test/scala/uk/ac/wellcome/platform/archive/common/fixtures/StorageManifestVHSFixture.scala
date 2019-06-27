@@ -5,42 +5,49 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.storage.StorageError
-import uk.ac.wellcome.storage.memory.{MemoryObjectStore, MemoryVersionedDao}
-import uk.ac.wellcome.storage.streaming.CodecInstances._
-import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry, VersionedHybridStore}
+import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
+import uk.ac.wellcome.storage.store.HybridIndexedStoreEntry
+import uk.ac.wellcome.storage.store.memory._
+import uk.ac.wellcome.storage.{Version, WriteError}
 
 trait StorageManifestVHSFixture extends EitherValues {
-  type StorageManifestVersionedDao =
+  type StorageManifestIndex =
+    MemoryStore[Version[BagId, Int], HybridIndexedStoreEntry[Version[BagId, Int], String, Map[String, String]]] with MemoryMaxima[BagId, HybridIndexedStoreEntry[Version[BagId, Int], String, Map[String, String]]]
 
+  type StorageManifestTypedStore = MemoryTypedStore[String, StorageManifest]
 
-    MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
-  type StorageManifestStore = MemoryObjectStore[StorageManifest]
+  def createIndex: StorageManifestIndex =
+    new MemoryStore[Version[BagId, Int], HybridIndexedStoreEntry[Version[BagId, Int], String, Map[String, String]]](initialEntries = Map.empty)
+      with MemoryMaxima[BagId, HybridIndexedStoreEntry[Version[BagId, Int], String, Map[String, String]]]
 
-  def createStore: StorageManifestStore =
-    new MemoryObjectStore[StorageManifest]()
-  def createDao: StorageManifestVersionedDao =
-    MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
+  def createTypedStore: StorageManifestTypedStore = {
+    val memoryStoreForStreamStore = new MemoryStore[String, MemoryStreamStoreEntry](Map.empty)
+    implicit val streamStore: MemoryStreamStore[String] = new MemoryStreamStore[String](memoryStoreForStreamStore)
+    new MemoryTypedStore[String, StorageManifest](Map.empty)
+  }
+
   def createStorageManifestDao(
-    dao: StorageManifestVersionedDao = createDao,
-    store: StorageManifestStore = createStore): StorageManifestDao =
+    implicit
+    indexStore: StorageManifestIndex = createIndex,
+    typedStore: StorageManifestTypedStore = createTypedStore): StorageManifestDao =
+    // TODO: This should use a companion object
     new StorageManifestDao(
-      new VersionedHybridStore[String, StorageManifest, EmptyMetadata] {
-        override protected val versionedDao: StorageManifestVersionedDao = dao
-        override protected val objectStore: StorageManifestStore = store
-      })
+      new MemoryVersionedHybridStore[BagId, StorageManifest, Map[String, String]](
+        new MemoryHybridStoreWithMaxima[BagId, StorageManifest, Map[String, String]]()
+      )
+    )
 
   def storeSingleManifest(
     vhs: StorageManifestDao,
-    storageManifest: StorageManifest): Either[StorageError, Unit] =
+    storageManifest: StorageManifest): Either[WriteError, StorageManifest] =
     vhs.put(storageManifest)
 
-  def getStorageManifest(dao: StorageManifestVersionedDao,
-                         store: StorageManifestStore,
+  def getStorageManifest(indexStore: StorageManifestIndex,
+                         typedStore: StorageManifestTypedStore,
                          id: BagId): StorageManifest = {
-    val entry: Entry[String, EmptyMetadata] =
-      dao.entries(id.toString)
+    val version = indexStore.max(id).right.value
+    val entry = indexStore.entries(Version(id, version))
 
-    store.get(entry.location).right.value
+    typedStore.get(entry.typedStoreId).right.value.identifiedT.t
   }
 }

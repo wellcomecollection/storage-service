@@ -21,11 +21,11 @@ class StorageManifestDaoTest
 
     storageManifest.id shouldBe newStorageManifest.id
 
-    val versionedDao = createDao
-    val store = createStore
+    val index = createIndex
+    val typedStore = createTypedStore
 
     val dao: StorageManifestDao =
-      createStorageManifestDao(versionedDao, store)
+      createStorageManifestDao(index, typedStore)
 
     // Empty get
 
