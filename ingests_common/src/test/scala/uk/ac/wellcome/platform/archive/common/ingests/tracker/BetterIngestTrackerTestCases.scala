@@ -82,6 +82,141 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
       }
     }
   }
+
+  describe("update()") {
+    describe("IngestEventUpdate") {
+      it("adds an event to an ingest") {
+        val ingest = createIngestWith(events = List.empty)
+
+        val event = createIngestEvent
+        val update = createIngestEventUpdateWith(
+          id = ingest.id,
+          events = List(event)
+        )
+
+        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+          val result = tracker.update(update)
+          result.right.value.identifiedT.events shouldBe Seq(event)
+
+          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+          storedIngest.events shouldBe Seq(event)
+        }
+      }
+
+      it("adds multiple events to an ingest") {
+        val ingest = createIngestWith(events = List.empty)
+
+        val events = List(createIngestEvent, createIngestEvent, createIngestEvent)
+        val update = createIngestEventUpdateWith(
+          id = ingest.id,
+          events = events
+        )
+
+        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+          val result = tracker.update(update)
+          result.right.value.identifiedT.events shouldBe events
+
+          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+          storedIngest.events shouldBe events
+        }
+      }
+
+      it("preserves the existing events on an ingest") {
+        val existingEvents = List(createIngestEvent, createIngestEvent)
+        val ingest = createIngestWith(events = existingEvents)
+
+        val newEvents = List(createIngestEvent, createIngestEvent)
+        val update = createIngestEventUpdateWith(
+          id = ingest.id,
+          events = newEvents
+        )
+
+        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+          val result = tracker.update(update)
+          result.right.value.identifiedT.events shouldBe existingEvents ++ newEvents
+
+          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+          storedIngest.events shouldBe existingEvents ++ newEvents
+        }
+      }
+
+      it("errors if there is no existing ingest with this ID") {
+        val update = createIngestEventUpdate
+
+        withIngestTrackerFixtures() { tracker =>
+          tracker.update(update).left.value shouldBe a[UpdateNonExistentIngestError]
+        }
+      }
+    }
+
+    describe("IngestStatusUpdate") {
+      it("adds an event to an ingest") {
+        true shouldBe false
+      }
+
+      it("adds multiple events to an ingest") {
+        true shouldBe false
+      }
+
+      it("preserves the existing events on an ingest") {
+        true shouldBe false
+      }
+
+      it("updates the status of an ingest") {
+        true shouldBe false
+      }
+
+      it("updates the bag ID on an ingest") {
+        true shouldBe false
+      }
+
+      it("errors if the existing status is set and is different") {
+        true shouldBe false
+      }
+
+      it("errors if the existing bag ID is set and is different") {
+        true shouldBe false
+      }
+
+      it("updates if the status is already set and matches the update") {
+        true shouldBe false
+      }
+
+      it("updates if the bag ID is already set and matches the update") {
+        true shouldBe false
+      }
+
+      it("errors if there is no existing ingest with this ID") {
+        true shouldBe false
+      }
+    }
+
+    describe("CallbackStatusUpdate") {
+      it("adds a callback status to an ingest") {
+        true shouldBe false
+      }
+
+      it("passes if the status is already set and matches the update") {
+        true shouldBe false
+      }
+
+      it("errors if the status is already set and is different") {
+        true shouldBe false
+      }
+
+      it("errors if the ingest does not have a callback") {
+        true shouldBe false
+      }
+
+      it("errors if there is no existing ingest with this ID") {
+        true shouldBe false
+      }
+    }
+
+    it("wraps an error from the underlying update() method") {
+      true shouldBe false
+    }
+  }
 }
 
 class MemoryIngestTrackerTest extends BetterIngestTrackerTestCases[MemoryVersionedStore[IngestID, Int, Ingest]] {
