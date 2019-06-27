@@ -500,6 +500,45 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
       }
     }
   }
+
+  describe("listByBagId()") {
+    it("returns an empty list if there aren't any matching ingests") {
+      withIngestTrackerFixtures() { tracker =>
+        tracker.listByBagId(createBagId).right.value shouldBe Seq.empty
+      }
+    }
+
+    it("finds a single matching ingest") {
+      val bagId = createBagId
+
+      val ingest = createIngestWith(
+        maybeBag = Some(bagId)
+      )
+
+      withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+        tracker.listByBagId(bagId).right.value shouldBe Seq(ingest)
+      }
+    }
+
+    it("ignores ingests with a different bag ID or not bag ID") {
+      val bagId = createBagId
+
+      val matchingIngests = (1 to 3).map { _ =>
+        createIngestWith(
+          maybeBag = Some(bagId)
+        )
+      }
+
+      val initialIngests = matchingIngests ++ Seq(
+        createIngestWith(maybeBag = Some(createBagId)),
+        createIngestWith(maybeBag = None)
+      )
+
+      withIngestTrackerFixtures(initialIngests) { tracker =>
+        tracker.listByBagId(bagId).right.value should contain theSameElementsAs matchingIngests
+      }
+    }
+  }
 }
 
 class MemoryIngestTrackerTest extends BetterIngestTrackerTestCases[MemoryVersionedStore[IngestID, Int, Ingest]] {

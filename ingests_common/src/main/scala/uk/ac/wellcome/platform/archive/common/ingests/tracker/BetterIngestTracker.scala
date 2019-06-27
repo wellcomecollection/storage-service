@@ -107,6 +107,15 @@ trait BetterIngestTracker {
     }
   }
 
+  /** Given a bag ID, find the ingests that it was involved in.
+    *
+    * This is intended to meet a particular use case for DLCS during migration and not as part of the
+    * public/documented API.  Consider either removing this functionality or enhancing it to be fully
+    * featured if a use case arises after migration.
+    *
+    */
+  def listByBagId(bagId: BagId): Either[IngestTrackerError, Seq[Ingest]]
+
   private def getNewBagId(initial: Option[BagId], update: Option[BagId]): Option[BagId] =
     (initial, update) match {
       case (Some(storedId), Some(newId)) if storedId == newId => Some(storedId)
