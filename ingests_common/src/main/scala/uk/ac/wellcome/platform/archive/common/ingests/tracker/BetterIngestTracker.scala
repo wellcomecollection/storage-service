@@ -4,15 +4,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
 
-sealed trait IngestTrackerError
+import scala.util.{Failure, Success, Try}
 
-case class IngestTrackerStoreError(err: StorageError) extends IngestTrackerError
-
-case class IngestAlreadyExistsError(err: VersionAlreadyExistsError) extends IngestTrackerError
-
-case class IngestDoesNotExistError(err: NotFoundError) extends IngestTrackerError
-
-case class UpdateNonExistentIngestError(err: UpdateNoSourceError) extends IngestTrackerError
+class IngestStatusGoingBackwardsException(val existing: Ingest.Status, val update: Ingest.Status)
+  extends RuntimeException(s"Received status update $update, but ingest already has status $existing")
 
 trait BetterIngestTracker {
   val underlying: VersionedStore[IngestID, Int, Ingest]
@@ -43,12 +38,18 @@ trait BetterIngestTracker {
             )
 
         case statusUpdate: IngestStatusUpdate =>
-          (ingest: Ingest) =>
+          (ingest: Ingest) => {
+            if (!statusUpdateIsAllowed(ingest.status, statusUpdate.status)) {
+              throw new IngestStatusGoingBackwardsException(ingest.status, statusUpdate.status)
+            }
+
             ingest.copy(
               bag = statusUpdate.affectedBag,
               status = statusUpdate.status,
               events = ingest.events ++ update.events
             )
+          }
+
 
         case callbackStatusUpdate: IngestCallbackStatusUpdate =>
           (ingest: Ingest) =>
@@ -60,10 +61,26 @@ trait BetterIngestTracker {
           )
       }
 
-    underlying.update(update.id)(updateCallback) match {
-      case Right(result)                  => Right(result)
-      case Left(err: UpdateNoSourceError) => Left(UpdateNonExistentIngestError(err))
-      case Left(err)                      => throw err.e
+    Try { underlying.update(update.id)(updateCallback) } match {
+      case Success(Right(result))                  => Right(result)
+
+      case Success(Left(err: UpdateNoSourceError)) => Left(UpdateNonExistentIngestError(err))
+
+      case Failure(err: IngestStatusGoingBackwardsException) =>
+        Left(IngestStatusGoingBackwards(err.existing, err.update))
+
+      case Failure(err)       => throw err
+      case Success(Left(err)) => throw err.e
+
+
     }
   }
+
+  private def statusUpdateIsAllowed(initial: Ingest.Status, update: Ingest.Status): Boolean =
+    initial match {
+      case Ingest.Accepted   => true
+      case Ingest.Processing => update != Ingest.Accepted
+      case Ingest.Completed  => false
+      case Ingest.Failed     => false
+    }
 }

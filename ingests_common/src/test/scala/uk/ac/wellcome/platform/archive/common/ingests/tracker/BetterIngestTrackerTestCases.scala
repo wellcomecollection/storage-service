@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
+import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
@@ -10,7 +11,7 @@ import uk.ac.wellcome.storage.{Identified, StoreReadError, StoreWriteError, Vers
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
-trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]] extends FunSpec with Matchers with EitherValues with IngestGenerators {
+trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]] extends FunSpec with Matchers with EitherValues with IngestGenerators with TableDrivenPropertyChecks {
   def withStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
 
   def withIngestTracker[R](initialIngests: Seq[Ingest] = Seq.empty)(testWith: TestWith[BetterIngestTracker, R])(implicit store: StoreImpl): R
@@ -205,33 +206,7 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
         }
       }
 
-      it("updates the status of an ingest") {
-        val ingest = createIngestWith(status = Ingest.Accepted)
-
-        val update = createIngestStatusUpdateWith(
-          id = ingest.id,
-          status = Ingest.Completed
-        )
-
-        withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-          val result = tracker.update(update)
-          result.right.value.identifiedT.status shouldBe Ingest.Completed
-        }
-      }
-
       it("updates the bag ID on an ingest") {
-        true shouldBe false
-      }
-
-      it("errors if the existing status is set and is different") {
-        true shouldBe false
-      }
-
-      it("errors if the existing bag ID is set and is different") {
-        true shouldBe false
-      }
-
-      it("updates if the status is already set and matches the update") {
         true shouldBe false
       }
 
@@ -241,6 +216,65 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
 
       it("errors if there is no existing ingest with this ID") {
         true shouldBe false
+      }
+
+      it("errors if the existing bag ID is set and is different") {
+        true shouldBe false
+      }
+
+      val allowedStatusUpdates = Table(
+        ("initial", "update"),
+        (Ingest.Accepted, Ingest.Accepted),
+        (Ingest.Accepted, Ingest.Processing),
+        (Ingest.Accepted, Ingest.Completed),
+        (Ingest.Accepted, Ingest.Failed),
+        (Ingest.Processing, Ingest.Completed),
+        (Ingest.Processing, Ingest.Failed),
+      )
+
+      it("updates the status of an ingest") {
+        forAll(allowedStatusUpdates) {
+          case (initialStatus: Ingest.Status, updatedStatus: Ingest.Status) =>
+            val ingest = createIngestWith(status = initialStatus)
+
+            val update = createIngestStatusUpdateWith(
+              id = ingest.id,
+              status = updatedStatus
+            )
+
+            withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+              val result = tracker.update(update)
+              result.right.value.identifiedT.status shouldBe updatedStatus
+            }
+        }
+      }
+
+      val disallowedStatusUpdates = Table(
+        ("initial", "update"),
+        (Ingest.Failed, Ingest.Completed),
+        (Ingest.Failed, Ingest.Processing),
+        (Ingest.Failed, Ingest.Accepted),
+        (Ingest.Completed, Ingest.Failed),
+        (Ingest.Completed, Ingest.Processing),
+        (Ingest.Completed, Ingest.Accepted),
+        (Ingest.Processing, Ingest.Accepted),
+      )
+
+      it("does not allow the status to go backwards") {
+        forAll(disallowedStatusUpdates) {
+          case (initialStatus: Ingest.Status, updatedStatus: Ingest.Status) =>
+            val ingest = createIngestWith(status = initialStatus)
+
+            val update = createIngestStatusUpdateWith(
+              id = ingest.id,
+              status = updatedStatus
+            )
+
+            withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+              val result = tracker.update(update)
+              result.left.value shouldBe a[IngestStatusGoingBackwards]
+            }
+        }
       }
     }
 
