@@ -22,7 +22,7 @@ object IngestType {
       case CreateIngestType.id => CreateIngestType
       case UpdateIngestType.id => UpdateIngestType
       case invalidId =>
-        throw new Throwable(
+        throw new IllegalArgumentException(
           s"""got "$invalidId", valid values are: ${CreateIngestType.id}, ${UpdateIngestType.id}.""")
     }
 
@@ -40,7 +40,7 @@ object IngestType {
   implicit val encoder: Encoder[IngestType] =
     (ingestType: IngestType) => Json.obj("id" -> Json.fromString(ingestType.id))
 
-  // TODO: This won't catch the Throwable above; fix it and test it
+  // TODO: This needs testing
   implicit def format: DynamoFormat[IngestType] =
     DynamoFormat.coercedXmap[IngestType, String, IllegalArgumentException](
       id => IngestType.create(id)

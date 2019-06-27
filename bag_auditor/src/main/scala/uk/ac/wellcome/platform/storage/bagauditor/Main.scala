@@ -5,11 +5,7 @@ import akka.stream.ActorMaterializer
 import cats.Id
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
@@ -27,6 +23,8 @@ import uk.ac.wellcome.platform.storage.bagauditor.services.{
 }
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, LockingBuilder}
+import uk.ac.wellcome.storage.locking.dynamo.{DynamoLockDao, DynamoLockDaoConfig, DynamoLockingService}
+import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
@@ -48,10 +46,15 @@ object Main extends WellcomeTypesafeApp {
 
     val operationName = OperationNameBuilder.getName(config)
 
-    val lockingService =
-      LockingBuilder
-        .buildDynamoLockingService[Either[IngestVersionManagerError, Int], Id](
-          config)
+    // TODO: There should be a builder for this
+    implicit val lockDao = new DynamoLockDao(
+      client = DynamoBuilder.buildDynamoClient(config),
+      config = DynamoLockDaoConfig(
+        DynamoBuilder.buildDynamoConfig(config, namespace = "locking")
+      )
+    )
+
+    val lockingService = new DynamoLockingService[Either[IngestVersionManagerError, Int], Id]()
 
     val ingestVersionManagerDao = new DynamoIngestVersionManagerDao(
       dynamoClient = DynamoBuilder.buildDynamoClient(config),
