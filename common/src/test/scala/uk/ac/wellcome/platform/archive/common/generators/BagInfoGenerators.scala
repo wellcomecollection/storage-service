@@ -8,7 +8,9 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 
-trait BagInfoGenerators extends ExternalIdentifierGenerators with StorageRandomThings {
+trait BagInfoGenerators
+    extends ExternalIdentifierGenerators
+    with StorageRandomThings {
 
   def createBagInfoWith(
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,

@@ -8,7 +8,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManagerDao, VersionRecord}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManagerDao,
+  VersionRecord
+}
 import uk.ac.wellcome.storage.MaximaError
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.maxima.dynamo.DynamoHashRangeMaxima
@@ -25,15 +28,20 @@ class DynamoIngestVersionManagerDao(
   formatVersionRecord: DynamoFormat[DynamoVersionRecord]
 ) extends IngestVersionManagerDao {
 
-  private val scanamoTable = ScanamoTable[DynamoVersionRecord](dynamoConfig.tableName)
+  private val scanamoTable =
+    ScanamoTable[DynamoVersionRecord](dynamoConfig.tableName)
   private val index = scanamoTable.index(dynamoConfig.indexName)
 
   val maxima = new DynamoHashRangeMaxima[String, Int, DynamoVersionRecord] {
-    override protected implicit val formatHashKey: DynamoFormat[String] = formatString
-    override protected implicit val formatRangeKey: DynamoFormat[Int] =formatInt
-    override protected implicit val format: DynamoFormat[DynamoVersionRecord] = formatVersionRecord
+    override protected implicit val formatHashKey: DynamoFormat[String] =
+      formatString
+    override protected implicit val formatRangeKey: DynamoFormat[Int] =
+      formatInt
+    override protected implicit val format: DynamoFormat[DynamoVersionRecord] =
+      formatVersionRecord
     override protected val client: AmazonDynamoDB = dynamoClient
-    override protected val table: ScanamoTable[DynamoVersionRecord] = scanamoTable
+    override protected val table: ScanamoTable[DynamoVersionRecord] =
+      scanamoTable
   }
 
   // TODO: Rewrite this to use Either

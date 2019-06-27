@@ -7,7 +7,11 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
@@ -24,8 +28,16 @@ import uk.ac.wellcome.platform.storage.bagauditor.services.{
   BagAuditorWorker
 }
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
+<<<<<<< HEAD
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, LockingBuilder}
 import uk.ac.wellcome.storage.locking.dynamo.{DynamoLockDao, DynamoLockDaoConfig, DynamoLockingService}
+=======
+import uk.ac.wellcome.storage.locking.dynamo.{
+  DynamoLockDao,
+  DynamoLockDaoConfig,
+  DynamoLockingService
+}
+>>>>>>> Apply auto-formatting rules
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -56,7 +68,8 @@ object Main extends WellcomeTypesafeApp {
       )
     )
 
-    val lockingService = new DynamoLockingService[Either[IngestVersionManagerError, Int], Id]()
+    val lockingService =
+      new DynamoLockingService[Either[IngestVersionManagerError, Int], Id]()
 
     val ingestVersionManagerDao = new DynamoIngestVersionManagerDao(
       dynamoClient = DynamoBuilder.buildDynamoClient(config),

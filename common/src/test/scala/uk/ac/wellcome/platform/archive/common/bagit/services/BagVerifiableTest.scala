@@ -3,14 +3,30 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 import java.net.URI
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetch, BagFetchEntry, BagFile, BagManifest, BagPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagFetch,
+  BagFetchEntry,
+  BagFile,
+  BagManifest,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, SHA256, VerifiableLocation}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  SHA256,
+  VerifiableLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
-class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators with ObjectLocationGenerators {
+class BagVerifiableTest
+    extends FunSpec
+    with Matchers
+    with BagInfoGenerators
+    with ObjectLocationGenerators {
   implicit val resolvable: Resolvable[ObjectLocation] =
     (t: ObjectLocation) => new URI(s"example://${t.namespace}/${t.path}")
 

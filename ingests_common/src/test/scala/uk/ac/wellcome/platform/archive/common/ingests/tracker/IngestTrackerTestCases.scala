@@ -6,16 +6,28 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest, IngestID}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Callback,
+  Ingest,
+  IngestID
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
 
-trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]] extends FunSpec with Matchers with EitherValues with IngestGenerators with TableDrivenPropertyChecks {
+trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
+    extends FunSpec
+    with Matchers
+    with EitherValues
+    with IngestGenerators
+    with TableDrivenPropertyChecks {
   def withStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
 
-  def withIngestTracker[R](initialIngests: Seq[Ingest] = Seq.empty)(testWith: TestWith[IngestTracker, R])(implicit store: StoreImpl): R
+  def withIngestTracker[R](initialIngests: Seq[Ingest] = Seq.empty)(
+    testWith: TestWith[IngestTracker, R])(implicit store: StoreImpl): R
 
-  private def withIngestTrackerFixtures[R](initialIngests: Seq[Ingest] = Seq.empty)(testWith: TestWith[IngestTracker, R]): R =
+  private def withIngestTrackerFixtures[R](initialIngests: Seq[Ingest] =
+                                             Seq.empty)(
+    testWith: TestWith[IngestTracker, R]): R =
     withStoreImpl { implicit store =>
       withIngestTracker(initialIngests) { tracker =>
         testWith(tracker)
@@ -30,7 +42,9 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
     it("creates an ingest") {
       withIngestTrackerFixtures() { tracker =>
         val ingest = createIngest
-        tracker.init(ingest).right.value shouldBe Identified(Version(ingest.id, 0), ingest)
+        tracker.init(ingest).right.value shouldBe Identified(
+          Version(ingest.id, 0),
+          ingest)
       }
     }
 
@@ -54,7 +68,10 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
     it("wraps an init() error from the underlying store") {
       withBrokenInitStoreImpl { implicit store =>
         withIngestTracker() { tracker =>
-          tracker.init(createIngest).left.value shouldBe a[IngestTrackerStoreError]
+          tracker
+            .init(createIngest)
+            .left
+            .value shouldBe a[IngestTrackerStoreError]
         }
       }
     }
@@ -65,20 +82,28 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
       val ingest = createIngest
 
       withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-        tracker.get(ingest.id).right.value shouldBe Identified(Version(ingest.id, 0), ingest)
+        tracker.get(ingest.id).right.value shouldBe Identified(
+          Version(ingest.id, 0),
+          ingest)
       }
     }
 
     it("returns an IngestNotFound if the ingest doesn't exist") {
       withIngestTrackerFixtures() { tracker =>
-        tracker.get(createIngestID).left.value shouldBe a[IngestDoesNotExistError]
+        tracker
+          .get(createIngestID)
+          .left
+          .value shouldBe a[IngestDoesNotExistError]
       }
     }
 
     it("wraps a get() error from the underlying store") {
       withBrokenGetStoreImpl { implicit store =>
         withIngestTracker() { tracker =>
-          tracker.get(createIngestID).left.value shouldBe a[IngestTrackerStoreError]
+          tracker
+            .get(createIngestID)
+            .left
+            .value shouldBe a[IngestTrackerStoreError]
         }
       }
     }
@@ -107,7 +132,8 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
       it("adds multiple events to an ingest") {
         val ingest = createIngestWith(events = List.empty)
 
-        val events = List(createIngestEvent, createIngestEvent, createIngestEvent)
+        val events =
+          List(createIngestEvent, createIngestEvent, createIngestEvent)
         val update = createIngestEventUpdateWith(
           id = ingest.id,
           events = events
@@ -145,7 +171,10 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
         val update = createIngestEventUpdate
 
         withIngestTrackerFixtures() { tracker =>
-          tracker.update(update).left.value shouldBe a[UpdateNonExistentIngestError]
+          tracker
+            .update(update)
+            .left
+            .value shouldBe a[UpdateNonExistentIngestError]
         }
       }
     }
@@ -173,7 +202,8 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
         it("adds multiple events to an ingest") {
           val ingest = createIngestWith(events = List.empty)
 
-          val events = List(createIngestEvent, createIngestEvent, createIngestEvent)
+          val events =
+            List(createIngestEvent, createIngestEvent, createIngestEvent)
           val update = createIngestStatusUpdateWith(
             id = ingest.id,
             events = events
@@ -295,9 +325,10 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
                 status = updatedStatus
               )
 
-              withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-                val result = tracker.update(update)
-                result.right.value.identifiedT.status shouldBe updatedStatus
+              withIngestTrackerFixtures(initialIngests = Seq(ingest)) {
+                tracker =>
+                  val result = tracker.update(update)
+                  result.right.value.identifiedT.status shouldBe updatedStatus
               }
           }
         }
@@ -323,9 +354,10 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
                 status = updatedStatus
               )
 
-              withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-                val result = tracker.update(update)
-                result.left.value shouldBe a[IngestStatusGoingBackwards]
+              withIngestTrackerFixtures(initialIngests = Seq(ingest)) {
+                tracker =>
+                  val result = tracker.update(update)
+                  result.left.value shouldBe a[IngestStatusGoingBackwards]
               }
           }
         }
@@ -364,7 +396,8 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
         it("adds multiple events to an ingest") {
           val ingest = createIngestWith(events = List.empty)
 
-          val events = List(createIngestEvent, createIngestEvent, createIngestEvent)
+          val events =
+            List(createIngestEvent, createIngestEvent, createIngestEvent)
           val update = createIngestCallbackStatusUpdateWith(
             id = ingest.id,
             events = events
@@ -411,12 +444,15 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
 
         it("updates the status of a callback") {
           forAll(allowedCallbackStatusUpdates) {
-            case (initialStatus: Callback.CallbackStatus, updatedStatus: Callback.CallbackStatus) =>
+            case (
+                initialStatus: Callback.CallbackStatus,
+                updatedStatus: Callback.CallbackStatus) =>
               val ingest = createIngestWith(
-                callback = Some(Callback(
-                  uri = new URI("https://example.org/callback"),
-                  status = initialStatus
-                ))
+                callback = Some(
+                  Callback(
+                    uri = new URI("https://example.org/callback"),
+                    status = initialStatus
+                  ))
               )
 
               val update = createIngestCallbackStatusUpdateWith(
@@ -424,10 +460,11 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
                 callbackStatus = updatedStatus
               )
 
-              withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-                val result = tracker.update(update)
-                val ingest = result.right.value.identifiedT
-                ingest.callback.get.status shouldBe updatedStatus
+              withIngestTrackerFixtures(initialIngests = Seq(ingest)) {
+                tracker =>
+                  val result = tracker.update(update)
+                  val ingest = result.right.value.identifiedT
+                  ingest.callback.get.status shouldBe updatedStatus
               }
           }
         }
@@ -442,12 +479,15 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
 
         it("does not allow the callback status to go backwards") {
           forAll(disallowedCallbackStatusUpdates) {
-            case (initialStatus: Callback.CallbackStatus, updatedStatus: Callback.CallbackStatus) =>
+            case (
+                initialStatus: Callback.CallbackStatus,
+                updatedStatus: Callback.CallbackStatus) =>
               val ingest = createIngestWith(
-                callback = Some(Callback(
-                  uri = new URI("https://example.org/callback"),
-                  status = initialStatus
-                ))
+                callback = Some(
+                  Callback(
+                    uri = new URI("https://example.org/callback"),
+                    status = initialStatus
+                  ))
               )
 
               val update = createIngestCallbackStatusUpdateWith(
@@ -455,9 +495,12 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
                 callbackStatus = updatedStatus
               )
 
-              withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-                val result = tracker.update(update)
-                result.left.value shouldBe IngestCallbackStatusGoingBackwards(initialStatus, updatedStatus)
+              withIngestTrackerFixtures(initialIngests = Seq(ingest)) {
+                tracker =>
+                  val result = tracker.update(update)
+                  result.left.value shouldBe IngestCallbackStatusGoingBackwards(
+                    initialStatus,
+                    updatedStatus)
               }
           }
         }
@@ -481,7 +524,10 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
         val update = createIngestCallbackStatusUpdate
 
         withIngestTrackerFixtures() { tracker =>
-          tracker.update(update).left.value shouldBe a[UpdateNonExistentIngestError]
+          tracker
+            .update(update)
+            .left
+            .value shouldBe a[UpdateNonExistentIngestError]
         }
       }
     }
@@ -532,9 +578,11 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
       )
 
       withIngestTrackerFixtures(initialIngests) { tracker =>
-        tracker.listByBagId(bagId).right.value should contain theSameElementsAs matchingIngests
+        tracker
+          .listByBagId(bagId)
+          .right
+          .value should contain theSameElementsAs matchingIngests
       }
     }
   }
 }
-

@@ -7,7 +7,11 @@ import org.scanamo.time.JavaTimeFormats._
 import org.scanamo.{Table => ScanamoTable}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManagerDao, IngestVersionManagerDaoTestCases, VersionRecord}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManagerDao,
+  IngestVersionManagerDaoTestCases,
+  VersionRecord
+}
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 
 import scala.util.Failure

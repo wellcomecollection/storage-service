@@ -15,8 +15,10 @@ class StorageManifestDao(
   def get(id: BagId): Either[ReadError, StorageManifest] =
     vhs.getLatest(id).map { _.identifiedT.t }
 
-  def put(storageManifest: StorageManifest): Either[WriteError, StorageManifest] =
+  def put(
+    storageManifest: StorageManifest): Either[WriteError, StorageManifest] =
     vhs
-      .init(id = storageManifest.id)(HybridStoreEntry(storageManifest, metadata = Map.empty))
+      .init(id = storageManifest.id)(
+        HybridStoreEntry(storageManifest, metadata = Map.empty))
       .map { _.identifiedT.t }
 }

@@ -13,8 +13,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures,
-  StorageRandomThings,
-  StorageManifestVHSFixture
+  StorageManifestVHSFixture,
+  StorageRandomThings
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{

@@ -13,7 +13,9 @@ trait IngestGenerators extends BagIdGenerators {
 
   val storageLocation = StorageLocation(
     StandardStorageProvider,
-    ObjectLocation(randomAlphanumericWithLength(), randomAlphanumericWithLength()))
+    ObjectLocation(
+      randomAlphanumericWithLength(),
+      randomAlphanumericWithLength()))
 
   def createIngest: Ingest = createIngestWith()
 
@@ -45,9 +47,9 @@ trait IngestGenerators extends BagIdGenerators {
   def createIngestEvent: IngestEvent =
     IngestEvent(randomAlphanumeric)
 
-  def createIngestEventUpdateWith(
-    id: IngestID,
-    events: List[IngestEvent] = List(createIngestEvent)): IngestEventUpdate =
+  def createIngestEventUpdateWith(id: IngestID,
+                                  events: List[IngestEvent] = List(
+                                    createIngestEvent)): IngestEventUpdate =
     IngestEventUpdate(
       id = id,
       events = events

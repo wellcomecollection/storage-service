@@ -3,8 +3,15 @@ package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 import java.io.{File, _}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveOutputStream, ArchiveStreamFactory}
-import org.apache.commons.compress.compressors.{CompressorOutputStream, CompressorStreamFactory}
+import org.apache.commons.compress.archivers.{
+  ArchiveEntry,
+  ArchiveOutputStream,
+  ArchiveStreamFactory
+}
+import org.apache.commons.compress.compressors.{
+  CompressorOutputStream,
+  CompressorStreamFactory
+}
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
@@ -31,10 +38,11 @@ trait CompressFixture extends StorageRandomThings with S3Fixtures with Logging {
     testWith(dstLocation)
   }
 
-  def createTgzArchiveWithRandomFiles(fileCount: Int = 10,
-                                      maxDepth: Int = 4,
-                                      minSize: Int = 265,
-                                      maxSize: Int = 1024): (File, Seq[File], Set[ArchiveEntry]) =
+  def createTgzArchiveWithRandomFiles(
+    fileCount: Int = 10,
+    maxDepth: Int = 4,
+    minSize: Int = 265,
+    maxSize: Int = 1024): (File, Seq[File], Set[ArchiveEntry]) =
     createTgzArchiveWithFiles(
       randomFilesInDirs(
         fileCount = fileCount,
@@ -45,7 +53,8 @@ trait CompressFixture extends StorageRandomThings with S3Fixtures with Logging {
       )
     )
 
-  def createTgzArchiveWithFiles(files: Seq[File]): (File, Seq[File], Set[ArchiveEntry]) =
+  def createTgzArchiveWithFiles(
+    files: Seq[File]): (File, Seq[File], Set[ArchiveEntry]) =
     createArchiveWith(
       archiverName = "tar",
       compressorName = "gz",

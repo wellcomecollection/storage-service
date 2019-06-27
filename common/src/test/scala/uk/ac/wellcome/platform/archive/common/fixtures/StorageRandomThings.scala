@@ -63,7 +63,7 @@ trait StorageRandomThings extends RandomThings {
         Paths
           .get(
             path,
-            s"${ randomAlphanumericWithLength()}.test"
+            s"${randomAlphanumericWithLength()}.test"
           )
           .toString
       )

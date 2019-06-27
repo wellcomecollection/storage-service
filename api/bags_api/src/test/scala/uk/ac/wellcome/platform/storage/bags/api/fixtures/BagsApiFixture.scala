@@ -7,7 +7,11 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageManifestVHSFixture, StorageRandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  HttpFixtures,
+  StorageManifestVHSFixture,
+  StorageRandomThings
+}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
@@ -67,10 +71,18 @@ trait BagsApiFixture
     testWith: TestWith[(StorageManifestDao, MetricsSender, String), R]): R = {
 
     val brokenIndex =
-      new MemoryStore[Version[BagId, Int], HybridIndexedStoreEntry[Version[BagId, Int], String, Map[String, String]]](initialEntries = Map.empty)
-        with MemoryMaxima[BagId, HybridIndexedStoreEntry[Version[BagId, Int], String, Map[String, String]]] {
-      override def max(id: BagId) =
-        Left(MaximaReadError(new Throwable("BOOM!")))
+      new MemoryStore[
+        Version[BagId, Int],
+        HybridIndexedStoreEntry[Version[BagId, Int],
+                                String,
+                                Map[String, String]]](
+        initialEntries = Map.empty) with MemoryMaxima[
+        BagId,
+        HybridIndexedStoreEntry[Version[BagId, Int],
+                                String,
+                                Map[String, String]]] {
+        override def max(id: BagId) =
+          Left(MaximaReadError(new Throwable("BOOM!")))
       }
 
     val brokenVhs = createStorageManifestDao(indexStore = brokenIndex)

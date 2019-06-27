@@ -77,17 +77,26 @@ trait IngestVersionManagerDaoTestCases[Context]
             Some(r))
         }
 
-        dao.lookupLatestVersionFor(
-          externalIdentifier = ExternalIdentifier("acorn"),
-          storageSpace = storageSpaceA).right.value shouldBe recordA3
+        dao
+          .lookupLatestVersionFor(
+            externalIdentifier = ExternalIdentifier("acorn"),
+            storageSpace = storageSpaceA)
+          .right
+          .value shouldBe recordA3
 
-        dao.lookupLatestVersionFor(
-          externalIdentifier = ExternalIdentifier("barley"),
-          storageSpace = storageSpaceB).right.value shouldBe recordB2
+        dao
+          .lookupLatestVersionFor(
+            externalIdentifier = ExternalIdentifier("barley"),
+            storageSpace = storageSpaceB)
+          .right
+          .value shouldBe recordB2
 
-        dao.lookupLatestVersionFor(
-          externalIdentifier = ExternalIdentifier("chestnut"),
-          storageSpace = createStorageSpace).left.value shouldBe a[NoMaximaValueError]
+        dao
+          .lookupLatestVersionFor(
+            externalIdentifier = ExternalIdentifier("chestnut"),
+            storageSpace = createStorageSpace)
+          .left
+          .value shouldBe a[NoMaximaValueError]
       }
     }
   }
@@ -104,9 +113,12 @@ trait IngestVersionManagerDaoTestCases[Context]
         dao2.lookupExistingVersion(record.ingestId) shouldBe Success(
           Some(record))
 
-        dao2.lookupLatestVersionFor(
-          externalIdentifier = record.externalIdentifier,
-          storageSpace = record.storageSpace).right.value shouldBe record
+        dao2
+          .lookupLatestVersionFor(
+            externalIdentifier = record.externalIdentifier,
+            storageSpace = record.storageSpace)
+          .right
+          .value shouldBe record
       }
     }
   }
@@ -149,9 +161,12 @@ trait IngestVersionManagerDaoTestCases[Context]
     it("returns None if there isn't one") {
       withContext { implicit context =>
         withDao(initialRecords = Seq.empty) { dao =>
-          dao.lookupLatestVersionFor(
-            externalIdentifier = createExternalIdentifier,
-            storageSpace = createStorageSpace).left.value shouldBe a[NoMaximaValueError]
+          dao
+            .lookupLatestVersionFor(
+              externalIdentifier = createExternalIdentifier,
+              storageSpace = createStorageSpace)
+            .left
+            .value shouldBe a[NoMaximaValueError]
         }
       }
     }
@@ -169,7 +184,10 @@ trait IngestVersionManagerDaoTestCases[Context]
 
       withContext { implicit context =>
         withDao(initialRecords) { dao =>
-          dao.lookupLatestVersionFor(externalIdentifier, storageSpace).right.value shouldBe initialRecords(4)
+          dao
+            .lookupLatestVersionFor(externalIdentifier, storageSpace)
+            .right
+            .value shouldBe initialRecords(4)
         }
       }
     }
@@ -187,20 +205,29 @@ trait IngestVersionManagerDaoTestCases[Context]
 
       withContext { implicit context =>
         withDao(initialRecords = Seq(record1, record2)) { dao =>
-          dao.lookupLatestVersionFor(
-            externalIdentifier = externalIdentifier,
-            storageSpace = record1.storageSpace
-          ).right.value shouldBe record1
+          dao
+            .lookupLatestVersionFor(
+              externalIdentifier = externalIdentifier,
+              storageSpace = record1.storageSpace
+            )
+            .right
+            .value shouldBe record1
 
-          dao.lookupLatestVersionFor(
-            externalIdentifier = externalIdentifier,
-            storageSpace = record2.storageSpace
-          ).right.value shouldBe record2
+          dao
+            .lookupLatestVersionFor(
+              externalIdentifier = externalIdentifier,
+              storageSpace = record2.storageSpace
+            )
+            .right
+            .value shouldBe record2
 
-          dao.lookupLatestVersionFor(
-            externalIdentifier = externalIdentifier,
-            storageSpace = createStorageSpace
-          ).left.value shouldBe a[NoMaximaValueError]
+          dao
+            .lookupLatestVersionFor(
+              externalIdentifier = externalIdentifier,
+              storageSpace = createStorageSpace
+            )
+            .left
+            .value shouldBe a[NoMaximaValueError]
         }
       }
     }

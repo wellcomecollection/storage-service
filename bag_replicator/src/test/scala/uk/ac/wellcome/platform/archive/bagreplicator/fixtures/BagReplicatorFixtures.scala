@@ -12,11 +12,21 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagReplicator,
+  BagReplicatorWorker
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  MonitoringClientFixture,
+  OperationFixtures
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
+import uk.ac.wellcome.storage.locking.memory.{
+  MemoryLockDao,
+  MemoryLockDaoFixtures
+}
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 
 import scala.collection.JavaConverters._
@@ -31,7 +41,8 @@ trait BagReplicatorFixtures
     with MemoryLockDaoFixtures {
 
   def withBagReplicatorWorker[R](
-    queue: Queue = Queue(randomAlphanumericWithLength(), randomAlphanumericWithLength()),
+    queue: Queue =
+      Queue(randomAlphanumericWithLength(), randomAlphanumericWithLength()),
     bucket: Bucket = Bucket(randomAlphanumericWithLength()),
     rootPath: Option[String] = None,
     ingests: MemoryMessageSender = new MemoryMessageSender(),

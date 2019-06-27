@@ -8,14 +8,22 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
   IngestTracker,
-  IngestTrackerTestCases}
-import uk.ac.wellcome.storage.{StoreReadError, StoreWriteError, UpdateWriteError, Version}
+  IngestTrackerTestCases
+}
+import uk.ac.wellcome.storage.{
+  StoreReadError,
+  StoreWriteError,
+  UpdateWriteError,
+  Version
+}
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
-class DynamoIngestTrackerTest extends IngestTrackerTestCases[VersionedStore[IngestID, Int, Ingest]] with DynamoFixtures {
+class DynamoIngestTrackerTest
+    extends IngestTrackerTestCases[VersionedStore[IngestID, Int, Ingest]]
+    with DynamoFixtures {
   def createIngestTrackerTable(table: Table): Table =
     createTableFromRequest(
       table,
@@ -53,7 +61,8 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[VersionedStore[Inge
           .withWriteCapacityUnits(1L))
     )
 
-  override def withStoreImpl[R](testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
+  override def withStoreImpl[R](
+    testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
     withSpecifiedTable(createIngestTrackerTable) { table =>
       val config = createDynamoConfigWith(table)
 
@@ -65,7 +74,8 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[VersionedStore[Inge
     }
 
   // TODO: This can be commonised
-  override def withIngestTracker[R](initialIngests: Seq[Ingest])(testWith: TestWith[IngestTracker, R])(
+  override def withIngestTracker[R](initialIngests: Seq[Ingest])(
+    testWith: TestWith[IngestTracker, R])(
     implicit store: VersionedStore[IngestID, Int, Ingest]): R = {
     initialIngests.foreach { ingest =>
       store.init(ingest.id)(ingest)
@@ -74,7 +84,8 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[VersionedStore[Inge
     testWith(new DynamoIngestTracker(store))
   }
 
-  override def withBrokenInitStoreImpl[R](testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
+  override def withBrokenInitStoreImpl[R](
+    testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
     withSpecifiedTable(createIngestTrackerTable) { table =>
       val config = createDynamoConfigWith(table)
 
@@ -82,12 +93,14 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[VersionedStore[Inge
         new VersionedStore[IngestID, Int, Ingest](
           new DynamoHashStore[Version[IngestID, Int], Int, Ingest](config)
         ) {
-          override def init(id: IngestID)(t: Ingest) = Left(StoreWriteError(new Throwable("BOOM!")))
+          override def init(id: IngestID)(t: Ingest) =
+            Left(StoreWriteError(new Throwable("BOOM!")))
         }
       )
     }
 
-  override def withBrokenGetStoreImpl[R](testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
+  override def withBrokenGetStoreImpl[R](
+    testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
     withSpecifiedTable(createIngestTrackerTable) { table =>
       val config = createDynamoConfigWith(table)
 
@@ -95,12 +108,14 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[VersionedStore[Inge
         new VersionedStore[IngestID, Int, Ingest](
           new DynamoHashStore[Version[IngestID, Int], Int, Ingest](config)
         ) {
-          override def getLatest(id: IngestID) = Left(StoreReadError(new Throwable("BOOM!")))
+          override def getLatest(id: IngestID) =
+            Left(StoreReadError(new Throwable("BOOM!")))
         }
       )
     }
 
-  override def withBrokenUpdateStoreImpl[R](testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
+  override def withBrokenUpdateStoreImpl[R](
+    testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
     withSpecifiedTable(createIngestTrackerTable) { table =>
       val config = createDynamoConfigWith(table)
 
@@ -108,7 +123,8 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[VersionedStore[Inge
         new VersionedStore[IngestID, Int, Ingest](
           new DynamoHashStore[Version[IngestID, Int], Int, Ingest](config)
         ) {
-          override def update(id: IngestID)(f: Ingest => Ingest) = Left(UpdateWriteError(new Throwable("BOOM!")))
+          override def update(id: IngestID)(f: Ingest => Ingest) =
+            Left(UpdateWriteError(new Throwable("BOOM!")))
         }
       )
     }
