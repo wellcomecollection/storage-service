@@ -1,13 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.ingests.fixtures
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import org.scanamo.DynamoFormat
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest, IngestID}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestType._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Namespace._
