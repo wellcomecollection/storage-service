@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
-import uk.ac.wellcome.storage.{Identified, StoreReadError, StoreWriteError, Version}
+import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
@@ -27,6 +27,7 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
 
   def withBrokenInitStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
   def withBrokenGetStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
+  def withBrokenUpdateStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
 
   describe("init()") {
     it("creates an ingest") {
@@ -489,7 +490,14 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
     }
 
     it("wraps an error from the underlying update() method") {
-      true shouldBe false
+      val ingest = createIngest
+      val update = createIngestCallbackStatusUpdate
+
+      withBrokenUpdateStoreImpl { implicit store =>
+        withIngestTracker(initialIngests = Seq(ingest)) { tracker =>
+          tracker.update(update).left.value shouldBe a[IngestTrackerStoreError]
+        }
+      }
     }
   }
 }
@@ -522,6 +530,13 @@ class MemoryIngestTrackerTest extends BetterIngestTrackerTestCases[MemoryVersion
     testWith(
       new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
         override def getLatest(id: IngestID) = Left(StoreReadError(new Throwable("BOOM!")))
+      }
+    )
+
+  override def withBrokenUpdateStoreImpl[R](testWith: TestWith[MemoryVersionedStore[IngestID, Int, Ingest], R]): R =
+    testWith(
+      new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
+        override def update(id: IngestID)(f: Ingest => Ingest) = Left(UpdateWriteError(new Throwable("BOOM!")))
       }
     )
 }

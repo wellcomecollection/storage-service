@@ -20,3 +20,5 @@ case class MismatchedBagIdError(stored: BagId, update: BagId) extends IngestTrac
 case class IngestCallbackStatusGoingBackwards(stored: Callback.CallbackStatus, update: Callback.CallbackStatus) extends IngestTrackerError
 
 case class NoCallbackOnIngest() extends IngestTrackerError
+
+case class IngestTrackerUpdateError(err: Throwable) extends IngestTrackerError

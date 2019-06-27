@@ -101,8 +101,9 @@ trait BetterIngestTracker {
       case Failure(_: NoCallbackException) =>
         Left(NoCallbackOnIngest())
 
-      case Failure(err)       => throw err
-      case Success(Left(err)) => throw err.e
+      case Success(Left(err)) => Left(IngestTrackerStoreError(err))
+
+      case Failure(err) => Left(IngestTrackerUpdateError(err))
     }
   }
 
