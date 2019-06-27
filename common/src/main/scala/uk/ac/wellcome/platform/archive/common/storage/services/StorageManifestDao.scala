@@ -1,24 +1,17 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.storage.{ReadError, StorageError}
-import uk.ac.wellcome.storage.vhs.{EmptyMetadata, VersionedHybridStore}
+import uk.ac.wellcome.storage.ReadError
+import uk.ac.wellcome.storage.store.{HybridStoreEntry, VersionedStore}
 
 class StorageManifestDao(
-  vhs: VersionedHybridStore[String, StorageManifest, EmptyMetadata]
+  vhs: VersionedStore[String, Int, HybridStoreEntry[StorageManifest, Map[String, String]]]
 ) {
-  def get(id: BagId): Either[ReadError, StorageManifest] = vhs.get(s"$id")
+  def get(id: String): Either[ReadError, StorageManifest] =
+    vhs.getLatest(id.toString).map { _.identifiedT.t }
 
-  def put(storageManifest: StorageManifest): Either[StorageError, Unit] = {
-
-    val ifNotExisting = (storageManifest, EmptyMetadata())
-    val ifExisting = (o: StorageManifest, m: EmptyMetadata) =>
-      (storageManifest, m)
-
-    vhs.update(s"${storageManifest.id}")(ifNotExisting)(ifExisting).map { _ =>
-      ()
-    }
-
-  }
+  def put(storageManifest: StorageManifest): vhs.WriteEither =
+    vhs.init(id = storageManifest.id.toString)(
+      HybridStoreEntry(storageManifest, metadata = Map.empty)
+    )
 }
