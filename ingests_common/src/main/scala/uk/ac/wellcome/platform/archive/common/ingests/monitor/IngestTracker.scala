@@ -62,6 +62,21 @@ class IngestTracker(
   def update(update: IngestUpdate): Try[Ingest] = {
     debug(s"Updating record:${update.id} with:$update")
 
+    // TODO: If you put an empty list of events in the UpdateExpression
+    // below, DynamoDB returns an error:
+    //
+    //    Invalid UpdateExpression: Incorrect operand type for operator or function;
+    //    operator or function: list_append, operand type: NULL (Service: AmazonDynamoDBv2;
+    //    Status Code: 400; Error Code: ValidationException; Request ID: 80fca121-e1e4-408a-925d-4ac18ff7459f)
+    //
+    // We should handle and test this case properly; for now this is here
+    // to spot the egregious uses.
+    if (update.events.isEmpty) {
+      throw new IllegalArgumentException(
+        "Don't pass an empty list of events here!"
+      )
+    }
+
     val eventsUpdate = appendAll('events -> update.events.toList)
 
     val mergedUpdate = update match {
@@ -75,9 +90,13 @@ class IngestTracker(
           'callback \ 'status -> callbackStatusUpdate.callbackStatus)
     }
 
+    println(s"@@AWLC mergedUpdate = $mergedUpdate")
+
     val ops = scanamoTable
       .given(attributeExists('id))
       .update('id -> update.id, mergedUpdate)
+
+    println(s"@@AWLC ops = $ops")
 
     scanamo.exec(ops) match {
       case Left(ConditionNotMet(e: ConditionalCheckFailedException)) => {
