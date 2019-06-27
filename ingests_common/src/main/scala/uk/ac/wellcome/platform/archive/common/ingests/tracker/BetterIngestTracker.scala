@@ -1,15 +1,26 @@
 package uk.ac.wellcome.platform.archive.common.ingests.tracker
+
 import uk.ac.wellcome.platform.archive.common.ingests.models._
+import uk.ac.wellcome.storage.{Identified, StorageError, Version, VersionAlreadyExistsError}
 import uk.ac.wellcome.storage.store.VersionedStore
 
-trait BetterIngestTracker[StoreImpl <: VersionedStore[IngestID, Int, Ingest]] {
-  val underlying: StoreImpl
+sealed trait IngestTrackerError
+
+case class IngestTrackerStoreError(err: StorageError) extends IngestTrackerError
+case class IngestAlreadyExistsError(err: VersionAlreadyExistsError) extends IngestTrackerError
+
+trait BetterIngestTracker {
+  val underlying: VersionedStore[IngestID, Int, Ingest]
+
+  def init(ingest: Ingest): Either[IngestTrackerError, Identified[Version[IngestID, Int], Ingest]]  =
+    underlying.init(ingest.id)(ingest) match {
+      case Right(value)                         => Right(value)
+      case Left(err: VersionAlreadyExistsError) => Left(IngestAlreadyExistsError(err))
+      case Left(err)                            => Left(IngestTrackerStoreError(err))
+    }
 
   def get(id: IngestID): underlying.ReadEither =
     underlying.getLatest(id)
-
-  def init(ingest: Ingest): underlying.WriteEither =
-    underlying.init(ingest.id)(ingest)
 
   def update(update: IngestUpdate): underlying.UpdateEither = {
     update match {
