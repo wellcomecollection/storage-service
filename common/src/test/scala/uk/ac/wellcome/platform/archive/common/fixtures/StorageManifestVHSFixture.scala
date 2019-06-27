@@ -12,6 +12,8 @@ import uk.ac.wellcome.storage.vhs.{EmptyMetadata, Entry, VersionedHybridStore}
 
 trait StorageManifestVHSFixture extends EitherValues {
   type StorageManifestVersionedDao =
+
+
     MemoryVersionedDao[String, Entry[String, EmptyMetadata]]
   type StorageManifestStore = MemoryObjectStore[StorageManifest]
 

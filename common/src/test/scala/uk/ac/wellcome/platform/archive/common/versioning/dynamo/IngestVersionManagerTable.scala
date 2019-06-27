@@ -1,14 +1,14 @@
 package uk.ac.wellcome.platform.archive.common.versioning.dynamo
 
 import com.amazonaws.services.dynamodbv2.model._
-import com.amazonaws.services.dynamodbv2.util.TableUtils.waitUntilActive
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 
-trait IngestVersionManagerTable extends LocalDynamoDb {
-  override def createTable(table: LocalDynamoDb.Table): LocalDynamoDb.Table = {
-    dynamoDbClient.createTable(
+trait IngestVersionManagerTable extends DynamoFixtures {
+  override def createTable(table: Table): Table =
+    createTableFromRequest(
+      table,
       new CreateTableRequest()
         .withTableName(table.name)
         .withKeySchema(new KeySchemaElement()
@@ -48,11 +48,6 @@ trait IngestVersionManagerTable extends LocalDynamoDb {
           .withReadCapacityUnits(1L)
           .withWriteCapacityUnits(1L))
     )
-    eventually {
-      waitUntilActive(dynamoDbClient, table.name)
-    }
-    table
-  }
 
   def withContext[R](testWith: TestWith[Table, R]): R =
     withLocalDynamoDbTable { table =>

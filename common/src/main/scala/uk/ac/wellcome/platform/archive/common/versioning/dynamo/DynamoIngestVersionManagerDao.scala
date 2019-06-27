@@ -32,6 +32,7 @@ class DynamoIngestVersionManagerDao(
     override protected val table: ScanamoTable[DynamoVersionRecord] = scanamoTable
   }
 
+  // TODO: Rewrite this to use Either
   override def lookupExistingVersion(
     ingestId: IngestID): Try[Option[VersionRecord]] = {
     val ops = index.query('ingestId -> ingestId)
