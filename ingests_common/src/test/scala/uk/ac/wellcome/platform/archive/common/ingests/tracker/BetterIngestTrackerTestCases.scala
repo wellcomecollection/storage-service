@@ -465,7 +465,17 @@ trait BetterIngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, In
         }
 
         it("errors if the ingest does not have a callback") {
-          true shouldBe false
+          val ingest = createIngestWith(
+            callback = None
+          )
+          val update = createIngestCallbackStatusUpdateWith(
+            id = ingest.id
+          )
+
+          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
+            val result = tracker.update(update)
+            result.left.value shouldBe a[NoCallbackOnIngest]
+          }
         }
       }
 

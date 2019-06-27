@@ -16,6 +16,9 @@ private class MismatchedBagIdException(val existing: BagId, val update: BagId)
 private class CallbackStatusGoingBackwardsException(val existing: Callback.CallbackStatus, val update: Callback.CallbackStatus)
   extends RuntimeException(s"Received callback status update $update, but ingest already has status $existing")
 
+private class NoCallbackException
+  extends RuntimeException("Received callback status update, but ingest doesn't have a callback")
+
 trait BetterIngestTracker {
   val underlying: VersionedStore[IngestID, Int, Ingest]
 
@@ -62,20 +65,22 @@ trait BetterIngestTracker {
 
         case callbackStatusUpdate: IngestCallbackStatusUpdate =>
           (ingest: Ingest) => {
-            if (!callbackStatusUpdateIsAllowed(ingest.callback.get.status, callbackStatusUpdate.callbackStatus)) {
-              throw new CallbackStatusGoingBackwardsException(
-                ingest.callback.get.status,
-                callbackStatusUpdate.callbackStatus
-              )
-            }
+            ingest.callback match {
+              case Some(callback) =>
+                if (!callbackStatusUpdateIsAllowed(callback.status, callbackStatusUpdate.callbackStatus)) {
+                  throw new CallbackStatusGoingBackwardsException(
+                    callback.status,
+                    callbackStatusUpdate.callbackStatus
+                  )
+                }
 
-            // TODO: What if there's no status?
-            ingest.copy(
-              callback = ingest.callback.map { cb =>
-                cb.copy(status = callbackStatusUpdate.callbackStatus)
-              },
-              events = ingest.events ++ update.events
-            )
+                ingest.copy(
+                  callback = Some(callback.copy(status = callbackStatusUpdate.callbackStatus)),
+                  events = ingest.events ++ update.events
+                )
+
+              case None => throw new NoCallbackException()
+            }
           }
       }
 
@@ -92,6 +97,9 @@ trait BetterIngestTracker {
 
       case Failure(err: CallbackStatusGoingBackwardsException) =>
         Left(IngestCallbackStatusGoingBackwards(err.existing, err.update))
+
+      case Failure(_: NoCallbackException) =>
+        Left(NoCallbackOnIngest())
 
       case Failure(err)       => throw err
       case Success(Left(err)) => throw err.e
