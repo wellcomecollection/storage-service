@@ -1,19 +1,25 @@
 package uk.ac.wellcome.platform.archive.display
 
 import java.net.{URI, URL}
+import java.time.Instant
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models._
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 sealed trait DisplayIngest
 
-case class RequestDisplayIngest(sourceLocation: DisplayLocation,
-                                callback: Option[DisplayCallback],
-                                ingestType: DisplayIngestType,
-                                space: DisplayStorageSpace,
-                                @JsonKey("type")
-                                ontologyType: String = "Ingest")
+case class RequestDisplayIngest(
+  sourceLocation: DisplayLocation,
+  callback: Option[DisplayCallback],
+  ingestType: DisplayIngestType,
+  space: DisplayStorageSpace,
+  externalIdentifier: String,
+  @JsonKey("type")
+  ontologyType: String = "Ingest"
+)
     extends DisplayIngest {
   def toIngest: Ingest =
     Ingest(
@@ -22,8 +28,10 @@ case class RequestDisplayIngest(sourceLocation: DisplayLocation,
       sourceLocation = sourceLocation.toStorageLocation,
       callback = Callback(
         callback.map(displayCallback => URI.create(displayCallback.url))),
-      space = Namespace(space.id),
-      status = Ingest.Accepted
+      space = StorageSpace(space.id),
+      externalIdentifier = ExternalIdentifier(externalIdentifier),
+      status = Ingest.Accepted,
+      createdDate = Instant.now
     )
 }
 
@@ -34,10 +42,10 @@ case class ResponseDisplayIngest(@JsonKey("@context") context: String,
                                  ingestType: DisplayIngestType,
                                  space: DisplayStorageSpace,
                                  status: DisplayStatus,
-                                 bag: Option[ResponseDisplayIngestBag] = None,
+                                 externalIdentifier: String,
                                  events: Seq[DisplayIngestEvent] = Seq.empty,
                                  createdDate: String,
-                                 lastModifiedDate: String,
+                                 lastModifiedDate: Option[String],
                                  @JsonKey("type") ontologyType: String =
                                    "Ingest")
     extends DisplayIngest
@@ -51,12 +59,12 @@ object ResponseDisplayIngest {
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),
       ingestType = DisplayIngestType(ingest.ingestType),
-      bag = ingest.bag.map { ResponseDisplayIngestBag(_) },
+      externalIdentifier = ingest.externalIdentifier.underlying,
       status = DisplayStatus(ingest.status),
       events = ingest.events
         .sortBy { _.createdDate }
         .map { DisplayIngestEvent(_) },
       createdDate = ingest.createdDate.toString,
-      lastModifiedDate = ingest.lastModifiedDate.toString
+      lastModifiedDate = ingest.lastModifiedDate.map { _.toString }
     )
 }

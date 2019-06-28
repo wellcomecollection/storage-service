@@ -34,7 +34,8 @@ trait PayloadGenerators
       ingestId = ingestId,
       ingestType = ingestType,
       storageSpace = storageSpace,
-      ingestDate = ingestDate
+      ingestDate = ingestDate,
+      externalIdentifier = createExternalIdentifier
     )
 
   def createPipelineContext: PipelineContext =

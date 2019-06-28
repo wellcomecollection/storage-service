@@ -2,18 +2,16 @@ package uk.ac.wellcome.platform.archive.common
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestType
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestType}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 case class PipelineContext(
   ingestId: IngestID,
   ingestType: IngestType,
   storageSpace: StorageSpace,
-  ingestDate: Instant
+  ingestDate: Instant,
+  externalIdentifier: ExternalIdentifier
 )
 
 case object PipelineContext {
@@ -22,6 +20,7 @@ case object PipelineContext {
       ingestId = ingest.id,
       ingestType = ingest.ingestType,
       storageSpace = StorageSpace(ingest.space.underlying),
-      ingestDate = ingest.createdDate
+      ingestDate = ingest.createdDate,
+      externalIdentifier = ingest.externalIdentifier
     )
 }

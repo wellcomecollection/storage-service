@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.display
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.ingests.models.BagIngest
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 
 case class DisplayIngestMinimal(
   id: UUID,
@@ -11,9 +11,9 @@ case class DisplayIngestMinimal(
 )
 
 case object DisplayIngestMinimal {
-  def apply(bagIngest: BagIngest): DisplayIngestMinimal =
+  def apply(ingest: Ingest): DisplayIngestMinimal =
     DisplayIngestMinimal(
-      id = bagIngest.id.underlying,
-      createdDate = bagIngest.createdDate.toString
+      id = ingest.id.underlying,
+      createdDate = ingest.createdDate.toString
     )
 }
