@@ -8,7 +8,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
   IngestTracker,
   IngestTrackerError
 }
-import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
@@ -25,7 +24,7 @@ object DynamoIngestTracker {
     dynamoClient: AmazonDynamoDB): DynamoIngestTracker =
     new DynamoIngestTracker(
       new VersionedStore[IngestID, Int, Ingest](
-        new DynamoHashStore[Version[IngestID, Int], Int, Ingest](config)
+        new DynamoHashStore[IngestID, Int, Ingest](config)
       )
     )
 }
