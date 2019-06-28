@@ -16,7 +16,9 @@ import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import uk.ac.wellcome.storage.ObjectLocation
@@ -198,7 +200,8 @@ class IngestsApiFeatureTest
     ingestType: String = "create",
     bucket: String = randomAlphanumeric(),
     key: String = randomAlphanumeric(),
-    space: String = randomAlphanumeric()
+    space: String = randomAlphanumeric(),
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier
   ): RequestEntity =
     HttpEntity(
       ContentTypes.`application/json`,
@@ -223,7 +226,8 @@ class IngestsApiFeatureTest
           |  },
           |  "callback": {
           |    "url": "${testCallbackUri.toString}"
-          |  }
+          |  },
+          |  "externalIdentifier: "${externalIdentifier.underlying}"
           |}""".stripMargin
     )
 
@@ -238,10 +242,13 @@ class IngestsApiFeatureTest
             val s3key = "key.txt"
             val spaceName = "somespace"
 
+            val externalIdentifier = createExternalIdentifier
+
             val entity = createRequestWith(
               bucket = bucketName,
               key = s3key,
-              space = spaceName
+              space = spaceName,
+              externalIdentifier = externalIdentifier
             )
 
             val expectedLocationR = s"$baseUrl/(.+)".r
@@ -260,63 +267,54 @@ class IngestsApiFeatureTest
                 Unmarshal(response.entity).to[ResponseDisplayIngest]
 
               whenReady(ingestFuture) { actualIngest =>
-                inside(actualIngest) {
-                  case ResponseDisplayIngest(
-                      actualContextUrl,
-                      actualId,
-                      actualSourceLocation,
-                      Some(
-                        DisplayCallback(
-                          actualCallbackUrl,
-                          Some(DisplayStatus(actualCallbackStatus, "Status")),
-                          "Callback")),
-                      CreateDisplayIngestType,
-                      DisplayStorageSpace(actualSpaceId, "Space"),
-                      DisplayStatus("accepted", "Status"),
-                      None,
-                      Nil,
-                      actualCreatedDate,
-                      actualLastModifiedDate,
-                      "Ingest") =>
-                    actualContextUrl shouldBe contextUrl
-                    actualId shouldBe id
-                    actualSourceLocation shouldBe DisplayLocation(
-                      StandardDisplayProvider,
-                      bucketName,
-                      s3key)
-                    actualCallbackUrl shouldBe testCallbackUri.toString
-                    actualCallbackStatus shouldBe "processing"
-                    actualSpaceId shouldBe spaceName
+                actualIngest.context shouldBe contextUrl
+                actualIngest.id shouldBe id
+                actualIngest.sourceLocation shouldBe DisplayLocation(
+                  provider = StandardDisplayProvider,
+                  bucket = bucketName,
+                  path = s3key
+                )
 
-                    val expectedIngest = Ingest(
-                      id = IngestID(id),
-                      ingestType = CreateIngestType,
-                      sourceLocation = StorageLocation(
-                        StandardStorageProvider,
-                        ObjectLocation(bucketName, s3key)
-                      ),
-                      space = Namespace(spaceName),
-                      callback =
-                        Some(Callback(testCallbackUri, Callback.Pending)),
-                      status = Ingest.Accepted,
-                      bag = None,
-                      createdDate = Instant.parse(actualCreatedDate),
-                      lastModifiedDate = Instant.parse(actualLastModifiedDate),
-                      events = Nil
-                    )
+                actualIngest.callback.isDefined shouldBe true
+                actualIngest.callback.get.url shouldBe testCallbackUri.toString
+                actualIngest.callback.get.status.get shouldBe "processing"
 
-                    assertTableOnlyHasItem[Ingest](expectedIngest, table)
+                actualIngest.ingestType shouldBe CreateDisplayIngestType
 
-                    val expectedPayload = SourceLocationPayload(expectedIngest)
-                    messageSender
-                      .getMessages[SourceLocationPayload] shouldBe Seq(
-                      expectedPayload)
-                }
+                actualIngest.status shouldBe DisplayStatus("accepted")
+
+                actualIngest.space shouldBe DisplayStorageSpace(spaceName, "Space")
+
+                actualIngest.externalIdentifier shouldBe externalIdentifier.underlying
+
+                val expectedIngest = Ingest(
+                  id = IngestID(id),
+                  ingestType = CreateIngestType,
+                  sourceLocation = StorageLocation(
+                    StandardStorageProvider,
+                    ObjectLocation(bucketName, s3key)
+                  ),
+                  space = StorageSpace(spaceName),
+                  callback =
+                    Some(Callback(testCallbackUri, Callback.Pending)),
+                  status = Ingest.Accepted,
+                  externalIdentifier = externalIdentifier,
+                  createdDate = Instant.parse(actualIngest.createdDate),
+                  lastModifiedDate = None,
+                  events = Nil
+                )
+
+                assertTableOnlyHasItem[Ingest](expectedIngest, table)
+
+                val expectedPayload = SourceLocationPayload(expectedIngest)
+                messageSender
+                  .getMessages[SourceLocationPayload] shouldBe Seq(
+                  expectedPayload)
+
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.Success)
               }
-
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.Success)
             }
           }
       }
@@ -736,16 +734,13 @@ class IngestsApiFeatureTest
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
             withIngestTracker(table) { ingestTracker =>
-              val ingest = createIngest
-              ingestTracker.initialise(ingest) shouldBe a[Success[_]]
-
               val bagId = createBagId
-              val bagIngest = BagIngest(
+              val ingest = createIngestWith(
                 id = createIngestID,
-                bagIdIndex = bagId.toString,
-                createdDate = Instant.now
+                space = bagId.space,
+                externalIdentifier = bagId.externalIdentifier
               )
-              givenTableHasItem(bagIngest, table)
+              givenTableHasItem(ingest, table)
 
               whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$bagId") {
                 response =>
@@ -758,7 +753,7 @@ class IngestsApiFeatureTest
 
                   whenReady(displayBagIngestFutures) { displayBagIngests =>
                     displayBagIngests shouldBe List(
-                      DisplayIngestMinimal(bagIngest))
+                      DisplayIngestMinimal(ingest))
                   }
 
                   assertMetricSent(
@@ -776,16 +771,13 @@ class IngestsApiFeatureTest
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
             withIngestTracker(table) { ingestTracker =>
-              val ingest = createIngest
-              ingestTracker.initialise(ingest) shouldBe a[Success[_]]
-
               val bagId = createBagId
-              val bagIngest = BagIngest(
+              val ingest = createIngestWith(
                 id = createIngestID,
-                bagIdIndex = bagId.toString,
-                createdDate = Instant.now
+                space = bagId.space,
+                externalIdentifier = bagId.externalIdentifier
               )
-              givenTableHasItem(bagIngest, table)
+              givenTableHasItem(ingest, table)
 
               whenGetRequestReady(
                 s"$baseUrl/ingests/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}") {
@@ -797,7 +789,7 @@ class IngestsApiFeatureTest
 
                   whenReady(displayBagIngestFutures) { displayBagIngests =>
                     displayBagIngests shouldBe List(
-                      DisplayIngestMinimal(bagIngest))
+                      DisplayIngestMinimal(ingest))
 
                     assertMetricSent(
                       metricsSender,
