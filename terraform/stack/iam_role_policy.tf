@@ -70,11 +70,6 @@ resource "aws_iam_role_policy" "bag_root_finder_metrics" {
 
 # bag auditor
 
-resource "aws_iam_role_policy" "bag_auditor_read_s3_ingests" {
-  role   = "${module.bag_auditor.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_read.json}"
-}
-
 resource "aws_iam_role_policy" "bag_auditor_metrics" {
   role   = "${module.bag_auditor.task_role_name}"
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"

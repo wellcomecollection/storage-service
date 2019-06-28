@@ -770,8 +770,7 @@ class IngestsApiFeatureTest
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
-            withIngestTracker(table) { ingestTracker =>
-              val bagId = createBagId
+            withIngestTracker(table) { ingestTracker =>val bagId = createBagId
               val ingest = createIngestWith(
                 id = createIngestID,
                 space = bagId.space,
