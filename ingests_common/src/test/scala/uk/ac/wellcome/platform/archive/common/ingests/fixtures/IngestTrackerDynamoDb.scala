@@ -27,7 +27,7 @@ trait IngestTrackerDynamoDb extends LocalDynamoDb {
             .withAttributeName("id")
             .withAttributeType("S"),
           new AttributeDefinition()
-            .withAttributeName("storageSpace")
+            .withAttributeName("space")
             .withAttributeType("S"),
           new AttributeDefinition()
             .withAttributeName("externalIdentifier")
@@ -45,7 +45,7 @@ trait IngestTrackerDynamoDb extends LocalDynamoDb {
                 .withAttributeName("externalIdentifier")
                 .withKeyType(KeyType.HASH),
               new KeySchemaElement()
-                .withAttributeName("storageSpace")
+                .withAttributeName("space")
                 .withKeyType(KeyType.RANGE)
             )
             .withProvisionedThroughput(new ProvisionedThroughput()

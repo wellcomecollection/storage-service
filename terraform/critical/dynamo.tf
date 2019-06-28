@@ -21,14 +21,14 @@ resource "aws_dynamodb_table" "ingests" {
   }
 
   attribute {
-    name = "storageSpace"
+    name = "space"
     type = "S"
   }
 
   global_secondary_index {
     name            = "${local.gsi_name}"
     hash_key        = "externalIdentifier"
-    range_key       = "storageSpace"
+    range_key       = "space"
     projection_type = "ALL"
   }
 

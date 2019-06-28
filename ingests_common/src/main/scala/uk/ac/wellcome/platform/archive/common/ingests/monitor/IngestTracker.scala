@@ -115,7 +115,7 @@ class IngestTracker(
     val query = Table[Ingest](dynamoConfig.table)
       .index(dynamoConfig.index)
       .limit(30)
-      .query('storageSpace -> bagId.space and 'externalIdentifier -> bagId.externalIdentifier)
+      .query('space -> bagId.space and 'externalIdentifier -> bagId.externalIdentifier)
     Scanamo.exec(dynamoClient)(query)
   }
 }
