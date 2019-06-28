@@ -23,9 +23,7 @@ class IngestsFeatureTest
         withIngestTracker(table) { ingestTracker =>
           val ingest = ingestTracker.initialise(createIngest).success.value
           val ingestStatusUpdate =
-            createIngestStatusUpdateWith(
-              id = ingest.id,
-              status = Completed)
+            createIngestStatusUpdateWith(id = ingest.id, status = Completed)
 
           sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 

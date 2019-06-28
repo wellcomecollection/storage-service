@@ -3,8 +3,16 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestID, IngestType}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestID,
+  IngestType
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerDaoError
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker

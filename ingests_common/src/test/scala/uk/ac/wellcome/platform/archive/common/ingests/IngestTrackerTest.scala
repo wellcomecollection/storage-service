@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.archive.common.ingests
 import java.time.Instant
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.{GetItemRequest, PutItemRequest, UpdateItemRequest}
+import com.amazonaws.services.dynamodbv2.model.{
+  GetItemRequest,
+  PutItemRequest,
+  UpdateItemRequest
+}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.{FunSpec, TryValues}
@@ -282,25 +286,28 @@ class IngestTrackerTest
           val storageSpace = createStorageSpace
           val externalIdentifier = createExternalIdentifier
 
-          val resultA = ingestTracker.initialise(createIngestWith(
-            createdDate = beforeTime,
-            space = storageSpace,
-            externalIdentifier = externalIdentifier
-          ))
+          val resultA = ingestTracker.initialise(
+            createIngestWith(
+              createdDate = beforeTime,
+              space = storageSpace,
+              externalIdentifier = externalIdentifier
+            ))
           val ingestA = resultA.success.value
 
-          val resultB = ingestTracker.initialise(createIngestWith(
-            createdDate = time,
-            space = storageSpace,
-            externalIdentifier = externalIdentifier
-          ))
+          val resultB = ingestTracker.initialise(
+            createIngestWith(
+              createdDate = time,
+              space = storageSpace,
+              externalIdentifier = externalIdentifier
+            ))
           val ingestB = resultB.success.value
 
-          val resultC = ingestTracker.initialise(createIngestWith(
-            createdDate = afterTime,
-            space = storageSpace,
-            externalIdentifier = externalIdentifier
-          ))
+          val resultC = ingestTracker.initialise(
+            createIngestWith(
+              createdDate = afterTime,
+              space = storageSpace,
+              externalIdentifier = externalIdentifier
+            ))
           val ingestC = resultC.success.value
 
           val bagId = BagId(
@@ -308,7 +315,10 @@ class IngestTrackerTest
             externalIdentifier = externalIdentifier
           )
 
-          ingestTracker.findByBagId(bagId) should contain theSameElementsAs List(ingestC, ingestB, ingestA).map { Right(_) }
+          ingestTracker.findByBagId(bagId) should contain theSameElementsAs List(
+            ingestC,
+            ingestB,
+            ingestA).map { Right(_) }
         }
       }
     }

@@ -19,8 +19,7 @@ case class RequestDisplayIngest(
   externalIdentifier: String,
   @JsonKey("type")
   ontologyType: String = "Ingest"
-)
-    extends DisplayIngest {
+) extends DisplayIngest {
   def toIngest: Ingest =
     Ingest(
       id = IngestID.random,

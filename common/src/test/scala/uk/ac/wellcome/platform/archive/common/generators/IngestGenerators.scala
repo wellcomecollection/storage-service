@@ -26,7 +26,8 @@ trait IngestGenerators extends BagIdGenerators {
                        callback: Option[Callback] = Some(createCallback()),
                        space: StorageSpace = createStorageSpace,
                        status: Status = Ingest.Accepted,
-                       externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+                       externalIdentifier: ExternalIdentifier =
+                         createExternalIdentifier,
                        createdDate: Instant = Instant.now,
                        events: Seq[IngestEvent] = Seq.empty): Ingest =
     Ingest(

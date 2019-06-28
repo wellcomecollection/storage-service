@@ -273,13 +273,16 @@ class IngestsApiFeatureTest
 
                 actualIngest.callback.isDefined shouldBe true
                 actualIngest.callback.get.url shouldBe testCallbackUri.toString
-                actualIngest.callback.get.status.get shouldBe DisplayStatus("processing")
+                actualIngest.callback.get.status.get shouldBe DisplayStatus(
+                  "processing")
 
                 actualIngest.ingestType shouldBe CreateDisplayIngestType
 
                 actualIngest.status shouldBe DisplayStatus("accepted")
 
-                actualIngest.space shouldBe DisplayStorageSpace(spaceName, "Space")
+                actualIngest.space shouldBe DisplayStorageSpace(
+                  spaceName,
+                  "Space")
 
                 actualIngest.externalIdentifier shouldBe externalIdentifier.underlying
 
@@ -291,8 +294,7 @@ class IngestsApiFeatureTest
                     ObjectLocation(bucketName, s3key)
                   ),
                   space = StorageSpace(spaceName),
-                  callback =
-                    Some(Callback(testCallbackUri, Callback.Pending)),
+                  callback = Some(Callback(testCallbackUri, Callback.Pending)),
                   status = Ingest.Accepted,
                   externalIdentifier = externalIdentifier,
                   createdDate = Instant.parse(actualIngest.createdDate),
@@ -819,7 +821,8 @@ class IngestsApiFeatureTest
       withConfiguredApp {
         case (table, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
-            withIngestTracker(table) { ingestTracker =>val bagId = createBagId
+            withIngestTracker(table) { ingestTracker =>
+              val bagId = createBagId
               val ingest = createIngestWith(
                 id = createIngestID,
                 space = bagId.space,

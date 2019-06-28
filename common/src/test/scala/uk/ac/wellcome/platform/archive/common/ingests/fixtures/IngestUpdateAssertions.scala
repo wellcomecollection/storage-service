@@ -9,10 +9,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import scala.util.Try
 
 trait IngestUpdateAssertions extends Inside with Logging with Matchers {
-  def assertTopicReceivesIngestStatus[R](ingestId: IngestID,
-                                         ingests: MemoryMessageSender,
-                                         status: Ingest.Status)(
-    assert: Seq[IngestEvent] => R): Assertion =
+  def assertTopicReceivesIngestStatus[R](
+    ingestId: IngestID,
+    ingests: MemoryMessageSender,
+    status: Ingest.Status)(assert: Seq[IngestEvent] => R): Assertion =
     assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size should be > 0
 

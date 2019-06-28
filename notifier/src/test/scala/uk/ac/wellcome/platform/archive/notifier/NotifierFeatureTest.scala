@@ -64,12 +64,11 @@ class NotifierFeatureTest
               ResponseDisplayIngest(
                 context = "http://localhost/context.json",
                 id = ingest.id.underlying,
-                sourceLocation =
-                  DisplayLocation(
-                    StandardDisplayProvider,
-                    ingest.sourceLocation.location.namespace,
-                    ingest.sourceLocation.location.key
-                  ),
+                sourceLocation = DisplayLocation(
+                  StandardDisplayProvider,
+                  ingest.sourceLocation.location.namespace,
+                  ingest.sourceLocation.location.key
+                ),
                 callback = ingest.callback.map { DisplayCallback(_) },
                 ingestType = CreateDisplayIngestType,
                 space = DisplayStorageSpace(ingest.space.underlying),
@@ -146,10 +145,11 @@ class NotifierFeatureTest
                 space = DisplayStorageSpace(ingest.space.underlying),
                 status = DisplayStatus(ingest.status.toString),
                 externalIdentifier = ingest.externalIdentifier.toString,
-                events = ingest.events.map(event =>
-                  DisplayIngestEvent(
-                    event.description,
-                    event.createdDate.toString)),
+                events = ingest.events.map(
+                  event =>
+                    DisplayIngestEvent(
+                      event.description,
+                      event.createdDate.toString)),
                 createdDate = ingest.createdDate.toString,
                 lastModifiedDate = ingest.lastModifiedDate.map {
                   _.toString
