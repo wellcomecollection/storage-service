@@ -7,8 +7,16 @@ import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestTracker, IngestTrackerTestCases}
-import uk.ac.wellcome.storage.{ReadError, StoreReadError, StoreWriteError, Version}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestTracker,
+  IngestTrackerTestCases
+}
+import uk.ac.wellcome.storage.{
+  ReadError,
+  StoreReadError,
+  StoreWriteError,
+  Version
+}
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.{Table => DynamoTable}
@@ -16,16 +24,22 @@ import uk.ac.wellcome.storage.generators.RandomThings
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
-class DynamoIngestTrackerTest extends IngestTrackerTestCases[DynamoTable] with DynamoFixtures with RandomThings {
+class DynamoIngestTrackerTest
+    extends IngestTrackerTestCases[DynamoTable]
+    with DynamoFixtures
+    with RandomThings {
   override def withContext[R](testWith: TestWith[DynamoTable, R]): R =
     withSpecifiedTable(createIngestTrackerTable) { table =>
       testWith(table)
     }
 
-  override def withIngestTracker[R](initialIngests: Seq[Ingest])(testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R = {
+  override def withIngestTracker[R](initialIngests: Seq[Ingest])(
+    testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R = {
     initialIngests.map { ingest =>
       val entry = DynamoHashEntry(ingest.id, version = 0, payload = ingest)
-      scanamo.exec(ScanamoTable[DynamoHashEntry[IngestID, Int, Ingest]](table.name).put(entry))
+      scanamo.exec(
+        ScanamoTable[DynamoHashEntry[IngestID, Int, Ingest]](table.name)
+          .put(entry))
     }
 
     testWith(
@@ -33,7 +47,8 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[DynamoTable] with D
     )
   }
 
-  override def createTable(table: DynamoTable): DynamoTable = createIngestTrackerTable(table)
+  override def createTable(table: DynamoTable): DynamoTable =
+    createIngestTrackerTable(table)
 
   def createIngestTrackerTable(table: DynamoTable): DynamoTable =
     createTableFromRequest(
@@ -72,14 +87,16 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[DynamoTable] with D
           .withWriteCapacityUnits(1L))
     )
 
-  private def withBrokenPutTracker[R](testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R = {
+  private def withBrokenPutTracker[R](testWith: TestWith[IngestTracker, R])(
+    implicit table: DynamoTable): R = {
     val config = createDynamoConfigWith(table)
 
     testWith(
       new DynamoIngestTracker(config) {
         override val underlying = new VersionedStore[IngestID, Int, Ingest](
           new DynamoHashStore[IngestID, Int, Ingest](config) {
-            override def put(id: Version[IngestID, Int])(t: Ingest): WriteEither =
+            override def put(id: Version[IngestID, Int])(
+              t: Ingest): WriteEither =
               Left(StoreWriteError(new Throwable("BOOM!")))
           }
         )
@@ -87,12 +104,14 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[DynamoTable] with D
     )
   }
 
-  override def withBrokenUnderlyingInitTracker[R](testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R =
+  override def withBrokenUnderlyingInitTracker[R](
+    testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R =
     withBrokenPutTracker { tracker =>
       testWith(tracker)
     }
 
-  override def withBrokenUnderlyingGetTracker[R](testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R = {
+  override def withBrokenUnderlyingGetTracker[R](
+    testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R = {
     val config = createDynamoConfigWith(table)
 
     testWith(
@@ -106,8 +125,9 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[DynamoTable] with D
       }
     )
   }
-  
-  override def withBrokenUnderlyingUpdateTracker[R](testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R =
+
+  override def withBrokenUnderlyingUpdateTracker[R](
+    testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R =
     withBrokenPutTracker { tracker =>
       testWith(tracker)
     }

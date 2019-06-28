@@ -32,10 +32,10 @@ trait IngestTrackerTestCases[Context]
       }
     }
 
-  def withBrokenUnderlyingInitTracker[R](
-    testWith: TestWith[IngestTracker, R])(implicit context: Context): R
-  def withBrokenUnderlyingGetTracker[R](
-    testWith: TestWith[IngestTracker, R])(implicit context: Context): R
+  def withBrokenUnderlyingInitTracker[R](testWith: TestWith[IngestTracker, R])(
+    implicit context: Context): R
+  def withBrokenUnderlyingGetTracker[R](testWith: TestWith[IngestTracker, R])(
+    implicit context: Context): R
   def withBrokenUnderlyingUpdateTracker[R](
     testWith: TestWith[IngestTracker, R])(implicit context: Context): R
 
