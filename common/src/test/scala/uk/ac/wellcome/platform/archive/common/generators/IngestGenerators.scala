@@ -63,8 +63,6 @@ trait IngestGenerators extends BagIdGenerators {
       events = events
     )
 
-  def createSpace = Namespace(randomAlphanumeric())
-
   def createCallback(): Callback = createCallbackWith()
 
   def createCallbackWith(
