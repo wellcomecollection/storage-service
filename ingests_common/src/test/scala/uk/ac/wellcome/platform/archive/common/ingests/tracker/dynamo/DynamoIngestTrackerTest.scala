@@ -5,7 +5,7 @@ import org.scanamo.{Table => ScanamoTable}
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestTracker, IngestTrackerTestCases}
 import uk.ac.wellcome.storage.dynamo._
@@ -19,7 +19,10 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[Table] with DynamoF
     }
 
   override def withIngestTracker[R](initialIngests: Seq[Ingest])(testWith: TestWith[IngestTracker, R])(implicit table: Table): R = {
-    scanamo.exec(ScanamoTable[Ingest](table.name).putAll(initialIngests.toSet))
+    initialIngests.map { ingest =>
+      val entry = DynamoHashEntry(ingest.id, version = 0, payload = ingest)
+      scanamo.exec(ScanamoTable[DynamoHashEntry[IngestID, Int, Ingest]](table.name).put(entry))
+    }
 
     testWith(
       new DynamoIngestTracker(config = createDynamoConfigWith(table))
