@@ -1,4 +1,86 @@
-//package uk.ac.wellcome.platform.archive.common.ingests.tracker.dynamo
+package uk.ac.wellcome.platform.archive.common.ingests.tracker.dynamo
+
+import com.amazonaws.services.dynamodbv2.model._
+import org.scanamo.{Table => ScanamoTable}
+import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestTracker, IngestTrackerTestCases}
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
+
+class DynamoIngestTrackerTest extends IngestTrackerTestCases[Table] with DynamoFixtures {
+  override def withContext[R](testWith: TestWith[Table, R]): R =
+    withSpecifiedTable(createIngestTrackerTable) { table =>
+      testWith(table)
+    }
+
+  override def withIngestTracker[R](initialIngests: Seq[Ingest])(testWith: TestWith[IngestTracker, R])(implicit table: Table): R = {
+    scanamo.exec(ScanamoTable[Ingest](table.name).putAll(initialIngests.toSet))
+
+    testWith(
+      new DynamoIngestTracker(config = createDynamoConfigWith(table))
+    )
+  }
+
+  override def withBrokenInitStoreImpl[R](testWith: TestWith[Table, R]): R = ???
+
+  override def withBrokenGetStoreImpl[R](testWith: TestWith[Table, R]): R = ???
+
+  override def withBrokenUpdateStoreImpl[R](testWith: TestWith[Table, R]): R = ???
+
+  override def createTable(table: Table): Table = createIngestTrackerTable(table)
+
+  def createIngestTrackerTable(table: Table): Table =
+    createTableFromRequest(
+      table,
+      new CreateTableRequest()
+        .withTableName(table.name)
+        .withKeySchema(new KeySchemaElement()
+          .withAttributeName("id")
+          .withKeyType(KeyType.HASH))
+        .withAttributeDefinitions(
+          new AttributeDefinition()
+            .withAttributeName("id")
+            .withAttributeType("S"),
+          new AttributeDefinition()
+            .withAttributeName("bagIdIndex")
+            .withAttributeType("S")
+        )
+        .withGlobalSecondaryIndexes(
+          new GlobalSecondaryIndex()
+            .withIndexName(table.index)
+            .withProjection(
+              new Projection()
+                .withProjectionType(ProjectionType.ALL)
+            )
+            .withKeySchema(
+              new KeySchemaElement()
+                .withAttributeName("bagIdIndex")
+                .withKeyType(KeyType.HASH)
+            )
+            .withProvisionedThroughput(new ProvisionedThroughput()
+              .withReadCapacityUnits(1L)
+              .withWriteCapacityUnits(1L))
+        )
+        .withProvisionedThroughput(new ProvisionedThroughput()
+          .withReadCapacityUnits(1L)
+          .withWriteCapacityUnits(1L))
+    )
+
+//  override def withStoreImpl[R](
+//                                 testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
+//    withSpecifiedTable(createIngestTrackerTable) { table =>
+//      val config = createDynamoConfigWith(table)
+//
+//      testWith(
+//        new VersionedStore[IngestID, Int, Ingest](
+//          new DynamoHashStore[Version[IngestID, Int], Int, Ingest](config)
+//        )
+//      )
+//    }
+
+}
+
 //
 //import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 //import com.amazonaws.services.dynamodbv2.model._
@@ -24,54 +106,6 @@
 //class DynamoIngestTrackerTest
 //    extends IngestTrackerTestCases[VersionedStore[IngestID, Int, Ingest]]
 //    with DynamoFixtures {
-//  def createIngestTrackerTable(table: Table): Table =
-//    createTableFromRequest(
-//      table,
-//      new CreateTableRequest()
-//        .withTableName(table.name)
-//        .withKeySchema(new KeySchemaElement()
-//          .withAttributeName("id")
-//          .withKeyType(KeyType.HASH))
-//        .withAttributeDefinitions(
-//          new AttributeDefinition()
-//            .withAttributeName("id")
-//            .withAttributeType("S"),
-//          new AttributeDefinition()
-//            .withAttributeName("bagIdIndex")
-//            .withAttributeType("S")
-//        )
-//        .withGlobalSecondaryIndexes(
-//          new GlobalSecondaryIndex()
-//            .withIndexName(table.index)
-//            .withProjection(
-//              new Projection()
-//                .withProjectionType(ProjectionType.ALL)
-//            )
-//            .withKeySchema(
-//              new KeySchemaElement()
-//                .withAttributeName("bagIdIndex")
-//                .withKeyType(KeyType.HASH)
-//            )
-//            .withProvisionedThroughput(new ProvisionedThroughput()
-//              .withReadCapacityUnits(1L)
-//              .withWriteCapacityUnits(1L))
-//        )
-//        .withProvisionedThroughput(new ProvisionedThroughput()
-//          .withReadCapacityUnits(1L)
-//          .withWriteCapacityUnits(1L))
-//    )
-//
-//  override def withStoreImpl[R](
-//    testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
-//    withSpecifiedTable(createIngestTrackerTable) { table =>
-//      val config = createDynamoConfigWith(table)
-//
-//      testWith(
-//        new VersionedStore[IngestID, Int, Ingest](
-//          new DynamoHashStore[Version[IngestID, Int], Int, Ingest](config)
-//        )
-//      )
-//    }
 //
 //  // TODO: This can be commonised
 //  override def withIngestTracker[R](initialIngests: Seq[Ingest])(
