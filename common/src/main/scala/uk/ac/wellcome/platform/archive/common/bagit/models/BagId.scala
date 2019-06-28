@@ -8,5 +8,4 @@ case class BagId(
 ) {
   override def toString: String =
     s"$space/$externalIdentifier"
-
 }
