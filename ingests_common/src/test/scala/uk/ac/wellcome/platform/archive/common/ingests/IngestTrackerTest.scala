@@ -13,7 +13,6 @@ import org.mockito.Mockito.when
 import org.scalatest.{FunSpec, TryValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestTrackerFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
@@ -123,35 +122,6 @@ class IngestTrackerTest
   }
 
   describe("update") {
-    it("sets the bag id to a ingest with none") {
-      withIngestTrackerTable { table =>
-        withIngestTracker(table) { ingestTracker =>
-          val result = ingestTracker.initialise(createIngest)
-          val ingest = result.success.value
-
-          val bagId = createBagId
-
-          val ingestUpdate = IngestStatusUpdate(
-            ingest.id,
-            Ingest.Processing,
-            Some(bagId)
-          )
-
-          ingestTracker.update(ingestUpdate)
-
-          val storedIngest = getStoredIngest(ingest, table)
-
-          assertRecent(storedIngest.createdDate)
-          assertRecent(storedIngest.lastModifiedDate)
-          storedIngest.events.map(_.description) should contain theSameElementsAs ingestUpdate.events
-            .map(_.description)
-          storedIngest.events.foreach(event => assertRecent(event.createdDate))
-
-          storedIngest.bag shouldBe ingestUpdate.affectedBag
-        }
-      }
-    }
-
     it("adds a single event to a monitor with no events") {
       withIngestTrackerTable { table =>
         withIngestTracker(table) { ingestTracker =>
@@ -182,12 +152,10 @@ class IngestTrackerTest
           val result = ingestTracker.initialise(createIngest)
           val ingest = result.success.value
 
-          val someBagId = Some(createBagId)
           val ingestUpdate = IngestStatusUpdate(
-            ingest.id,
-            Ingest.Completed,
-            affectedBag = someBagId,
-            List(createIngestEvent)
+            id = ingest.id,
+            status = Ingest.Completed,
+            events = List(createIngestEvent)
           )
 
           ingestTracker.update(ingestUpdate)
@@ -195,7 +163,6 @@ class IngestTrackerTest
           val actualIngest = assertIngestCreated(ingest, table)
 
           actualIngest.status shouldBe Ingest.Completed
-          actualIngest.bag shouldBe someBagId
 
           assertIngestRecordedRecentEvents(
             id = ingestUpdate.id,
@@ -330,34 +297,18 @@ class IngestTrackerTest
           val bagId = createBagId
 
           val ingestAUpdate =
-            createIngestUpdateWith(ingestA.id, bagId)
+            createIngestUpdateWith(ingestA.id)
           ingestTracker.update(ingestAUpdate)
           val ingestBUpdate =
-            createIngestUpdateWith(ingestB.id, bagId)
+            createIngestUpdateWith(ingestB.id)
           ingestTracker.update(ingestBUpdate)
           val ingestCUpdate =
-            createIngestUpdateWith(ingestC.id, bagId)
+            createIngestUpdateWith(ingestC.id)
           ingestTracker.update(ingestCUpdate)
 
           val bagIngests = ingestTracker.findByBagId(bagId)
 
-          bagIngests shouldBe List(
-            BagIngest(
-              id = ingestC.id,
-              bagIdIndex = bagId.toString,
-              createdDate = afterTime
-            ),
-            BagIngest(
-              id = ingestB.id,
-              bagIdIndex = bagId.toString,
-              createdDate = time
-            ),
-            BagIngest(
-              id = ingestA.id,
-              bagIdIndex = bagId.toString,
-              createdDate = beforeTime
-            )
-          ).map { Right(_) }
+          bagIngests shouldBe List(ingestC, ingestB, ingestA).map { Right(_) }
         }
       }
     }
@@ -377,7 +328,7 @@ class IngestTrackerTest
           eventualIngests.map(eventualIngest =>
             eventualIngest.map { ingest =>
               val ingestUpdate =
-                createIngestUpdateWith(ingest.id, bagId)
+                createIngestUpdateWith(ingest.id)
               ingestTracker.update(ingestUpdate)
           })
 
@@ -391,10 +342,9 @@ class IngestTrackerTest
     }
   }
 
-  private def createIngestUpdateWith(id: IngestID, bagId: BagId): IngestUpdate =
+  private def createIngestUpdateWith(id: IngestID): IngestUpdate =
     createIngestStatusUpdateWith(
       id = id,
-      status = Ingest.Processing,
-      maybeBag = Some(bagId)
+      status = Ingest.Processing
     )
 }

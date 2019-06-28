@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.net.URI
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Status
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
@@ -55,13 +55,11 @@ trait IngestGenerators extends BagIdGenerators {
 
   def createIngestStatusUpdateWith(id: IngestID = createIngestID,
                                    status: Status = Ingest.Accepted,
-                                   maybeBag: Option[BagId] = Some(createBagId),
                                    events: Seq[IngestEvent] = List(
                                      createIngestEvent)): IngestStatusUpdate =
     IngestStatusUpdate(
       id = id,
       status = status,
-      affectedBag = maybeBag,
       events = events
     )
 

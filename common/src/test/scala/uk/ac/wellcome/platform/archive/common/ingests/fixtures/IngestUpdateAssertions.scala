@@ -4,7 +4,6 @@ import grizzled.slf4j.Logging
 import org.scalatest.{Assertion, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 import scala.util.Try
@@ -12,8 +11,7 @@ import scala.util.Try
 trait IngestUpdateAssertions extends Inside with Logging with Matchers {
   def assertTopicReceivesIngestStatus[R](ingestId: IngestID,
                                          ingests: MemoryMessageSender,
-                                         status: Ingest.Status,
-                                         expectedBag: Option[BagId] = None)(
+                                         status: Ingest.Status)(
     assert: Seq[IngestEvent] => R): Assertion =
     assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size should be > 0
@@ -22,10 +20,9 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
         .map { ingestUpdate =>
           debug(s"Received IngestUpdate: $ingestUpdate")
           Try(inside(ingestUpdate) {
-            case IngestStatusUpdate(id, actualStatus, maybeBag, events) =>
+            case IngestStatusUpdate(id, actualStatus, events) =>
               id shouldBe ingestId
               actualStatus shouldBe status
-              maybeBag shouldBe expectedBag
               assert(events)
           })
         }

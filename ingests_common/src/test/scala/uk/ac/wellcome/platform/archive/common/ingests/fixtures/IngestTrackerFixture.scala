@@ -36,7 +36,7 @@ trait IngestTrackerFixture
     storedIngest.sourceLocation shouldBe ingest.sourceLocation
 
     assertRecent(storedIngest.createdDate, recentSeconds = 45)
-    assertRecent(storedIngest.lastModifiedDate, recentSeconds = 45)
+    assertRecent(storedIngest.lastModifiedDate.get, recentSeconds = 45)
     storedIngest
   }
 

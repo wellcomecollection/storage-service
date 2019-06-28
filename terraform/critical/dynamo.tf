@@ -16,22 +16,20 @@ resource "aws_dynamodb_table" "ingests" {
   }
 
   attribute {
-    name = "bagIdIndex"
+    name = "externalIdentifier"
     type = "S"
   }
 
   attribute {
-    name = "createdDate"
+    name = "storageSpace"
     type = "S"
   }
 
   global_secondary_index {
     name            = "${local.gsi_name}"
-    hash_key        = "bagIdIndex"
-    range_key       = "createdDate"
-    projection_type = "INCLUDE"
-
-    non_key_attributes = ["bagIdIndex", "id", "createdDate"]
+    hash_key        = "externalIdentifier"
+    range_key       = "storageSpace"
+    projection_type = "ALL"
   }
 
   lifecycle {

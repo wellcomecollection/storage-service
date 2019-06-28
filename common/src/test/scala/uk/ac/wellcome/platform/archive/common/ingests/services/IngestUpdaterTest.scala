@@ -50,20 +50,17 @@ class IngestUpdaterTest
       messageSender = messageSender
     )
 
-    val bagId = createBagId
     val update = ingestUpdater.send(
       ingestId = ingestId,
-      step = createOperationCompletedWith(summary),
-      bagId = Some(bagId)
+      step = createOperationCompletedWith(summary)
     )
 
     update shouldBe a[Success[_]]
 
     assertTopicReceivesIngestStatus(
-      ingestId,
-      messageSender,
-      Ingest.Completed,
-      Some(bagId)) { events =>
+      ingestId = ingestId,
+      ingests = messageSender,
+      status = Ingest.Completed) { events =>
       events should have size 1
       events.head.description shouldBe s"${stepName.capitalize} succeeded (completed)"
     }
@@ -76,20 +73,17 @@ class IngestUpdaterTest
       messageSender = messageSender
     )
 
-    val bagId = createBagId
     val update = ingestUpdater.send(
       ingestId = ingestId,
-      step = createIngestFailureWith(summary),
-      bagId = Some(bagId)
+      step = createIngestFailureWith(summary)
     )
 
     update shouldBe a[Success[_]]
 
     assertTopicReceivesIngestStatus(
-      ingestId,
-      messageSender,
-      Ingest.Failed,
-      Some(bagId)) { events =>
+      ingestId = ingestId,
+      ingests = messageSender,
+      status = Ingest.Failed) { events =>
       events should have size 1
       events.head.description shouldBe s"${stepName.capitalize} failed"
     }
@@ -124,24 +118,20 @@ class IngestUpdaterTest
 
     val failureMessage = randomAlphanumeric(length = 50)
 
-    val bagId = createBagId
-
     val update = ingestUpdater.send(
       ingestId = ingestId,
       step = createIngestFailureWith(
         summary,
         maybeFailureMessage = Some(failureMessage)
-      ),
-      bagId = Some(bagId)
+      )
     )
 
     update shouldBe a[Success[_]]
 
     assertTopicReceivesIngestStatus(
-      ingestId,
-      messageSender,
-      Ingest.Failed,
-      Some(bagId)) { events =>
+      ingestId = ingestId,
+      ingests = messageSender,
+      status = Ingest.Failed) { events =>
       events should have size 1
       events.head.description shouldBe s"${stepName.capitalize} failed - $failureMessage"
     }

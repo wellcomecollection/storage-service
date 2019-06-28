@@ -5,7 +5,6 @@ import com.amazonaws.services.dynamodbv2.model._
 import com.amazonaws.services.dynamodbv2.util.TableUtils.waitUntilActive
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb
 import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
-import scala.collection.JavaConverters._
 import uk.ac.wellcome.fixtures.TestWith
 
 import scala.util.Random
@@ -28,10 +27,10 @@ trait IngestTrackerDynamoDb extends LocalDynamoDb {
             .withAttributeName("id")
             .withAttributeType("S"),
           new AttributeDefinition()
-            .withAttributeName("bagIdIndex")
+            .withAttributeName("storageSpace")
             .withAttributeType("S"),
           new AttributeDefinition()
-            .withAttributeName("createdDate")
+            .withAttributeName("externalIdentifier")
             .withAttributeType("S")
         )
         .withGlobalSecondaryIndexes(
@@ -39,16 +38,14 @@ trait IngestTrackerDynamoDb extends LocalDynamoDb {
             .withIndexName(table.index)
             .withProjection(
               new Projection()
-                .withProjectionType(ProjectionType.INCLUDE)
-                .withNonKeyAttributes(
-                  List("bagIdIndex", "id", "createdDate").asJava)
+                .withProjectionType(ProjectionType.ALL)
             )
             .withKeySchema(
               new KeySchemaElement()
-                .withAttributeName("bagIdIndex")
+                .withAttributeName("externalIdentifier")
                 .withKeyType(KeyType.HASH),
               new KeySchemaElement()
-                .withAttributeName("createdDate")
+                .withAttributeName("storageSpace")
                 .withKeyType(KeyType.RANGE)
             )
             .withProvisionedThroughput(new ProvisionedThroughput()
