@@ -121,10 +121,6 @@ class IngestsApiFeatureTest
                   assertRecent(
                     Instant.parse(root.createdDate.string.getOption(json).get),
                     25)
-                  assertRecent(
-                    Instant.parse(
-                      root.lastModifiedDate.string.getOption(json).get),
-                    25)
                 }
 
                 assertMetricSent(
@@ -227,7 +223,7 @@ class IngestsApiFeatureTest
           |  "callback": {
           |    "url": "${testCallbackUri.toString}"
           |  },
-          |  "externalIdentifier: "${externalIdentifier.underlying}"
+          |  "externalIdentifier": "${externalIdentifier.underlying}"
           |}""".stripMargin
     )
 
@@ -277,7 +273,7 @@ class IngestsApiFeatureTest
 
                 actualIngest.callback.isDefined shouldBe true
                 actualIngest.callback.get.url shouldBe testCallbackUri.toString
-                actualIngest.callback.get.status.get shouldBe "processing"
+                actualIngest.callback.get.status.get shouldBe DisplayStatus("processing")
 
                 actualIngest.ingestType shouldBe CreateDisplayIngestType
 
@@ -393,7 +389,7 @@ class IngestsApiFeatureTest
 
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
-                """|{
+                s"""|{
                    |  "type": "Ingest",
                    |  "ingestType": {
                    |    "id": "create",
@@ -402,7 +398,8 @@ class IngestsApiFeatureTest
                    |  "space": {
                    |    "id": "bcnfgh",
                    |    "type": "Space"
-                   |  }
+                   |  },
+                   |  "externalIdentifier": "${createExternalIdentifier.underlying}"
                    |}""".stripMargin
               )
 
@@ -489,13 +486,14 @@ class IngestsApiFeatureTest
 
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
-                """|{
-                   |  "type": "Ingest",
-                   |  "space": {
-                   |    "id": "bcnfgh",
-                   |    "type": "Space"
-                   |  }
-                   |}""".stripMargin
+                s"""|{
+                    |  "type": "Ingest",
+                    |  "space": {
+                    |    "id": "bcnfgh",
+                    |    "type": "Space"
+                    |  },
+                    |  "externalIdentifier": "${createExternalIdentifier.underlying}"
+                    |}""".stripMargin
               )
 
               whenPostRequestReady(url, entity) { response: HttpResponse =>
@@ -541,7 +539,8 @@ class IngestsApiFeatureTest
                     |  "space": {
                     |    "id": "bcnfgh",
                     |    "type": "Space"
-                    |  }
+                    |  },
+                    |  "externalIdentifier": "${createExternalIdentifier.underlying}"
                     |}""".stripMargin
               )
 
@@ -550,6 +549,53 @@ class IngestsApiFeatureTest
                   response = response,
                   description =
                     "Invalid value at .sourceLocation.bucket: required property not supplied."
+                )
+
+                messageSender.messages shouldBe empty
+
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.UserError)
+              }
+            }
+        }
+      }
+
+      it("if the request doesn't have an externalIdentifier") {
+        withConfiguredApp {
+          case (_, messageSender, metricsSender, baseUrl) =>
+            withMaterializer { implicit materialiser =>
+              val url = s"$baseUrl/ingests"
+
+              val entity = HttpEntity(
+                ContentTypes.`application/json`,
+                s"""|{
+                    |  "type": "Ingest",
+                    |  "ingestType": {
+                    |    "id": "create",
+                    |    "type": "IngestType"
+                    |  },
+                    |  "sourceLocation":{
+                    |    "type": "Location",
+                    |    "provider": {
+                    |      "type": "Provider",
+                    |      "id": "${StandardDisplayProvider.id}"
+                    |    },
+                    |    "bucket": "${randomAlphanumeric()}",
+                    |    "path": "b22454408.zip"
+                    |  },
+                    |  "space": {
+                    |    "id": "bcnfgh",
+                    |    "type": "Space"
+                    |  }
+                    |}""".stripMargin
+              )
+
+              whenPostRequestReady(url, entity) { response: HttpResponse =>
+                assertIsUserErrorResponse(
+                  response = response,
+                  description =
+                    "Invalid value at .externalIdentifier: required property not supplied."
                 )
 
                 messageSender.messages shouldBe empty
@@ -588,7 +634,8 @@ class IngestsApiFeatureTest
                     |  "space": {
                     |    "id": "bcnfgh",
                     |    "type": "Space"
-                    |  }
+                    |  },
+                    |  "externalIdentifier": "${createExternalIdentifier.underlying}"
                     |}""".stripMargin
               )
 
@@ -617,26 +664,27 @@ class IngestsApiFeatureTest
 
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
-                """|{
-                   |  "type": "Ingest",
-                   |  "ingestType": {
-                   |    "id": "create",
-                   |    "type": "IngestType"
-                   |  },
-                   |  "sourceLocation":{
-                   |    "type": "Location",
-                   |    "provider": {
-                   |      "type": "Provider",
-                   |      "id": "blipbloop"
-                   |    },
-                   |    "bucket": "bucket",
-                   |    "path": "b22454408.zip"
-                   |  },
-                   |  "space": {
-                   |    "id": "bcnfgh",
-                   |    "type": "Space"
-                   |  }
-                   |}""".stripMargin
+                s"""|{
+                    |  "type": "Ingest",
+                    |  "ingestType": {
+                    |    "id": "create",
+                    |    "type": "IngestType"
+                    |  },
+                    |  "sourceLocation":{
+                    |    "type": "Location",
+                    |    "provider": {
+                    |      "type": "Provider",
+                    |      "id": "blipbloop"
+                    |    },
+                    |    "bucket": "bucket",
+                    |    "path": "b22454408.zip"
+                    |  },
+                    |  "space": {
+                    |    "id": "bcnfgh",
+                    |    "type": "Space"
+                    |  },
+                    |  "externalIdentifier": "${createExternalIdentifier.underlying}"
+                    |}""".stripMargin
               )
 
               whenPostRequestReady(url, entity) { response: HttpResponse =>
@@ -711,7 +759,8 @@ class IngestsApiFeatureTest
                   |  },
                   |  "callback": {
                   |    "url": "${testCallbackUri.toString}"
-                  |  }
+                  |  },
+                  |  "externalIdentifier": "${createExternalIdentifier.underlying}"
                   |}""".stripMargin
             )
 
