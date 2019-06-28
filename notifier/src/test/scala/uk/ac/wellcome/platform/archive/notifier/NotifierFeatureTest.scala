@@ -60,31 +60,35 @@ class NotifierFeatureTest
               CallbackNotification(ingestId, callbackUri, ingest)
             )
 
+            val expectedResponse =
+              ResponseDisplayIngest(
+                context = "http://localhost/context.json",
+                id = ingest.id.underlying,
+                sourceLocation =
+                  DisplayLocation(
+                    StandardDisplayProvider,
+                    ingest.sourceLocation.location.namespace,
+                    ingest.sourceLocation.location.key
+                  ),
+                callback = ingest.callback.map { DisplayCallback(_) },
+                ingestType = CreateDisplayIngestType,
+                space = DisplayStorageSpace(ingest.space.underlying),
+                status = DisplayStatus(ingest.status.toString),
+                externalIdentifier = ingest.externalIdentifier.toString,
+                events = ingest.events.map { event =>
+                  DisplayIngestEvent(
+                    event.description,
+                    event.createdDate.toString)
+                },
+                createdDate = ingest.createdDate.toString,
+                lastModifiedDate = ingest.lastModifiedDate.map { _.toString }
+              )
+
             eventually {
               wireMock.verifyThat(
                 1,
                 postRequestedFor(urlPathEqualTo(callbackUri.getPath))
-                  .withRequestBody(equalToJson(toJson(ResponseDisplayIngest(
-                    "http://localhost/context.json",
-                    ingest.id.underlying,
-                    DisplayLocation(
-                      StandardDisplayProvider,
-                      ingest.sourceLocation.location.namespace,
-                      ingest.sourceLocation.location.key),
-                    ingest.callback.map(DisplayCallback(_)),
-                    CreateDisplayIngestType,
-                    DisplayStorageSpace(ingest.space.underlying),
-                    DisplayStatus(ingest.status.toString),
-                    ingest.bag.map(bagId =>
-                      ResponseDisplayIngestBag(
-                        s"${bagId.space}/${bagId.externalIdentifier}")),
-                    ingest.events.map(event =>
-                      DisplayIngestEvent(
-                        event.description,
-                        event.createdDate.toString)),
-                    ingest.createdDate.toString,
-                    ingest.lastModifiedDate.toString
-                  )).get))
+                  .withRequestBody(equalToJson(toJson(expectedResponse).get))
               )
             }
         }
@@ -130,31 +134,33 @@ class NotifierFeatureTest
                 CallbackNotification(ingestID, callbackUri, ingest)
               )
 
+              val expectedResponse = ResponseDisplayIngest(
+                context = "http://localhost/context.json",
+                id = ingest.id.underlying,
+                sourceLocation = DisplayLocation(
+                  StandardDisplayProvider,
+                  ingest.sourceLocation.location.namespace,
+                  ingest.sourceLocation.location.key),
+                callback = ingest.callback.map(DisplayCallback(_)),
+                ingestType = DisplayIngestType(ingest.ingestType),
+                space = DisplayStorageSpace(ingest.space.underlying),
+                status = DisplayStatus(ingest.status.toString),
+                externalIdentifier = ingest.externalIdentifier.toString,
+                events = ingest.events.map(event =>
+                  DisplayIngestEvent(
+                    event.description,
+                    event.createdDate.toString)),
+                createdDate = ingest.createdDate.toString,
+                lastModifiedDate = ingest.lastModifiedDate.map {
+                  _.toString
+                }
+              )
+
               eventually {
                 wireMock.verifyThat(
                   1,
                   postRequestedFor(urlPathEqualTo(callbackUri.getPath))
-                    .withRequestBody(equalToJson(toJson(ResponseDisplayIngest(
-                      "http://localhost/context.json",
-                      ingest.id.underlying,
-                      DisplayLocation(
-                        StandardDisplayProvider,
-                        ingest.sourceLocation.location.namespace,
-                        ingest.sourceLocation.location.key),
-                      ingest.callback.map(DisplayCallback(_)),
-                      DisplayIngestType(ingest.ingestType),
-                      DisplayStorageSpace(ingest.space.underlying),
-                      DisplayStatus(ingest.status.toString),
-                      ingest.bag.map(bagId =>
-                        ResponseDisplayIngestBag(
-                          s"${bagId.space}/${bagId.externalIdentifier}")),
-                      ingest.events.map(event =>
-                        DisplayIngestEvent(
-                          event.description,
-                          event.createdDate.toString)),
-                      ingest.createdDate.toString,
-                      ingest.lastModifiedDate.toString
-                    )).get))
+                    .withRequestBody(equalToJson(toJson(expectedResponse).get))
                 )
 
                 val updates = messageSender.getMessages[IngestUpdate]
