@@ -32,9 +32,12 @@ trait IngestTrackerTestCases[Context]
       }
     }
 
-  def withBrokenInitStoreContext[R](testWith: TestWith[Context, R]): R
-  def withBrokenGetStoreContext[R](testWith: TestWith[Context, R]): R
-  def withBrokenUpdateStoreContext[R](testWith: TestWith[Context, R]): R
+  def withBrokenUnderlyingInitTracker[R](
+    testWith: TestWith[IngestTracker, R])(implicit context: Context): R
+  def withBrokenUnderlyingGetTracker[R](
+    testWith: TestWith[IngestTracker, R])(implicit context: Context): R
+  def withBrokenUnderlyingUpdateTracker[R](
+    testWith: TestWith[IngestTracker, R])(implicit context: Context): R
 
   describe("init()") {
     it("creates an ingest") {
@@ -64,8 +67,8 @@ trait IngestTrackerTestCases[Context]
     }
 
     it("wraps an init() error from the underlying store") {
-      withBrokenInitStoreContext { implicit context =>
-        withIngestTracker() { tracker =>
+      withContext { implicit context =>
+        withBrokenUnderlyingInitTracker { tracker =>
           tracker
             .init(createIngest)
             .left
@@ -96,8 +99,8 @@ trait IngestTrackerTestCases[Context]
     }
 
     it("wraps a get() error from the underlying store") {
-      withBrokenGetStoreContext { implicit context =>
-        withIngestTracker() { tracker =>
+      withContext { implicit context =>
+        withBrokenUnderlyingGetTracker { tracker =>
           tracker
             .get(createIngestID)
             .left
@@ -531,11 +534,10 @@ trait IngestTrackerTestCases[Context]
     }
 
     it("wraps an error from the underlying update() method") {
-      val ingest = createIngest
       val update = createIngestCallbackStatusUpdate
 
-      withBrokenUpdateStoreContext { implicit context =>
-        withIngestTracker(initialIngests = Seq(ingest)) { tracker =>
+      withContext { implicit context =>
+        withBrokenUnderlyingUpdateTracker { tracker =>
           tracker.update(update).left.value shouldBe a[IngestTrackerStoreError]
         }
       }

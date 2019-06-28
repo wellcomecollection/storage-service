@@ -37,30 +37,41 @@ class MemoryIngestTrackerTest
     testWith(new MemoryIngestTracker(store))
   }
 
-  override def withBrokenInitStoreContext[R](
-    testWith: TestWith[MemoryVersionedStore[IngestID, Int, Ingest], R]): R =
+  override def withBrokenUnderlyingInitTracker[R](
+    testWith: TestWith[IngestTracker, R])(
+    implicit
+    context: MemoryVersionedStore[IngestID, Int, Ingest]): R =
     testWith(
-      new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
-        override def init(id: IngestID)(t: Ingest) =
-          Left(StoreWriteError(new Throwable("BOOM!")))
-      }
+      new MemoryIngestTracker(
+        new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
+          override def init(id: IngestID)(t: Ingest) =
+            Left(StoreWriteError(new Throwable("BOOM!")))
+        }
+      )
     )
 
-  override def withBrokenGetStoreContext[R](
-    testWith: TestWith[MemoryVersionedStore[IngestID, Int, Ingest], R]): R =
+  override def withBrokenUnderlyingGetTracker[R](
+    testWith: TestWith[IngestTracker, R])(
+    implicit
+    context: MemoryVersionedStore[IngestID, Int, Ingest]): R =
     testWith(
-      new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
-        override def getLatest(id: IngestID) =
-          Left(StoreReadError(new Throwable("BOOM!")))
-      }
+      new MemoryIngestTracker(
+        new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
+          override def getLatest(id: IngestID) =
+            Left(StoreReadError(new Throwable("BOOM!")))
+        }
+      )
     )
 
-  override def withBrokenUpdateStoreContext[R](
-    testWith: TestWith[MemoryVersionedStore[IngestID, Int, Ingest], R]): R =
+  override def withBrokenUnderlyingUpdateTracker[R](
+    testWith: TestWith[IngestTracker, R])(
+    implicit context: MemoryVersionedStore[IngestID, Int, Ingest]): R =
     testWith(
-      new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
-        override def update(id: IngestID)(f: Ingest => Ingest) =
-          Left(UpdateWriteError(new Throwable("BOOM!")))
-      }
+      new MemoryIngestTracker(
+        new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
+          override def update(id: IngestID)(f: Ingest => Ingest) =
+            Left(UpdateWriteError(new Throwable("BOOM!")))
+        }
+      )
     )
 }

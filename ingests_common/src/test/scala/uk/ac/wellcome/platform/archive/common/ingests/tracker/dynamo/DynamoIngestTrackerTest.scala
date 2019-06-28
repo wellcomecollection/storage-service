@@ -8,10 +8,13 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestTracker, IngestTrackerTestCases}
+import uk.ac.wellcome.storage.{ReadError, StoreReadError, StoreWriteError, Version}
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.{Table => DynamoTable}
 import uk.ac.wellcome.storage.generators.RandomThings
+import uk.ac.wellcome.storage.store.VersionedStore
+import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
 class DynamoIngestTrackerTest extends IngestTrackerTestCases[DynamoTable] with DynamoFixtures with RandomThings {
   override def withContext[R](testWith: TestWith[DynamoTable, R]): R =
@@ -29,15 +32,6 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[DynamoTable] with D
       new DynamoIngestTracker(config = createDynamoConfigWith(table))
     )
   }
-
-  override def withBrokenInitStoreContext[R](testWith: TestWith[DynamoTable, R]): R =
-    testWith(DynamoTable(randomAlphanumeric, randomAlphanumeric))
-
-  override def withBrokenGetStoreContext[R](testWith: TestWith[DynamoTable, R]): R =
-    testWith(DynamoTable(randomAlphanumeric, randomAlphanumeric))
-
-  override def withBrokenUpdateStoreContext[R](testWith: TestWith[DynamoTable, R]): R =
-    testWith(DynamoTable(randomAlphanumeric, randomAlphanumeric))
 
   override def createTable(table: DynamoTable): DynamoTable = createIngestTrackerTable(table)
 
@@ -78,18 +72,45 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[DynamoTable] with D
           .withWriteCapacityUnits(1L))
     )
 
-//  override def withStoreImpl[R](
-//                                 testWith: TestWith[VersionedStore[IngestID, Int, Ingest], R]): R =
-//    withSpecifiedTable(createIngestTrackerTable) { table =>
-//      val config = createDynamoConfigWith(table)
-//
-//      testWith(
-//        new VersionedStore[IngestID, Int, Ingest](
-//          new DynamoHashStore[Version[IngestID, Int], Int, Ingest](config)
-//        )
-//      )
-//    }
+  private def withBrokenPutTracker[R](testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R = {
+    val config = createDynamoConfigWith(table)
 
+    testWith(
+      new DynamoIngestTracker(config) {
+        override val underlying = new VersionedStore[IngestID, Int, Ingest](
+          new DynamoHashStore[IngestID, Int, Ingest](config) {
+            override def put(id: Version[IngestID, Int])(t: Ingest): WriteEither =
+              Left(StoreWriteError(new Throwable("BOOM!")))
+          }
+        )
+      }
+    )
+  }
+
+  override def withBrokenUnderlyingInitTracker[R](testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R =
+    withBrokenPutTracker { tracker =>
+      testWith(tracker)
+    }
+
+  override def withBrokenUnderlyingGetTracker[R](testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R = {
+    val config = createDynamoConfigWith(table)
+
+    testWith(
+      new DynamoIngestTracker(config) {
+        override val underlying = new VersionedStore[IngestID, Int, Ingest](
+          new DynamoHashStore[IngestID, Int, Ingest](config) {
+            override def max(hashKey: IngestID): Either[ReadError, Int] =
+              Left(StoreReadError(new Throwable("BOOM!")))
+          }
+        )
+      }
+    )
+  }
+  
+  override def withBrokenUnderlyingUpdateTracker[R](testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R =
+    withBrokenPutTracker { tracker =>
+      testWith(tracker)
+    }
 }
 
 //
