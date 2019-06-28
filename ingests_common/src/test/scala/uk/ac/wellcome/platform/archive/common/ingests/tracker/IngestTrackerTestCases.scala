@@ -8,35 +8,33 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Callback,
-  Ingest,
-  IngestID
+  Ingest
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.store.VersionedStore
 
-trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
+trait IngestTrackerTestCases[Context]
     extends FunSpec
     with Matchers
     with EitherValues
     with IngestGenerators
     with TableDrivenPropertyChecks {
-  def withStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
+  def withContext[R](testWith: TestWith[Context, R]): R
 
   def withIngestTracker[R](initialIngests: Seq[Ingest] = Seq.empty)(
-    testWith: TestWith[IngestTracker, R])(implicit store: StoreImpl): R
+    testWith: TestWith[IngestTracker, R])(implicit context: Context): R
 
   private def withIngestTrackerFixtures[R](initialIngests: Seq[Ingest] =
                                              Seq.empty)(
     testWith: TestWith[IngestTracker, R]): R =
-    withStoreImpl { implicit store =>
+    withContext { implicit context =>
       withIngestTracker(initialIngests) { tracker =>
         testWith(tracker)
       }
     }
 
-  def withBrokenInitStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
-  def withBrokenGetStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
-  def withBrokenUpdateStoreImpl[R](testWith: TestWith[StoreImpl, R]): R
+  def withBrokenInitStoreImpl[R](testWith: TestWith[Context, R]): R
+  def withBrokenGetStoreImpl[R](testWith: TestWith[Context, R]): R
+  def withBrokenUpdateStoreImpl[R](testWith: TestWith[Context, R]): R
 
   describe("init()") {
     it("creates an ingest") {
@@ -66,7 +64,7 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
     }
 
     it("wraps an init() error from the underlying store") {
-      withBrokenInitStoreImpl { implicit store =>
+      withBrokenInitStoreImpl { implicit context =>
         withIngestTracker() { tracker =>
           tracker
             .init(createIngest)
@@ -98,7 +96,7 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
     }
 
     it("wraps a get() error from the underlying store") {
-      withBrokenGetStoreImpl { implicit store =>
+      withBrokenGetStoreImpl { implicit context =>
         withIngestTracker() { tracker =>
           tracker
             .get(createIngestID)
@@ -536,7 +534,7 @@ trait IngestTrackerTestCases[StoreImpl <: VersionedStore[IngestID, Int, Ingest]]
       val ingest = createIngest
       val update = createIngestCallbackStatusUpdate
 
-      withBrokenUpdateStoreImpl { implicit store =>
+      withBrokenUpdateStoreImpl { implicit context =>
         withIngestTracker(initialIngests = Seq(ingest)) { tracker =>
           tracker.update(update).left.value shouldBe a[IngestTrackerStoreError]
         }

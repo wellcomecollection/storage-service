@@ -21,7 +21,7 @@ class MemoryIngestTrackerTest
     new MemoryStore[Version[IngestID, Int], Ingest](initialEntries = Map.empty)
     with MemoryMaxima[IngestID, Ingest]
 
-  override def withStoreImpl[R](
+  override def withContext[R](
     testWith: TestWith[MemoryVersionedStore[IngestID, Int, Ingest], R]): R =
     testWith(new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore))
 
