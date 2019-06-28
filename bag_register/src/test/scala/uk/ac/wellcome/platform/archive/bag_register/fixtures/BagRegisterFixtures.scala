@@ -9,7 +9,6 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
@@ -77,8 +76,7 @@ trait BagRegisterFixtures
     }
 
   def assertBagRegisterSucceeded(ingestId: IngestID,
-                                 ingests: MemoryMessageSender,
-                                 bagId: BagId): Assertion =
+                                 ingests: MemoryMessageSender): Assertion =
     assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
@@ -88,13 +86,11 @@ trait BagRegisterFixtures
       val ingestCompleted =
         ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
       ingestCompleted.status shouldBe Ingest.Completed
-      ingestCompleted.affectedBag shouldBe Some(bagId)
       ingestCompleted.events.head.description shouldBe "Register succeeded (completed)"
     }
 
   def assertBagRegisterFailed(ingestId: IngestID,
-                              ingests: MemoryMessageSender,
-                              bagId: Option[BagId] = None): Assertion =
+                              ingests: MemoryMessageSender): Assertion =
     assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
@@ -104,7 +100,6 @@ trait BagRegisterFixtures
       val ingestFailed =
         ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
       ingestFailed.status shouldBe Ingest.Failed
-      ingestFailed.affectedBag shouldBe bagId
       ingestFailed.events.head.description shouldBe "Register failed"
     }
 }

@@ -52,8 +52,7 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
 
       _ <- ingestUpdater.send(
         ingestId = payload.ingestId,
-        step = registrationSummary,
-        bagId = registrationSummary.summary.bagId
+        step = registrationSummary
       )
 
       _ <- outgoingPublisher.sendIfSuccessful(
