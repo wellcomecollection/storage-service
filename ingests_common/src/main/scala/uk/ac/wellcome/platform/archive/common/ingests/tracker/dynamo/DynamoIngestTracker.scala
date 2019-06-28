@@ -7,12 +7,22 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestTracker, IngestTrackerError}
+import uk.ac.wellcome.storage.{DoesNotExistError, NoMaximaValueError, ReadError}
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
 class DynamoIngestTracker(config: DynamoConfig)(implicit client: AmazonDynamoDB) extends IngestTracker {
-  private val hashStore = new DynamoHashStore[IngestID, Int, Ingest](config)
+
+  // TODO: This should be upstreamed to the scala-storage library
+  private val hashStore = new DynamoHashStore[IngestID, Int, Ingest](config) {
+    override def max(hashKey: IngestID): Either[ReadError, Int] =
+      super.max(hashKey) match {
+        case Right(value) => Right(value)
+        case Left(_: DoesNotExistError) => Left(NoMaximaValueError())
+        case Left(err) => Left(err)
+      }
+  }
 
   override val underlying: VersionedStore[IngestID, Int, Ingest] = new VersionedStore[IngestID, Int, Ingest](hashStore)
 
