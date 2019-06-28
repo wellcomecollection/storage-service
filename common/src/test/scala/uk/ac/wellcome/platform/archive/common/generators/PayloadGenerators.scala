@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common._
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   CreateIngestType,
   IngestID,
@@ -69,13 +68,11 @@ trait PayloadGenerators
   def createEnrichedBagInformationPayloadWith(
     context: PipelineContext = createPipelineContext,
     bagRootLocation: ObjectLocation = createObjectLocation,
-    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: Int = 1
   ): EnrichedBagInformationPayload =
     EnrichedBagInformationPayload(
       context = context,
       bagRootLocation = bagRootLocation,
-      externalIdentifier = externalIdentifier,
       version = version
     )
 

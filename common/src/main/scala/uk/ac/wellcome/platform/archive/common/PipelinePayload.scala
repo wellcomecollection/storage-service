@@ -18,6 +18,7 @@ sealed trait PipelinePayload {
   def ingestType: IngestType = context.ingestType
   def storageSpace: StorageSpace = context.storageSpace
   def ingestDate: Instant = context.ingestDate
+  def externalIdentifier: ExternalIdentifier = context.externalIdentifier
 }
 
 case class SourceLocationPayload(
@@ -50,6 +51,5 @@ case class BagRootLocationPayload(
 case class EnrichedBagInformationPayload(
   context: PipelineContext,
   bagRootLocation: ObjectLocation,
-  externalIdentifier: ExternalIdentifier,
   version: Int
 ) extends BagRootPayload
