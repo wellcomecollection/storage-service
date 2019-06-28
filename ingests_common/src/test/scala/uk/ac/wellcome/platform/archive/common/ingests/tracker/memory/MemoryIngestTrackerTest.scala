@@ -37,7 +37,7 @@ class MemoryIngestTrackerTest
     testWith(new MemoryIngestTracker(store))
   }
 
-  override def withBrokenInitStoreImpl[R](
+  override def withBrokenInitStoreContext[R](
     testWith: TestWith[MemoryVersionedStore[IngestID, Int, Ingest], R]): R =
     testWith(
       new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
@@ -46,7 +46,7 @@ class MemoryIngestTrackerTest
       }
     )
 
-  override def withBrokenGetStoreImpl[R](
+  override def withBrokenGetStoreContext[R](
     testWith: TestWith[MemoryVersionedStore[IngestID, Int, Ingest], R]): R =
     testWith(
       new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
@@ -55,7 +55,7 @@ class MemoryIngestTrackerTest
       }
     )
 
-  override def withBrokenUpdateStoreImpl[R](
+  override def withBrokenUpdateStoreContext[R](
     testWith: TestWith[MemoryVersionedStore[IngestID, Int, Ingest], R]): R =
     testWith(
       new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {

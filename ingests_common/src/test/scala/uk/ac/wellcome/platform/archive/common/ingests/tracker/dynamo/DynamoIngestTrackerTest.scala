@@ -10,15 +10,16 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestTracker, IngestTrackerTestCases}
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures.{Table => DynamoTable}
+import uk.ac.wellcome.storage.generators.RandomThings
 
-class DynamoIngestTrackerTest extends IngestTrackerTestCases[Table] with DynamoFixtures {
-  override def withContext[R](testWith: TestWith[Table, R]): R =
+class DynamoIngestTrackerTest extends IngestTrackerTestCases[DynamoTable] with DynamoFixtures with RandomThings {
+  override def withContext[R](testWith: TestWith[DynamoTable, R]): R =
     withSpecifiedTable(createIngestTrackerTable) { table =>
       testWith(table)
     }
 
-  override def withIngestTracker[R](initialIngests: Seq[Ingest])(testWith: TestWith[IngestTracker, R])(implicit table: Table): R = {
+  override def withIngestTracker[R](initialIngests: Seq[Ingest])(testWith: TestWith[IngestTracker, R])(implicit table: DynamoTable): R = {
     initialIngests.map { ingest =>
       val entry = DynamoHashEntry(ingest.id, version = 0, payload = ingest)
       scanamo.exec(ScanamoTable[DynamoHashEntry[IngestID, Int, Ingest]](table.name).put(entry))
@@ -29,15 +30,18 @@ class DynamoIngestTrackerTest extends IngestTrackerTestCases[Table] with DynamoF
     )
   }
 
-  override def withBrokenInitStoreImpl[R](testWith: TestWith[Table, R]): R = ???
+  override def withBrokenInitStoreContext[R](testWith: TestWith[DynamoTable, R]): R =
+    testWith(DynamoTable(randomAlphanumeric, randomAlphanumeric))
 
-  override def withBrokenGetStoreImpl[R](testWith: TestWith[Table, R]): R = ???
+  override def withBrokenGetStoreContext[R](testWith: TestWith[DynamoTable, R]): R =
+    testWith(DynamoTable(randomAlphanumeric, randomAlphanumeric))
 
-  override def withBrokenUpdateStoreImpl[R](testWith: TestWith[Table, R]): R = ???
+  override def withBrokenUpdateStoreContext[R](testWith: TestWith[DynamoTable, R]): R =
+    testWith(DynamoTable(randomAlphanumeric, randomAlphanumeric))
 
-  override def createTable(table: Table): Table = createIngestTrackerTable(table)
+  override def createTable(table: DynamoTable): DynamoTable = createIngestTrackerTable(table)
 
-  def createIngestTrackerTable(table: Table): Table =
+  def createIngestTrackerTable(table: DynamoTable): DynamoTable =
     createTableFromRequest(
       table,
       new CreateTableRequest()
