@@ -76,6 +76,9 @@ trait IngestsApiFixture
     ) {
       override def get(id: IngestID): Result =
         Left(IngestTrackerStoreError(StoreWriteError(new Throwable("BOOM!"))))
+
+      override def init(ingest: Ingest): Result =
+        Left(IngestTrackerStoreError(StoreWriteError(new Throwable("BOOM!"))))
     }
 
     withMockMetricsSender { metricsSender =>
