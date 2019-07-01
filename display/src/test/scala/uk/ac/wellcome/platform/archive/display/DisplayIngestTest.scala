@@ -118,6 +118,9 @@ class DisplayIngestTest
       val displayProvider = InfrequentAccessDisplayProvider
       val bucket = "ingest-bucket"
       val path = "bag.zip"
+
+      val externalIdentifier = createExternalIdentifier
+
       val ingestCreateRequest = RequestDisplayIngest(
         sourceLocation = DisplayLocation(displayProvider, bucket, path),
         callback = Some(
@@ -126,7 +129,13 @@ class DisplayIngestTest
             status = None
           )
         ),
-        externalIdentifier = createExternalIdentifier.underlying,
+        bag = DisplayBag(
+          info = DisplayBagInfo(
+            externalIdentifier = externalIdentifier,
+            ontologyType = "BagInfo"
+          ),
+          ontologyType = "Bag"
+        ),
         ingestType = CreateDisplayIngestType,
         space = DisplayStorageSpace("space-id")
       )
@@ -140,6 +149,7 @@ class DisplayIngestTest
       ingest.callback shouldBe Some(
         Callback(URI.create(ingestCreateRequest.callback.get.url)))
       ingest.status shouldBe Ingest.Accepted
+      ingest.externalIdentifier shouldBe externalIdentifier
       assertRecent(ingest.createdDate)
       ingest.lastModifiedDate shouldBe None
       ingest.events shouldBe empty
@@ -176,7 +186,13 @@ class DisplayIngestTest
       sourceLocation = sourceLocation,
       callback = callback,
       ingestType = ingestType,
-      externalIdentifier = createExternalIdentifier.underlying,
+      bag = DisplayBag(
+        info = DisplayBagInfo(
+          externalIdentifier = createExternalIdentifier,
+          ontologyType = "BagInfo"
+        ),
+        ontologyType = "Bag"
+      ),
       space = space
     )
 }

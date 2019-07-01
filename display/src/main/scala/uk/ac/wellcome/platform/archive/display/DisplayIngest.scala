@@ -5,7 +5,6 @@ import java.time.Instant
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
@@ -16,7 +15,7 @@ case class RequestDisplayIngest(
   callback: Option[DisplayCallback],
   ingestType: DisplayIngestType,
   space: DisplayStorageSpace,
-  externalIdentifier: String,
+  bag: DisplayBag,
   @JsonKey("type")
   ontologyType: String = "Ingest"
 ) extends DisplayIngest {
@@ -28,25 +27,25 @@ case class RequestDisplayIngest(
       callback = Callback(
         callback.map(displayCallback => URI.create(displayCallback.url))),
       space = StorageSpace(space.id),
-      externalIdentifier = ExternalIdentifier(externalIdentifier),
+      externalIdentifier = bag.info.externalIdentifier,
       status = Ingest.Accepted,
       createdDate = Instant.now
     )
 }
 
-case class ResponseDisplayIngest(@JsonKey("@context") context: String,
-                                 id: UUID,
-                                 sourceLocation: DisplayLocation,
-                                 callback: Option[DisplayCallback],
-                                 ingestType: DisplayIngestType,
-                                 space: DisplayStorageSpace,
-                                 status: DisplayStatus,
-                                 externalIdentifier: String,
-                                 events: Seq[DisplayIngestEvent] = Seq.empty,
-                                 createdDate: String,
-                                 lastModifiedDate: Option[String],
-                                 @JsonKey("type") ontologyType: String =
-                                   "Ingest")
+case class ResponseDisplayIngest(
+  @JsonKey("@context") context: String,
+  id: UUID,
+  sourceLocation: DisplayLocation,
+  callback: Option[DisplayCallback],
+  ingestType: DisplayIngestType,
+  space: DisplayStorageSpace,
+  status: DisplayStatus,
+  externalIdentifier: String,
+  events: Seq[DisplayIngestEvent] = Seq.empty,
+  createdDate: String,
+  lastModifiedDate: Option[String],
+  @JsonKey("type") ontologyType: String = "Ingest")
     extends DisplayIngest
 
 object ResponseDisplayIngest {
