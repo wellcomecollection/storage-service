@@ -12,10 +12,6 @@ private class IngestStatusGoingBackwardsException(val existing: Ingest.Status,
     extends RuntimeException(
       s"Received status update $update, but ingest already has status $existing")
 
-private class MismatchedBagIdException(val existing: BagId, val update: BagId)
-    extends RuntimeException(
-      s"Received bag ID $update, but ingest already has bag ID $existing")
-
 private class CallbackStatusGoingBackwardsException(
   val existing: Callback.CallbackStatus,
   val update: Callback.CallbackStatus)
@@ -65,10 +61,7 @@ trait IngestTracker {
                   statusUpdate.status)
               }
 
-              val newBagId = getNewBagId(ingest.bag, statusUpdate.affectedBag)
-
               ingest.copy(
-                bag = newBagId,
                 status = statusUpdate.status,
                 events = ingest.events ++ update.events
               )
@@ -109,9 +102,6 @@ trait IngestTracker {
       case Failure(err: IngestStatusGoingBackwardsException) =>
         Left(IngestStatusGoingBackwards(err.existing, err.update))
 
-      case Failure(err: MismatchedBagIdException) =>
-        Left(MismatchedBagIdError(err.existing, err.update))
-
       case Failure(err: CallbackStatusGoingBackwardsException) =>
         Left(IngestCallbackStatusGoingBackwards(err.existing, err.update))
 
@@ -132,18 +122,6 @@ trait IngestTracker {
     *
     */
   def listByBagId(bagId: BagId): Either[IngestTrackerError, Seq[Ingest]]
-
-  private def getNewBagId(initial: Option[BagId],
-                          update: Option[BagId]): Option[BagId] =
-    (initial, update) match {
-      case (Some(storedId), Some(newId)) if storedId == newId => Some(storedId)
-      case (Some(storedId), Some(newId)) =>
-        throw new MismatchedBagIdException(storedId, newId)
-
-      case (Some(storedId), None) => Some(storedId)
-      case (None, Some(newId))    => Some(newId)
-      case (None, None)           => None
-    }
 
   private def statusUpdateIsAllowed(initial: Ingest.Status,
                                     update: Ingest.Status): Boolean =

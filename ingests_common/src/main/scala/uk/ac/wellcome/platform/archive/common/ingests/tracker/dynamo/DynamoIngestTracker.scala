@@ -26,26 +26,16 @@ class DynamoIngestTracker(config: DynamoConfig)(implicit client: AmazonDynamoDB)
       }
 
     override def put(id: Version[IngestID, Int])(ingest: Ingest): WriteEither =
-      super.put(id)(ingest).flatMap { result: Identified[Version[IngestID, Int], Ingest] =>
-        ingest.bag match {
-          case Some(bagId) =>
-            val ops = table
-              .given(attributeExists('id) and 'version = result.id.version)
-              .update('bagIdIndex -> bagId)
-        }
-
-      }
+      super.put(id)(ingest)
   }
 
   override val underlying: VersionedStore[IngestID, Int, Ingest] = new VersionedStore[IngestID, Int, Ingest](hashStore)
 
   override def listByBagId(bagId: BagId): Either[IngestTrackerError, Seq[Ingest]] = {
-
-
     val query = ScanamoTable[Ingest](config.tableName)
       .index(config.indexName)
 //      .limit(30)
-      .query('bagId \ 'externalIdentifier -> bagId.externalIdentifier)
+      .query('externalIdentifier -> bagId.externalIdentifier and 'space -> bagId.space)
 //      .descending
 
     val result = Scanamo(client).exec(query)

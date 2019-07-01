@@ -63,7 +63,10 @@ class DynamoIngestTrackerTest
             .withAttributeName("id")
             .withAttributeType("S"),
           new AttributeDefinition()
-            .withAttributeName("bagIdIndex")
+            .withAttributeName("externalIdentifier")
+            .withAttributeType("S"),
+          new AttributeDefinition()
+            .withAttributeName("space")
             .withAttributeType("S")
         )
         .withGlobalSecondaryIndexes(
@@ -75,8 +78,11 @@ class DynamoIngestTrackerTest
             )
             .withKeySchema(
               new KeySchemaElement()
-                .withAttributeName("bagIdIndex")
-                .withKeyType(KeyType.HASH)
+                .withAttributeName("externalIdentifier")
+                .withKeyType(KeyType.HASH),
+              new KeySchemaElement()
+                .withAttributeName("space")
+                .withKeyType(KeyType.RANGE)
             )
             .withProvisionedThroughput(new ProvisionedThroughput()
               .withReadCapacityUnits(1L)

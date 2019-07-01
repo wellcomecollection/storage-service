@@ -239,70 +239,6 @@ trait IngestTrackerTestCases[Context]
         }
       }
 
-      describe("updating the bag ID") {
-        it("adds the bag ID if there isn't one already") {
-          val ingest = createIngestWith(maybeBag = None)
-          val bagId = createBagId
-
-          val update = createIngestStatusUpdateWith(
-            id = ingest.id,
-            maybeBag = Some(bagId)
-          )
-
-          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-            val result = tracker.update(update)
-            result.right.value.identifiedT.bag shouldBe Some(bagId)
-          }
-        }
-
-        it("does not remove an existing bag ID") {
-          val bagId = createBagId
-          val ingest = createIngestWith(maybeBag = Some(bagId))
-
-          val update = createIngestStatusUpdateWith(
-            id = ingest.id,
-            maybeBag = None
-          )
-
-          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-            val result = tracker.update(update)
-            result.right.value.identifiedT.bag shouldBe Some(bagId)
-          }
-        }
-
-        it("updates if the bag ID is already set and matches the update") {
-          val bagId = createBagId
-          val ingest = createIngestWith(maybeBag = Some(bagId))
-
-          val update = createIngestStatusUpdateWith(
-            id = ingest.id,
-            maybeBag = Some(bagId)
-          )
-
-          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-            val result = tracker.update(update)
-            result.right.value.identifiedT.bag shouldBe Some(bagId)
-          }
-        }
-
-        it("errors if the existing bag ID is set and is different") {
-          val ingest = createIngestWith(maybeBag = Some(createBagId))
-
-          val update = createIngestStatusUpdateWith(
-            id = ingest.id,
-            maybeBag = Some(createBagId)
-          )
-
-          withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-            val result = tracker.update(update)
-            result.left.value shouldBe MismatchedBagIdError(
-              stored = ingest.bag.get,
-              update = update.affectedBag.get
-            )
-          }
-        }
-      }
-
       describe("updating the status") {
         val allowedStatusUpdates = Table(
           ("initial", "update"),
@@ -552,10 +488,17 @@ trait IngestTrackerTestCases[Context]
     }
 
     it("finds a single matching ingest") {
-      val bagId = createBagId
+      val space = createStorageSpace
+      val externalIdentifier = createExternalIdentifier
 
       val ingest = createIngestWith(
-        maybeBag = Some(bagId)
+        space = space,
+        externalIdentifier = externalIdentifier
+      )
+
+      val bagId = createBagIdWith(
+        space = space,
+        externalIdentifier = externalIdentifier
       )
 
       withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
@@ -563,18 +506,26 @@ trait IngestTrackerTestCases[Context]
       }
     }
 
-    it("ignores ingests with a different bag ID or not bag ID") {
-      val bagId = createBagId
+    it("ignores ingests with a different storage space or externalIdentifier") {
+      val space = createStorageSpace
+      val externalIdentifier = createExternalIdentifier
 
       val matchingIngests = (1 to 3).map { _ =>
         createIngestWith(
-          maybeBag = Some(bagId)
+          space = space,
+          externalIdentifier = externalIdentifier
         )
       }
 
       val initialIngests = matchingIngests ++ Seq(
-        createIngestWith(maybeBag = Some(createBagId)),
-        createIngestWith(maybeBag = None)
+        createIngestWith(space = space),
+        createIngestWith(externalIdentifier = externalIdentifier),
+        createIngest
+      )
+
+      val bagId = createBagIdWith(
+        space = space,
+        externalIdentifier = externalIdentifier
       )
 
       withIngestTrackerFixtures(initialIngests) { tracker =>
@@ -586,14 +537,21 @@ trait IngestTrackerTestCases[Context]
     }
 
     it("sorts ingests by creation date") {
-      val bagId = createBagId
+      val space = createStorageSpace
+      val externalIdentifier = createExternalIdentifier
 
       val initialIngests = (1 to 5).map { _ =>
         createIngestWith(
-          maybeBag = Some(bagId),
+          space = space,
+          externalIdentifier = externalIdentifier,
           createdDate = Instant.ofEpochSecond(Random.nextLong())
         )
       }
+
+      val bagId = createBagIdWith(
+        space = space,
+        externalIdentifier = externalIdentifier
+      )
 
       withIngestTrackerFixtures(initialIngests) { tracker =>
         tracker

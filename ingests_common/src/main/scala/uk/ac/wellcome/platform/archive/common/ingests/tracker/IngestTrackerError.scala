@@ -1,5 +1,4 @@
 package uk.ac.wellcome.platform.archive.common.ingests.tracker
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest}
 import uk.ac.wellcome.storage.{
   NotFoundError,
@@ -23,9 +22,6 @@ case class UpdateNonExistentIngestError(err: UpdateNoSourceError)
 
 case class IngestStatusGoingBackwards(stored: Ingest.Status,
                                       update: Ingest.Status)
-    extends IngestTrackerError
-
-case class MismatchedBagIdError(stored: BagId, update: BagId)
     extends IngestTrackerError
 
 case class IngestCallbackStatusGoingBackwards(stored: Callback.CallbackStatus,

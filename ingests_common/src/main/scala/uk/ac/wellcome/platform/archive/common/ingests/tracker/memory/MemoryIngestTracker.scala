@@ -20,7 +20,10 @@ class MemoryIngestTracker(
         .asInstanceOf[MemoryStore[Version[IngestID, Int], Ingest]]
         .entries
         .values
-        .filter { _.bag.contains(bagId) }
+        .filter { storedIngest =>
+          storedIngest.externalIdentifier == bagId.externalIdentifier &&
+          storedIngest.space == bagId.space
+        }
         .toSeq
     )
 }
