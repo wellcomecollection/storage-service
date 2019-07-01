@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
 import java.net.URI
-import java.time.Instant
 
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{EitherValues, FunSpec, Matchers}
@@ -9,8 +8,6 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest}
 import uk.ac.wellcome.storage._
-
-import scala.util.Random
 
 trait IngestTrackerTestCases[Context]
     extends FunSpec
@@ -544,7 +541,7 @@ trait IngestTrackerTestCases[Context]
         createIngestWith(
           space = space,
           externalIdentifier = externalIdentifier,
-          createdDate = Instant.ofEpochSecond(Random.nextLong())
+          createdDate = randomInstant
         )
       }
 

@@ -25,5 +25,7 @@ class MemoryIngestTracker(
           storedIngest.space == bagId.space
         }
         .toSeq
+        .sortBy { _.createdDate }
+        .reverse
     )
 }

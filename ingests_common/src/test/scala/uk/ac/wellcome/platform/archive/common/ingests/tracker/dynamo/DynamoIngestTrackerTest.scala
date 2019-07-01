@@ -54,12 +54,10 @@ class DynamoIngestTrackerTest
     createIngestTrackerTable(table)
 
   def createIngestTrackerTable(table: DynamoTable): DynamoTable =
-    createTableWithHashRangeKey(
+    createTableWithHashKey(
       table,
-      hashKeyName = "id",
-      hashKeyType = ScalarAttributeType.S,
-      rangeKeyName = "version",
-      rangeKeyType = ScalarAttributeType.N
+      keyName = "id",
+      keyType = ScalarAttributeType.S
     )
 
   def createBagIdLookupTable(table: DynamoTable): DynamoTable =
