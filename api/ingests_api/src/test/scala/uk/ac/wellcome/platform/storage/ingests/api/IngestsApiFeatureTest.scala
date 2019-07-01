@@ -625,7 +625,13 @@ class IngestsApiFeatureTest
           |  "callback": {
           |    "url": "${testCallbackUri.toString}"
           |  },
-          |  "externalIdentifier": "${externalIdentifier.underlying}"
+          |  "bag": {
+          |    "type": "Bag",
+          |    "info": {
+          |      "type": "BagInfo",
+          |      "externalIdentifier": "${externalIdentifier.underlying}"
+          |    }
+          |  }
           |}""".stripMargin
     ).right.value
 
