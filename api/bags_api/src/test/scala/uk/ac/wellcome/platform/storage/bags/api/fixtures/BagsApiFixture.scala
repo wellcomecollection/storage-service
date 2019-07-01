@@ -70,6 +70,7 @@ trait BagsApiFixture
   def withBrokenApp[R](
     testWith: TestWith[(StorageManifestDao, MetricsSender, String), R]): R = {
 
+    // TODO: This should be a MaximaReadError really.
     val brokenIndex =
       new MemoryStore[
         Version[BagId, Int],
@@ -82,7 +83,7 @@ trait BagsApiFixture
                                 String,
                                 Map[String, String]]] {
         override def max(id: BagId) =
-          Left(MaximaReadError(new Throwable("BOOM!")))
+          Left(NoMaximaValueError(new Throwable("BOOM!")))
       }
 
     val brokenVhs = createStorageManifestDao(indexStore = brokenIndex)

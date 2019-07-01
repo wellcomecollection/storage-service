@@ -6,10 +6,13 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTrackerStoreError
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestStarterFixture
-import uk.ac.wellcome.storage.dynamo._
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
+import uk.ac.wellcome.storage.{StoreWriteError, Version}
+import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
+import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 import scala.util.{Failure, Try}
 
@@ -24,12 +27,12 @@ class IngestStarterTest
 
   it("saves an Ingest and sends a notification") {
     val messageSender = new MemoryMessageSender()
-    withIngestTrackerTable { table =>
-      withIngestStarter(table, messageSender) { ingestStarter =>
+    withMemoryIngestTracker(initialIngests = Seq.empty) { ingestTracker =>
+      withIngestStarter(ingestTracker, messageSender) { ingestStarter =>
         val result = ingestStarter.initialise(ingest)
         result.success.value shouldBe ingest
 
-        assertTableOnlyHasItem(ingest, table)
+        ingestTracker.underlying.getLatest(ingest.id).right.value.identifiedT shouldBe ingest
 
         val expectedPayload = SourceLocationPayload(ingest)
         messageSender.getMessages[SourceLocationPayload] shouldBe Seq(
@@ -40,9 +43,18 @@ class IngestStarterTest
 
   it("returns a failed future if saving to DynamoDB fails") {
     val messageSender = new MemoryMessageSender()
-    val fakeTable = Table("does-not-exist", index = "does-not-exist")
 
-    withIngestStarter(fakeTable, messageSender) { ingestStarter =>
+    val brokenTracker = new MemoryIngestTracker(
+      underlying = new MemoryVersionedStore[IngestID, Int, Ingest](
+        new MemoryStore[Version[IngestID, Int], Ingest](initialEntries = Map.empty)
+          with MemoryMaxima[IngestID, Ingest]
+      )
+    ) {
+      override def init(ingest: Ingest): Result =
+        Left(IngestTrackerStoreError(StoreWriteError(new Throwable("BOOM!"))))
+    }
+
+    withIngestStarter(brokenTracker, messageSender) { ingestStarter =>
       val result = ingestStarter.initialise(ingest)
 
       result shouldBe a[Failure[_]]
@@ -52,18 +64,18 @@ class IngestStarterTest
   }
 
   it("returns a failed future if sending a message fails") {
-    withIngestTrackerTable { table =>
+    withMemoryIngestTracker(initialIngests = Seq.empty) { ingestTracker =>
       val brokenMessageSender = new MemoryMessageSender() {
         override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
           Failure(new Throwable("BOOM!"))
       }
 
-      withIngestStarter(table, brokenMessageSender) { ingestStarter =>
+      withIngestStarter(ingestTracker, brokenMessageSender) { ingestStarter =>
         val result = ingestStarter.initialise(ingest)
 
         result shouldBe a[Failure[_]]
 
-        assertTableOnlyHasItem(ingest, table)
+        ingestTracker.underlying.getLatest(ingest.id).right.value.identifiedT shouldBe ingest
       }
     }
   }
