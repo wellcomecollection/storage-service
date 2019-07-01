@@ -14,7 +14,7 @@ import uk.ac.wellcome.storage.{StoreWriteError, Version}
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 class IngestStarterTest
     extends FunSpec
@@ -45,7 +45,22 @@ class IngestStarterTest
     }
   }
 
-  it("returns a failed future if saving to DynamoDB fails") {
+  it("fails if this Ingest already exists") {
+    val ingest = createIngest
+
+    val messageSender = new MemoryMessageSender()
+    withMemoryIngestTracker(initialIngests = Seq(ingest)) { ingestTracker =>
+      withIngestStarter(ingestTracker, messageSender) { ingestStarter =>
+        val result = ingestStarter.initialise(ingest)
+        result.failed shouldBe a[Success[_]]
+        result.failed.get.getMessage should startWith("Error from the ingest tracker: IngestAlreadyExistsError")
+
+        messageSender.messages shouldBe empty
+      }
+    }
+  }
+
+  it("fails if saving to the underlying tracker fails") {
     val messageSender = new MemoryMessageSender()
 
     val brokenTracker = new MemoryIngestTracker(
@@ -67,7 +82,7 @@ class IngestStarterTest
     }
   }
 
-  it("returns a failed future if sending a message fails") {
+  it("fails if sending a message fails") {
     withMemoryIngestTracker(initialIngests = Seq.empty) { ingestTracker =>
       val brokenMessageSender = new MemoryMessageSender() {
         override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
