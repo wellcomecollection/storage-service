@@ -67,7 +67,7 @@ class NotifierFeatureTest
                 sourceLocation = DisplayLocation(
                   StandardDisplayProvider,
                   ingest.sourceLocation.location.namespace,
-                  ingest.sourceLocation.location.key
+                  ingest.sourceLocation.location.path
                 ),
                 callback = ingest.callback.map { DisplayCallback(_) },
                 ingestType = CreateDisplayIngestType,
@@ -139,7 +139,7 @@ class NotifierFeatureTest
                 sourceLocation = DisplayLocation(
                   StandardDisplayProvider,
                   ingest.sourceLocation.location.namespace,
-                  ingest.sourceLocation.location.key),
+                  ingest.sourceLocation.location.path),
                 callback = ingest.callback.map(DisplayCallback(_)),
                 ingestType = DisplayIngestType(ingest.ingestType),
                 space = DisplayStorageSpace(ingest.space.underlying),

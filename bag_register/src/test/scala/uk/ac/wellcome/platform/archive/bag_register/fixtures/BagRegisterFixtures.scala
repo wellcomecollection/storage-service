@@ -5,24 +5,12 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bag_register.services.{
-  BagRegisterWorker,
-  Register
-}
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures,
-  StorageManifestVHSFixture,
-  StorageRandomThings
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures, StorageManifestVHSFixture, StorageRandomThings}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestStatusUpdate
-}
-import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestStatusUpdate}
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 trait BagRegisterFixtures
     extends StorageRandomThings
@@ -31,11 +19,11 @@ trait BagRegisterFixtures
     with StorageManifestVHSFixture
     with MonitoringClientFixture
     with IngestUpdateAssertions
-    with S3 {
+    with S3Fixtures {
 
   type Fixtures = (BagRegisterWorker[String, String],
                    StorageManifestIndex,
-                   StorageManifestStore,
+                   StorageManifestTypedStore,
                    MemoryMessageSender,
                    MemoryMessageSender,
                    QueuePair)
@@ -43,9 +31,9 @@ trait BagRegisterFixtures
   def withBagRegisterWorker[R](testWith: TestWith[Fixtures, R]): R =
     withActorSystem { implicit actorSystem =>
       withMonitoringClient { implicit monitoringClient =>
-        val dao = createDao
-        val store = createStore
-        val storageManifestVHS = createStorageManifestDao(dao, store)
+        val index = createIndex
+        val store = createTypedStore
+        val storageManifestVHS = createStorageManifestDao(index, store)
 
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
@@ -69,7 +57,7 @@ trait BagRegisterFixtures
           service.run()
 
           testWith(
-            (service, dao, store, ingests, outgoing, queuePair)
+            (service, index, store, ingests, outgoing, queuePair)
           )
         }
       }

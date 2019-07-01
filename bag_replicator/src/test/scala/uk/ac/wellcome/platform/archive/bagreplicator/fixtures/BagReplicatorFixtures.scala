@@ -5,36 +5,24 @@ import java.util.UUID
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  MonitoringClientFixture,
-  OperationFixtures
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.locking.memory.{
-  MemoryLockDao,
-  MemoryLockDaoFixtures
-}
+import uk.ac.wellcome.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 
 import scala.collection.JavaConverters._
 import scala.util.Try
 
 trait BagReplicatorFixtures
-    extends Messaging
-    with BagLocationFixtures
+    extends BagLocationFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture

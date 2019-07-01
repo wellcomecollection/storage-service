@@ -7,38 +7,15 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerError
-import uk.ac.wellcome.platform.archive.common.versioning.dynamo.{
-  DynamoIngestVersionManager,
-  DynamoIngestVersionManagerDao
-}
-import uk.ac.wellcome.platform.storage.bagauditor.services.{
-  BagAuditor,
-  BagAuditorWorker
-}
+import uk.ac.wellcome.platform.archive.common.versioning.dynamo.{DynamoIngestVersionManager, DynamoIngestVersionManagerDao}
+import uk.ac.wellcome.platform.storage.bagauditor.services.{BagAuditor, BagAuditorWorker}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
-<<<<<<< HEAD
-import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, LockingBuilder}
 import uk.ac.wellcome.storage.locking.dynamo.{DynamoLockDao, DynamoLockDaoConfig, DynamoLockingService}
-=======
-import uk.ac.wellcome.storage.locking.dynamo.{
-  DynamoLockDao,
-  DynamoLockDaoConfig,
-  DynamoLockingService
-}
->>>>>>> Apply auto-formatting rules
-import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
+import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 

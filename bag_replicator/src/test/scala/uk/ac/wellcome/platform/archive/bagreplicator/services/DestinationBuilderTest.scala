@@ -28,7 +28,7 @@ class DestinationBuilderTest
     )
 
     location.namespace shouldBe "MyNamespace"
-    location.key shouldBe s"RootPath/${storageSpace.underlying}/${externalIdentifier.toString}/v1"
+    location.path shouldBe s"RootPath/${storageSpace.underlying}/${externalIdentifier.toString}/v1"
   }
 
   it("skips the root path if not provided") {
@@ -47,6 +47,6 @@ class DestinationBuilderTest
     )
 
     location.namespace shouldBe "MyNamespace"
-    location.key shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/v2"
+    location.path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/v2"
   }
 }

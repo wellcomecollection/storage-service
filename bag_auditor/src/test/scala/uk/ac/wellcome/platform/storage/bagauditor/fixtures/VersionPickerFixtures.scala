@@ -9,8 +9,6 @@ import uk.ac.wellcome.platform.archive.common.versioning.memory.MemoryIngestVers
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
-import uk.ac.wellcome.storage.memory.MemoryLockDao
-import uk.ac.wellcome.storage.{LockDao, LockingService}
 
 trait VersionPickerFixtures {
   def createLockDao: MemoryLockDao[String, UUID] =
