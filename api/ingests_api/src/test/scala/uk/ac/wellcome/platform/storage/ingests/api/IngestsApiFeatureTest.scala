@@ -35,88 +35,76 @@ class IngestsApiFeatureTest
   describe("GET /ingests/:id") {
     it("returns a ingest tracker when available") {
       val ingest = createIngestWith(
-        createdDate = Instant.now()
+        createdDate = Instant.now(),
+        events = Seq(createIngestEvent, createIngestEvent)
       )
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
         case (_, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materializer =>
-            val expectedSourceLocationJson =
-              s"""{
-                  "provider": {
-                    "id": "${StandardDisplayProvider.id}",
-                    "type": "Provider"
-                  },
-                  "bucket": "${ingest.sourceLocation.location.namespace}",
-                  "path": "${ingest.sourceLocation.location.path}",
-                  "type": "Location"
-                }""".stripMargin
-
-            val expectedCallbackJson =
-              s"""{
-                  "url": "${ingest.callback.get.uri}",
-                  "status": {
-                    "id": "processing",
-                    "type": "Status"
-                  },
-                  "type": "Callback"
-                }""".stripMargin
-
-            val expectedIngestTypeJson =
-              s"""{
-                "id": "create",
-                "type": "IngestType"
-              }""".stripMargin
-
-            val expectedSpaceJson =
-              s"""{
-                "id": "${ingest.space.underlying}",
-                "type": "Space"
-              }""".stripMargin
-
-            val expectedStatusJson =
-              s"""{
-                "id": "accepted",
-                "type": "Status"
-              }""".stripMargin
-
             whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
               result.status shouldBe StatusCodes.OK
 
               withStringEntity(result.entity) { jsonString =>
-                val json = parse(jsonString).right.get
-                root.`@context`.string
-                  .getOption(json)
-                  .get shouldBe "http://api.wellcomecollection.org/storage/v1/context.json"
-                root.id.string
-                  .getOption(json)
-                  .get shouldBe ingest.id.toString
-
                 assertJsonStringsAreEqual(
-                  root.sourceLocation.json.getOption(json).get.noSpaces,
-                  expectedSourceLocationJson)
-
-                assertJsonStringsAreEqual(
-                  root.callback.json.getOption(json).get.noSpaces,
-                  expectedCallbackJson)
-                assertJsonStringsAreEqual(
-                  root.ingestType.json.getOption(json).get.noSpaces,
-                  expectedIngestTypeJson)
-                assertJsonStringsAreEqual(
-                  root.space.json.getOption(json).get.noSpaces,
-                  expectedSpaceJson)
-                assertJsonStringsAreEqual(
-                  root.status.json.getOption(json).get.noSpaces,
-                  expectedStatusJson)
-                assertJsonStringsAreEqual(
-                  root.events.json.getOption(json).get.noSpaces,
-                  "[]")
-
-                root.`type`.string.getOption(json).get shouldBe "Ingest"
-
-                assertRecent(
-                  Instant.parse(root.createdDate.string.getOption(json).get),
-                  25)
+                  jsonString,
+                  s"""
+                     |{
+                     |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+                     |  "id": "${ingest.id.toString}",
+                     |  "type": "Ingest",
+                     |  "ingestType": {
+                     |    "id": "${ingest.ingestType.id}",
+                     |    "type": "IngestType"
+                     |  },
+                     |  "space": {
+                     |    "id": "${ingest.space.underlying}",
+                     |    "type": "Space"
+                     |  },
+                     |  "bag": {
+                     |    "type": "Bag",
+                     |    "info": {
+                     |      "type": "BagInfo",
+                     |      "externalIdentifier": "${ingest.externalIdentifier.underlying}"
+                     |    }
+                     |  },
+                     |  "status": {
+                     |    "id": "${ingest.status.toString}",
+                     |    "type": "Status"
+                     |  },
+                     |  "sourceLocation": {
+                     |    "type": "Location",
+                     |    "provider": {
+                     |      "type": "Provider",
+                     |      "id": "aws-s3-standard"
+                     |    },
+                     |    "bucket": "${ingest.sourceLocation.location.namespace}",
+                     |    "path": "${ingest.sourceLocation.location.path}"
+                     |  },
+                     |  "callback": {
+                     |    "type": "Callback",
+                     |    "url": "${ingest.callback.get.uri}",
+                     |    "status": {
+                     |      "id": "${ingest.callback.get.status.toString}",
+                     |      "type": "Status"
+                     |    }
+                     |  },
+                     |  "createdDate": "${ingest.createdDate}",
+                     |  "events": [
+                     |    {
+                     |      "type": "IngestEvent",
+                     |      "createdDate": "${ingest.events(0).createdDate}",
+                     |      "description": "${ingest.events(0).description}"
+                     |    },
+                     |    {
+                     |      "type": "IngestEvent",
+                     |      "createdDate": "${ingest.events(1).createdDate}",
+                     |      "description": "${ingest.events(1).description}"
+                     |    }
+                     |  ]
+                     |}
+                   """.stripMargin
+                )
               }
 
               assertMetricSent(
@@ -242,7 +230,7 @@ class IngestsApiFeatureTest
                   spaceName,
                   "Space")
 
-                actualIngest.externalIdentifier shouldBe externalIdentifier.underlying
+                actualIngest.bag.info.externalIdentifier shouldBe externalIdentifier
 
                 val expectedIngest = Ingest(
                   id = IngestID(id),
@@ -333,7 +321,9 @@ class IngestsApiFeatureTest
 
       describe("problems with the ingestType") {
         it("if the field is missing") {
-          val badJson = root.obj.modify { _.remove("ingestType" )}
+          val badJson = root.obj.modify {
+            _.remove("ingestType")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -342,7 +332,9 @@ class IngestsApiFeatureTest
         }
 
         it("if the id field is missing") {
-          val badJson = root.ingestType.obj.modify { _.remove("id") }
+          val badJson = root.ingestType.obj.modify {
+            _.remove("id")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -365,7 +357,9 @@ class IngestsApiFeatureTest
 
       describe("problems with the space") {
         it("if the field is missing") {
-          val badJson = root.obj.modify { _.remove("space" )}
+          val badJson = root.obj.modify {
+            _.remove("space")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -374,7 +368,9 @@ class IngestsApiFeatureTest
         }
 
         it("if the id field is missing") {
-          val badJson = root.space.obj.modify { _.remove("id" )}
+          val badJson = root.space.obj.modify {
+            _.remove("id")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -385,7 +381,9 @@ class IngestsApiFeatureTest
 
       describe("problems with the bag") {
         it("if the field is missing") {
-          val badJson = root.obj.modify { _.remove("bag") }
+          val badJson = root.obj.modify {
+            _.remove("bag")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -394,7 +392,9 @@ class IngestsApiFeatureTest
         }
 
         it("if the info field is missing") {
-          val badJson = root.bag.obj.modify { _.remove("info") }
+          val badJson = root.bag.obj.modify {
+            _.remove("info")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -403,7 +403,9 @@ class IngestsApiFeatureTest
         }
 
         it("if the info.externalIdentifier field is missing") {
-          val badJson = root.bag.info.obj.modify { _.remove("externalIdentifier") }
+          val badJson = root.bag.info.obj.modify {
+            _.remove("externalIdentifier")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -414,7 +416,9 @@ class IngestsApiFeatureTest
 
       describe("problems with the sourceLocation") {
         it("if the field is missing") {
-          val badJson = root.obj.modify { _.remove("sourceLocation") }
+          val badJson = root.obj.modify {
+            _.remove("sourceLocation")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -423,7 +427,9 @@ class IngestsApiFeatureTest
         }
 
         it("if the provider field is missing") {
-          val badJson = root.sourceLocation.obj.modify { _.remove("provider") }
+          val badJson = root.sourceLocation.obj.modify {
+            _.remove("provider")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -432,7 +438,9 @@ class IngestsApiFeatureTest
         }
 
         it("if the bucket field is missing") {
-          val badJson = root.sourceLocation.obj.modify { _.remove("bucket") }
+          val badJson = root.sourceLocation.obj.modify {
+            _.remove("bucket")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -441,7 +449,9 @@ class IngestsApiFeatureTest
         }
 
         it("if the path field is missing") {
-          val badJson = root.sourceLocation.obj.modify { _.remove("path") }
+          val badJson = root.sourceLocation.obj.modify {
+            _.remove("path")
+          }
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
@@ -467,7 +477,9 @@ class IngestsApiFeatureTest
       }
 
       it("includes every error") {
-        val badJson = root.obj.modify { _.remove("ingestType").remove("sourceLocation") }
+        val badJson = root.obj.modify {
+          _.remove("ingestType").remove("sourceLocation")
+        }
 
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
@@ -476,47 +488,18 @@ class IngestsApiFeatureTest
                |Invalid value at .ingestType: required property not supplied.""".stripMargin
         )
       }
+    }
 
-      it("returns a 500 Server Error if updating DynamoDB fails") {
-        withMaterializer { implicit materializer =>
-          withBrokenApp {
-            case (_, _, metricsSender, baseUrl) =>
-              val entity = HttpEntity(
-                ContentTypes.`application/json`,
-                s"""|{
-                    |  "type": "Ingest",
-                    |  "ingestType": {
-                    |    "id": "create",
-                    |    "type": "IngestType"
-                    |  },
-                    |  "sourceLocation":{
-                    |    "type": "Location",
-                    |    "provider": {
-                    |      "type": "Provider",
-                    |      "id": "${StandardDisplayProvider.id}"
-                    |    },
-                    |    "bucket": "bukkit",
-                    |    "path": "key"
-                    |  },
-                    |  "space": {
-                    |    "id": "space",
-                    |    "type": "Space"
-                    |  },
-                    |  "callback": {
-                    |    "url": "${testCallbackUri.toString}"
-                    |  },
-                    |  "externalIdentifier": "${createExternalIdentifier.underlying}"
-                    |}""".stripMargin
-              )
+    it("returns a 500 Server Error if updating the ingest starter fails") {
+      withMaterializer { implicit materializer =>
+        withBrokenApp { case (_, _, metricsSender, baseUrl) =>
+          whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
+            response =>
+              assertIsInternalServerErrorResponse(response)
 
-              whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", entity) {
-                response =>
-                  assertIsInternalServerErrorResponse(response)
-
-                  assertMetricSent(
-                    metricsSender,
-                    result = HttpMetricResults.ServerError)
-              }
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.ServerError)
           }
         }
       }
@@ -655,6 +638,9 @@ class IngestsApiFeatureTest
         externalIdentifier = externalIdentifier
       ).noSpaces
     )
+
+  def createRequest: RequestEntity =
+    createRequestWith()
 
   private def assertCatchesMalformedRequest(
     requestBody: String = createRequestJson.noSpaces,
