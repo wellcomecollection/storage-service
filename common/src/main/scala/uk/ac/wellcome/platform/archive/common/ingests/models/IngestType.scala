@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
-import com.gu.scanamo.DynamoFormat
+import org.scanamo.DynamoFormat
 import io.circe.CursorOp.DownField
 import io.circe._
 
@@ -22,7 +22,7 @@ object IngestType {
       case CreateIngestType.id => CreateIngestType
       case UpdateIngestType.id => UpdateIngestType
       case invalidId =>
-        throw new Throwable(
+        throw new IllegalArgumentException(
           s"""got "$invalidId", valid values are: ${CreateIngestType.id}, ${UpdateIngestType.id}.""")
     }
 
@@ -40,6 +40,7 @@ object IngestType {
   implicit val encoder: Encoder[IngestType] =
     (ingestType: IngestType) => Json.obj("id" -> Json.fromString(ingestType.id))
 
+  // TODO: This needs testing
   implicit def format: DynamoFormat[IngestType] =
     DynamoFormat.coercedXmap[IngestType, String, IllegalArgumentException](
       id => IngestType.create(id)

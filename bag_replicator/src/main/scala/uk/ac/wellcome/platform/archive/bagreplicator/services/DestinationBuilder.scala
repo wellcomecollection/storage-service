@@ -7,14 +7,13 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
 class DestinationBuilder(namespace: String, rootPath: Option[String]) {
-
   def buildDestination(
     storageSpace: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     version: Int
   ): ObjectLocation = ObjectLocation(
     namespace = namespace,
-    key = Paths
+    path = Paths
       .get(
         rootPath.getOrElse(""),
         storageSpace.toString,

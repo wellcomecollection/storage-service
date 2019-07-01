@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.versioning.dynamo
 
+import org.scanamo.auto._
+import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
@@ -9,7 +11,8 @@ import uk.ac.wellcome.platform.archive.common.versioning.{
   IngestVersionManagerTestCases,
   VersionRecord
 }
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
+import uk.ac.wellcome.storage.{MaximaError, MaximaReadError}
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 
 import scala.util.{Failure, Try}
 
@@ -20,7 +23,7 @@ class DynamoIngestVersionManagerTest
     implicit table: Table): R =
     testWith(
       new DynamoIngestVersionManagerDao(
-        dynamoClient = dynamoDbClient,
+        dynamoClient = dynamoClient,
         dynamoConfig = createDynamoConfigWith(table)
       )
     )
@@ -30,7 +33,7 @@ class DynamoIngestVersionManagerTest
     implicit table: Table): R =
     testWith(
       new DynamoIngestVersionManagerDao(
-        dynamoClient = dynamoDbClient,
+        dynamoClient = dynamoClient,
         dynamoConfig = createDynamoConfigWith(table)
       ) {
         override def lookupExistingVersion(
@@ -44,13 +47,13 @@ class DynamoIngestVersionManagerTest
     implicit table: Table): R =
     testWith(
       new DynamoIngestVersionManagerDao(
-        dynamoClient = dynamoDbClient,
+        dynamoClient = dynamoClient,
         dynamoConfig = createDynamoConfigWith(table)
       ) {
         override def lookupLatestVersionFor(
           externalIdentifier: ExternalIdentifier,
-          storageSpace: StorageSpace): Try[Option[VersionRecord]] =
-          Failure(new Throwable("BOOM!"))
+          storageSpace: StorageSpace): Either[MaximaError, VersionRecord] =
+          Left(MaximaReadError(new Throwable("BOOM!")))
       }
     )
 
@@ -59,7 +62,7 @@ class DynamoIngestVersionManagerTest
     implicit table: Table): R =
     testWith(
       new DynamoIngestVersionManagerDao(
-        dynamoClient = dynamoDbClient,
+        dynamoClient = dynamoClient,
         dynamoConfig = createDynamoConfigWith(table)
       ) {
         override def storeNewVersion(record: VersionRecord): Try[Unit] =

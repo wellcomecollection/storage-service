@@ -2,40 +2,34 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.io.{File, FileOutputStream}
 import java.nio.file.Paths
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.storage.generators.RandomThings
 
 import scala.util.Random
 
-trait RandomThings {
-  def randomAlphanumeric(length: Int = 8) = {
+trait StorageRandomThings extends RandomThings {
+  def randomAlphanumericWithLength(length: Int = 8): String =
     Random.alphanumeric take length mkString
-  }
 
-  def randomBytes(length: Int = 1024) = {
-    val byteArray = new Array[Byte](length)
+  def randomInstant: Instant =
+    Instant.now().plusSeconds(Random.nextInt())
 
-    Random.nextBytes(byteArray)
-
-    byteArray
-  }
-
-  def randomPaths(maxDepth: Int = 4, dirs: Int = 4) = {
+  def randomPaths(maxDepth: Int = 4, dirs: Int = 4): List[String] = {
     (1 to dirs).map { _ =>
       val depth = Random.nextInt(maxDepth)
 
       (1 to depth).foldLeft("") { (memo, _) =>
-        Paths.get(memo, randomAlphanumeric()).toString
+        Paths.get(memo, randomAlphanumeric).toString
       }
     }.toList
   }
 
-  def randomAlphanumericWithSpace(length: Int = 8) = {
-    val str = randomAlphanumeric(length).toCharArray
+  def randomAlphanumericWithSpace(length: Int = 8): Array[Char] = {
+    val str = randomAlphanumericWithLength(length).toCharArray
 
     // Randomly choose an index in the string
     // to replace with a space,
@@ -49,7 +43,7 @@ trait RandomThings {
                         dirs: Int = 4,
                         maxDepth: Int = 4,
                         minSize: Int = 265,
-                        maxSize: Int = 1024) = {
+                        maxSize: Int = 1024): Seq[File] = {
 
     def createFile(name: String) = {
       val fileSize =
@@ -72,19 +66,19 @@ trait RandomThings {
         Paths
           .get(
             path,
-            s"${randomAlphanumeric()}.test"
+            s"${randomAlphanumericWithLength()}.test"
           )
           .toString
       )
-    }.toList
+    }
   }
 
-  val tmpDir = System.getProperty("java.io.tmpdir")
+  val tmpDir: String = System.getProperty("java.io.tmpdir")
 
   def randomFilesWithNames(fileNames: List[String],
                            maxDepth: Int = 4,
                            minSize: Int = 265,
-                           maxSize: Int = 1024) = {
+                           maxSize: Int = 1024): Seq[File] = {
     def createFile(name: String) = {
       val fileSize =
         Random.nextInt(maxSize - minSize) + minSize
@@ -121,33 +115,33 @@ trait RandomThings {
     size: Int = 256,
     path: String = s"${randomUUID.toString}.test",
     useBytes: Boolean = false
-  ) =
+  ): File =
     writeToOutputStream(path) { fileOutputStream =>
       val bytes = if (useBytes) {
         randomBytes(size)
       } else {
-        randomAlphanumeric(size).getBytes
+        randomAlphanumericWithLength(size).getBytes
       }
 
       fileOutputStream.write(bytes)
     }
 
-  def randomUUID = UUID.randomUUID()
+  def randomUUID: UUID = UUID.randomUUID()
 
   def createIngestID: IngestID =
     IngestID(randomUUID)
 
   def randomSourceOrganisation =
-    SourceOrganisation(randomAlphanumeric())
+    SourceOrganisation(randomAlphanumericWithLength())
 
   def randomInternalSenderIdentifier =
-    InternalSenderIdentifier(randomAlphanumeric())
+    InternalSenderIdentifier(randomAlphanumericWithLength())
 
   def randomInternalSenderDescription =
-    InternalSenderDescription(randomAlphanumeric())
+    InternalSenderDescription(randomAlphanumericWithLength())
 
   def randomExternalDescription =
-    ExternalDescription(randomAlphanumeric())
+    ExternalDescription(randomAlphanumericWithLength())
 
   def randomPayloadOxum =
     PayloadOxum(Random.nextLong().abs, Random.nextInt().abs)
@@ -157,6 +151,4 @@ trait RandomThings {
     val maxValue = 1999999998
     LocalDate.ofEpochDay(startRange + Random.nextInt(maxValue))
   }
-
-  def randomBucket = Bucket(randomAlphanumeric().toLowerCase)
 }

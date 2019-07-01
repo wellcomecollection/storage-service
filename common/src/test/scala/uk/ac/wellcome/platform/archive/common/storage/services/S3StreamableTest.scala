@@ -3,17 +3,17 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.nio.file.Paths
 
 import org.scalatest.{EitherValues, FunSpec, OptionValues}
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, LocateFailure}
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 class S3StreamableTest
     extends FunSpec
-    with S3
+    with S3Fixtures
     with OptionValues
     with EitherValues
-    with RandomThings {
+    with StorageRandomThings {
 
   import S3StreamableInstances._
 
@@ -22,8 +22,8 @@ class S3StreamableTest
   implicit val thingResolver: Locatable[Thing] = new Locatable[Thing] {
     override def locate(thing: Thing)(root: Option[ObjectLocation])
       : Either[LocateFailure[Thing], ObjectLocation] = {
-      val paths = Paths.get(root.get.key, thing.stuff)
-      Right(root.get.copy(key = paths.toString))
+      val paths = Paths.get(root.get.path, thing.stuff)
+      Right(root.get.copy(path = paths.toString))
     }
   }
 
@@ -35,7 +35,7 @@ class S3StreamableTest
         "invalid.key"
       )
 
-      val myThing = Thing(randomAlphanumeric())
+      val myThing = Thing(randomAlphanumericWithLength())
 
       val myStream = myThing.locateWith(invalidRoot)
 
@@ -45,8 +45,8 @@ class S3StreamableTest
 
     it("produces a Right[Some[Thing]] from a valid ObjectLocation") {
       withLocalS3Bucket { bucket =>
-        val key = randomAlphanumeric()
-        val thingStuff = randomAlphanumeric()
+        val key = randomAlphanumericWithLength()
+        val thingStuff = randomAlphanumericWithLength()
 
         s3Client.putObject(bucket.name, s"$key/$thingStuff", thingStuff)
 

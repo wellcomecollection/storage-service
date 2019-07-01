@@ -5,7 +5,6 @@ import java.util.UUID
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.Messaging
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -21,30 +20,33 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
 }
-import uk.ac.wellcome.storage.fixtures.LockingServiceFixtures
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
-import uk.ac.wellcome.storage.memory.MemoryLockDao
-import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
+import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.locking.memory.{
+  MemoryLockDao,
+  MemoryLockDaoFixtures
+}
+import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 
 import scala.collection.JavaConverters._
 import scala.util.Try
 
 trait BagReplicatorFixtures
-    extends Messaging
-    with BagLocationFixtures
+    extends BagLocationFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture
-    with LockingServiceFixtures {
+    with MemoryLockDaoFixtures {
 
   def withBagReplicatorWorker[R](
-    queue: Queue = Queue(randomAlphanumeric(), randomAlphanumeric()),
-    bucket: Bucket = Bucket(randomAlphanumeric()),
+    queue: Queue =
+      Queue(randomAlphanumericWithLength(), randomAlphanumericWithLength()),
+    bucket: Bucket = Bucket(randomAlphanumericWithLength()),
     rootPath: Option[String] = None,
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
-    stepName: String = randomAlphanumeric())(
+    stepName: String = randomAlphanumericWithLength())(
     testWith: TestWith[BagReplicatorWorker[String, String], R]
   ): R =
     withActorSystem { implicit actorSystem =>
@@ -101,7 +103,7 @@ trait BagReplicatorFixtures
   private def getObjectSummaries(
     objectLocation: ObjectLocation): List[S3ObjectSummary] =
     s3Client
-      .listObjects(objectLocation.namespace, objectLocation.key)
+      .listObjects(objectLocation.namespace, objectLocation.path)
       .getObjectSummaries
       .asScala
       .toList

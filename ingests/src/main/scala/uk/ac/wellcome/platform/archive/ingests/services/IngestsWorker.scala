@@ -18,7 +18,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
@@ -42,7 +42,11 @@ class IngestsWorker[CallbackDestination](
 
   def processMessage(ingestUpdate: IngestUpdate): Try[Result[Ingest]] = {
     val result = for {
-      ingest <- ingestTracker.update(ingestUpdate)
+      ingest <- ingestTracker.update(ingestUpdate) match {
+        case Right(updatedIngest) => Success(updatedIngest.identifiedT)
+        case Left(err) =>
+          Failure(new Throwable(s"Error from the ingest tracker: $err"))
+      }
       _ <- callbackNotificationService.sendNotification(ingest)
     } yield ingest
 

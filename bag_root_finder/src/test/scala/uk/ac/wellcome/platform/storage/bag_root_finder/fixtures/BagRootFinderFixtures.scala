@@ -12,19 +12,19 @@ import uk.ac.wellcome.platform.storage.bag_root_finder.services.{
   BagRootFinder,
   BagRootFinderWorker
 }
-import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 trait BagRootFinderFixtures
     extends OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture
-    with S3 {
+    with S3Fixtures {
 
   def withWorkerService[R](
     queue: Queue,
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
-    stepName: String = randomAlphanumeric()
+    stepName: String = randomAlphanumericWithLength()
   )(testWith: TestWith[BagRootFinderWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)

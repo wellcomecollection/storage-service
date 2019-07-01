@@ -8,11 +8,11 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 trait BagLocationFixtures
-    extends S3
+    extends S3Fixtures
     with BagInfoGenerators
     with BagIt
     with StorageSpaceGenerators {
@@ -58,7 +58,7 @@ trait BagLocationFixtures
       s3Client
         .putObject(
           entryLocation.namespace,
-          entryLocation.key,
+          entryLocation.path,
           entry.contents
         )
     })

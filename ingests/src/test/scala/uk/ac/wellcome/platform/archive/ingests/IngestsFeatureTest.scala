@@ -1,8 +1,11 @@
 package uk.ac.wellcome.platform.archive.ingests
 
-import org.scalatest.concurrent.Eventually
+import java.time.Instant
+
+import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   CallbackNotification,
@@ -15,41 +18,45 @@ class IngestsFeatureTest
     with Matchers
     with Eventually
     with IngestsFixtures
+    with IngestGenerators
+    with IntegrationPatience
     with TryValues {
 
   it("updates an existing ingest status to Completed") {
-    withConfiguredApp {
-      case (queue, messageSender, table) =>
-        withIngestTracker(table) { ingestTracker =>
-          val ingest = ingestTracker.initialise(createIngest).success.value
-          val ingestStatusUpdate =
-            createIngestStatusUpdateWith(id = ingest.id, status = Completed)
+    val ingest = createIngestWith(
+      createdDate = Instant.now()
+    )
 
-          sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+    withConfiguredApp(initialIngests = Seq(ingest)) {
+      case (queue, messageSender, ingestTracker) =>
+        implicit val _ = ingestTracker
 
-          eventually {
-            val expectedIngest = ingest.copy(
-              status = Completed,
-              events = ingestStatusUpdate.events
-            )
+        val ingestStatusUpdate =
+          createIngestStatusUpdateWith(id = ingest.id, status = Completed)
 
-            val expectedMessage = CallbackNotification(
-              ingestId = ingest.id,
-              callbackUri = ingest.callback.get.uri,
-              payload = expectedIngest
-            )
+        sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-            messageSender.getMessages[CallbackNotification] shouldBe Seq(
-              expectedMessage)
+        eventually {
+          val expectedIngest = ingest.copy(
+            status = Completed,
+            events = ingestStatusUpdate.events
+          )
 
-            assertIngestCreated(ingest, table)
+          val expectedMessage = CallbackNotification(
+            ingestId = ingest.id,
+            callbackUri = ingest.callback.get.uri,
+            payload = expectedIngest
+          )
 
-            assertIngestRecordedRecentEvents(
-              ingestStatusUpdate.id,
-              ingestStatusUpdate.events.map(_.description),
-              table
-            )
-          }
+          messageSender.getMessages[CallbackNotification] shouldBe Seq(
+            expectedMessage)
+
+          assertIngestCreated(ingest)
+
+          assertIngestRecordedRecentEvents(
+            ingestStatusUpdate.id,
+            ingestStatusUpdate.events.map { _.description }
+          )
         }
     }
   }

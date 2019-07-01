@@ -24,7 +24,7 @@ class BagReplicatorFeatureTest
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { ingestsBucket =>
       withLocalS3Bucket { archiveBucket =>
-        val rootPath = randomAlphanumeric()
+        val rootPath = randomAlphanumericWithLength()
 
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()

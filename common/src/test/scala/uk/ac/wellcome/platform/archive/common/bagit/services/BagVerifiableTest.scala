@@ -20,10 +20,15 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   VerifiableLocation
 }
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
-class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
+class BagVerifiableTest
+    extends FunSpec
+    with Matchers
+    with BagInfoGenerators
+    with ObjectLocationGenerators {
   implicit val resolvable: Resolvable[ObjectLocation] =
-    (t: ObjectLocation) => new URI(s"example://${t.namespace}/${t.key}")
+    (t: ObjectLocation) => new URI(s"example://${t.namespace}/${t.path}")
 
   val root: ObjectLocation = createObjectLocation
   val bagVerifiable = new BagVerifiable(root)
@@ -270,14 +275,8 @@ class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
       path = BagPath(path)
     )
 
-  def createObjectLocation: ObjectLocation =
-    ObjectLocation(
-      namespace = randomAlphanumeric(),
-      key = randomAlphanumeric()
-    )
-
   def createObjectLocationWith(root: ObjectLocation): ObjectLocation =
-    root.join(randomAlphanumeric(), randomAlphanumeric())
+    root.join(randomAlphanumericWithLength(), randomAlphanumericWithLength())
 
   def createFetchEntryWith(
     uri: String,
@@ -293,7 +292,7 @@ class BagVerifiableTest extends FunSpec with Matchers with BagInfoGenerators {
     bagFiles.map { mf =>
       VerifiableLocation(
         uri = new URI(
-          s"example://${root.namespace}/${root.key}/${mf.path.toString}"),
+          s"example://${root.namespace}/${root.path}/${mf.path.toString}"),
         checksum = mf.checksum,
         length = None
       )

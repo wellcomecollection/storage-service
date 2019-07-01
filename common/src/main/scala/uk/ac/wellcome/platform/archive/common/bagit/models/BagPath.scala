@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
-import com.gu.scanamo.DynamoFormat
 import io.circe.{Decoder, Encoder, HCursor, Json}
+import org.scanamo.DynamoFormat
 
 case class BagPath(value: String) {
   override def toString: String = value
@@ -34,10 +34,9 @@ object BagPath {
     cursor.value.as[String].map(BagPath(_))
 
   implicit def evidence: DynamoFormat[BagPath] =
-    DynamoFormat
-      .coercedXmap[BagPath, String, IllegalArgumentException](
-        BagPath(_)
-      )(
-        _.toString
-      )
+    DynamoFormat.iso[BagPath, String](
+      BagPath(_)
+    )(
+      _.toString
+    )
 }

@@ -47,7 +47,7 @@ class S3Uploader(implicit s3Client: AmazonS3) {
 
     val putObjectRequest = new PutObjectRequest(
       uploadLocation.namespace,
-      uploadLocation.key,
+      uploadLocation.path,
       inputStream,
       metadata
     )

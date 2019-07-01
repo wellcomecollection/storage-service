@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.common.versioning.{
   IngestVersionManagerTestCases,
   VersionRecord
 }
+import uk.ac.wellcome.storage.{MaximaError, MaximaReadError}
 
 import scala.util.{Failure, Try}
 
@@ -39,8 +40,8 @@ class MemoryIngestVersionManagerTest
     testWith(new MemoryIngestVersionManagerDao() {
       override def lookupLatestVersionFor(
         externalIdentifier: ExternalIdentifier,
-        storageSpace: StorageSpace): Try[Option[VersionRecord]] =
-        Failure(new Throwable("BOOM!"))
+        storageSpace: StorageSpace): Either[MaximaError, VersionRecord] =
+        Left(MaximaReadError(new Throwable("BOOM!")))
     })
 
   override def withBrokenStoreNewVersionDao[R](

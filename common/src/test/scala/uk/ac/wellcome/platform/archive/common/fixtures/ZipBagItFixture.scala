@@ -13,7 +13,7 @@ trait ZipBagItFixture extends BagInfoGenerators with BagIt with Logging {
   def withZipFile[R](files: Seq[FileEntry]): Fixture[File, R] =
     fixture[File, R](
       create = {
-        val file = File.createTempFile(randomAlphanumeric(), ".zip")
+        val file = File.createTempFile(randomAlphanumericWithLength(), ".zip")
         val zipFileOutputStream = new FileOutputStream(file)
         val zipOutputStream = new ZipOutputStream(zipFileOutputStream)
 

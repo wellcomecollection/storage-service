@@ -19,5 +19,5 @@ object DisplayLocation {
     DisplayLocation(
       DisplayProvider(location.provider),
       location.location.namespace,
-      location.location.key)
+      location.location.path)
 }

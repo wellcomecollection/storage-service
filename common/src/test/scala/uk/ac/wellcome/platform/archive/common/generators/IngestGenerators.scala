@@ -13,7 +13,9 @@ trait IngestGenerators extends BagIdGenerators {
 
   val storageLocation = StorageLocation(
     StandardStorageProvider,
-    ObjectLocation(randomAlphanumeric(), randomAlphanumeric()))
+    ObjectLocation(
+      randomAlphanumericWithLength(),
+      randomAlphanumericWithLength()))
 
   def createIngest: Ingest = createIngestWith()
 
@@ -28,7 +30,7 @@ trait IngestGenerators extends BagIdGenerators {
                        status: Status = Ingest.Accepted,
                        externalIdentifier: ExternalIdentifier =
                          createExternalIdentifier,
-                       createdDate: Instant = Instant.now,
+                       createdDate: Instant = randomInstant,
                        events: Seq[IngestEvent] = Seq.empty): Ingest =
     Ingest(
       id = id,
@@ -43,12 +45,14 @@ trait IngestGenerators extends BagIdGenerators {
     )
 
   def createIngestEvent: IngestEvent =
-    IngestEvent(randomAlphanumeric(15))
+    IngestEvent(randomAlphanumeric)
 
-  def createIngestEventUpdateWith(id: IngestID): IngestEventUpdate =
+  def createIngestEventUpdateWith(id: IngestID,
+                                  events: List[IngestEvent] = List(
+                                    createIngestEvent)): IngestEventUpdate =
     IngestEventUpdate(
       id = id,
-      events = List(createIngestEvent)
+      events = events
     )
 
   def createIngestEventUpdate: IngestEventUpdate =
@@ -63,6 +67,23 @@ trait IngestGenerators extends BagIdGenerators {
       status = status,
       events = events
     )
+
+  def createIngestCallbackStatusUpdateWith(
+    id: IngestID = createIngestID,
+    callbackStatus: Callback.CallbackStatus = Callback.Pending,
+    events: Seq[IngestEvent] = Seq.empty
+  ): IngestCallbackStatusUpdate =
+    IngestCallbackStatusUpdate(
+      id = id,
+      callbackStatus = callbackStatus,
+      events = events
+    )
+
+  def createIngestCallbackStatusUpdate: IngestCallbackStatusUpdate =
+    createIngestCallbackStatusUpdateWith()
+
+  def createIngestStatusUpdate: IngestStatusUpdate =
+    createIngestStatusUpdateWith()
 
   def createCallback(): Callback = createCallbackWith()
 

@@ -18,19 +18,19 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   S3ObjectVerifier,
   S3Resolvable
 }
-import uk.ac.wellcome.storage.fixtures.S3
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
     with SQS
     with OperationFixtures
     with MonitoringClientFixture
-    with S3 {
-  def withBagVerifierWorker[R](ingests: MemoryMessageSender,
-                               outgoing: MemoryMessageSender,
-                               queue: Queue =
-                                 Queue("fixture", arn = "arn::fixture"),
-                               stepName: String = randomAlphanumeric())(
+    with S3Fixtures {
+  def withBagVerifierWorker[R](
+    ingests: MemoryMessageSender,
+    outgoing: MemoryMessageSender,
+    queue: Queue = Queue("fixture", arn = "arn::fixture"),
+    stepName: String = randomAlphanumericWithLength())(
     testWith: TestWith[BagVerifierWorker[String, String], R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>

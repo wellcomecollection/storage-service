@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.util.UUID
 
-import com.gu.scanamo.DynamoFormat
+import org.scanamo.DynamoFormat
 import io.circe.{Decoder, Encoder, Json}
 
 case class IngestID(underlying: UUID) extends AnyVal {

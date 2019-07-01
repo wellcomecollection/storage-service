@@ -40,8 +40,8 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     val bagInfoInDirectory = findBagInfoInDirectory(objectLocation)
 
     (bagInfoInRoot, bagInfoInDirectory) match {
-      case (Success(key), _) => Success(objectLocation.copy(key = key))
-      case (_, Success(key)) => Success(objectLocation.copy(key = key))
+      case (Success(path), _) => Success(objectLocation.copy(path = path))
+      case (_, Success(path)) => Success(objectLocation.copy(path = path))
       case (Failure(rootErr), Failure(dirError)) => {
         warn(s"Could not find bag in root: ${rootErr.getMessage}")
         warn(s"Could not find bag in subdir: ${dirError.getMessage}")
@@ -52,7 +52,7 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
 
   def locateBagRoot(objectLocation: ObjectLocation): Try[ObjectLocation] =
     locateBagInfo(objectLocation).map { loc =>
-      loc.copy(key = loc.key.stripSuffix("/bag-info.txt"))
+      loc.copy(path = loc.path.stripSuffix("/bag-info.txt"))
     }
 
   /** Find a bag directly below a given ObjectLocation. */
@@ -60,13 +60,13 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     Try {
       val listObjectsResult = s3Client.listObjectsV2(
         objectLocation.namespace,
-        createBagInfoPath(objectLocation.key)
+        createBagInfoPath(objectLocation.path)
       )
 
       val keyCount = listObjectsResult.getObjectSummaries.size()
 
       if (keyCount == 1) {
-        createBagInfoPath(objectLocation.key)
+        createBagInfoPath(objectLocation.path)
       } else {
         throw new RuntimeException(s"No bag-info.txt inside $objectLocation")
       }
@@ -80,7 +80,7 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     objectLocation: ObjectLocation): Try[String] = Try {
     val listObjectsRequest = new ListObjectsV2Request()
       .withBucketName(objectLocation.namespace)
-      .withPrefix(objectLocation.key + "/")
+      .withPrefix(objectLocation.path + "/")
       .withDelimiter("/")
 
     val directoriesInBag =
@@ -88,7 +88,7 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
 
     if (directoriesInBag.size == 1) {
       val directoryLocation = objectLocation.copy(
-        key = directoriesInBag.head
+        path = directoriesInBag.head
       )
 
       findBagInfoInRoot(directoryLocation) match {

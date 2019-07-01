@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
 }
-import uk.ac.wellcome.storage.fixtures.S3.Bucket
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 trait BagUnpackerFixtures
     extends SQS
@@ -30,7 +30,7 @@ trait BagUnpackerFixtures
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
     dstBucket: Bucket,
-    stepName: String = randomAlphanumeric()
+    stepName: String = randomAlphanumericWithLength()
   )(testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)

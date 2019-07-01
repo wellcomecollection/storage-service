@@ -26,7 +26,7 @@ object S3StreamableInstances {
           s3Client
             .getObject(
               location.namespace,
-              location.key
+              location.path
             )
         }
         contentLength <- Try {
@@ -50,7 +50,7 @@ object S3StreamableInstances {
 
       val bucketExists = Try(s3Client.doesBucketExistV2(location.namespace))
       val objectExists = Try(
-        s3Client.doesObjectExist(location.namespace, location.key))
+        s3Client.doesObjectExist(location.namespace, location.path))
 
       val result = (bucketExists, objectExists) match {
         case (Success(true), Success(true))  => getObjectContent(location)

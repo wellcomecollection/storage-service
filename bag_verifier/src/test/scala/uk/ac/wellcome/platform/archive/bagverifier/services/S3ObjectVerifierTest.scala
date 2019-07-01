@@ -55,7 +55,11 @@ class S3ObjectVerifierTest
         checksum = badChecksum
       )
 
-      createObject(objectLocation, content = "HelloWorld")
+      s3Client.putObject(
+        objectLocation.namespace,
+        objectLocation.path,
+        "HelloWorld"
+      )
 
       val verifiedLocation = objectVerifier.verify(verifiableLocation)
 
@@ -88,7 +92,11 @@ class S3ObjectVerifierTest
         length = Some(contentString.getBytes().length - 1)
       )
 
-      createObject(objectLocation, content = contentString)
+      s3Client.putObject(
+        objectLocation.namespace,
+        objectLocation.path,
+        contentString
+      )
 
       val verifiedLocation = objectVerifier.verify(verifiableLocation)
 
@@ -120,7 +128,11 @@ class S3ObjectVerifierTest
         checksum = checksum
       )
 
-      createObject(objectLocation, content = contentString)
+      s3Client.putObject(
+        objectLocation.namespace,
+        objectLocation.path,
+        contentString
+      )
 
       val verifiedLocation = objectVerifier.verify(verifiableLocation)
 
@@ -149,7 +161,11 @@ class S3ObjectVerifierTest
         length = Some(contentString.getBytes().length)
       )
 
-      createObject(objectLocation, content = contentString)
+      s3Client.putObject(
+        objectLocation.namespace,
+        objectLocation.path,
+        contentString
+      )
 
       val verifiedLocation = objectVerifier.verify(verifiableLocation)
 
@@ -177,7 +193,11 @@ class S3ObjectVerifierTest
         checksum = checksum
       )
 
-      createObject(objectLocation, content = contentString)
+      s3Client.putObject(
+        objectLocation.namespace,
+        objectLocation.path,
+        contentString
+      )
 
       val verifiedLocation = objectVerifier.verify(verifiableLocation)
 

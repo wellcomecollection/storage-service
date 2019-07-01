@@ -21,7 +21,8 @@ import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
-import uk.ac.wellcome.storage.{LockDao, LockingService, ObjectLocation}
+import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future

@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.apache.commons.io.IOUtils
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.fixtures.RandomThings
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.verify.{
   Checksum,
   ChecksumValue,
@@ -16,7 +16,7 @@ class ChecksumTest
     extends FunSpec
     with Matchers
     with ScalaFutures
-    with RandomThings {
+    with StorageRandomThings {
 
   private def toInputStream(s: String) =
     IOUtils.toInputStream(s, "UTF-8");

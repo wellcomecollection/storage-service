@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.versioning.dynamo
 
 import com.amazonaws.services.dynamodbv2.model._
-import com.gu.scanamo.{Scanamo, Table => ScanamoTable}
+import org.scalatest.EitherValues
+import org.scanamo.auto._
+import org.scanamo.time.JavaTimeFormats._
+import org.scanamo.{Table => ScanamoTable}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.versioning.{
@@ -9,25 +12,25 @@ import uk.ac.wellcome.platform.archive.common.versioning.{
   IngestVersionManagerDaoTestCases,
   VersionRecord
 }
-import uk.ac.wellcome.storage.dynamo._
-import uk.ac.wellcome.storage.fixtures.LocalDynamoDb.Table
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 
 import scala.util.Failure
 
 class DynamoIngestVersionManagerDaoTest
     extends IngestVersionManagerDaoTestCases[Table]
-    with IngestVersionManagerTable {
+    with IngestVersionManagerTable
+    with EitherValues {
   override def withDao[R](initialRecords: Seq[VersionRecord])(
     testWith: TestWith[IngestVersionManagerDao, R])(
     implicit table: Table): R = {
-    Scanamo.exec(dynamoDbClient)(
-      ScanamoTable[DynamoEntry](table.name).putAll(initialRecords.map {
-        DynamoEntry(_)
+    scanamo.exec(
+      ScanamoTable[DynamoVersionRecord](table.name).putAll(initialRecords.map {
+        DynamoVersionRecord(_)
       }.toSet))
 
     testWith(
       new DynamoIngestVersionManagerDao(
-        dynamoClient = dynamoDbClient,
+        dynamoClient = dynamoClient,
         dynamoConfig = createDynamoConfigWith(table)
       )
     )
@@ -56,12 +59,12 @@ class DynamoIngestVersionManagerDaoTest
         )
 
         val record = BadRecord(
-          id = randomAlphanumeric(),
+          id = randomAlphanumericWithLength(),
           ingestId = createIngestID,
           version = 1
         )
 
-        Scanamo.put(dynamoDbClient)(table.name)(record)
+        scanamo.exec(ScanamoTable[BadRecord](table.name).put(record))
 
         withDao(initialRecords = Seq.empty) { dao =>
           val result = dao.lookupExistingVersion(record.ingestId)
@@ -85,9 +88,8 @@ class DynamoIngestVersionManagerDaoTest
           storageSpace = createStorageSpace
         )
 
-        result shouldBe a[Failure[_]]
-        result.failed.get shouldBe a[ResourceNotFoundException]
-        result.failed.get.getMessage should startWith(
+        result.left.value.e shouldBe a[ResourceNotFoundException]
+        result.left.value.e.getMessage should startWith(
           "Cannot do operations on a non-existent table")
       }
     }

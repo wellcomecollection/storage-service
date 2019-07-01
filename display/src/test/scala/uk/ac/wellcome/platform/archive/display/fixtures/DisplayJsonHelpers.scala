@@ -50,7 +50,7 @@ trait DisplayJsonHelpers {
        |    "type": "Provider"
        |  },
        |  "bucket": "${loc.location.namespace}",
-       |  "path": "${loc.location.key}",
+       |  "path": "${loc.location.path}",
        |  "type": "Location"
        |}
      """.stripMargin

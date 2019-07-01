@@ -9,5 +9,5 @@ import uk.ac.wellcome.storage.ObjectLocation
 class S3Resolvable(implicit s3Client: AmazonS3)
     extends Resolvable[ObjectLocation] {
   override def resolve(t: ObjectLocation): URI =
-    s3Client.getUrl(t.namespace, t.key).toURI
+    s3Client.getUrl(t.namespace, t.path).toURI
 }

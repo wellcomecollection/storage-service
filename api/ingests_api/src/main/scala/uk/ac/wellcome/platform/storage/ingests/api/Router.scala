@@ -19,7 +19,10 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   UserErrorResponse
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestDoesNotExistError,
+  IngestTracker
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display.{
   DisplayIngestMinimal,
@@ -66,17 +69,17 @@ class Router[UnpackerDestination](
         get {
           // TODO: Do we have a test for the failure case?
           ingestTracker.get(IngestID(id)) match {
-            case scala.util.Success(Some(ingest)) =>
-              complete(ResponseDisplayIngest(ingest, contextURL))
-            case scala.util.Success(None) =>
+            case Right(ingest) =>
+              complete(ResponseDisplayIngest(ingest.identifiedT, contextURL))
+            case Left(_: IngestDoesNotExistError) =>
               complete(
                 NotFound -> UserErrorResponse(
                   context = contextURL,
                   statusCode = StatusCodes.NotFound,
                   description = s"Ingest $id not found"
                 ))
-            case scala.util.Failure(err) =>
-              error(s"Unexpected error while fetching ingest $id", err)
+            case Left(err) =>
+              error(s"Unexpected error while fetching ingest $id: $err")
               complete(
                 InternalServerError -> InternalServerErrorResponse(
                   contextURL,
@@ -104,24 +107,24 @@ class Router[UnpackerDestination](
       }
     }
 
-  private def findIngest(bagId: BagId): StandardRoute = {
-    val results = ingestTracker.findByBagId(bagId)
-    if (results.nonEmpty && results.forall(_.isRight)) {
-      complete(OK -> results.collect {
-        case Right(ingest) => DisplayIngestMinimal(ingest)
-      })
-    } else if (results.isEmpty) {
-      complete(NotFound -> List[DisplayIngestMinimal]())
-    } else {
-      info(s"""errors fetching ingests for $bagId: ${results.mkString(" ")}""")
-      complete(
-        InternalServerError -> InternalServerErrorResponse(
-          context = contextURL,
-          statusCode = InternalServerError
+  private def findIngest(bagId: BagId): StandardRoute =
+    ingestTracker.listByBagId(bagId) match {
+      case Right(results) =>
+        if (results.nonEmpty) {
+          complete(OK -> results.map { DisplayIngestMinimal(_) })
+        } else {
+          complete(NotFound -> List[DisplayIngestMinimal]())
+        }
+
+      case Left(err) =>
+        warn(s"""errors fetching ingests for $bagId: $err""")
+        complete(
+          InternalServerError -> InternalServerErrorResponse(
+            context = contextURL,
+            statusCode = InternalServerError
+          )
         )
-      )
     }
-  }
 
   private def createLocationHeader(ingest: Ingest) =
     Location(s"${httpServerConfig.externalBaseURL}/${ingest.id}")

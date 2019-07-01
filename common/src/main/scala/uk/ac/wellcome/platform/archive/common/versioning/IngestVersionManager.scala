@@ -5,6 +5,7 @@ import java.time.Instant
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.storage.NoMaximaValueError
 
 import scala.util.{Failure, Success}
 
@@ -18,7 +19,7 @@ trait IngestVersionManager {
     storageSpace: StorageSpace
   ): Either[IngestVersionManagerError, Int] =
     dao.lookupLatestVersionFor(externalIdentifier, storageSpace) match {
-      case Success(Some(existingRecord)) =>
+      case Right(existingRecord) =>
         if (existingRecord.ingestDate.isBefore(ingestDate))
           storeNewVersion(
             externalIdentifier = externalIdentifier,
@@ -34,7 +35,7 @@ trait IngestVersionManager {
               request = ingestDate
             ))
 
-      case Success(None) =>
+      case Left(NoMaximaValueError(_)) =>
         storeNewVersion(
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
@@ -43,7 +44,8 @@ trait IngestVersionManager {
           newVersion = 1
         )
 
-      case Failure(err) => Left(IngestVersionManagerDaoError(err))
+      // TODO: Can we preserve the StorageError here?
+      case Left(err) => Left(IngestVersionManagerDaoError(err.e))
     }
 
   private def storeNewVersion(
