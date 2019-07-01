@@ -2,20 +2,13 @@ package uk.ac.wellcome.platform.archive.ingests
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SNSBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SNSBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.common.ingests.monitor.IngestTracker
-import uk.ac.wellcome.platform.archive.ingests.services.{
-  CallbackNotificationService,
-  IngestsWorker
-}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.dynamo.DynamoIngestTracker
+import uk.ac.wellcome.platform.archive.ingests.services.{CallbackNotificationService, IngestsWorker}
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -37,9 +30,12 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val ingestTracker = new IngestTracker(
-      dynamoClient = DynamoBuilder.buildDynamoClient(config),
-      dynamoConfig = DynamoBuilder.buildDynamoConfig(config)
+    implicit val dynamoClient: AmazonDynamoDB =
+      DynamoBuilder.buildDynamoClient(config)
+
+    val ingestTracker = new DynamoIngestTracker(
+      config = DynamoBuilder.buildDynamoConfig(config),
+      bagIdLookupConfig = DynamoBuilder.buildDynamoConfig(config, namespace = "bagIdLookup")
     )
 
     val callbackNotificationService = new CallbackNotificationService(

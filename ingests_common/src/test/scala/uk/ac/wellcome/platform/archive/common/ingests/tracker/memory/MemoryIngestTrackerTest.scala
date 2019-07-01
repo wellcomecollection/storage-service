@@ -2,40 +2,25 @@ package uk.ac.wellcome.platform.archive.common.ingests.tracker.memory
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
-  IngestTracker,
-  IngestTrackerTestCases
-}
-import uk.ac.wellcome.storage.{
-  StoreReadError,
-  StoreWriteError,
-  UpdateWriteError,
-  Version
-}
-import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestTracker, IngestTrackerTestCases}
+import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import uk.ac.wellcome.storage.{StoreReadError, StoreWriteError, UpdateWriteError}
 
 class MemoryIngestTrackerTest
-    extends IngestTrackerTestCases[MemoryVersionedStore[IngestID, Int, Ingest]] {
-  private def createMemoryStore =
-    new MemoryStore[Version[IngestID, Int], Ingest](initialEntries = Map.empty)
-    with MemoryMaxima[IngestID, Ingest]
+    extends IngestTrackerTestCases[MemoryVersionedStore[IngestID, Int, Ingest]]
+    with IngestTrackerFixtures {
 
   override def withContext[R](
     testWith: TestWith[MemoryVersionedStore[IngestID, Int, Ingest], R]): R =
-    testWith(new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore))
+    testWith(createMemoryVersionedStore)
 
   override def withIngestTracker[R](initialIngests: Seq[Ingest])(
     testWith: TestWith[IngestTracker, R])(
-    implicit store: MemoryVersionedStore[IngestID, Int, Ingest]): R = {
-
-    initialIngests
-      .map { ingest =>
-        store.init(ingest.id)(ingest)
-      }
-
-    testWith(new MemoryIngestTracker(store))
-  }
+    implicit store: MemoryVersionedStore[IngestID, Int, Ingest]): R =
+    withMemoryIngestTracker(initialIngests) { tracker =>
+      testWith(tracker)
+    }
 
   override def withBrokenUnderlyingInitTracker[R](
     testWith: TestWith[IngestTracker, R])(
