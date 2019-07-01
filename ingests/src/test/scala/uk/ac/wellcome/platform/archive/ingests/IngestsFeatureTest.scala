@@ -22,20 +22,15 @@ class IngestsFeatureTest
       case (queue, messageSender, table) =>
         withIngestTracker(table) { ingestTracker =>
           val ingest = ingestTracker.initialise(createIngest).success.value
-          val someBagId = Some(createBagId)
           val ingestStatusUpdate =
-            createIngestStatusUpdateWith(
-              id = ingest.id,
-              status = Completed,
-              maybeBag = someBagId)
+            createIngestStatusUpdateWith(id = ingest.id, status = Completed)
 
           sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
           eventually {
             val expectedIngest = ingest.copy(
               status = Completed,
-              events = ingestStatusUpdate.events,
-              bag = someBagId
+              events = ingestStatusUpdate.events
             )
 
             val expectedMessage = CallbackNotification(

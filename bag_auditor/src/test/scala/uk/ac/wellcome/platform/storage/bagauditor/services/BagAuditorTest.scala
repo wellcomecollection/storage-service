@@ -33,6 +33,7 @@ class BagAuditorTest
               ingestDate = Instant.now,
               ingestType = CreateIngestType,
               root = bagRootLocation,
+              externalIdentifier = bagInfo.externalIdentifier,
               storageSpace = storageSpace
             )
 
@@ -40,90 +41,7 @@ class BagAuditorTest
             val summary = result.summary
               .asInstanceOf[AuditSuccessSummary]
 
-            summary.audit.externalIdentifier shouldBe bagInfo.externalIdentifier
             summary.audit.version shouldBe 1
-          }
-      }
-    }
-  }
-
-  it("errors if it cannot find the bag") {
-    withBagAuditor { bagAuditor =>
-      val maybeAudit = bagAuditor.getAuditSummary(
-        ingestId = createIngestID,
-        ingestDate = Instant.now,
-        ingestType = CreateIngestType,
-        root = createObjectLocation,
-        storageSpace = createStorageSpace
-      )
-
-      val result = maybeAudit.success.get
-
-      result shouldBe a[IngestFailed[_]]
-      result.summary shouldBe a[AuditFailureSummary]
-    }
-  }
-
-  it("errors if it cannot find the bag-info file") {
-    withLocalS3Bucket { bucket =>
-      withBag(bucket) {
-        case (bagRootLocation, storageSpace) =>
-          withBagAuditor { bagAuditor =>
-            val bagInfoLocation = bagRootLocation.join("bag-info.txt")
-            s3Client.deleteObject(
-              bagInfoLocation.namespace,
-              bagInfoLocation.key
-            )
-
-            val maybeAudit = bagAuditor.getAuditSummary(
-              ingestId = createIngestID,
-              ingestDate = Instant.now,
-              ingestType = CreateIngestType,
-              root = bagRootLocation,
-              storageSpace = storageSpace
-            )
-
-            val result = maybeAudit.success.get
-
-            result shouldBe a[IngestFailed[_]]
-
-            val ingestFailed = result.asInstanceOf[IngestFailed[_]]
-            ingestFailed.summary shouldBe a[AuditFailureSummary]
-            ingestFailed.maybeUserFacingMessage shouldBe Some(
-              "Could not find a bag-info file in the bag")
-          }
-      }
-    }
-  }
-
-  it("errors if it cannot parse the bag-info file") {
-    withLocalS3Bucket { bucket =>
-      withBag(bucket) {
-        case (bagRootLocation, storageSpace) =>
-          withBagAuditor { bagAuditor =>
-            val bagInfoLocation = bagRootLocation.join("bag-info.txt")
-            s3Client.putObject(
-              bagInfoLocation.namespace,
-              bagInfoLocation.key,
-              "not a real bag-info.txt"
-            )
-
-            val maybeAudit = bagAuditor.getAuditSummary(
-              ingestId = createIngestID,
-              ingestDate = Instant.now,
-              ingestType = CreateIngestType,
-              root = bagRootLocation,
-              storageSpace = storageSpace
-            )
-
-            val result = maybeAudit.success.get
-
-            result shouldBe a[IngestFailed[_]]
-
-            val ingestFailed = result.asInstanceOf[IngestFailed[_]]
-            ingestFailed.summary shouldBe a[AuditFailureSummary]
-            ingestFailed.maybeUserFacingMessage shouldBe Some(
-              "An external identifier was not found in the bag info")
           }
       }
     }
@@ -131,7 +49,8 @@ class BagAuditorTest
 
   it("fails if you ask for ingestType 'update' on a new bag") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket) {
+      val bagInfo = createBagInfo
+      withBag(bucket, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
           withBagAuditor { bagAuditor =>
             val maybeAudit = bagAuditor.getAuditSummary(
@@ -139,6 +58,7 @@ class BagAuditorTest
               ingestDate = Instant.now,
               ingestType = UpdateIngestType,
               root = bagRootLocation,
+              externalIdentifier = bagInfo.externalIdentifier,
               storageSpace = storageSpace
             )
 
@@ -157,7 +77,8 @@ class BagAuditorTest
 
   it("fails if you ask for ingestType 'create' on an existing bag") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket) {
+      val bagInfo = createBagInfo
+      withBag(bucket, bagInfo = bagInfo) {
         case (bagRootLocation, storageSpace) =>
           withBagAuditor { bagAuditor =>
             bagAuditor.getAuditSummary(
@@ -165,6 +86,7 @@ class BagAuditorTest
               ingestDate = Instant.ofEpochSecond(1),
               ingestType = CreateIngestType,
               root = bagRootLocation,
+              externalIdentifier = bagInfo.externalIdentifier,
               storageSpace = storageSpace
             )
 
@@ -173,6 +95,7 @@ class BagAuditorTest
               ingestDate = Instant.ofEpochSecond(2),
               ingestType = CreateIngestType,
               root = bagRootLocation,
+              externalIdentifier = bagInfo.externalIdentifier,
               storageSpace = storageSpace
             )
 

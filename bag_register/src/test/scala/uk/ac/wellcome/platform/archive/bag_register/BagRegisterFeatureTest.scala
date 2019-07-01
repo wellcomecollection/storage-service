@@ -61,8 +61,7 @@ class BagRegisterFeatureTest
 
                 assertBagRegisterSucceeded(
                   ingestId = payload.ingestId,
-                  ingests = ingests,
-                  bagId = bagId
+                  ingests = ingests
                 )
 
                 assertQueueEmpty(queuePair.queue)

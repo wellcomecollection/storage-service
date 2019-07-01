@@ -42,8 +42,7 @@ class IngestsWorkerServiceTest
 
             val expectedIngest = ingest.copy(
               status = Completed,
-              events = ingestStatusUpdate.events,
-              bag = ingestStatusUpdate.affectedBag
+              events = ingestStatusUpdate.events
             )
 
             val callbackNotification = CallbackNotification(
@@ -87,14 +86,12 @@ class IngestsWorkerServiceTest
             val ingestStatusUpdate2 =
               createIngestStatusUpdateWith(
                 id = ingest.id,
-                status = Processing,
-                maybeBag = ingestStatusUpdate1.affectedBag
+                status = Processing
               )
 
             val expectedIngest = ingest.copy(
               status = Completed,
-              events = ingestStatusUpdate1.events ++ ingestStatusUpdate2.events,
-              bag = ingestStatusUpdate1.affectedBag
+              events = ingestStatusUpdate1.events ++ ingestStatusUpdate2.events
             )
 
             service

@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.common.ingests.services
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.MessageSender
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models._
 
@@ -21,16 +20,14 @@ class IngestUpdater[Destination](stepName: String,
 
   def send[R](
     ingestId: IngestID,
-    step: IngestStep[R],
-    bagId: Option[BagId] = None
+    step: IngestStep[R]
   ): Try[Unit] = {
-    debug(s"Sending an ingest update for ID=$ingestId step=$step bagId=$bagId")
+    debug(s"Sending an ingest update for ID=$ingestId step=$step")
     val update = step match {
       case IngestCompleted(_) =>
         IngestStatusUpdate(
           id = ingestId,
           status = Ingest.Completed,
-          affectedBag = bagId,
           events = List(
             IngestEvent(
               s"${stepName.capitalize} succeeded (completed)"
@@ -54,7 +51,6 @@ class IngestUpdater[Destination](stepName: String,
         IngestStatusUpdate(
           id = ingestId,
           status = Ingest.Failed,
-          affectedBag = bagId,
           events = List(
             IngestEvent(
               eventDescription(s"${stepName.capitalize} failed", maybeMessage)

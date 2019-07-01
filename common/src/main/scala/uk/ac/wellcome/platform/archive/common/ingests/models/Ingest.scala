@@ -2,44 +2,23 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 case class Ingest(
   id: IngestID,
   ingestType: IngestType,
   sourceLocation: StorageLocation,
-  space: Namespace,
+  space: StorageSpace,
   callback: Option[Callback],
   status: Ingest.Status,
-  bag: Option[BagId],
+  externalIdentifier: ExternalIdentifier,
   createdDate: Instant,
-  lastModifiedDate: Instant,
-  events: Seq[IngestEvent]
+  lastModifiedDate: Option[Instant] = None,
+  events: Seq[IngestEvent] = Seq.empty
 )
 
 case object Ingest {
-  def apply(id: IngestID,
-            ingestType: IngestType,
-            sourceLocation: StorageLocation,
-            space: Namespace,
-            callback: Option[Callback] = None,
-            status: Ingest.Status = Ingest.Accepted,
-            bag: Option[BagId] = None,
-            createdDate: Instant = Instant.now(),
-            events: Seq[IngestEvent] = Seq.empty): Ingest =
-    Ingest(
-      id = id,
-      ingestType = ingestType,
-      sourceLocation = sourceLocation,
-      space = space,
-      callback = callback,
-      status = status,
-      bag = bag,
-      createdDate = createdDate,
-      lastModifiedDate = createdDate,
-      events = events
-    )
-
   sealed trait Status
 
   private val acceptedString = "accepted"
@@ -62,11 +41,4 @@ case object Ingest {
   case object Failed extends Status {
     override def toString: String = failedString
   }
-
 }
-
-case class BagIngest(
-  id: IngestID,
-  bagIdIndex: String,
-  createdDate: Instant
-)

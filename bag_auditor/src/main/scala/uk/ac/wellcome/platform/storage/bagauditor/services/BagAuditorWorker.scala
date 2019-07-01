@@ -58,6 +58,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
         ingestDate = payload.ingestDate,
         ingestType = payload.ingestType,
         root = payload.bagRootLocation,
+        externalIdentifier = payload.externalIdentifier,
         storageSpace = payload.storageSpace
       )
 
@@ -73,7 +74,6 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
         ingestUpdater.sendEvent(
           ingestId = payload.ingestId,
           messages = Seq(
-            s"Detected bag identifier as ${summary.audit.externalIdentifier}",
             s"Assigned bag version ${summary.audit.version}"
           )
         )
@@ -89,7 +89,6 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
           EnrichedBagInformationPayload(
             context = payload.context,
             bagRootLocation = summary.root,
-            externalIdentifier = summary.audit.externalIdentifier,
             version = summary.audit.version
           )
         )

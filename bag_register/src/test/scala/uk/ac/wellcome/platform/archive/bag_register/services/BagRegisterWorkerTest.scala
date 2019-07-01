@@ -67,8 +67,7 @@ class BagRegisterWorkerTest
 
               assertBagRegisterSucceeded(
                 ingestId = payload.ingestId,
-                ingests = ingests,
-                bagId = bagId
+                ingests = ingests
               )
           }
         }

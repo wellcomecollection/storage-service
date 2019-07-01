@@ -3,9 +3,10 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.net.URI
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Status
 import uk.ac.wellcome.platform.archive.common.ingests.models._
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
 trait IngestGenerators extends BagIdGenerators {
@@ -23,11 +24,12 @@ trait IngestGenerators extends BagIdGenerators {
                        ingestType: IngestType = CreateIngestType,
                        sourceLocation: StorageLocation = storageLocation,
                        callback: Option[Callback] = Some(createCallback()),
-                       space: Namespace = createSpace,
+                       space: StorageSpace = createStorageSpace,
                        status: Status = Ingest.Accepted,
-                       maybeBag: Option[BagId] = None,
+                       externalIdentifier: ExternalIdentifier =
+                         createExternalIdentifier,
                        createdDate: Instant = Instant.now,
-                       events: List[IngestEvent] = List.empty): Ingest =
+                       events: Seq[IngestEvent] = Seq.empty): Ingest =
     Ingest(
       id = id,
       ingestType = ingestType,
@@ -35,7 +37,7 @@ trait IngestGenerators extends BagIdGenerators {
       callback = callback,
       space = space,
       status = status,
-      bag = maybeBag,
+      externalIdentifier = externalIdentifier,
       createdDate = createdDate,
       events = events
     )
@@ -54,17 +56,13 @@ trait IngestGenerators extends BagIdGenerators {
 
   def createIngestStatusUpdateWith(id: IngestID = createIngestID,
                                    status: Status = Ingest.Accepted,
-                                   maybeBag: Option[BagId] = Some(createBagId),
                                    events: Seq[IngestEvent] = List(
                                      createIngestEvent)): IngestStatusUpdate =
     IngestStatusUpdate(
       id = id,
       status = status,
-      affectedBag = maybeBag,
       events = events
     )
-
-  def createSpace = Namespace(randomAlphanumeric())
 
   def createCallback(): Callback = createCallbackWith()
 

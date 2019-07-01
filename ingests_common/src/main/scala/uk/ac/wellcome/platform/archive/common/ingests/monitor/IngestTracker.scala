@@ -65,19 +65,7 @@ class IngestTracker(
       case _: IngestEventUpdate =>
         eventsUpdate
       case statusUpdate: IngestStatusUpdate =>
-        val bagUpdate = statusUpdate.affectedBag
-          .map(
-            bag =>
-              set('bag -> bag) and set(
-                'bagIdIndex -> bag.toString
-            ))
-          .toList
-
-        (List(
-          eventsUpdate,
-          set('status -> statusUpdate.status)
-        ) ++ bagUpdate)
-          .reduce(_ and _)
+        eventsUpdate and set('status -> statusUpdate.status)
 
       case callbackStatusUpdate: IngestCallbackStatusUpdate =>
         eventsUpdate and set(
@@ -120,14 +108,15 @@ class IngestTracker(
     *
     * return a list of Either BagIngest or error querying DynamoDb
     *
-    * Returns at most 30 associated ingests with most recent first -- to simplify the code by avoiding
+    * Returns at most 30 associated ingests -- to simplify the code by avoiding
     * pagination, but still fulfilling DLCS's requirements.
     */
-  def findByBagId(bagId: BagId): List[Either[DynamoReadError, BagIngest]] = {
-    val query = Table[BagIngest](dynamoConfig.table)
+  def findByBagId(bagId: BagId): List[Either[DynamoReadError, Ingest]] = {
+    val query = Table[Ingest](dynamoConfig.table)
       .index(dynamoConfig.index)
       .limit(30)
-      .query(('bagIdIndex -> bagId.toString).descending)
+      .query(
+        'space -> bagId.space and 'externalIdentifier -> bagId.externalIdentifier)
     Scanamo.exec(dynamoClient)(query)
   }
 }

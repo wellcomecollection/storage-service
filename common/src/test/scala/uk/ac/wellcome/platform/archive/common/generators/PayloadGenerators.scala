@@ -28,13 +28,15 @@ trait PayloadGenerators
     ingestId: IngestID = createIngestID,
     ingestType: IngestType = randomIngestType,
     ingestDate: Instant = Instant.now(),
-    storageSpace: StorageSpace = createStorageSpace
+    storageSpace: StorageSpace = createStorageSpace,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier
   ): PipelineContext =
     PipelineContext(
       ingestId = ingestId,
       ingestType = ingestType,
       storageSpace = storageSpace,
-      ingestDate = ingestDate
+      ingestDate = ingestDate,
+      externalIdentifier = externalIdentifier
     )
 
   def createPipelineContext: PipelineContext =
@@ -68,13 +70,11 @@ trait PayloadGenerators
   def createEnrichedBagInformationPayloadWith(
     context: PipelineContext = createPipelineContext,
     bagRootLocation: ObjectLocation = createObjectLocation,
-    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: Int = 1
   ): EnrichedBagInformationPayload =
     EnrichedBagInformationPayload(
       context = context,
       bagRootLocation = bagRootLocation,
-      externalIdentifier = externalIdentifier,
       version = version
     )
 
@@ -86,12 +86,14 @@ trait PayloadGenerators
     ingestId: IngestID = createIngestID,
     ingestDate: Instant = Instant.now(),
     bagRootLocation: ObjectLocation = createObjectLocation,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     storageSpace: StorageSpace = createStorageSpace): BagRootLocationPayload =
     BagRootLocationPayload(
       context = createPipelineContextWith(
         ingestId = ingestId,
         ingestDate = ingestDate,
-        storageSpace = storageSpace
+        storageSpace = storageSpace,
+        externalIdentifier = externalIdentifier
       ),
       bagRootLocation = bagRootLocation
     )

@@ -4,9 +4,13 @@ import java.net.{URI, URL}
 import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  IngestGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -15,6 +19,7 @@ class DisplayIngestTest
     with Matchers
     with BagIdGenerators
     with TimeTestFixture
+    with IngestGenerators
     with ObjectLocationGenerators {
 
   private val id = createIngestID
@@ -29,7 +34,7 @@ class DisplayIngestTest
 
   describe("ResponseDisplayIngest") {
     it("creates a DisplayIngest from Ingest") {
-      val bagId = createBagId
+      val externalIdentifier = createExternalIdentifier
       val ingest: Ingest = Ingest(
         id = id,
         ingestType = CreateIngestType,
@@ -37,12 +42,12 @@ class DisplayIngestTest
           provider = StandardStorageProvider,
           location = ObjectLocation("bukkit", "key.txt")
         ),
-        space = Namespace(spaceId),
+        space = StorageSpace(spaceId),
         callback = Some(Callback(new URI(callbackUrl))),
         status = Ingest.Processing,
-        bag = Some(bagId),
+        externalIdentifier = externalIdentifier,
         createdDate = Instant.parse(createdDate),
-        lastModifiedDate = Instant.parse(modifiedDate),
+        lastModifiedDate = Some(Instant.parse(modifiedDate)),
         events = List(IngestEvent(eventDescription, Instant.parse(eventDate)))
       )
 
@@ -62,11 +67,9 @@ class DisplayIngestTest
       )
       displayIngest.space shouldBe DisplayStorageSpace(spaceId)
       displayIngest.status shouldBe DisplayStatus("processing")
-      displayIngest.bag shouldBe Some(
-        ResponseDisplayIngestBag(s"${bagId.space}/${bagId.externalIdentifier}")
-      )
+      displayIngest.externalIdentifier shouldBe externalIdentifier.underlying
       displayIngest.createdDate shouldBe createdDate
-      displayIngest.lastModifiedDate shouldBe modifiedDate
+      displayIngest.lastModifiedDate.get shouldBe modifiedDate
       displayIngest.events shouldBe List(
         DisplayIngestEvent(eventDescription, eventDate)
       )
@@ -80,7 +83,7 @@ class DisplayIngestTest
         )
       }
 
-      val ingest = createIngestWith(events)
+      val ingest = createIngestWith(events = events)
 
       val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
 
@@ -123,6 +126,7 @@ class DisplayIngestTest
             status = None
           )
         ),
+        externalIdentifier = createExternalIdentifier.underlying,
         ingestType = CreateDisplayIngestType,
         space = DisplayStorageSpace("space-id")
       )
@@ -137,8 +141,8 @@ class DisplayIngestTest
         Callback(URI.create(ingestCreateRequest.callback.get.url)))
       ingest.status shouldBe Ingest.Accepted
       assertRecent(ingest.createdDate)
-      assertRecent(ingest.lastModifiedDate)
-      ingest.events shouldBe List.empty
+      ingest.lastModifiedDate shouldBe None
+      ingest.events shouldBe empty
     }
 
     it("sets an ingest type of 'create'") {
@@ -172,19 +176,7 @@ class DisplayIngestTest
       sourceLocation = sourceLocation,
       callback = callback,
       ingestType = ingestType,
+      externalIdentifier = createExternalIdentifier.underlying,
       space = space
-    )
-
-  def createIngestWith(events: Seq[IngestEvent] = Seq.empty,
-                       ingestType: IngestType = CreateIngestType): Ingest =
-    Ingest(
-      id = createIngestID,
-      ingestType = ingestType,
-      sourceLocation = StorageLocation(
-        provider = StandardStorageProvider,
-        location = createObjectLocation
-      ),
-      space = Namespace(randomAlphanumeric()),
-      events = events
     )
 }

@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.models.error.ArchiveError
 
 sealed trait IngestUpdate {
@@ -14,7 +13,6 @@ object IngestUpdate {
     IngestStatusUpdate(
       id = id,
       status = Ingest.Failed,
-      affectedBag = None,
       events = List(IngestEvent(error.toString))
     )
 
@@ -28,7 +26,6 @@ case class IngestEventUpdate(id: IngestID, events: Seq[IngestEvent])
 
 case class IngestStatusUpdate(id: IngestID,
                               status: Ingest.Status,
-                              affectedBag: Option[BagId],
                               events: Seq[IngestEvent] = List.empty)
     extends IngestUpdate
 
