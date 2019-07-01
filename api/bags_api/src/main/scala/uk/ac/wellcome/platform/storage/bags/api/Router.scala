@@ -40,7 +40,7 @@ class Router(vhs: StorageManifestDao, contextURL: URL)(
         )
 
         get {
-          vhs.get(bagId) match {
+          vhs.getLatest(bagId) match {
             case Right(storageManifest) =>
               complete(
                 DisplayBag(

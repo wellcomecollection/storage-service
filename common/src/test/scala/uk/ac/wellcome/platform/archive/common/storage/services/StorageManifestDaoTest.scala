@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.storage.{NoVersionExistsError, WriteError}
+import uk.ac.wellcome.storage.{NoVersionExistsError, VersionAlreadyExistsError, WriteError}
 
 class StorageManifestDaoTest
     extends FunSpec
@@ -29,7 +29,7 @@ class StorageManifestDaoTest
 
     // Empty get
 
-    val getResultPreInsert = dao.get(storageManifest.id)
+    val getResultPreInsert = dao.getLatest(storageManifest.id)
     getResultPreInsert.left.value shouldBe a[NoVersionExistsError]
 
     // Insert
@@ -37,7 +37,7 @@ class StorageManifestDaoTest
     val insertResult = dao.put(storageManifest)
     insertResult shouldBe a[Right[_, _]]
 
-    val getResultPostInsert = dao.get(storageManifest.id)
+    val getResultPostInsert = dao.getLatest(storageManifest.id)
     getResultPostInsert.right.value shouldBe storageManifest
 
     // Update
@@ -76,6 +76,6 @@ class StorageManifestDaoTest
     val storageManifest = createStorageManifest
 
     dao.put(storageManifest).right.value shouldBe storageManifest
-    dao.put(storageManifest).left.value shouldBe "hello world"
+    dao.put(storageManifest).left.value shouldBe a[VersionAlreadyExistsError]
   }
 }
