@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.io.{File, FileOutputStream}
 import java.nio.file.Paths
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 import uk.ac.wellcome.platform.archive.common.bagit.models._
@@ -14,6 +14,9 @@ import scala.util.Random
 trait StorageRandomThings extends RandomThings {
   def randomAlphanumericWithLength(length: Int = 8) =
     Random.alphanumeric take length mkString
+
+  def randomInstant: Instant =
+    Instant.ofEpochSecond(Random.nextInt())
 
   def randomPaths(maxDepth: Int = 4, dirs: Int = 4): List[String] = {
     (1 to dirs).map { _ =>

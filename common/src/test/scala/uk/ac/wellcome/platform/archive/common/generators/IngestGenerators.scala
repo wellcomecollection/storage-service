@@ -9,6 +9,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 
+import scala.util.Random
+
 trait IngestGenerators extends BagIdGenerators {
 
   val storageLocation = StorageLocation(
@@ -30,7 +32,7 @@ trait IngestGenerators extends BagIdGenerators {
                        status: Status = Ingest.Accepted,
                        externalIdentifier: ExternalIdentifier =
                          createExternalIdentifier,
-                       createdDate: Instant = Instant.now,
+                       createdDate: Instant = randomInstant,
                        events: Seq[IngestEvent] = Seq.empty): Ingest =
     Ingest(
       id = id,
