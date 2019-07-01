@@ -74,6 +74,46 @@ class BagRegisterWorkerTest
     }
   }
 
+  it("stores multiple versions of a bag") {
+    withBagRegisterWorker {
+      case (service, storageManifestDao, _, _, _) =>
+        val bagInfo = createBagInfo
+
+        withLocalS3Bucket { bucket =>
+          withBag(bucket, bagInfo = bagInfo) {
+            case (bagRootLocation, storageSpace) =>
+              val payload1 = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  storageSpace = storageSpace
+                ),
+                bagRootLocation = bagRootLocation,
+                version = 1
+              )
+              val payload2 = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  storageSpace = storageSpace
+                ),
+                bagRootLocation = bagRootLocation,
+                version = 2
+              )
+
+              val bagId = BagId(
+                space = storageSpace,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
+
+              service.processMessage(payload1) shouldBe a[Success[_]]
+              service.processMessage(payload2) shouldBe a[Success[_]]
+
+              storageManifestDao.get(bagId, version = 1).right.value.version shouldBe 1
+              storageManifestDao.get(bagId, version = 2).right.value.version shouldBe 2
+
+              storageManifestDao.getLatest(bagId).right.value.version shouldBe 2
+          }
+        }
+    }
+  }
+
   it("sends a failed IngestUpdate if storing fails") {
     withBagRegisterWorker {
       case (service, _, ingests, _, _) =>
