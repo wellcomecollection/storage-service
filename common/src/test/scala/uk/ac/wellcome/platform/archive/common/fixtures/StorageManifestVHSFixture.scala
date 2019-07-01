@@ -5,10 +5,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
+import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.HybridIndexedStoreEntry
 import uk.ac.wellcome.storage.store.memory._
-import uk.ac.wellcome.storage.{Version, WriteError}
 
 trait StorageManifestVHSFixture extends EitherValues {
   type StorageManifestIndex =
@@ -55,18 +55,4 @@ trait StorageManifestVHSFixture extends EitherValues {
           Map[String, String]]()
       )
     )
-
-  def storeSingleManifest(
-    vhs: StorageManifestDao,
-    storageManifest: StorageManifest): Either[WriteError, StorageManifest] =
-    vhs.put(storageManifest)
-
-  def getStorageManifest(indexStore: StorageManifestIndex,
-                         typedStore: StorageManifestTypedStore,
-                         id: BagId): StorageManifest = {
-    val version = indexStore.max(id).right.value
-    val entry = indexStore.entries(Version(id, version))
-
-    typedStore.get(entry.typedStoreId).right.value.identifiedT.t
-  }
 }

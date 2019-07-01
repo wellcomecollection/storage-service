@@ -29,7 +29,7 @@ class BagRegisterWorkerTest
 
   it("sends a successful IngestUpdate upon registration") {
     withBagRegisterWorker {
-      case (service, dao, store, ingests, _, _) =>
+      case (service, storageManifestDao, ingests, _, _) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
@@ -50,7 +50,7 @@ class BagRegisterWorkerTest
 
               service.processMessage(payload) shouldBe a[Success[_]]
 
-              val storageManifest = getStorageManifest(dao, store, id = bagId)
+              val storageManifest = storageManifestDao.getLatest(bagId).right.value
 
               storageManifest.space shouldBe bagId.space
               storageManifest.info shouldBe bagInfo
@@ -76,7 +76,7 @@ class BagRegisterWorkerTest
 
   it("sends a failed IngestUpdate if storing fails") {
     withBagRegisterWorker {
-      case (service, _, _, ingests, _, _) =>
+      case (service, _, ingests, _, _) =>
         val payload = createEnrichedBagInformationPayload
 
         service.processMessage(payload) shouldBe a[Success[_]]

@@ -31,6 +31,7 @@ class BagsApiFeatureTest
 
   describe("GET /bags/:space/:id") {
     it("returns a bag when available") {
+      // TODO: Make this take initialManifests
       withConfiguredApp {
         case (vhs, metricsSender, baseUrl) =>
           withMaterializer { implicit materializer =>
@@ -90,7 +91,7 @@ class BagsApiFeatureTest
             val storageManifest = createStorageManifestWith(
               bagInfo = createBagInfoWith(externalDescription = None)
             )
-            storeSingleManifest(vhs, storageManifest) shouldBe a[Right[_, _]]
+            vhs.put(storageManifest) shouldBe a[Right[_, _]]
 
             whenGetRequestReady(
               s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
