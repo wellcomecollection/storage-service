@@ -41,7 +41,7 @@ case class ResponseDisplayIngest(
   ingestType: DisplayIngestType,
   space: DisplayStorageSpace,
   status: DisplayStatus,
-  externalIdentifier: String,
+  bag: DisplayBag,
   events: Seq[DisplayIngestEvent] = Seq.empty,
   createdDate: String,
   lastModifiedDate: Option[String],
@@ -57,7 +57,11 @@ object ResponseDisplayIngest {
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),
       ingestType = DisplayIngestType(ingest.ingestType),
-      externalIdentifier = ingest.externalIdentifier.underlying,
+      bag = DisplayBag(
+        info = DisplayBagInfo(
+          externalIdentifier = ingest.externalIdentifier
+        )
+      ),
       status = DisplayStatus(ingest.status),
       events = ingest.events
         .sortBy { _.createdDate }

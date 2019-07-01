@@ -67,7 +67,7 @@ class DisplayIngestTest
       )
       displayIngest.space shouldBe DisplayStorageSpace(spaceId)
       displayIngest.status shouldBe DisplayStatus("processing")
-      displayIngest.externalIdentifier shouldBe externalIdentifier.underlying
+      displayIngest.bag.info.externalIdentifier shouldBe externalIdentifier
       displayIngest.createdDate shouldBe createdDate
       displayIngest.lastModifiedDate.get shouldBe modifiedDate
       displayIngest.events shouldBe List(
@@ -131,10 +131,8 @@ class DisplayIngestTest
         ),
         bag = DisplayBag(
           info = DisplayBagInfo(
-            externalIdentifier = externalIdentifier,
-            ontologyType = "BagInfo"
-          ),
-          ontologyType = "Bag"
+            externalIdentifier = externalIdentifier
+          )
         ),
         ingestType = CreateDisplayIngestType,
         space = DisplayStorageSpace("space-id")

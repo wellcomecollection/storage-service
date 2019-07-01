@@ -5,10 +5,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 
 case class DisplayBag(
   info: DisplayBagInfo,
-  @JsonKey("type") ontologyType: String
+  @JsonKey("type") ontologyType: String = "Bag"
 )
 
 case class DisplayBagInfo(
   externalIdentifier: ExternalIdentifier,
-  @JsonKey("type") ontologyType: String
+  @JsonKey("type") ontologyType: String = "BagInfo"
 )
