@@ -3,7 +3,3 @@ sqs:
   ports:
     - "9324:9324"
     - "4789:9324"
-dynamodb:
-  image: peopleperhour/dynamodb
-  ports:
-    - "45678:8000"

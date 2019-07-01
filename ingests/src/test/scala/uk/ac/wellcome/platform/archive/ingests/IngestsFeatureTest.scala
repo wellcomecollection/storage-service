@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.ingests
 
-import org.scalatest.concurrent.Eventually
+import java.time.Instant
+
+import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
@@ -14,10 +16,13 @@ class IngestsFeatureTest
     with Eventually
     with IngestsFixtures
     with IngestGenerators
+    with IntegrationPatience
     with TryValues {
 
   it("updates an existing ingest status to Completed") {
-    val ingest = createIngest
+    val ingest = createIngestWith(
+      createdDate = Instant.now()
+    )
 
     withConfiguredApp(initialIngests = Seq(ingest)) {
       case (queue, messageSender, ingestTracker) =>

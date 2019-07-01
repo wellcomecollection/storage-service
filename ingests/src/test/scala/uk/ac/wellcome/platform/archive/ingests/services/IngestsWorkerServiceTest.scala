@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
+import java.time.Instant
+
 import io.circe.Encoder
 import org.scalatest.{FunSpec, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
@@ -21,7 +23,9 @@ class IngestsWorkerServiceTest
     with TryValues {
 
   it("updates an existing ingest to Completed") {
-    val ingest = createIngest
+    val ingest = createIngestWith(
+      createdDate = Instant.now
+    )
 
     withLocalSqsQueue { queue =>
       withMemoryIngestTracker(initialIngests = Seq(ingest)) { implicit ingestTracker =>
@@ -66,7 +70,9 @@ class IngestsWorkerServiceTest
   }
 
   it("adds multiple events to an ingest") {
-    val ingest = createIngest
+    val ingest = createIngestWith(
+      createdDate = Instant.now()
+    )
 
     withLocalSqsQueue { queue =>
       withMemoryIngestTracker(initialIngests = Seq(ingest)) { implicit ingestTracker =>
@@ -115,7 +121,7 @@ class IngestsWorkerServiceTest
     }
   }
 
-  it("fails if the ingest is not in the table") {
+  it("fails if the ingest is not in the tracker") {
     withLocalSqsQueue { queue =>
       withMemoryIngestTracker() { implicit ingestTracker =>
         val messageSender = new MemoryMessageSender()
@@ -130,7 +136,7 @@ class IngestsWorkerServiceTest
 
           result.success.value
             .asInstanceOf[DeterministicFailure[_]]
-            .failure shouldBe a[RuntimeException]
+            .failure shouldBe a[Throwable]
         }
       }
     }
