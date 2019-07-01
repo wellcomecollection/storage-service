@@ -50,7 +50,8 @@ class BagRegisterWorkerTest
 
               service.processMessage(payload) shouldBe a[Success[_]]
 
-              val storageManifest = storageManifestDao.getLatest(bagId).right.value
+              val storageManifest =
+                storageManifestDao.getLatest(bagId).right.value
 
               storageManifest.space shouldBe bagId.space
               storageManifest.info shouldBe bagInfo
@@ -105,8 +106,16 @@ class BagRegisterWorkerTest
               service.processMessage(payload1) shouldBe a[Success[_]]
               service.processMessage(payload2) shouldBe a[Success[_]]
 
-              storageManifestDao.get(bagId, version = 1).right.value.version shouldBe 1
-              storageManifestDao.get(bagId, version = 2).right.value.version shouldBe 2
+              storageManifestDao
+                .get(bagId, version = 1)
+                .right
+                .value
+                .version shouldBe 1
+              storageManifestDao
+                .get(bagId, version = 2)
+                .right
+                .value
+                .version shouldBe 2
 
               storageManifestDao.getLatest(bagId).right.value.version shouldBe 2
           }

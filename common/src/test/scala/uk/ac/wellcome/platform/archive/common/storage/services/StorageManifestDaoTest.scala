@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.storage.{NoVersionExistsError, VersionAlreadyExistsError, WriteError}
+import uk.ac.wellcome.storage.{
+  NoVersionExistsError,
+  VersionAlreadyExistsError,
+  WriteError
+}
 
 class StorageManifestDaoTest
     extends FunSpec
@@ -66,8 +70,14 @@ class StorageManifestDaoTest
 
     index.entries.size shouldBe 2
 
-    dao.get(id = storageManifest.id, version = storageManifest.version).right.value shouldBe storageManifest
-    dao.get(id = storageManifest.id, version = newStorageManifest.version).right.value shouldBe newStorageManifest
+    dao
+      .get(id = storageManifest.id, version = storageManifest.version)
+      .right
+      .value shouldBe storageManifest
+    dao
+      .get(id = storageManifest.id, version = newStorageManifest.version)
+      .right
+      .value shouldBe newStorageManifest
   }
 
   it("blocks putting two manifests with the same version") {

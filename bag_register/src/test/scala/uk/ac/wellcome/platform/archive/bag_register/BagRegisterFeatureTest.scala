@@ -44,7 +44,8 @@ class BagRegisterFeatureTest
               sendNotificationToSQS(queuePair.queue, payload)
 
               eventually {
-                val storageManifest = storageManifestDao.getLatest(bagId).right.value
+                val storageManifest =
+                  storageManifestDao.getLatest(bagId).right.value
 
                 storageManifest.space shouldBe bagId.space
                 storageManifest.info shouldBe bagInfo
