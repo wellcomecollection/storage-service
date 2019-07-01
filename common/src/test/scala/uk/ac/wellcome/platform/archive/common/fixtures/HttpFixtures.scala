@@ -7,14 +7,12 @@ import akka.http.scaladsl.model.HttpMethods.{GET, POST}
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.Sink
-import akka.stream.{ActorMaterializer, Materializer}
 import io.circe.Decoder
 import org.mockito.Mockito.{atLeastOnce, verify}
 import org.scalatest.{Assertion, Matchers}
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil.fromJson
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
@@ -60,32 +58,32 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
     }
   }
 
-  def getT[T](entity: HttpEntity)(implicit decoder: Decoder[T],
-                                  materializer: Materializer): T = {
-    val timeout = 300.millis
+  def getT[T](entity: HttpEntity)(implicit decoder: Decoder[T]): T =
+    withMaterializer { implicit materializer =>
+      val timeout = 300.millis
 
-    val stringBody = entity
-      .toStrict(timeout)
-      .map(_.data)
-      .map(_.utf8String)
-      .value
-      .get
-      .get
-    fromJson[T](stringBody).get
-  }
+      val stringBody = entity
+        .toStrict(timeout)
+        .map(_.data)
+        .map(_.utf8String)
+        .value
+        .get
+        .get
+      fromJson[T](stringBody).get
+    }
 
   def withStringEntity[R](httpEntity: HttpEntity)(
-    testWith: TestWith[String, R])(
-    implicit materializer: ActorMaterializer): R = {
-    val value =
-      httpEntity.dataBytes.runWith(Sink.fold("") {
-        case (acc, byteString) =>
-          acc + byteString.utf8String
-      })
-    whenReady(value) { string =>
-      testWith(string)
+    testWith: TestWith[String, R]): R =
+    withMaterializer { implicit materializer =>
+      val value =
+        httpEntity.dataBytes.runWith(Sink.fold("") {
+          case (acc, byteString) =>
+            acc + byteString.utf8String
+        })
+      whenReady(value) { string =>
+        testWith(string)
+      }
     }
-  }
 
   def createHTTPServerConfig: HTTPServerConfig =
     HTTPServerConfig(
@@ -108,37 +106,37 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
   def assertIsUserErrorResponse(response: HttpResponse,
                                 description: String,
                                 statusCode: StatusCode = StatusCodes.BadRequest,
-                                label: String = "Bad Request")(
-    implicit materializer: ActorMaterializer): Assertion = {
-    response.status shouldBe statusCode
-    response.entity.contentType shouldBe ContentTypes.`application/json`
+                                label: String = "Bad Request"): Assertion =
+    withMaterializer { implicit materializer =>
+      response.status shouldBe statusCode
+      response.entity.contentType shouldBe ContentTypes.`application/json`
 
-    val ingestFuture = Unmarshal(response.entity).to[UserErrorResponse]
+      val ingestFuture = Unmarshal(response.entity).to[UserErrorResponse]
 
-    whenReady(ingestFuture) { actualError =>
-      actualError shouldBe UserErrorResponse(
-        context = contextURL.toString,
-        httpStatus = statusCode.intValue,
-        description = description,
-        label = label
-      )
+      whenReady(ingestFuture) { actualError =>
+        actualError shouldBe UserErrorResponse(
+          context = contextURL.toString,
+          httpStatus = statusCode.intValue,
+          description = description,
+          label = label
+        )
+      }
     }
-  }
 
-  def assertIsInternalServerErrorResponse(response: HttpResponse)(
-    implicit materializer: ActorMaterializer): Assertion = {
-    response.status shouldBe StatusCodes.InternalServerError
-    response.entity.contentType shouldBe ContentTypes.`application/json`
+  def assertIsInternalServerErrorResponse(response: HttpResponse): Assertion =
+    withMaterializer { implicit materializer =>
+      response.status shouldBe StatusCodes.InternalServerError
+      response.entity.contentType shouldBe ContentTypes.`application/json`
 
-    val ingestFuture = Unmarshal(response.entity)
-      .to[InternalServerErrorResponse]
+      val ingestFuture = Unmarshal(response.entity)
+        .to[InternalServerErrorResponse]
 
-    whenReady(ingestFuture) { actualError =>
-      actualError shouldBe InternalServerErrorResponse(
-        context = contextURL.toString,
-        httpStatus = StatusCodes.InternalServerError.intValue,
-        label = StatusCodes.InternalServerError.reason
-      )
+      whenReady(ingestFuture) { actualError =>
+        actualError shouldBe InternalServerErrorResponse(
+          context = contextURL.toString,
+          httpStatus = StatusCodes.InternalServerError.intValue,
+          label = StatusCodes.InternalServerError.reason
+        )
+      }
     }
-  }
 }

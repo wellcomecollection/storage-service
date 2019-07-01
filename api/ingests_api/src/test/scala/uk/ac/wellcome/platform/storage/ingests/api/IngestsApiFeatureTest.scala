@@ -6,10 +6,11 @@ import java.util.UUID
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+import io.circe.Json
 import io.circe.optics.JsonPath.root
 import io.circe.parser._
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{FunSpec, Inside, Matchers}
+import org.scalatest.concurrent.IntegrationPatience
+import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
@@ -25,9 +26,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 class IngestsApiFeatureTest
     extends FunSpec
     with Matchers
-    with ScalaFutures
     with IngestsApiFixture
-    with Inside
     with IntegrationPatience
     with JsonAssertions
     with StorageRandomThings {
@@ -40,7 +39,7 @@ class IngestsApiFeatureTest
       )
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
-        case (ingestTracker, _, metricsSender, baseUrl) =>
+        case (_, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materializer =>
             val expectedSourceLocationJson =
               s"""{
@@ -186,41 +185,6 @@ class IngestsApiFeatureTest
     }
   }
 
-  def createRequestWith(
-    ingestType: String = "create",
-    bucket: String = randomAlphanumeric,
-    key: String = randomAlphanumeric,
-    space: String = randomAlphanumeric,
-    externalIdentifier: ExternalIdentifier = createExternalIdentifier
-  ): RequestEntity =
-    HttpEntity(
-      ContentTypes.`application/json`,
-      s"""|{
-          |  "type": "Ingest",
-          |  "ingestType": {
-          |    "id": "$ingestType",
-          |    "type": "IngestType"
-          |  },
-          |  "sourceLocation":{
-          |    "type": "Location",
-          |    "provider": {
-          |      "type": "Provider",
-          |      "id": "${StandardDisplayProvider.id}"
-          |    },
-          |    "bucket": "$bucket",
-          |    "path": "$key"
-          |  },
-          |  "space": {
-          |    "id": "$space",
-          |    "type": "Space"
-          |  },
-          |  "callback": {
-          |    "url": "${testCallbackUri.toString}"
-          |  },
-          |  "externalIdentifier": "${externalIdentifier.underlying}"
-          |}""".stripMargin
-    )
-
   describe("POST /ingests") {
     it("creates an ingest") {
       withConfiguredApp() {
@@ -315,31 +279,25 @@ class IngestsApiFeatureTest
     it("allows requesting an ingestType 'create'") {
       withConfiguredApp() {
         case (_, messageSender, metricsSender, baseUrl) =>
-          withMaterializer { implicit materializer =>
-            val url = s"$baseUrl/ingests"
+          val url = s"$baseUrl/ingests"
 
-            val entity = createRequestWith(
-              ingestType = "create"
-            )
+          val entity = createRequestWith(
+            ingestType = "create"
+          )
 
-            whenPostRequestReady(url, entity) { response: HttpResponse =>
-              response.status shouldBe StatusCodes.Created
+          whenPostRequestReady(url, entity) { response: HttpResponse =>
+            response.status shouldBe StatusCodes.Created
 
-              val ingestFuture =
-                Unmarshal(response.entity).to[ResponseDisplayIngest]
+            val actualIngest = getT[ResponseDisplayIngest](response.entity)
+            actualIngest.ingestType.id shouldBe "create"
 
-              whenReady(ingestFuture) { actualIngest =>
-                actualIngest.ingestType.id shouldBe "create"
+            val payload =
+              messageSender.getMessages[SourceLocationPayload].head
+            payload.context.ingestType shouldBe CreateIngestType
 
-                val payload =
-                  messageSender.getMessages[SourceLocationPayload].head
-                payload.context.ingestType shouldBe CreateIngestType
-
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.Success)
-              }
-            }
+            assertMetricSent(
+              metricsSender,
+              result = HttpMetricResults.Success)
           }
       }
     }
@@ -347,222 +305,182 @@ class IngestsApiFeatureTest
     it("allows requesting an ingestType 'update'") {
       withConfiguredApp() {
         case (_, messageSender, metricsSender, baseUrl) =>
-          withMaterializer { implicit materializer =>
-            val url = s"$baseUrl/ingests"
+          val url = s"$baseUrl/ingests"
 
-            val entity = createRequestWith(
-              ingestType = "update"
-            )
+          val entity = createRequestWith(
+            ingestType = "update"
+          )
 
-            whenPostRequestReady(url, entity) { response: HttpResponse =>
-              response.status shouldBe StatusCodes.Created
+          whenPostRequestReady(url, entity) { response: HttpResponse =>
+            response.status shouldBe StatusCodes.Created
 
-              val ingestFuture =
-                Unmarshal(response.entity).to[ResponseDisplayIngest]
+            val actualIngest = getT[ResponseDisplayIngest](response.entity)
 
-              whenReady(ingestFuture) { actualIngest =>
-                actualIngest.ingestType.id shouldBe "update"
+            actualIngest.ingestType.id shouldBe "update"
 
-                val payload =
-                  messageSender.getMessages[SourceLocationPayload].head
-                payload.context.ingestType shouldBe UpdateIngestType
+            val payload = messageSender.getMessages[SourceLocationPayload].head
+            payload.context.ingestType shouldBe UpdateIngestType
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.Success)
-              }
-            }
+            assertMetricSent(
+              metricsSender,
+              result = HttpMetricResults.Success)
           }
       }
     }
 
     describe("returns a 400 error for malformed requests") {
-      it("if the ingest request doesn't have a sourceLocation") {
-        withConfiguredApp() {
-          case (_, messageSender, metricsSender, baseUrl) =>
-            withMaterializer { implicit materializer =>
-              val url = s"$baseUrl/ingests"
+      val json = createRequestJson
 
-              val entity = HttpEntity(
-                ContentTypes.`application/json`,
-                s"""|{
-                   |  "type": "Ingest",
-                   |  "ingestType": {
-                   |    "id": "create",
-                   |    "type": "IngestType"
-                   |  },
-                   |  "space": {
-                   |    "id": "bcnfgh",
-                   |    "type": "Space"
-                   |  },
-                   |  "externalIdentifier": "${createExternalIdentifier.underlying}"
-                   |}""".stripMargin
-              )
+      describe("problems with the ingestType") {
+        it("if the field is missing") {
+          val badJson = root.obj.modify { _.remove("ingestType" )}
 
-              whenPostRequestReady(url, entity) { response: HttpResponse =>
-                assertIsUserErrorResponse(
-                  response = response,
-                  description =
-                    "Invalid value at .sourceLocation: required property not supplied."
-                )
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .ingestType: required property not supplied."
+          )
+        }
 
-                messageSender.messages shouldBe empty
+        it("if the id field is missing") {
+          val badJson = root.ingestType.obj.modify { _.remove("id") }
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-              }
-            }
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .ingestType.id: required property not supplied."
+          )
+        }
+
+        it("if the field has an invalid value") {
+          val badIngestType = randomAlphanumeric
+
+          val badJson = root.ingestType.id.string.set(badIngestType)
+
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage =
+              s"""Invalid value at .ingestType.id: got "$badIngestType", valid values are: create, update."""
+          )
         }
       }
 
-      it("if the body of the request is not valid JSON") {
-        withConfiguredApp() {
-          case (_, messageSender, metricsSender, baseUrl) =>
-            withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/ingests"
+      describe("problems with the space") {
+        it("if the field is missing") {
+          val badJson = root.obj.modify { _.remove("space" )}
 
-              val entity = HttpEntity(
-                ContentTypes.`application/json`,
-                """hgjh""".stripMargin
-              )
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .space: required property not supplied."
+          )
+        }
 
-              whenPostRequestReady(url, entity) { response: HttpResponse =>
-                assertIsUserErrorResponse(
-                  response = response,
-                  description =
-                    "The request content was malformed:\nexpected json value got h (line 1, column 1)"
-                )
+        it("if the id field is missing") {
+          val badJson = root.space.obj.modify { _.remove("id" )}
 
-                messageSender.messages shouldBe empty
-
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-              }
-            }
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .space.id: required property not supplied."
+          )
         }
       }
 
-      it("if the Content-Type of the request is not an accepted type") {
-        withConfiguredApp() {
-          case (_, messageSender, metricsSender, baseUrl) =>
-            withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/ingests"
+      describe("problems with the bag") {
+        it("if the field is missing") {
+          val badJson = root.obj.modify { _.remove("bag") }
 
-              val entity = HttpEntity(
-                ContentTypes.`text/plain(UTF-8)`,
-                """hgjh""".stripMargin
-              )
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .bag: required property not supplied."
+          )
+        }
 
-              whenPostRequestReady(url, entity) { response: HttpResponse =>
-                assertIsUserErrorResponse(
-                  response = response,
-                  description =
-                    "The request's Content-Type is not supported. Expected:\napplication/json",
-                  statusCode = StatusCodes.UnsupportedMediaType,
-                  label = "Unsupported Media Type"
-                )
+        it("if the info field is missing") {
+          val badJson = root.bag.obj.modify { _.remove("info") }
 
-                messageSender.messages shouldBe empty
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .bag.info: required property not supplied."
+          )
+        }
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-              }
-            }
+        it("if the info.externalIdentifier field is missing") {
+          val badJson = root.bag.info.obj.modify { _.remove("externalIdentifier") }
+
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .bag.info.externalIdentifier: required property not supplied."
+          )
         }
       }
 
-      it("if the ingest request doesn't have a sourceLocation or ingestType") {
-        withConfiguredApp() {
-          case (_, messageSender, metricsSender, baseUrl) =>
-            withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/ingests"
+      describe("problems with the sourceLocation") {
+        it("if the field is missing") {
+          val badJson = root.obj.modify { _.remove("sourceLocation") }
 
-              val entity = HttpEntity(
-                ContentTypes.`application/json`,
-                s"""|{
-                    |  "type": "Ingest",
-                    |  "space": {
-                    |    "id": "bcnfgh",
-                    |    "type": "Space"
-                    |  },
-                    |  "externalIdentifier": "${createExternalIdentifier.underlying}"
-                    |}""".stripMargin
-              )
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .sourceLocation: required property not supplied."
+          )
+        }
 
-              whenPostRequestReady(url, entity) { response: HttpResponse =>
-                assertIsUserErrorResponse(
-                  response = response,
-                  description =
-                    """|Invalid value at .sourceLocation: required property not supplied.
-                       |Invalid value at .ingestType: required property not supplied.""".stripMargin
-                )
+        it("if the provider field is missing") {
+          val badJson = root.sourceLocation.obj.modify { _.remove("provider") }
 
-                messageSender.messages shouldBe empty
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .sourceLocation.provider: required property not supplied."
+          )
+        }
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-              }
-            }
+        it("if the bucket field is missing") {
+          val badJson = root.sourceLocation.obj.modify { _.remove("bucket") }
+
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .sourceLocation.bucket: required property not supplied."
+          )
+        }
+
+        it("if the path field is missing") {
+          val badJson = root.sourceLocation.obj.modify { _.remove("path") }
+
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage = "Invalid value at .sourceLocation.path: required property not supplied."
+          )
         }
       }
 
-      it("if the sourceLocation doesn't have a bucket field") {
-        withConfiguredApp() {
-          case (_, messageSender, metricsSender, baseUrl) =>
-            withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/ingests"
-
-              val entity = HttpEntity(
-                ContentTypes.`application/json`,
-                s"""|{
-                    |  "type": "Ingest",
-                    |  "ingestType": {
-                    |    "id": "create",
-                    |    "type": "IngestType"
-                    |  },
-                    |  "sourceLocation":{
-                    |    "type": "Location",
-                    |    "provider": {
-                    |      "type": "Provider",
-                    |      "id": "${StandardDisplayProvider.id}"
-                    |    },
-                    |    "path": "b22454408.zip"
-                    |  },
-                    |  "space": {
-                    |    "id": "bcnfgh",
-                    |    "type": "Space"
-                    |  },
-                    |  "externalIdentifier": "${createExternalIdentifier.underlying}"
-                    |}""".stripMargin
-              )
-
-              whenPostRequestReady(url, entity) { response: HttpResponse =>
-                assertIsUserErrorResponse(
-                  response = response,
-                  description =
-                    "Invalid value at .sourceLocation.bucket: required property not supplied."
-                )
-
-                messageSender.messages shouldBe empty
-
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-              }
-            }
-        }
+      it("if the body is not valid JSON") {
+        assertCatchesMalformedRequest(
+          requestBody = "hgjh",
+          expectedMessage = "The request content was malformed:\nexpected json value got h (line 1, column 1)"
+        )
       }
 
-      it("if the request doesn't have an externalIdentifier") {
-        withConfiguredApp() {
-          case (_, messageSender, metricsSender, baseUrl) =>
-            withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/ingests"
+      it("if the Content-Type is not an accepted type") {
+        assertCatchesMalformedRequest(
+          contentType = ContentTypes.`text/plain(UTF-8)`,
+          expectedStatusCode = StatusCodes.UnsupportedMediaType,
+          expectedMessage = "The request's Content-Type is not supported. Expected:\napplication/json",
+          expectedLabel = "Unsupported Media Type"
+        )
+      }
 
+      it("includes every error") {
+        val badJson = root.obj.modify { _.remove("ingestType").remove("sourceLocation") }
+
+        assertCatchesMalformedRequest(
+          badJson(json).noSpaces,
+          expectedMessage =
+            """|Invalid value at .sourceLocation: required property not supplied.
+               |Invalid value at .ingestType: required property not supplied.""".stripMargin
+        )
+      }
+
+      it("returns a 500 Server Error if updating DynamoDB fails") {
+        withMaterializer { implicit materializer =>
+          withBrokenApp {
+            case (_, _, metricsSender, baseUrl) =>
               val entity = HttpEntity(
                 ContentTypes.`application/json`,
                 s"""|{
@@ -577,197 +495,29 @@ class IngestsApiFeatureTest
                     |      "type": "Provider",
                     |      "id": "${StandardDisplayProvider.id}"
                     |    },
-                    |    "bucket": "${randomAlphanumeric}",
-                    |    "path": "b22454408.zip"
+                    |    "bucket": "bukkit",
+                    |    "path": "key"
                     |  },
                     |  "space": {
-                    |    "id": "bcnfgh",
+                    |    "id": "space",
                     |    "type": "Space"
-                    |  }
-                    |}""".stripMargin
-              )
-
-              whenPostRequestReady(url, entity) { response: HttpResponse =>
-                assertIsUserErrorResponse(
-                  response = response,
-                  description =
-                    "Invalid value at .externalIdentifier: required property not supplied."
-                )
-
-                messageSender.messages shouldBe empty
-
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-              }
-            }
-        }
-      }
-
-      it("if the sourceLocation has an invalid bucket field") {
-        withConfiguredApp() {
-          case (_, messageSender, metricsSender, baseUrl) =>
-            withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/ingests"
-
-              val entity = HttpEntity(
-                ContentTypes.`application/json`,
-                s"""|{
-                    |  "type": "Ingest",
-                    |  "ingestType": {
-                    |    "id": "create",
-                    |    "type": "IngestType"
                     |  },
-                    |  "sourceLocation":{
-                    |    "type": "Location",
-                    |    "provider": {
-                    |      "type": "Provider",
-                    |      "id": "${StandardDisplayProvider.id}"
-                    |    },
-                    |    "bucket": {"name": "bucket"},
-                    |    "path": "b22454408.zip"
-                    |  },
-                    |  "space": {
-                    |    "id": "bcnfgh",
-                    |    "type": "Space"
+                    |  "callback": {
+                    |    "url": "${testCallbackUri.toString}"
                     |  },
                     |  "externalIdentifier": "${createExternalIdentifier.underlying}"
                     |}""".stripMargin
               )
 
-              whenPostRequestReady(url, entity) { response: HttpResponse =>
-                assertIsUserErrorResponse(
-                  response = response,
-                  description =
-                    "Invalid value at .sourceLocation.bucket: should be a String."
-                )
+              whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", entity) {
+                response =>
+                  assertIsInternalServerErrorResponse(response)
 
-                messageSender.messages shouldBe empty
-
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
+                  assertMetricSent(
+                    metricsSender,
+                    result = HttpMetricResults.ServerError)
               }
-            }
-        }
-      }
-
-      it("if the provider doesn't have a valid id field") {
-        withConfiguredApp() {
-          case (_, messageSender, metricsSender, baseUrl) =>
-            withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/ingests"
-
-              val entity = HttpEntity(
-                ContentTypes.`application/json`,
-                s"""|{
-                    |  "type": "Ingest",
-                    |  "ingestType": {
-                    |    "id": "create",
-                    |    "type": "IngestType"
-                    |  },
-                    |  "sourceLocation":{
-                    |    "type": "Location",
-                    |    "provider": {
-                    |      "type": "Provider",
-                    |      "id": "blipbloop"
-                    |    },
-                    |    "bucket": "bucket",
-                    |    "path": "b22454408.zip"
-                    |  },
-                    |  "space": {
-                    |    "id": "bcnfgh",
-                    |    "type": "Space"
-                    |  },
-                    |  "externalIdentifier": "${createExternalIdentifier.underlying}"
-                    |}""".stripMargin
-              )
-
-              whenPostRequestReady(url, entity) { response: HttpResponse =>
-                assertIsUserErrorResponse(
-                  response = response,
-                  description =
-                    """Invalid value at .sourceLocation.provider.id: got "blipbloop", valid values are: aws-s3-standard, aws-s3-ia."""
-                )
-
-                messageSender.messages shouldBe empty
-
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-              }
-            }
-        }
-      }
-
-      it("if the ingestType doesn't have a valid id field") {
-        withConfiguredApp() {
-          case (_, messageSender, metricsSender, baseUrl) =>
-            withMaterializer { implicit materialiser =>
-              val url = s"$baseUrl/ingests"
-
-              val entity = createRequestWith(
-                ingestType = "baboop"
-              )
-
-              whenPostRequestReady(url, entity) { response: HttpResponse =>
-                assertIsUserErrorResponse(
-                  response = response,
-                  description =
-                    """Invalid value at .ingestType.id: got "baboop", valid values are: create, update."""
-                )
-
-                messageSender.messages shouldBe empty
-
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-              }
-            }
-        }
-      }
-    }
-
-    it("returns a 500 Server Error if updating DynamoDB fails") {
-      withMaterializer { implicit materializer =>
-        withBrokenApp {
-          case (_, _, metricsSender, baseUrl) =>
-            val entity = HttpEntity(
-              ContentTypes.`application/json`,
-              s"""|{
-                  |  "type": "Ingest",
-                  |  "ingestType": {
-                  |    "id": "create",
-                  |    "type": "IngestType"
-                  |  },
-                  |  "sourceLocation":{
-                  |    "type": "Location",
-                  |    "provider": {
-                  |      "type": "Provider",
-                  |      "id": "${StandardDisplayProvider.id}"
-                  |    },
-                  |    "bucket": "bukkit",
-                  |    "path": "key"
-                  |  },
-                  |  "space": {
-                  |    "id": "space",
-                  |    "type": "Space"
-                  |  },
-                  |  "callback": {
-                  |    "url": "${testCallbackUri.toString}"
-                  |  },
-                  |  "externalIdentifier": "${createExternalIdentifier.underlying}"
-                  |}""".stripMargin
-            )
-
-            whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", entity) {
-              response =>
-                assertIsInternalServerErrorResponse(response)
-
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.ServerError)
-            }
+          }
         }
       }
     }
@@ -783,25 +533,19 @@ class IngestsApiFeatureTest
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
         case (_, _, metricsSender, baseUrl) =>
-          withMaterializer { implicit materialiser =>
-            whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$bagId") {
-              response =>
-                response.status shouldBe StatusCodes.OK
-                response.entity.contentType shouldBe ContentTypes.`application/json`
-                val displayBagIngestFutures =
-                  Unmarshal(
-                    response.entity
-                  ).to[List[DisplayIngestMinimal]]
+          whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$bagId") {
+            response =>
+              response.status shouldBe StatusCodes.OK
+              response.entity.contentType shouldBe ContentTypes.`application/json`
 
-                whenReady(displayBagIngestFutures) { displayBagIngests =>
-                  displayBagIngests shouldBe List(DisplayIngestMinimal(ingest))
-                }
+              val ingests = getT[List[DisplayIngestMinimal]](response.entity)
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.Success
-                )
-            }
+              ingests shouldBe List(DisplayIngestMinimal(ingest))
+
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.Success
+              )
           }
       }
     }
@@ -815,52 +559,126 @@ class IngestsApiFeatureTest
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
         case (_, _, metricsSender, baseUrl) =>
-          withMaterializer { implicit materialiser =>
-            whenGetRequestReady(
-              s"$baseUrl/ingests/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}") {
-              response =>
-                response.status shouldBe StatusCodes.OK
-                response.entity.contentType shouldBe ContentTypes.`application/json`
-                val displayBagIngestFutures =
-                  Unmarshal(response.entity).to[List[DisplayIngestMinimal]]
+          whenGetRequestReady(
+            s"$baseUrl/ingests/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}") {
+            response =>
+              response.status shouldBe StatusCodes.OK
+              response.entity.contentType shouldBe ContentTypes.`application/json`
 
-                whenReady(displayBagIngestFutures) { displayBagIngests =>
-                  displayBagIngests shouldBe List(DisplayIngestMinimal(ingest))
+              val ingests = getT[List[DisplayIngestMinimal]](response.entity)
 
-                  assertMetricSent(
-                    metricsSender,
-                    result = HttpMetricResults.Success
-                  )
-                }
-            }
+              ingests shouldBe List(DisplayIngestMinimal(ingest))
+
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.Success
+              )
           }
       }
     }
 
     it("returns 'Not Found' if there are no ingests for the given bag id") {
-      withConfiguredApp() {
-        case (_, _, metricsSender, baseUrl) =>
-          withMaterializer { implicit materialiser =>
-            whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$randomUUID") {
-              response =>
-                response.status shouldBe StatusCodes.NotFound
-                response.entity.contentType shouldBe ContentTypes.`application/json`
-                val displayBagIngestFutures =
-                  Unmarshal(response.entity).to[List[DisplayIngestMinimal]]
-                whenReady(
-                  displayBagIngestFutures
-                ) { displayBagIngests =>
-                  displayBagIngests shouldBe List.empty
+      withConfiguredApp() { case (_, _, metricsSender, baseUrl) =>
+        whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$randomUUID") {
+          response =>
+            response.status shouldBe StatusCodes.NotFound
+            response.entity.contentType shouldBe ContentTypes.`application/json`
 
-                  assertMetricSent(
-                    metricsSender,
-                    result = HttpMetricResults.UserError
-                  )
+            getT[List[DisplayIngestMinimal]](response.entity) shouldBe empty
 
-                }
-            }
-          }
+            assertMetricSent(
+              metricsSender,
+              result = HttpMetricResults.UserError
+            )
+        }
       }
+    }
+  }
+
+  def createRequestJsonWith(
+    ingestType: String = CreateIngestType.id,
+    bucket: String = randomAlphanumeric,
+    key: String = randomAlphanumeric,
+    space: String = randomAlphanumeric,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier
+  ): Json =
+    parse(
+      s"""|{
+          |  "type": "Ingest",
+          |  "ingestType": {
+          |    "id": "$ingestType",
+          |    "type": "IngestType"
+          |  },
+          |  "sourceLocation":{
+          |    "type": "Location",
+          |    "provider": {
+          |      "type": "Provider",
+          |      "id": "${StandardDisplayProvider.id}"
+          |    },
+          |    "bucket": "$bucket",
+          |    "path": "$key"
+          |  },
+          |  "space": {
+          |    "id": "$space",
+          |    "type": "Space"
+          |  },
+          |  "callback": {
+          |    "url": "${testCallbackUri.toString}"
+          |  },
+          |  "externalIdentifier": "${externalIdentifier.underlying}"
+          |}""".stripMargin
+    ).right.value
+
+  def createRequestJson: Json =
+    createRequestJsonWith()
+
+  def createRequestWith(
+    ingestType: String = CreateIngestType.id,
+    bucket: String = randomAlphanumeric,
+    key: String = randomAlphanumeric,
+    space: String = randomAlphanumeric,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier
+  ): RequestEntity =
+    HttpEntity(
+      ContentTypes.`application/json`,
+      createRequestJsonWith(
+        ingestType = ingestType,
+        bucket = bucket,
+        key = key,
+        space = space,
+        externalIdentifier = externalIdentifier
+      ).noSpaces
+    )
+
+  private def assertCatchesMalformedRequest(
+    requestBody: String = createRequestJson.noSpaces,
+    contentType: ContentType.NonBinary = ContentTypes.`application/json`,
+    expectedStatusCode: StatusCode = StatusCodes.BadRequest,
+    expectedMessage: String,
+    expectedLabel: String = "Bad Request") = {
+    withConfiguredApp() {
+      case (_, messageSender, metricsSender, baseUrl) =>
+        val url = s"$baseUrl/ingests"
+
+        val entity = HttpEntity(
+          contentType = contentType,
+          string = requestBody
+        )
+
+        whenPostRequestReady(url, entity) { response: HttpResponse =>
+          assertIsUserErrorResponse(
+            response = response,
+            description = expectedMessage,
+            statusCode = expectedStatusCode,
+            label = expectedLabel
+          )
+
+          messageSender.messages shouldBe empty
+
+          assertMetricSent(
+            metricsSender,
+            result = HttpMetricResults.UserError)
+        }
     }
   }
 }
