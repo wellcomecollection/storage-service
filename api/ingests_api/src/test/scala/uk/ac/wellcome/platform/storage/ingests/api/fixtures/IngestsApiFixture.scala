@@ -70,7 +70,7 @@ trait IngestsApiFixture
           with MemoryMaxima[IngestID, Ingest]
       )
     ) {
-      override def init(ingest: Ingest): Result =
+      override def get(id: IngestID): Result =
         Left(IngestTrackerStoreError(StoreWriteError(new Throwable("BOOM!"))))
     }
 

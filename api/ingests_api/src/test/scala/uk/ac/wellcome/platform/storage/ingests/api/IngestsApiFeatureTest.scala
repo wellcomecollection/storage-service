@@ -35,7 +35,9 @@ class IngestsApiFeatureTest
   val contextUrl = "http://api.wellcomecollection.org/storage/v1/context.json"
   describe("GET /ingests/:id") {
     it("returns a ingest tracker when available") {
-      val ingest = createIngest
+      val ingest = createIngestWith(
+        createdDate = Instant.now()
+      )
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
         case (ingestTracker, _, metricsSender, baseUrl) =>

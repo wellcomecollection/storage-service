@@ -13,10 +13,9 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdent
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestDoesNotExistError, IngestTracker}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display.{DisplayIngestMinimal, RequestDisplayIngest, ResponseDisplayIngest}
-import uk.ac.wellcome.storage.DoesNotExistError
 
 class Router[UnpackerDestination](
   ingestTracker: IngestTracker,
@@ -59,7 +58,7 @@ class Router[UnpackerDestination](
           ingestTracker.get(IngestID(id)) match {
             case Right(ingest) =>
               complete(ResponseDisplayIngest(ingest.identifiedT, contextURL))
-            case Left(_: DoesNotExistError) =>
+            case Left(_: IngestDoesNotExistError) =>
               complete(
                 NotFound -> UserErrorResponse(
                   context = contextURL,
