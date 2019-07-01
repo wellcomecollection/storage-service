@@ -15,6 +15,9 @@ class StorageManifestDao(
   def get(id: BagId): Either[ReadError, StorageManifest] =
     vhs.getLatest(id).map { _.identifiedT.t }
 
+  def get(id: BagId, version: Int): Either[ReadError, StorageManifest] =
+    vhs.getLatest(id).map { _.identifiedT.t }
+
   def put(
     storageManifest: StorageManifest): Either[WriteError, StorageManifest] =
     vhs

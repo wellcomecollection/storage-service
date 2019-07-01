@@ -11,6 +11,7 @@ class StorageManifestDaoTest
     with EitherValues
     with StorageManifestGenerators
     with StorageManifestVHSFixture {
+
   it("allows storing and retrieving a record") {
     val storageManifest = createStorageManifest
 
@@ -21,11 +22,10 @@ class StorageManifestDaoTest
 
     storageManifest.id shouldBe newStorageManifest.id
 
-    val index = createIndex
-    val typedStore = createTypedStore
+    implicit val index: StorageManifestIndex = createIndex
+    implicit val typedStore: StorageManifestTypedStore = createTypedStore
 
-    val dao: StorageManifestDao =
-      createStorageManifestDao(index, typedStore)
+    val dao: StorageManifestDao = createStorageManifestDao
 
     // Empty get
 
@@ -44,5 +44,38 @@ class StorageManifestDaoTest
 
     val updateResult = dao.put(newStorageManifest)
     updateResult.left.value shouldBe a[WriteError]
+  }
+
+  it("stores a record under the appropriate ID and version") {
+    implicit val index: StorageManifestIndex = createIndex
+
+    val dao: StorageManifestDao = createStorageManifestDao
+
+    val storageManifest = createStorageManifestWith(
+      version = 2
+    )
+
+    val newStorageManifest = createStorageManifestWith(
+      space = storageManifest.space,
+      bagInfo = storageManifest.info,
+      version = 3
+    )
+
+    dao.put(storageManifest).right.value shouldBe storageManifest
+    dao.put(newStorageManifest).right.value shouldBe newStorageManifest
+
+    index.entries.size shouldBe 2
+
+    dao.get(id = storageManifest.id, version = storageManifest.version).right.value shouldBe storageManifest
+    dao.get(id = storageManifest.id, version = newStorageManifest.version).right.value shouldBe newStorageManifest
+  }
+
+  it("blocks putting two manifests with the same version") {
+    val dao: StorageManifestDao = createStorageManifestDao
+
+    val storageManifest = createStorageManifest
+
+    dao.put(storageManifest).right.value shouldBe storageManifest
+    dao.put(storageManifest).left.value shouldBe "hello world"
   }
 }
