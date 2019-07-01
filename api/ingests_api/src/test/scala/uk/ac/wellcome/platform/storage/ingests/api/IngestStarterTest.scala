@@ -32,7 +32,11 @@ class IngestStarterTest
         val result = ingestStarter.initialise(ingest)
         result.success.value shouldBe ingest
 
-        ingestTracker.underlying.getLatest(ingest.id).right.value.identifiedT shouldBe ingest
+        ingestTracker.underlying
+          .getLatest(ingest.id)
+          .right
+          .value
+          .identifiedT shouldBe ingest
 
         val expectedPayload = SourceLocationPayload(ingest)
         messageSender.getMessages[SourceLocationPayload] shouldBe Seq(
@@ -46,8 +50,8 @@ class IngestStarterTest
 
     val brokenTracker = new MemoryIngestTracker(
       underlying = new MemoryVersionedStore[IngestID, Int, Ingest](
-        new MemoryStore[Version[IngestID, Int], Ingest](initialEntries = Map.empty)
-          with MemoryMaxima[IngestID, Ingest]
+        new MemoryStore[Version[IngestID, Int], Ingest](
+          initialEntries = Map.empty) with MemoryMaxima[IngestID, Ingest]
       )
     ) {
       override def init(ingest: Ingest): Result =
@@ -75,7 +79,11 @@ class IngestStarterTest
 
         result shouldBe a[Failure[_]]
 
-        ingestTracker.underlying.getLatest(ingest.id).right.value.identifiedT shouldBe ingest
+        ingestTracker.underlying
+          .getLatest(ingest.id)
+          .right
+          .value
+          .identifiedT shouldBe ingest
       }
     }
   }

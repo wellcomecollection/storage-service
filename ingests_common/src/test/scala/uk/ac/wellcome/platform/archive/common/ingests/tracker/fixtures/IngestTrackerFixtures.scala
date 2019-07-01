@@ -10,8 +10,10 @@ import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 trait IngestTrackerFixtures extends EitherValues with TimeTestFixture {
-  def assertIngestCreated(ingest: Ingest)(implicit ingestTracker: MemoryIngestTracker): Ingest = {
-    val storedIngest = ingestTracker.underlying.getLatest(ingest.id).right.value.identifiedT
+  def assertIngestCreated(ingest: Ingest)(
+    implicit ingestTracker: MemoryIngestTracker): Ingest = {
+    val storedIngest =
+      ingestTracker.underlying.getLatest(ingest.id).right.value.identifiedT
 
     storedIngest.sourceLocation shouldBe ingest.sourceLocation
     storedIngest.sourceLocation shouldBe ingest.sourceLocation
@@ -23,11 +25,11 @@ trait IngestTrackerFixtures extends EitherValues with TimeTestFixture {
     storedIngest
   }
 
-  def assertIngestRecordedRecentEvents(
-    id: IngestID,
-    expectedEventDescriptions: Seq[String])(
+  def assertIngestRecordedRecentEvents(id: IngestID,
+                                       expectedEventDescriptions: Seq[String])(
     implicit ingestTracker: MemoryIngestTracker): Unit = {
-    val storedIngest = ingestTracker.underlying.getLatest(id).right.value.identifiedT
+    val storedIngest =
+      ingestTracker.underlying.getLatest(id).right.value.identifiedT
 
     storedIngest.events.map { _.description } should contain theSameElementsAs expectedEventDescriptions
     storedIngest.events.foreach { event =>
@@ -35,16 +37,20 @@ trait IngestTrackerFixtures extends EitherValues with TimeTestFixture {
     }
   }
 
-  protected def createMemoryStore: MemoryStore[Version[IngestID, Int], Ingest] with MemoryMaxima[IngestID, Ingest] =
+  protected def createMemoryStore
+    : MemoryStore[Version[IngestID, Int], Ingest] with MemoryMaxima[IngestID,
+                                                                    Ingest] =
     new MemoryStore[Version[IngestID, Int], Ingest](initialEntries = Map.empty)
-      with MemoryMaxima[IngestID, Ingest]
+    with MemoryMaxima[IngestID, Ingest]
 
-  protected def createMemoryVersionedStore: MemoryVersionedStore[IngestID, Int, Ingest] =
+  protected def createMemoryVersionedStore
+    : MemoryVersionedStore[IngestID, Int, Ingest] =
     new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore)
 
   def withMemoryIngestTracker[R](initialIngests: Seq[Ingest] = Seq.empty)(
     testWith: TestWith[MemoryIngestTracker, R])(
-    implicit store: MemoryVersionedStore[IngestID, Int, Ingest] = createMemoryVersionedStore): R = {
+    implicit store: MemoryVersionedStore[IngestID, Int, Ingest] =
+      createMemoryVersionedStore): R = {
     initialIngests
       .map { ingest =>
         store.init(ingest.id)(ingest)

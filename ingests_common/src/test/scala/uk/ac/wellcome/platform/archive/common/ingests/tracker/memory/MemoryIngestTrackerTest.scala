@@ -3,9 +3,16 @@ package uk.ac.wellcome.platform.archive.common.ingests.tracker.memory
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestTracker, IngestTrackerTestCases}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestTracker,
+  IngestTrackerTestCases
+}
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
-import uk.ac.wellcome.storage.{StoreReadError, StoreWriteError, UpdateWriteError}
+import uk.ac.wellcome.storage.{
+  StoreReadError,
+  StoreWriteError,
+  UpdateWriteError
+}
 
 class MemoryIngestTrackerTest
     extends IngestTrackerTestCases[MemoryVersionedStore[IngestID, Int, Ingest]]

@@ -12,7 +12,11 @@ import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestTracker, IngestTrackerError, IngestTrackerStoreError}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestTracker,
+  IngestTrackerError,
+  IngestTrackerStoreError
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.store.VersionedStore
@@ -20,16 +24,18 @@ import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
 import scala.util.Try
 
-class DynamoIngestTracker(config: DynamoConfig,
-                          bagIdLookupConfig: DynamoConfig)(implicit client: AmazonDynamoDB) extends IngestTracker with Logging {
+class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)(
+  implicit client: AmazonDynamoDB)
+    extends IngestTracker
+    with Logging {
 
   // TODO: This should be upstreamed to the scala-storage library
   private val hashStore = new DynamoHashStore[IngestID, Int, Ingest](config) {
     override def max(hashKey: IngestID): Either[ReadError, Int] =
       super.max(hashKey) match {
-        case Right(value) => Right(value)
+        case Right(value)               => Right(value)
         case Left(_: DoesNotExistError) => Left(NoMaximaValueError())
-        case Left(err) => Left(err)
+        case Left(err)                  => Left(err)
       }
 
     override def put(id: Version[IngestID, Int])(ingest: Ingest): WriteEither =
@@ -39,7 +45,8 @@ class DynamoIngestTracker(config: DynamoConfig,
       }
   }
 
-  override val underlying: VersionedStore[IngestID, Int, Ingest] = new VersionedStore[IngestID, Int, Ingest](hashStore)
+  override val underlying: VersionedStore[IngestID, Int, Ingest] =
+    new VersionedStore[IngestID, Int, Ingest](hashStore)
 
   // The bag ID lookup is a temporary feature for DLCS during the migration.
   // For now we're splitting the data across two tables because you can't
@@ -55,7 +62,8 @@ class DynamoIngestTracker(config: DynamoConfig,
     ingest: Ingest
   )
 
-  private def storeBagIdLookup(ingest: Ingest): Try[Option[Either[DynamoReadError, BagIdLookup]]] = {
+  private def storeBagIdLookup(
+    ingest: Ingest): Try[Option[Either[DynamoReadError, BagIdLookup]]] = {
     val ops = ScanamoTable[BagIdLookup](bagIdLookupConfig.tableName)
       .put(
         BagIdLookup(
@@ -68,7 +76,8 @@ class DynamoIngestTracker(config: DynamoConfig,
     Try { Scanamo(client).exec(ops) }
   }
 
-  override def listByBagId(bagId: BagId): Either[IngestTrackerError, Seq[Ingest]] = {
+  override def listByBagId(
+    bagId: BagId): Either[IngestTrackerError, Seq[Ingest]] = {
     val query = ScanamoTable[BagIdLookup](bagIdLookupConfig.tableName)
       .limit(30)
       .descending
@@ -76,7 +85,9 @@ class DynamoIngestTracker(config: DynamoConfig,
 
     val result = Scanamo(client).exec(query)
 
-    val ingests = result.collect { case Right(bagIdLookup) => bagIdLookup.ingest }
+    val ingests = result.collect {
+      case Right(bagIdLookup) => bagIdLookup.ingest
+    }
     val errors = result.collect { case Left(err) => err }
 
     Either.cond(

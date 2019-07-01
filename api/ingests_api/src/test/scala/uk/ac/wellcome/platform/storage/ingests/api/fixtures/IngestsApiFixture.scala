@@ -43,31 +43,35 @@ trait IngestsApiFixture
           metricsSender = metricsSender
         )
 
-        withIngestStarter(ingestTracker, unpackerMessageSender) { ingestStarter =>
-          val ingestsApi = new IngestsApi(
-            ingestTracker = ingestTracker,
-            ingestStarter = ingestStarter,
-            httpMetrics = httpMetrics,
-            httpServerConfig = httpServerConfig,
-            contextURL = contextURL
-          )
+        withIngestStarter(ingestTracker, unpackerMessageSender) {
+          ingestStarter =>
+            val ingestsApi = new IngestsApi(
+              ingestTracker = ingestTracker,
+              ingestStarter = ingestStarter,
+              httpMetrics = httpMetrics,
+              httpServerConfig = httpServerConfig,
+              contextURL = contextURL
+            )
 
-          ingestsApi.run()
+            ingestsApi.run()
 
-          testWith(ingestsApi)
+            testWith(ingestsApi)
         }
       }
     }
 
   def withBrokenApp[R](
-    testWith: TestWith[(MemoryIngestTracker, MemoryMessageSender, MetricsSender, String), R])
-    : R = {
+    testWith: TestWith[(MemoryIngestTracker,
+                        MemoryMessageSender,
+                        MetricsSender,
+                        String),
+                       R]): R = {
     val messageSender = new MemoryMessageSender()
 
     val brokenTracker = new MemoryIngestTracker(
       underlying = new MemoryVersionedStore[IngestID, Int, Ingest](
-        new MemoryStore[Version[IngestID, Int], Ingest](initialEntries = Map.empty)
-          with MemoryMaxima[IngestID, Ingest]
+        new MemoryStore[Version[IngestID, Int], Ingest](
+          initialEntries = Map.empty) with MemoryMaxima[IngestID, Ingest]
       )
     ) {
       override def get(id: IngestID): Result =
@@ -87,8 +91,11 @@ trait IngestsApiFixture
   }
 
   def withConfiguredApp[R](initialIngests: Seq[Ingest] = Seq.empty)(
-    testWith: TestWith[(MemoryIngestTracker, MemoryMessageSender, MetricsSender, String), R])
-    : R =
+    testWith: TestWith[(MemoryIngestTracker,
+                        MemoryMessageSender,
+                        MetricsSender,
+                        String),
+                       R]): R =
     withMemoryIngestTracker(initialIngests = initialIngests) { ingestTracker =>
       val messageSender = new MemoryMessageSender()
       withMockMetricsSender { metricsSender =>

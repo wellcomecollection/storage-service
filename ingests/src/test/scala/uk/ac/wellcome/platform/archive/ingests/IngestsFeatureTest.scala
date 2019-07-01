@@ -7,7 +7,10 @@ import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CallbackNotification,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.ingests.fixtures._
 
 class IngestsFeatureTest

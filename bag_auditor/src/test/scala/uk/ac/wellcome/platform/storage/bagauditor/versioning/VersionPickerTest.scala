@@ -5,10 +5,19 @@ import java.util.UUID
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  UpdateIngestType
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.versioning.{ExternalIdentifiersMismatch, NewerIngestAlreadyExists}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  ExternalIdentifiersMismatch,
+  NewerIngestAlreadyExists
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
 import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure, UnlockFailure}
@@ -185,7 +194,7 @@ class VersionPickerTest
 
       lockDao.getCurrentLocks shouldBe empty
 
-      // TODO: Restore history on the MemoryLockDao
+    // TODO: Restore history on the MemoryLockDao
 //      lockDao.history.map { _.id } should contain theSameElementsAs List(
 //        s"ingest:$ingestId",
 //        s"external:$storageSpace:$externalIdentifier"
@@ -210,8 +219,8 @@ class VersionPickerTest
       )
 
       lockDao.getCurrentLocks shouldBe empty
-      // TODO: Restore history on the MemoryLockDao
-      // TODO: Why?
+    // TODO: Restore history on the MemoryLockDao
+    // TODO: Why?
 //      lockDao.history.map { _.id } should contain theSameElementsAs List(
 //        s"ingest:$ingestId",
 //        s"external:a%3Ab:x%3Ay"

@@ -9,7 +9,10 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Successful}
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Completed, Processing}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+  Completed,
+  Processing
+}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.ingests.fixtures.IngestsFixtures
 
@@ -28,43 +31,44 @@ class IngestsWorkerServiceTest
     )
 
     withLocalSqsQueue { queue =>
-      withMemoryIngestTracker(initialIngests = Seq(ingest)) { implicit ingestTracker =>
-        val messageSender = new MemoryMessageSender()
-        withIngestWorker(queue, ingestTracker, messageSender) { service =>
-          val ingestStatusUpdate =
-            createIngestStatusUpdateWith(
-              id = ingest.id,
-              status = Completed
+      withMemoryIngestTracker(initialIngests = Seq(ingest)) {
+        implicit ingestTracker =>
+          val messageSender = new MemoryMessageSender()
+          withIngestWorker(queue, ingestTracker, messageSender) { service =>
+            val ingestStatusUpdate =
+              createIngestStatusUpdateWith(
+                id = ingest.id,
+                status = Completed
+              )
+
+            service
+              .processMessage(ingestStatusUpdate)
+              .success
+              .value shouldBe a[Successful[_]]
+
+            val expectedIngest = ingest.copy(
+              status = Completed,
+              events = ingestStatusUpdate.events
             )
 
-          service
-            .processMessage(ingestStatusUpdate)
-            .success
-            .value shouldBe a[Successful[_]]
+            val callbackNotification = CallbackNotification(
+              ingestId = ingest.id,
+              callbackUri = ingest.callback.get.uri,
+              payload = expectedIngest
+            )
 
-          val expectedIngest = ingest.copy(
-            status = Completed,
-            events = ingestStatusUpdate.events
-          )
+            messageSender.getMessages[CallbackNotification] shouldBe Seq(
+              callbackNotification)
 
-          val callbackNotification = CallbackNotification(
-            ingestId = ingest.id,
-            callbackUri = ingest.callback.get.uri,
-            payload = expectedIngest
-          )
+            assertIngestCreated(expectedIngest)
 
-          messageSender.getMessages[CallbackNotification] shouldBe Seq(
-            callbackNotification)
-
-          assertIngestCreated(expectedIngest)
-
-          assertIngestRecordedRecentEvents(
-            id = ingestStatusUpdate.id,
-            expectedEventDescriptions = ingestStatusUpdate.events.map {
-              _.description
-            }
-          )
-        }
+            assertIngestRecordedRecentEvents(
+              id = ingestStatusUpdate.id,
+              expectedEventDescriptions = ingestStatusUpdate.events.map {
+                _.description
+              }
+            )
+          }
       }
     }
   }
@@ -75,48 +79,49 @@ class IngestsWorkerServiceTest
     )
 
     withLocalSqsQueue { queue =>
-      withMemoryIngestTracker(initialIngests = Seq(ingest)) { implicit ingestTracker =>
-        val messageSender = new MemoryMessageSender()
-        withIngestWorker(queue, ingestTracker, messageSender) { service =>
-          val ingestStatusUpdate1 =
-            createIngestStatusUpdateWith(
-              id = ingest.id,
-              status = Processing
+      withMemoryIngestTracker(initialIngests = Seq(ingest)) {
+        implicit ingestTracker =>
+          val messageSender = new MemoryMessageSender()
+          withIngestWorker(queue, ingestTracker, messageSender) { service =>
+            val ingestStatusUpdate1 =
+              createIngestStatusUpdateWith(
+                id = ingest.id,
+                status = Processing
+              )
+
+            val ingestStatusUpdate2 =
+              createIngestStatusUpdateWith(
+                id = ingest.id,
+                status = Processing
+              )
+
+            val expectedIngest = ingest.copy(
+              status = Completed,
+              events = ingestStatusUpdate1.events ++ ingestStatusUpdate2.events
             )
 
-          val ingestStatusUpdate2 =
-            createIngestStatusUpdateWith(
-              id = ingest.id,
-              status = Processing
+            service
+              .processMessage(ingestStatusUpdate1)
+              .success
+              .value shouldBe a[Successful[_]]
+            service
+              .processMessage(ingestStatusUpdate2)
+              .success
+              .value shouldBe a[Successful[_]]
+
+            assertIngestCreated(expectedIngest)
+
+            val expectedEventDescriptions =
+              (ingestStatusUpdate1.events ++ ingestStatusUpdate2.events)
+                .map {
+                  _.description
+                }
+
+            assertIngestRecordedRecentEvents(
+              id = ingestStatusUpdate1.id,
+              expectedEventDescriptions = expectedEventDescriptions
             )
-
-          val expectedIngest = ingest.copy(
-            status = Completed,
-            events = ingestStatusUpdate1.events ++ ingestStatusUpdate2.events
-          )
-
-          service
-            .processMessage(ingestStatusUpdate1)
-            .success
-            .value shouldBe a[Successful[_]]
-          service
-            .processMessage(ingestStatusUpdate2)
-            .success
-            .value shouldBe a[Successful[_]]
-
-          assertIngestCreated(expectedIngest)
-
-          val expectedEventDescriptions =
-            (ingestStatusUpdate1.events ++ ingestStatusUpdate2.events)
-              .map {
-                _.description
-              }
-
-          assertIngestRecordedRecentEvents(
-            id = ingestStatusUpdate1.id,
-            expectedEventDescriptions = expectedEventDescriptions
-          )
-        }
+          }
       }
     }
   }
@@ -146,28 +151,30 @@ class IngestsWorkerServiceTest
     val ingest = createIngest
 
     withLocalSqsQueue { queue =>
-      withMemoryIngestTracker(initialIngests = Seq(ingest)) { implicit ingestTracker =>
-        val exception = new Throwable("BOOM!")
+      withMemoryIngestTracker(initialIngests = Seq(ingest)) {
+        implicit ingestTracker =>
+          val exception = new Throwable("BOOM!")
 
-        val brokenSender = new MemoryMessageSender() {
-          override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
-            Failure(exception)
-        }
+          val brokenSender = new MemoryMessageSender() {
+            override def sendT[T](t: T)(
+              implicit encoder: Encoder[T]): Try[Unit] =
+              Failure(exception)
+          }
 
-        withIngestWorker(queue, ingestTracker, brokenSender) { service =>
-          val ingestStatusUpdate =
-            createIngestStatusUpdateWith(
-              id = ingest.id,
-              status = Completed
-            )
+          withIngestWorker(queue, ingestTracker, brokenSender) { service =>
+            val ingestStatusUpdate =
+              createIngestStatusUpdateWith(
+                id = ingest.id,
+                status = Completed
+              )
 
-          val result = service.processMessage(ingestStatusUpdate)
+            val result = service.processMessage(ingestStatusUpdate)
 
-          result.success.value shouldBe a[DeterministicFailure[_]]
-          result.success.value
-            .asInstanceOf[DeterministicFailure[_]]
-            .failure shouldBe exception
-        }
+            result.success.value shouldBe a[DeterministicFailure[_]]
+            result.success.value
+              .asInstanceOf[DeterministicFailure[_]]
+              .failure shouldBe exception
+          }
       }
     }
   }

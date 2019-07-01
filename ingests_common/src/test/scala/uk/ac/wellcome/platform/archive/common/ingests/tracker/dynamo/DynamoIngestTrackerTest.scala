@@ -27,7 +27,8 @@ class DynamoIngestTrackerTest
     extends IngestTrackerTestCases[(DynamoTable, DynamoTable)]
     with DynamoFixtures
     with RandomThings {
-  override def withContext[R](testWith: TestWith[(DynamoTable, DynamoTable), R]): R =
+  override def withContext[R](
+    testWith: TestWith[(DynamoTable, DynamoTable), R]): R =
     withSpecifiedTable(createIngestTrackerTable) { ingestTrackerTable =>
       withSpecifiedTable(createBagIdLookupTable) { bagIdLookupTable =>
         testWith((ingestTrackerTable, bagIdLookupTable))
@@ -35,7 +36,8 @@ class DynamoIngestTrackerTest
     }
 
   override def withIngestTracker[R](initialIngests: Seq[Ingest])(
-    testWith: TestWith[IngestTracker, R])(implicit tables: (DynamoTable, DynamoTable)): R = {
+    testWith: TestWith[IngestTracker, R])(
+    implicit tables: (DynamoTable, DynamoTable)): R = {
     val (ingestTrackerTable, bagIdLookupTable) = tables
 
     val tracker = new DynamoIngestTracker(
@@ -121,7 +123,8 @@ class DynamoIngestTrackerTest
   }
 
   override def withBrokenUnderlyingUpdateTracker[R](
-    testWith: TestWith[IngestTracker, R])(implicit tables: (DynamoTable, DynamoTable)): R =
+    testWith: TestWith[IngestTracker, R])(
+    implicit tables: (DynamoTable, DynamoTable)): R =
     withBrokenPutTracker { tracker =>
       testWith(tracker)
     }

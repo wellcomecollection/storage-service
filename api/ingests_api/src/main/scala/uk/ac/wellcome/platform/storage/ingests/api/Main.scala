@@ -30,11 +30,13 @@ object Main extends WellcomeTypesafeApp {
       metricsSender = MetricsBuilder.buildMetricsSender(config)
     )
 
-    implicit val dynamoClient: AmazonDynamoDB = DynamoBuilder.buildDynamoClient(config)
+    implicit val dynamoClient: AmazonDynamoDB =
+      DynamoBuilder.buildDynamoClient(config)
 
     val ingestTracker = new DynamoIngestTracker(
       config = DynamoBuilder.buildDynamoConfig(config),
-      bagIdLookupConfig = DynamoBuilder.buildDynamoConfig(config, namespace = "bagIdLookup")
+      bagIdLookupConfig =
+        DynamoBuilder.buildDynamoConfig(config, namespace = "bagIdLookup")
     )
 
     val ingestStarter = new IngestStarter[SNSConfig](

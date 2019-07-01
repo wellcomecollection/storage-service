@@ -794,8 +794,7 @@ class IngestsApiFeatureTest
                   ).to[List[DisplayIngestMinimal]]
 
                 whenReady(displayBagIngestFutures) { displayBagIngests =>
-                  displayBagIngests shouldBe List(
-                    DisplayIngestMinimal(ingest))
+                  displayBagIngests shouldBe List(DisplayIngestMinimal(ingest))
                 }
 
                 assertMetricSent(
@@ -817,7 +816,6 @@ class IngestsApiFeatureTest
       withConfiguredApp(initialIngests = Seq(ingest)) {
         case (_, _, metricsSender, baseUrl) =>
           withMaterializer { implicit materialiser =>
-
             whenGetRequestReady(
               s"$baseUrl/ingests/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}") {
               response =>
@@ -827,8 +825,7 @@ class IngestsApiFeatureTest
                   Unmarshal(response.entity).to[List[DisplayIngestMinimal]]
 
                 whenReady(displayBagIngestFutures) { displayBagIngests =>
-                  displayBagIngests shouldBe List(
-                    DisplayIngestMinimal(ingest))
+                  displayBagIngests shouldBe List(DisplayIngestMinimal(ingest))
 
                   assertMetricSent(
                     metricsSender,

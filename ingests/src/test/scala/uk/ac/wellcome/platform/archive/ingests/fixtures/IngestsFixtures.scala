@@ -10,7 +10,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.platform.archive.ingests.services.{CallbackNotificationService, IngestsWorker}
+import uk.ac.wellcome.platform.archive.ingests.services.{
+  CallbackNotificationService,
+  IngestsWorker
+}
 
 trait IngestsFixtures
     extends ScalaFutures
@@ -42,7 +45,8 @@ trait IngestsFixtures
     }
 
   def withConfiguredApp[R](initialIngests: Seq[Ingest] = Seq.empty)(
-    testWith: TestWith[(Queue, MemoryMessageSender, MemoryIngestTracker), R]): R = {
+    testWith: TestWith[(Queue, MemoryMessageSender, MemoryIngestTracker), R])
+    : R = {
     withLocalSqsQueue { queue =>
       val messageSender = new MemoryMessageSender()
       withMemoryIngestTracker(initialIngests) { ingestTracker =>
