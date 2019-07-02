@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
@@ -22,6 +23,7 @@ trait BagUnpackerFixtures
     extends SQS
     with BagLocationFixtures
     with OperationFixtures
+    with Akka
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture {
 

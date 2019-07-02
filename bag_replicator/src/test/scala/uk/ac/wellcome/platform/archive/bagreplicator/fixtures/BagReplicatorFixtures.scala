@@ -4,6 +4,7 @@ import java.util.UUID
 
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import org.scalatest.Assertion
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
@@ -33,6 +34,7 @@ import scala.util.Try
 
 trait BagReplicatorFixtures
     extends BagLocationFixtures
+    with Akka
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture

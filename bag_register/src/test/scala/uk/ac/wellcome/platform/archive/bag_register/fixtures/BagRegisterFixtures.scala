@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bag_register.fixtures
 
 import org.scalatest.Assertion
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
@@ -27,6 +28,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 trait BagRegisterFixtures
     extends StorageRandomThings
+    with Akka
     with AlpakkaSQSWorkerFixtures
     with OperationFixtures
     with StorageManifestVHSFixture

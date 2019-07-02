@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixtures
 
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
@@ -23,6 +24,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
     with SQS
+    with Akka
     with OperationFixtures
     with MonitoringClientFixture
     with S3Fixtures {
