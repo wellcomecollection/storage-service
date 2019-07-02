@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.storage.bag_root_finder.fixtures
 
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
@@ -17,6 +18,7 @@ import uk.ac.wellcome.json.JsonUtil._
 
 trait BagRootFinderFixtures
     extends OperationFixtures
+    with Akka
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture
     with S3Fixtures {

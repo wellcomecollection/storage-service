@@ -2,9 +2,9 @@ import sbt._
 
 object WellcomeDependencies {
   lazy val versions = new {
-    val fixtures = "1.0.0"
-    val json = "1.1.1"
-    val messaging = "5.2.0"
+    val fixtures   = "1.0.0"
+    val json       = "1.1.1"
+    val messaging  = "5.3.1"
     val monitoring = "2.2.0"
     val storage = "7.18.0"
     val typesafe = "1.0.0"
@@ -48,6 +48,11 @@ object WellcomeDependencies {
   val messagingTypesafeLibrary: Seq[ModuleID] = library(
     name = "messaging_typesafe",
     version = versions.messaging
+  )
+
+  val storageTypesafeLibrary: Seq[ModuleID] = library(
+    name = "storage_typesafe",
+    version = versions.storage
   )
 
   private def library(name: String, version: String): Seq[ModuleID] = Seq(
@@ -125,5 +130,6 @@ object StorageDependencies {
       WellcomeDependencies.storageLibrary ++
       WellcomeDependencies.typesafeLibrary ++
       WellcomeDependencies.monitoringTypesafeLibrary ++
-      WellcomeDependencies.messagingTypesafeLibrary
+      WellcomeDependencies.messagingTypesafeLibrary ++
+      WellcomeDependencies.storageTypesafeLibrary
 }
