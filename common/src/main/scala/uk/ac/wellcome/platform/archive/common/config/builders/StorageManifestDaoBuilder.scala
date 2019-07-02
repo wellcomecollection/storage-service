@@ -12,7 +12,11 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
 import uk.ac.wellcome.storage.store.HybridIndexedStoreEntry
-import uk.ac.wellcome.storage.store.dynamo.{DynamoHashRangeStore, DynamoHybridStoreWithMaxima, DynamoVersionedHybridStore}
+import uk.ac.wellcome.storage.store.dynamo.{
+  DynamoHashRangeStore,
+  DynamoHybridStoreWithMaxima,
+  DynamoVersionedHybridStore
+}
 import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
@@ -38,15 +42,18 @@ object StorageManifestDaoBuilder {
         val result = for {
           stringId <- av.as[String]
           space <- DynamoID.getStorageSpace(stringId).toEither
-          externalIdentifier <- DynamoID.getExternalIdentifier(stringId).toEither
+          externalIdentifier <- DynamoID
+            .getExternalIdentifier(stringId)
+            .toEither
           bagId = BagId(space, externalIdentifier)
         } yield bagId
 
         result match {
           case Left(err) =>
-            Left(TypeCoercionError(
-              new Throwable(s"Error decoding BagId from DynamoDB: $err")
-            ))
+            Left(
+              TypeCoercionError(
+                new Throwable(s"Error decoding BagId from DynamoDB: $err")
+              ))
           case Right(bagId) => Right(bagId)
         }
       }
