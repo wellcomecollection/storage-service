@@ -17,7 +17,7 @@ class IngestStarter[UnpackerDestination](
       ingest <- ingestTracker.init(ingest) match {
         case Right(result) => Success(result.identifiedT)
         case Left(err) =>
-          Failure(new Throwable(s"Error form the ingest tracker: $err"))
+          Failure(new Throwable(s"Error from the ingest tracker: $err"))
       }
       _ <- unpackerMessageSender.sendT(SourceLocationPayload(ingest))
     } yield ingest

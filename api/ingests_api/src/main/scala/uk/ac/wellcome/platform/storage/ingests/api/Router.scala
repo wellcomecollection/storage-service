@@ -4,7 +4,6 @@ import java.net.URL
 import java.util.UUID
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import grizzled.slf4j.Logging
@@ -30,6 +29,8 @@ import uk.ac.wellcome.platform.archive.display.{
   ResponseDisplayIngest
 }
 
+import scala.util.{Failure, Success}
+
 class Router[UnpackerDestination](
   ingestTracker: IngestTracker,
   ingestStarter: IngestStarter[UnpackerDestination],
@@ -49,16 +50,19 @@ class Router[UnpackerDestination](
         entity(as[RequestDisplayIngest]) { requestDisplayIngest =>
           // TODO: Do we have a test for the failure case?
           ingestStarter.initialise(requestDisplayIngest.toIngest) match {
-            case scala.util.Success(ingest) =>
+            case Success(ingest) =>
               respondWithHeaders(List(createLocationHeader(ingest))) {
-                complete(Created -> ResponseDisplayIngest(ingest, contextURL))
+                complete(
+                  StatusCodes.Created -> ResponseDisplayIngest(
+                    ingest,
+                    contextURL))
               }
-            case scala.util.Failure(err) =>
+            case Failure(err) =>
               error(
                 s"Unexpected error while creating an ingest $requestDisplayIngest",
                 err)
               complete(
-                InternalServerError -> InternalServerErrorResponse(
+                StatusCodes.InternalServerError -> InternalServerErrorResponse(
                   contextURL,
                   statusCode = StatusCodes.InternalServerError
                 )
@@ -73,7 +77,7 @@ class Router[UnpackerDestination](
               complete(ResponseDisplayIngest(ingest.identifiedT, contextURL))
             case Left(_: IngestDoesNotExistError) =>
               complete(
-                NotFound -> UserErrorResponse(
+                StatusCodes.NotFound -> UserErrorResponse(
                   context = contextURL,
                   statusCode = StatusCodes.NotFound,
                   description = s"Ingest $id not found"
@@ -81,7 +85,7 @@ class Router[UnpackerDestination](
             case Left(err) =>
               error(s"Unexpected error while fetching ingest $id: $err")
               complete(
-                InternalServerError -> InternalServerErrorResponse(
+                StatusCodes.InternalServerError -> InternalServerErrorResponse(
                   contextURL,
                   statusCode = StatusCodes.InternalServerError
                 )
@@ -111,17 +115,17 @@ class Router[UnpackerDestination](
     ingestTracker.listByBagId(bagId) match {
       case Right(results) =>
         if (results.nonEmpty) {
-          complete(OK -> results.map { DisplayIngestMinimal(_) })
+          complete(StatusCodes.OK -> results.map { DisplayIngestMinimal(_) })
         } else {
-          complete(NotFound -> List[DisplayIngestMinimal]())
+          complete(StatusCodes.NotFound -> List[DisplayIngestMinimal]())
         }
 
       case Left(err) =>
         warn(s"""errors fetching ingests for $bagId: $err""")
         complete(
-          InternalServerError -> InternalServerErrorResponse(
+          StatusCodes.InternalServerError -> InternalServerErrorResponse(
             context = contextURL,
-            statusCode = InternalServerError
+            statusCode = StatusCodes.InternalServerError
           )
         )
     }

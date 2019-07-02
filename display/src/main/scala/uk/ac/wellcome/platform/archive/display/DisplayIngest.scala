@@ -5,7 +5,6 @@ import java.time.Instant
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
@@ -16,7 +15,7 @@ case class RequestDisplayIngest(
   callback: Option[DisplayCallback],
   ingestType: DisplayIngestType,
   space: DisplayStorageSpace,
-  externalIdentifier: String,
+  bag: DisplayBag,
   @JsonKey("type")
   ontologyType: String = "Ingest"
 ) extends DisplayIngest {
@@ -28,7 +27,7 @@ case class RequestDisplayIngest(
       callback = Callback(
         callback.map(displayCallback => URI.create(displayCallback.url))),
       space = StorageSpace(space.id),
-      externalIdentifier = ExternalIdentifier(externalIdentifier),
+      externalIdentifier = bag.info.externalIdentifier,
       status = Ingest.Accepted,
       createdDate = Instant.now
     )
@@ -41,7 +40,7 @@ case class ResponseDisplayIngest(@JsonKey("@context") context: String,
                                  ingestType: DisplayIngestType,
                                  space: DisplayStorageSpace,
                                  status: DisplayStatus,
-                                 externalIdentifier: String,
+                                 bag: DisplayBag,
                                  events: Seq[DisplayIngestEvent] = Seq.empty,
                                  createdDate: String,
                                  lastModifiedDate: Option[String],
@@ -58,7 +57,11 @@ object ResponseDisplayIngest {
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),
       ingestType = DisplayIngestType(ingest.ingestType),
-      externalIdentifier = ingest.externalIdentifier.underlying,
+      bag = DisplayBag(
+        info = DisplayBagInfo(
+          externalIdentifier = ingest.externalIdentifier
+        )
+      ),
       status = DisplayStatus(ingest.status),
       events = ingest.events
         .sortBy { _.createdDate }
