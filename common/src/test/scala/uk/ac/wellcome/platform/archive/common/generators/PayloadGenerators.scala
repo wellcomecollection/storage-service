@@ -70,7 +70,7 @@ trait PayloadGenerators
   def createEnrichedBagInformationPayloadWith(
     context: PipelineContext = createPipelineContext,
     bagRootLocation: ObjectLocation = createObjectLocation,
-    version: Int = 1
+    version: Int = Random.nextInt()
   ): EnrichedBagInformationPayload =
     EnrichedBagInformationPayload(
       context = context,

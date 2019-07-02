@@ -34,7 +34,8 @@ class BagAuditorFeatureTest
 
           val expectedPayload = createEnrichedBagInformationPayloadWith(
             context = payload.context,
-            bagRootLocation = bagRootLocation
+            bagRootLocation = bagRootLocation,
+            version = 1
           )
 
           withLocalSqsQueue { queue =>

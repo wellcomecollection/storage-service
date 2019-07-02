@@ -22,7 +22,7 @@ class BagRegisterFeatureTest
 
   it("sends an update if it registers a bag") {
     withBagRegisterWorker {
-      case (_, dao, store, ingests, _, queuePair) =>
+      case (_, storageManifestDao, ingests, _, queuePair) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
 
@@ -44,7 +44,8 @@ class BagRegisterFeatureTest
               sendNotificationToSQS(queuePair.queue, payload)
 
               eventually {
-                val storageManifest = getStorageManifest(dao, store, id = bagId)
+                val storageManifest =
+                  storageManifestDao.getLatest(bagId).right.value
 
                 storageManifest.space shouldBe bagId.space
                 storageManifest.info shouldBe bagInfo
@@ -73,7 +74,7 @@ class BagRegisterFeatureTest
 
   it("sends a failed update and discards the work on error") {
     withBagRegisterWorker {
-      case (_, _, _, ingests, _, queuePair) =>
+      case (_, _, ingests, _, queuePair) =>
         val payload = createEnrichedBagInformationPayload
 
         sendNotificationToSQS(queuePair.queue, payload)
