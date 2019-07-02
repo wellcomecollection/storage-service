@@ -68,7 +68,8 @@ module "stack_letterman" {
   ingests_table_name = "${module.critical.ingests_table_name}"
   ingests_table_arn  = "${module.critical.ingests_table_arn}"
 
-  ingests_table_ingest_index_name = "${module.critical.ingests_table_ingest_index_name}"
+  bag_id_lookup_table_name = "${module.critical-staging.bag_id_lookup_table_name}"
+  bag_id_lookup_table_arn  = "${module.critical-staging.bag_id_lookup_table_arn}"
 
   ingest_bucket_name = "${module.critical.ingest_drop_bucket_name}"
 
