@@ -33,19 +33,19 @@ case class RequestDisplayIngest(
     )
 }
 
-case class ResponseDisplayIngest(
-  @JsonKey("@context") context: String,
-  id: UUID,
-  sourceLocation: DisplayLocation,
-  callback: Option[DisplayCallback],
-  ingestType: DisplayIngestType,
-  space: DisplayStorageSpace,
-  status: DisplayStatus,
-  bag: DisplayBag,
-  events: Seq[DisplayIngestEvent] = Seq.empty,
-  createdDate: String,
-  lastModifiedDate: Option[String],
-  @JsonKey("type") ontologyType: String = "Ingest")
+case class ResponseDisplayIngest(@JsonKey("@context") context: String,
+                                 id: UUID,
+                                 sourceLocation: DisplayLocation,
+                                 callback: Option[DisplayCallback],
+                                 ingestType: DisplayIngestType,
+                                 space: DisplayStorageSpace,
+                                 status: DisplayStatus,
+                                 bag: DisplayBag,
+                                 events: Seq[DisplayIngestEvent] = Seq.empty,
+                                 createdDate: String,
+                                 lastModifiedDate: Option[String],
+                                 @JsonKey("type") ontologyType: String =
+                                   "Ingest")
     extends DisplayIngest
 
 object ResponseDisplayIngest {

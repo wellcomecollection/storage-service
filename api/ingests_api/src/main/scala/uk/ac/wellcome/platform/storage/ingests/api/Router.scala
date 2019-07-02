@@ -52,7 +52,10 @@ class Router[UnpackerDestination](
           ingestStarter.initialise(requestDisplayIngest.toIngest) match {
             case Success(ingest) =>
               respondWithHeaders(List(createLocationHeader(ingest))) {
-                complete(StatusCodes.Created -> ResponseDisplayIngest(ingest, contextURL))
+                complete(
+                  StatusCodes.Created -> ResponseDisplayIngest(
+                    ingest,
+                    contextURL))
               }
             case Failure(err) =>
               error(

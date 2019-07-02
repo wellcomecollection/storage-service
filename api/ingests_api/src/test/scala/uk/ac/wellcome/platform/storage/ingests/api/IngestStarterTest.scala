@@ -53,7 +53,8 @@ class IngestStarterTest
       withIngestStarter(ingestTracker, messageSender) { ingestStarter =>
         val result = ingestStarter.initialise(ingest)
         result.failed shouldBe a[Success[_]]
-        result.failed.get.getMessage should startWith("Error from the ingest tracker: IngestAlreadyExistsError")
+        result.failed.get.getMessage should startWith(
+          "Error from the ingest tracker: IngestAlreadyExistsError")
 
         messageSender.messages shouldBe empty
       }

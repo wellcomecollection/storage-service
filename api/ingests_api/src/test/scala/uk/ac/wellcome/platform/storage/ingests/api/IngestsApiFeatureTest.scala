@@ -283,9 +283,7 @@ class IngestsApiFeatureTest
               messageSender.getMessages[SourceLocationPayload].head
             payload.context.ingestType shouldBe CreateIngestType
 
-            assertMetricSent(
-              metricsSender,
-              result = HttpMetricResults.Success)
+            assertMetricSent(metricsSender, result = HttpMetricResults.Success)
           }
       }
     }
@@ -309,9 +307,7 @@ class IngestsApiFeatureTest
             val payload = messageSender.getMessages[SourceLocationPayload].head
             payload.context.ingestType shouldBe UpdateIngestType
 
-            assertMetricSent(
-              metricsSender,
-              result = HttpMetricResults.Success)
+            assertMetricSent(metricsSender, result = HttpMetricResults.Success)
           }
       }
     }
@@ -327,7 +323,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .ingestType: required property not supplied."
+            expectedMessage =
+              "Invalid value at .ingestType: required property not supplied."
           )
         }
 
@@ -338,7 +335,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .ingestType.id: required property not supplied."
+            expectedMessage =
+              "Invalid value at .ingestType.id: required property not supplied."
           )
         }
 
@@ -363,7 +361,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .space: required property not supplied."
+            expectedMessage =
+              "Invalid value at .space: required property not supplied."
           )
         }
 
@@ -374,7 +373,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .space.id: required property not supplied."
+            expectedMessage =
+              "Invalid value at .space.id: required property not supplied."
           )
         }
       }
@@ -387,7 +387,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .bag: required property not supplied."
+            expectedMessage =
+              "Invalid value at .bag: required property not supplied."
           )
         }
 
@@ -398,7 +399,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .bag.info: required property not supplied."
+            expectedMessage =
+              "Invalid value at .bag.info: required property not supplied."
           )
         }
 
@@ -409,7 +411,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .bag.info.externalIdentifier: required property not supplied."
+            expectedMessage =
+              "Invalid value at .bag.info.externalIdentifier: required property not supplied."
           )
         }
       }
@@ -422,7 +425,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .sourceLocation: required property not supplied."
+            expectedMessage =
+              "Invalid value at .sourceLocation: required property not supplied."
           )
         }
 
@@ -433,7 +437,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .sourceLocation.provider: required property not supplied."
+            expectedMessage =
+              "Invalid value at .sourceLocation.provider: required property not supplied."
           )
         }
 
@@ -444,7 +449,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .sourceLocation.bucket: required property not supplied."
+            expectedMessage =
+              "Invalid value at .sourceLocation.bucket: required property not supplied."
           )
         }
 
@@ -455,7 +461,8 @@ class IngestsApiFeatureTest
 
           assertCatchesMalformedRequest(
             badJson(json).noSpaces,
-            expectedMessage = "Invalid value at .sourceLocation.path: required property not supplied."
+            expectedMessage =
+              "Invalid value at .sourceLocation.path: required property not supplied."
           )
         }
       }
@@ -463,7 +470,8 @@ class IngestsApiFeatureTest
       it("if the body is not valid JSON") {
         assertCatchesMalformedRequest(
           requestBody = "hgjh",
-          expectedMessage = "The request content was malformed:\nexpected json value got h (line 1, column 1)"
+          expectedMessage =
+            "The request content was malformed:\nexpected json value got h (line 1, column 1)"
         )
       }
 
@@ -471,7 +479,8 @@ class IngestsApiFeatureTest
         assertCatchesMalformedRequest(
           contentType = ContentTypes.`text/plain(UTF-8)`,
           expectedStatusCode = StatusCodes.UnsupportedMediaType,
-          expectedMessage = "The request's Content-Type is not supported. Expected:\napplication/json",
+          expectedMessage =
+            "The request's Content-Type is not supported. Expected:\napplication/json",
           expectedLabel = "Unsupported Media Type"
         )
       }
@@ -492,15 +501,16 @@ class IngestsApiFeatureTest
 
     it("returns a 500 Server Error if updating the ingest starter fails") {
       withMaterializer { implicit materializer =>
-        withBrokenApp { case (_, _, metricsSender, baseUrl) =>
-          whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
-            response =>
-              assertIsInternalServerErrorResponse(response)
+        withBrokenApp {
+          case (_, _, metricsSender, baseUrl) =>
+            whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
+              response =>
+                assertIsInternalServerErrorResponse(response)
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.ServerError)
-          }
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.ServerError)
+            }
         }
       }
     }
@@ -561,19 +571,20 @@ class IngestsApiFeatureTest
     }
 
     it("returns 'Not Found' if there are no ingests for the given bag id") {
-      withConfiguredApp() { case (_, _, metricsSender, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$randomUUID") {
-          response =>
-            response.status shouldBe StatusCodes.NotFound
-            response.entity.contentType shouldBe ContentTypes.`application/json`
+      withConfiguredApp() {
+        case (_, _, metricsSender, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$randomUUID") {
+            response =>
+              response.status shouldBe StatusCodes.NotFound
+              response.entity.contentType shouldBe ContentTypes.`application/json`
 
-            getT[List[DisplayIngestMinimal]](response.entity) shouldBe empty
+              getT[List[DisplayIngestMinimal]](response.entity) shouldBe empty
 
-            assertMetricSent(
-              metricsSender,
-              result = HttpMetricResults.UserError
-            )
-        }
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.UserError
+              )
+          }
       }
     }
   }
@@ -667,9 +678,7 @@ class IngestsApiFeatureTest
 
           messageSender.messages shouldBe empty
 
-          assertMetricSent(
-            metricsSender,
-            result = HttpMetricResults.UserError)
+          assertMetricSent(metricsSender, result = HttpMetricResults.UserError)
         }
     }
   }
