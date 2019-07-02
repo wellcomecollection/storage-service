@@ -25,23 +25,19 @@ resource "aws_dynamodb_table" "bag_id_lookup" {
   name           = "${var.namespace}-ingests"
   read_capacity  = 1
   write_capacity = 1
-  hash_key       = "id"
+  hash_key       = "bagId"
+  range_key      = "createdDate"
 
   billing_mode = "${var.billing_mode}"
 
   attribute {
-    name = "id"
+    name = "bagId"
     type = "S"
   }
 
   attribute {
-    name = "externalIdentifier"
-    type = "S"
-  }
-
-  attribute {
-    name = "space"
-    type = "S"
+    name = "createdDate"
+    type = "N"
   }
 
   lifecycle {
