@@ -43,11 +43,12 @@ class Router(register: StorageManifestDao, contextURL: URL)(
         )
 
         get {
-          parameter('version.as[Int]?) { maybeVersion =>
-            val result: Either[ReadError, StorageManifest] = maybeVersion match {
-              case Some(version) => register.get(bagId, version = version)
-              case None          => register.getLatest(bagId)
-            }
+          parameter('version.as[Int] ?) { maybeVersion =>
+            val result: Either[ReadError, StorageManifest] =
+              maybeVersion match {
+                case Some(version) => register.get(bagId, version = version)
+                case None          => register.getLatest(bagId)
+              }
 
             result match {
               case Right(storageManifest) =>
@@ -58,8 +59,9 @@ class Router(register: StorageManifestDao, contextURL: URL)(
                 )
               case Left(_: NoVersionExistsError) =>
                 val errorMessage = maybeVersion match {
-                  case Some(version) => s"Storage manifest $bagId v$version not found"
-                  case None          => s"Storage manifest $bagId not found"
+                  case Some(version) =>
+                    s"Storage manifest $bagId v$version not found"
+                  case None => s"Storage manifest $bagId not found"
                 }
 
                 complete(

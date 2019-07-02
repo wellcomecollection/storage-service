@@ -115,7 +115,7 @@ class BagsApiFeatureTest
                    |    ${asList(storageManifest.locations, location)}
                    |  ],
                    |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                  storageManifest.createdDate)}",
+                     storageManifest.createdDate)}",
                    |  "type": "Bag"
                    |}
                    """.stripMargin
@@ -198,20 +198,19 @@ class BagsApiFeatureTest
       withMaterializer { implicit materializer =>
         withConfiguredApp(initialManifests = Seq(storageManifest)) {
           case (_, metricsSender, baseUrl) =>
-            val badId = s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
-            whenGetRequestReady(
-              s"$baseUrl/bags/$badId") {
-              response =>
-                assertIsUserErrorResponse(
-                  response,
-                  description = s"Storage manifest $badId not found",
-                  statusCode = StatusCodes.NotFound,
-                  label = "Not Found"
-                )
+            val badId =
+              s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
+            whenGetRequestReady(s"$baseUrl/bags/$badId") { response =>
+              assertIsUserErrorResponse(
+                response,
+                description = s"Storage manifest $badId not found",
+                statusCode = StatusCodes.NotFound,
+                label = "Not Found"
+              )
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.UserError)
             }
         }
       }
@@ -228,7 +227,8 @@ class BagsApiFeatureTest
               response =>
                 assertIsUserErrorResponse(
                   response,
-                  description = s"Storage manifest ${storageManifest.id} v${storageManifest.version + 1} not found",
+                  description =
+                    s"Storage manifest ${storageManifest.id} v${storageManifest.version + 1} not found",
                   statusCode = StatusCodes.NotFound,
                   label = "Not Found"
                 )
@@ -248,16 +248,16 @@ class BagsApiFeatureTest
         withConfiguredApp() {
           case (_, metricsSender, baseUrl) =>
             whenGetRequestReady(
-              s"$baseUrl/bags/$createBagId?version=$badVersion") {
-              response =>
-                assertIsUserErrorResponse(
-                  response,
-                  description = s"The query parameter 'version' was malformed:\n'$badVersion' is not a valid 32-bit signed integer value"
-                )
+              s"$baseUrl/bags/$createBagId?version=$badVersion") { response =>
+              assertIsUserErrorResponse(
+                response,
+                description =
+                  s"The query parameter 'version' was malformed:\n'$badVersion' is not a valid 32-bit signed integer value"
+              )
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.UserError)
             }
         }
       }
