@@ -27,7 +27,7 @@ trait PayloadGenerators
   def createPipelineContextWith(
     ingestId: IngestID = createIngestID,
     ingestType: IngestType = randomIngestType,
-    ingestDate: Instant = Instant.now(),
+    ingestDate: Instant = randomInstant,
     storageSpace: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier
   ): PipelineContext =
