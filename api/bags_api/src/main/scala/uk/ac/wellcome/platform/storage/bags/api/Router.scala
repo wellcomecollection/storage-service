@@ -57,11 +57,16 @@ class Router(register: StorageManifestDao, contextURL: URL)(
                     contextUrl = contextURL)
                 )
               case Left(_: NoVersionExistsError) =>
+                val errorMessage = maybeVersion match {
+                  case Some(version) => s"Storage manifest $bagId v$version not found"
+                  case None          => s"Storage manifest $bagId not found"
+                }
+
                 complete(
                   NotFound -> UserErrorResponse(
                     context = contextURL,
                     statusCode = StatusCodes.NotFound,
-                    description = s"Storage manifest $bagId not found"
+                    description = errorMessage
                   )
                 )
               case Left(storageError) =>

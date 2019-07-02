@@ -228,7 +228,7 @@ class BagsApiFeatureTest
               response =>
                 assertIsUserErrorResponse(
                   response,
-                  description = s"Storage manifest ${storageManifest.id} version ${storageManifest.version + 1} not found",
+                  description = s"Storage manifest ${storageManifest.id} v${storageManifest.version + 1} not found",
                   statusCode = StatusCodes.NotFound,
                   label = "Not Found"
                 )
