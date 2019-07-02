@@ -45,7 +45,7 @@ trait BagsApiFixture
         )
 
         val bagsApi = new BagsApi(
-          vhs = vhs,
+          register = vhs,
           httpMetrics = httpMetrics,
           httpServerConfig = httpServerConfig,
           contextURL = contextURL

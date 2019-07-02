@@ -24,6 +24,8 @@ import uk.ac.wellcome.platform.archive.common.verify.{
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
+import scala.util.Random
+
 trait StorageManifestGenerators
     extends BagInfoGenerators
     with StorageSpaceGenerators
@@ -48,7 +50,7 @@ trait StorageManifestGenerators
   def createStorageManifestWith(
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
-    version: Int = 1,
+    version: Int = Random.nextInt,
     locations: List[ObjectLocation] = List(createObjectLocation)
   ): StorageManifest =
     StorageManifest(

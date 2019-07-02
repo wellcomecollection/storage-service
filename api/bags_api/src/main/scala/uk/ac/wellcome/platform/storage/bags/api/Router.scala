@@ -16,14 +16,17 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   InternalServerErrorResponse,
   UserErrorResponse
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBag
-import uk.ac.wellcome.storage.NoVersionExistsError
+import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
 
 import scala.concurrent.ExecutionContext
 
-class Router(vhs: StorageManifestDao, contextURL: URL)(
+class Router(register: StorageManifestDao, contextURL: URL)(
   implicit val ec: ExecutionContext)
     extends Logging {
 
@@ -40,29 +43,43 @@ class Router(vhs: StorageManifestDao, contextURL: URL)(
         )
 
         get {
-          vhs.getLatest(bagId) match {
-            case Right(storageManifest) =>
-              complete(
-                DisplayBag(
-                  storageManifest = storageManifest,
-                  contextUrl = contextURL)
-              )
-            case Left(e: NoVersionExistsError) =>
-              error("Does not exist", e.e)
-              complete(
-                NotFound -> UserErrorResponse(
-                  context = contextURL,
-                  statusCode = StatusCodes.NotFound,
-                  description = s"Storage manifest $bagId not found"
-                ))
-            case Left(storageError) =>
-              error("Internal server error", storageError.e)
-              complete(
-                InternalServerError -> InternalServerErrorResponse(
-                  context = contextURL,
-                  statusCode = StatusCodes.InternalServerError
+          parameter('version.as[Int] ?) { maybeVersion =>
+            val result: Either[ReadError, StorageManifest] =
+              maybeVersion match {
+                case Some(version) => register.get(bagId, version = version)
+                case None          => register.getLatest(bagId)
+              }
+
+            result match {
+              case Right(storageManifest) =>
+                complete(
+                  DisplayBag(
+                    storageManifest = storageManifest,
+                    contextUrl = contextURL)
                 )
-              )
+              case Left(_: NoVersionExistsError) =>
+                val errorMessage = maybeVersion match {
+                  case Some(version) =>
+                    s"Storage manifest $bagId v$version not found"
+                  case None => s"Storage manifest $bagId not found"
+                }
+
+                complete(
+                  NotFound -> UserErrorResponse(
+                    context = contextURL,
+                    statusCode = StatusCodes.NotFound,
+                    description = errorMessage
+                  )
+                )
+              case Left(storageError) =>
+                error("Internal server error", storageError.e)
+                complete(
+                  InternalServerError -> InternalServerErrorResponse(
+                    context = contextURL,
+                    statusCode = StatusCodes.InternalServerError
+                  )
+                )
+            }
           }
         }
       }
