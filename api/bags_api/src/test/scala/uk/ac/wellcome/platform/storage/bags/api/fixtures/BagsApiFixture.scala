@@ -7,12 +7,9 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  HttpFixtures,
-  StorageManifestVHSFixture,
-  StorageRandomThings
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageManifestVHSFixture, StorageRandomThings}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
@@ -56,13 +53,17 @@ trait BagsApiFixture
       }
     }
 
-  def withConfiguredApp[R](
+  def withConfiguredApp[R](initialManifests: Seq[StorageManifest] = Seq.empty)(
     testWith: TestWith[(StorageManifestDao, MetricsSender, String), R]): R = {
-    val vhs = createStorageManifestDao()
+    val dao = createStorageManifestDao()
+
+    initialManifests.foreach { manifest =>
+      dao.put(manifest) shouldBe a[Right[_, _]]
+    }
 
     withMockMetricsSender { metricsSender =>
-      withApp(metricsSender, vhs) { _ =>
-        testWith((vhs, metricsSender, httpServerConfig.externalBaseURL))
+      withApp(metricsSender, dao) { _ =>
+        testWith((dao, metricsSender, httpServerConfig.externalBaseURL))
       }
     }
   }

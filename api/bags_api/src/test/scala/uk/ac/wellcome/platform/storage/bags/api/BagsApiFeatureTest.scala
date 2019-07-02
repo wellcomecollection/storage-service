@@ -14,7 +14,6 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageManifestGenerators
 }
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
 
@@ -31,18 +30,17 @@ class BagsApiFeatureTest
 
   describe("GET /bags/:space/:id") {
     it("returns a bag when available") {
-      // TODO: Make this take initialManifests
-      withConfiguredApp {
+      val storageManifest = createStorageManifestWith(
+        locations = List(
+          createObjectLocation,
+          createObjectLocation,
+          createObjectLocation
+        )
+      )
+
+      withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (vhs, metricsSender, baseUrl) =>
           withMaterializer { implicit materializer =>
-            val storageManifest: StorageManifest = createStorageManifestWith(
-              locations = List(
-                createObjectLocation,
-                createObjectLocation,
-                createObjectLocation
-              )
-            )
-
             val expectedJson =
               s"""
                      |{
@@ -64,7 +62,6 @@ class BagsApiFeatureTest
                      |}
                    """.stripMargin
 
-            storeSingleManifest(vhs, storageManifest) shouldBe a[Right[_, _]]
             val url =
               s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
 
@@ -85,14 +82,13 @@ class BagsApiFeatureTest
     }
 
     it("does not output null values") {
-      withConfiguredApp {
+      val storageManifest = createStorageManifestWith(
+        bagInfo = createBagInfoWith(externalDescription = None)
+      )
+
+      withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (vhs, metricsSender, baseUrl) =>
           withMaterializer { implicit materializer =>
-            val storageManifest = createStorageManifestWith(
-              bagInfo = createBagInfoWith(externalDescription = None)
-            )
-            vhs.put(storageManifest) shouldBe a[Right[_, _]]
-
             whenGetRequestReady(
               s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
               response =>
@@ -116,7 +112,7 @@ class BagsApiFeatureTest
 
     it("returns a 404 NotFound if no ingest monitor matches id") {
       withMaterializer { implicit materializer =>
-        withConfiguredApp {
+        withConfiguredApp() {
           case (_, metricsSender, baseUrl) =>
             val bagId = createBagId
             whenGetRequestReady(
