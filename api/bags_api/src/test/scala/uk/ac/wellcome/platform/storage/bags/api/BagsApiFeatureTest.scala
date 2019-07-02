@@ -241,7 +241,27 @@ class BagsApiFeatureTest
       }
     }
 
-    // TODO: Add a test for a non-int version
+    it("returns a 400 BadRequest if you ask for a non-numeric version") {
+      val badVersion = randomAlphanumeric
+
+      withMaterializer { implicit materializer =>
+        withConfiguredApp() {
+          case (_, metricsSender, baseUrl) =>
+            whenGetRequestReady(
+              s"$baseUrl/bags/$createBagId?version=$badVersion") {
+              response =>
+                assertIsUserErrorResponse(
+                  response,
+                  description = s"The query parameter 'version' was malformed:\n'$badVersion' is not a valid 32-bit signed integer value"
+                )
+
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.UserError)
+            }
+        }
+      }
+    }
 
     // TODO: Come back and restore this test when we can reliably
     // break the underlying tracker.

@@ -43,9 +43,9 @@ class Router(register: StorageManifestDao, contextURL: URL)(
         )
 
         get {
-          parameter('version.?) { maybeVersion =>
+          parameter('version.as[Int]?) { maybeVersion =>
             val result: Either[ReadError, StorageManifest] = maybeVersion match {
-              case Some(version) => register.get(bagId, version = version.toInt)
+              case Some(version) => register.get(bagId, version = version)
               case None          => register.getLatest(bagId)
             }
 
