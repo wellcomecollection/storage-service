@@ -11,7 +11,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
-import uk.ac.wellcome.storage.store.HybridIndexedStoreEntry
 import uk.ac.wellcome.storage.store.dynamo.{
   DynamoHashRangeStore,
   DynamoHybridStoreWithMaxima,
@@ -20,7 +19,7 @@ import uk.ac.wellcome.storage.store.dynamo.{
 import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, Version}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 object StorageManifestDaoBuilder {
   def build(config: Config): StorageManifestDao = {
@@ -67,15 +66,11 @@ object StorageManifestDaoBuilder {
     implicit val indexedStore
       : DynamoHashRangeStore[BagId,
                              Int,
-                             HybridIndexedStoreEntry[Version[BagId, Int],
-                                                     ObjectLocation,
-                                                     Map[String, String]]] =
+                             ObjectLocation] =
       new DynamoHashRangeStore[
         BagId,
         Int,
-        HybridIndexedStoreEntry[Version[BagId, Int],
-                                ObjectLocation,
-                                Map[String, String]]](
+        ObjectLocation](
         config = DynamoBuilder.buildDynamoConfig(config, namespace = "vhs")
       )
 
