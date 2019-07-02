@@ -198,12 +198,13 @@ class BagsApiFeatureTest
       withMaterializer { implicit materializer =>
         withConfiguredApp(initialManifests = Seq(storageManifest)) {
           case (_, metricsSender, baseUrl) =>
+            val badId = s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
             whenGetRequestReady(
-              s"$baseUrl/bags/${storageManifest.space}123/${storageManifest.id.externalIdentifier}") {
+              s"$baseUrl/bags/$badId") {
               response =>
                 assertIsUserErrorResponse(
                   response,
-                  description = s"Storage manifest ${storageManifest.id} not found",
+                  description = s"Storage manifest $badId not found",
                   statusCode = StatusCodes.NotFound,
                   label = "Not Found"
                 )
