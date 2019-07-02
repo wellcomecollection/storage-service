@@ -28,8 +28,10 @@ class BagAuditorFeatureTest
       withBag(bucket) {
         case (bagRootLocation, storageSpace) =>
           val payload = createBagRootLocationPayloadWith(
-            bagRootLocation = bagRootLocation,
-            storageSpace = storageSpace
+            context = createPipelineContextWith(
+              storageSpace = storageSpace
+            ),
+            bagRootLocation = bagRootLocation
           )
 
           val expectedPayload = createEnrichedBagInformationPayloadWith(

@@ -30,11 +30,8 @@ class BagRootFinderFeatureTest
           )
 
           val expectedPayload = createBagRootLocationPayloadWith(
-            ingestId = payload.ingestId,
-            ingestDate = payload.ingestDate,
-            bagRootLocation = bagRootLocation,
-            storageSpace = storageSpace,
-            externalIdentifier = payload.externalIdentifier
+            context = payload.context,
+            bagRootLocation = bagRootLocation
           )
 
           withLocalSqsQueue { queue =>
@@ -81,10 +78,8 @@ class BagRootFinderFeatureTest
           )
 
           val expectedPayload = createBagRootLocationPayloadWith(
-            ingestId = payload.ingestId,
-            bagRootLocation = bagRootLocation,
-            storageSpace = storageSpace,
-            externalIdentifier = payload.externalIdentifier
+            context = payload.context,
+            bagRootLocation = bagRootLocation
           )
 
           withLocalSqsQueue { queue =>
