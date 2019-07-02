@@ -21,8 +21,8 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   register: Register
 )(implicit
+  val mc: MonitoringClient,
   actorSystem: ActorSystem,
-  mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends IngestStepWorker[EnrichedBagInformationPayload, RegistrationSummary] {
 

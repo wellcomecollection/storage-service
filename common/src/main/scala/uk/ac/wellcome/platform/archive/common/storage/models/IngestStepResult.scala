@@ -60,6 +60,8 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
   val config: AlpakkaSQSWorkerConfig
   val visibilityTimeout = 0
 
+  implicit val mc: MonitoringClient
+
   def processMessage(payload: Work): Try[IngestStepResult[Summary]]
 
   def process(payload: Work): Future[Result[Summary]] = Future.fromTry {

@@ -25,8 +25,8 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination]
 )(implicit
+  val mc: MonitoringClient,
   actorSystem: ActorSystem,
-  mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends IngestStepWorker[UnpackedBagLocationPayload, RootFinderSummary] {
 

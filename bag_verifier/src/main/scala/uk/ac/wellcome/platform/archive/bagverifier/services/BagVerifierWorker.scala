@@ -30,8 +30,8 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   verifier: BagVerifier
 )(implicit
+  val mc: MonitoringClient,
   actorSystem: ActorSystem,
-  mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends IngestStepWorker[
       BagRootPayload,

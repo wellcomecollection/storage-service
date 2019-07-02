@@ -26,8 +26,8 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   unpacker: Unpacker)(implicit
+                      val mc: MonitoringClient,
                       actorSystem: ActorSystem,
-                      mc: MonitoringClient,
                       sc: AmazonSQSAsync)
     extends IngestStepWorker[SourceLocationPayload, UnpackSummary] {
 

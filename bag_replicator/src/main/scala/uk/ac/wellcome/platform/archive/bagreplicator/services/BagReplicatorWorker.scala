@@ -33,11 +33,10 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
                                  LockDao[String, UUID]],
   replicatorDestinationConfig: ReplicatorDestinationConfig
 )(implicit
+  val mc: MonitoringClient,
   actorSystem: ActorSystem,
-  mc: MonitoringClient,
   sc: AmazonSQSAsync)
     extends IngestStepWorker[EnrichedBagInformationPayload, ReplicationSummary] {
-
   override val visibilityTimeout = 180
 
   val destinationBuilder = new DestinationBuilder(
