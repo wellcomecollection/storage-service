@@ -22,7 +22,7 @@ resource "aws_dynamodb_table" "ingests" {
 }
 
 resource "aws_dynamodb_table" "bag_id_lookup" {
-  name           = "${var.namespace}-ingests"
+  name           = "${var.namespace}-bag_id_lookup"
   read_capacity  = 1
   write_capacity = 1
   hash_key       = "bagId"
