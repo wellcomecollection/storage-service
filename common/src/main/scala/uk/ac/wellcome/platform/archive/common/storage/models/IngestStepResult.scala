@@ -4,8 +4,16 @@ import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction
 import com.amazonaws.services.sqs.model.Message
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
-import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, NonDeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.{
+  DeterministicFailure,
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.PipelinePayload
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
@@ -44,7 +52,9 @@ case class IngestShouldRetry[T](
   maybeUserFacingMessage: Option[String] = None
 ) extends IngestStepResult[T]
 
-trait IngestStepWorker[Work <: PipelinePayload, Summary] extends Runnable with Logging {
+trait IngestStepWorker[Work <: PipelinePayload, Summary]
+    extends Runnable
+    with Logging {
 
   // TODO: Move visibilityTimeout into SQSConfig
   val config: AlpakkaSQSWorkerConfig
@@ -56,10 +66,11 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary] extends Runnable with L
     processMessage(payload).map(toResult)
   }
 
-  val worker =  new AlpakkaSQSWorker[Work, Summary, MonitoringClient](config)(process) {
-     override val retryAction: Message => (Message, sqs.MessageAction) =
-       (_, MessageAction.changeMessageVisibility(visibilityTimeout))
-  }
+  val worker =
+    new AlpakkaSQSWorker[Work, Summary, MonitoringClient](config)(process) {
+      override val retryAction: Message => (Message, sqs.MessageAction) =
+        (_, MessageAction.changeMessageVisibility(visibilityTimeout))
+    }
 
   def run(): Future[Any] = worker.start
 

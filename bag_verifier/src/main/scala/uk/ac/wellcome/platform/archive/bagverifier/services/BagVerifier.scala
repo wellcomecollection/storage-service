@@ -24,9 +24,10 @@ class BagVerifier()(
   verifier: Verifier
 ) extends Logging {
 
-  def verify(root: ObjectLocation): Try[IngestStepResult[VerificationSummary]] = Try {
-    implicit val bagVerifiable = new BagVerifiable(root)
-    val startTime = Instant.now()
+  def verify(root: ObjectLocation): Try[IngestStepResult[VerificationSummary]] =
+    Try {
+      implicit val bagVerifiable = new BagVerifiable(root)
+      val startTime = Instant.now()
 
     bagReader.get(root) match {
       case Left(e) =>
@@ -40,8 +41,8 @@ class BagVerifier()(
           case incomplete @ VerificationIncompleteSummary(_, _, _, _) =>
             IngestFailed(incomplete, incomplete.e)
         }
+
     }
-  }
 }
 
 case class InvalidBag(bag: Bag)

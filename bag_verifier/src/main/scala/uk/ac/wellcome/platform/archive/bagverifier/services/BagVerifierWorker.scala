@@ -5,14 +5,20 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
 import uk.ac.wellcome.platform.archive.common.BagRootPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepWorker}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepWorker
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
@@ -30,7 +36,7 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
     extends IngestStepWorker[
       BagRootPayload,
       VerificationSummary
-      ] {
+    ] {
 
   override def processMessage(
     payload: BagRootPayload): Try[IngestStepResult[VerificationSummary]] =
