@@ -64,13 +64,8 @@ object StorageManifestDaoBuilder {
     }
 
     implicit val indexedStore
-      : DynamoHashRangeStore[BagId,
-                             Int,
-                             ObjectLocation] =
-      new DynamoHashRangeStore[
-        BagId,
-        Int,
-        ObjectLocation](
+      : DynamoHashRangeStore[BagId, Int, ObjectLocation] =
+      new DynamoHashRangeStore[BagId, Int, ObjectLocation](
         config = DynamoBuilder.buildDynamoConfig(config, namespace = "vhs")
       )
 
