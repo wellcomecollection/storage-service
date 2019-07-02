@@ -2,33 +2,18 @@ package uk.ac.wellcome.platform.storage.bag_root_finder.services
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
-import grizzled.slf4j.Logging
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
-import uk.ac.wellcome.messaging.worker.models.Result
+import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.platform.archive.common._
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestStepResult,
-  IngestStepSucceeded,
-  IngestStepWorker
-}
-import uk.ac.wellcome.platform.archive.common._
-import uk.ac.wellcome.platform.storage.bag_root_finder.models.{
-  RootFinderSuccessSummary,
-  RootFinderSummary
-}
-import uk.ac.wellcome.typesafe.Runnable
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
+import uk.ac.wellcome.platform.storage.bag_root_finder.models.{RootFinderSuccessSummary, RootFinderSummary}
 
-import scala.concurrent.Future
 import scala.util.{Success, Try}
 
 class BagRootFinderWorker[IngestDestination, OutgoingDestination](
-  alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
+  val config: AlpakkaSQSWorkerConfig,
   bagRootFinder: BagRootFinder,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination]
@@ -36,17 +21,10 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
   actorSystem: ActorSystem,
   mc: MonitoringClient,
   sc: AmazonSQSAsync)
-    extends Runnable
-    with Logging
-    with IngestStepWorker {
-  private val worker =
-    AlpakkaSQSWorker[UnpackedBagLocationPayload, RootFinderSummary](
-      alpakkaSQSWorkerConfig) { payload: UnpackedBagLocationPayload =>
-      Future.fromTry { processMessage(payload) }
-    }
+    extends IngestStepWorker[UnpackedBagLocationPayload, RootFinderSummary] {
 
-  def processMessage(
-    payload: UnpackedBagLocationPayload): Try[Result[RootFinderSummary]] =
+  override def processMessage(
+    payload: UnpackedBagLocationPayload): Try[IngestStepResult[RootFinderSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
@@ -59,7 +37,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
       _ <- sendIngestInformation(payload)(summary)
       _ <- ingestUpdater.send(payload.ingestId, summary)
       _ <- sendSuccessful(payload)(summary)
-    } yield toResult(summary)
+    } yield summary
 
   private def sendIngestInformation(payload: UnpackedBagLocationPayload)(
     step: IngestStepResult[RootFinderSummary]): Try[Unit] =
@@ -85,6 +63,4 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
         outgoingPublisher.sendIfSuccessful(step, outgoingPayload)
       case _ => Success(())
     }
-
-  override def run(): Future[Any] = worker.start
 }

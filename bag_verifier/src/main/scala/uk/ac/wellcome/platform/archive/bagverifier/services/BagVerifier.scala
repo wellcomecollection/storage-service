@@ -24,7 +24,7 @@ class BagVerifier()(
   verifier: Verifier
 ) extends Logging {
 
-  def verify(root: ObjectLocation) = Try {
+  def verify(root: ObjectLocation): Try[IngestStepResult[VerificationSummary]] = Try {
     implicit val bagVerifiable = new BagVerifiable(root)
     val startTime = Instant.now()
 
