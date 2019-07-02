@@ -1,6 +1,7 @@
 data "aws_iam_policy_document" "archive_ingest_table_read_write_policy" {
   statement {
     actions = [
+      "dynamodb:Query",
       "dynamodb:PutItem",
       "dynamodb:GetItem",
     ]
