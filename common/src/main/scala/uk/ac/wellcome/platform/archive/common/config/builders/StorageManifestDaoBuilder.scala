@@ -14,7 +14,11 @@ import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDa
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.s3.S3Config
 import uk.ac.wellcome.storage.store.HybridIndexedStoreEntry
-import uk.ac.wellcome.storage.store.dynamo.{DynamoHashRangeStore, DynamoHybridStoreWithMaxima, DynamoVersionedHybridStore}
+import uk.ac.wellcome.storage.store.dynamo.{
+  DynamoHashRangeStore,
+  DynamoHybridStoreWithMaxima,
+  DynamoVersionedHybridStore
+}
 import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
@@ -65,24 +69,33 @@ object StorageManifestDaoBuilder {
 //    }
 
     implicit val indexedStore
-    : DynamoHashRangeStore[String, Int, HybridIndexedStoreEntry[Version[String, Int], ObjectLocation, Map[String, String]]] =
-      new DynamoHashRangeStore[String, Int, HybridIndexedStoreEntry[Version[String, Int], ObjectLocation, Map[String, String]]](dynamoConfig)
+      : DynamoHashRangeStore[String,
+                             Int,
+                             HybridIndexedStoreEntry[Version[String, Int],
+                                                     ObjectLocation,
+                                                     Map[String, String]]] =
+      new DynamoHashRangeStore[
+        String,
+        Int,
+        HybridIndexedStoreEntry[Version[String, Int],
+                                ObjectLocation,
+                                Map[String, String]]](dynamoConfig)
 
     new DynamoVersionedHybridStore[
       String,
+      Int,
+      StorageManifest,
+      Map[String, String]](
+      store = new DynamoHybridStoreWithMaxima[
+        String,
         Int,
         StorageManifest,
         Map[String, String]](
-        store = new DynamoHybridStoreWithMaxima[
-          String,
-          Int,
-          StorageManifest,
-          Map[String, String]](
-          prefix = ObjectLocationPrefix(
-            namespace = s3Config.bucketName,
-            path = ""
-          )
+        prefix = ObjectLocationPrefix(
+          namespace = s3Config.bucketName,
+          path = ""
         )
+      )
     )
   }
 
@@ -95,9 +108,11 @@ object StorageManifestDaoBuilder {
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
 
-    new StorageManifestDao(buildVHS(
-      dynamoConfig = DynamoBuilder.buildDynamoConfig(config, namespace = "vhs"),
-      s3Config = S3Builder.buildS3Config(config, namespace = "vhs")
-    ))
+    new StorageManifestDao(
+      buildVHS(
+        dynamoConfig =
+          DynamoBuilder.buildDynamoConfig(config, namespace = "vhs"),
+        s3Config = S3Builder.buildS3Config(config, namespace = "vhs")
+      ))
   }
 }
