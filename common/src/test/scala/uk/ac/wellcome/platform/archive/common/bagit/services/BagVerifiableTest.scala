@@ -3,8 +3,16 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 import java.net.URI
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchEntry, BagFile, BagPath}
-import uk.ac.wellcome.platform.archive.common.generators.{BagFileGenerators, BagGenerators, FetchEntryGenerators}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFetchEntry,
+  BagFile,
+  BagPath
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagFileGenerators,
+  BagGenerators,
+  FetchEntryGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.verify.VerifiableLocation
 import uk.ac.wellcome.storage.ObjectLocation

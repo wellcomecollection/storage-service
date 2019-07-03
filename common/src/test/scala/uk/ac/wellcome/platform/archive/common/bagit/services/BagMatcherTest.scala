@@ -2,10 +2,13 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.MatchedLocation
-import uk.ac.wellcome.platform.archive.common.generators.{BagFileGenerators, FetchEntryGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagFileGenerators,
+  FetchEntryGenerators
+}
 
 class BagMatcherTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with EitherValues
     with FetchEntryGenerators
@@ -13,10 +16,13 @@ class BagMatcherTest
 
   describe("creates the correct list of MatchedLocations") {
     it("for an empty bag") {
-      BagMatcher.correlateFetchEntryToBagFile(
-        bagFiles = Seq.empty,
-        fetchEntries = Seq.empty
-      ).right.value shouldBe Seq.empty
+      BagMatcher
+        .correlateFetchEntryToBagFile(
+          bagFiles = Seq.empty,
+          fetchEntries = Seq.empty
+        )
+        .right
+        .value shouldBe Seq.empty
     }
 
     it("for a bag that doesn't have any fetch entries") {

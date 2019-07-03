@@ -1,7 +1,11 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFile, BagPath}
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, SHA256}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  SHA256
+}
 import uk.ac.wellcome.storage.generators.RandomThings
 
 trait BagFileGenerators extends RandomThings {

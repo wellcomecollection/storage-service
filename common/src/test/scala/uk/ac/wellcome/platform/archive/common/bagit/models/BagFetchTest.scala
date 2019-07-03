@@ -158,7 +158,9 @@ class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
       path = BagPath(path)
     )
 
-  def createBagFetchEntryWith(uri: String, length: Long, path: String): BagFetchEntry =
+  def createBagFetchEntryWith(uri: String,
+                              length: Long,
+                              path: String): BagFetchEntry =
     createFetchEntryWith(
       uri = uri,
       length = Some(length),

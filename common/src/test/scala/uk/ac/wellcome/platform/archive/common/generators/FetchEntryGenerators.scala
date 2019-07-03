@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.common.generators
 
 import java.net.URI
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchEntry, BagPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFetchEntry,
+  BagPath
+}
 import uk.ac.wellcome.storage.generators.RandomThings
 
 import scala.util.Random

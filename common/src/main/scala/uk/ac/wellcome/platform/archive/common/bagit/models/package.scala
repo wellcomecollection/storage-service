@@ -2,11 +2,16 @@ package uk.ac.wellcome.platform.archive.common.bagit
 
 import java.nio.file.Paths
 
-import uk.ac.wellcome.platform.archive.common.storage.{Locatable, LocateFailure, LocationNotFound}
+import uk.ac.wellcome.platform.archive.common.storage.{
+  Locatable,
+  LocateFailure,
+  LocationNotFound
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 package object models {
-  private def locateBagPath(root: ObjectLocation)(bagPath: BagPath): ObjectLocation = {
+  private def locateBagPath(root: ObjectLocation)(
+    bagPath: BagPath): ObjectLocation = {
     val paths = Paths.get(root.path, bagPath.value)
     root.copy(path = paths.toString)
   }

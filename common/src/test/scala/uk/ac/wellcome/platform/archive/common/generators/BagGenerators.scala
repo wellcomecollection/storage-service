@@ -1,6 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetch, BagFetchEntry, BagFile, BagManifest}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagFetch,
+  BagFetchEntry,
+  BagFile,
+  BagManifest
+}
 import uk.ac.wellcome.platform.archive.common.verify.SHA256
 
 trait BagGenerators extends BagInfoGenerators {
