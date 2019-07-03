@@ -35,17 +35,19 @@ class Register(
     val result = for {
       bag <- bagService.get(bagRootLocation)
 
-      manifest = StorageManifest.create(
-        root = bagRootLocation,
+      manifest = StorageManifest(
         space = storageSpace,
-        bag = bag,
+        info = bag.info,
         version = version,
+        manifest = bag.manifest,
+        tagManifest = bag.tagManifest,
         locations = List(
           StorageLocation(
             provider = InfrequentAccessStorageProvider,
             location = bagRootLocation
           )
-        )
+        ),
+        createdDate = Instant.now()
       )
 
       registrationWithBagId = registration.copy(bagId = Some(manifest.id))
