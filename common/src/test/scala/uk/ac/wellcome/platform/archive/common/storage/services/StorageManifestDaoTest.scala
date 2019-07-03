@@ -21,7 +21,8 @@ class StorageManifestDaoTest
 
     val newStorageManifest = createStorageManifestWith(
       space = storageManifest.space,
-      bagInfo = storageManifest.info
+      bagInfo = storageManifest.info,
+      version = storageManifest.version
     )
 
     storageManifest.id shouldBe newStorageManifest.id
