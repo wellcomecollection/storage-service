@@ -6,10 +6,19 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifier,
+  BagVerifierWorker
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
-import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
-import uk.ac.wellcome.platform.archive.common.storage.services.{S3ObjectVerifier, S3Resolvable}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
+  OperationFixtures
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  S3ObjectVerifier,
+  S3Resolvable
+}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 trait BagVerifierFixtures

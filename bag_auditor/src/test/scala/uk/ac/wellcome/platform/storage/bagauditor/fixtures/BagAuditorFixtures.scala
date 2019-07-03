@@ -5,8 +5,15 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
-import uk.ac.wellcome.platform.storage.bagauditor.services.{BagAuditor, BagAuditorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  MonitoringClientFixture,
+  OperationFixtures
+}
+import uk.ac.wellcome.platform.storage.bagauditor.services.{
+  BagAuditor,
+  BagAuditorWorker
+}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 
 trait BagAuditorFixtures
