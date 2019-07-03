@@ -11,9 +11,14 @@ trait BagGenerators extends BagInfoGenerators {
   ): Bag =
     Bag(
       info = createBagInfo,
-      manifest = BagManifest(checksumAlgorithm = SHA256, files = manifestFiles),
-      tagManifest =
-        BagManifest(checksumAlgorithm = SHA256, files = tagManifestFiles),
+      manifest = BagManifest(
+        checksumAlgorithm = SHA256,
+        files = manifestFiles
+      ),
+      tagManifest = BagManifest(
+        checksumAlgorithm = SHA256,
+        files = tagManifestFiles
+      ),
       fetch = if (fetchEntries.isEmpty) None else Some(BagFetch(fetchEntries))
     )
 

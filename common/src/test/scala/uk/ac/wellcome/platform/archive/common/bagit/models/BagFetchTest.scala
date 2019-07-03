@@ -1,12 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import java.io.InputStream
-import java.net.URI
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.generators.FetchEntryGenerators
 
-class BagFetchTest extends FunSpec with Matchers {
+class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
 
   describe("write") {
     it("writes the lines of a fetch.txt") {
@@ -151,16 +151,16 @@ class BagFetchTest extends FunSpec with Matchers {
     }
   }
 
-  def createBagFetchEntryWith(uri: String, path: String) =
-    BagFetchEntry(
-      uri = new URI(uri),
+  def createBagFetchEntryWith(uri: String, path: String): BagFetchEntry =
+    createFetchEntryWith(
+      uri = uri,
       length = None,
       path = BagPath(path)
     )
 
-  def createBagFetchEntryWith(uri: String, length: Long, path: String) =
-    BagFetchEntry(
-      uri = new URI(uri),
+  def createBagFetchEntryWith(uri: String, length: Long, path: String): BagFetchEntry =
+    createFetchEntryWith(
+      uri = uri,
       length = Some(length),
       path = BagPath(path)
     )
