@@ -17,7 +17,9 @@ trait StorageManifestVHSFixture extends EitherValues {
                                         String,
                                         Map[String, String]]] with MemoryMaxima[
       String,
-      HybridIndexedStoreEntry[Version[String, Int], String, Map[String, String]]]
+      HybridIndexedStoreEntry[Version[String, Int],
+                              String,
+                              Map[String, String]]]
 
   type StorageManifestTypedStore = MemoryTypedStore[String, StorageManifest]
 
@@ -29,7 +31,9 @@ trait StorageManifestVHSFixture extends EitherValues {
                               Map[String, String]]](initialEntries = Map.empty)
     with MemoryMaxima[
       String,
-      HybridIndexedStoreEntry[Version[String, Int], String, Map[String, String]]]
+      HybridIndexedStoreEntry[Version[String, Int],
+                              String,
+                              Map[String, String]]]
 
   def createTypedStore: StorageManifestTypedStore = {
     val memoryStoreForStreamStore =

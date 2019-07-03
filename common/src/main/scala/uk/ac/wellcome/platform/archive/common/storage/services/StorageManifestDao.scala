@@ -8,7 +8,10 @@ import uk.ac.wellcome.storage.{ReadError, Version, WriteError}
 // TODO: Do we need this wrapper at all now?
 // TODO: This could be a Store!
 class StorageManifestDao(
-  val vhs: VersionedStore[String, Int, HybridStoreEntry[StorageManifest, Map[String, String]]]
+  val vhs: VersionedStore[
+    String,
+    Int,
+    HybridStoreEntry[StorageManifest, Map[String, String]]]
 ) {
   def getLatest(id: BagId): Either[ReadError, StorageManifest] =
     vhs.getLatest(id.toString).map { _.identifiedT.t }
