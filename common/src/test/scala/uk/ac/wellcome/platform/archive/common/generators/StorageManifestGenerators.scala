@@ -28,24 +28,11 @@ import scala.util.Random
 
 trait StorageManifestGenerators
     extends BagInfoGenerators
+    with BagFileGenerators
     with StorageSpaceGenerators
     with ObjectLocationGenerators {
 
   val checksumAlgorithm = SHA256
-  val checksumValue = ChecksumValue("a")
-
-  val bagItemPath = BagPath("bag-info.txt")
-  val manifestFiles = List(
-    BagFile(
-      Checksum(
-        checksumAlgorithm,
-        checksumValue
-      ),
-      bagItemPath
-    )
-  )
-
-  val emptyFiles = Nil
 
   def createStorageManifestWith(
     space: StorageSpace = createStorageSpace,
@@ -59,11 +46,19 @@ trait StorageManifestGenerators
       version = version,
       manifest = BagManifest(
         checksumAlgorithm,
-        emptyFiles
+        files = Seq(
+          createBagFile,
+          createBagFile,
+          createBagFile
+        )
       ),
       tagManifest = BagManifest(
         checksumAlgorithm,
-        manifestFiles
+        files = Seq(
+          createBagFile,
+          createBagFile,
+          createBagFile
+        )
       ),
       locations = locations.map { StorageLocation(StandardStorageProvider, _) },
       createdDate = Instant.now

@@ -3,29 +3,19 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 import java.net.URI
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  Bag,
-  BagFetch,
-  BagFetchEntry,
-  BagFile,
-  BagManifest,
-  BagPath
-}
-import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchEntry, BagFile, BagPath}
+import uk.ac.wellcome.platform.archive.common.generators.{BagFileGenerators, BagGenerators, FetchEntryGenerators}
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Checksum,
-  ChecksumValue,
-  SHA256,
-  VerifiableLocation
-}
+import uk.ac.wellcome.platform.archive.common.verify.VerifiableLocation
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class BagVerifiableTest
     extends FunSpec
     with Matchers
-    with BagInfoGenerators
+    with BagGenerators
+    with BagFileGenerators
+    with FetchEntryGenerators
     with ObjectLocationGenerators {
   implicit val resolvable: Resolvable[ObjectLocation] =
     (t: ObjectLocation) => new URI(s"example://${t.namespace}/${t.path}")
@@ -248,45 +238,8 @@ class BagVerifiableTest
     }
   }
 
-  def createBagWith(
-    manifestFiles: Seq[BagFile] = List.empty,
-    tagManifestFiles: Seq[BagFile] = List.empty,
-    fetchEntries: Seq[BagFetchEntry] = List.empty
-  ): Bag =
-    Bag(
-      info = createBagInfo,
-      manifest = BagManifest(checksumAlgorithm = SHA256, files = manifestFiles),
-      tagManifest =
-        BagManifest(checksumAlgorithm = SHA256, files = tagManifestFiles),
-      fetch = if (fetchEntries.isEmpty) None else Some(BagFetch(fetchEntries))
-    )
-
-  def createBag: Bag = createBagWith()
-
-  def createBagFileWith(
-    path: String,
-    checksum: String = "abc",
-  ): BagFile =
-    BagFile(
-      checksum = Checksum(
-        algorithm = SHA256,
-        value = ChecksumValue(checksum)
-      ),
-      path = BagPath(path)
-    )
-
   def createObjectLocationWith(root: ObjectLocation): ObjectLocation =
     root.join(randomAlphanumericWithLength(), randomAlphanumericWithLength())
-
-  def createFetchEntryWith(
-    uri: String,
-    path: BagPath
-  ): BagFetchEntry =
-    BagFetchEntry(
-      uri = new URI(uri),
-      length = None,
-      path = path
-    )
 
   def getExpectedLocations(bagFiles: Seq[BagFile]): Seq[VerifiableLocation] =
     bagFiles.map { mf =>
