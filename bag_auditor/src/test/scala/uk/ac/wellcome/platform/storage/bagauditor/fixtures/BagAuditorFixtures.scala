@@ -1,24 +1,19 @@
 package uk.ac.wellcome.platform.storage.bagauditor.fixtures
 
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  MonitoringClientFixture,
-  OperationFixtures
-}
-import uk.ac.wellcome.platform.storage.bagauditor.services.{
-  BagAuditor,
-  BagAuditorWorker
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.platform.storage.bagauditor.services.{BagAuditor, BagAuditorWorker}
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 
 trait BagAuditorFixtures
     extends BagLocationFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
+    with Akka
     with MonitoringClientFixture
     with VersionPickerFixtures {
 

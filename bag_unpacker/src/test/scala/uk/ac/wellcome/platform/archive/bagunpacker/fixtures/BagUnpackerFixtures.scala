@@ -1,26 +1,20 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  BagUnpackerWorker,
-  S3Uploader,
-  Unpacker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  MonitoringClientFixture,
-  OperationFixtures
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, S3Uploader, Unpacker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 trait BagUnpackerFixtures
     extends SQS
     with BagLocationFixtures
+    with Akka
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture {
