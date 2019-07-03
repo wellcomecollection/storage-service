@@ -37,49 +37,48 @@ class BagReplicatorFeatureTest
             ingests,
             outgoing,
             stepName = "replicating") { _ =>
-            withBag(ingestsBucket) {
-              case (srcBagRootLocation, _) =>
-                val payload = createEnrichedBagInformationPayloadWith(
-                  bagRootLocation = srcBagRootLocation
+            withBagObjects(ingestsBucket) { bagRootLocation =>
+              val payload = createEnrichedBagInformationPayloadWith(
+                bagRootLocation = bagRootLocation
+              )
+
+              sendNotificationToSQS(queue, payload)
+
+              eventually {
+                val expectedDst = createObjectLocationWith(
+                  bucket = archiveBucket,
+                  key = Paths
+                    .get(
+                      rootPath,
+                      payload.storageSpace.toString,
+                      payload.externalIdentifier.toString,
+                      s"v${payload.version}"
+                    )
+                    .toString
                 )
 
-                sendNotificationToSQS(queue, payload)
+                val expectedPayload = payload.copy(
+                  bagRootLocation = expectedDst
+                )
 
-                eventually {
-                  val expectedDst = createObjectLocationWith(
-                    bucket = archiveBucket,
-                    key = Paths
-                      .get(
-                        rootPath,
-                        payload.storageSpace.toString,
-                        payload.externalIdentifier.toString,
-                        s"v${payload.version}"
-                      )
-                      .toString
+                outgoing
+                  .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                  expectedPayload)
+
+                verifyObjectsCopied(
+                  src = bagRootLocation,
+                  dst = expectedDst
+                )
+
+                assertTopicReceivesIngestEvents(
+                  payload.ingestId,
+                  ingests,
+                  expectedDescriptions = Seq(
+                    "Replicating started",
+                    "Replicating succeeded"
                   )
-
-                  val expectedPayload = payload.copy(
-                    bagRootLocation = expectedDst
-                  )
-
-                  outgoing
-                    .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-                    expectedPayload)
-
-                  verifyBagCopied(
-                    src = srcBagRootLocation,
-                    dst = expectedDst
-                  )
-
-                  assertTopicReceivesIngestEvents(
-                    payload.ingestId,
-                    ingests,
-                    expectedDescriptions = Seq(
-                      "Replicating started",
-                      "Replicating succeeded"
-                    )
-                  )
-                }
+                )
+              }
             }
           }
         }

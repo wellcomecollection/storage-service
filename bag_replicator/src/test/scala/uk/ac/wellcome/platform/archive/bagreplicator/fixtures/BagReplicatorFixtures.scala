@@ -11,25 +11,15 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  MonitoringClientFixture,
-  OperationFixtures
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.locking.memory.{
-  MemoryLockDao,
-  MemoryLockDaoFixtures
-}
+import uk.ac.wellcome.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 
 import scala.collection.JavaConverters._
-import scala.util.Try
+import scala.util.{Random, Try}
 
 trait BagReplicatorFixtures
     extends BagLocationFixtures
@@ -90,7 +80,30 @@ trait BagReplicatorFixtures
       rootPath = rootPath
     )
 
-  def verifyBagCopied(src: ObjectLocation, dst: ObjectLocation): Assertion = {
+  // Note: the replicator doesn't currently make any assumptions about
+  // the bag structure, so we just put a random collection of objects
+  // in the "bag".
+  def withBagObjects[R](bucket: Bucket)(testWith: TestWith[ObjectLocation, R]): R = {
+    val rootLocation = createObjectLocationWith(bucket)
+
+    (1 to Random.nextInt(250)).map { _ =>
+      val parts = (1 to Random.nextInt(5)).map { _ =>
+        randomAlphanumeric
+      }
+
+      val location = rootLocation.join(parts: _*)
+
+      s3Client.putObject(
+        location.namespace,
+        location.path,
+        randomAlphanumeric
+      )
+    }
+
+    testWith(rootLocation)
+  }
+
+  def verifyObjectsCopied(src: ObjectLocation, dst: ObjectLocation): Assertion = {
     val sourceItems = getObjectSummaries(src)
     val sourceKeyEtags = sourceItems.map { _.getETag }
 
