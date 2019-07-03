@@ -11,11 +11,21 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagLocationFixtures, MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{
+  BagReplicator,
+  BagReplicatorWorker
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagLocationFixtures,
+  MonitoringClientFixture,
+  OperationFixtures
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
+import uk.ac.wellcome.storage.locking.memory.{
+  MemoryLockDao,
+  MemoryLockDaoFixtures
+}
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 
 import scala.collection.JavaConverters._
@@ -83,7 +93,8 @@ trait BagReplicatorFixtures
   // Note: the replicator doesn't currently make any assumptions about
   // the bag structure, so we just put a random collection of objects
   // in the "bag".
-  def withBagObjects[R](bucket: Bucket)(testWith: TestWith[ObjectLocation, R]): R = {
+  def withBagObjects[R](bucket: Bucket)(
+    testWith: TestWith[ObjectLocation, R]): R = {
     val rootLocation = createObjectLocationWith(bucket)
 
     (1 to Random.nextInt(250)).map { _ =>
@@ -103,7 +114,8 @@ trait BagReplicatorFixtures
     testWith(rootLocation)
   }
 
-  def verifyObjectsCopied(src: ObjectLocation, dst: ObjectLocation): Assertion = {
+  def verifyObjectsCopied(src: ObjectLocation,
+                          dst: ObjectLocation): Assertion = {
     val sourceItems = getObjectSummaries(src)
     val sourceKeyEtags = sourceItems.map { _.getETag }
 

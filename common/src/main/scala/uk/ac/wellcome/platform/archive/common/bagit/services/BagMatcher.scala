@@ -1,6 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, BagFile, BagPath, MatchedLocation}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagFetchEntry,
+  BagFile,
+  BagPath,
+  MatchedLocation
+}
 
 /** A bag can contain concrete files or refer to files stored elsewhere
   * in the fetch file.  This object takes a list of files referenced in
@@ -10,7 +16,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, 
   */
 object BagMatcher {
 
-  def correlateFetchEntries(bag: Bag): Either[Seq[Throwable], Seq[MatchedLocation]] =
+  def correlateFetchEntries(
+    bag: Bag): Either[Seq[Throwable], Seq[MatchedLocation]] =
     correlateFetchEntryToBagFile(
       bagFiles = bag.manifest.files ++ bag.tagManifest.files,
       fetchEntries = bag.fetch match {

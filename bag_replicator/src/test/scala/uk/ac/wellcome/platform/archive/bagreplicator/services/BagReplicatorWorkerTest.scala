@@ -170,8 +170,7 @@ class BagReplicatorWorkerTest
               result shouldBe a[Successful[_]]
 
               val destination = result.summary.get.destination
-              destination.path should startWith(
-                payload.storageSpace.underlying)
+              destination.path should startWith(payload.storageSpace.underlying)
             }
           }
         }
@@ -219,8 +218,8 @@ class BagReplicatorWorkerTest
 
             // TODO: Restore these history tests
             println(destination)
-            // lockServiceDao.history should have size 1
-            // lockServiceDao.history.head.id shouldBe destination.toString
+          // lockServiceDao.history should have size 1
+          // lockServiceDao.history.head.id shouldBe destination.toString
           }
       }
     }
@@ -260,8 +259,8 @@ class BagReplicatorWorkerTest
             result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
             result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
 
-            // TODO: Restore this test
-            // lockServiceDao.history should have size 1
+          // TODO: Restore this test
+          // lockServiceDao.history should have size 1
           }
         }
       }

@@ -6,10 +6,20 @@ import org.scalatest.FunSpec
 import org.scalatest.concurrent.Eventually
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, PayloadGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  PayloadGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
-import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, EnrichedBagInformationPayload}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  UpdateIngestType
+}
+import uk.ac.wellcome.platform.archive.common.{
+  BagRootLocationPayload,
+  EnrichedBagInformationPayload
+}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -43,30 +53,27 @@ class BagAuditorFeatureTest
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
-      withAuditorWorker(
-        queue,
-        ingests,
-        outgoing,
-        stepName = "auditing bag") { _ =>
-        sendNotificationToSQS(queue, payload)
+      withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") {
+        _ =>
+          sendNotificationToSQS(queue, payload)
 
-        eventually {
-          assertQueueEmpty(queue)
+          eventually {
+            assertQueueEmpty(queue)
 
-          outgoing
-            .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-            expectedPayload)
+            outgoing
+              .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+              expectedPayload)
 
-          assertTopicReceivesIngestEvents(
-            payload.ingestId,
-            ingests,
-            expectedDescriptions = Seq(
-              "Auditing bag started",
-              "Assigned bag version 1",
-              "Auditing bag succeeded"
+            assertTopicReceivesIngestEvents(
+              payload.ingestId,
+              ingests,
+              expectedDescriptions = Seq(
+                "Auditing bag started",
+                "Assigned bag version 1",
+                "Auditing bag succeeded"
+              )
             )
-          )
-        }
+          }
       }
     }
   }
@@ -97,53 +104,50 @@ class BagAuditorFeatureTest
     val outgoing = new MemoryMessageSender()
 
     withLocalSqsQueue { queue =>
-      withAuditorWorker(
-        queue,
-        ingests,
-        outgoing,
-        stepName = "auditing bag") { _ =>
-        // Send the initial payload with "create" and check it completes
-        sendNotificationToSQS(queue, payload1)
+      withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") {
+        _ =>
+          // Send the initial payload with "create" and check it completes
+          sendNotificationToSQS(queue, payload1)
 
-        eventually {
-          assertQueueEmpty(queue)
+          eventually {
+            assertQueueEmpty(queue)
 
-          outgoing
-            .getMessages[EnrichedBagInformationPayload] should have size 1
+            outgoing
+              .getMessages[EnrichedBagInformationPayload] should have size 1
 
-          assertTopicReceivesIngestEvents(
-            payload1.ingestId,
-            ingests,
-            expectedDescriptions = Seq(
-              "Auditing bag started",
-              "Assigned bag version 1",
-              "Auditing bag succeeded"
+            assertTopicReceivesIngestEvents(
+              payload1.ingestId,
+              ingests,
+              expectedDescriptions = Seq(
+                "Auditing bag started",
+                "Assigned bag version 1",
+                "Auditing bag succeeded"
+              )
             )
-          )
-        }
+          }
 
-        // Now send the payload with "update"
-        sendNotificationToSQS(queue, payload2)
+          // Now send the payload with "update"
+          sendNotificationToSQS(queue, payload2)
 
-        eventually {
-          assertQueueEmpty(queue)
+          eventually {
+            assertQueueEmpty(queue)
 
-          outgoing
-            .getMessages[EnrichedBagInformationPayload] should have size 2
+            outgoing
+              .getMessages[EnrichedBagInformationPayload] should have size 2
 
-          assertTopicReceivesIngestEvents(
-            payload1.ingestId,
-            ingests,
-            expectedDescriptions = Seq(
-              "Auditing bag started",
-              "Assigned bag version 1",
-              "Auditing bag succeeded",
-              "Auditing bag started",
-              "Assigned bag version 2",
-              "Auditing bag succeeded"
+            assertTopicReceivesIngestEvents(
+              payload1.ingestId,
+              ingests,
+              expectedDescriptions = Seq(
+                "Auditing bag started",
+                "Assigned bag version 1",
+                "Auditing bag succeeded",
+                "Auditing bag started",
+                "Assigned bag version 2",
+                "Auditing bag succeeded"
+              )
             )
-          )
-        }
+          }
       }
     }
   }
