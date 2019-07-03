@@ -17,6 +17,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.store.TypedStoreEntry
+import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 
 import scala.util.Random
 
@@ -25,6 +27,9 @@ trait BagLocationFixtures
     with BagInfoGenerators
     with BagIt
     with StorageSpaceGenerators {
+
+  implicit val s3StreamStore: S3StreamStore = new S3StreamStore()
+  implicit val s3TypedStore: S3TypedStore[String] = new S3TypedStore[String]()
 
   def withBag[R](
     bucket: Bucket,
@@ -84,15 +89,11 @@ trait BagLocationFixtures
 
     val bagFetchEntries = fetchFiles.map { entry =>
       val entryLocation = createObjectLocationWith(bucket)
-      s3Client
-        .putObject(
-          entryLocation.namespace,
-          entryLocation.path,
-          entry.contents
-        )
+      s3TypedStore.put(entryLocation)(
+        TypedStoreEntry(entry.contents, metadata = Map.empty)) shouldBe a[Right[_, _]]
 
       BagFetchEntry(
-        uri = new URI(s"s3://${bucket.name}/${entryLocation.path}"),
+        uri = new URI(s"s3://${entryLocation.namespace}/${entryLocation.path}"),
         length = Some(entry.contents.length),
         path = BagPath(entry.name)
       )
@@ -100,13 +101,10 @@ trait BagLocationFixtures
 
     if (fetchFiles.nonEmpty) {
       val fetchLocation = unpackedBagLocation.join("fetch.txt")
+      val fetchContents = BagFetch.write(bagFetchEntries)
 
-      s3Client
-        .putObject(
-          fetchLocation.namespace,
-          fetchLocation.path,
-          BagFetch.write(bagFetchEntries)
-        )
+      s3TypedStore.put(fetchLocation)(
+        TypedStoreEntry(fetchContents, metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
     testWith((bagRootLocation, storageSpace))
