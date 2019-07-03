@@ -22,13 +22,7 @@ class BagVerifiable(root: ObjectLocation)(
     bag: Bag): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]] = {
     debug(s"Attempting to create Seq[VerifiableLocation] for $bag")
 
-    val bagFiles = bag.tagManifest.files ++ bag.manifest.files
-    val fetchEntries = bag.fetch.toSeq.flatMap { _.files }
-
-    debug(s"bagFiles: $bagFiles")
-    debug(s"fetchEntries: $fetchEntries")
-
-    BagMatcher.correlateFetchEntryToBagFile(bagFiles, fetchEntries) match {
+    BagMatcher.correlateFetchEntries(bag) match {
       case Left(errors) =>
         debug(s"Left: $errors")
         Left(combine(errors))
