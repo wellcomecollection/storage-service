@@ -3,10 +3,8 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFile,
   BagInfo,
-  BagManifest,
-  BagPath
+  BagManifest
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StandardStorageProvider,
@@ -16,11 +14,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Checksum,
-  ChecksumValue,
-  SHA256
-}
+import uk.ac.wellcome.platform.archive.common.verify.SHA256
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -28,24 +22,11 @@ import scala.util.Random
 
 trait StorageManifestGenerators
     extends BagInfoGenerators
+    with BagFileGenerators
     with StorageSpaceGenerators
     with ObjectLocationGenerators {
 
   val checksumAlgorithm = SHA256
-  val checksumValue = ChecksumValue("a")
-
-  val bagItemPath = BagPath("bag-info.txt")
-  val manifestFiles = List(
-    BagFile(
-      Checksum(
-        checksumAlgorithm,
-        checksumValue
-      ),
-      bagItemPath
-    )
-  )
-
-  val emptyFiles = Nil
 
   def createStorageManifestWith(
     space: StorageSpace = createStorageSpace,
@@ -59,11 +40,19 @@ trait StorageManifestGenerators
       version = version,
       manifest = BagManifest(
         checksumAlgorithm,
-        emptyFiles
+        files = Seq(
+          createBagFile,
+          createBagFile,
+          createBagFile
+        )
       ),
       tagManifest = BagManifest(
         checksumAlgorithm,
-        manifestFiles
+        files = Seq(
+          createBagFile,
+          createBagFile,
+          createBagFile
+        )
       ),
       locations = locations.map { StorageLocation(StandardStorageProvider, _) },
       createdDate = Instant.now
