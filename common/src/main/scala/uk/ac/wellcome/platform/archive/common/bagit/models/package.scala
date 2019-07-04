@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.bagit
 
-import java.nio.file.Paths
-
 import uk.ac.wellcome.platform.archive.common.storage.{
   Locatable,
   LocateFailure,
@@ -11,10 +9,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 package object models {
   private def locateBagPath(root: ObjectLocation)(
-    bagPath: BagPath): ObjectLocation = {
-    val paths = Paths.get(root.path, bagPath.value)
-    root.copy(path = paths.toString)
-  }
+    bagPath: BagPath): ObjectLocation =
+    root.join(bagPath.value)
 
   implicit val bagPathLocator: Locatable[BagPath] = new Locatable[BagPath] {
     override def locate(bagPath: BagPath)(maybeRoot: Option[ObjectLocation])
