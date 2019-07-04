@@ -89,8 +89,9 @@ trait BagLocationFixtures
 
     val bagFetchEntries = fetchFiles.map { entry =>
       val entryLocation = createObjectLocationWith(bucket)
-      s3TypedStore.put(entryLocation)(
-        TypedStoreEntry(entry.contents, metadata = Map.empty)) shouldBe a[Right[_, _]]
+      s3TypedStore.put(entryLocation)(TypedStoreEntry(
+        entry.contents,
+        metadata = Map.empty)) shouldBe a[Right[_, _]]
 
       BagFetchEntry(
         uri = new URI(s"s3://${entryLocation.namespace}/${entryLocation.path}"),
@@ -103,8 +104,9 @@ trait BagLocationFixtures
       val fetchLocation = unpackedBagLocation.join("fetch.txt")
       val fetchContents = BagFetch.write(bagFetchEntries)
 
-      s3TypedStore.put(fetchLocation)(
-        TypedStoreEntry(fetchContents, metadata = Map.empty)) shouldBe a[Right[_, _]]
+      s3TypedStore.put(fetchLocation)(TypedStoreEntry(
+        fetchContents,
+        metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
     testWith((bagRootLocation, storageSpace))
