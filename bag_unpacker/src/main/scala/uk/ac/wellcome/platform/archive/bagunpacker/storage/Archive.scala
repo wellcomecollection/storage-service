@@ -3,16 +3,48 @@ package uk.ac.wellcome.platform.archive.bagunpacker.storage
 import java.io.{BufferedInputStream, InputStream}
 
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{
-  ArchiveEntry,
-  ArchiveInputStream,
-  ArchiveStreamFactory
-}
-import org.apache.commons.compress.compressors.CompressorStreamFactory
+import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveInputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.compressors.{CompressorInputStream, CompressorStreamFactory}
 import org.apache.commons.io.input.CloseShieldInputStream
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
+
+object BetterArchive {
+  def unpack(inputStream: InputStream): Try[Iterator[(ArchiveEntry, InputStream)]] =
+    for {
+      uncompressedStream <- uncompress(inputStream)
+      archiveInputStream: ArchiveInputStream <- extract(uncompressedStream)
+      iterator = createIterator(archiveInputStream)
+    } yield iterator
+
+  private def createIterator(archiveInputStream: ArchiveInputStream): Iterator[(ArchiveEntry, InputStream)] =
+    new Iterator[(ArchiveEntry, InputStream)] {
+      private var latest: ArchiveEntry = null
+
+      override def hasNext: Boolean = {
+        latest = archiveInputStream.getNextEntry
+        latest != null
+      }
+
+      override def next(): (ArchiveEntry, InputStream) =
+        (latest, archiveInputStream)
+    }
+
+  private def uncompress(compressedStream: InputStream): Try[CompressorInputStream] =
+    Try {
+      new CompressorStreamFactory()
+        .createCompressorInputStream(compressedStream)
+    }
+
+  private def extract(inputStream: InputStream) =
+    Try {
+      // We have to wrap in a BufferedInputStream because this method
+      // only takes InputStreams that support the `mark()` method.
+      new ArchiveStreamFactory()
+        .createArchiveInputStream(new BufferedInputStream(inputStream))
+    }
+}
 
 object Archive extends Logging {
   def unpack[T](
@@ -36,6 +68,7 @@ object Archive extends Logging {
           throw e
       }
     }
+
     foldStream(inputStream)(init)(f)
   }
 
@@ -47,13 +80,11 @@ object Archive extends Logging {
 
       archiveInputStream match {
         case Failure(e) => StreamError(t, e)
-        case Success(
-            archiveInputStream: ArchiveInputStream
-            ) => {
-          archiveInputStream.getNextEntry match {
+        case Success(ais: ArchiveInputStream) => {
+          ais.getNextEntry match {
             case null => {
               Try {
-                archiveInputStream.close()
+                ais.close()
                 inputStream.close()
               } match {
                 case Success(_) => StreamEnd(t)
@@ -70,7 +101,7 @@ object Archive extends Logging {
 
               Try {
                 val closeShieldInputStream =
-                  new CloseShieldInputStream(archiveInputStream)
+                  new CloseShieldInputStream(ais)
 
                 f(t, closeShieldInputStream, entry)
               } match {
