@@ -10,8 +10,8 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  S3BagLocationFixtures,
-  FileEntry
+  FileEntry,
+  S3BagLocationFixtures
 }
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.storage.models.{

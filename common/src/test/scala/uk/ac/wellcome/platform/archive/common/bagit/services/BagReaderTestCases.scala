@@ -6,21 +6,33 @@ import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.{TypedStore, TypedStoreEntry}
 
-trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with EitherValues with BagLocationFixtures[Namespace] {
+trait BagReaderTestCases[Context, Namespace]
+    extends FunSpec
+    with Matchers
+    with EitherValues
+    with BagLocationFixtures[Namespace] {
   def withContext[R](testWith: TestWith[Context, R]): R
-  def withTypedStore[R](testWith: TestWith[TypedStore[ObjectLocation, String], R])(implicit context: Context): R
+  def withTypedStore[R](
+    testWith: TestWith[TypedStore[ObjectLocation, String], R])(
+    implicit context: Context): R
 
-  def withBagReader[R](testWith: TestWith[BagReader[_], R])(implicit context: Context): R
+  def withBagReader[R](testWith: TestWith[BagReader[_], R])(
+    implicit context: Context): R
 
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
-  def deleteFile(rootLocation: ObjectLocation, path: String)(implicit context: Context)
+  def deleteFile(rootLocation: ObjectLocation, path: String)(
+    implicit context: Context)
 
-  def scrambleFile(rootLocation: ObjectLocation, path: String)(implicit typedStore: TypedStore[ObjectLocation, String]): Assertion =
-    typedStore.put(rootLocation.join(path))(
-      TypedStoreEntry(randomAlphanumeric, metadata = Map.empty)) shouldBe a[Right[_, _]]
+  def scrambleFile(rootLocation: ObjectLocation, path: String)(
+    implicit typedStore: TypedStore[ObjectLocation, String]): Assertion =
+    typedStore.put(rootLocation.join(path))(TypedStoreEntry(
+      randomAlphanumeric,
+      metadata = Map.empty)) shouldBe a[Right[_, _]]
 
-  def withFixtures[R](testWith: TestWith[(Context, TypedStore[ObjectLocation, String], Namespace), R]): R =
+  def withFixtures[R](
+    testWith: TestWith[(Context, TypedStore[ObjectLocation, String], Namespace),
+                       R]): R =
     withContext { implicit context =>
       withTypedStore { typedStore =>
         withNamespace { namespace =>
@@ -49,7 +61,8 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
         withBag() { rootLocation =>
           deleteFile(rootLocation, "bag-info.txt")
 
-          bagReader.get(rootLocation).left.value.msg should startWith("Error loading bag-info.txt")
+          bagReader.get(rootLocation).left.value.msg should startWith(
+            "Error loading bag-info.txt")
         }
       }
     }
@@ -62,7 +75,8 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
         withBag() { rootLocation =>
           scrambleFile(rootLocation, "bag-info.txt")
 
-          bagReader.get(rootLocation).left.value.msg should startWith("Error loading bag-info.txt")
+          bagReader.get(rootLocation).left.value.msg should startWith(
+            "Error loading bag-info.txt")
         }
       }
     }
@@ -75,7 +89,8 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
         withBag() { rootLocation =>
           deleteFile(rootLocation, "manifest-sha256.txt")
 
-          bagReader.get(rootLocation).left.value.msg should startWith("Error loading manifest-sha256.txt")
+          bagReader.get(rootLocation).left.value.msg should startWith(
+            "Error loading manifest-sha256.txt")
         }
       }
     }
@@ -88,7 +103,8 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
         withBag() { rootLocation =>
           scrambleFile(rootLocation, "manifest-sha256.txt")
 
-          bagReader.get(rootLocation).left.value.msg should startWith("Error loading manifest-sha256.txt")
+          bagReader.get(rootLocation).left.value.msg should startWith(
+            "Error loading manifest-sha256.txt")
         }
       }
     }
@@ -101,7 +117,8 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
         withBag() { rootLocation =>
           deleteFile(rootLocation, "tagmanifest-sha256.txt")
 
-          bagReader.get(rootLocation).left.value.msg should startWith("Error loading tagmanifest-sha256.txt")
+          bagReader.get(rootLocation).left.value.msg should startWith(
+            "Error loading tagmanifest-sha256.txt")
         }
       }
     }
@@ -114,7 +131,8 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
         withBag() { rootLocation =>
           scrambleFile(rootLocation, "tagmanifest-sha256.txt")
 
-          bagReader.get(rootLocation).left.value.msg should startWith("Error loading tagmanifest-sha256.txt")
+          bagReader.get(rootLocation).left.value.msg should startWith(
+            "Error loading tagmanifest-sha256.txt")
         }
       }
     }
@@ -140,7 +158,8 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
         withBag() { rootLocation =>
           scrambleFile(rootLocation, "fetch.txt")
 
-          bagReader.get(rootLocation).left.value.msg should startWith("Error loading fetch.txt")
+          bagReader.get(rootLocation).left.value.msg should startWith(
+            "Error loading fetch.txt")
         }
       }
     }

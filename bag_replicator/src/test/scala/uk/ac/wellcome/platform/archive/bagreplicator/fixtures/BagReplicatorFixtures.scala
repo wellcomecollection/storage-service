@@ -16,9 +16,9 @@ import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagReplicatorWorker
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  S3BagLocationFixtures,
   MonitoringClientFixture,
-  OperationFixtures
+  OperationFixtures,
+  S3BagLocationFixtures
 }
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket

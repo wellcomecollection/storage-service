@@ -2,7 +2,13 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import java.io.InputStream
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetch, BagInfo, BagManifest, BagPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagFetch,
+  BagInfo,
+  BagManifest,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
 import uk.ac.wellcome.storage.store.StreamStore
@@ -61,8 +67,8 @@ trait BagReader[IS <: InputStreamWithLength] {
     f: Stream[T]): Either[BagUnavailable, T] =
     loadOptional[T](root)(path)(f) match {
       case Right(Some(result)) => Right(result)
-      case Right(None)         => Left(
-        BagUnavailable(s"Error loading ${path.value}: no such file!"))
-      case Left(err)           => Left(err)
+      case Right(None) =>
+        Left(BagUnavailable(s"Error loading ${path.value}: no such file!"))
+      case Left(err) => Left(err)
     }
 }

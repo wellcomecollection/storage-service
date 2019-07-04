@@ -3,8 +3,16 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetch, BagFetchEntry, BagInfo, BagPath}
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFetch,
+  BagFetchEntry,
+  BagInfo,
+  BagPath
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -15,17 +23,22 @@ import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 
 import scala.util.Random
 
-trait BagLocationFixtures[Namespace] extends BagInfoGenerators with BagIt with StorageSpaceGenerators with ObjectLocationGenerators {
-  def createObjectLocationWith(namespace: Namespace, path: String): ObjectLocation
+trait BagLocationFixtures[Namespace]
+    extends BagInfoGenerators
+    with BagIt
+    with StorageSpaceGenerators
+    with ObjectLocationGenerators {
+  def createObjectLocationWith(namespace: Namespace,
+                               path: String): ObjectLocation
 
   def withBag[R](
     bagInfo: BagInfo = createBagInfo,
     dataFileCount: Int = 1,
     storageSpace: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
-    createValidDataManifest,
+      createValidDataManifest,
     createTagManifest: List[(String, String)] => Option[FileEntry] =
-    createValidTagManifest,
+      createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
     testWith: TestWith[ObjectLocation, R])(
     implicit
@@ -70,8 +83,9 @@ trait BagLocationFixtures[Namespace] extends BagInfoGenerators with BagIt with S
     realFiles.map { entry =>
       val entryLocation = unpackedBagLocation.join(entry.name)
 
-      typedStore.put(entryLocation)(
-        TypedStoreEntry(entry.contents, metadata = Map.empty)) shouldBe a[Right[_, _]]
+      typedStore.put(entryLocation)(TypedStoreEntry(
+        entry.contents,
+        metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
     val bagFetchEntries = fetchFiles.map { entry =>
@@ -80,8 +94,9 @@ trait BagLocationFixtures[Namespace] extends BagInfoGenerators with BagIt with S
         path = randomAlphanumeric
       )
 
-      typedStore.put(entryLocation)(
-        TypedStoreEntry(entry.contents, metadata = Map.empty)) shouldBe a[Right[_, _]]
+      typedStore.put(entryLocation)(TypedStoreEntry(
+        entry.contents,
+        metadata = Map.empty)) shouldBe a[Right[_, _]]
 
       BagFetchEntry(
         uri = new URI(s"s3://${entryLocation.namespace}/${entryLocation.path}"),

@@ -11,8 +11,8 @@ import uk.ac.wellcome.platform.archive.common.{
   EnrichedBagInformationPayload
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  S3BagLocationFixtures,
-  FileEntry
+  FileEntry,
+  S3BagLocationFixtures
 }
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
