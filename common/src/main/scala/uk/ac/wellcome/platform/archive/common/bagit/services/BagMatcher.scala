@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
   BagFetchEntry,
   BagFile,
   BagPath,
@@ -14,6 +15,17 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   *
   */
 object BagMatcher {
+
+  def correlateFetchEntries(
+    bag: Bag): Either[Seq[Throwable], Seq[MatchedLocation]] =
+    correlateFetchEntryToBagFile(
+      bagFiles = bag.manifest.files ++ bag.tagManifest.files,
+      fetchEntries = bag.fetch match {
+        case Some(fetchEntry) => fetchEntry.files
+        case None             => Seq.empty
+      }
+    )
+
   def correlateFetchEntryToBagFile(
     bagFiles: Seq[BagFile],
     fetchEntries: Seq[BagFetchEntry]
