@@ -20,7 +20,7 @@ object BetterArchive {
 
   private def createIterator(archiveInputStream: ArchiveInputStream): Iterator[(ArchiveEntry, InputStream)] =
     new Iterator[(ArchiveEntry, InputStream)] {
-      private var latest: ArchiveEntry = null
+      private var latest: ArchiveEntry = _
 
       override def hasNext: Boolean = {
         latest = archiveInputStream.getNextEntry
@@ -33,8 +33,10 @@ object BetterArchive {
 
   private def uncompress(compressedStream: InputStream): Try[CompressorInputStream] =
     Try {
+      // We have to wrap in a BufferedInputStream because this method
+      // only takes InputStreams that support the `mark()` method.
       new CompressorStreamFactory()
-        .createCompressorInputStream(compressedStream)
+        .createCompressorInputStream(new BufferedInputStream(compressedStream))
     }
 
   private def extract(inputStream: InputStream) =

@@ -1,10 +1,14 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.storage
 
+import java.io.FilterInputStream
+
 import org.apache.commons.compress.archivers.ArchiveException
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.compressors.CompressorException
 import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.storage.streaming.Codec._
+
+import scala.util.Success
 
 /** The archive files used in these tests were deliberately created
   * with external tools to get better examples of "real" files,
@@ -41,6 +45,16 @@ class BetterArchiveTest extends FunSpec with Matchers with EitherValues with Try
         contentsNumber shouldBe filenameNumber
       }
     }
+  }
+
+  it("unpacks a tar.gz file when the provided stream does not support mark()") {
+    val inputStream = getClass.getResourceAsStream("/numbers.tar.gz")
+
+    val unmarkableStream = new FilterInputStream(inputStream) {
+      override def markSupported(): Boolean = false
+    }
+
+    BetterArchive.unpack(unmarkableStream) shouldBe a[Success[_]]
   }
 
   /** The file for this test was created with the bash script:
