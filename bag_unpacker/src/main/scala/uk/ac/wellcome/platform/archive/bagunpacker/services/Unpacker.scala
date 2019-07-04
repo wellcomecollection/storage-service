@@ -4,22 +4,20 @@ import java.io.InputStream
 import java.nio.file.Paths
 import java.time.Instant
 
-import com.amazonaws.services.s3.AmazonS3
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{ArchiveLocationException, UnpackerArchiveEntryUploadException}
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
-import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
 import uk.ac.wellcome.storage.store.Readable
 
 import scala.util.{Failure, Success, Try}
 
-case class Unpacker(
-  downloader: Readable[ObjectLocation, _ <: InputStream],
-  s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
+case class Unpacker[IS <: InputStream](
+  downloader: Readable[ObjectLocation, IS],
+  s3Uploader: S3Uploader) {
 
   def unpack(
     ingestId: IngestID,
@@ -76,9 +74,9 @@ case class Unpacker(
 
   private def archiveDownloadStream(
     srcLocation: ObjectLocation): Try[InputStream] =
-    srcLocation.toInputStream match {
-      case Right(Some(is)) => Success(is)
-      case Right(None) =>
+    downloader.get(srcLocation) match {
+      case Right(inputStream) => Success(inputStream.identifiedT)
+      case Left(_: DoesNotExistError) =>
         Failure(
           new ArchiveLocationException(
             objectLocation = srcLocation,
@@ -90,7 +88,7 @@ case class Unpacker(
         Failure(new ArchiveLocationException(
           objectLocation = srcLocation,
           message =
-            s"Error getting input stream for s3://$srcLocation: ${err.getMessage}"))
+            s"Error getting input stream for s3://$srcLocation: $err"))
     }
 
   private def putArchiveEntry(dstLocation: ObjectLocation,

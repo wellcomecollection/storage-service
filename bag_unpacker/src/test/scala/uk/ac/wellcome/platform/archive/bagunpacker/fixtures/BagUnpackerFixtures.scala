@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
+import java.io.InputStream
+
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
@@ -26,7 +28,7 @@ trait BagUnpackerFixtures
     outgoing: MemoryMessageSender,
     dstBucket: Bucket,
     stepName: String = randomAlphanumericWithLength()
-  )(testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
+  )(testWith: TestWith[BagUnpackerWorker[String, String, _ <: InputStream], R]): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
@@ -49,7 +51,7 @@ trait BagUnpackerFixtures
     }
 
   def withBagUnpackerApp[R](stepName: String)(
-    testWith: TestWith[(BagUnpackerWorker[String, String],
+    testWith: TestWith[(BagUnpackerWorker[String, String, _ <: InputStream],
                         Bucket,
                         Queue,
                         MemoryMessageSender,

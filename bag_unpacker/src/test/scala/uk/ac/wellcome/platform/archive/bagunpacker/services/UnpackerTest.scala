@@ -108,7 +108,7 @@ class UnpackerTest
     underlyingError.e.getMessage should
       startWith(
         s"Error getting input stream for s3://$srcLocation: " +
-          "The specified bucket is not valid")
+          "No such object")
   }
 
   it("returns an IngestFailed if it cannot write to the destination") {

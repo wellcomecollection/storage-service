@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
+import java.io.InputStream
+
 import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
@@ -21,12 +23,12 @@ import uk.ac.wellcome.platform.archive.common.{
 
 import scala.util.Try
 
-class BagUnpackerWorker[IngestDestination, OutgoingDestination](
+class BagUnpackerWorker[IngestDestination, OutgoingDestination, IS <: InputStream](
   val config: AlpakkaSQSWorkerConfig,
   bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  unpacker: Unpacker
+  unpacker: Unpacker[IS]
 )(implicit val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
