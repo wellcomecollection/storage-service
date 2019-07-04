@@ -31,7 +31,6 @@ trait BagRootFinderFixtures
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
       withMonitoringClient { implicit monitoringClient =>
-
         val worker = new BagRootFinderWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           bagRootFinder = new BagRootFinder(),

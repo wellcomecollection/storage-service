@@ -52,7 +52,6 @@ trait BagAuditorFixtures
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
       withMonitoringClient { implicit monitoringClient =>
         withBagAuditor { bagAuditor =>
-
           val worker = new BagAuditorWorker(
             config = createAlpakkaSQSWorkerConfig(queue),
             bagAuditor = bagAuditor,

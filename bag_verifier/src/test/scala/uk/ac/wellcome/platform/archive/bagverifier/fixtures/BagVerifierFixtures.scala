@@ -29,7 +29,6 @@ trait BagVerifierFixtures
       withActorSystem { implicit actorSystem =>
         withMaterializer(actorSystem) { implicit mat =>
           withVerifier { verifier =>
-
             val ingestUpdater =
               createIngestUpdaterWith(ingests, stepName = stepName)
 
