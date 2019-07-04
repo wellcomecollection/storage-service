@@ -5,9 +5,10 @@ import java.nio.file.Paths
 import java.time.Instant
 
 import org.apache.commons.compress.archivers.ArchiveEntry
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{ArchiveLocationException, UnpackerArchiveEntryUploadException}
+import org.apache.commons.io.input.CloseShieldInputStream
+import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.ArchiveLocationException
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
+import uk.ac.wellcome.platform.archive.bagunpacker.storage.BetterArchive
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
@@ -33,8 +34,8 @@ case class Unpacker[IS <: InputStream](
         startTime = Instant.now)
 
     val result = for {
-      archiveInputStream <- archiveDownloadStream(srcLocation)
-      unpackSummary <- unpack(unpackSummary, archiveInputStream, dstLocation)
+      srcStream <- getSrcStream(srcLocation)
+      unpackSummary <- unpack(unpackSummary, srcStream, dstLocation)
     } yield unpackSummary
 
     result match {
@@ -58,21 +59,32 @@ case class Unpacker[IS <: InputStream](
   }
 
   private def unpack(unpackSummary: UnpackSummary,
-                     packageInputStream: InputStream,
+                     srcStream: InputStream,
                      dstLocation: ObjectLocation): Try[UnpackSummary] =
-    Archive
-      .unpack[UnpackSummary](packageInputStream)(unpackSummary) {
-        (summary: UnpackSummary,
-         inputStream: InputStream,
-         archiveEntry: ArchiveEntry) =>
-          if (!archiveEntry.isDirectory) {
-            putArchiveEntry(dstLocation, summary, inputStream, archiveEntry)
-          } else {
-            summary
-          }
-      }
+    BetterArchive.unpack(srcStream).map { iterator =>
+      var totalFiles = 0
+      var totalBytes = 0
 
-  private def archiveDownloadStream(
+      iterator
+        .filterNot { case (archiveEntry, _) => archiveEntry.isDirectory }
+        .foreach { case (archiveEntry, entryStream) =>
+          val uploadedBytes = putObject(
+            inputStream = entryStream,
+            archiveEntry = archiveEntry,
+            destination = dstLocation
+          )
+
+          totalFiles += 1
+          totalBytes += uploadedBytes.toInt
+        }
+
+      unpackSummary.copy(
+        fileCount = totalFiles,
+        bytesUnpacked = totalBytes
+      )
+    }
+
+  private def getSrcStream(
     srcLocation: ObjectLocation): Try[InputStream] =
     downloader.get(srcLocation) match {
       case Right(inputStream) => Success(inputStream.identifiedT)
@@ -89,28 +101,6 @@ case class Unpacker[IS <: InputStream](
           objectLocation = srcLocation,
           message =
             s"Error getting input stream for s3://$srcLocation: $err"))
-    }
-
-  private def putArchiveEntry(dstLocation: ObjectLocation,
-                              summary: UnpackSummary,
-                              inputStream: InputStream,
-                              archiveEntry: ArchiveEntry) =
-    try {
-      val archiveEntrySize = putObject(
-        inputStream,
-        archiveEntry,
-        dstLocation
-      )
-      summary.copy(
-        fileCount = summary.fileCount + 1,
-        bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
-      )
-    } catch {
-      case err: Throwable =>
-        throw new UnpackerArchiveEntryUploadException(
-          dstLocation,
-          s"upload failed for ${archiveEntry.getName}",
-          err)
     }
 
   private def putObject(
@@ -130,8 +120,12 @@ case class Unpacker[IS <: InputStream](
       )
     }
 
+    // The S3 SDK will "helpfully" attempt to close the input stream when
+    // it's finished uploading.  Because this is really a view into the underlying
+    // stream coming from the original archive, we don't want to close it -- hold
+    // it open.
     s3Uploader.putObject(
-      inputStream = inputStream,
+      inputStream = new CloseShieldInputStream(inputStream),
       streamLength = archiveEntrySize,
       uploadLocation = uploadLocation
     )

@@ -23,7 +23,7 @@ class S3Uploader(implicit s3Client: AmazonS3) {
 
     s3StreamStore.put(uploadLocation)(stream) match {
       case Right(_) => ()
-      case Left(err) => throw new Throwable(s"Error from S3 Stream store: $err")
+      case Left(err) => throw new Throwable(s"Error from S3StreamStore: $err")
     }
   }
 }
