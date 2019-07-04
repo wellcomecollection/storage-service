@@ -6,17 +6,10 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  BagUnpackerWorker,
-  S3Uploader,
-  Unpacker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures,
-  S3BagLocationFixtures
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, S3Uploader, Unpacker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures, S3BagLocationFixtures}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 import uk.ac.wellcome.json.JsonUtil._
 
@@ -43,7 +36,10 @@ trait BagUnpackerFixtures
           bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher,
-          unpacker = Unpacker(new S3Uploader())
+          unpacker = Unpacker(
+            downloader = new S3StreamStore(),
+            s3Uploader = new S3Uploader()
+          )
         )
 
         bagUnpackerWorker.run()

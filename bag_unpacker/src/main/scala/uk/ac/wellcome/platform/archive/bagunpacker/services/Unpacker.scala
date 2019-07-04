@@ -13,10 +13,13 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.store.Readable
 
 import scala.util.{Failure, Success, Try}
 
-case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
+case class Unpacker(
+  downloader: Readable[ObjectLocation, _ <: InputStream],
+  s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
 
   def unpack(
     ingestId: IngestID,

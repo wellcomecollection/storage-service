@@ -5,20 +5,15 @@ import java.nio.file.Paths
 
 import org.apache.commons.io.IOUtils
 import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
-  ArchiveLocationException,
-  UnpackerArchiveEntryUploadException
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{ArchiveLocationException, UnpackerArchiveEntryUploadException}
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 class UnpackerTest
     extends FunSpec
@@ -29,6 +24,7 @@ class UnpackerTest
     with S3Fixtures {
 
   val unpacker = Unpacker(
+    downloader = new S3StreamStore(),
     s3Uploader = new S3Uploader()
   )
 
