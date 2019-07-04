@@ -244,7 +244,7 @@ class BagReplicatorWorkerTest
       // We have to create a large bag to slow down the replicators, or the
       // first process finishes and releases the lock before the later
       // processes have started.
-      withBag(bucket, dataFileCount = 250) {
+      withBag(bucket, dataFileCount = 750) {
         case (bagRootLocation, _) =>
           withBagReplicatorWorker(
             bucket = bucket,
