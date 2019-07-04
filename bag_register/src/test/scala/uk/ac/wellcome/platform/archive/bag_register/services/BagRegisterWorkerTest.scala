@@ -6,7 +6,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
+import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
   PayloadGenerators
@@ -23,7 +23,7 @@ class BagRegisterWorkerTest
     with Matchers
     with ScalaFutures
     with BagInfoGenerators
-    with BagLocationFixtures
+    with S3BagLocationFixtures
     with BagRegisterFixtures
     with PayloadGenerators {
 
@@ -34,7 +34,7 @@ class BagRegisterWorkerTest
         val bagInfo = createBagInfo
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo = bagInfo) {
+          withS3Bag(bucket, bagInfo = bagInfo) {
             case (bagRootLocation, storageSpace) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
@@ -81,7 +81,7 @@ class BagRegisterWorkerTest
         val bagInfo = createBagInfo
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo = bagInfo) {
+          withS3Bag(bucket, bagInfo = bagInfo) {
             case (bagRootLocation, storageSpace) =>
               val payload1 = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(

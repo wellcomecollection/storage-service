@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.services.{
   BagReplicatorWorker
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
+  S3BagLocationFixtures,
   MonitoringClientFixture,
   OperationFixtures
 }
@@ -32,7 +32,7 @@ import scala.collection.JavaConverters._
 import scala.util.{Random, Try}
 
 trait BagReplicatorFixtures
-    extends BagLocationFixtures
+    extends S3BagLocationFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture

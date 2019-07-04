@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
+  S3BagLocationFixtures,
   MonitoringClientFixture,
   OperationFixtures
 }
@@ -20,7 +20,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 trait BagUnpackerFixtures
     extends SQS
-    with BagLocationFixtures
+    with S3BagLocationFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture {

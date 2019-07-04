@@ -4,7 +4,7 @@ import org.scalatest.FunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.BagRootPayload
-import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
+import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -18,11 +18,11 @@ class BagRootFinderFeatureTest
     with BagRootFinderFixtures
     with IngestUpdateAssertions
     with PayloadGenerators
-    with BagLocationFixtures {
+    with S3BagLocationFixtures {
 
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket) {
+      withS3Bag(bucket) {
         case (bagRootLocation, storageSpace) =>
           val payload = createUnpackedBagLocationPayloadWith(
             unpackedBagLocation = bagRootLocation,
@@ -68,7 +68,7 @@ class BagRootFinderFeatureTest
 
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket, bagRootDirectory = Some("subdir")) {
+      withS3Bag(bucket, bagRootDirectory = Some("subdir")) {
         case (unpackedBagLocation, storageSpace) =>
           val bagRootLocation = unpackedBagLocation.join("subdir")
 
@@ -116,7 +116,7 @@ class BagRootFinderFeatureTest
 
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
-      withBag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
+      withS3Bag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
         case (unpackedBagLocation, _) =>
           val payload =
             createUnpackedBagLocationPayloadWith(unpackedBagLocation)

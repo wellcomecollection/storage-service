@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.{
   BagRootPayload,
   EnrichedBagInformationPayload
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
+import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -22,7 +22,7 @@ class BagVerifierFeatureTest
     extends FunSpec
     with Matchers
     with Eventually
-    with BagLocationFixtures
+    with S3BagLocationFixtures
     with IntegrationPatience
     with IngestUpdateAssertions
     with BagVerifierFixtures
@@ -41,7 +41,7 @@ class BagVerifierFeatureTest
           queue,
           stepName = "verification") { _ =>
           withLocalS3Bucket { bucket =>
-            withBag(bucket) {
+            withS3Bag(bucket) {
               case (bagRootLocation, _) =>
                 val payload = createEnrichedBagInformationPayloadWith(
                   bagRootLocation = bagRootLocation
@@ -84,7 +84,7 @@ class BagVerifierFeatureTest
           queue,
           stepName = "verification") { _ =>
           withLocalS3Bucket { bucket =>
-            withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
+            withS3Bag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
               case (bagRootLocation, _) =>
                 val payload = createEnrichedBagInformationPayloadWith(
                   bagRootLocation = bagRootLocation
