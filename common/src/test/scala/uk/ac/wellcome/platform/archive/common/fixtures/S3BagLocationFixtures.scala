@@ -27,7 +27,7 @@ trait BagLocationFixtures[Namespace] extends BagInfoGenerators with BagIt with S
     createTagManifest: List[(String, String)] => Option[FileEntry] =
     createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
-    testWith: TestWith[(ObjectLocation, StorageSpace), R])(
+    testWith: TestWith[ObjectLocation, R])(
     implicit
     typedStore: TypedStore[ObjectLocation, String],
     namespace: Namespace
@@ -99,20 +99,16 @@ trait BagLocationFixtures[Namespace] extends BagInfoGenerators with BagIt with S
         metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
-    testWith((bagRootLocation, storageSpace))
+    testWith(bagRootLocation)
   }
 }
 
 trait S3BagLocationFixtures
     extends S3Fixtures
-    with BagInfoGenerators
-    with BagIt
-    with StorageSpaceGenerators {
+    with BagLocationFixtures[Bucket] {
 
   implicit val s3StreamStore: S3StreamStore = new S3StreamStore()
   implicit val s3TypedStore: S3TypedStore[String] = new S3TypedStore[String]()
-
-
 
   def withS3Bag[R](
     bucket: Bucket,
@@ -125,73 +121,17 @@ trait S3BagLocationFixtures
       createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
     testWith: TestWith[(ObjectLocation, StorageSpace), R]): R = {
-    val bagIdentifier = createExternalIdentifier
+    implicit val namespace: Bucket = bucket
 
-    info(s"Creating Bag $bagIdentifier")
-
-    val fileEntries = createBag(
-      bagInfo,
+    withBag(
+      bagInfo = bagInfo,
       dataFileCount = dataFileCount,
+      storageSpace = storageSpace,
       createDataManifest = createDataManifest,
-      createTagManifest = createTagManifest)
-
-    debug(s"fileEntries: $fileEntries")
-
-    val storageSpaceRootLocation = createObjectLocationWith(
-      bucket = bucket,
-      key = storageSpace.toString
-    )
-
-    val bagRootLocation = storageSpaceRootLocation.join(
-      bagIdentifier.toString
-    )
-
-    val unpackedBagLocation = bagRootLocation.join(
-      bagRootDirectory.getOrElse("")
-    )
-
-    // To simulate a bag that contains both concrete objects and
-    // fetch files, siphon off some of the entries to be written
-    // as a fetch file.
-    //
-    // We need to make sure bag-info.txt, manifest.txt, and so on,
-    // are written into the bag proper.
-    val (realFiles, fetchFiles) = fileEntries.partition { file =>
-      file.name.endsWith(".txt") || Random.nextFloat() < 0.8
+      createTagManifest = createTagManifest,
+      bagRootDirectory = bagRootDirectory
+    ) { bagRootLocation =>
+      testWith((bagRootLocation, storageSpace))
     }
-
-    realFiles.map { entry =>
-      val entryLocation = unpackedBagLocation.join(entry.name)
-      s3Client
-        .putObject(
-          entryLocation.namespace,
-          entryLocation.path,
-          entry.contents
-        )
-    }
-
-    val bagFetchEntries = fetchFiles.map { entry =>
-      val entryLocation = createObjectLocationWith(bucket)
-      s3TypedStore.put(entryLocation)(TypedStoreEntry(
-        entry.contents,
-        metadata = Map.empty)) shouldBe a[Right[_, _]]
-
-      BagFetchEntry(
-        uri = new URI(s"s3://${entryLocation.namespace}/${entryLocation.path}"),
-        length = Some(entry.contents.length),
-        path = BagPath(entry.name)
-      )
-    }
-
-    if (fetchFiles.nonEmpty) {
-      val fetchLocation = unpackedBagLocation.join("fetch.txt")
-      val fetchContents = BagFetch.write(bagFetchEntries)
-
-      s3TypedStore.put(fetchLocation)(TypedStoreEntry(
-        fetchContents,
-        metadata = Map.empty)) shouldBe a[Right[_, _]]
-    }
-
-    testWith((bagRootLocation, storageSpace))
   }
 }

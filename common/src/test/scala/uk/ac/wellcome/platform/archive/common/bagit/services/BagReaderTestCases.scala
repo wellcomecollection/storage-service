@@ -32,10 +32,10 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
   it("gets a correctly formed bag") {
     val bagInfo = createBagInfo
 
-    withFixtures { case fixtures =>
+    withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
       withBagReader { bagReader =>
-        withBag(bagInfo = bagInfo) { case (rootLocation, _) =>
+        withBag(bagInfo = bagInfo) { rootLocation =>
           bagReader.get(rootLocation).right.value.info shouldBe bagInfo
         }
       }
@@ -43,10 +43,10 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
   }
 
   it("errors if the bag-info.txt file does not exist") {
-    withFixtures { case fixtures =>
+    withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
       withBagReader { bagReader =>
-        withBag() { case (rootLocation, _) =>
+        withBag() { rootLocation =>
           deleteFile(rootLocation, "bag-info.txt")
 
           bagReader.get(rootLocation).left.value.msg should startWith("Error loading bag-info.txt")
@@ -56,10 +56,10 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
   }
 
   it("errors if the bag-info.txt file is malformed") {
-    withFixtures { case fixtures =>
+    withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
       withBagReader { bagReader =>
-        withBag() { case (rootLocation, _) =>
+        withBag() { rootLocation =>
           scrambleFile(rootLocation, "bag-info.txt")
 
           bagReader.get(rootLocation).left.value.msg should startWith("Error loading bag-info.txt")
@@ -69,10 +69,10 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
   }
 
   it("errors if the file manifest does not exist") {
-    withFixtures { case fixtures =>
+    withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
       withBagReader { bagReader =>
-        withBag() { case (rootLocation, _) =>
+        withBag() { rootLocation =>
           deleteFile(rootLocation, "manifest-sha256.txt")
 
           bagReader.get(rootLocation).left.value.msg should startWith("Error loading manifest-sha256.txt")
@@ -82,10 +82,10 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
   }
 
   it("errors if the file manifest is malformed") {
-    withFixtures { case fixtures =>
+    withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
       withBagReader { bagReader =>
-        withBag() { case (rootLocation, _) =>
+        withBag() { rootLocation =>
           scrambleFile(rootLocation, "manifest-sha256.txt")
 
           bagReader.get(rootLocation).left.value.msg should startWith("Error loading manifest-sha256.txt")
@@ -95,10 +95,10 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
   }
 
   it("errors if the tag manifest does not exist") {
-    withFixtures { case fixtures =>
+    withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
       withBagReader { bagReader =>
-        withBag() { case (rootLocation, _) =>
+        withBag() { rootLocation =>
           deleteFile(rootLocation, "tagmanifest-sha256.txt")
 
           bagReader.get(rootLocation).left.value.msg should startWith("Error loading tagmanifest-sha256.txt")
@@ -108,10 +108,10 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
   }
 
   it("errors if the tag manifest is malformed") {
-    withFixtures { case fixtures =>
+    withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
       withBagReader { bagReader =>
-        withBag() { case (rootLocation, _) =>
+        withBag() { rootLocation =>
           scrambleFile(rootLocation, "tagmanifest-sha256.txt")
 
           bagReader.get(rootLocation).left.value.msg should startWith("Error loading tagmanifest-sha256.txt")
@@ -121,10 +121,10 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
   }
 
   it("passes if the fetch.txt does not exist") {
-    withFixtures { case fixtures =>
+    withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
       withBagReader { bagReader =>
-        withBag() { case (rootLocation, _) =>
+        withBag() { rootLocation =>
           deleteFile(rootLocation, "fetch.txt")
 
           bagReader.get(rootLocation).right.value.fetch shouldBe None
@@ -134,10 +134,10 @@ trait BagReaderTestCases[Context, Namespace] extends FunSpec with Matchers with 
   }
 
   it("errors if the fetch file is malformed") {
-    withFixtures { case fixtures =>
+    withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
       withBagReader { bagReader =>
-        withBag() { case (rootLocation, _) =>
+        withBag() { rootLocation =>
           scrambleFile(rootLocation, "fetch.txt")
 
           bagReader.get(rootLocation).left.value.msg should startWith("Error loading fetch.txt")
