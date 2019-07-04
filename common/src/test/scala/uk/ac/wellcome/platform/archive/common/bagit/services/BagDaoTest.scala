@@ -1,11 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 class BagDaoTest extends FunSpec with Matchers with S3Fixtures with BagLocationFixtures with EitherValues {
-  val bagDao = new BagDao()
+  val bagDao = new S3BagReader()
 
   it("gets a correctly formed bag") {
     val bagInfo = createBagInfo
