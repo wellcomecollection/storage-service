@@ -16,11 +16,15 @@ class OutgoingPublisher[Destination](
     debug(s"Sending outgoing message for result $result")
     result match {
       case IngestStepSucceeded(_) | IngestCompleted(_) =>
-        debug(
-          s"Ingest success/completed: sending an outgoing message $outgoing")
+        debug(msg =
+          "Ingest step succeeded/completed: " +
+            s"sending an outgoing message $outgoing")
         messageSender.sendT[PipelinePayload](outgoing)
       case IngestFailed(_, _, _) =>
-        debug(s"Ingest failed: not sending a message")
+        debug(s"Ingest step failed: not sending a message")
+        Success(())
+      case IngestShouldRetry(_, _, _) =>
+        debug(s"Ingest step retrying: not sending a message")
         Success(())
     }
   }

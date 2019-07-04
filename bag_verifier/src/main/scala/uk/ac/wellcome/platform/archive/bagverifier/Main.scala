@@ -32,38 +32,52 @@ import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
 import scala.concurrent.ExecutionContext
 
+import uk.ac.wellcome.json.JsonUtil._
+
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
+
     implicit val actorSystem: ActorSystem =
       AkkaBuilder.buildActorSystem()
+
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
-    implicit val materializer: ActorMaterializer =
+
+    implicit val mat: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
+
     implicit val monitoringClient: MonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
+
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
-    implicit val s3ObjectVerifier =
+
+    implicit val s3ObjectVerifier: S3ObjectVerifier =
       new S3ObjectVerifier()
-    implicit val bagReader: BagReader[_] = new S3BagReader()
+
+    implicit val bagReader: BagReader[_] =
+      new S3BagReader()
+
     implicit val s3Resolvable =
       new S3Resolvable()
 
-    val verifier = new BagVerifier()
+    val verifier =
+      new BagVerifier()
 
-    val operationName = OperationNameBuilder.getName(config)
+    val operationName =
+      OperationNameBuilder.getName(config)
 
-    val ingestUpdater = IngestUpdaterBuilder.build(config, operationName)
+    val ingestUpdater =
+      IngestUpdaterBuilder.build(config, operationName)
 
     val outgoingPublisher =
       OutgoingPublisherBuilder.build(config, operationName)
 
     new BagVerifierWorker(
-      alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       verifier = verifier

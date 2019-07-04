@@ -5,21 +5,13 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifier,
-  BagVerifierWorker
-}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures
-}
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  S3ObjectVerifier,
-  S3Resolvable
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.platform.archive.common.storage.services.{S3ObjectVerifier, S3Resolvable}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.json.JsonUtil._
 
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
@@ -37,11 +29,15 @@ trait BagVerifierFixtures
       withActorSystem { implicit actorSystem =>
         withMaterializer(actorSystem) { implicit mat =>
           withVerifier { verifier =>
+
             val ingestUpdater =
               createIngestUpdaterWith(ingests, stepName = stepName)
-            val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+
+            val outgoingPublisher =
+              createOutgoingPublisherWith(outgoing)
+
             val service = new BagVerifierWorker(
-              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+              config = createAlpakkaSQSWorkerConfig(queue),
               ingestUpdater = ingestUpdater,
               outgoingPublisher = outgoingPublisher,
               verifier = verifier
@@ -57,9 +53,15 @@ trait BagVerifierFixtures
 
   def withVerifier[R](testWith: TestWith[BagVerifier, R]): R =
     withMaterializer { implicit mat =>
-      implicit val bagReader: BagReader[_] = new S3BagReader()
-      implicit val _s3ObjectVerifier = new S3ObjectVerifier()
-      implicit val _s3Resolvable = new S3Resolvable()
+
+      implicit val _bagReader: BagReader[_] =
+        new S3BagReader()
+
+      implicit val _s3ObjectVerifier: S3ObjectVerifier =
+        new S3ObjectVerifier()
+
+      implicit val _s3Resolvable: S3Resolvable =
+        new S3Resolvable()
 
       val verifier = new BagVerifier()
 

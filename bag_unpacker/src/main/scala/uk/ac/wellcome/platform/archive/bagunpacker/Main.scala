@@ -28,6 +28,8 @@ import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder._
 
 import scala.concurrent.ExecutionContext
 
+import uk.ac.wellcome.json.JsonUtil._
+
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
@@ -62,8 +64,8 @@ object Main extends WellcomeTypesafeApp {
     val outgoingPublisher =
       OutgoingPublisherBuilder.build(config, operationName = operationName)
 
-    BagUnpackerWorker(
-      alpakkaSQSWorkerConfig = alpakkaSQSWorkerConfig,
+    new BagUnpackerWorker(
+      config = alpakkaSQSWorkerConfig,
       bagUnpackerWorkerConfig = unpackerWorkerConfig,
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,

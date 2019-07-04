@@ -47,6 +47,15 @@ class IngestUpdater[Destination](stepName: String,
           description = s"${stepName.capitalize} started"
         )
 
+      case IngestShouldRetry(_,_, maybeMessage) =>
+        IngestUpdate.event(
+          id = ingestId,
+          description = eventDescription(
+            s"${stepName.capitalize} retrying",
+            maybeMessage
+          )
+        )
+
       case IngestFailed(_, _, maybeMessage) =>
         IngestStatusUpdate(
           id = ingestId,

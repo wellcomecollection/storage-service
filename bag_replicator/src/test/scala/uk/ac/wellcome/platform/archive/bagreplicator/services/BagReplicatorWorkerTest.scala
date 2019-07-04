@@ -7,17 +7,14 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.worker.models.{
-  NonDeterministicFailure,
-  Result,
-  Successful
-}
+import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 
@@ -95,7 +92,7 @@ class BagReplicatorWorkerTest
               val result = worker.processMessage(payload).success.value
               result shouldBe a[Successful[_]]
 
-              val destination = result.summary.get.destination
+              val destination = result.summary.destination
               destination.namespace shouldBe archiveBucket.name
             }
           }
@@ -118,7 +115,7 @@ class BagReplicatorWorkerTest
               val result = worker.processMessage(payload).success.value
               result shouldBe a[Successful[_]]
 
-              val destination = result.summary.get.destination
+              val destination = result.summary.destination
               val expectedPath =
                 Paths
                   .get(
@@ -148,7 +145,7 @@ class BagReplicatorWorkerTest
               val result = worker.processMessage(payload).success.value
               result shouldBe a[Successful[_]]
 
-              val destination = result.summary.get.destination
+              val destination = result.summary.destination
               destination.path should endWith(
                 s"/${payload.externalIdentifier.toString}/v3")
             }
@@ -169,7 +166,7 @@ class BagReplicatorWorkerTest
               val result = worker.processMessage(payload).success.value
               result shouldBe a[Successful[_]]
 
-              val destination = result.summary.get.destination
+              val destination = result.summary.destination
               destination.path should startWith(payload.storageSpace.underlying)
             }
           }
@@ -191,7 +188,7 @@ class BagReplicatorWorkerTest
               val result = worker.processMessage(payload).success.value
               result shouldBe a[Successful[_]]
 
-              val destination = result.summary.get.destination
+              val destination = result.summary.destination
               destination.path should startWith("rootprefix/")
             }
           }
@@ -214,7 +211,7 @@ class BagReplicatorWorkerTest
             val result = service.processMessage(payload).success.value
             result shouldBe a[Successful[_]]
 
-            val destination = result.summary.get.destination
+            val destination = result.summary.destination
 
             // TODO: Restore these history tests
             println(destination)
@@ -240,7 +237,7 @@ class BagReplicatorWorkerTest
             bagRootLocation = bagRootLocation
           )
 
-          val futures: Future[Seq[Result[ReplicationSummary]]] =
+          val futures: Future[Seq[IngestStepResult[ReplicationSummary]]] =
             Future.sequence(
               (1 to 5).map { i =>
                 Future.successful(i).flatMap { _ =>
@@ -259,8 +256,8 @@ class BagReplicatorWorkerTest
             result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
             result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
 
-          // TODO: Restore this test
-          // lockServiceDao.history should have size 1
+            // TODO: Restore this test
+            // lockServiceDao.history should have size 1
           }
         }
       }

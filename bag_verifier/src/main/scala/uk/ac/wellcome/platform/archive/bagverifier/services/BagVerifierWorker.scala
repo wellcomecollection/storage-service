@@ -2,26 +2,15 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
-import grizzled.slf4j.Logging
-import org.apache.commons.codec.digest.MessageDigestAlgorithms
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
-import uk.ac.wellcome.messaging.worker.models.Result
+import io.circe.Decoder
+import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
 import uk.ac.wellcome.platform.archive.common.BagRootPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestStepResult,
-  IngestStepWorker
-}
-import uk.ac.wellcome.typesafe.Runnable
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepWorker}
 
-import scala.concurrent.Future
 import scala.util.Try
 
 class BagVerifierWorker[IngestDestination, OutgoingDestination](
@@ -31,9 +20,10 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
   verifier: BagVerifier
 )(implicit
   val mc: MonitoringClient,
-  actorSystem: ActorSystem,
-  sc: AmazonSQSAsync)
-    extends IngestStepWorker[
+  val as: ActorSystem,
+  val sc: AmazonSQSAsync,
+  val wd: Decoder[BagRootPayload]
+) extends IngestStepWorker[
       BagRootPayload,
       VerificationSummary
     ] {

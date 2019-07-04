@@ -1,19 +1,14 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
+import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction
+import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.amazonaws.services.sqs.model.Message
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
-import uk.ac.wellcome.messaging.worker.models.{
-  DeterministicFailure,
-  NonDeterministicFailure,
-  Result,
-  Successful
-}
+import io.circe.Decoder
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, NonDeterministicFailure, Result, Successful}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.PipelinePayload
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
@@ -61,6 +56,9 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
   val visibilityTimeout = 0
 
   implicit val mc: MonitoringClient
+  implicit val as: ActorSystem
+  implicit val wd: Decoder[Work]
+  implicit val sc: AmazonSQSAsync
 
   def processMessage(payload: Work): Try[IngestStepResult[Summary]]
 

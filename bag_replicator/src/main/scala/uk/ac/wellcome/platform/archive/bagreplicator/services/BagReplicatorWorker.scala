@@ -6,6 +6,7 @@ import java.util.UUID
 import akka.actor.ActorSystem
 import cats.instances.try_._
 import com.amazonaws.services.sqs.AmazonSQSAsync
+import io.circe.Decoder
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
@@ -15,11 +16,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.locking.{
-  FailedLockingServiceOp,
-  LockDao,
-  LockingService
-}
+import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
 
 import scala.util.Try
 
@@ -34,9 +31,10 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   replicatorDestinationConfig: ReplicatorDestinationConfig
 )(implicit
   val mc: MonitoringClient,
-  actorSystem: ActorSystem,
-  sc: AmazonSQSAsync)
-    extends IngestStepWorker[EnrichedBagInformationPayload, ReplicationSummary] {
+  val as: ActorSystem,
+  val sc: AmazonSQSAsync,
+  val wd: Decoder[EnrichedBagInformationPayload]
+) extends IngestStepWorker[EnrichedBagInformationPayload, ReplicationSummary] {
   override val visibilityTimeout = 180
 
   val destinationBuilder = new DestinationBuilder(

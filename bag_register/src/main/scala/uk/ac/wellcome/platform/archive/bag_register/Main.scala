@@ -27,6 +27,7 @@ import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
 import scala.concurrent.ExecutionContext
+import uk.ac.wellcome.json.JsonUtil._
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -65,7 +66,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new BagRegisterWorker(
-      workerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       register = register

@@ -8,28 +8,20 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures,
-  S3BagLocationFixtures
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
+import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.locking.memory.{
-  MemoryLockDao,
-  MemoryLockDaoFixtures
-}
+import uk.ac.wellcome.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 
 import scala.collection.JavaConverters._
 import scala.util.{Random, Try}
+
+import uk.ac.wellcome.json.JsonUtil._
 
 trait BagReplicatorFixtures
     extends S3BagLocationFixtures
@@ -54,7 +46,7 @@ trait BagReplicatorFixtures
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
       withMonitoringClient { implicit monitoringClient =>
         val lockingService = new LockingService[
-          Result[ReplicationSummary],
+          IngestStepResult[ReplicationSummary],
           Try,
           LockDao[String, UUID]] {
           override implicit val lockDao: LockDao[String, UUID] =
@@ -67,7 +59,7 @@ trait BagReplicatorFixtures
           createReplicatorDestinationConfigWith(bucket, rootPath)
 
         val service = new BagReplicatorWorker(
-          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          config = createAlpakkaSQSWorkerConfig(queue),
           bagReplicator = new BagReplicator(),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher,
