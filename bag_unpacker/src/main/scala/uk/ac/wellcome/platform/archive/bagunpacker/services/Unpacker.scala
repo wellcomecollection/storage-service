@@ -6,17 +6,11 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import org.apache.commons.compress.archivers.ArchiveEntry
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
-  ArchiveLocationException,
-  UnpackerArchiveEntryUploadException
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{ArchiveLocationException, UnpackerArchiveEntryUploadException}
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
 import uk.ac.wellcome.storage.ObjectLocation
 
@@ -25,14 +19,14 @@ import scala.util.{Failure, Success, Try}
 case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
 
   def unpack(
-    requestId: String,
+    ingestId: IngestID,
     srcLocation: ObjectLocation,
     dstLocation: ObjectLocation
   ): Try[IngestStepResult[UnpackSummary]] = {
 
     val unpackSummary =
       UnpackSummary(
-        requestId,
+        ingestId,
         srcLocation,
         dstLocation,
         startTime = Instant.now)

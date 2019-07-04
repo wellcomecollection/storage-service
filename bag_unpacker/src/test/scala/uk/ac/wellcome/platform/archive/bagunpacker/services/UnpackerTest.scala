@@ -44,9 +44,9 @@ class UnpackerTest
 
           val summaryResult = unpacker
             .unpack(
-              randomUUID.toString,
-              testArchive,
-              dstLocation
+              ingestId = createIngestID,
+              srcLocation = testArchive,
+              dstLocation = dstLocation
             )
 
           val unpacked = summaryResult.success.value
@@ -74,9 +74,9 @@ class UnpackerTest
           val dstKey = "unpacked"
           val summaryResult = unpacker
             .unpack(
-              randomUUID.toString,
-              testArchive,
-              ObjectLocation(dstBucket.name, dstKey)
+              ingestId = createIngestID,
+              srcLocation = testArchive,
+              dstLocation = ObjectLocation(dstBucket.name, dstKey)
             )
 
           val unpacked = summaryResult.success.value
@@ -96,7 +96,7 @@ class UnpackerTest
     val srcLocation = createObjectLocation
     val result =
       unpacker.unpack(
-        randomUUID.toString,
+        ingestId = createIngestID,
         srcLocation = srcLocation,
         dstLocation = createObjectLocation
       )
@@ -122,7 +122,7 @@ class UnpackerTest
         val dstLocation = createObjectLocation
         val result =
           unpacker.unpack(
-            randomUUID.toString,
+            ingestId = createIngestID,
             srcLocation = testArchive,
             dstLocation = dstLocation
           )
