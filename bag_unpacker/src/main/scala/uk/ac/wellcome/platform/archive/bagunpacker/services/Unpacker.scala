@@ -5,7 +5,6 @@ import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
   ArchiveLocationException,
@@ -112,11 +111,11 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
         bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
       )
     } catch {
-      case ae: AmazonS3Exception =>
+      case err: Throwable =>
         throw new UnpackerArchiveEntryUploadException(
           dstLocation,
           s"upload failed for ${archiveEntry.getName}",
-          ae)
+          err)
     }
 
   private def putObject(
