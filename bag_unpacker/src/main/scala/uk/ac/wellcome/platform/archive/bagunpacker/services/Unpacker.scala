@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import java.io.InputStream
-import java.nio.file.Paths
 import java.time.Instant
 
 import org.apache.commons.compress.archivers.ArchiveEntry
@@ -11,7 +10,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.BetterArchive
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.Readable
 
 import scala.util.{Failure, Success, Try}
@@ -23,7 +22,7 @@ case class Unpacker[IS <: InputStream](
   def unpack(
     ingestId: IngestID,
     srcLocation: ObjectLocation,
-    dstLocation: ObjectLocation
+    dstLocation: ObjectLocationPrefix
   ): Try[IngestStepResult[UnpackSummary]] = {
 
     val unpackSummary =
@@ -60,7 +59,7 @@ case class Unpacker[IS <: InputStream](
 
   private def unpack(unpackSummary: UnpackSummary,
                      srcStream: InputStream,
-                     dstLocation: ObjectLocation): Try[UnpackSummary] =
+                     dstLocation: ObjectLocationPrefix): Try[UnpackSummary] =
     BetterArchive.unpack(srcStream).map { iterator =>
       var totalFiles = 0
       var totalBytes = 0
@@ -106,11 +105,9 @@ case class Unpacker[IS <: InputStream](
   private def putObject(
     inputStream: InputStream,
     archiveEntry: ArchiveEntry,
-    destination: ObjectLocation
+    destination: ObjectLocationPrefix
   ): Long = {
-    val uploadLocation = destination.copy(
-      path = normalizeKey(destination.path, archiveEntry.getName)
-    )
+    val uploadLocation = destination.asLocation(archiveEntry.getName)
 
     val archiveEntrySize = archiveEntry.getSize
 
@@ -132,10 +129,4 @@ case class Unpacker[IS <: InputStream](
 
     archiveEntrySize
   }
-
-  private def normalizeKey(prefix: String, key: String) =
-    Paths
-      .get(prefix, key)
-      .normalize()
-      .toString
 }

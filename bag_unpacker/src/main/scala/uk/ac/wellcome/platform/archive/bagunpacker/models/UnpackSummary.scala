@@ -4,11 +4,11 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 case class UnpackSummary(id: IngestID,
                          srcLocation: ObjectLocation,
-                         dstLocation: ObjectLocation,
+                         dstLocation: ObjectLocationPrefix,
                          fileCount: Int = 0,
                          bytesUnpacked: Long = 0L,
                          startTime: Instant,

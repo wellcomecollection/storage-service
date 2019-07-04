@@ -24,8 +24,9 @@ class BagRootFinderFeatureTest
     withLocalS3Bucket { bucket =>
       withS3Bag(bucket) {
         case (bagRootLocation, storageSpace) =>
+          // TODO: Bag root location should really be a prefix here
           val payload = createUnpackedBagLocationPayloadWith(
-            unpackedBagLocation = bagRootLocation,
+            unpackedBagLocation = bagRootLocation.asPrefix,
             storageSpace = storageSpace
           )
 
@@ -73,7 +74,7 @@ class BagRootFinderFeatureTest
           val bagRootLocation = unpackedBagLocation.join("subdir")
 
           val payload = createUnpackedBagLocationPayloadWith(
-            unpackedBagLocation = unpackedBagLocation,
+            unpackedBagLocation = unpackedBagLocation.asPrefix,
             storageSpace = storageSpace
           )
 
@@ -119,7 +120,7 @@ class BagRootFinderFeatureTest
       withS3Bag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
         case (unpackedBagLocation, _) =>
           val payload =
-            createUnpackedBagLocationPayloadWith(unpackedBagLocation)
+            createUnpackedBagLocationPayloadWith(unpackedBagLocation.asPrefix)
 
           withLocalSqsQueue { queue =>
             val ingests = new MemoryMessageSender()
@@ -157,7 +158,7 @@ class BagRootFinderFeatureTest
 
   it("errors if it cannot find the bag") {
     val unpackedBagLocation = createObjectLocation
-    val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation)
+    val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation.asPrefix)
 
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()
