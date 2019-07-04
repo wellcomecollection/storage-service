@@ -9,10 +9,7 @@ ingest_template = {
     "type": "Ingest",
     "ingestType": {"id": "create", "type": "IngestType"},
     "space": {"id": "digitised", "type": "Space"},
-    "bag": {
-        "type": "Bag",
-        "info": {"type": "BagInfo", "externalIdentifier": None}
-    },
+    "bag": {"type": "Bag", "info": {"type": "BagInfo", "externalIdentifier": None}},
     "sourceLocation": {
         "type": "Location",
         "provider": {"type": "Provider", "id": "aws-s3-standard"},
