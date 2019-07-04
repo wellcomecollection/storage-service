@@ -4,11 +4,8 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.ObjectLocation
@@ -16,7 +13,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.util.{Success, Try}
 
 class Register(
-  bagService: BagDao,
+  bagReader: BagReader[_],
   storageManifestDao: StorageManifestDao
 ) extends Logging {
 
@@ -33,7 +30,7 @@ class Register(
     )
 
     val result = for {
-      bag <- bagService.get(bagRootLocation)
+      bag <- bagReader.get(bagRootLocation)
 
       manifest = StorageManifest(
         space = storageSpace,

@@ -11,17 +11,9 @@ import uk.ac.wellcome.messaging.typesafe.{
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.bag_register.services.{
-  BagRegisterWorker,
-  Register
-}
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder,
-  StorageManifestDaoBuilder
-}
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder, StorageManifestDaoBuilder}
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -45,8 +37,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val bagService = new BagDao()
-
     val storageManifestVHS = StorageManifestDaoBuilder.build(config)
 
     val operationName = OperationNameBuilder.getName(config)
@@ -57,7 +47,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val register = new Register(
-      bagService,
+      bagReader = new S3BagReader(),
       storageManifestVHS
     )
 
