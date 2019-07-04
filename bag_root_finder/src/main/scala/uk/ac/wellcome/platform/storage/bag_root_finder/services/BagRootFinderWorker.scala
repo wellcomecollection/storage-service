@@ -8,8 +8,15 @@ import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common._
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
-import uk.ac.wellcome.platform.storage.bag_root_finder.models.{RootFinderSuccessSummary, RootFinderSummary}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepSucceeded,
+  IngestStepWorker
+}
+import uk.ac.wellcome.platform.storage.bag_root_finder.models.{
+  RootFinderSuccessSummary,
+  RootFinderSummary
+}
 
 import scala.util.{Success, Try}
 
@@ -22,8 +29,8 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
   val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[UnpackedBagLocationPayload]
-) extends IngestStepWorker[UnpackedBagLocationPayload, RootFinderSummary] {
+  val wd: Decoder[UnpackedBagLocationPayload])
+    extends IngestStepWorker[UnpackedBagLocationPayload, RootFinderSummary] {
 
   override def processMessage(payload: UnpackedBagLocationPayload)
     : Try[IngestStepResult[RootFinderSummary]] =

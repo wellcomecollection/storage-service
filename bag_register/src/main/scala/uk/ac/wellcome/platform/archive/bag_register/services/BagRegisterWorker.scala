@@ -9,7 +9,10 @@ import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepWorker}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepWorker
+}
 
 import scala.util.Try
 
@@ -22,8 +25,8 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
   val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[EnrichedBagInformationPayload]
-) extends IngestStepWorker[EnrichedBagInformationPayload, RegistrationSummary] {
+  val wd: Decoder[EnrichedBagInformationPayload])
+    extends IngestStepWorker[EnrichedBagInformationPayload, RegistrationSummary] {
 
   override def processMessage(payload: EnrichedBagInformationPayload)
     : Try[IngestStepResult[RegistrationSummary]] =

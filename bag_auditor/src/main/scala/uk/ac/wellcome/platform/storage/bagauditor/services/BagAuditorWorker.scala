@@ -7,9 +7,19 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
-import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, EnrichedBagInformationPayload}
-import uk.ac.wellcome.platform.storage.bagauditor.models.{AuditSuccessSummary, AuditSummary}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepSucceeded,
+  IngestStepWorker
+}
+import uk.ac.wellcome.platform.archive.common.{
+  BagRootLocationPayload,
+  EnrichedBagInformationPayload
+}
+import uk.ac.wellcome.platform.storage.bagauditor.models.{
+  AuditSuccessSummary,
+  AuditSummary
+}
 
 import scala.util.{Success, Try}
 
@@ -22,8 +32,8 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
   val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[BagRootLocationPayload]
-) extends IngestStepWorker[BagRootLocationPayload, AuditSummary] {
+  val wd: Decoder[BagRootLocationPayload])
+    extends IngestStepWorker[BagRootLocationPayload, AuditSummary] {
 
   override def processMessage(
     payload: BagRootLocationPayload): Try[IngestStepResult[AuditSummary]] =
