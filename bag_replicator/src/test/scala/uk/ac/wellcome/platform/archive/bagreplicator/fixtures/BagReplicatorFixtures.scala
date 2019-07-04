@@ -97,7 +97,7 @@ trait BagReplicatorFixtures
     testWith: TestWith[ObjectLocation, R]): R = {
     val rootLocation = createObjectLocationWith(bucket)
 
-    (1 to Random.nextInt(250)).map { _ =>
+    (1 to 250).map { _ =>
       val parts = (1 to Random.nextInt(5)).map { _ =>
         randomAlphanumeric
       }
