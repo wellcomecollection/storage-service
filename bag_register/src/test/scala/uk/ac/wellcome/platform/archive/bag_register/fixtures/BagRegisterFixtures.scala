@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures,
@@ -49,10 +49,8 @@ trait BagRegisterFixtures
         val outgoing = new MemoryMessageSender()
 
         withLocalSqsQueueAndDlq { queuePair =>
-          val bagService = new BagDao()
-
           val register = new Register(
-            bagService,
+            bagReader = new S3BagReader(),
             storageManifestDao
           )
 

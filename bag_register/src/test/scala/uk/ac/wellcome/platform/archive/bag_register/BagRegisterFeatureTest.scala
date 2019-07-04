@@ -6,7 +6,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.fixtures.BagLocationFixtures
+import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 class BagRegisterFeatureTest
     extends FunSpec
     with Matchers
-    with BagLocationFixtures
+    with S3BagLocationFixtures
     with BagRegisterFixtures
     with PayloadGenerators {
 
@@ -27,7 +27,7 @@ class BagRegisterFeatureTest
         val bagInfo = createBagInfo
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo = bagInfo) {
+          withS3Bag(bucket, bagInfo = bagInfo) {
             case (bagRootLocation, storageSpace) =>
               val bagId = BagId(
                 space = storageSpace,

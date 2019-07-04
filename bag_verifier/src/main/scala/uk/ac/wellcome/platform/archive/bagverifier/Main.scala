@@ -15,7 +15,8 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifier,
   BagVerifierWorker
 }
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagDao
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
@@ -48,8 +49,7 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
     implicit val s3ObjectVerifier =
       new S3ObjectVerifier()
-    implicit val bagService =
-      new BagDao()
+    implicit val bagReader: BagReader[_] = new S3BagReader()
     implicit val s3Resolvable =
       new S3Resolvable()
 

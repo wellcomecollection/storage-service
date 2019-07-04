@@ -11,8 +11,8 @@ import uk.ac.wellcome.platform.archive.common.{
   EnrichedBagInformationPayload
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagLocationFixtures,
-  FileEntry
+  FileEntry,
+  S3BagLocationFixtures
 }
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -23,7 +23,7 @@ import scala.util.{Failure, Success, Try}
 class BagVerifierWorkerTest
     extends FunSpec
     with Matchers
-    with BagLocationFixtures
+    with S3BagLocationFixtures
     with IngestUpdateAssertions
     with IntegrationPatience
     with BagVerifierFixtures
@@ -37,7 +37,7 @@ class BagVerifierWorkerTest
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket) {
+          withS3Bag(bucket) {
             case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
@@ -68,7 +68,7 @@ class BagVerifierWorkerTest
 
       withBagVerifierWorker(ingests, outgoing) { service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket) {
+          withS3Bag(bucket) {
             case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
@@ -89,7 +89,7 @@ class BagVerifierWorkerTest
 
       withBagVerifierWorker(ingests, outgoing) { service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket) {
+          withS3Bag(bucket) {
             case (bagRootLocation, _) =>
               val payload = createBagRootLocationPayloadWith(
                 bagRootLocation = bagRootLocation
@@ -111,7 +111,7 @@ class BagVerifierWorkerTest
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
+          withS3Bag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
             case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
@@ -146,7 +146,7 @@ class BagVerifierWorkerTest
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket, createDataManifest = dontCreateTheDataManifest) {
+          withS3Bag(bucket, createDataManifest = dontCreateTheDataManifest) {
             case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
@@ -182,7 +182,7 @@ class BagVerifierWorkerTest
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withBag(bucket) {
+          withS3Bag(bucket) {
             case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation

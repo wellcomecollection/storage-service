@@ -6,7 +6,7 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.{
-  BagDao,
+  BagReader,
   BagVerifiable
 }
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
@@ -19,7 +19,7 @@ import scala.util.Try
 
 class BagVerifier()(
   implicit
-  bagService: BagDao,
+  bagReader: BagReader[_],
   resolvable: Resolvable[ObjectLocation],
   verifier: Verifier
 ) extends Logging {
@@ -28,7 +28,7 @@ class BagVerifier()(
     implicit val bagVerifiable = new BagVerifiable(root)
     val startTime = Instant.now()
 
-    bagService.get(root) match {
+    bagReader.get(root) match {
       case Left(e) =>
         IngestFailed(VerificationSummary.incomplete(root, e, startTime), e)
       case Right(bag) =>

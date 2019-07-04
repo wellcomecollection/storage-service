@@ -17,22 +17,21 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.store.TypedStoreEntry
+import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
+import uk.ac.wellcome.storage.store.{TypedStore, TypedStoreEntry}
 import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 
 import scala.util.Random
 
-trait BagLocationFixtures
-    extends S3Fixtures
-    with BagInfoGenerators
+trait BagLocationFixtures[Namespace]
+    extends BagInfoGenerators
     with BagIt
-    with StorageSpaceGenerators {
-
-  implicit val s3StreamStore: S3StreamStore = new S3StreamStore()
-  implicit val s3TypedStore: S3TypedStore[String] = new S3TypedStore[String]()
+    with StorageSpaceGenerators
+    with ObjectLocationGenerators {
+  def createObjectLocationWith(namespace: Namespace,
+                               path: String): ObjectLocation
 
   def withBag[R](
-    bucket: Bucket,
     bagInfo: BagInfo = createBagInfo,
     dataFileCount: Int = 1,
     storageSpace: StorageSpace = createStorageSpace,
@@ -41,7 +40,11 @@ trait BagLocationFixtures
     createTagManifest: List[(String, String)] => Option[FileEntry] =
       createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
-    testWith: TestWith[(ObjectLocation, StorageSpace), R]): R = {
+    testWith: TestWith[ObjectLocation, R])(
+    implicit
+    typedStore: TypedStore[ObjectLocation, String],
+    namespace: Namespace
+  ): R = {
     val bagIdentifier = createExternalIdentifier
 
     info(s"Creating Bag $bagIdentifier")
@@ -55,8 +58,8 @@ trait BagLocationFixtures
     debug(s"fileEntries: $fileEntries")
 
     val storageSpaceRootLocation = createObjectLocationWith(
-      bucket = bucket,
-      key = storageSpace.toString
+      namespace,
+      path = storageSpace.toString
     )
 
     val bagRootLocation = storageSpaceRootLocation.join(
@@ -79,17 +82,19 @@ trait BagLocationFixtures
 
     realFiles.map { entry =>
       val entryLocation = unpackedBagLocation.join(entry.name)
-      s3Client
-        .putObject(
-          entryLocation.namespace,
-          entryLocation.path,
-          entry.contents
-        )
+
+      typedStore.put(entryLocation)(TypedStoreEntry(
+        entry.contents,
+        metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
     val bagFetchEntries = fetchFiles.map { entry =>
-      val entryLocation = createObjectLocationWith(bucket)
-      s3TypedStore.put(entryLocation)(TypedStoreEntry(
+      val entryLocation = createObjectLocationWith(
+        namespace,
+        path = randomAlphanumeric
+      )
+
+      typedStore.put(entryLocation)(TypedStoreEntry(
         entry.contents,
         metadata = Map.empty)) shouldBe a[Right[_, _]]
 
@@ -104,11 +109,44 @@ trait BagLocationFixtures
       val fetchLocation = unpackedBagLocation.join("fetch.txt")
       val fetchContents = BagFetch.write(bagFetchEntries)
 
-      s3TypedStore.put(fetchLocation)(TypedStoreEntry(
+      typedStore.put(fetchLocation)(TypedStoreEntry(
         fetchContents,
         metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
-    testWith((bagRootLocation, storageSpace))
+    testWith(bagRootLocation)
+  }
+}
+
+trait S3BagLocationFixtures
+    extends S3Fixtures
+    with BagLocationFixtures[Bucket] {
+
+  implicit val s3StreamStore: S3StreamStore = new S3StreamStore()
+  implicit val s3TypedStore: S3TypedStore[String] = new S3TypedStore[String]()
+
+  def withS3Bag[R](
+    bucket: Bucket,
+    bagInfo: BagInfo = createBagInfo,
+    dataFileCount: Int = 1,
+    storageSpace: StorageSpace = createStorageSpace,
+    createDataManifest: List[(String, String)] => Option[FileEntry] =
+      createValidDataManifest,
+    createTagManifest: List[(String, String)] => Option[FileEntry] =
+      createValidTagManifest,
+    bagRootDirectory: Option[String] = None)(
+    testWith: TestWith[(ObjectLocation, StorageSpace), R]): R = {
+    implicit val namespace: Bucket = bucket
+
+    withBag(
+      bagInfo = bagInfo,
+      dataFileCount = dataFileCount,
+      storageSpace = storageSpace,
+      createDataManifest = createDataManifest,
+      createTagManifest = createTagManifest,
+      bagRootDirectory = bagRootDirectory
+    ) { bagRootLocation =>
+      testWith((bagRootLocation, storageSpace))
+    }
   }
 }
