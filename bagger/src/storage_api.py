@@ -9,6 +9,7 @@ ingest_template = {
     "type": "Ingest",
     "ingestType": {"id": "create", "type": "IngestType"},
     "space": {"id": "digitised", "type": "Space"},
+    "bag": {"type": "Bag", "info": {"type": "BagInfo", "externalIdentifier": None}},
     "sourceLocation": {
         "type": "Location",
         "provider": {"type": "Provider", "id": "aws-s3-standard"},
@@ -68,6 +69,7 @@ def ingest(bnumber):
     global ingest_template
     body = deepcopy(ingest_template)
     body["sourceLocation"]["path"] = bnumber + ".tar.gz"
+    body["bag"]["info"]["externalIdentifier"] = bnumber
     url = settings.STORAGE_API_INGESTS
     scope = get_ingest_scope()
     return get_oauthed_json(url, scope, method="POST", data=json.dumps(body))
