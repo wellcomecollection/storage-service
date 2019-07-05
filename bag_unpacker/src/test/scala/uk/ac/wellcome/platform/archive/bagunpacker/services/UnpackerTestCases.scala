@@ -8,14 +8,10 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.ArchiveLocationException
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.services.s3.S3Unpacker
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, InputStreamWithLengthAndMetadata, StreamAssertions}
-import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, StreamAssertions}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues with CompressFixture[Namespace] with StreamAssertions {
   val unpacker: Unpacker
@@ -128,101 +124,3 @@ trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues 
         n + file.length()
       }
 }
-
-class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
-  override val unpacker: Unpacker = new S3Unpacker()
-
-  override def withNamespace[R](testWith: TestWith[Bucket, R]): R =
-    withLocalS3Bucket { bucket =>
-      testWith(bucket)
-    }
-
-  // TODO: Add covariance to StreamStore
-  override def withStreamStore[R](testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]): R = {
-    val s3StreamStore = new S3StreamStore()
-
-    val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
-      override def get(location: ObjectLocation): ReadEither =
-        s3StreamStore.get(location)
-          .map { is => Identified(is.id, new InputStreamWithLength(is.identifiedT, length = is.identifiedT.length)) }
-
-      override def put(location: ObjectLocation)(is: InputStreamWithLength): WriteEither =
-        s3StreamStore.put(location)(
-          new InputStreamWithLengthAndMetadata(is, length = is.length, metadata = Map.empty)
-        ).map { is =>
-          is.copy(
-            identifiedT = new InputStreamWithLength(is.identifiedT, length = is.identifiedT.length)
-          )
-        }
-    }
-
-    testWith(store)
-  }
-}
-
-//class UnpackerTest
-//    extends FunSpec
-//    with Matchers
-//    with CompressFixture
-//    with StorageRandomThings
-//    with TryValues
-//    with S3Fixtures {
-//
-//  val unpacker = Unpacker(
-//    downloader = new S3StreamStore(),
-//    s3Uploader = new S3Uploader()
-//  )
-//
-//
-//
-//
-//
-//  private def assertBucketContentsMatchFiles(
-//    bucket: Bucket,
-//    keyStripPrefix: String,
-//    expectedFiles: Seq[File]): Seq[Assertion] = {
-//    val keys = listKeysInBucket(bucket)
-//    val locations = keys.map(ObjectLocation(bucket.name, _))
-//    val bucketFileMap = objectToContentMap(locations, keyStripPrefix)
-//
-//    bucketFileMap.size shouldBe expectedFiles.length
-//
-//    expectedFiles.map { actualArchiveFile =>
-//      val fis = new FileInputStream(actualArchiveFile)
-//      val content = IOUtils.toByteArray(fis)
-//      val archiveFileName = Paths
-//        .get(relativeToTmpDir(actualArchiveFile))
-//        .normalize()
-//        .toString
-//
-//      val dstFile = bucketFileMap.get(archiveFileName)
-//      dstFile shouldBe defined
-//
-//      val actualBytes = dstFile.get
-//      actualBytes.length shouldBe content.length
-//      actualBytes shouldEqual content
-//    }
-//  }
-//
-//  private def objectToContentMap(
-//    objectLocations: List[ObjectLocation],
-//    stripKeyPrefix: String): Map[String, Array[Byte]] = {
-//    objectLocations.map { objectLocation: ObjectLocation =>
-//      val s3Object =
-//        s3Client.getObject(objectLocation.namespace, objectLocation.path)
-//
-//      val content = IOUtils
-//        .toByteArray(s3Object.getObjectContent)
-//
-//      val name = objectLocation.path
-//        .replaceFirst(
-//          s"$stripKeyPrefix/",
-//          ""
-//        )
-//
-//      debug(s"Found $key in $objectLocation")
-//
-//      name -> content
-//    }.toMap
-//  }
-//
