@@ -116,9 +116,7 @@ def bag_from_identifier(identifier, skip_file_download):
 
     if skip_file_download:
         logging.info("Finished %s without bagging", b_number)
-
-        bag_assembly.cleanup(b_number)
-
+        # bag_assembly.cleanup(bag_details)
         return None
 
     bagit.make_bag(bag_details["directory"], get_bag_info(b_number, title))
@@ -141,6 +139,7 @@ def process_manifestation(root, bag_details, skip_file_download, id_map):
     assets, alto = mets.get_physical_file_maps(root)
     files.process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
     files.process_alto(root, bag_details, alto, skip_file_download)
+    files.check_for_posterimages(root, tech_md_files, bag_details, skip_file_download)
 
 
 def load_xml(path):

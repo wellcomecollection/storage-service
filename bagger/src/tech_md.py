@@ -1,5 +1,7 @@
+import os
 import logging
 import mappings
+import image_size
 from xml_help import make_child, remove_first_child, namespaces
 
 
@@ -23,21 +25,25 @@ class UnrecognisedPRONOMFormatError(KeyError):
     pass
 
 
+def make_premis_file_element(parent):
+    premis_file = make_child(parent, "premis", "object")
+    premis_file.set("xsi:type", "premis:file")
+    # These v3 schemas conflict with the v2 asserted in the existing METS, but fix that later
+    premis_file.set(
+        "xsi:schemaLocation",
+        "http://www.loc.gov/premis/v3 http://www.loc.gov/standards/premis/v3/premis.xsd",
+    )
+    premis_file.set("version", "3.0")
+    return premis_file
+
+
 def remodel_file_technical_metadata(root, id_map):
     logging.debug("transforming Tessella techMD")
     x_path = ".//mets:xmlData[tessella:File]"
     tessella_file_xmldata = root.findall(x_path, namespaces)
     for xmldata in tessella_file_xmldata:
         tessella_file = xmldata[0]
-        premis_file = make_child(xmldata, "premis", "object")
-
-        premis_file.set("xsi:type", "premis:file")
-        # These v3 schemas conflict with the v2 asserted in the existing METS, but fix that later
-        premis_file.set(
-            "xsi:schemaLocation",
-            "http://www.loc.gov/premis/v3 http://www.loc.gov/standards/premis/v3/premis.xsd",
-        )
-        premis_file.set("version", "3.0")
+        premis_file = make_premis_file_element(xmldata)
 
         file_name = tessella_file.find("tessella:FileName", namespaces).text
         add_premis_identifier(premis_file, "local", file_name)
@@ -92,3 +98,41 @@ def remodel_file_technical_metadata(root, id_map):
             raise UnrecognisedPRONOMFormatError(format_name.text)
 
         remove_first_child(xmldata)
+
+
+def append_poster(root, destination):
+    # Add this in as an additional file in technical metadata, but not in
+    # structMaps (yet), as that would be just inventing something that needs to
+    # go in Archivematica
+
+    # data we are interested in
+    head, tail = os.path.split(destination)
+    file_name = tail
+    file_size = os.path.getsize(destination)
+    width, height = image_size.get_image_size(destination)
+
+    amds = root.find("./mets:amdSec[@ID='AMD']", namespaces)
+    tech_md = make_child(amds, "mets", "techMD")
+    tech_md.set("ID", "AMD_POSTER")
+    md_wrap = make_child(tech_md, "mets", "mdWrap")
+    md_wrap.set("MDTYPE", "OTHER")
+    md_wrap.set("MIMETYPE", "text/xml")
+    xmldata = make_child(md_wrap, "mets", "xmlData")
+    premis_file = make_premis_file_element(xmldata)
+    add_premis_identifier(premis_file, "local", file_name)
+    add_premis_significant_prop(premis_file, "ImageWidth", str(width))
+    add_premis_significant_prop(premis_file, "ImageHeight", str(height))
+    characteristics = make_child(premis_file, "premis", "objectCharacteristics")
+    file_size_el = make_child(characteristics, "premis", "size")
+    file_size_el.text = str(file_size)
+    p_format = make_child(characteristics, "premis", "format")
+    format_designation = make_child(p_format, "premis", "formatDesignation")
+    format_name = make_child(format_designation, "premis", "formatName")
+    format_name.text = "JPEG Format"
+    format_registry = make_child(p_format, "premis", "formatRegistry")
+    format_registry_name = make_child(
+        format_registry, "premis", "formatRegistryName"
+    )
+    format_registry_name.text = "PRONOM"
+    format_registry_key = make_child(format_registry, "premis", "formatRegistryKey")
+    format_registry_key.text = "fmt/44"

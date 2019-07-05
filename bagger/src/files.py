@@ -10,6 +10,7 @@ import settings
 import bag_assembly
 import dlcs
 import storage
+import tech_md
 from xml_help import expand, namespaces
 
 import boto3
@@ -19,6 +20,10 @@ s3_client = boto3.client("s3")
 # keep track of these to ensure no collisions in Multiple Manifestations
 ALTO_KEYS = set()
 OBJECT_KEYS = set()
+
+# For bagging posters when running on AWS
+POSTER_CANDIDATES = [".mpg", ".mpeg", ".mp3", ".wav", ".mp4"]
+POSTER_SOURCE = "https://wellcomelibrary.org/posterimages/{0}.{1}"
 
 
 def download_s3_object(b_number, source_bucket, source, destination):
@@ -173,6 +178,8 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
 
         if skip_file_download:
             logging.debug("Skipping processing file %s", preservica_uuid)
+            # We assume that the download would always have been a success
+            structmap_uuids_downloaded.append(preservica_uuid)
             continue
 
         fetch_attempt = try_to_download_asset(preservica_uuid, destination)
@@ -201,6 +208,10 @@ def process_assets(root, bag_details, assets, tech_md_files, skip_file_download)
             assert tech_md_file.get("warning", None) is not None
             logging.debug(tech_md_file["warning"])
             tech_md_mismatch_warnings.append(tech_md_file["warning"])
+
+            if skip_file_download:
+                continue
+
             # we've recorded the warning, now try to get the file
             folder = "objects"
             filename = tech_md_file["filename"]
@@ -346,3 +357,35 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
             download_err = err
             pass
     raise download_err
+
+
+def check_for_posterimages(root, tech_md_files, bag_details, skip_file_download):
+    # Going to try and catch as many AV files as possible without relying
+    # on logical structure, but we need to bail out as quickly as possible
+
+    # TODO: spend less time in here by knowing the object is AV by other means
+    for tech_md_file in tech_md_files:
+        base, ext = os.path.splitext(tech_md_file["filename"])
+        if might_have_poster(ext):
+            file_name = base + ".jpg"
+            destination = os.path.join(bag_details["directory"], "posters", file_name)
+            if download_poster(base, destination):
+                tech_md.append_poster(root, destination)
+
+
+def might_have_poster(ext):
+    if ext == ".jp2":
+        return False
+    return ext.lower() in POSTER_CANDIDATES
+
+
+def download_poster(base, destination):
+    for jpgext in ["jpg", "jpeg"]:
+        url = POSTER_SOURCE.format(base, jpgext)
+        response = requests.get(url)
+        if response.status_code == 200:
+            bag_assembly.ensure_directory(destination)
+            with open(destination, 'wb') as f:
+                f.write(response.content)
+                return True
+    return False
