@@ -6,7 +6,7 @@ import java.time.Instant
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.ArchiveLocationException
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.storage.BetterArchive
+import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
@@ -15,6 +15,11 @@ import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ObjectLocation
 import scala.util.{Failure, Success, Try}
 
 trait Unpacker {
+  // The unpacker asks for separate get/put methods rather than a Store
+  // because it might be unpacking/uploading to different providers.
+  //
+  // e.g. we might unpack a package from an S3 bucket, then upload it to Azure.
+  //
   def get(location: ObjectLocation): Either[StorageError, InputStream]
   def put(location: ObjectLocation)(inputStream: InputStreamWithLength): Either[StorageError, Unit]
 
@@ -59,7 +64,7 @@ trait Unpacker {
   private def unpack(unpackSummary: UnpackSummary,
                      srcStream: InputStream,
                      dstLocation: ObjectLocationPrefix): Try[UnpackSummary] =
-    BetterArchive.unpack(srcStream).map { iterator =>
+    Archive.unpack(srcStream).map { iterator =>
       var totalFiles = 0
       var totalBytes = 0
 

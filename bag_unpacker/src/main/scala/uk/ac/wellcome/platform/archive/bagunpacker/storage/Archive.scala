@@ -7,7 +7,7 @@ import org.apache.commons.compress.compressors.{CompressorInputStream, Compresso
 
 import scala.util.Try
 
-object BetterArchive {
+object Archive {
   def unpack(inputStream: InputStream): Try[Iterator[(ArchiveEntry, InputStream)]] =
     for {
       uncompressedStream <- uncompress(inputStream)

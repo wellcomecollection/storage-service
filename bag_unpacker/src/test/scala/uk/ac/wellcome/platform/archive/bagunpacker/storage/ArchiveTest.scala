@@ -15,7 +15,7 @@ import scala.util.Success
   * and because they're simpler than doing it with Scala!
   *
   */
-class BetterArchiveTest extends FunSpec with Matchers with EitherValues with TryValues {
+class ArchiveTest extends FunSpec with Matchers with EitherValues with TryValues {
 
   /** The package for this test was created with the bash script:
     *
@@ -31,7 +31,7 @@ class BetterArchiveTest extends FunSpec with Matchers with EitherValues with Try
   it("unpacks a tar.gz file") {
     val inputStream = getClass.getResourceAsStream("/numbers.tar.gz")
 
-    val archiveIterator = BetterArchive.unpack(inputStream).success.value
+    val archiveIterator = Archive.unpack(inputStream).success.value
 
     archiveIterator.foreach { case (archiveEntry, entryInputStream) =>
       archiveEntry shouldBe a[TarArchiveEntry]
@@ -54,7 +54,7 @@ class BetterArchiveTest extends FunSpec with Matchers with EitherValues with Try
       override def markSupported(): Boolean = false
     }
 
-    BetterArchive.unpack(unmarkableStream) shouldBe a[Success[_]]
+    Archive.unpack(unmarkableStream) shouldBe a[Success[_]]
   }
 
   /** The file for this test was created with the bash script:
@@ -66,7 +66,7 @@ class BetterArchiveTest extends FunSpec with Matchers with EitherValues with Try
   it("fails if the uncompressed stream is not a container") {
     val inputStream = getClass.getResourceAsStream("/greeting.txt.gz")
 
-    val error = BetterArchive.unpack(inputStream).failure
+    val error = Archive.unpack(inputStream).failure
 
     error.exception shouldBe a[ArchiveException]
     error.exception.getMessage should startWith("No Archiver found for the stream signature")
@@ -75,7 +75,7 @@ class BetterArchiveTest extends FunSpec with Matchers with EitherValues with Try
   it("fails if the file is not a compressed stream") {
     val inputStream = stringCodec.toStream("hello world").right.value
 
-    val error = BetterArchive.unpack(inputStream).failure
+    val error = Archive.unpack(inputStream).failure
 
     error.exception shouldBe a[CompressorException]
     error.exception.getMessage should startWith("No Compressor found for the stream signature")
