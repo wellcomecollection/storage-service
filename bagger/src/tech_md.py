@@ -130,9 +130,7 @@ def append_poster(root, destination):
     format_name = make_child(format_designation, "premis", "formatName")
     format_name.text = "JPEG Format"
     format_registry = make_child(p_format, "premis", "formatRegistry")
-    format_registry_name = make_child(
-        format_registry, "premis", "formatRegistryName"
-    )
+    format_registry_name = make_child(format_registry, "premis", "formatRegistryName")
     format_registry_name.text = "PRONOM"
     format_registry_key = make_child(format_registry, "premis", "formatRegistryKey")
     format_registry_key.text = "fmt/44"

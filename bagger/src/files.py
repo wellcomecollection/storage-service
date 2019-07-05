@@ -385,7 +385,7 @@ def download_poster(base, destination):
         response = requests.get(url)
         if response.status_code == 200:
             bag_assembly.ensure_directory(destination)
-            with open(destination, 'wb') as f:
+            with open(destination, "wb") as f:
                 f.write(response.content)
                 return True
     return False
