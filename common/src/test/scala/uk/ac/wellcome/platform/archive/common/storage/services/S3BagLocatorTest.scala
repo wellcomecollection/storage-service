@@ -112,7 +112,7 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3Fixtures {
 
         val prefix = createObjectLocationPrefixWith(bucket, "bag123")
 
-        s3BagLocator.locateBagRoot(prefix) shouldBe Success(prefix)
+        s3BagLocator.locateBagRoot(prefix) shouldBe Success(prefix.asLocation())
       }
     }
 

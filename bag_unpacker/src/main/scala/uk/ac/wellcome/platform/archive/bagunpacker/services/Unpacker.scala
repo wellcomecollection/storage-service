@@ -88,7 +88,7 @@ trait Unpacker {
     }
 
   private def getSrcStream(
-                            srcLocation: ObjectLocation): Try[InputStream] =
+    srcLocation: ObjectLocation): Try[InputStream] =
     get(srcLocation) match {
       case Right(inputStream) => Success(inputStream)
       case Left(_: DoesNotExistError) =>
