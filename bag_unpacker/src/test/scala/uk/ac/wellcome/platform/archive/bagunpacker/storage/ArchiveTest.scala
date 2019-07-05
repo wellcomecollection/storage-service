@@ -57,6 +57,16 @@ class ArchiveTest extends FunSpec with Matchers with EitherValues with TryValues
     Archive.unpack(unmarkableStream) shouldBe a[Success[_]]
   }
 
+  it("handles the caller closing the input stream") {
+    val inputStream = getClass.getResourceAsStream("/numbers.tar.gz")
+
+    val archiveIterator = Archive.unpack(inputStream).success.value
+
+    archiveIterator.foreach { case (_, entryInputStream) =>
+      entryInputStream.close()
+    }
+  }
+
   /** The file for this test was created with the bash script:
     *
     *     echo "hello world" > greeting.txt

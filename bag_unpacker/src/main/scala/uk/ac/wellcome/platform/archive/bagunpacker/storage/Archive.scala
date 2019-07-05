@@ -4,6 +4,7 @@ import java.io.{BufferedInputStream, InputStream}
 
 import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveInputStream, ArchiveStreamFactory}
 import org.apache.commons.compress.compressors.{CompressorInputStream, CompressorStreamFactory}
+import org.apache.commons.io.input.CloseShieldInputStream
 
 import scala.util.Try
 
@@ -25,9 +26,9 @@ import scala.util.Try
   *                                  +---------+       file3
   *                                            +-----+ file4
   *
-  * This means you need to make sure the individual input streams never
-  * get closed -- or it'll close the underlying stream, and you'll be
-  * unable to get any more entries.
+  * This is why we wrap the output in a close shield: if the caller closed
+  * the individual stream, they'd close the underlying stream and we'd be
+  * unable to read any more of the archive.
   *
   */
 object Archive {
@@ -48,7 +49,7 @@ object Archive {
       }
 
       override def next(): (ArchiveEntry, InputStream) =
-        (latest, archiveInputStream)
+        (latest, new CloseShieldInputStream(archiveInputStream))
     }
 
   private def uncompress(compressedStream: InputStream): Try[CompressorInputStream] =
