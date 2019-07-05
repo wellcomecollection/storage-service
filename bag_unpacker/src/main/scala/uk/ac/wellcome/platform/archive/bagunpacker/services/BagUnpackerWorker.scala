@@ -23,12 +23,12 @@ import uk.ac.wellcome.platform.archive.common.{
 
 import scala.util.Try
 
-class BagUnpackerWorker[IngestDestination, OutgoingDestination, IS <: InputStream](
+class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
   bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  unpacker: Unpacker[IS]
+  unpacker: Unpacker
 )(implicit val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,

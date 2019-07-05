@@ -4,20 +4,19 @@ import java.io.InputStream
 import java.time.Instant
 
 import org.apache.commons.compress.archivers.ArchiveEntry
-import org.apache.commons.io.input.CloseShieldInputStream
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.ArchiveLocationException
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.BetterArchive
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ObjectLocationPrefix}
-import uk.ac.wellcome.storage.store.Readable
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ObjectLocationPrefix, StorageError}
 
 import scala.util.{Failure, Success, Try}
 
-case class Unpacker[IS <: InputStream](
-  downloader: Readable[ObjectLocation, IS],
-  s3Uploader: S3Uploader) {
+trait Unpacker {
+  def get(location: ObjectLocation): Either[StorageError, InputStream]
+  def put(location: ObjectLocation)(inputStream: InputStreamWithLength): Either[StorageError, Unit]
 
   def unpack(
     ingestId: IngestID,
@@ -84,9 +83,9 @@ case class Unpacker[IS <: InputStream](
     }
 
   private def getSrcStream(
-    srcLocation: ObjectLocation): Try[InputStream] =
-    downloader.get(srcLocation) match {
-      case Right(inputStream) => Success(inputStream.identifiedT)
+                            srcLocation: ObjectLocation): Try[InputStream] =
+    get(srcLocation) match {
+      case Right(inputStream) => Success(inputStream)
       case Left(_: DoesNotExistError) =>
         Failure(
           new ArchiveLocationException(
@@ -121,11 +120,11 @@ case class Unpacker[IS <: InputStream](
     // it's finished uploading.  Because this is really a view into the underlying
     // stream coming from the original archive, we don't want to close it -- hold
     // it open.
-    s3Uploader.putObject(
-      inputStream = new CloseShieldInputStream(inputStream),
-      streamLength = archiveEntrySize,
-      uploadLocation = uploadLocation
-    )
+    put(uploadLocation)(
+      new InputStreamWithLength(inputStream, length = archiveEntrySize)) match {
+      case Right(_) => ()
+      case Left(storageError) => throw storageError.e
+    }
 
     archiveEntrySize
   }

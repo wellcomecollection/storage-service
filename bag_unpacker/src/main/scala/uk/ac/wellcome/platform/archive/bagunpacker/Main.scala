@@ -5,13 +5,13 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder}
 import uk.ac.wellcome.messaging.typesafe.SQSBuilder.buildSQSAsyncClient
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.UnpackerWorkerConfigBuilder
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{BagUnpackerWorker, S3Uploader, Unpacker}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorker
+import uk.ac.wellcome.platform.archive.bagunpacker.services.s3.S3Unpacker
 import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.S3Builder._
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder._
@@ -59,10 +59,7 @@ object Main extends WellcomeTypesafeApp {
       bagUnpackerWorkerConfig = unpackerWorkerConfig,
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
-      unpacker = Unpacker(
-        downloader = new S3StreamStore(),
-        s3Uploader = new S3Uploader()
-      )
+      unpacker = new S3Unpacker()
     )
   }
 }
