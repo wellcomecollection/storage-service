@@ -91,14 +91,14 @@ trait Unpacker {
           new ArchiveLocationException(
             objectLocation = srcLocation,
             message =
-              s"Error getting input stream for s3://$srcLocation: No such object"
+              s"Error getting input stream for $srcLocation: No such object"
           )
         )
       case Left(err) =>
         Failure(new ArchiveLocationException(
           objectLocation = srcLocation,
           message =
-            s"Error getting input stream for s3://$srcLocation: $err"))
+            s"Error getting input stream for $srcLocation: $err"))
     }
 
   private def putObject(

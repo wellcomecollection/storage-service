@@ -5,9 +5,11 @@ import java.nio.file.Paths
 
 import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.ArchiveLocationException
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
+import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.services.s3.S3Unpacker
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepSucceeded
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore
@@ -50,6 +52,58 @@ trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues 
         }
       }
     }
+  }
+
+  it("normalizes file entries such as './' when unpacking") {
+    val (archiveFile, filesInArchive, _) =
+      createTgzArchiveWithFiles(
+        randomFilesWithNames(
+          List("./testA", "/testB", "/./testC", "//testD")
+        ))
+
+    withNamespace { srcNamespace =>
+      withNamespace { dstNamespace =>
+        withStreamStore { implicit streamStore =>
+          withArchive(srcNamespace, archiveFile) { archiveLocation =>
+            val dstLocation = createObjectLocationWith(dstNamespace, path = "unpacker").asPrefix
+            val summaryResult = unpacker
+              .unpack(
+                ingestId = createIngestID,
+                srcLocation = archiveLocation,
+                dstLocation = dstLocation
+              )
+
+            val unpacked = summaryResult.success.value
+            unpacked shouldBe a[IngestStepSucceeded[_]]
+
+            val summary = unpacked.summary
+            summary.fileCount shouldBe filesInArchive.size
+            summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
+
+            assertEqual(dstLocation, filesInArchive)
+          }
+        }
+      }
+    }
+  }
+
+  it("fails if the original archive does not exist") {
+    val srcLocation = createObjectLocation
+    val result =
+      unpacker.unpack(
+        ingestId = createIngestID,
+        srcLocation = srcLocation,
+        dstLocation = createObjectLocationPrefix
+      )
+
+    val ingestResult = result.success.value
+    ingestResult shouldBe a[IngestFailed[_]]
+    ingestResult.summary.fileCount shouldBe 0
+    ingestResult.summary.bytesUnpacked shouldBe 0
+
+    val underlyingError = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
+    underlyingError.e shouldBe a[ArchiveLocationException]
+    underlyingError.e.getMessage should startWith(s"Error getting input stream for $srcLocation:")
   }
 
   def assertEqual(prefix: ObjectLocationPrefix, expectedFiles: Seq[File])(implicit store: StreamStore[ObjectLocation, InputStreamWithLength]): Seq[Assertion] = {
@@ -120,82 +174,8 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
 //  )
 //
 //
-//  it("normalizes file entries such as './' when unpacking") {
-//    withLocalS3Bucket { srcBucket =>
-//      withLocalS3Bucket { dstBucket =>
-//        val (archiveFile, filesInArchive, _) =
-//          createTgzArchiveWithFiles(
-//            randomFilesWithNames(
-//              List("./testA", "/testB", "/./testC", "//testD")
-//            ))
-//        withArchive(srcBucket, archiveFile) { testArchive =>
-//          val dstKey = "unpacked"
-//          val summaryResult = unpacker
-//            .unpack(
-//              ingestId = createIngestID,
-//              srcLocation = testArchive,
-//              dstLocation = ObjectLocation(dstBucket.name, dstKey)
-//            )
 //
-//          val unpacked = summaryResult.success.value
-//          unpacked shouldBe a[IngestStepSucceeded[_]]
 //
-//          val summary = unpacked.summary
-//          summary.fileCount shouldBe filesInArchive.size
-//          summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
-//
-//          assertBucketContentsMatchFiles(dstBucket, dstKey, filesInArchive)
-//        }
-//      }
-//    }
-//  }
-//
-//  it("returns an IngestFailed if it cannot open the input stream") {
-//    val srcLocation = createObjectLocation
-//    val result =
-//      unpacker.unpack(
-//        ingestId = createIngestID,
-//        srcLocation = srcLocation,
-//        dstLocation = createObjectLocation
-//      )
-//
-//    val ingestResult = result.success.value
-//    ingestResult shouldBe a[IngestFailed[_]]
-//    ingestResult.summary.fileCount shouldBe 0
-//    ingestResult.summary.bytesUnpacked shouldBe 0
-//
-//    val underlyingError = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
-//    underlyingError.e shouldBe a[ArchiveLocationException]
-//    underlyingError.e.getMessage should
-//      startWith(
-//        s"Error getting input stream for s3://$srcLocation: " +
-//          "No such object")
-//  }
-//
-//  it("returns an IngestFailed if it cannot write to the destination") {
-//    withLocalS3Bucket { srcBucket =>
-//      val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
-//      withArchive(srcBucket, archiveFile) { testArchive =>
-//        val dstLocation = createObjectLocation
-//        val result =
-//          unpacker.unpack(
-//            ingestId = createIngestID,
-//            srcLocation = testArchive,
-//            dstLocation = dstLocation
-//          )
-//
-//        val ingestResult = result.success.value
-//        ingestResult shouldBe a[IngestFailed[_]]
-//        ingestResult.summary.fileCount shouldBe 0
-//        ingestResult.summary.bytesUnpacked shouldBe 0
-//
-//        val underlyingError =
-//          ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
-//        underlyingError.e shouldBe a[Throwable]
-//        underlyingError.e.getMessage should startWith("Error from S3StreamStore")
-//      }
-//    }
-//  }
 //
 //  private def assertBucketContentsMatchFiles(
 //    bucket: Bucket,
