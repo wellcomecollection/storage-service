@@ -11,7 +11,9 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 
-class S3BagReaderTest extends BagReaderTestCases[Unit, Bucket] with S3Fixtures {
+class S3BagReaderTest
+    extends BagReaderTestCases[Unit, Bucket]
+    with S3Fixtures {
   override def withTypedStore[R](
     testWith: TestWith[TypedStore[ObjectLocation, String], R])(
     implicit context: Unit): R = {

@@ -40,7 +40,7 @@ object S3StreamableInstances {
 
       result match {
         case Success(stream) => Right(Some(stream))
-        case Failure(err)    => Left(StreamUnavailable(err.getMessage))
+        case Failure(err) => Left(StreamUnavailable(err.getMessage))
       }
     }
 
@@ -53,7 +53,7 @@ object S3StreamableInstances {
         s3Client.doesObjectExist(location.namespace, location.path))
 
       val result = (bucketExists, objectExists) match {
-        case (Success(true), Success(true))  => getObjectContent(location)
+        case (Success(true), Success(true)) => getObjectContent(location)
         case (Success(true), Success(false)) => Right(None)
         case (Success(true), Failure(e)) =>
           Left(StreamUnavailable(e.getMessage))
@@ -91,13 +91,13 @@ object S3StreamableInstances {
       : Either[StreamUnavailable, Option[S3ObjectStream]] =
       for {
         located <- locator.locate(t)(root) match {
-          case Left(f)         => Left(StreamUnavailable(f.msg))
+          case Left(f) => Left(StreamUnavailable(f.msg))
           case Right(location) => Right(location)
         }
 
         streamed <- new StreamableObjectLocation().stream(located) match {
           case Left(f: StreamUnavailable) => Left(StreamUnavailable(f.msg))
-          case Right(location)            => Right(location)
+          case Right(location) => Right(location)
         }
       } yield streamed
 

@@ -21,8 +21,7 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   verifier: BagVerifier
-)(implicit
-  val mc: MonitoringClient,
+)(implicit val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
   val wd: Decoder[BagRootPayload])

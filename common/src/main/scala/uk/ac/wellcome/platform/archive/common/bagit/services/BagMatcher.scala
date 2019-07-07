@@ -22,7 +22,7 @@ object BagMatcher {
       bagFiles = bag.manifest.files ++ bag.tagManifest.files,
       fetchEntries = bag.fetch match {
         case Some(fetchEntry) => fetchEntry.files
-        case None             => Seq.empty
+        case None => Seq.empty
       }
     )
 

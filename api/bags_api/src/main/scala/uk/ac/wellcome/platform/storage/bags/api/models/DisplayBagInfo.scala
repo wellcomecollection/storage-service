@@ -11,8 +11,7 @@ case class DisplayBagInfo(
   externalDescription: Option[String] = None,
   internalSenderIdentifier: Option[String] = None,
   internalSenderDescription: Option[String] = None,
-  @JsonKey("type")
-  ontologyType: String = "BagInfo"
+  @JsonKey("type") ontologyType: String = "BagInfo"
 )
 
 object DisplayBagInfo {

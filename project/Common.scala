@@ -5,9 +5,8 @@ object Common {
   val settings: Seq[Def.Setting[_]] = Seq(
     scalaVersion := "2.12.6",
     organization := "uk.ac.wellcome",
-
-    resolvers ++= Seq("S3 releases" at "s3://releases.mvn-repo.wellcomecollection.org/"),
-
+    resolvers ++= Seq(
+      "S3 releases" at "s3://releases.mvn-repo.wellcomecollection.org/"),
     scalacOptions ++= Seq(
       "-deprecation",
       "-unchecked",
@@ -20,7 +19,6 @@ object Common {
       "-language:postfixOps",
       "-Ypartial-unification",
       "-Xcheckinit"
-
     ),
     parallelExecution in Test := false
   )

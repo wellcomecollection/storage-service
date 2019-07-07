@@ -117,7 +117,11 @@ class BagRegisterWorkerTest
                 .value
                 .version shouldBe 2
 
-              storageManifestDao.getLatest(bagId).right.value.version shouldBe 2
+              storageManifestDao
+                .getLatest(bagId)
+                .right
+                .value
+                .version shouldBe 2
           }
         }
     }

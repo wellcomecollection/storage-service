@@ -33,7 +33,8 @@ class Router(register: StorageManifestDao, contextURL: URL)(
   def routes: Route = {
     import akka.http.scaladsl.server.Directives._
     import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
-    implicit val printer: Printer = Printer.noSpaces.copy(dropNullValues = true)
+    implicit val printer: Printer =
+      Printer.noSpaces.copy(dropNullValues = true)
 
     pathPrefix("bags") {
       path(Segment / Segment) { (space, externalIdentifier) =>
@@ -47,7 +48,7 @@ class Router(register: StorageManifestDao, contextURL: URL)(
             val result: Either[ReadError, StorageManifest] =
               maybeVersion match {
                 case Some(version) => register.get(bagId, version = version)
-                case None          => register.getLatest(bagId)
+                case None => register.getLatest(bagId)
               }
 
             result match {

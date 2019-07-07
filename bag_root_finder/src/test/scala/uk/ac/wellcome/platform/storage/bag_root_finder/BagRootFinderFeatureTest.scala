@@ -162,28 +162,31 @@ class BagRootFinderFeatureTest
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
-      withWorkerService(queue, ingests, outgoing, stepName = "finding bag root") {
-        _ =>
-          sendNotificationToSQS(queue, payload)
+      withWorkerService(
+        queue,
+        ingests,
+        outgoing,
+        stepName = "finding bag root") { _ =>
+        sendNotificationToSQS(queue, payload)
 
-          eventually {
-            assertQueueEmpty(queue)
+        eventually {
+          assertQueueEmpty(queue)
 
-            outgoing.messages shouldBe empty
+          outgoing.messages shouldBe empty
 
-            assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
-              ingestUpdates =>
-                ingestUpdates.size shouldBe 2
+          assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+            ingestUpdates =>
+              ingestUpdates.size shouldBe 2
 
-                val ingestStart = ingestUpdates.head
-                ingestStart.events.head.description shouldBe "Finding bag root started"
+              val ingestStart = ingestUpdates.head
+              ingestStart.events.head.description shouldBe "Finding bag root started"
 
-                val ingestFailed =
-                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-                ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe s"Finding bag root failed - Unable to find root of the bag at $unpackedBagLocation"
-            }
+              val ingestFailed =
+                ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+              ingestFailed.status shouldBe Ingest.Failed
+              ingestFailed.events.head.description shouldBe s"Finding bag root failed - Unable to find root of the bag at $unpackedBagLocation"
           }
+        }
       }
     }
   }

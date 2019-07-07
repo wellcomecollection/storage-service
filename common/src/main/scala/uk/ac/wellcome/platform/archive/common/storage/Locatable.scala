@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.archive.common.storage
 import uk.ac.wellcome.storage.ObjectLocation
 
 trait Locatable[T] {
-  def locate(t: T)(
-    maybeRoot: Option[ObjectLocation]): Either[LocateFailure[T], ObjectLocation]
+  def locate(t: T)(maybeRoot: Option[ObjectLocation])
+    : Either[LocateFailure[T], ObjectLocation]
 }
 
 object Locatable {

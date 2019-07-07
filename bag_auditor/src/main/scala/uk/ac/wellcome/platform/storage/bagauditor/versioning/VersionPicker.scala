@@ -34,10 +34,9 @@ class VersionPicker(
     storageSpace: StorageSpace
   ): Either[VersionPickerError, Int] = {
     val assignedVersion: Id[lockingService.Process] = lockingService
-      .withLocks(
-        Set(
-          s"ingest:$ingestId",
-          s"external:${DynamoID.createId(storageSpace, externalIdentifier)}")) {
+      .withLocks(Set(
+        s"ingest:$ingestId",
+        s"external:${DynamoID.createId(storageSpace, externalIdentifier)}")) {
         ingestVersionManager.assignVersion(
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
@@ -78,7 +77,8 @@ class VersionPicker(
     new MonadError[Id, Throwable] {
       override def raiseError[A](e: Throwable): Id[A] = throw e
 
-      override def handleErrorWith[A](fa: Id[A])(f: Throwable => Id[A]): Id[A] =
+      override def handleErrorWith[A](fa: Id[A])(
+        f: Throwable => Id[A]): Id[A] =
         try {
           fa
         } catch {

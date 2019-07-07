@@ -59,8 +59,7 @@ class WellcomeHttpApp(routes: Route,
     resp
   }
 
-  private def handleDecodingFailures(
-    causes: DecodingFailures): StandardRoute = {
+  private def handleDecodingFailures(causes: DecodingFailures): StandardRoute = {
     val message = causes.failures.map { cause =>
       val path = CursorOp.opsToPath(cause.history)
 

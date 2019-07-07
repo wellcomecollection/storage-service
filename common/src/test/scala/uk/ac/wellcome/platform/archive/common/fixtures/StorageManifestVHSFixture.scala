@@ -12,12 +12,15 @@ import uk.ac.wellcome.storage.store.memory._
 
 trait StorageManifestVHSFixture extends EitherValues {
   type StorageManifestIndex =
-    MemoryStore[Version[BagId, Int],
-                HybridIndexedStoreEntry[Version[BagId, Int],
-                                        String,
-                                        Map[String, String]]] with MemoryMaxima[
+    MemoryStore[
+      Version[BagId, Int],
+      HybridIndexedStoreEntry[Version[BagId, Int],
+                              String,
+                              Map[String, String]]] with MemoryMaxima[
       BagId,
-      HybridIndexedStoreEntry[Version[BagId, Int], String, Map[String, String]]]
+      HybridIndexedStoreEntry[Version[BagId, Int],
+                              String,
+                              Map[String, String]]]
 
   type StorageManifestTypedStore = MemoryTypedStore[String, StorageManifest]
 
@@ -29,7 +32,9 @@ trait StorageManifestVHSFixture extends EitherValues {
                               Map[String, String]]](initialEntries = Map.empty)
     with MemoryMaxima[
       BagId,
-      HybridIndexedStoreEntry[Version[BagId, Int], String, Map[String, String]]]
+      HybridIndexedStoreEntry[Version[BagId, Int],
+                              String,
+                              Map[String, String]]]
 
   def createTypedStore: StorageManifestTypedStore = {
     val memoryStoreForStreamStore =
@@ -39,8 +44,8 @@ trait StorageManifestVHSFixture extends EitherValues {
     new MemoryTypedStore[String, StorageManifest](Map.empty)
   }
 
-  def createStorageManifestDao(implicit
-                               indexStore: StorageManifestIndex = createIndex,
+  def createStorageManifestDao(implicit indexStore: StorageManifestIndex =
+                                 createIndex,
                                typedStore: StorageManifestTypedStore =
                                  createTypedStore): StorageManifestDao =
     // TODO: This should use a companion object

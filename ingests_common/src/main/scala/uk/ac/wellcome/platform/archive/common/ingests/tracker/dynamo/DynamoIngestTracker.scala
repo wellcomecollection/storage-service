@@ -24,8 +24,9 @@ import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
 import scala.util.Try
 
-class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)(
-  implicit client: AmazonDynamoDB)
+class DynamoIngestTracker(
+  config: DynamoConfig,
+  bagIdLookupConfig: DynamoConfig)(implicit client: AmazonDynamoDB)
     extends IngestTracker
     with Logging {
 
@@ -33,9 +34,9 @@ class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)
   private val hashStore = new DynamoHashStore[IngestID, Int, Ingest](config) {
     override def max(hashKey: IngestID): Either[ReadError, Int] =
       super.max(hashKey) match {
-        case Right(value)               => Right(value)
+        case Right(value) => Right(value)
         case Left(_: DoesNotExistError) => Left(NoMaximaValueError())
-        case Left(err)                  => Left(err)
+        case Left(err) => Left(err)
       }
 
     override def put(id: Version[IngestID, Int])(ingest: Ingest): WriteEither =

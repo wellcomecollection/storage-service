@@ -64,7 +64,7 @@ trait IngestVersionManager {
     )
 
     dao.storeNewVersion(newRecord) match {
-      case Success(_)   => Right(newVersion)
+      case Success(_) => Right(newVersion)
       case Failure(err) => Left(IngestVersionManagerDaoError(err))
     }
   }

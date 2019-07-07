@@ -38,7 +38,8 @@ object IngestType {
     } yield ingestType
 
   implicit val encoder: Encoder[IngestType] =
-    (ingestType: IngestType) => Json.obj("id" -> Json.fromString(ingestType.id))
+    (ingestType: IngestType) =>
+      Json.obj("id" -> Json.fromString(ingestType.id))
 
   // TODO: This needs testing
   implicit def format: DynamoFormat[IngestType] =

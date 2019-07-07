@@ -33,7 +33,8 @@ case class InternalServerErrorResponse(
 )
 
 case object InternalServerErrorResponse {
-  def apply(context: URL, statusCode: StatusCode): InternalServerErrorResponse =
+  def apply(context: URL,
+            statusCode: StatusCode): InternalServerErrorResponse =
     InternalServerErrorResponse(
       context = context.toString,
       httpStatus = statusCode.intValue(),

@@ -41,8 +41,7 @@ trait BagLocationFixtures[Namespace]
       createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
     testWith: TestWith[ObjectLocation, R])(
-    implicit
-    typedStore: TypedStore[ObjectLocation, String],
+    implicit typedStore: TypedStore[ObjectLocation, String],
     namespace: Namespace
   ): R = {
     val bagIdentifier = createExternalIdentifier

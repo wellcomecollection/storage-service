@@ -75,7 +75,8 @@ class BagAuditor(versionPicker: VersionPicker) {
   private def getUnderlyingThrowable(auditError: AuditError): Throwable =
     auditError match {
       case CannotFindExternalIdentifier(e) => e
-      case UnableToAssignVersion(internalError: IngestVersionManagerDaoError) =>
+      case UnableToAssignVersion(
+          internalError: IngestVersionManagerDaoError) =>
         internalError.e
       case err => new Throwable(s"Unexpected error in the auditor: $err")
     }

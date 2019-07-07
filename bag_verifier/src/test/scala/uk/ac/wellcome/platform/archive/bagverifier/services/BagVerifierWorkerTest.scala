@@ -97,7 +97,8 @@ class BagVerifierWorkerTest
 
               service.processMessage(payload) shouldBe a[Success[_]]
 
-              outgoing.getMessages[BagRootLocationPayload] shouldBe Seq(payload)
+              outgoing.getMessages[BagRootLocationPayload] shouldBe Seq(
+                payload)
           }
         }
       }

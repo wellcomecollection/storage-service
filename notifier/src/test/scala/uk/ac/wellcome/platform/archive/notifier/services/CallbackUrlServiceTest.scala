@@ -29,8 +29,8 @@ class CallbackUrlServiceTest
 
         val future = service.getHttpResponse(
           ingest = ingest,
-          callbackUri =
-            new URI(s"http://$callbackHost:$callbackPort/callback/${ingest.id}")
+          callbackUri = new URI(
+            s"http://$callbackHost:$callbackPort/callback/${ingest.id}")
         )
 
         whenReady(future) { result =>

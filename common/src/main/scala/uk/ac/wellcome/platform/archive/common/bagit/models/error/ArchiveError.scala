@@ -4,6 +4,7 @@ trait ArchiveError[T] {
   val t: T
 }
 
-case class InvalidBagInfo[T](t: T, keys: List[String]) extends ArchiveError[T] {
+case class InvalidBagInfo[T](t: T, keys: List[String])
+    extends ArchiveError[T] {
   override def toString = s"Invalid bag-info: ${keys.mkString(", ")}"
 }

@@ -28,10 +28,7 @@ class IngestsWorker[CallbackDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   ingestTracker: IngestTracker,
   callbackNotificationService: CallbackNotificationService[CallbackDestination]
-)(implicit
-  actorSystem: ActorSystem,
-  mc: MonitoringClient,
-  sc: AmazonSQSAsync)
+)(implicit actorSystem: ActorSystem, mc: MonitoringClient, sc: AmazonSQSAsync)
     extends Runnable
     with Logging {
 
@@ -52,7 +49,7 @@ class IngestsWorker[CallbackDestination](
 
     result match {
       case Success(ingest) => Success(Successful(Some(ingest)))
-      case Failure(err)    => Success(DeterministicFailure(err, summary = None))
+      case Failure(err) => Success(DeterministicFailure(err, summary = None))
     }
   }
 

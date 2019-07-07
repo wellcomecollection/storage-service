@@ -16,8 +16,7 @@ case class RequestDisplayIngest(
   ingestType: DisplayIngestType,
   space: DisplayStorageSpace,
   bag: DisplayBag,
-  @JsonKey("type")
-  ontologyType: String = "Ingest"
+  @JsonKey("type") ontologyType: String = "Ingest"
 ) extends DisplayIngest {
   def toIngest: Ingest =
     Ingest(

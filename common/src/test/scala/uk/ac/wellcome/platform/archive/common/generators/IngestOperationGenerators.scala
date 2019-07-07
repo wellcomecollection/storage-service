@@ -24,7 +24,8 @@ trait IngestOperationGenerators extends StorageRandomThings {
 
   def createOperationCompleted() = createOperationCompletedWith()
 
-  def createOperationCompletedWith(summary: TestSummary = createTestSummary()) =
+  def createOperationCompletedWith(
+    summary: TestSummary = createTestSummary()) =
     IngestCompleted(summary)
 
   def createOperationFailure() = createIngestFailureWith()

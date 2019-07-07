@@ -6,11 +6,23 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.bag_register.services.{
+  BagRegisterWorker,
+  Register
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures, StorageManifestVHSFixture, StorageRandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
+  OperationFixtures,
+  StorageManifestVHSFixture,
+  StorageRandomThings
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 

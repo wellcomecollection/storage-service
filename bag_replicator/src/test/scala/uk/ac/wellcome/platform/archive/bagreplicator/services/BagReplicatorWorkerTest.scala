@@ -7,7 +7,10 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
@@ -167,7 +170,8 @@ class BagReplicatorWorkerTest
               result shouldBe a[Successful[_]]
 
               val destination = result.summary.destination
-              destination.path should startWith(payload.storageSpace.underlying)
+              destination.path should startWith(
+                payload.storageSpace.underlying)
             }
           }
         }
@@ -256,8 +260,8 @@ class BagReplicatorWorkerTest
             result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
             result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
 
-            // TODO: Restore this test
-            // lockServiceDao.history should have size 1
+          // TODO: Restore this test
+          // lockServiceDao.history should have size 1
           }
         }
       }

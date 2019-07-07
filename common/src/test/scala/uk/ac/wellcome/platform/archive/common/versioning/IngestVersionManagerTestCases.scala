@@ -26,8 +26,8 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
   def withBrokenStoreNewVersionDao[R](testWith: TestWith[DaoImpl, R])(
     implicit context: Context): R
 
-  def withManager[R](dao: DaoImpl)(testWith: TestWith[IngestVersionManager, R])(
-    implicit context: Context): R
+  def withManager[R](dao: DaoImpl)(
+    testWith: TestWith[IngestVersionManager, R])(implicit context: Context): R
 
   describe("behaves as an ingest version manager") {
     it("assigns version 1 if it hasn't seen this external ID before") {

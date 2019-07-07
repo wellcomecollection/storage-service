@@ -38,9 +38,9 @@ trait IngestTracker {
 
   def get(id: IngestID): Result =
     underlying.getLatest(id) match {
-      case Right(value)             => Right(value)
+      case Right(value) => Right(value)
       case Left(err: NotFoundError) => Left(IngestDoesNotExistError(err))
-      case Left(err)                => Left(IngestTrackerStoreError(err))
+      case Left(err) => Left(IngestTrackerStoreError(err))
     }
 
   def update(update: IngestUpdate): Result = {
@@ -128,10 +128,10 @@ trait IngestTracker {
     initial match {
       case status if status == update => true
 
-      case Ingest.Accepted   => true
+      case Ingest.Accepted => true
       case Ingest.Processing => update != Ingest.Accepted
-      case Ingest.Completed  => false
-      case Ingest.Failed     => false
+      case Ingest.Completed => false
+      case Ingest.Failed => false
     }
 
   private def callbackStatusUpdateIsAllowed(
@@ -140,8 +140,8 @@ trait IngestTracker {
     initial match {
       case status if status == update => true
 
-      case Callback.Pending   => true
+      case Callback.Pending => true
       case Callback.Succeeded => false
-      case Callback.Failed    => false
+      case Callback.Failed => false
     }
 }

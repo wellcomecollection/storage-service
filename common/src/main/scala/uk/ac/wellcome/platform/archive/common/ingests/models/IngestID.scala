@@ -18,7 +18,8 @@ object IngestID {
   }
 
   implicit val decoder: Decoder[IngestID] =
-    Decoder.instance[IngestID](cursor => cursor.value.as[UUID].map(IngestID(_)))
+    Decoder.instance[IngestID](cursor =>
+      cursor.value.as[UUID].map(IngestID(_)))
 
   implicit def format: DynamoFormat[IngestID] =
     DynamoFormat.coercedXmap[IngestID, String, IllegalArgumentException](

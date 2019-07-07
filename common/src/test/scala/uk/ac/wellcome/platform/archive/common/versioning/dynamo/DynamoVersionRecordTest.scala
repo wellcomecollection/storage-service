@@ -51,6 +51,7 @@ class DynamoVersionRecordTest
       version = 1
     )
 
-    entry.toVersionRecord.failure.exception shouldBe a[IllegalArgumentException]
+    entry.toVersionRecord.failure.exception shouldBe a[
+      IllegalArgumentException]
   }
 }

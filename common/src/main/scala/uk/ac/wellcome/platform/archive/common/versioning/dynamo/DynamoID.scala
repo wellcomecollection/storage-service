@@ -21,10 +21,12 @@ object DynamoID {
 
   def getStorageSpace(id: String): Try[StorageSpace] =
     id.split(":") match {
-      case Array(storageSpace, _) => Success(StorageSpace(decode(storageSpace)))
+      case Array(storageSpace, _) =>
+        Success(StorageSpace(decode(storageSpace)))
       case _ =>
         Failure(
-          new IllegalArgumentException(s"Malformed ID for version record: $id"))
+          new IllegalArgumentException(
+            s"Malformed ID for version record: $id"))
     }
 
   def getExternalIdentifier(id: String): Try[ExternalIdentifier] =
@@ -33,7 +35,8 @@ object DynamoID {
         Success(ExternalIdentifier(decode(externalIdentifier)))
       case _ =>
         Failure(
-          new IllegalArgumentException(s"Malformed ID for version record: $id"))
+          new IllegalArgumentException(
+            s"Malformed ID for version record: $id"))
     }
 
   private def encode(s: String): String =

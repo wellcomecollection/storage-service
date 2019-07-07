@@ -28,8 +28,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
   bagAuditor: BagAuditor,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination]
-)(implicit
-  val mc: MonitoringClient,
+)(implicit val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
   val wd: Decoder[BagRootLocationPayload])

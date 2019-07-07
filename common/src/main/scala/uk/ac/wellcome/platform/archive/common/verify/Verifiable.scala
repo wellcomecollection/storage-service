@@ -1,7 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.verify
 
 trait Verifiable[T] {
-  def create(t: T): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]]
+  def create(
+    t: T): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]]
 }
 
 object Verifiable {

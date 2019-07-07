@@ -19,7 +19,8 @@ import scala.util.{Failure, Try}
 class DynamoIngestVersionManagerTest
     extends IngestVersionManagerTestCases[DynamoIngestVersionManagerDao, Table]
     with IngestVersionManagerTable {
-  override def withDao[R](testWith: TestWith[DynamoIngestVersionManagerDao, R])(
+  override def withDao[R](
+    testWith: TestWith[DynamoIngestVersionManagerDao, R])(
     implicit table: Table): R =
     testWith(
       new DynamoIngestVersionManagerDao(
