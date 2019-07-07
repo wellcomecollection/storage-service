@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
-import java.io.InputStream
-
 import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
