@@ -6,16 +6,25 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{BagUnpackerFixtures, CompressFixture}
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
+  BagUnpackerFixtures,
+  CompressFixture
+}
 import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, InputStreamWithLengthAndMetadata}
+import uk.ac.wellcome.storage.streaming.{
+  InputStreamWithLength,
+  InputStreamWithLengthAndMetadata
+}
 
 class UnpackerFeatureTest
     extends FunSpec
@@ -95,22 +104,39 @@ class UnpackerFeatureTest
   }
 
   // TODO: Add covariance to StreamStore
-  def withStreamStore[R](testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]): R = {
+  def withStreamStore[R](
+    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R])
+    : R = {
     val s3StreamStore = new S3StreamStore()
 
     val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
       override def get(location: ObjectLocation): ReadEither =
-        s3StreamStore.get(location)
-          .map { is => Identified(is.id, new InputStreamWithLength(is.identifiedT, length = is.identifiedT.length)) }
+        s3StreamStore
+          .get(location)
+          .map { is =>
+            Identified(
+              is.id,
+              new InputStreamWithLength(
+                is.identifiedT,
+                length = is.identifiedT.length))
+          }
 
-      override def put(location: ObjectLocation)(is: InputStreamWithLength): WriteEither =
-        s3StreamStore.put(location)(
-          new InputStreamWithLengthAndMetadata(is, length = is.length, metadata = Map.empty)
-        ).map { is =>
-          is.copy(
-            identifiedT = new InputStreamWithLength(is.identifiedT, length = is.identifiedT.length)
+      override def put(location: ObjectLocation)(
+        is: InputStreamWithLength): WriteEither =
+        s3StreamStore
+          .put(location)(
+            new InputStreamWithLengthAndMetadata(
+              is,
+              length = is.length,
+              metadata = Map.empty)
           )
-        }
+          .map { is =>
+            is.copy(
+              identifiedT = new InputStreamWithLength(
+                is.identifiedT,
+                length = is.identifiedT.length)
+            )
+          }
     }
 
     testWith(store)

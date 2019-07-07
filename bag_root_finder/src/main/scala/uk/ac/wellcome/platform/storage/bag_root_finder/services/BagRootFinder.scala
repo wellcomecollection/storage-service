@@ -4,7 +4,12 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.storage.bag_root_finder.models._
 import uk.ac.wellcome.storage.ObjectLocationPrefix
@@ -45,7 +50,8 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
             err,
             maybeUserFacingMessage =
               // TODO: Add a toString method on ObjectLocationPrefix
-              Some(s"Unable to find root of the bag at ${unpackLocation.namespace}/${unpackLocation.path}")
+              Some(
+                s"Unable to find root of the bag at ${unpackLocation.namespace}/${unpackLocation.path}")
           )
       }
     }

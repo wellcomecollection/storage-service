@@ -158,7 +158,8 @@ class S3BagLocatorTest extends FunSpec with Matchers with S3Fixtures {
     }
 
   // TODO: Move this into ObjectLocationgenerators
-  def createObjectLocationPrefixWith(bucket: Bucket, path: String): ObjectLocationPrefix =
+  def createObjectLocationPrefixWith(bucket: Bucket,
+                                     path: String): ObjectLocationPrefix =
     ObjectLocationPrefix(
       namespace = bucket.name,
       path = path

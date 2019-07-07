@@ -29,17 +29,18 @@ class UnarchiverTest extends FunSpec with Matchers with EitherValues {
 
     val archiveIterator = Unarchiver.open(inputStream).right.value
 
-    archiveIterator.foreach { case (archiveEntry, entryInputStream) =>
-      archiveEntry shouldBe a[TarArchiveEntry]
+    archiveIterator.foreach {
+      case (archiveEntry, entryInputStream) =>
+        archiveEntry shouldBe a[TarArchiveEntry]
 
-      if (!archiveEntry.isDirectory) {
-        val contents = stringCodec.fromStream(entryInputStream).right.value
+        if (!archiveEntry.isDirectory) {
+          val contents = stringCodec.fromStream(entryInputStream).right.value
 
-        val contentsNumber = contents.trim
-        val filenameNumber = archiveEntry.getName.split("/").last
+          val contentsNumber = contents.trim
+          val filenameNumber = archiveEntry.getName.split("/").last
 
-        contentsNumber shouldBe filenameNumber
-      }
+          contentsNumber shouldBe filenameNumber
+        }
     }
   }
 
@@ -58,8 +59,9 @@ class UnarchiverTest extends FunSpec with Matchers with EitherValues {
 
     val archiveIterator = Unarchiver.open(inputStream).right.value
 
-    archiveIterator.foreach { case (_, entryInputStream) =>
-      entryInputStream.close()
+    archiveIterator.foreach {
+      case (_, entryInputStream) =>
+        entryInputStream.close()
     }
   }
 
@@ -75,7 +77,8 @@ class UnarchiverTest extends FunSpec with Matchers with EitherValues {
     val error = Unarchiver.open(inputStream).left.value
 
     error shouldBe a[ArchiveFormatError]
-    error.e.getMessage should startWith("No Archiver found for the stream signature")
+    error.e.getMessage should startWith(
+      "No Archiver found for the stream signature")
   }
 
   it("fails if the file is not a compressed stream") {
@@ -84,7 +87,8 @@ class UnarchiverTest extends FunSpec with Matchers with EitherValues {
     val error = Unarchiver.open(inputStream).left.value
 
     error shouldBe a[CompressorError]
-    error.e.getMessage should startWith("No Compressor found for the stream signature")
+    error.e.getMessage should startWith(
+      "No Compressor found for the stream signature")
   }
 
   it("fails if the input stream is null") {

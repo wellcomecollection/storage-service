@@ -2,14 +2,20 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerTestCases}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  Unpacker,
+  UnpackerTestCases
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
 import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, InputStreamWithLengthAndMetadata}
+import uk.ac.wellcome.storage.streaming.{
+  InputStreamWithLength,
+  InputStreamWithLengthAndMetadata
+}
 
 class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
   override val unpacker: Unpacker = new S3Unpacker()
@@ -20,22 +26,39 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
     }
 
   // TODO: Add covariance to StreamStore
-  override def withStreamStore[R](testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]): R = {
+  override def withStreamStore[R](
+    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R])
+    : R = {
     val s3StreamStore = new S3StreamStore()
 
     val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
       override def get(location: ObjectLocation): ReadEither =
-        s3StreamStore.get(location)
-          .map { is => Identified(is.id, new InputStreamWithLength(is.identifiedT, length = is.identifiedT.length)) }
+        s3StreamStore
+          .get(location)
+          .map { is =>
+            Identified(
+              is.id,
+              new InputStreamWithLength(
+                is.identifiedT,
+                length = is.identifiedT.length))
+          }
 
-      override def put(location: ObjectLocation)(is: InputStreamWithLength): WriteEither =
-        s3StreamStore.put(location)(
-          new InputStreamWithLengthAndMetadata(is, length = is.length, metadata = Map.empty)
-        ).map { is =>
-          is.copy(
-            identifiedT = new InputStreamWithLength(is.identifiedT, length = is.identifiedT.length)
+      override def put(location: ObjectLocation)(
+        is: InputStreamWithLength): WriteEither =
+        s3StreamStore
+          .put(location)(
+            new InputStreamWithLengthAndMetadata(
+              is,
+              length = is.length,
+              metadata = Map.empty)
           )
-        }
+          .map { is =>
+            is.copy(
+              identifiedT = new InputStreamWithLength(
+                is.identifiedT,
+                length = is.identifiedT.length)
+            )
+          }
     }
 
     testWith(store)
@@ -63,7 +86,8 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
           val underlyingError =
             ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
           underlyingError.e shouldBe a[Throwable]
-          underlyingError.e.getMessage should startWith("The specified bucket is not valid")
+          underlyingError.e.getMessage should startWith(
+            "The specified bucket is not valid")
         }
       }
     }

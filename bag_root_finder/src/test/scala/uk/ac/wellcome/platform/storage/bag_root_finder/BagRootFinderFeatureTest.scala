@@ -158,7 +158,8 @@ class BagRootFinderFeatureTest
 
   it("errors if it cannot find the bag") {
     val unpackedBagLocation = createObjectLocation
-    val payload = createUnpackedBagLocationPayloadWith(unpackedBagLocation.asPrefix)
+    val payload =
+      createUnpackedBagLocationPayloadWith(unpackedBagLocation.asPrefix)
 
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()

@@ -7,17 +7,30 @@ import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepSucceeded
+}
 import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, StreamAssertions}
+import uk.ac.wellcome.storage.streaming.{
+  InputStreamWithLength,
+  StreamAssertions
+}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
-trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues with CompressFixture[Namespace] with StreamAssertions {
+trait UnpackerTestCases[Namespace]
+    extends FunSpec
+    with Matchers
+    with TryValues
+    with CompressFixture[Namespace]
+    with StreamAssertions {
   val unpacker: Unpacker
 
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
-  def withStreamStore[R](testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]): R
+  def withStreamStore[R](
+    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R])
+    : R
 
   it("unpacks a tgz archive") {
     val (archiveFile, filesInArchive, _) = createTgzArchiveWithRandomFiles()
@@ -26,7 +39,8 @@ trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues 
       withNamespace { dstNamespace =>
         withStreamStore { implicit streamStore =>
           withArchive(srcNamespace, archiveFile) { archiveLocation =>
-            val dstLocation = createObjectLocationWith(dstNamespace, path = "unpacker").asPrefix
+            val dstLocation =
+              createObjectLocationWith(dstNamespace, path = "unpacker").asPrefix
 
             val summaryResult = unpacker
               .unpack(
@@ -60,7 +74,8 @@ trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues 
       withNamespace { dstNamespace =>
         withStreamStore { implicit streamStore =>
           withArchive(srcNamespace, archiveFile) { archiveLocation =>
-            val dstLocation = createObjectLocationWith(dstNamespace, path = "unpacker").asPrefix
+            val dstLocation =
+              createObjectLocationWith(dstNamespace, path = "unpacker").asPrefix
             val summaryResult = unpacker
               .unpack(
                 ingestId = createIngestID,
@@ -84,7 +99,8 @@ trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues 
 
   it("fails if the original archive does not exist") {
     withNamespace { srcNamespace =>
-      val srcLocation = createObjectLocationWith(srcNamespace, path = randomAlphanumeric)
+      val srcLocation =
+        createObjectLocationWith(srcNamespace, path = randomAlphanumeric)
       val result =
         unpacker.unpack(
           ingestId = createIngestID,
@@ -98,11 +114,14 @@ trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues 
       ingestResult.summary.bytesUnpacked shouldBe 0
 
       val ingestFailed = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
-      ingestFailed.maybeUserFacingMessage shouldBe Some(s"There is no archive at $srcLocation")
+      ingestFailed.maybeUserFacingMessage shouldBe Some(
+        s"There is no archive at $srcLocation")
     }
   }
 
-  def assertEqual(prefix: ObjectLocationPrefix, expectedFiles: Seq[File])(implicit store: StreamStore[ObjectLocation, InputStreamWithLength]): Seq[Assertion] = {
+  def assertEqual(prefix: ObjectLocationPrefix, expectedFiles: Seq[File])(
+    implicit store: StreamStore[ObjectLocation, InputStreamWithLength])
+    : Seq[Assertion] = {
     expectedFiles.map { file =>
       val name = Paths
         .get(relativeToTmpDir(file))
