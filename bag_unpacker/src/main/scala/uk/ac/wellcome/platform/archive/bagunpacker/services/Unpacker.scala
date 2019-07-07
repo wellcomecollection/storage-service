@@ -63,7 +63,7 @@ trait Unpacker {
                               error: UnpackerError): Option[String] =
     error match {
       case UnpackerStorageError(_: DoesNotExistError) =>
-        Some(s"Archive does not exist: $srcLocation")
+        Some(s"There is no archive at $srcLocation")
 
       case _ => None
     }

@@ -83,21 +83,23 @@ trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues 
   }
 
   it("fails if the original archive does not exist") {
-    val srcLocation = createObjectLocation
-    val result =
-      unpacker.unpack(
-        ingestId = createIngestID,
-        srcLocation = srcLocation,
-        dstLocation = createObjectLocationPrefix
-      )
+    withNamespace { srcNamespace =>
+      val srcLocation = createObjectLocationWith(srcNamespace, path = randomAlphanumeric)
+      val result =
+        unpacker.unpack(
+          ingestId = createIngestID,
+          srcLocation = srcLocation,
+          dstLocation = createObjectLocationPrefix
+        )
 
-    val ingestResult = result.success.value
-    ingestResult shouldBe a[IngestFailed[_]]
-    ingestResult.summary.fileCount shouldBe 0
-    ingestResult.summary.bytesUnpacked shouldBe 0
+      val ingestResult = result.success.value
+      ingestResult shouldBe a[IngestFailed[_]]
+      ingestResult.summary.fileCount shouldBe 0
+      ingestResult.summary.bytesUnpacked shouldBe 0
 
-    val ingestFailed = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
-    ingestFailed.maybeUserFacingMessage shouldBe s"Archive does not exist: $srcLocation"
+      val ingestFailed = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
+      ingestFailed.maybeUserFacingMessage shouldBe Some(s"There is no archive at $srcLocation")
+    }
   }
 
   def assertEqual(prefix: ObjectLocationPrefix, expectedFiles: Seq[File])(implicit store: StreamStore[ObjectLocation, InputStreamWithLength]): Seq[Assertion] = {

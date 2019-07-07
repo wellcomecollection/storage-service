@@ -88,7 +88,7 @@ class UnpackerFeatureTest
                 ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
               ingestFailed.status shouldBe Ingest.Failed
               ingestFailed.events.head.description shouldBe
-                s"Unpacker failed - ${payload.sourceLocation} could not be downloaded"
+                s"Unpacker failed - There is no archive at ${payload.sourceLocation}"
           }
         }
     }
