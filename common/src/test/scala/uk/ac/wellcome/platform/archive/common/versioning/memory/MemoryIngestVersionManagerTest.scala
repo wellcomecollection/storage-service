@@ -21,8 +21,7 @@ class MemoryIngestVersionManagerTest
     testWith: TestWith[MemoryIngestVersionManagerDao, R]): R =
     testWith(new MemoryIngestVersionManagerDao())
 
-  override def withDao[R](
-    testWith: TestWith[MemoryIngestVersionManagerDao, R])(
+  override def withDao[R](testWith: TestWith[MemoryIngestVersionManagerDao, R])(
     implicit context: MemoryIngestVersionManagerDao): R =
     testWith(context)
 

@@ -49,7 +49,7 @@ class IngestsWorker[CallbackDestination](
 
     result match {
       case Success(ingest) => Success(Successful(Some(ingest)))
-      case Failure(err) => Success(DeterministicFailure(err, summary = None))
+      case Failure(err)    => Success(DeterministicFailure(err, summary = None))
     }
   }
 

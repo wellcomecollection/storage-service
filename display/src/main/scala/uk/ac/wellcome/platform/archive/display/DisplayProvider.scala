@@ -33,7 +33,7 @@ case object InfrequentAccessDisplayProvider extends DisplayProvider {
 object DisplayProvider {
   def apply(provider: StorageProvider): DisplayProvider =
     provider match {
-      case StandardStorageProvider => StandardDisplayProvider
+      case StandardStorageProvider         => StandardDisplayProvider
       case InfrequentAccessStorageProvider => InfrequentAccessDisplayProvider
     }
 

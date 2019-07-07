@@ -31,7 +31,7 @@ class BagVerifiable(root: ObjectLocation)(
 
         val matches = matched.map(getVerifiableLocation)
 
-        val failures = matches collect { case Left(f) => f }
+        val failures = matches collect { case Left(f)           => f }
         val successes = matches collect { case Right(locations) => locations }
 
         debug(s"Got ($successes, $failures)")

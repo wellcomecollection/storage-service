@@ -63,7 +63,7 @@ class Register(
 
     result match {
       case Right(stepResult) => Success(stepResult)
-      case Left(value) => Success(IngestFailed(registration.complete, value))
+      case Left(value)       => Success(IngestFailed(registration.complete, value))
     }
   }
 }

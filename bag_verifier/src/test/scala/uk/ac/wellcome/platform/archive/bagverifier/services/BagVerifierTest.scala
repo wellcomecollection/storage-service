@@ -176,8 +176,7 @@ class BagVerifierTest
             val error = summary.e
 
             error shouldBe a[BagUnavailable]
-            error.getMessage should include(
-              "Error loading manifest-sha256.txt")
+            error.getMessage should include("Error loading manifest-sha256.txt")
           }
       }
     }

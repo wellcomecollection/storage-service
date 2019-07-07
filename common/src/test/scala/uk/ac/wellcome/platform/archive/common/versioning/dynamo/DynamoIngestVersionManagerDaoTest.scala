@@ -20,10 +20,9 @@ class DynamoIngestVersionManagerDaoTest
     extends IngestVersionManagerDaoTestCases[Table]
     with IngestVersionManagerTable
     with EitherValues {
-  override def withDao[R](
-    initialRecords: Seq[VersionRecord])(testWith: TestWith[
-                                          IngestVersionManagerDao,
-                                          R])(implicit table: Table): R = {
+  override def withDao[R](initialRecords: Seq[VersionRecord])(
+    testWith: TestWith[IngestVersionManagerDao, R])(
+    implicit table: Table): R = {
     scanamo.exec(
       ScanamoTable[DynamoVersionRecord](table.name).putAll(initialRecords.map {
         DynamoVersionRecord(_)

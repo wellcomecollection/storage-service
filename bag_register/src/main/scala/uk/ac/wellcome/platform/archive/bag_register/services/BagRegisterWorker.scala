@@ -25,9 +25,7 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
   val wd: Decoder[EnrichedBagInformationPayload])
-    extends IngestStepWorker[
-      EnrichedBagInformationPayload,
-      RegistrationSummary] {
+    extends IngestStepWorker[EnrichedBagInformationPayload, RegistrationSummary] {
 
   override def processMessage(payload: EnrichedBagInformationPayload)
     : Try[IngestStepResult[RegistrationSummary]] =

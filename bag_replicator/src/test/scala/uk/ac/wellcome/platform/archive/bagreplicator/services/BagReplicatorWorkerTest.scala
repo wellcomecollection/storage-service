@@ -171,8 +171,7 @@ class BagReplicatorWorkerTest
               result shouldBe a[IngestStepSucceeded[_]]
 
               val destination = result.summary.destination
-              destination.path should startWith(
-                payload.storageSpace.underlying)
+              destination.path should startWith(payload.storageSpace.underlying)
             }
           }
         }

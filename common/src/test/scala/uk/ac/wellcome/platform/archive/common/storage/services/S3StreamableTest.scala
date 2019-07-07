@@ -4,10 +4,7 @@ import java.nio.file.Paths
 
 import org.scalatest.{EitherValues, FunSpec, OptionValues}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.platform.archive.common.storage.{
-  Locatable,
-  LocateFailure
-}
+import uk.ac.wellcome.platform.archive.common.storage.{Locatable, LocateFailure}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 

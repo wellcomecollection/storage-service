@@ -16,7 +16,7 @@ package object models {
     override def locate(bagPath: BagPath)(maybeRoot: Option[ObjectLocation])
       : Either[LocateFailure[BagPath], ObjectLocation] =
       maybeRoot match {
-        case None => Left(LocationNotFound(bagPath, s"No root specified!"))
+        case None       => Left(LocationNotFound(bagPath, s"No root specified!"))
         case Some(root) => Right(locateBagPath(root)(bagPath))
       }
   }
@@ -25,7 +25,7 @@ package object models {
     override def locate(bagFile: BagFile)(maybeRoot: Option[ObjectLocation])
       : Either[LocateFailure[BagFile], ObjectLocation] =
       maybeRoot match {
-        case None => Left(LocationNotFound(bagFile, s"No root specified!"))
+        case None       => Left(LocationNotFound(bagFile, s"No root specified!"))
         case Some(root) => Right(locateBagPath(root)(bagFile.path))
       }
   }

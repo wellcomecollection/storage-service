@@ -503,14 +503,13 @@ class IngestsApiFeatureTest
       withMaterializer { implicit materializer =>
         withBrokenApp {
           case (_, _, metricsSender, baseUrl) =>
-            whenPostRequestReady(
-              s"$baseUrl/ingests/$randomUUID",
-              createRequest) { response =>
-              assertIsInternalServerErrorResponse(response)
+            whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
+              response =>
+                assertIsInternalServerErrorResponse(response)
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.ServerError)
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.ServerError)
             }
         }
       }

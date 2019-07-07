@@ -74,7 +74,7 @@ object BagFetch {
   private def encodeLength(length: Option[Long]): String =
     length match {
       case Some(i) => i.toString
-      case None => "-"
+      case None    => "-"
     }
 
   private def decodeLength(ls: String): Option[Long] =

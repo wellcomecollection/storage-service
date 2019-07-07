@@ -18,8 +18,8 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
     ingestID: IngestID): Try[Option[VersionRecord]] =
     records.filter { _.ingestId == ingestID } match {
       case Seq(record) => Success(Some(record))
-      case Nil => Success(None)
-      case _ => Failure(new Throwable("Too many matching entries!"))
+      case Nil         => Success(None)
+      case _           => Failure(new Throwable("Too many matching entries!"))
     }
 
   override def lookupLatestVersionFor(

@@ -103,11 +103,10 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
 
   val contextURL: URL
 
-  def assertIsUserErrorResponse(
-    response: HttpResponse,
-    description: String,
-    statusCode: StatusCode = StatusCodes.BadRequest,
-    label: String = "Bad Request"): Assertion =
+  def assertIsUserErrorResponse(response: HttpResponse,
+                                description: String,
+                                statusCode: StatusCode = StatusCodes.BadRequest,
+                                label: String = "Bad Request"): Assertion =
     withMaterializer { implicit materializer =>
       response.status shouldBe statusCode
       response.entity.contentType shouldBe ContentTypes.`application/json`

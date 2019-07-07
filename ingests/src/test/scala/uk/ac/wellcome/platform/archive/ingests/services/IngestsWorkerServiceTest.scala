@@ -6,10 +6,7 @@ import io.circe.Encoder
 import org.scalatest.{FunSpec, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.worker.models.{
-  DeterministicFailure,
-  Successful
-}
+import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Successful}
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{

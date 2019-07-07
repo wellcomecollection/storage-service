@@ -19,10 +19,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
-trait CompressFixture
-    extends StorageRandomThings
-    with S3Fixtures
-    with Logging {
+trait CompressFixture extends StorageRandomThings with S3Fixtures with Logging {
 
   val defaultFileCount = 10
 

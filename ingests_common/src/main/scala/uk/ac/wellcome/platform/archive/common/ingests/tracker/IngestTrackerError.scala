@@ -9,8 +9,7 @@ import uk.ac.wellcome.storage.{
 
 sealed trait IngestTrackerError
 
-case class IngestTrackerStoreError(err: StorageError)
-    extends IngestTrackerError
+case class IngestTrackerStoreError(err: StorageError) extends IngestTrackerError
 
 case class IngestAlreadyExistsError(err: VersionAlreadyExistsError)
     extends IngestTrackerError

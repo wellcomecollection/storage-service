@@ -84,9 +84,9 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
 
   def toResult[T](ingestResult: IngestStepResult[T]): Result[T] =
     ingestResult match {
-      case IngestStepSucceeded(s) => Successful(Some(s))
-      case IngestCompleted(s) => Successful(Some(s))
-      case IngestFailed(s, t, _) => DeterministicFailure(t, Some(s))
+      case IngestStepSucceeded(s)     => Successful(Some(s))
+      case IngestCompleted(s)         => Successful(Some(s))
+      case IngestFailed(s, t, _)      => DeterministicFailure(t, Some(s))
       case IngestShouldRetry(s, t, _) => NonDeterministicFailure(t, Some(s))
     }
 }

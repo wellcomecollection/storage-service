@@ -31,9 +31,8 @@ trait BagReaderTestCases[Context, Namespace]
       metadata = Map.empty)) shouldBe a[Right[_, _]]
 
   def withFixtures[R](
-    testWith: TestWith[
-      (Context, TypedStore[ObjectLocation, String], Namespace),
-      R]): R =
+    testWith: TestWith[(Context, TypedStore[ObjectLocation, String], Namespace),
+                       R]): R =
     withContext { implicit context =>
       withTypedStore { typedStore =>
         withNamespace { namespace =>

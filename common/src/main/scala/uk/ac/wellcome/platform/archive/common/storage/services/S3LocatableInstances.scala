@@ -36,9 +36,7 @@ object S3LocatableInstances {
         // We are running in AWS - fail as usual.
         case Failure(e) =>
           Left(
-            LocationParsingError(
-              t,
-              s"Failed to parse S3 URI: ${e.getMessage}"))
+            LocationParsingError(t, s"Failed to parse S3 URI: ${e.getMessage}"))
 
       }
   }
