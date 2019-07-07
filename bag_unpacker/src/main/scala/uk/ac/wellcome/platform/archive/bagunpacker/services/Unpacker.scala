@@ -120,10 +120,6 @@ trait Unpacker {
       )
     }
 
-    // The S3 SDK will "helpfully" attempt to close the input stream when
-    // it's finished uploading.  Because this is really a view into the underlying
-    // stream coming from the original archive, we don't want to close it -- hold
-    // it open.
     put(uploadLocation)(
       new InputStreamWithLength(inputStream, length = archiveEntrySize)) match {
       case Right(_) => ()
