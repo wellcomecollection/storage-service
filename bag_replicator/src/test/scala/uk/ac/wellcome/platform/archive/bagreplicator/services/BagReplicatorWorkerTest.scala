@@ -7,14 +7,13 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestShouldRetry, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 
@@ -188,7 +187,7 @@ class BagReplicatorWorkerTest
               )
 
               val result = worker.processMessage(payload).success.value
-              result shouldBe a[Successful[_]]
+              result shouldBe a[IngestStepSucceeded[_]]
 
               val destination = result.summary.destination
               destination.path should startWith("rootprefix/")
@@ -256,7 +255,7 @@ class BagReplicatorWorkerTest
 
           whenReady(futures) { result =>
             result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 1
-            result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
+            result.count { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 4
 
           // TODO: Restore this test
           // lockServiceDao.history should have size 1
