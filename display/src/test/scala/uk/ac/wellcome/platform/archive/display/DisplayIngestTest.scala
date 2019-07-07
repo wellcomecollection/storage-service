@@ -30,7 +30,8 @@ class DisplayIngestTest
   private val eventDate = "2018-10-10T09:38:55.323Z"
   private val eventDescription = "Event description"
   private val contextUrl = new URL(
-    "http://api.wellcomecollection.org/storage/v1/context.json")
+    "http://api.wellcomecollection.org/storage/v1/context.json"
+  )
 
   describe("ResponseDisplayIngest") {
     it("creates a DisplayIngest from Ingest") {

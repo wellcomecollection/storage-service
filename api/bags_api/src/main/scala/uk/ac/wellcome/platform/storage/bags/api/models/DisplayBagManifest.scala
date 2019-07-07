@@ -6,8 +6,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagManifest
 case class DisplayBagManifest(
   checksumAlgorithm: String,
   files: Seq[DisplayBagFile],
-  @JsonKey("type")
-  ontologyType: String = "BagManifest"
+  @JsonKey("type") ontologyType: String = "BagManifest"
 )
 
 object DisplayBagManifest {

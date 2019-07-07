@@ -2,45 +2,33 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
-import grizzled.slf4j.Logging
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
-import uk.ac.wellcome.messaging.worker.models.Result
+import io.circe.Decoder
+import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
-import uk.ac.wellcome.typesafe.Runnable
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepWorker
+}
 
-import scala.concurrent.Future
 import scala.util.Try
 
 class BagRegisterWorker[IngestDestination, OutgoingDestination](
-  workerConfig: AlpakkaSQSWorkerConfig,
+  val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   register: Register
-)(implicit
-  actorSystem: ActorSystem,
-  mc: MonitoringClient,
-  sc: AmazonSQSAsync)
-    extends Runnable
-    with Logging
-    with IngestStepWorker {
+)(implicit val mc: MonitoringClient,
+  val as: ActorSystem,
+  val sc: AmazonSQSAsync,
+  val wd: Decoder[EnrichedBagInformationPayload])
+    extends IngestStepWorker[EnrichedBagInformationPayload, RegistrationSummary] {
 
-  private val worker =
-    AlpakkaSQSWorker[EnrichedBagInformationPayload, RegistrationSummary](
-      workerConfig) { payload =>
-      Future.fromTry(processMessage(payload))
-    }
-
-  def processMessage(
-    payload: EnrichedBagInformationPayload): Try[Result[RegistrationSummary]] =
+  override def processMessage(payload: EnrichedBagInformationPayload)
+    : Try[IngestStepResult[RegistrationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
@@ -60,7 +48,5 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
         outgoing = payload
       )
 
-    } yield toResult(registrationSummary)
-
-  override def run(): Future[Any] = worker.start
+    } yield registrationSummary
 }

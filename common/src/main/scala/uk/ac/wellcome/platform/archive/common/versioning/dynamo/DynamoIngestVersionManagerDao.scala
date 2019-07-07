@@ -22,8 +22,7 @@ class DynamoIngestVersionManagerDao(
   dynamoClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig
 )(
-  implicit
-  formatString: DynamoFormat[String],
+  implicit formatString: DynamoFormat[String],
   formatInt: DynamoFormat[Int],
   formatVersionRecord: DynamoFormat[DynamoVersionRecord]
 ) extends IngestVersionManagerDao {
@@ -85,8 +84,9 @@ class DynamoIngestVersionManagerDao(
     val ops = scanamoTable.put(DynamoVersionRecord(record))
 
     Scanamo(dynamoClient).exec(ops) match {
-      case Some(Left(err)) => throw new RuntimeException(s"Scanamo error: $err")
-      case _               => ()
+      case Some(Left(err)) =>
+        throw new RuntimeException(s"Scanamo error: $err")
+      case _ => ()
     }
   }
 }

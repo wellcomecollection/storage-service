@@ -28,10 +28,7 @@ class IngestsWorker[CallbackDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   ingestTracker: IngestTracker,
   callbackNotificationService: CallbackNotificationService[CallbackDestination]
-)(implicit
-  actorSystem: ActorSystem,
-  mc: MonitoringClient,
-  sc: AmazonSQSAsync)
+)(implicit actorSystem: ActorSystem, mc: MonitoringClient, sc: AmazonSQSAsync)
     extends Runnable
     with Logging {
 

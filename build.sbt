@@ -14,9 +14,9 @@ def setupProject(
   // to run tests based on the up-to-date project graph.
   // See https://www.scala-sbt.org/release/docs/Howto-Generating-Files.html
   val file = new File(s".sbt_metadata/${project.id}.json")
-  val dependencyIds: List[String] = localDependencies
-    .map { p: Project => p.id }
-    .toList
+  val dependencyIds: List[String] = localDependencies.map { p: Project =>
+    p.id
+  }.toList
 
   val metadata = Map(
     "id" -> project.id,
@@ -44,60 +44,62 @@ def setupProject(
     .settings(libraryDependencies ++= externalDependencies)
 }
 
-lazy val common = setupProject(project, "common",
-  externalDependencies = StorageDependencies.commonDependencies
-)
+lazy val common = setupProject(
+  project,
+  "common",
+  externalDependencies = StorageDependencies.commonDependencies)
 
-lazy val bag_auditor = setupProject(project, "bag_auditor",
-  localDependencies = Seq(common)
-)
+lazy val bag_auditor =
+  setupProject(project, "bag_auditor", localDependencies = Seq(common))
 
-lazy val bag_root_finder = setupProject(project, "bag_root_finder",
-  localDependencies = Seq(common)
-)
+lazy val bag_root_finder =
+  setupProject(project, "bag_root_finder", localDependencies = Seq(common))
 
-lazy val bag_register = setupProject(project, "bag_register",
+lazy val bag_register = setupProject(
+  project,
+  "bag_register",
   localDependencies = Seq(common),
-  externalDependencies = ExternalDependencies.circeOpticsDependencies
-)
+  externalDependencies = ExternalDependencies.circeOpticsDependencies)
 
-lazy val bag_replicator = setupProject(project, "bag_replicator",
-  localDependencies = Seq(common)
-)
+lazy val bag_replicator =
+  setupProject(project, "bag_replicator", localDependencies = Seq(common))
 
-lazy val bag_verifier = setupProject(project, "bag_verifier",
-  localDependencies = Seq(common)
-)
+lazy val bag_verifier =
+  setupProject(project, "bag_verifier", localDependencies = Seq(common))
 
-lazy val bag_unpacker = setupProject(project, "bag_unpacker",
+lazy val bag_unpacker = setupProject(
+  project,
+  "bag_unpacker",
   localDependencies = Seq(common),
   externalDependencies = ExternalDependencies.commonsCompressDependencies ++ ExternalDependencies.commonsIODependencies
 )
 
-lazy val ingests_common = setupProject(project, "ingests_common",
-  localDependencies = Seq(common)
-)
+lazy val ingests_common =
+  setupProject(project, "ingests_common", localDependencies = Seq(common))
 
-lazy val ingests = setupProject(project, "ingests",
+lazy val ingests = setupProject(
+  project,
+  "ingests",
   localDependencies = Seq(ingests_common),
-  externalDependencies = ExternalDependencies.wiremockDependencies
-)
+  externalDependencies = ExternalDependencies.wiremockDependencies)
 
-lazy val display = setupProject(project, "display",
-  localDependencies = Seq(common)
-)
+lazy val display =
+  setupProject(project, "display", localDependencies = Seq(common))
 
-lazy val notifier = setupProject(project, "notifier",
+lazy val notifier = setupProject(
+  project,
+  "notifier",
   localDependencies = Seq(common, display),
-  externalDependencies = ExternalDependencies.wiremockDependencies
-)
+  externalDependencies = ExternalDependencies.wiremockDependencies)
 
-lazy val ingests_api = setupProject(project, "api/ingests_api",
+lazy val ingests_api = setupProject(
+  project,
+  "api/ingests_api",
   localDependencies = Seq(ingests_common, display),
-  externalDependencies = ExternalDependencies.circeOpticsDependencies
-)
+  externalDependencies = ExternalDependencies.circeOpticsDependencies)
 
-lazy val bags_api = setupProject(project, "api/bags_api",
+lazy val bags_api = setupProject(
+  project,
+  "api/bags_api",
   localDependencies = Seq(common, display),
-  externalDependencies = ExternalDependencies.circeOpticsDependencies
-)
+  externalDependencies = ExternalDependencies.circeOpticsDependencies)

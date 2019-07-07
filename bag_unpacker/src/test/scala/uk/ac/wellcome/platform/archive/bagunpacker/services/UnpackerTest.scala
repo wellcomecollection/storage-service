@@ -35,7 +35,8 @@ class UnpackerTest
   it("unpacks a tgz archive") {
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
-        val (archiveFile, filesInArchive, _) = createTgzArchiveWithRandomFiles()
+        val (archiveFile, filesInArchive, _) =
+          createTgzArchiveWithRandomFiles()
         withArchive(srcBucket, archiveFile) { testArchive =>
           val dstKey = "unpacked"
           val dstLocation =
@@ -105,7 +106,8 @@ class UnpackerTest
     ingestResult.summary.fileCount shouldBe 0
     ingestResult.summary.bytesUnpacked shouldBe 0
 
-    val underlyingError = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
+    val underlyingError =
+      ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
     underlyingError.e shouldBe a[ArchiveLocationException]
     underlyingError.e.getMessage should
       startWith(

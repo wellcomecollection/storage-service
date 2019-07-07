@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.storage.bag_root_finder.services.{
   BagRootFinderWorker
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.json.JsonUtil._
 
 trait BagRootFinderFixtures
     extends OperationFixtures
@@ -31,7 +32,7 @@ trait BagRootFinderFixtures
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
       withMonitoringClient { implicit monitoringClient =>
         val worker = new BagRootFinderWorker(
-          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          config = createAlpakkaSQSWorkerConfig(queue),
           bagRootFinder = new BagRootFinder(),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher

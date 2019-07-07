@@ -25,6 +25,7 @@ import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
 import scala.concurrent.ExecutionContextExecutor
+import uk.ac.wellcome.json.JsonUtil._
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -45,7 +46,7 @@ object Main extends WellcomeTypesafeApp {
     val operationName = OperationNameBuilder.getName(config)
 
     new BagRootFinderWorker(
-      alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = AlpakkaSqsWorkerConfigBuilder.build(config),
       bagRootFinder = new BagRootFinder(),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)

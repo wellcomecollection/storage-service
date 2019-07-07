@@ -20,6 +20,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   S3Resolvable
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.json.JsonUtil._
 
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
@@ -39,9 +40,12 @@ trait BagVerifierFixtures
           withVerifier { verifier =>
             val ingestUpdater =
               createIngestUpdaterWith(ingests, stepName = stepName)
-            val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+
+            val outgoingPublisher =
+              createOutgoingPublisherWith(outgoing)
+
             val service = new BagVerifierWorker(
-              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+              config = createAlpakkaSQSWorkerConfig(queue),
               ingestUpdater = ingestUpdater,
               outgoingPublisher = outgoingPublisher,
               verifier = verifier
@@ -57,9 +61,14 @@ trait BagVerifierFixtures
 
   def withVerifier[R](testWith: TestWith[BagVerifier, R]): R =
     withMaterializer { implicit mat =>
-      implicit val bagReader: BagReader[_] = new S3BagReader()
-      implicit val _s3ObjectVerifier = new S3ObjectVerifier()
-      implicit val _s3Resolvable = new S3Resolvable()
+      implicit val _bagReader: BagReader[_] =
+        new S3BagReader()
+
+      implicit val _s3ObjectVerifier: S3ObjectVerifier =
+        new S3ObjectVerifier()
+
+      implicit val _s3Resolvable: S3Resolvable =
+        new S3Resolvable()
 
       val verifier = new BagVerifier()
 

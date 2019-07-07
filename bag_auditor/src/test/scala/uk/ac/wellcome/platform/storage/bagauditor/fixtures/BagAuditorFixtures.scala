@@ -14,6 +14,8 @@ import uk.ac.wellcome.platform.storage.bagauditor.services.{
 }
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 
+import uk.ac.wellcome.json.JsonUtil._
+
 trait BagAuditorFixtures
     extends OperationFixtures
     with AlpakkaSQSWorkerFixtures
@@ -51,7 +53,7 @@ trait BagAuditorFixtures
       withMonitoringClient { implicit monitoringClient =>
         withBagAuditor { bagAuditor =>
           val worker = new BagAuditorWorker(
-            alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+            config = createAlpakkaSQSWorkerConfig(queue),
             bagAuditor = bagAuditor,
             ingestUpdater = ingestUpdater,
             outgoingPublisher = outgoingPublisher

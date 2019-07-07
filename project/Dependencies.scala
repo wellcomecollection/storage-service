@@ -2,16 +2,16 @@ import sbt._
 
 object WellcomeDependencies {
   lazy val versions = new {
-    val fixtures   = "1.0.0"
-    val json       = "1.1.1"
-    val messaging  = "5.2.0"
+    val fixtures = "1.0.0"
+    val json = "1.1.1"
+    val messaging = "5.2.0"
     val monitoring = "2.2.0"
-    val storage    = "7.18.0"
-    val typesafe   = "1.0.0"
+    val storage = "7.18.0"
+    val typesafe = "1.0.0"
   }
 
   val jsonLibrary: Seq[ModuleID] = library(
-    name    = "json",
+    name = "json",
     version = versions.json
   )
 
@@ -58,17 +58,17 @@ object WellcomeDependencies {
 
 object ExternalDependencies {
   lazy val versions = new {
-    val akkaHttp            = "10.1.5"
-    val akkaHttpCirce       = "1.21.1"
-    val akkaStreamAlpakka   = "0.20"
-    val commonsCompress     = "1.5"
-    val commonsIO           = "2.6"
-    val aws                 = "1.11.95"
-    val circe               = "0.9.0"
-    val mockito             = "1.9.5"
-    val scalatest           = "3.0.1"
-    val wiremock            = "2.18.0"
-    val logback             = "1.2.3"
+    val akkaHttp = "10.1.5"
+    val akkaHttpCirce = "1.21.1"
+    val akkaStreamAlpakka = "0.20"
+    val commonsCompress = "1.5"
+    val commonsIO = "2.6"
+    val aws = "1.11.95"
+    val circe = "0.9.0"
+    val mockito = "1.9.5"
+    val scalatest = "3.0.1"
+    val wiremock = "2.18.0"
+    val logback = "1.2.3"
   }
 
   val logbackDependencies = Seq(

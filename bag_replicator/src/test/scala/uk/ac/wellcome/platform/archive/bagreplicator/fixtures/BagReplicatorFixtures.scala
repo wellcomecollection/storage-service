@@ -5,10 +5,10 @@ import java.util.UUID
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.services.{
@@ -20,6 +20,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   OperationFixtures,
   S3BagLocationFixtures
 }
+import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.locking.memory.{
@@ -54,11 +55,12 @@ trait BagReplicatorFixtures
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
       withMonitoringClient { implicit monitoringClient =>
         val lockingService = new LockingService[
-          Result[ReplicationSummary],
+          IngestStepResult[ReplicationSummary],
           Try,
           LockDao[String, UUID]] {
           override implicit val lockDao: LockDao[String, UUID] =
             lockServiceDao
+
           override protected def createContextId(): lockDao.ContextId =
             UUID.randomUUID()
         }
@@ -67,7 +69,7 @@ trait BagReplicatorFixtures
           createReplicatorDestinationConfigWith(bucket, rootPath)
 
         val service = new BagReplicatorWorker(
-          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          config = createAlpakkaSQSWorkerConfig(queue),
           bagReplicator = new BagReplicator(),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher,
@@ -117,10 +119,14 @@ trait BagReplicatorFixtures
   def verifyObjectsCopied(src: ObjectLocation,
                           dst: ObjectLocation): Assertion = {
     val sourceItems = getObjectSummaries(src)
-    val sourceKeyEtags = sourceItems.map { _.getETag }
+    val sourceKeyEtags = sourceItems.map {
+      _.getETag
+    }
 
     val destinationItems = getObjectSummaries(dst)
-    val destinationKeyEtags = destinationItems.map { _.getETag }
+    val destinationKeyEtags = destinationItems.map {
+      _.getETag
+    }
 
     destinationKeyEtags should contain theSameElementsAs sourceKeyEtags
   }

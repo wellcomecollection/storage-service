@@ -2,47 +2,39 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
-import uk.ac.wellcome.messaging.worker.models.Result
+import io.circe.Decoder
+import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepWorker
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepWorker
+}
 import uk.ac.wellcome.platform.archive.common.{
   SourceLocationPayload,
   UnpackedBagLocationPayload
 }
-import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.Future
 import scala.util.Try
 
-case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
-  alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
+class BagUnpackerWorker[IngestDestination, OutgoingDestination](
+  val config: AlpakkaSQSWorkerConfig,
   bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  unpacker: Unpacker)(implicit
-                      actorSystem: ActorSystem,
-                      mc: MonitoringClient,
-                      sc: AmazonSQSAsync)
-    extends Runnable
-    with IngestStepWorker {
-  private val worker =
-    AlpakkaSQSWorker[SourceLocationPayload, UnpackSummary](
-      alpakkaSQSWorkerConfig) { msg =>
-      Future.fromTry { processMessage(msg) }
-    }
+  unpacker: Unpacker
+)(implicit val mc: MonitoringClient,
+  val as: ActorSystem,
+  val sc: AmazonSQSAsync,
+  val wd: Decoder[SourceLocationPayload])
+    extends IngestStepWorker[SourceLocationPayload, UnpackSummary] {
 
   def processMessage(
-    payload: SourceLocationPayload): Try[Result[UnpackSummary]] =
+    payload: SourceLocationPayload): Try[IngestStepResult[UnpackSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
@@ -65,7 +57,5 @@ case class BagUnpackerWorker[IngestDestination, OutgoingDestination](
         unpackedBagLocation = unpackedBagLocation
       )
       _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
-    } yield toResult(stepResult)
-
-  override def run(): Future[Any] = worker.start
+    } yield stepResult
 }

@@ -31,8 +31,7 @@ class MemoryIngestTrackerTest
 
   override def withBrokenUnderlyingInitTracker[R](
     testWith: TestWith[IngestTracker, R])(
-    implicit
-    context: MemoryVersionedStore[IngestID, Int, Ingest]): R =
+    implicit context: MemoryVersionedStore[IngestID, Int, Ingest]): R =
     testWith(
       new MemoryIngestTracker(
         new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {
@@ -44,8 +43,7 @@ class MemoryIngestTrackerTest
 
   override def withBrokenUnderlyingGetTracker[R](
     testWith: TestWith[IngestTracker, R])(
-    implicit
-    context: MemoryVersionedStore[IngestID, Int, Ingest]): R =
+    implicit context: MemoryVersionedStore[IngestID, Int, Ingest]): R =
     testWith(
       new MemoryIngestTracker(
         new MemoryVersionedStore[IngestID, Int, Ingest](createMemoryStore) {

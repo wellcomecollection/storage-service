@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bag_register.fixtures
 
 import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -55,7 +56,7 @@ trait BagRegisterFixtures
           )
 
           val service = new BagRegisterWorker(
-            workerConfig = createAlpakkaSQSWorkerConfig(queuePair.queue),
+            config = createAlpakkaSQSWorkerConfig(queuePair.queue),
             ingestUpdater =
               createIngestUpdaterWith(ingests, stepName = "register"),
             outgoingPublisher = createOutgoingPublisherWith(outgoing),

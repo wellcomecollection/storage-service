@@ -18,6 +18,8 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
+import uk.ac.wellcome.json.JsonUtil._
+
 trait BagUnpackerFixtures
     extends SQS
     with S3BagLocationFixtures
@@ -36,8 +38,8 @@ trait BagUnpackerFixtures
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
       withMonitoringClient { implicit monitoringClient =>
-        val bagUnpackerWorker = BagUnpackerWorker(
-          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+        val bagUnpackerWorker = new BagUnpackerWorker(
+          config = createAlpakkaSQSWorkerConfig(queue),
           bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher,

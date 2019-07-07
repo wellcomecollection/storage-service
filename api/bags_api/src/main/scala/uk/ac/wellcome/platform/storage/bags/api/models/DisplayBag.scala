@@ -10,8 +10,7 @@ import uk.ac.wellcome.platform.archive.display.{
 }
 
 case class DisplayBag(
-  @JsonKey("@context")
-  context: String,
+  @JsonKey("@context") context: String,
   id: String,
   space: DisplayStorageSpace,
   info: DisplayBagInfo,
@@ -19,8 +18,7 @@ case class DisplayBag(
   tagManifest: DisplayBagManifest,
   locations: List[DisplayLocation],
   createdDate: String,
-  @JsonKey("type")
-  ontologyType: String = "Bag"
+  @JsonKey("type") ontologyType: String = "Bag"
 )
 
 object DisplayBag {

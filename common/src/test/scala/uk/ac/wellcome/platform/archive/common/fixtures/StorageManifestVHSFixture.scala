@@ -39,8 +39,8 @@ trait StorageManifestVHSFixture extends EitherValues {
     new MemoryTypedStore[String, StorageManifest](Map.empty)
   }
 
-  def createStorageManifestDao(implicit
-                               indexStore: StorageManifestIndex = createIndex,
+  def createStorageManifestDao(implicit indexStore: StorageManifestIndex =
+                                 createIndex,
                                typedStore: StorageManifestTypedStore =
                                  createTypedStore): StorageManifestDao =
     // TODO: This should use a companion object
