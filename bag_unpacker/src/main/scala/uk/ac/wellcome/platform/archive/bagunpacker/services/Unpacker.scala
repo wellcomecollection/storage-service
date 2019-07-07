@@ -6,7 +6,7 @@ import java.time.Instant
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.ArchiveLocationException
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
+import uk.ac.wellcome.platform.archive.bagunpacker.storage.Unarchiver
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
@@ -64,7 +64,7 @@ trait Unpacker {
   private def unpack(unpackSummary: UnpackSummary,
                      srcStream: InputStream,
                      dstLocation: ObjectLocationPrefix): Try[UnpackSummary] =
-    Archive.unpack(srcStream) match {
+    Unarchiver.open(srcStream) match {
       case Left(error) => Failure(error.e)
       case Right(iterator) =>
         var totalFiles = 0

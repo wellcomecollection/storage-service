@@ -11,7 +11,7 @@ import uk.ac.wellcome.storage.streaming.Codec._
   * and because they're simpler than doing it with Scala!
   *
   */
-class ArchiveTest extends FunSpec with Matchers with EitherValues {
+class UnarchiverTest extends FunSpec with Matchers with EitherValues {
 
   /** The package for this test was created with the bash script:
     *
@@ -27,7 +27,7 @@ class ArchiveTest extends FunSpec with Matchers with EitherValues {
   it("unpacks a tar.gz file") {
     val inputStream = getClass.getResourceAsStream("/numbers.tar.gz")
 
-    val archiveIterator = Archive.unpack(inputStream).right.value
+    val archiveIterator = Unarchiver.open(inputStream).right.value
 
     archiveIterator.foreach { case (archiveEntry, entryInputStream) =>
       archiveEntry shouldBe a[TarArchiveEntry]
@@ -50,13 +50,13 @@ class ArchiveTest extends FunSpec with Matchers with EitherValues {
       override def markSupported(): Boolean = false
     }
 
-    Archive.unpack(unmarkableStream) shouldBe a[Right[_, _]]
+    Unarchiver.open(unmarkableStream) shouldBe a[Right[_, _]]
   }
 
   it("handles the caller closing the input stream") {
     val inputStream = getClass.getResourceAsStream("/numbers.tar.gz")
 
-    val archiveIterator = Archive.unpack(inputStream).right.value
+    val archiveIterator = Unarchiver.open(inputStream).right.value
 
     archiveIterator.foreach { case (_, entryInputStream) =>
       entryInputStream.close()
@@ -72,7 +72,7 @@ class ArchiveTest extends FunSpec with Matchers with EitherValues {
   it("fails if the uncompressed stream is not a container") {
     val inputStream = getClass.getResourceAsStream("/greeting.txt.gz")
 
-    val error = Archive.unpack(inputStream).left.value
+    val error = Unarchiver.open(inputStream).left.value
 
     error shouldBe a[ArchiveFormatError]
     error.e.getMessage should startWith("No Archiver found for the stream signature")
@@ -81,13 +81,13 @@ class ArchiveTest extends FunSpec with Matchers with EitherValues {
   it("fails if the file is not a compressed stream") {
     val inputStream = stringCodec.toStream("hello world").right.value
 
-    val error = Archive.unpack(inputStream).left.value
+    val error = Unarchiver.open(inputStream).left.value
 
     error shouldBe a[CompressorError]
     error.e.getMessage should startWith("No Compressor found for the stream signature")
   }
 
   it("fails if the input stream is null") {
-    Archive.unpack(null).left.value shouldBe a[CompressorError]
+    Unarchiver.open(null).left.value shouldBe a[CompressorError]
   }
 }

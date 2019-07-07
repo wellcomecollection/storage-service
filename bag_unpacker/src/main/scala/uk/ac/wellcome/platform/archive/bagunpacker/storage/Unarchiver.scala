@@ -31,8 +31,8 @@ import scala.util.{Failure, Success, Try}
   * unable to read any more of the archive.
   *
   */
-object Archive {
-  def unpack(inputStream: InputStream): Either[ArchiveError, Iterator[(ArchiveEntry, InputStream)]] =
+object Unarchiver {
+  def open(inputStream: InputStream): Either[UnarchiverError, Iterator[(ArchiveEntry, InputStream)]] =
     for {
       uncompressedStream <- uncompress(inputStream)
       archiveInputStream <- extract(uncompressedStream)
@@ -52,7 +52,7 @@ object Archive {
         (latest, new CloseShieldInputStream(archiveInputStream))
     }
 
-  private def uncompress(compressedStream: InputStream): Either[ArchiveError, CompressorInputStream] =
+  private def uncompress(compressedStream: InputStream): Either[UnarchiverError, CompressorInputStream] =
     Try {
       // We have to wrap in a BufferedInputStream because this method
       // only takes InputStreams that support the `mark()` method.
@@ -61,10 +61,10 @@ object Archive {
     } match {
       case Success(stream)                   => Right(stream)
       case Failure(err: CompressorException) => Left(CompressorError(err))
-      case Failure(err)                      => Left(UnexpectedArchiveError(err))
+      case Failure(err)                      => Left(UnexpectedUnarchiverError(err))
     }
 
-  private def extract(inputStream: InputStream): Either[ArchiveError, ArchiveInputStream] =
+  private def extract(inputStream: InputStream): Either[UnarchiverError, ArchiveInputStream] =
     Try {
       // We have to wrap in a BufferedInputStream because this method
       // only takes InputStreams that support the `mark()` method.
@@ -73,6 +73,6 @@ object Archive {
     } match {
       case Success(stream)                => Right(stream)
       case Failure(err: ArchiveException) => Left(ArchiveFormatError(err))
-      case Failure(err)                   => Left(UnexpectedArchiveError(err))
+      case Failure(err)                   => Left(UnexpectedUnarchiverError(err))
     }
 }
