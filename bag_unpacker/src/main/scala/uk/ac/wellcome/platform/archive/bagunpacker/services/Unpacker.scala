@@ -5,13 +5,13 @@ import java.time.Instant
 
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.storage.{Unarchiver, UnarchiverError}
+import uk.ac.wellcome.platform.archive.bagunpacker.storage.Unarchiver
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, StorageError}
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ObjectLocationPrefix, StorageError}
 
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 trait Unpacker {
   // The unpacker asks for separate get/put methods rather than a Store
@@ -39,55 +39,70 @@ trait Unpacker {
         .left.map { storageError => UnpackerStorageError(storageError) }
 
       unpackSummary <- unpack(unpackSummary, srcStream, dstLocation)
-        .left.map { unarchiverError => UnpackerUnarchiverError(unarchiverError) }
     } yield unpackSummary
 
     result match {
       case Right(summary) =>
         Success(IngestStepSucceeded(summary))
 
-      case Left(UnpackerStorageError(storageError)) =>
+      case Left(unpackerError) =>
         Success(
           IngestFailed(
             unpackSummary,
-            e = storageError.e
-          )
-        )
-
-      case Left(UnpackerUnarchiverError(unarchiverError)) =>
-        Success(
-          IngestFailed(
-            unpackSummary,
-            e = unarchiverError.e
+            e = unpackerError.e,
+            maybeUserFacingMessage = buildMessageFor(
+              srcLocation,
+              error = unpackerError
+            )
           )
         )
     }
   }
 
+  private def buildMessageFor(srcLocation: ObjectLocation,
+                              error: UnpackerError): Option[String] =
+    error match {
+      case UnpackerStorageError(_: DoesNotExistError) =>
+        Some(s"Archive does not exist: $srcLocation")
+
+      case _ => None
+    }
+
   private def unpack(unpackSummary: UnpackSummary,
                      srcStream: InputStream,
-                     dstLocation: ObjectLocationPrefix): Either[UnarchiverError, UnpackSummary] =
-    Unarchiver.open(srcStream).map { iterator =>
-      var totalFiles = 0
-      var totalBytes = 0
+                     dstLocation: ObjectLocationPrefix): Either[UnpackerError, UnpackSummary] =
+    Unarchiver.open(srcStream) match {
+      case Left(unarchiverError) => Left(UnpackerUnarchiverError(unarchiverError))
 
-      iterator
-        .filterNot { case (archiveEntry, _) => archiveEntry.isDirectory }
-        .foreach { case (archiveEntry, entryStream) =>
-          val uploadedBytes = putObject(
-            inputStream = entryStream,
-            archiveEntry = archiveEntry,
-            destination = dstLocation
+      case Right(iterator) =>
+        var totalFiles = 0
+        var totalBytes = 0
+
+        Try {
+          iterator
+            .filterNot { case (archiveEntry, _) => archiveEntry.isDirectory }
+            .foreach { case (archiveEntry, entryStream) =>
+              val uploadedBytes = putObject(
+                inputStream = entryStream,
+                archiveEntry = archiveEntry,
+                destination = dstLocation
+              )
+
+              totalFiles += 1
+              totalBytes += uploadedBytes.toInt
+            }
+
+          unpackSummary.copy(
+            fileCount = totalFiles,
+            bytesUnpacked = totalBytes
           )
-
-          totalFiles += 1
-          totalBytes += uploadedBytes.toInt
-          }
-
-      unpackSummary.copy(
-        fileCount = totalFiles,
-        bytesUnpacked = totalBytes
-      )
+        } match {
+          case Success(result) => Right(result)
+          case Failure(err: StorageError) =>
+            Left(UnpackerStorageError(err))
+          case Failure(err: Throwable) =>
+            Left(UnpackerUnexpectedError(err))
+        }
     }
 
   private def putObject(

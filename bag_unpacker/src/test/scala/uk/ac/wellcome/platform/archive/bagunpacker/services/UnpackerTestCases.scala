@@ -96,9 +96,8 @@ trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues 
     ingestResult.summary.fileCount shouldBe 0
     ingestResult.summary.bytesUnpacked shouldBe 0
 
-    val underlyingError = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
-    underlyingError.e shouldBe a[RuntimeException]
-    underlyingError.e.getMessage should startWith(s"Error getting input stream for $srcLocation:")
+    val ingestFailed = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
+    ingestFailed.maybeUserFacingMessage shouldBe s"Archive does not exist: $srcLocation"
   }
 
   def assertEqual(prefix: ObjectLocationPrefix, expectedFiles: Seq[File])(implicit store: StreamStore[ObjectLocation, InputStreamWithLength]): Seq[Assertion] = {
