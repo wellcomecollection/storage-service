@@ -2,11 +2,11 @@ package uk.ac.wellcome.platform.archive.bagunpacker.storage
 
 import java.io.{BufferedInputStream, InputStream}
 
-import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveInputStream, ArchiveStreamFactory}
-import org.apache.commons.compress.compressors.{CompressorInputStream, CompressorStreamFactory}
+import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveException, ArchiveInputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.compressors.{CompressorException, CompressorInputStream, CompressorStreamFactory}
 import org.apache.commons.io.input.CloseShieldInputStream
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /** You pass this class an inputStream that comes from the storage provider,
   * e.g. a FileInputStream or an S3InputStream.  The stream should be a tar.gz
@@ -32,10 +32,10 @@ import scala.util.Try
   *
   */
 object Archive {
-  def unpack(inputStream: InputStream): Try[Iterator[(ArchiveEntry, InputStream)]] =
+  def unpack(inputStream: InputStream): Either[ArchiveError, Iterator[(ArchiveEntry, InputStream)]] =
     for {
       uncompressedStream <- uncompress(inputStream)
-      archiveInputStream: ArchiveInputStream <- extract(uncompressedStream)
+      archiveInputStream <- extract(uncompressedStream)
       iterator = createIterator(archiveInputStream)
     } yield iterator
 
@@ -52,19 +52,27 @@ object Archive {
         (latest, new CloseShieldInputStream(archiveInputStream))
     }
 
-  private def uncompress(compressedStream: InputStream): Try[CompressorInputStream] =
+  private def uncompress(compressedStream: InputStream): Either[ArchiveError, CompressorInputStream] =
     Try {
       // We have to wrap in a BufferedInputStream because this method
       // only takes InputStreams that support the `mark()` method.
       new CompressorStreamFactory()
         .createCompressorInputStream(new BufferedInputStream(compressedStream))
+    } match {
+      case Success(stream)                   => Right(stream)
+      case Failure(err: CompressorException) => Left(CompressorError(err))
+      case Failure(err)                      => Left(UnexpectedArchiveError(err))
     }
 
-  private def extract(inputStream: InputStream) =
+  private def extract(inputStream: InputStream): Either[ArchiveError, ArchiveInputStream] =
     Try {
       // We have to wrap in a BufferedInputStream because this method
       // only takes InputStreams that support the `mark()` method.
       new ArchiveStreamFactory()
         .createArchiveInputStream(new BufferedInputStream(inputStream))
+    } match {
+      case Success(stream)                => Right(stream)
+      case Failure(err: ArchiveException) => Left(ArchiveFormatError(err))
+      case Failure(err)                   => Left(UnexpectedArchiveError(err))
     }
 }

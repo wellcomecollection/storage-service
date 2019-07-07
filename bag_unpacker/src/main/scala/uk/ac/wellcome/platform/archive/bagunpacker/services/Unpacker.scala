@@ -64,27 +64,31 @@ trait Unpacker {
   private def unpack(unpackSummary: UnpackSummary,
                      srcStream: InputStream,
                      dstLocation: ObjectLocationPrefix): Try[UnpackSummary] =
-    Archive.unpack(srcStream).map { iterator =>
-      var totalFiles = 0
-      var totalBytes = 0
+    Archive.unpack(srcStream) match {
+      case Left(error) => Failure(error.e)
+      case Right(iterator) =>
+        var totalFiles = 0
+        var totalBytes = 0
 
-      iterator
-        .filterNot { case (archiveEntry, _) => archiveEntry.isDirectory }
-        .foreach { case (archiveEntry, entryStream) =>
-          val uploadedBytes = putObject(
-            inputStream = entryStream,
-            archiveEntry = archiveEntry,
-            destination = dstLocation
+        iterator
+          .filterNot { case (archiveEntry, _) => archiveEntry.isDirectory }
+          .foreach { case (archiveEntry, entryStream) =>
+            val uploadedBytes = putObject(
+              inputStream = entryStream,
+              archiveEntry = archiveEntry,
+              destination = dstLocation
+            )
+
+            totalFiles += 1
+            totalBytes += uploadedBytes.toInt
+          }
+
+        Success(
+          unpackSummary.copy(
+            fileCount = totalFiles,
+            bytesUnpacked = totalBytes
           )
-
-          totalFiles += 1
-          totalBytes += uploadedBytes.toInt
-        }
-
-      unpackSummary.copy(
-        fileCount = totalFiles,
-        bytesUnpacked = totalBytes
-      )
+        )
     }
 
   private def getSrcStream(
