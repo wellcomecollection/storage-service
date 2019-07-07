@@ -4,15 +4,14 @@ import java.io.InputStream
 import java.time.Instant
 
 import org.apache.commons.compress.archivers.ArchiveEntry
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.ArchiveLocationException
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.storage.Unarchiver
+import uk.ac.wellcome.platform.archive.bagunpacker.storage.{Unarchiver, UnarchiverError}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ObjectLocationPrefix, StorageError}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, StorageError}
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 trait Unpacker {
   // The unpacker asks for separate get/put methods rather than a Store
@@ -28,7 +27,6 @@ trait Unpacker {
     srcLocation: ObjectLocation,
     dstLocation: ObjectLocationPrefix
   ): Try[IngestStepResult[UnpackSummary]] = {
-
     val unpackSummary =
       UnpackSummary(
         ingestId,
@@ -37,77 +35,59 @@ trait Unpacker {
         startTime = Instant.now)
 
     val result = for {
-      srcStream <- getSrcStream(srcLocation)
+      srcStream <- get(srcLocation)
+        .left.map { storageError => UnpackerStorageError(storageError) }
+
       unpackSummary <- unpack(unpackSummary, srcStream, dstLocation)
+        .left.map { unarchiverError => UnpackerUnarchiverError(unarchiverError) }
     } yield unpackSummary
 
     result match {
-      case Success(summary) =>
+      case Right(summary) =>
         Success(IngestStepSucceeded(summary))
-      case Failure(archiveLocationException: ArchiveLocationException) =>
+
+      case Left(UnpackerStorageError(storageError)) =>
         Success(
           IngestFailed(
             unpackSummary,
-            archiveLocationException,
-            Some(clientMessageFor(archiveLocationException))))
-      case Failure(e) =>
-        Success(IngestFailed(unpackSummary, e))
+            e = storageError.e
+          )
+        )
+
+      case Left(UnpackerUnarchiverError(unarchiverError)) =>
+        Success(
+          IngestFailed(
+            unpackSummary,
+            e = unarchiverError.e
+          )
+        )
     }
-  }
-
-  private def clientMessageFor(exception: ArchiveLocationException) = {
-    val archiveLocation = exception.getObjectLocation
-
-    s"$archiveLocation could not be downloaded"
   }
 
   private def unpack(unpackSummary: UnpackSummary,
                      srcStream: InputStream,
-                     dstLocation: ObjectLocationPrefix): Try[UnpackSummary] =
-    Unarchiver.open(srcStream) match {
-      case Left(error) => Failure(error.e)
-      case Right(iterator) =>
-        var totalFiles = 0
-        var totalBytes = 0
+                     dstLocation: ObjectLocationPrefix): Either[UnarchiverError, UnpackSummary] =
+    Unarchiver.open(srcStream).map { iterator =>
+      var totalFiles = 0
+      var totalBytes = 0
 
-        iterator
-          .filterNot { case (archiveEntry, _) => archiveEntry.isDirectory }
-          .foreach { case (archiveEntry, entryStream) =>
-            val uploadedBytes = putObject(
-              inputStream = entryStream,
-              archiveEntry = archiveEntry,
-              destination = dstLocation
-            )
+      iterator
+        .filterNot { case (archiveEntry, _) => archiveEntry.isDirectory }
+        .foreach { case (archiveEntry, entryStream) =>
+          val uploadedBytes = putObject(
+            inputStream = entryStream,
+            archiveEntry = archiveEntry,
+            destination = dstLocation
+          )
 
-            totalFiles += 1
-            totalBytes += uploadedBytes.toInt
+          totalFiles += 1
+          totalBytes += uploadedBytes.toInt
           }
 
-        Success(
-          unpackSummary.copy(
-            fileCount = totalFiles,
-            bytesUnpacked = totalBytes
-          )
-        )
-    }
-
-  private def getSrcStream(
-    srcLocation: ObjectLocation): Try[InputStream] =
-    get(srcLocation) match {
-      case Right(inputStream) => Success(inputStream)
-      case Left(_: DoesNotExistError) =>
-        Failure(
-          new ArchiveLocationException(
-            objectLocation = srcLocation,
-            message =
-              s"Error getting input stream for $srcLocation: No such object"
-          )
-        )
-      case Left(err) =>
-        Failure(new ArchiveLocationException(
-          objectLocation = srcLocation,
-          message =
-            s"Error getting input stream for $srcLocation: $err"))
+      unpackSummary.copy(
+        fileCount = totalFiles,
+        bytesUnpacked = totalBytes
+      )
     }
 
   private def putObject(

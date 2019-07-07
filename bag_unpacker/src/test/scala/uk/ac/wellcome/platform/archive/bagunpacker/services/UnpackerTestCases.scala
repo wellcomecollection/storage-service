@@ -5,7 +5,6 @@ import java.nio.file.Paths
 
 import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.ArchiveLocationException
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
@@ -98,7 +97,7 @@ trait UnpackerTestCases[Namespace] extends FunSpec with Matchers with TryValues 
     ingestResult.summary.bytesUnpacked shouldBe 0
 
     val underlyingError = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
-    underlyingError.e shouldBe a[ArchiveLocationException]
+    underlyingError.e shouldBe a[RuntimeException]
     underlyingError.e.getMessage should startWith(s"Error getting input stream for $srcLocation:")
   }
 
