@@ -7,17 +7,14 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.worker.models.{
-  NonDeterministicFailure,
-  Successful
-}
+import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 
@@ -52,10 +49,11 @@ class BagReplicatorWorkerTest
             )
 
             val serviceResult = service.processMessage(payload)
-            serviceResult.success.value shouldBe a[Successful[_]]
+            serviceResult.success.value shouldBe a[IngestStepSucceeded[_]]
 
             val receivedMessages =
               outgoing.getMessages[EnrichedBagInformationPayload]
+
             receivedMessages.size shouldBe 1
 
             val result = receivedMessages.head
@@ -93,7 +91,7 @@ class BagReplicatorWorkerTest
               )
 
               val result = worker.processMessage(payload).success.value
-              result shouldBe a[Successful[_]]
+              result shouldBe a[IngestStepSucceeded[_]]
 
               val destination = result.summary.destination
               destination.namespace shouldBe archiveBucket.name
@@ -116,7 +114,7 @@ class BagReplicatorWorkerTest
               )
 
               val result = worker.processMessage(payload).success.value
-              result shouldBe a[Successful[_]]
+              result shouldBe a[IngestStepSucceeded[_]]
 
               val destination = result.summary.destination
               val expectedPath =
@@ -146,7 +144,7 @@ class BagReplicatorWorkerTest
               )
 
               val result = worker.processMessage(payload).success.value
-              result shouldBe a[Successful[_]]
+              result shouldBe a[IngestStepSucceeded[_]]
 
               val destination = result.summary.destination
               destination.path should endWith(
@@ -167,7 +165,7 @@ class BagReplicatorWorkerTest
               )
 
               val result = worker.processMessage(payload).success.value
-              result shouldBe a[Successful[_]]
+              result shouldBe a[IngestStepSucceeded[_]]
 
               val destination = result.summary.destination
               destination.path should startWith(
@@ -213,7 +211,7 @@ class BagReplicatorWorkerTest
             )
 
             val result = service.processMessage(payload).success.value
-            result shouldBe a[Successful[_]]
+            result shouldBe a[IngestStepSucceeded[_]]
 
             val destination = result.summary.destination
 
@@ -257,7 +255,7 @@ class BagReplicatorWorkerTest
             )
 
           whenReady(futures) { result =>
-            result.count { _.isInstanceOf[Successful[_]] } shouldBe 1
+            result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 1
             result.count { _.isInstanceOf[NonDeterministicFailure[_]] } shouldBe 4
 
           // TODO: Restore this test
