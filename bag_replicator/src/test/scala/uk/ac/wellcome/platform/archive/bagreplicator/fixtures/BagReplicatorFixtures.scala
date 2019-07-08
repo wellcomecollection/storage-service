@@ -95,11 +95,11 @@ trait BagReplicatorFixtures
   // Note: the replicator doesn't currently make any assumptions about
   // the bag structure, so we just put a random collection of objects
   // in the "bag".
-  def withBagObjects[R](bucket: Bucket)(
+  def withBagObjects[R](bucket: Bucket, objectCount: Int = 50)(
     testWith: TestWith[ObjectLocation, R]): R = {
     val rootLocation = createObjectLocationWith(bucket)
 
-    (1 to 250).map { _ =>
+    (1 to objectCount).map { _ =>
       val parts = (1 to Random.nextInt(5)).map { _ =>
         randomAlphanumeric
       }
