@@ -1,132 +1,126 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import java.io.InputStream
-import java.nio.file.Paths
 import java.time.Instant
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.commons.compress.archivers.ArchiveEntry
-import uk.ac.wellcome.platform.archive.bagunpacker.exceptions.{
-  ArchiveLocationException,
-  UnpackerArchiveEntryUploadException
-}
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.storage.Archive
+import uk.ac.wellcome.platform.archive.bagunpacker.storage.Unarchiver
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
   IngestStepSucceeded
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import uk.ac.wellcome.storage.{
+  DoesNotExistError,
+  ObjectLocation,
+  ObjectLocationPrefix,
+  StorageError
+}
 
 import scala.util.{Failure, Success, Try}
 
-case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
+trait Unpacker {
+  // The unpacker asks for separate get/put methods rather than a Store
+  // because it might be unpacking/uploading to different providers.
+  //
+  // e.g. we might unpack a package from an S3 bucket, then upload it to Azure.
+  //
+  def get(location: ObjectLocation): Either[StorageError, InputStream]
+  def put(location: ObjectLocation)(
+    inputStream: InputStreamWithLength): Either[StorageError, Unit]
 
   def unpack(
-    requestId: String,
+    ingestId: IngestID,
     srcLocation: ObjectLocation,
-    dstLocation: ObjectLocation
+    dstLocation: ObjectLocationPrefix
   ): Try[IngestStepResult[UnpackSummary]] = {
-
     val unpackSummary =
-      UnpackSummary(
-        requestId,
-        srcLocation,
-        dstLocation,
-        startTime = Instant.now)
+      UnpackSummary(ingestId, srcLocation, dstLocation, startTime = Instant.now)
 
     val result = for {
-      archiveInputStream <- archiveDownloadStream(srcLocation)
-      unpackSummary <- unpack(unpackSummary, archiveInputStream, dstLocation)
+      srcStream <- get(srcLocation).left.map { storageError =>
+        UnpackerStorageError(storageError)
+      }
+
+      unpackSummary <- unpack(unpackSummary, srcStream, dstLocation)
     } yield unpackSummary
 
     result match {
-      case Success(summary) =>
+      case Right(summary) =>
         Success(IngestStepSucceeded(summary))
-      case Failure(archiveLocationException: ArchiveLocationException) =>
+
+      case Left(unpackerError) =>
         Success(
           IngestFailed(
             unpackSummary,
-            archiveLocationException,
-            Some(clientMessageFor(archiveLocationException))))
-      case Failure(e) =>
-        Success(IngestFailed(unpackSummary, e))
-    }
-  }
-
-  private def clientMessageFor(exception: ArchiveLocationException) = {
-    val archiveLocation = exception.getObjectLocation
-
-    s"$archiveLocation could not be downloaded"
-  }
-
-  private def unpack(unpackSummary: UnpackSummary,
-                     packageInputStream: InputStream,
-                     dstLocation: ObjectLocation): Try[UnpackSummary] =
-    Archive
-      .unpack[UnpackSummary](packageInputStream)(unpackSummary) {
-        (summary: UnpackSummary,
-         inputStream: InputStream,
-         archiveEntry: ArchiveEntry) =>
-          if (!archiveEntry.isDirectory) {
-            putArchiveEntry(dstLocation, summary, inputStream, archiveEntry)
-          } else {
-            summary
-          }
-      }
-
-  private def archiveDownloadStream(
-    srcLocation: ObjectLocation): Try[InputStream] =
-    srcLocation.toInputStream match {
-      case Right(Some(is)) => Success(is)
-      case Right(None) =>
-        Failure(
-          new ArchiveLocationException(
-            objectLocation = srcLocation,
-            message =
-              s"Error getting input stream for s3://$srcLocation: No such object"
+            e = unpackerError.e,
+            maybeUserFacingMessage = buildMessageFor(
+              srcLocation,
+              error = unpackerError
+            )
           )
         )
-      case Left(err) =>
-        Failure(new ArchiveLocationException(
-          objectLocation = srcLocation,
-          message =
-            s"Error getting input stream for s3://$srcLocation: ${err.getMessage}"))
+    }
+  }
+
+  private def buildMessageFor(srcLocation: ObjectLocation,
+                              error: UnpackerError): Option[String] =
+    error match {
+      case UnpackerStorageError(_: DoesNotExistError) =>
+        Some(s"There is no archive at $srcLocation")
+
+      case _ => None
     }
 
-  private def putArchiveEntry(dstLocation: ObjectLocation,
-                              summary: UnpackSummary,
-                              inputStream: InputStream,
-                              archiveEntry: ArchiveEntry) =
-    try {
-      val archiveEntrySize = putObject(
-        inputStream,
-        archiveEntry,
-        dstLocation
-      )
-      summary.copy(
-        fileCount = summary.fileCount + 1,
-        bytesUnpacked = summary.bytesUnpacked + archiveEntrySize
-      )
-    } catch {
-      case ae: AmazonS3Exception =>
-        throw new UnpackerArchiveEntryUploadException(
-          dstLocation,
-          s"upload failed for ${archiveEntry.getName}",
-          ae)
+  private def unpack(
+    unpackSummary: UnpackSummary,
+    srcStream: InputStream,
+    dstLocation: ObjectLocationPrefix): Either[UnpackerError, UnpackSummary] =
+    Unarchiver.open(srcStream) match {
+      case Left(unarchiverError) =>
+        Left(UnpackerUnarchiverError(unarchiverError))
+
+      case Right(iterator) =>
+        var totalFiles = 0
+        var totalBytes = 0
+
+        Try {
+          iterator
+            .filterNot { case (archiveEntry, _) => archiveEntry.isDirectory }
+            .foreach {
+              case (archiveEntry, entryStream) =>
+                val uploadedBytes = putObject(
+                  inputStream = entryStream,
+                  archiveEntry = archiveEntry,
+                  destination = dstLocation
+                )
+
+                totalFiles += 1
+                totalBytes += uploadedBytes.toInt
+            }
+
+          unpackSummary.copy(
+            fileCount = totalFiles,
+            bytesUnpacked = totalBytes
+          )
+        } match {
+          case Success(result) => Right(result)
+          case Failure(err: StorageError) =>
+            Left(UnpackerStorageError(err))
+          case Failure(err: Throwable) =>
+            Left(UnpackerUnexpectedError(err))
+        }
     }
 
   private def putObject(
     inputStream: InputStream,
     archiveEntry: ArchiveEntry,
-    destination: ObjectLocation
+    destination: ObjectLocationPrefix
   ): Long = {
-    val uploadLocation = destination.copy(
-      path = normalizeKey(destination.path, archiveEntry.getName)
-    )
+    val uploadLocation = destination.asLocation(archiveEntry.getName)
 
     val archiveEntrySize = archiveEntry.getSize
 
@@ -136,18 +130,12 @@ case class Unpacker(s3Uploader: S3Uploader)(implicit s3Client: AmazonS3) {
       )
     }
 
-    s3Uploader.putObject(
-      inputStream = inputStream,
-      streamLength = archiveEntrySize,
-      uploadLocation = uploadLocation
-    )
+    put(uploadLocation)(
+      new InputStreamWithLength(inputStream, length = archiveEntrySize)) match {
+      case Right(_)           => ()
+      case Left(storageError) => throw storageError.e
+    }
 
     archiveEntrySize
   }
-
-  private def normalizeKey(prefix: String, key: String) =
-    Paths
-      .get(prefix, key)
-      .normalize()
-      .toString
 }

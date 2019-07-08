@@ -17,25 +17,37 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
-trait CompressFixture extends StorageRandomThings with S3Fixtures with Logging {
+trait CompressFixture[Namespace]
+    extends StorageRandomThings
+    with S3Fixtures
+    with Logging {
 
   val defaultFileCount = 10
 
+  def createObjectLocationWith(namespace: Namespace,
+                               path: String): ObjectLocation
+
   def withArchive[R](
-    bucket: Bucket,
+    namespace: Namespace,
     archiveFile: File
-  )(testWith: TestWith[ObjectLocation, R]): R = {
-
-    val srcKey = archiveFile.getName
-    s3Client.putObject(bucket.name, srcKey, archiveFile)
-
-    val dstLocation = ObjectLocation(
-      bucket.name,
-      srcKey
+  )(testWith: TestWith[ObjectLocation, R])(
+    implicit streamStore: StreamStore[ObjectLocation, InputStreamWithLength]
+  ): R = {
+    val location = createObjectLocationWith(
+      namespace = namespace,
+      path = archiveFile.getName
     )
-    testWith(dstLocation)
+
+    streamStore.put(location)(
+      new InputStreamWithLength(
+        new FileInputStream(archiveFile),
+        length = archiveFile.length())
+    ) shouldBe a[Right[_, _]]
+
+    testWith(location)
   }
 
   def createTgzArchiveWithRandomFiles(
@@ -109,13 +121,10 @@ trait CompressFixture extends StorageRandomThings with S3Fixtures with Logging {
     (archiveFile, files, entries)
   }
 
-  def relativeToTmpDir(file: File): String = {
-    val path = new File(tmpDir).toURI
+  def relativeToTmpDir(file: File): String =
+    new File(tmpDir).toURI
       .relativize(file.toURI)
       .getPath
-
-    s"./$path"
-  }
 
   private[fixtures] class Archive(
     archiverName: String,

@@ -45,7 +45,7 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
       )
 
       stepResult <- unpacker.unpack(
-        requestId = payload.ingestId.toString,
+        ingestId = payload.ingestId,
         srcLocation = payload.sourceLocation,
         dstLocation = unpackedBagLocation
       )

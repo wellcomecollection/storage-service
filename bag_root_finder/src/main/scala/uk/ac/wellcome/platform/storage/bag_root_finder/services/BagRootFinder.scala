@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.S3BagLocator
 import uk.ac.wellcome.platform.storage.bag_root_finder.models._
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 import scala.util.{Failure, Success, Try}
 
@@ -22,7 +22,7 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
   type IngestStep = Try[IngestStepResult[RootFinderSummary]]
 
   def getSummary(ingestId: IngestID,
-                 unpackLocation: ObjectLocation,
+                 unpackLocation: ObjectLocationPrefix,
                  storageSpace: StorageSpace): IngestStep =
     Try {
       val startTime = Instant.now()
@@ -49,7 +49,9 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
             ),
             err,
             maybeUserFacingMessage =
-              Some(s"Unable to find root of the bag at $unpackLocation")
+              // TODO: Add a toString method on ObjectLocationPrefix
+              Some(
+                s"Unable to find root of the bag at ${unpackLocation.namespace}/${unpackLocation.path}")
           )
       }
     }

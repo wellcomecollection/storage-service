@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestType
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 sealed trait PipelinePayload {
   val context: PipelineContext
@@ -36,7 +36,7 @@ case object SourceLocationPayload {
 
 case class UnpackedBagLocationPayload(
   context: PipelineContext,
-  unpackedBagLocation: ObjectLocation
+  unpackedBagLocation: ObjectLocationPrefix
 ) extends PipelinePayload
 
 sealed trait BagRootPayload extends PipelinePayload {
