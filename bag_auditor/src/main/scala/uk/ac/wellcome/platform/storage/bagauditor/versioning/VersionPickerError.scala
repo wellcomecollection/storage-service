@@ -1,12 +1,8 @@
-package uk.ac.wellcome.platform.storage.bagauditor.models
+package uk.ac.wellcome.platform.storage.bagauditor.versioning
 
 import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerError
 
-sealed trait AuditError
-
-case class CannotFindExternalIdentifier(e: Throwable) extends AuditError
-
-sealed trait VersionPickerError extends AuditError
+sealed trait VersionPickerError
 
 case class InternalVersionPickerError(e: Throwable) extends VersionPickerError
 

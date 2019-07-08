@@ -10,6 +10,8 @@ import uk.ac.wellcome.platform.archive.common.storage.{
   LocationParsingError
 }
 import uk.ac.wellcome.platform.archive.common.verify._
+import uk.ac.wellcome.storage.DoesNotExistError
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 import scala.util.{Failure, Success}
 
@@ -19,7 +21,8 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
 
   import uk.ac.wellcome.platform.archive.common.storage.Locatable._
   import uk.ac.wellcome.platform.archive.common.storage.services.S3LocatableInstances._
-  import uk.ac.wellcome.platform.archive.common.storage.services.S3StreamableInstances._
+
+  private val s3StreamStore = new S3StreamStore()
 
   def verify(verifiableLocation: VerifiableLocation): VerifiedLocation = {
     debug(s"S3ObjectVerifier: Attempting to verify: $verifiableLocation")
@@ -27,7 +30,6 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
     val algorithm = verifiableLocation.checksum.algorithm
 
     val eitherInputStream = for {
-      // URI is not a valid S3 Location
       objectLocation <- verifiableLocation.uri.locate match {
         case Right(l) => Right(l)
         case Left(e) =>
@@ -36,12 +38,12 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
           )
       }
 
-      // ObjectLocation cannot be converted to an InputStream
-      inputStream <- objectLocation.toInputStream match {
-        case Right(l) => Right(l)
-        case Left(e) =>
+      inputStream <- s3StreamStore.get(objectLocation) match {
+        case Right(stream)                => Right(Some(stream.identifiedT))
+        case Left(err: DoesNotExistError) => Right(None)
+        case Left(storageError) =>
           Left(
-            LocationError(verifiableLocation, e.msg)
+            LocationError(verifiableLocation, storageError.e.getMessage)
           )
       }
     } yield inputStream
@@ -62,7 +64,7 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
             debug(
               "Location specifies an expected length, checking it's correct")
 
-            if (expectedLength == inputStream.contentLength) {
+            if (expectedLength == inputStream.length) {
               verifyChecksum(
                 verifiableLocation = verifiableLocation,
                 inputStream = inputStream,

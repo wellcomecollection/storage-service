@@ -2,10 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.VerifyFixtures
-import uk.ac.wellcome.platform.archive.common.storage.{
-  LocationError,
-  LocationNotFound
-}
+import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
 
 class S3ObjectVerifierTest
@@ -13,6 +10,8 @@ class S3ObjectVerifierTest
     with Matchers
     with EitherValues
     with VerifyFixtures {
+
+  // TODO: Rewrite these tests to use traits and test cases
 
   it("returns a failure if the bucket doesn't exist") {
     val badVerifiableLocation = createVerifiableLocation
@@ -22,9 +21,9 @@ class S3ObjectVerifierTest
     val verifiedFailure = verifiedLocation.asInstanceOf[VerifiedFailure]
 
     verifiedFailure.location shouldBe badVerifiableLocation
-    verifiedFailure.e shouldBe a[LocationError[_]]
+    verifiedFailure.e shouldBe a[LocationNotFound[_]]
     verifiedFailure.e.getMessage should include(
-      "The specified bucket is not valid"
+      "Location not available!"
     )
   }
 

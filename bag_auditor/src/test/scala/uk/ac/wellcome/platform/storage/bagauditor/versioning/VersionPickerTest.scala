@@ -19,7 +19,6 @@ import uk.ac.wellcome.platform.archive.common.versioning.{
   NewerIngestAlreadyExists
 }
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.VersionPickerFixtures
-import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure, UnlockFailure}
 
 class VersionPickerTest
