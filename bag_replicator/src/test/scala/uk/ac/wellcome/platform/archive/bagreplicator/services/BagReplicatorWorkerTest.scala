@@ -233,7 +233,7 @@ class BagReplicatorWorkerTest
       // We have to create a large bag to slow down the replicators, or the
       // first process finishes and releases the lock before the later
       // processes have started.
-      withBagObjects(bucket) { bagRootLocation =>
+      withBagObjects(bucket, objectCount = 500) { bagRootLocation =>
         withBagReplicatorWorker(
           bucket = bucket,
           lockServiceDao = lockServiceDao) { worker =>
