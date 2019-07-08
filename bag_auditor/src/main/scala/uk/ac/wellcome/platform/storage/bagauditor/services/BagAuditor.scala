@@ -3,19 +3,11 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  IngestID,
-  IngestType
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestID, IngestType}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
 import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerDaoError
 import uk.ac.wellcome.platform.storage.bagauditor.models._
-import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
+import uk.ac.wellcome.platform.storage.bagauditor.versioning.{UnableToAssignVersion, VersionPicker, VersionPickerError}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.Try
@@ -32,7 +24,7 @@ class BagAuditor(versionPicker: VersionPicker) {
     Try {
       val startTime = Instant.now()
 
-      val audit: Either[AuditError, AuditSuccess] = for {
+      val audit: Either[VersionPickerError, AuditSuccess] = for {
         version <- versionPicker.chooseVersion(
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
@@ -72,9 +64,8 @@ class BagAuditor(versionPicker: VersionPicker) {
       }
     }
 
-  private def getUnderlyingThrowable(auditError: AuditError): Throwable =
-    auditError match {
-      case CannotFindExternalIdentifier(e) => e
+  private def getUnderlyingThrowable(error: VersionPickerError): Throwable =
+    error match {
       case UnableToAssignVersion(internalError: IngestVersionManagerDaoError) =>
         internalError.e
       case err => new Throwable(s"Unexpected error in the auditor: $err")

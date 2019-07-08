@@ -2,27 +2,21 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.StreamUnavailable
 import uk.ac.wellcome.platform.archive.common.versioning.{
   ExternalIdentifiersMismatch,
   NewerIngestAlreadyExists
 }
-import uk.ac.wellcome.platform.storage.bagauditor.models._
+import uk.ac.wellcome.platform.storage.bagauditor.versioning.{
+  IngestTypeCreateForExistingBag,
+  IngestTypeUpdateForNewBag,
+  UnableToAssignVersion,
+  VersionPickerError
+}
 
 object UserFacingMessages extends Logging {
   def createMessage(ingestId: IngestID,
-                    auditError: AuditError): Option[String] =
-    auditError match {
-      case CannotFindExternalIdentifier(err: StreamUnavailable) =>
-        info(
-          s"Could not find bag-info to parse an external identifier for $ingestId: $err")
-        Some("Could not find a bag-info file in the bag")
-
-      case CannotFindExternalIdentifier(err) =>
-        info(
-          s"Unable to find an external identifier for $ingestId. Error: $err")
-        Some("An external identifier was not found in the bag info")
-
+                    error: VersionPickerError): Option[String] =
+    error match {
       case IngestTypeUpdateForNewBag() =>
         Some(
           "Cannot update existing bag: a bag with the supplied external identifier does not exist in this space")

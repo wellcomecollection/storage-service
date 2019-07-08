@@ -17,7 +17,6 @@ import uk.ac.wellcome.platform.archive.common.versioning.{
   IngestVersionManager,
   IngestVersionManagerError
 }
-import uk.ac.wellcome.platform.storage.bagauditor.models._
 import uk.ac.wellcome.storage.locking.{FailedProcess, LockDao, LockingService}
 
 class VersionPicker(
