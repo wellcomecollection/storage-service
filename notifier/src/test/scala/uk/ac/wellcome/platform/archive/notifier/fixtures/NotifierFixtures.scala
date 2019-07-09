@@ -54,7 +54,6 @@ trait NotifierFixtures
     }
 
   def withNotifier[R](testWith: TestWith[(Queue, MemoryMessageSender), R]): R =
-    // TODO: Can this be a regular queue?
     withLocalSqsQueue { queue =>
       val messageSender = new MemoryMessageSender()
       withApp(queue = queue, messageSender = messageSender) { _ =>
