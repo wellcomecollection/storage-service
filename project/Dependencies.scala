@@ -70,7 +70,6 @@ object ExternalDependencies {
     val commonsIO = "2.6"
     val aws = "1.11.95"
     val circe = "0.9.0"
-    val mockito = "1.9.5"
     val scalatest = "3.0.1"
     val wiremock = "2.18.0"
     val logback = "1.2.3"
@@ -90,10 +89,6 @@ object ExternalDependencies {
 
   val circeOpticsDependencies = Seq[ModuleID](
     "io.circe" %% "circe-optics" % versions.circe
-  )
-
-  val mockitoDependencies: Seq[ModuleID] = Seq(
-    "org.mockito" % "mockito-core" % versions.mockito % "test"
   )
 
   val scalatestDependencies = Seq[ModuleID](
@@ -121,7 +116,6 @@ object StorageDependencies {
     ExternalDependencies.commonsIODependencies ++
       ExternalDependencies.akkaDependencies ++
       ExternalDependencies.cloudwatchMetricsDependencies ++
-      ExternalDependencies.mockitoDependencies ++
       ExternalDependencies.scalatestDependencies ++
       ExternalDependencies.logbackDependencies ++
       WellcomeDependencies.jsonLibrary ++
