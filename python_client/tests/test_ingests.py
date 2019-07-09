@@ -27,7 +27,7 @@ def test_can_create_and_retrieve_ingest(client):
         space_id="digitised",
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
-        external_identifier="b12345"
+        external_identifier="b12345",
     )
 
     resp = client.get_ingest_from_location(location)
@@ -57,7 +57,7 @@ def test_default_ingest_type_is_create(client):
         space_id="digitised",
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
-        external_identifier="b12345"
+        external_identifier="b12345",
     )
 
     resp = client.get_ingest_from_location(location)
@@ -71,7 +71,7 @@ def test_can_specify_ingest_type(client, ingest_type):
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
         ingest_type=ingest_type,
-        external_identifier="b12345"
+        external_identifier="b12345",
     )
 
     resp = client.get_ingest_from_location(location)
@@ -84,7 +84,7 @@ def test_it_includes_the_external_identifier(client):
         space_id="digitised",
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
-        external_identifier=external_identifier
+        external_identifier=external_identifier,
     )
 
     resp = client.get_ingest_from_location(location)

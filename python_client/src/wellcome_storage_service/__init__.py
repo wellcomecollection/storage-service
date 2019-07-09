@@ -95,7 +95,7 @@ class StorageServiceClient:
         s3_key,
         external_identifier,
         callback_url=None,
-        ingest_type="create"
+        ingest_type="create",
     ):
         """
         Create an ingest from an object in an S3 bucket.
@@ -115,8 +115,8 @@ class StorageServiceClient:
             },
             "bag": {
                 "type": "Bag",
-                "info": {"type": "BagInfo", "externalIdentifier": external_identifier}
-            }
+                "info": {"type": "BagInfo", "externalIdentifier": external_identifier},
+            },
         }
 
         if callback_url is not None:
