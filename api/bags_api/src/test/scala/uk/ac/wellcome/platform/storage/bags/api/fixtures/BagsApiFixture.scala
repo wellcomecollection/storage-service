@@ -41,7 +41,7 @@ trait BagsApiFixture
       withMaterializer(actorSystem) { implicit materializer =>
         val httpMetrics = new HttpMetrics(
           name = metricsName,
-          metricsSender = metricsSender
+          metrics = metricsSender
         )
 
         val bagsApi = new BagsApi(
