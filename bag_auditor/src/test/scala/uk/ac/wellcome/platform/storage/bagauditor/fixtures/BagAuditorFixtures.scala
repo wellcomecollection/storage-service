@@ -18,8 +18,7 @@ import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
 import uk.ac.wellcome.json.JsonUtil._
 
 trait BagAuditorFixtures
-    extends BagLocationFixtures
-    with OperationFixtures
+    extends OperationFixtures
     with Akka
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture
