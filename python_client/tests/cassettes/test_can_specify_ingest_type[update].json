@@ -1,7 +1,7 @@
 {
   "http_interactions": [
     {
-      "recorded_at": "2019-07-09T12:39:09",
+      "recorded_at": "2019-07-09T12:39:15",
       "request": {
         "body": {
           "encoding": "utf-8",
@@ -49,7 +49,7 @@
             "application/json;charset=UTF-8"
           ],
           "Date": [
-            "Tue, 09 Jul 2019 12:39:09 GMT"
+            "Tue, 09 Jul 2019 12:39:15 GMT"
           ],
           "Expires": [
             "0"
@@ -61,7 +61,7 @@
             "Server"
           ],
           "Set-Cookie": [
-            "XSRF-TOKEN=a941118e-5102-497e-bdc4-51ff641eb4c3; Path=/; Secure; HttpOnly"
+            "XSRF-TOKEN=9cf6f6a3-1add-4c3d-8a0e-466e548ba2f8; Path=/; Secure; HttpOnly"
           ],
           "Strict-Transport-Security": [
             "max-age=31536000 ; includeSubDomains"
@@ -70,10 +70,10 @@
             "chunked"
           ],
           "Via": [
-            "1.1 9c88570ae95b464366b83f50692ea5b3.cloudfront.net (CloudFront)"
+            "1.1 c43c90722e6d0ba1fca990016c4bdb33.cloudfront.net (CloudFront)"
           ],
           "X-Amz-Cf-Id": [
-            "4vElWNvRQeqJ5uuFTTJJQGsz0uA-BxASFrUfLQo3nQkRtbEm5Loshw=="
+            "iOOdluR3DM-Zsh3btiVw3UWzRCtN8gFTLtaqYuyFzBYzJMD0fw92Qg=="
           ],
           "X-Amz-Cf-Pop": [
             "LHR61-C1"
@@ -94,7 +94,7 @@
             "1; mode=block"
           ],
           "x-amz-cognito-request-id": [
-            "b5778c99-1faa-4cab-b414-6a9daebe252a"
+            "3fbf9023-6292-4bfe-986d-cf6733389216"
           ]
         },
         "status": {
@@ -105,11 +105,11 @@
       }
     },
     {
-      "recorded_at": "2019-07-09T12:39:10",
+      "recorded_at": "2019-07-09T12:39:16",
       "request": {
         "body": {
           "encoding": "utf-8",
-          "string": "{\"type\": \"Ingest\", \"space\": {\"id\": \"digitised\", \"type\": \"Space\"}, \"sourceLocation\": {\"type\": \"Location\", \"provider\": {\"id\": \"aws-s3-standard\", \"type\": \"Provider\"}, \"path\": \"bagit.zip\", \"bucket\": \"testing-bucket\"}, \"bag\": {\"type\": \"Bag\", \"info\": {\"type\": \"BagInfo\", \"externalIdentifier\": \"b12345\"}}, \"ingestType\": {\"id\": \"create\", \"type\": \"IngestType\"}}"
+          "string": "{\"type\": \"Ingest\", \"space\": {\"id\": \"digitised\", \"type\": \"Space\"}, \"sourceLocation\": {\"type\": \"Location\", \"provider\": {\"id\": \"aws-s3-standard\", \"type\": \"Provider\"}, \"path\": \"bagit.zip\", \"bucket\": \"testing-bucket\"}, \"bag\": {\"type\": \"Bag\", \"info\": {\"type\": \"BagInfo\", \"externalIdentifier\": \"b12345\"}}, \"ingestType\": {\"id\": \"update\", \"type\": \"IngestType\"}}"
         },
         "headers": {
           "Accept": [
@@ -140,7 +140,7 @@
       "response": {
         "body": {
           "encoding": null,
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"3ea0369c-ed87-4b40-af30-0372e25f3f6b\",\"sourceLocation\":{\"provider\":{\"id\":\"aws-s3-standard\",\"type\":\"Provider\"},\"bucket\":\"testing-bucket\",\"path\":\"bagit.zip\",\"type\":\"Location\"},\"ingestType\":{\"id\":\"create\",\"type\":\"IngestType\"},\"space\":{\"id\":\"digitised\",\"type\":\"Space\"},\"status\":{\"id\":\"accepted\",\"type\":\"Status\"},\"bag\":{\"info\":{\"externalIdentifier\":\"b12345\",\"type\":\"BagInfo\"},\"type\":\"Bag\"},\"events\":[],\"createdDate\":\"2019-07-09T12:39:09.835662Z\",\"type\":\"Ingest\"}"
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"0fe322c0-559f-4784-9535-ffaccccd1145\",\"sourceLocation\":{\"provider\":{\"id\":\"aws-s3-standard\",\"type\":\"Provider\"},\"bucket\":\"testing-bucket\",\"path\":\"bagit.zip\",\"type\":\"Location\"},\"ingestType\":{\"id\":\"update\",\"type\":\"IngestType\"},\"space\":{\"id\":\"digitised\",\"type\":\"Space\"},\"status\":{\"id\":\"accepted\",\"type\":\"Status\"},\"bag\":{\"info\":{\"externalIdentifier\":\"b12345\",\"type\":\"BagInfo\"},\"type\":\"Bag\"},\"events\":[],\"createdDate\":\"2019-07-09T12:39:15.848465Z\",\"type\":\"Ingest\"}"
         },
         "headers": {
           "Access-Control-Allow-Credentials": [
@@ -165,16 +165,16 @@
             "application/json"
           ],
           "Date": [
-            "Tue, 09 Jul 2019 12:39:10 GMT"
+            "Tue, 09 Jul 2019 12:39:16 GMT"
           ],
           "Location": [
-            "https://api.wellcomecollection.org/storage/v1/ingests/3ea0369c-ed87-4b40-af30-0372e25f3f6b"
+            "https://api.wellcomecollection.org/storage/v1/ingests/0fe322c0-559f-4784-9535-ffaccccd1145"
           ],
           "Via": [
-            "1.1 87df42a5b068c9b504dcaa62529e2dfa.cloudfront.net (CloudFront)"
+            "1.1 ad6867d63596a34d30f21ec3e1133a3d.cloudfront.net (CloudFront)"
           ],
           "X-Amz-Cf-Id": [
-            "8xEqKU6AM_azYIZv_Uq3QFXf4TNO9VIO1RT2t18imwSznHEAcpgw_w=="
+            "OCRI-56mliPsXvC95HnDBkyEX_QDmJ9fKA40cE7FimQ9sZyDQTUrXw=="
           ],
           "X-Amz-Cf-Pop": [
             "LHR61-C1"
@@ -183,7 +183,7 @@
             "Miss from cloudfront"
           ],
           "x-amz-apigw-id": [
-            "cjqlKE8djoEF3ug="
+            "cjqmGH-QDoEFuZA="
           ],
           "x-amzn-Remapped-Connection": [
             "keep-alive"
@@ -192,13 +192,13 @@
             "525"
           ],
           "x-amzn-Remapped-Date": [
-            "Tue, 09 Jul 2019 12:39:10 GMT"
+            "Tue, 09 Jul 2019 12:39:16 GMT"
           ],
           "x-amzn-Remapped-Server": [
             "nginx"
           ],
           "x-amzn-RequestId": [
-            "8c617b5c-a246-11e9-ad18-17458d883c2b"
+            "8ff6fe14-a246-11e9-972c-4bbebd0ed208"
           ]
         },
         "status": {
@@ -209,7 +209,7 @@
       }
     },
     {
-      "recorded_at": "2019-07-09T12:39:11",
+      "recorded_at": "2019-07-09T12:39:16",
       "request": {
         "body": {
           "encoding": "utf-8",
@@ -233,12 +233,12 @@
           ]
         },
         "method": "GET",
-        "uri": "https://api.wellcomecollection.org/storage/v1/ingests/3ea0369c-ed87-4b40-af30-0372e25f3f6b"
+        "uri": "https://api.wellcomecollection.org/storage/v1/ingests/0fe322c0-559f-4784-9535-ffaccccd1145"
       },
       "response": {
         "body": {
           "encoding": null,
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"3ea0369c-ed87-4b40-af30-0372e25f3f6b\",\"sourceLocation\":{\"provider\":{\"id\":\"aws-s3-standard\",\"type\":\"Provider\"},\"bucket\":\"testing-bucket\",\"path\":\"bagit.zip\",\"type\":\"Location\"},\"ingestType\":{\"id\":\"create\",\"type\":\"IngestType\"},\"space\":{\"id\":\"digitised\",\"type\":\"Space\"},\"status\":{\"id\":\"accepted\",\"type\":\"Status\"},\"bag\":{\"info\":{\"externalIdentifier\":\"b12345\",\"type\":\"BagInfo\"},\"type\":\"Bag\"},\"events\":[],\"createdDate\":\"2019-07-09T12:39:09.835Z\",\"type\":\"Ingest\"}"
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"0fe322c0-559f-4784-9535-ffaccccd1145\",\"sourceLocation\":{\"provider\":{\"id\":\"aws-s3-standard\",\"type\":\"Provider\"},\"bucket\":\"testing-bucket\",\"path\":\"bagit.zip\",\"type\":\"Location\"},\"ingestType\":{\"id\":\"update\",\"type\":\"IngestType\"},\"space\":{\"id\":\"digitised\",\"type\":\"Space\"},\"status\":{\"id\":\"failed\",\"type\":\"Status\"},\"bag\":{\"info\":{\"externalIdentifier\":\"b12345\",\"type\":\"BagInfo\"},\"type\":\"Bag\"},\"events\":[{\"description\":\"Unpacking started\",\"createdDate\":\"2019-07-09T12:39:16.186Z\",\"type\":\"IngestEvent\"},{\"description\":\"Unpacking failed\",\"createdDate\":\"2019-07-09T12:39:16.225Z\",\"type\":\"IngestEvent\"}],\"createdDate\":\"2019-07-09T12:39:15.848Z\",\"type\":\"Ingest\"}"
         },
         "headers": {
           "Access-Control-Allow-Credentials": [
@@ -257,19 +257,19 @@
             "keep-alive"
           ],
           "Content-Length": [
-            "522"
+            "714"
           ],
           "Content-Type": [
             "application/json"
           ],
           "Date": [
-            "Tue, 09 Jul 2019 12:39:11 GMT"
+            "Tue, 09 Jul 2019 12:39:16 GMT"
           ],
           "Via": [
-            "1.1 87df42a5b068c9b504dcaa62529e2dfa.cloudfront.net (CloudFront)"
+            "1.1 ad6867d63596a34d30f21ec3e1133a3d.cloudfront.net (CloudFront)"
           ],
           "X-Amz-Cf-Id": [
-            "pv1nwjw6mKUKRkVrWyysu7vfUghjWUFCiYlzLBh9gKarwYtKb9PnLA=="
+            "iZ4Yp7KFDujxQ0_VFLkpdsqEMk48rwX2qw10Dxotz7NHpOIoLqucSQ=="
           ],
           "X-Amz-Cf-Pop": [
             "LHR61-C1"
@@ -278,29 +278,29 @@
             "Miss from cloudfront"
           ],
           "x-amz-apigw-id": [
-            "cjqlPFYwDoEFtDQ="
+            "cjqmNGiKjoEF2Hg="
           ],
           "x-amzn-Remapped-Connection": [
             "keep-alive"
           ],
           "x-amzn-Remapped-Content-Length": [
-            "522"
+            "714"
           ],
           "x-amzn-Remapped-Date": [
-            "Tue, 09 Jul 2019 12:39:11 GMT"
+            "Tue, 09 Jul 2019 12:39:16 GMT"
           ],
           "x-amzn-Remapped-Server": [
             "nginx"
           ],
           "x-amzn-RequestId": [
-            "8cb2f6a2-a246-11e9-b45e-e1b12fda0f8b"
+            "906ca42b-a246-11e9-b17b-9985e905a7a6"
           ]
         },
         "status": {
           "code": 200,
           "message": "OK"
         },
-        "url": "https://api.wellcomecollection.org/storage/v1/ingests/3ea0369c-ed87-4b40-af30-0372e25f3f6b"
+        "url": "https://api.wellcomecollection.org/storage/v1/ingests/0fe322c0-559f-4784-9535-ffaccccd1145"
       }
     }
   ],

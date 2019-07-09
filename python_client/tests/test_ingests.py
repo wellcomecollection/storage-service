@@ -24,7 +24,10 @@ def test_5xx_response_becomes_servererror(client):
 
 def test_can_create_and_retrieve_ingest(client):
     location = client.create_s3_ingest(
-        space_id="digitised", s3_bucket="testing-bucket", s3_key="bagit.zip"
+        space_id="digitised",
+        s3_bucket="testing-bucket",
+        s3_key="bagit.zip",
+        external_identifier="b12345"
     )
 
     resp = client.get_ingest_from_location(location)
@@ -41,6 +44,7 @@ def test_can_create_ingest_with_callback(client):
         space_id="digitised",
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
+        external_identifier="b12345",
         callback_url="https://example.org/callback/bagit.zip",
     )
 
@@ -48,11 +52,12 @@ def test_can_create_ingest_with_callback(client):
     assert resp["callback"]["url"] == "https://example.org/callback/bagit.zip"
 
 
-def test_default_ingest_type_is_create(client, ingest_type):
+def test_default_ingest_type_is_create(client):
     location = client.create_s3_ingest(
         space_id="digitised",
         s3_bucket="testing-bucket",
-        s3_key="bagit.zip"
+        s3_key="bagit.zip",
+        external_identifier="b12345"
     )
 
     resp = client.get_ingest_from_location(location)
@@ -65,8 +70,22 @@ def test_can_specify_ingest_type(client, ingest_type):
         space_id="digitised",
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
-        ingest_type=ingest_type
+        ingest_type=ingest_type,
+        external_identifier="b12345"
     )
 
     resp = client.get_ingest_from_location(location)
     assert resp["ingestType"]["id"] == ingest_type
+
+
+def test_it_includes_the_external_identifier(client):
+    external_identifier = "b12345"
+    location = client.create_s3_ingest(
+        space_id="digitised",
+        s3_bucket="testing-bucket",
+        s3_key="bagit.zip",
+        external_identifier=external_identifier
+    )
+
+    resp = client.get_ingest_from_location(location)
+    assert resp["bag"]["info"]["externalIdentifier"] == external_identifier

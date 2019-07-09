@@ -1,104 +1,107 @@
 {
   "http_interactions": [
     {
-      "recorded_at": "2019-03-27T14:37:34",
-      "response": {
+      "recorded_at": "2019-07-09T12:39:17",
+      "request": {
         "body": {
-          "string": "{\"access_token\":\"<ACCESS_TOKEN>\",\"expires_in\":3600,\"token_type\":\"Bearer\"}",
-          "encoding": "UTF-8"
+          "encoding": "utf-8",
+          "string": "grant_type=client_credentials"
         },
         "headers": {
-          "x-amz-cognito-request-id": [
-            "86503c3d-13c2-4e5b-a348-681ae7d7bb9a"
+          "Accept": [
+            "application/json"
           ],
-          "Cache-Control": [
-            "no-cache, no-store, max-age=0, must-revalidate"
+          "Accept-Encoding": [
+            "gzip, deflate"
           ],
-          "Pragma": [
-            "no-cache"
-          ],
-          "Expires": [
-            "0"
-          ],
-          "X-XSS-Protection": [
-            "1; mode=block"
+          "Authorization": [
+            "<AUTH_TOKEN>"
           ],
           "Connection": [
             "keep-alive"
           ],
-          "X-Content-Type-Options": [
-            "nosniff"
+          "Content-Length": [
+            "29"
           ],
-          "Transfer-Encoding": [
-            "chunked"
+          "Content-Type": [
+            "application/x-www-form-urlencoded;charset=UTF-8"
           ],
-          "Via": [
-            "1.1 52e28d5e88c0c05ef6f40e101df14cab.cloudfront.net (CloudFront)"
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ]
+        },
+        "method": "POST",
+        "uri": "https://auth.wellcomecollection.org/oauth2/token"
+      },
+      "response": {
+        "body": {
+          "encoding": "UTF-8",
+          "string": "{\"access_token\":\"<ACCESS_TOKEN>\",\"expires_in\":3600,\"token_type\":\"Bearer\"}"
+        },
+        "headers": {
+          "Cache-Control": [
+            "no-cache, no-store, max-age=0, must-revalidate"
           ],
-          "X-Frame-Options": [
-            "DENY"
-          ],
-          "Set-Cookie": [
-            "XSRF-TOKEN=04e79de0-4098-4cee-ad1f-63b620a19e27; Path=/; Secure; HttpOnly"
+          "Connection": [
+            "keep-alive"
           ],
           "Content-Type": [
             "application/json;charset=UTF-8"
           ],
           "Date": [
-            "Wed, 27 Mar 2019 14:37:34 GMT"
+            "Tue, 09 Jul 2019 12:39:17 GMT"
           ],
-          "X-Amz-Cf-Id": [
-            "wGZ4b_Db_O2Tk1kTVIe63t9sHrOu6Q1ogyCtkzdAcCggrSBb2g9EXw=="
+          "Expires": [
+            "0"
           ],
-          "Strict-Transport-Security": [
-            "max-age=31536000 ; includeSubDomains"
+          "Pragma": [
+            "no-cache"
           ],
           "Server": [
             "Server"
           ],
-          "X-Cache": [
-            "Miss from cloudfront"
+          "Set-Cookie": [
+            "XSRF-TOKEN=9747eeaf-bf28-43d6-baa4-bcb39838dd83; Path=/; Secure; HttpOnly"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000 ; includeSubDomains"
+          ],
+          "Transfer-Encoding": [
+            "chunked"
+          ],
+          "Via": [
+            "1.1 11353e5e706855a44a10829d33622e23.cloudfront.net (CloudFront)"
+          ],
+          "X-Amz-Cf-Id": [
+            "sY_O4jch9mS2kRc1s1We8xgcJzMz7WEb_Py6HB9_cfOfasSPaMcCzw=="
+          ],
+          "X-Amz-Cf-Pop": [
+            "LHR61-C1"
           ],
           "X-Application-Context": [
             "application:prod:8443"
+          ],
+          "X-Cache": [
+            "Miss from cloudfront"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "DENY"
+          ],
+          "X-XSS-Protection": [
+            "1; mode=block"
+          ],
+          "x-amz-cognito-request-id": [
+            "8b3898d2-14cc-4b7e-8507-a4186f58479b"
           ]
         },
-        "url": "https://auth.wellcomecollection.org/oauth2/token",
         "status": {
-          "message": "OK",
-          "code": 200
-        }
-      },
-      "request": {
-        "body": {
-          "string": "grant_type=client_credentials",
-          "encoding": "utf-8"
+          "code": 200,
+          "message": "OK"
         },
-        "headers": {
-          "User-Agent": [
-            "python-requests/2.21.0"
-          ],
-          "Content-Length": [
-            "29"
-          ],
-          "Accept": [
-            "application/json"
-          ],
-          "Connection": [
-            "keep-alive"
-          ],
-          "Authorization": [
-            "<AUTH_TOKEN>"
-          ],
-          "Content-Type": [
-            "application/x-www-form-urlencoded;charset=UTF-8"
-          ],
-          "Accept-Encoding": [
-            "gzip, deflate"
-          ]
-        },
-        "method": "POST",
-        "uri": "https://auth.wellcomecollection.org/oauth2/token"
+        "url": "https://auth.wellcomecollection.org/oauth2/token"
       }
     }
   ],

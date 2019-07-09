@@ -93,6 +93,7 @@ class StorageServiceClient:
         space_id,
         s3_bucket,
         s3_key,
+        external_identifier,
         callback_url=None,
         ingest_type="create"
     ):
@@ -112,6 +113,10 @@ class StorageServiceClient:
                 "bucket": s3_bucket,
                 "path": s3_key,
             },
+            "bag": {
+                "type": "Bag",
+                "info": {"type": "BagInfo", "externalIdentifier": external_identifier}
+            }
         }
 
         if callback_url is not None:
