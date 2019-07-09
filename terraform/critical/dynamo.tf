@@ -26,7 +26,7 @@ resource "aws_dynamodb_table" "bag_id_lookup" {
   read_capacity  = 1
   write_capacity = 1
   hash_key       = "bagId"
-  range_key      = "createdDate"
+  range_key      = "ingestDate"
 
   billing_mode = "${var.billing_mode}"
 
@@ -36,7 +36,7 @@ resource "aws_dynamodb_table" "bag_id_lookup" {
   }
 
   attribute {
-    name = "createdDate"
+    name = "ingestDate"
     type = "N"
   }
 
