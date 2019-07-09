@@ -14,6 +14,7 @@ module "replicator_lock_table" {
 
 locals {
   auditor_versions_table_name  = "${aws_dynamodb_table.auditor_versions_table.name}"
+   auditor_versions_table_index = "ingestId_index"
 }
 
 # TODO: MOve this into the 'critical' part
