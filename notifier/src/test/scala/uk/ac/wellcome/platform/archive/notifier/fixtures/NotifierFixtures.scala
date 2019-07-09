@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.notifier.fixtures
 import java.net.URL
 
 import akka.actor.ActorSystem
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
@@ -20,6 +21,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 trait NotifierFixtures
     extends BagIt
+    with Akka
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture {
 
