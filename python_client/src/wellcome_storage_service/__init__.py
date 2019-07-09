@@ -88,7 +88,14 @@ class StorageServiceClient:
             return resp
 
     @needs_token
-    def create_s3_ingest(self, space_id, s3_bucket, s3_key, callback_url=None):
+    def create_s3_ingest(
+        self,
+        space_id,
+        s3_bucket,
+        s3_key,
+        callback_url=None,
+        ingest_type="create"
+    ):
         """
         Create an ingest from an object in an S3 bucket.
 
@@ -97,7 +104,7 @@ class StorageServiceClient:
         """
         payload = {
             "type": "Ingest",
-            "ingestType": {"id": "create", "type": "IngestType"},
+            "ingestType": {"id": ingest_type, "type": "IngestType"},
             "space": {"id": space_id, "type": "Space"},
             "sourceLocation": {
                 "type": "Location",

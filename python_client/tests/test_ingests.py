@@ -48,6 +48,17 @@ def test_can_create_ingest_with_callback(client):
     assert resp["callback"]["url"] == "https://example.org/callback/bagit.zip"
 
 
+def test_default_ingest_type_is_create(client, ingest_type):
+    location = client.create_s3_ingest(
+        space_id="digitised",
+        s3_bucket="testing-bucket",
+        s3_key="bagit.zip"
+    )
+
+    resp = client.get_ingest_from_location(location)
+    assert resp["ingestType"]["id"] == "create"
+
+
 @pytest.mark.parametrize("ingest_type", ["create", "update"])
 def test_can_specify_ingest_type(client, ingest_type):
     location = client.create_s3_ingest(
