@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.ingests.fixtures
 
 import org.scalatest.concurrent.ScalaFutures
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
@@ -17,6 +18,7 @@ import uk.ac.wellcome.platform.archive.ingests.services.{
 
 trait IngestsFixtures
     extends ScalaFutures
+    with Akka
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture
     with IngestTrackerFixtures {
