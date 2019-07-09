@@ -1,24 +1,27 @@
 data "aws_iam_policy_document" "archive_ingest_table_read_write_policy" {
   statement {
     actions = [
-      "dynamodb:UpdateItem",
+      "dynamodb:Query",
       "dynamodb:PutItem",
       "dynamodb:GetItem",
-      "dynamodb:DeleteItem",
     ]
 
     resources = [
       "${var.ingests_table_arn}",
     ]
   }
+}
 
+data "aws_iam_policy_document" "bag_id_lookup_table_read_write_policy" {
   statement {
     actions = [
       "dynamodb:Query",
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
     ]
 
     resources = [
-      "${var.ingests_table_arn}/index/*",
+      "${var.bag_id_lookup_table_arn}",
     ]
   }
 }

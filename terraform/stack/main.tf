@@ -303,11 +303,12 @@ module "ingests" {
     queue_url                 = "${module.ingests_input_queue.url}"
     topic_arn                 = "${module.ingests_output_topic.arn}"
     archive_ingest_table_name = "${var.ingests_table_name}"
+    bag_id_lookup_table_name  = "${var.bag_id_lookup_table_name}"
     metrics_namespace         = "${local.ingests_service_name}"
     JAVA_OPTS                 = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
   }
 
-  env_vars_length = 5
+  env_vars_length = 6
 
   min_capacity = "1"
   max_capacity = "10"
@@ -363,7 +364,7 @@ module "api" {
     app_base_url                  = "${var.api_url}/storage/v1/ingests"
     unpacker_topic_arn            = "${module.bag_unpacker_input_topic.arn}"
     archive_ingest_table_name     = "${var.ingests_table_name}"
-    archive_bag_ingest_index_name = "${var.ingests_table_ingest_index_name}"
+    bag_id_lookup_table_name      = "${var.bag_id_lookup_table_name}"
     metrics_namespace             = "${local.ingests_api_service_name}"
     JAVA_OPTS                     = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
   }

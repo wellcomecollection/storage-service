@@ -27,7 +27,7 @@ object Main extends WellcomeTypesafeApp {
 
     val httpMetrics = new HttpMetrics(
       name = "IngestsApi",
-      metricsSender = MetricsBuilder.buildMetricsSender(config)
+      metrics = MetricsBuilder.buildMetricsSender(config)
     )
 
     implicit val dynamoClient: AmazonDynamoDB =

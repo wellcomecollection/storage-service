@@ -40,7 +40,7 @@ class IngestsApiFeatureTest
       )
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
-        case (_, _, metricsSender, baseUrl) =>
+        case (_, _, metrics, baseUrl) =>
           withMaterializer { implicit materializer =>
             whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
               result.status shouldBe StatusCodes.OK
@@ -107,9 +107,7 @@ class IngestsApiFeatureTest
                 )
               }
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.Success)
+              assertMetricSent(metrics, result = HttpMetricResults.Success)
             }
           }
       }
@@ -119,7 +117,7 @@ class IngestsApiFeatureTest
       val ingest = createIngestWith(callback = None)
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
-        case (ingestTracker, _, metricsSender, baseUrl) =>
+        case (ingestTracker, _, metrics, baseUrl) =>
           withMaterializer { implicit materialiser =>
             whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
               result.status shouldBe StatusCodes.OK
@@ -128,9 +126,7 @@ class IngestsApiFeatureTest
                 infoJson.findAllByKey("callback") shouldBe empty
               }
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.Success)
+              assertMetricSent(metrics, result = HttpMetricResults.Success)
             }
           }
       }
@@ -139,7 +135,7 @@ class IngestsApiFeatureTest
     it("returns a 404 NotFound if no ingest tracker matches id") {
       withMaterializer { implicit materializer =>
         withConfiguredApp() {
-          case (_, _, metricsSender, baseUrl) =>
+          case (_, _, metrics, baseUrl) =>
             val id = randomUUID
             whenGetRequestReady(s"$baseUrl/ingests/$id") { response =>
               assertIsUserErrorResponse(
@@ -149,9 +145,7 @@ class IngestsApiFeatureTest
                 label = "Not Found"
               )
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.UserError)
+              assertMetricSent(metrics, result = HttpMetricResults.UserError)
             }
         }
       }
@@ -160,13 +154,11 @@ class IngestsApiFeatureTest
     it("returns a 500 Server Error if reading from DynamoDB fails") {
       withMaterializer { implicit materializer =>
         withBrokenApp {
-          case (_, _, metricsSender, baseUrl) =>
+          case (_, _, metrics, baseUrl) =>
             whenGetRequestReady(s"$baseUrl/ingests/$randomUUID") { response =>
               assertIsInternalServerErrorResponse(response)
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.ServerError)
+              assertMetricSent(metrics, result = HttpMetricResults.ServerError)
             }
         }
       }
@@ -176,7 +168,7 @@ class IngestsApiFeatureTest
   describe("POST /ingests") {
     it("creates an ingest") {
       withConfiguredApp() {
-        case (ingestTracker, messageSender, metricsSender, baseUrl) =>
+        case (ingestTracker, messageSender, metrics, baseUrl) =>
           withMaterializer { implicit mat =>
             val url = s"$baseUrl/ingests"
 
@@ -255,9 +247,7 @@ class IngestsApiFeatureTest
                   .getMessages[SourceLocationPayload] shouldBe Seq(
                   expectedPayload)
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.Success)
+                assertMetricSent(metrics, result = HttpMetricResults.Success)
               }
             }
           }
@@ -266,7 +256,7 @@ class IngestsApiFeatureTest
 
     it("allows requesting an ingestType 'create'") {
       withConfiguredApp() {
-        case (_, messageSender, metricsSender, baseUrl) =>
+        case (_, messageSender, metrics, baseUrl) =>
           val url = s"$baseUrl/ingests"
 
           val entity = createRequestWith(
@@ -283,14 +273,14 @@ class IngestsApiFeatureTest
               messageSender.getMessages[SourceLocationPayload].head
             payload.context.ingestType shouldBe CreateIngestType
 
-            assertMetricSent(metricsSender, result = HttpMetricResults.Success)
+            assertMetricSent(metrics, result = HttpMetricResults.Success)
           }
       }
     }
 
     it("allows requesting an ingestType 'update'") {
       withConfiguredApp() {
-        case (_, messageSender, metricsSender, baseUrl) =>
+        case (_, messageSender, metrics, baseUrl) =>
           val url = s"$baseUrl/ingests"
 
           val entity = createRequestWith(
@@ -307,7 +297,7 @@ class IngestsApiFeatureTest
             val payload = messageSender.getMessages[SourceLocationPayload].head
             payload.context.ingestType shouldBe UpdateIngestType
 
-            assertMetricSent(metricsSender, result = HttpMetricResults.Success)
+            assertMetricSent(metrics, result = HttpMetricResults.Success)
           }
       }
     }
@@ -502,13 +492,13 @@ class IngestsApiFeatureTest
     it("returns a 500 Server Error if updating the ingest starter fails") {
       withMaterializer { implicit materializer =>
         withBrokenApp {
-          case (_, _, metricsSender, baseUrl) =>
+          case (_, _, metrics, baseUrl) =>
             whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
               response =>
                 assertIsInternalServerErrorResponse(response)
 
                 assertMetricSent(
-                  metricsSender,
+                  metrics,
                   result = HttpMetricResults.ServerError)
             }
         }
@@ -525,7 +515,7 @@ class IngestsApiFeatureTest
       )
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
-        case (_, _, metricsSender, baseUrl) =>
+        case (_, _, metrics, baseUrl) =>
           whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$bagId") {
             response =>
               response.status shouldBe StatusCodes.OK
@@ -536,7 +526,7 @@ class IngestsApiFeatureTest
               ingests shouldBe List(DisplayIngestMinimal(ingest))
 
               assertMetricSent(
-                metricsSender,
+                metrics,
                 result = HttpMetricResults.Success
               )
           }
@@ -551,7 +541,7 @@ class IngestsApiFeatureTest
       )
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
-        case (_, _, metricsSender, baseUrl) =>
+        case (_, _, metrics, baseUrl) =>
           whenGetRequestReady(
             s"$baseUrl/ingests/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}") {
             response =>
@@ -563,7 +553,7 @@ class IngestsApiFeatureTest
               ingests shouldBe List(DisplayIngestMinimal(ingest))
 
               assertMetricSent(
-                metricsSender,
+                metrics,
                 result = HttpMetricResults.Success
               )
           }
@@ -572,7 +562,7 @@ class IngestsApiFeatureTest
 
     it("returns 'Not Found' if there are no ingests for the given bag id") {
       withConfiguredApp() {
-        case (_, _, metricsSender, baseUrl) =>
+        case (_, _, metrics, baseUrl) =>
           whenGetRequestReady(s"$baseUrl/ingests/find-by-bag-id/$randomUUID") {
             response =>
               response.status shouldBe StatusCodes.NotFound
@@ -581,7 +571,7 @@ class IngestsApiFeatureTest
               getT[List[DisplayIngestMinimal]](response.entity) shouldBe empty
 
               assertMetricSent(
-                metricsSender,
+                metrics,
                 result = HttpMetricResults.UserError
               )
           }
@@ -660,7 +650,7 @@ class IngestsApiFeatureTest
     expectedMessage: String,
     expectedLabel: String = "Bad Request") = {
     withConfiguredApp() {
-      case (_, messageSender, metricsSender, baseUrl) =>
+      case (_, messageSender, metrics, baseUrl) =>
         val url = s"$baseUrl/ingests"
 
         val entity = HttpEntity(
@@ -678,7 +668,7 @@ class IngestsApiFeatureTest
 
           messageSender.messages shouldBe empty
 
-          assertMetricSent(metricsSender, result = HttpMetricResults.UserError)
+          assertMetricSent(metrics, result = HttpMetricResults.UserError)
         }
     }
   }

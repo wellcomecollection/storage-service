@@ -26,8 +26,12 @@ output "ingests_table_arn" {
   value = "${aws_dynamodb_table.ingests.arn}"
 }
 
-output "ingests_table_ingest_index_name" {
-  value = "${local.gsi_name}"
+output "bag_id_lookup_table_name" {
+  value = "${aws_dynamodb_table.bag_id_lookup.name}"
+}
+
+output "bag_id_lookup_table_arn" {
+  value = "${aws_dynamodb_table.bag_id_lookup.arn}"
 }
 
 output "use_encryption_key_policy" {

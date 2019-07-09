@@ -22,7 +22,7 @@ import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)(
   implicit client: AmazonDynamoDB)
@@ -40,7 +40,12 @@ class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)
 
     override def put(id: Version[IngestID, Int])(ingest: Ingest): WriteEither =
       super.put(id)(ingest).map { result =>
-        debug(s"Storing bagID lookup: ${storeBagIdLookup(ingest)}")
+        storeBagIdLookup(ingest) match {
+          case Success(_) =>
+            debug(s"Stored bagID lookup for $ingest successfully")
+          case Failure(err) =>
+            warn(s"Failure storing bagID lookup for $ingest: $err")
+        }
         result
       }
   }

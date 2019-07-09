@@ -4,9 +4,8 @@ import java.net.URL
 
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.monitoring.MetricsSender
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
   StorageManifestVHSFixture,
@@ -35,13 +34,13 @@ trait BagsApiFixture
   val contextURL = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
-  private def withApp[R](metricsSender: MetricsSender, vhs: StorageManifestDao)(
+  private def withApp[R](metrics: MemoryMetrics[Unit], vhs: StorageManifestDao)(
     testWith: TestWith[BagsApi, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
         val httpMetrics = new HttpMetrics(
           name = metricsName,
-          metricsSender = metricsSender
+          metrics = metrics
         )
 
         val bagsApi = new BagsApi(
@@ -58,45 +57,47 @@ trait BagsApiFixture
     }
 
   def withConfiguredApp[R](initialManifests: Seq[StorageManifest] = Seq.empty)(
-    testWith: TestWith[(StorageManifestDao, MetricsSender, String), R]): R = {
+    testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R])
+    : R = {
     val dao = createStorageManifestDao()
 
     initialManifests.foreach { manifest =>
       dao.put(manifest) shouldBe a[Right[_, _]]
     }
 
-    withMockMetricsSender { metricsSender =>
-      withApp(metricsSender, dao) { _ =>
-        testWith((dao, metricsSender, httpServerConfig.externalBaseURL))
-      }
+    val metrics = new MemoryMetrics[Unit]()
+
+    withApp(metrics, dao) { _ =>
+      testWith((dao, metrics, httpServerConfig.externalBaseURL))
     }
   }
 
   def withBrokenApp[R](
-    testWith: TestWith[(StorageManifestDao, MetricsSender, String), R]): R = {
+    testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R])
+    : R = {
 
     // TODO: This should be a MaximaReadError really.
     val brokenIndex =
       new MemoryStore[
-        Version[BagId, Int],
-        HybridIndexedStoreEntry[Version[BagId, Int],
+        Version[String, Int],
+        HybridIndexedStoreEntry[Version[String, Int],
                                 String,
                                 Map[String, String]]](
         initialEntries = Map.empty) with MemoryMaxima[
-        BagId,
-        HybridIndexedStoreEntry[Version[BagId, Int],
+        String,
+        HybridIndexedStoreEntry[Version[String, Int],
                                 String,
                                 Map[String, String]]] {
-        override def max(id: BagId) =
+        override def max(id: String) =
           Left(NoMaximaValueError(new Throwable("BOOM!")))
       }
 
     val brokenVhs = createStorageManifestDao(indexStore = brokenIndex)
 
-    withMockMetricsSender { metricsSender =>
-      withApp(metricsSender, brokenVhs) { _ =>
-        testWith((brokenVhs, metricsSender, httpServerConfig.externalBaseURL))
-      }
+    val metrics = new MemoryMetrics[Unit]()
+
+    withApp(metrics, brokenVhs) { _ =>
+      testWith((brokenVhs, metrics, httpServerConfig.externalBaseURL))
     }
   }
 }

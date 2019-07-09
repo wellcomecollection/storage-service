@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.storage.bagauditor.fixtures
 
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
@@ -18,6 +19,7 @@ import uk.ac.wellcome.json.JsonUtil._
 
 trait BagAuditorFixtures
     extends OperationFixtures
+    with Akka
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture
     with VersionPickerFixtures {

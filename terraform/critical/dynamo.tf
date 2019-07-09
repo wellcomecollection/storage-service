@@ -1,7 +1,3 @@
-locals {
-  gsi_name = "${var.namespace}-bag-id-index"
-}
-
 resource "aws_dynamodb_table" "ingests" {
   name           = "${var.namespace}-ingests"
   read_capacity  = 1
@@ -15,21 +11,33 @@ resource "aws_dynamodb_table" "ingests" {
     type = "S"
   }
 
+  lifecycle {
+    prevent_destroy = true
+
+    ignore_changes = [
+      "read_capacity",
+      "write_capacity",
+    ]
+  }
+}
+
+resource "aws_dynamodb_table" "bag_id_lookup" {
+  name           = "${var.namespace}-bag_id_lookup"
+  read_capacity  = 1
+  write_capacity = 1
+  hash_key       = "bagId"
+  range_key      = "ingestDate"
+
+  billing_mode = "${var.billing_mode}"
+
   attribute {
-    name = "externalIdentifier"
+    name = "bagId"
     type = "S"
   }
 
   attribute {
-    name = "space"
-    type = "S"
-  }
-
-  global_secondary_index {
-    name            = "${local.gsi_name}"
-    hash_key        = "externalIdentifier"
-    range_key       = "space"
-    projection_type = "ALL"
+    name = "ingestDate"
+    type = "N"
   }
 
   lifecycle {

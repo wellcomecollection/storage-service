@@ -8,13 +8,12 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.Sink
 import io.circe.Decoder
-import org.mockito.Mockito.{atLeastOnce, verify}
 import org.scalatest.{Assertion, Matchers}
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.monitoring.MetricsSender
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.http.models.{
   InternalServerErrorResponse,
@@ -22,7 +21,6 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
 }
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.concurrent.duration._
 
 trait HttpFixtures extends Akka with ScalaFutures with Matchers {
@@ -96,10 +94,10 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
 
   val metricsName: String
 
-  def assertMetricSent(metricsSender: MetricsSender,
-                       result: HttpMetricResults.Value): Future[Unit] =
-    verify(metricsSender, atLeastOnce())
-      .incrementCount(metricName = s"${metricsName}_HttpResponse_$result")
+  def assertMetricSent(metrics: MemoryMetrics[_],
+                       result: HttpMetricResults.Value): Assertion =
+    metrics.incrementedCounts should contain(
+      s"${metricsName}_HttpResponse_$result")
 
   val contextURL: URL
 

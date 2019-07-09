@@ -24,7 +24,7 @@ object Main extends WellcomeTypesafeApp {
 
     val httpMetrics = new HttpMetrics(
       name = "BagsApi",
-      metricsSender = MetricsBuilder.buildMetricsSender(config)
+      metrics = MetricsBuilder.buildMetricsSender(config)
     )
 
     new BagsApi(
