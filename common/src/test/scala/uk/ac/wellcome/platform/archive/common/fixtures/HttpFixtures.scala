@@ -96,7 +96,8 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
 
   def assertMetricSent(metrics: MemoryMetrics[_],
                        result: HttpMetricResults.Value): Assertion =
-    metrics.incrementedCounts should contain(s"${metricsName}_HttpResponse_$result")
+    metrics.incrementedCounts should contain(
+      s"${metricsName}_HttpResponse_$result")
 
   val contextURL: URL
 

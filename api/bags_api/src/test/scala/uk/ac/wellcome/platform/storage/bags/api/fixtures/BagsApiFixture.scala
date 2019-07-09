@@ -6,7 +6,11 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageManifestVHSFixture, StorageRandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  HttpFixtures,
+  StorageManifestVHSFixture,
+  StorageRandomThings
+}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
@@ -53,7 +57,8 @@ trait BagsApiFixture
     }
 
   def withConfiguredApp[R](initialManifests: Seq[StorageManifest] = Seq.empty)(
-    testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R]): R = {
+    testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R])
+    : R = {
     val dao = createStorageManifestDao()
 
     initialManifests.foreach { manifest =>
@@ -68,20 +73,21 @@ trait BagsApiFixture
   }
 
   def withBrokenApp[R](
-    testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R]): R = {
+    testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R])
+    : R = {
 
     // TODO: This should be a MaximaReadError really.
     val brokenIndex =
       new MemoryStore[
         Version[String, Int],
         HybridIndexedStoreEntry[Version[String, Int],
-          String,
-          Map[String, String]]](
+                                String,
+                                Map[String, String]]](
         initialEntries = Map.empty) with MemoryMaxima[
         String,
         HybridIndexedStoreEntry[Version[String, Int],
-          String,
-          Map[String, String]]] {
+                                String,
+                                Map[String, String]]] {
         override def max(id: String) =
           Left(NoMaximaValueError(new Throwable("BOOM!")))
       }

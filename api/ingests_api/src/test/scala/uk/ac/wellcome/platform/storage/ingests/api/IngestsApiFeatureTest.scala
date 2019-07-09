@@ -107,9 +107,7 @@ class IngestsApiFeatureTest
                 )
               }
 
-              assertMetricSent(
-                metrics,
-                result = HttpMetricResults.Success)
+              assertMetricSent(metrics, result = HttpMetricResults.Success)
             }
           }
       }
@@ -128,9 +126,7 @@ class IngestsApiFeatureTest
                 infoJson.findAllByKey("callback") shouldBe empty
               }
 
-              assertMetricSent(
-                metrics,
-                result = HttpMetricResults.Success)
+              assertMetricSent(metrics, result = HttpMetricResults.Success)
             }
           }
       }
@@ -149,9 +145,7 @@ class IngestsApiFeatureTest
                 label = "Not Found"
               )
 
-              assertMetricSent(
-                metrics,
-                result = HttpMetricResults.UserError)
+              assertMetricSent(metrics, result = HttpMetricResults.UserError)
             }
         }
       }
@@ -164,9 +158,7 @@ class IngestsApiFeatureTest
             whenGetRequestReady(s"$baseUrl/ingests/$randomUUID") { response =>
               assertIsInternalServerErrorResponse(response)
 
-              assertMetricSent(
-                metrics,
-                result = HttpMetricResults.ServerError)
+              assertMetricSent(metrics, result = HttpMetricResults.ServerError)
             }
         }
       }
@@ -255,9 +247,7 @@ class IngestsApiFeatureTest
                   .getMessages[SourceLocationPayload] shouldBe Seq(
                   expectedPayload)
 
-                assertMetricSent(
-                  metrics,
-                  result = HttpMetricResults.Success)
+                assertMetricSent(metrics, result = HttpMetricResults.Success)
               }
             }
           }

@@ -41,7 +41,8 @@ class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)
     override def put(id: Version[IngestID, Int])(ingest: Ingest): WriteEither =
       super.put(id)(ingest).map { result =>
         storeBagIdLookup(ingest) match {
-          case Success(_) => debug(s"Stored bagID lookup for $ingest successfully")
+          case Success(_) =>
+            debug(s"Stored bagID lookup for $ingest successfully")
           case Failure(err) =>
             warn(s"Failure storing bagID lookup for $ingest: $err")
         }

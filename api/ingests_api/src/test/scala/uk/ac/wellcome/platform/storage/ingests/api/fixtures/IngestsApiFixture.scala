@@ -66,7 +66,7 @@ trait IngestsApiFixture
   def withBrokenApp[R](
     testWith: TestWith[(MemoryIngestTracker,
                         MemoryMessageSender,
-      MemoryMetrics[StandardUnit],
+                        MemoryMetrics[StandardUnit],
                         String),
                        R]): R = {
     val messageSender = new MemoryMessageSender()
