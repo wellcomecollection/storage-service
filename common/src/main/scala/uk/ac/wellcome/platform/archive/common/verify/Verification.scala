@@ -10,7 +10,7 @@ object Verification extends Logging {
 
   implicit def verification[Container](
     implicit verifiable: Verifiable[Container],
-    verifier: Verifier
+    verifier: Verifier[_]
   ) =
     new Verification[Container] {
       override def verify(container: Container): VerificationResult = {

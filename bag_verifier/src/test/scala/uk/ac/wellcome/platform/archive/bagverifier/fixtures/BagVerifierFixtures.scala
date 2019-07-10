@@ -16,12 +16,10 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  S3ObjectVerifier,
-  S3Resolvable
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.verify.s3.S3ObjectVerifier
 
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
