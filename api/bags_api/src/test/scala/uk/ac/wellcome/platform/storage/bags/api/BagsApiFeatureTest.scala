@@ -122,7 +122,7 @@ class BagsApiFeatureTest
                    """.stripMargin
 
               val url =
-                s"$baseUrl/bags/${storageSpace.underlying}/${externalIdentifier.underlying}?version=${storageManifest.version}"
+                s"$baseUrl/bags/${storageSpace.underlying}/${externalIdentifier.underlying}?version=v${storageManifest.version}"
 
               whenGetRequestReady(url) { response =>
                 response.status shouldBe StatusCodes.OK
@@ -224,12 +224,12 @@ class BagsApiFeatureTest
         withConfiguredApp(initialManifests = Seq(storageManifest)) {
           case (_, metricsSender, baseUrl) =>
             whenGetRequestReady(
-              s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=${storageManifest.version + 1}") {
+              s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=v${storageManifest.version + 1}") {
               response =>
                 assertIsUserErrorResponse(
                   response,
                   description =
-                    s"Storage manifest ${storageManifest.id} v${storageManifest.version + 1} not found",
+                    s"Storage manifest ${storageManifest.id} version v${storageManifest.version + 1} not found",
                   statusCode = StatusCodes.NotFound,
                   label = "Not Found"
                 )
@@ -242,18 +242,22 @@ class BagsApiFeatureTest
       }
     }
 
-    it("returns a 400 BadRequest if you ask for a non-numeric version") {
+    it("returns a 404 NotFound if you ask for a non-numeric version") {
       val badVersion = randomAlphanumeric
+
+      val bagId = createBagId
 
       withMaterializer { implicit materializer =>
         withConfiguredApp() {
           case (_, metricsSender, baseUrl) =>
             whenGetRequestReady(
-              s"$baseUrl/bags/$createBagId?version=$badVersion") { response =>
+              s"$baseUrl/bags/$bagId?version=$badVersion") { response =>
               assertIsUserErrorResponse(
                 response,
                 description =
-                  s"The query parameter 'version' was malformed:\n'$badVersion' is not a valid 32-bit signed integer value"
+                  s"Storage manifest $bagId version $badVersion not found",
+                statusCode = StatusCodes.NotFound,
+                label = "Not Found"
               )
 
               assertMetricSent(

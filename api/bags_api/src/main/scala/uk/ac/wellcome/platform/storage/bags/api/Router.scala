@@ -8,27 +8,21 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagId,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.http.models.{
-  InternalServerErrorResponse,
-  UserErrorResponse
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageManifest,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.models.ResponseDisplayBag
 import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
 
 import scala.concurrent.ExecutionContext
+import scala.util.matching.Regex
 
 class Router(register: StorageManifestDao, contextURL: URL)(
   implicit val ec: ExecutionContext)
     extends Logging {
+
+  private val versionRegex: Regex = new Regex("^v(\\d+)$", "version")
 
   def routes: Route = {
     import akka.http.scaladsl.server.Directives._
@@ -44,10 +38,15 @@ class Router(register: StorageManifestDao, contextURL: URL)(
         )
 
         get {
-          parameter('version.as[Int] ?) { maybeVersion =>
+          parameter('version.as[String] ?) { maybeVersion =>
             val result: Either[ReadError, StorageManifest] =
               maybeVersion match {
-                case Some(version) => register.get(bagId, version = version)
+                case Some(versionString) =>
+                  versionRegex.findFirstMatchIn(versionString) match {
+                    case Some(regexMatch) =>
+                      register.get(bagId, version = regexMatch.group("version").toInt)
+                    case None => Left(NoVersionExistsError())
+                  }
                 case None          => register.getLatest(bagId)
               }
 
@@ -61,7 +60,7 @@ class Router(register: StorageManifestDao, contextURL: URL)(
               case Left(_: NoVersionExistsError) =>
                 val errorMessage = maybeVersion match {
                   case Some(version) =>
-                    s"Storage manifest $bagId v$version not found"
+                    s"Storage manifest $bagId version $version not found"
                   case None => s"Storage manifest $bagId not found"
                 }
 
