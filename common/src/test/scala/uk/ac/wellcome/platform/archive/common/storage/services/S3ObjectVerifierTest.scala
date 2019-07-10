@@ -1,9 +1,77 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
+import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.VerifyFixtures
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
+import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.store.fixtures.{BucketNamespaceFixtures, NamespaceFixtures}
+
+trait BetterVerifierTestCases[Namespace, Context]
+  extends FunSpec
+    with Matchers
+    with NamespaceFixtures[ObjectLocation, Namespace]
+    with VerifyFixtures {
+
+  def withContext[R](testWith: TestWith[Context, R]): R
+
+  def createObjectLocationWith(namespace: Namespace): ObjectLocation
+
+  def putString(location: ObjectLocation, contents: String)(implicit context: Context): Unit
+
+  def withVerifier[R](testWith: TestWith[BetterVerifier[_], R])(implicit context: Context): R
+
+  it("returns a success if the checksum is correct") {
+    withContext { implicit context =>
+      withNamespace { implicit namespace =>
+        val contentHashingAlgorithm = MD5
+        val contentString = "HelloWorld"
+        // md5("HelloWorld")
+        val contentStringChecksum = ChecksumValue(
+          "68e109f0f40ca72a15e05cc22786f8e6"
+        )
+        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
+
+        val location = createObjectLocationWith(namespace)
+        putString(location, contentString)
+
+        val verifiableLocation = createVerifiableLocationWith(
+          location = location,
+          checksum = checksum
+        )
+
+        val verifiedLocation =
+          withVerifier {
+            _.verify(verifiableLocation)
+          }
+
+        verifiedLocation shouldBe a[VerifiedSuccess]
+        val verifiedSuccess = verifiedLocation.asInstanceOf[VerifiedSuccess]
+
+        verifiedSuccess.location shouldBe verifiableLocation
+      }
+    }
+  }
+}
+
+class BetterS3ObjectVerifierTest
+  extends BetterVerifierTestCases[Bucket, Unit]
+    with BucketNamespaceFixtures {
+  override def withContext[R](testWith: TestWith[Unit, R]): R =
+    testWith(())
+
+  override def putString(location: ObjectLocation, contents: String)(implicit context: Unit): Unit =
+    s3Client.putObject(
+      location.namespace,
+      location.path,
+      contents
+    )
+
+  override def withVerifier[R](testWith: TestWith[BetterVerifier[_], R])(implicit context: Unit): R =
+    testWith(new S3ObjectVerifier())
+}
 
 class S3ObjectVerifierTest
     extends FunSpec
@@ -12,6 +80,38 @@ class S3ObjectVerifierTest
     with VerifyFixtures {
 
   // TODO: Rewrite these tests to use traits and test cases
+
+  it("returns a success if the checksum is correct") {
+    withLocalS3Bucket { bucket =>
+      val contentHashingAlgorithm = MD5
+      val contentString = "HelloWorld"
+      // md5("HelloWorld")
+      val contentStringChecksum = ChecksumValue(
+        "68e109f0f40ca72a15e05cc22786f8e6"
+      )
+
+      val objectLocation = createObjectLocationWith(bucket)
+      val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
+
+      val verifiableLocation = createVerifiableLocationWith(
+        location = objectLocation,
+        checksum = checksum
+      )
+
+      s3Client.putObject(
+        objectLocation.namespace,
+        objectLocation.path,
+        contentString
+      )
+
+      val verifiedLocation = objectVerifier.verify(verifiableLocation)
+
+      verifiedLocation shouldBe a[VerifiedSuccess]
+      val verifiedSuccess = verifiedLocation.asInstanceOf[VerifiedSuccess]
+
+      verifiedSuccess.location shouldBe verifiableLocation
+    }
+  }
 
   it("returns a failure if the bucket doesn't exist") {
     val badVerifiableLocation = createVerifiableLocation
@@ -110,37 +210,7 @@ class S3ObjectVerifierTest
     }
   }
 
-  it("returns a success if the checksum is correct") {
-    withLocalS3Bucket { bucket =>
-      val contentHashingAlgorithm = MD5
-      val contentString = "HelloWorld"
-      // md5("HelloWorld")
-      val contentStringChecksum = ChecksumValue(
-        "68e109f0f40ca72a15e05cc22786f8e6"
-      )
 
-      val objectLocation = createObjectLocationWith(bucket)
-      val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
-
-      val verifiableLocation = createVerifiableLocationWith(
-        location = objectLocation,
-        checksum = checksum
-      )
-
-      s3Client.putObject(
-        objectLocation.namespace,
-        objectLocation.path,
-        contentString
-      )
-
-      val verifiedLocation = objectVerifier.verify(verifiableLocation)
-
-      verifiedLocation shouldBe a[VerifiedSuccess]
-      val verifiedSuccess = verifiedLocation.asInstanceOf[VerifiedSuccess]
-
-      verifiedSuccess.location shouldBe verifiableLocation
-    }
-  }
 
   it("succeeds if the checksum is correct and the lengths match") {
     withLocalS3Bucket { bucket =>
