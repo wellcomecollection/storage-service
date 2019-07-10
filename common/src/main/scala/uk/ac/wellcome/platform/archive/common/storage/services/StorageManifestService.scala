@@ -5,6 +5,7 @@ import java.time.Instant
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagManifest, BagPath}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.storage.models.{FileManifest, StorageManifest, StorageManifestFile, StorageSpace}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
@@ -45,7 +46,13 @@ object StorageManifestService extends Logging {
           checksumAlgorithm = bag.tagManifest.checksumAlgorithm,
           files = tagManifestFiles
         ),
-        locations = List.empty,
+        locations = Seq(
+          // TODO: Support adding more locations!
+          StorageLocation(
+            provider = InfrequentAccessStorageProvider,
+            location = bagRoot.asLocation()
+          )
+        ),
         createdDate = Instant.now
       )
     } yield storageManifest

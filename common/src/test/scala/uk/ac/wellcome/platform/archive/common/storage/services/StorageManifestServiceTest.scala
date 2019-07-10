@@ -5,6 +5,8 @@ import java.net.URI
 import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, BagPath}
 import uk.ac.wellcome.platform.archive.common.generators.BagGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -15,21 +17,21 @@ class StorageManifestServiceTest
     with ObjectLocationGenerators
     with TryValues {
 
-  it("rejects a bag if the root location is not a versioned directory") {
-    val bagRootLocation = createObjectLocation
+  it("rejects a bag if the replica root is not a versioned directory") {
+    val replicaRootLocation = createObjectLocation
     val version = randomInt(1, 10)
 
-    assertIsError(replicaRootLocation = bagRootLocation, version = version) {
-      _ shouldBe s"Malformed bag root: $bagRootLocation (expected suffix /v$version)"
+    assertIsError(replicaRootLocation = replicaRootLocation, version = version) {
+      _ shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
     }
   }
 
-  it("rejects a bag if the versioned directory is wrong") {
+  it("rejects a bag if the replica root has the wrong version") {
     val version = randomInt(1, 10)
-    val bagRootLocation = createObjectLocation.join(s"/v${version + 1}")
+    val replicaRootLocation = createObjectLocation.join(s"/v${version + 1}")
 
-    assertIsError(replicaRootLocation = bagRootLocation, version = version) {
-      _ shouldBe s"Malformed bag root: $bagRootLocation (expected suffix /v$version)"
+    assertIsError(replicaRootLocation = replicaRootLocation, version = version) {
+      _ shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
     }
   }
 
@@ -52,8 +54,24 @@ class StorageManifestServiceTest
     }
   }
 
-  // TEST: Creates correct root location
-  // TEST: Puts that location in the manifest with s3-whatever
+  it("identifies the correct root location of a bag") {
+    val version = randomInt(1, 10)
+    val bagRoot = createObjectLocation
+    val replicaRoot = bagRoot.join(s"/v$version")
+
+    val storageManifest = createManifest(
+      replicaRoot = replicaRoot,
+      version = version
+    )
+
+    storageManifest.locations shouldBe Seq(
+      StorageLocation(
+        provider = InfrequentAccessStorageProvider,
+        location = bagRoot
+      )
+    )
+  }
+
   // TEST: If there are no fetch entries, puts all entries with correct versioned path
   // TEST: If the fetch entry is in wrong namespace, reject
   // TEST: If the fetch entry is in the wrong path, reject
@@ -62,6 +80,17 @@ class StorageManifestServiceTest
   // TEST: Correct bagInfo
   // TEST: Correct version
   // TEST: Recent createdDate
+
+  private def createManifest(
+    bag: Bag = createBag,
+    replicaRoot: ObjectLocation,
+    version: Int
+  ): StorageManifest =
+    StorageManifestService.createManifest(
+      bag = bag,
+      replicaRootLocation = replicaRoot,
+      version = version
+    ).success.value
 
   private def assertIsError(
     bag: Bag = createBag,
