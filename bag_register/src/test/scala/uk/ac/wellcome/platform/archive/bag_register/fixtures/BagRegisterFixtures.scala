@@ -7,25 +7,16 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bag_register.services.{
-  BagRegisterWorker,
-  Register
-}
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures,
-  StorageManifestVHSFixture,
-  StorageRandomThings
-}
+import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestStatusUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 trait BagRegisterFixtures
     extends StorageRandomThings
@@ -35,7 +26,7 @@ trait BagRegisterFixtures
     with StorageManifestVHSFixture
     with MonitoringClientFixture
     with IngestUpdateAssertions
-    with S3Fixtures {
+    with S3BagLocationFixtures {
 
   type Fixtures = (BagRegisterWorker[String, String],
                    StorageManifestDao,
@@ -100,5 +91,17 @@ trait BagRegisterFixtures
         ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
       ingestFailed.status shouldBe Ingest.Failed
       ingestFailed.events.head.description shouldBe "Register failed"
+    }
+
+  // The bag register inspects the paths to a bag's entries to
+  // check they are in the correct format post-replicator,
+  // hence the version directory.
+  def withBag[R](bucket: Bucket, bagInfo: BagInfo, externalIdentifier: ExternalIdentifier, space: StorageSpace, version: Int)(testWith: TestWith[ObjectLocation, R]): R =
+    withS3Bag(
+      bucket,
+      bagInfo = bagInfo,
+      storageSpace = space,
+      bagRootDirectory = Some(s"v$version")) { case (bagRootLocation, _) =>
+      testWith(bagRootLocation.join(s"v$version"))
     }
 }

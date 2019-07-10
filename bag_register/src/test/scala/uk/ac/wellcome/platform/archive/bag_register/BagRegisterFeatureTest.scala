@@ -6,17 +6,11 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
 
 class BagRegisterFeatureTest
     extends FunSpec
     with Matchers
-    with S3BagLocationFixtures
     with BagRegisterFixtures
     with PayloadGenerators {
 
@@ -25,48 +19,46 @@ class BagRegisterFeatureTest
       case (_, storageManifestDao, ingests, _, queuePair) =>
         val createdAfterDate = Instant.now()
         val bagInfo = createBagInfo
+        val externalIdentifier = createExternalIdentifier
+        val space = createStorageSpace
+        val version = randomInt(1, 15)
 
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, bagInfo = bagInfo) {
-            case (bagRootLocation, storageSpace) =>
-              val bagId = BagId(
-                space = storageSpace,
-                externalIdentifier = bagInfo.externalIdentifier
+          withBag(bucket, bagInfo, externalIdentifier, space, version) { bagRootLocation =>
+            val bagId = BagId(
+              space = space,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
+
+            val payload = createEnrichedBagInformationPayloadWith(
+              context = createPipelineContextWith(
+                storageSpace = space
+              ),
+              bagRootLocation = bagRootLocation,
+              version = version
+            )
+
+            sendNotificationToSQS(queuePair.queue, payload)
+
+            eventually {
+              val storageManifest =
+                storageManifestDao.getLatest(bagId).right.value
+
+              storageManifest.space shouldBe bagId.space
+              storageManifest.info shouldBe bagInfo
+              storageManifest.manifest.files should have size 1
+
+              storageManifest.locations should have size 1
+
+              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+
+              assertBagRegisterSucceeded(
+                ingestId = payload.ingestId,
+                ingests = ingests
               )
 
-              val payload = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  storageSpace = storageSpace
-                ),
-                bagRootLocation = bagRootLocation
-              )
-
-              sendNotificationToSQS(queuePair.queue, payload)
-
-              eventually {
-                val storageManifest =
-                  storageManifestDao.getLatest(bagId).right.value
-
-                storageManifest.space shouldBe bagId.space
-                storageManifest.info shouldBe bagInfo
-                storageManifest.manifest.files should have size 1
-
-                storageManifest.locations shouldBe List(
-                  StorageLocation(
-                    provider = InfrequentAccessStorageProvider,
-                    location = bagRootLocation
-                  )
-                )
-
-                storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
-
-                assertBagRegisterSucceeded(
-                  ingestId = payload.ingestId,
-                  ingests = ingests
-                )
-
-                assertQueueEmpty(queuePair.queue)
-              }
+              assertQueueEmpty(queuePair.queue)
+            }
           }
         }
     }
