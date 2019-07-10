@@ -3,18 +3,13 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import java.time.Instant
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagInfoGenerators,
-  PayloadGenerators
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, PayloadGenerators}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepSucceeded
 
 import scala.util.Success
 
@@ -25,7 +20,8 @@ class BagRegisterWorkerTest
     with BagInfoGenerators
     with S3BagLocationFixtures
     with BagRegisterFixtures
-    with PayloadGenerators {
+    with PayloadGenerators
+    with TryValues {
 
   it("sends a successful IngestUpdate upon registration") {
     withBagRegisterWorker {
@@ -48,7 +44,9 @@ class BagRegisterWorkerTest
                 externalIdentifier = bagInfo.externalIdentifier
               )
 
-              service.processMessage(payload) shouldBe a[Success[_]]
+              val result = service.processMessage(payload)
+              result shouldBe a[Success[_]]
+              result.success.value shouldBe a[IngestStepSucceeded[_]]
 
               val storageManifest =
                 storageManifestDao.getLatest(bagId).right.value
@@ -103,8 +101,11 @@ class BagRegisterWorkerTest
                 externalIdentifier = bagInfo.externalIdentifier
               )
 
-              service.processMessage(payload1) shouldBe a[Success[_]]
-              service.processMessage(payload2) shouldBe a[Success[_]]
+              Seq(payload1, payload2).map { payload =>
+                val result = service.processMessage(payload)
+                result shouldBe a[Success[_]]
+                result.success.value shouldBe a[IngestStepSucceeded[_]]
+              }
 
               storageManifestDao
                 .get(bagId, version = 1)
