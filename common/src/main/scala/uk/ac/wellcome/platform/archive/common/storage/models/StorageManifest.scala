@@ -2,9 +2,16 @@ package uk.ac.wellcome.platform.archive.common.storage.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFile, BagId, BagInfo}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFile,
+  BagId,
+  BagInfo
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
-import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, HashingAlgorithm}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  ChecksumValue,
+  HashingAlgorithm
+}
 
 // TODO: These need better names!
 case class StorageManifestFile(

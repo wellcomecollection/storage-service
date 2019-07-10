@@ -4,7 +4,10 @@ import java.time.format.DateTimeFormatter
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
-import uk.ac.wellcome.platform.archive.common.storage.models.{FileManifest, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  FileManifest,
+  StorageManifestFile
+}
 
 trait DisplayJsonHelpers {
   private def stringField[T](t: T): String =

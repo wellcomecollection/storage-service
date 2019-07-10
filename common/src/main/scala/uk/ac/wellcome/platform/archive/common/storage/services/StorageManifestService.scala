@@ -3,15 +3,28 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.time.Instant
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagManifest, BagPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagManifest,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
-import uk.ac.wellcome.platform.archive.common.storage.models.{FileManifest, StorageManifest, StorageManifestFile, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  FileManifest,
+  StorageManifest,
+  StorageManifestFile,
+  StorageSpace
+}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
 
-class StorageManifestException(message: String) extends RuntimeException(message)
+class StorageManifestException(message: String)
+    extends RuntimeException(message)
 
 object StorageManifestService extends Logging {
   def createManifest(
@@ -71,7 +84,8 @@ object StorageManifestService extends Logging {
     * the replicator.
     *
     */
-  private def getBagRoot(replicaRoot: ObjectLocation, version: Int): Try[ObjectLocationPrefix] =
+  private def getBagRoot(replicaRoot: ObjectLocation,
+                         version: Int): Try[ObjectLocationPrefix] =
     if (replicaRoot.path.endsWith(s"/v$version")) {
       Success(
         replicaRoot.asPrefix.copy(
@@ -79,7 +93,9 @@ object StorageManifestService extends Logging {
         )
       )
     } else {
-      Failure(new StorageManifestException(s"Malformed bag root: $replicaRoot (expected suffix /v$version)"))
+      Failure(
+        new StorageManifestException(
+          s"Malformed bag root: $replicaRoot (expected suffix /v$version)"))
     }
 
   /** Every entry in the bag manifest will be either a:
@@ -91,17 +107,16 @@ object StorageManifestService extends Logging {
     * This function gets a map (bag name) -> (path), relative to the bag root.
     *
     */
-  private def createNamePathMap(
-    bag: Bag,
-    bagRoot: ObjectLocationPrefix,
-    version: Int): Try[Map[BagPath, String]] = Try {
+  private def createNamePathMap(bag: Bag,
+                                bagRoot: ObjectLocationPrefix,
+                                version: Int): Try[Map[BagPath, String]] = Try {
     BagMatcher.correlateFetchEntries(bag) match {
       case Right(matchedLocations) =>
         matchedLocations.map { matchedLoc =>
           val path = matchedLoc.fetchEntry match {
             // This is a concrete file inside the replicated bag,
             // so it's inside the versioned replica directory.
-            case None             => s"v$version/${matchedLoc.bagFile.path.value}"
+            case None => s"v$version/${matchedLoc.bagFile.path.value}"
 
             // This is referring to a fetch file somewhere else.
             // We need to check it's in another versioned directory
@@ -138,7 +153,8 @@ object StorageManifestService extends Logging {
     }
   }
 
-  private def createManifestFiles(manifest: BagManifest, entries: Map[BagPath, String]) = Try {
+  private def createManifestFiles(manifest: BagManifest,
+                                  entries: Map[BagPath, String]) = Try {
     manifest.files.map { bagFile =>
       // This lookup should never file -- the BagMatcher populates the
       // entries from the original manifests in the bag.

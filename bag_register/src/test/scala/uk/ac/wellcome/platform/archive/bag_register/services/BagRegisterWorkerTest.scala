@@ -6,8 +6,14 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, PayloadGenerators}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  PayloadGenerators
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestCompleted
 
 import scala.util.Success
@@ -31,7 +37,12 @@ class BagRegisterWorkerTest
         val externalIdentifier = createExternalIdentifier
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo, externalIdentifier, space = space, version = version) { bagRootLocation =>
+          withBag(
+            bucket,
+            bagInfo,
+            externalIdentifier,
+            space = space,
+            version = version) { bagRootLocation =>
             val payload = createEnrichedBagInformationPayloadWith(
               context = createPipelineContextWith(
                 storageSpace = space
@@ -85,11 +96,17 @@ class BagRegisterWorkerTest
 
         withLocalS3Bucket { bucket =>
           withBag(
-            bucket, bagInfo, externalIdentifier = externalIdentifier, space = space, version = 1) { location1 =>
+            bucket,
+            bagInfo,
+            externalIdentifier = externalIdentifier,
+            space = space,
+            version = 1) { location1 =>
             withBag(
-              bucket, bagInfo, externalIdentifier = externalIdentifier, space = space, version = 2) { location2 =>
-
-
+              bucket,
+              bagInfo,
+              externalIdentifier = externalIdentifier,
+              space = space,
+              version = 2) { location2 =>
               val payload1 = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space

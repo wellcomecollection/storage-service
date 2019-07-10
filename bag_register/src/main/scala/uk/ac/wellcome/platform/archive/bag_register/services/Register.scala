@@ -5,8 +5,16 @@ import java.time.Instant
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepResult, StorageSpace}
-import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestDao, StorageManifestService}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  IngestFailed,
+  IngestStepResult,
+  StorageSpace
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  StorageManifestDao,
+  StorageManifestService
+}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
@@ -31,7 +39,8 @@ class Register(
     val result: Try[IngestStepResult[RegistrationSummary]] = for {
       bag <- bagReader.get(bagRootLocation) match {
         case Right(value) => Success(value)
-        case Left(err)    => Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
+        case Left(err) =>
+          Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
       }
 
       storageManifest <- StorageManifestService.createManifest(
