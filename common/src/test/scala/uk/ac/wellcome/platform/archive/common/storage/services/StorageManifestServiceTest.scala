@@ -249,6 +249,34 @@ class StorageManifestServiceTest
         _ shouldBe "Fetch entry for data/file1.txt refers to an object in the wrong namespace: not-the-replica-bucket"
       }
     }
+
+    it("refers to a file that isn't in a versioned directory") {
+      val version = randomInt(1, 10)
+      val bagRoot = createObjectLocation
+      val replicaRoot = bagRoot.join(s"/v$version")
+
+      val fetchEntries = Seq(
+        BagFetchEntry(
+          uri = new URI(s"s3://${replicaRoot.namespace}/file1.txt"),
+          length = None,
+          path = BagPath("data/file1.txt")
+        )
+      )
+
+      val bag = createBagWith(
+        manifestFiles = Seq(
+          BagFile(
+            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+            path = BagPath("data/file1.txt")
+          )
+        ),
+        fetchEntries = fetchEntries
+      )
+
+      assertIsError(bag = bag, replicaRootLocation = replicaRoot, version = version) {
+        _ shouldBe "Fetch entry for data/file1.txt refers to an object in the wrong path: /file1.txt"
+      }
+    }
   }
 
   // TEST: If the fetch entry is in wrong namespace, reject

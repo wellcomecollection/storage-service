@@ -117,6 +117,13 @@ object StorageManifestService extends Logging {
                 )
               }
 
+              // TODO: This check could actually look for a /v1, /v2, etc.
+              if (!fetchLocation.path.startsWith(bagRoot.path + "/")) {
+                throw new StorageManifestException(
+                  s"Fetch entry for ${matchedLoc.bagFile.path.value} refers to an object in the wrong path: ${fetchLocation.path}"
+                )
+              }
+
               fetchLocation.path
           }
 
