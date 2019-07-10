@@ -15,19 +15,21 @@ class StorageManifestServiceTest
 
   it("rejects a bag if the root location is not a versioned directory") {
     val bagRootLocation = createObjectLocation
-    assertIsError(bagRootLocation = createObjectLocation) { msg =>
-      msg should contain(s"Malformed bag root: $bagRootLocation (not a versioned directory)")
+    val version = randomInt(1, 10)
+
+    assertIsError(bagRootLocation = bagRootLocation, version = version) {
+      _ shouldBe s"Malformed bag root: $bagRootLocation (expected suffix /v$version)"
     }
   }
 
   private def assertIsError(
     bag: Bag = createBag,
     bagRootLocation: ObjectLocation,
-    version: Int = randomInt(1, 10)
+    version: Int
   )(assertMessage: String => Assertion): Assertion = {
     val result = StorageManifestService.createManifest(
       bag = bag,
-      bagRootLocation = bagRootLocation,
+      replicaRootLocation = bagRootLocation,
       version = version
     )
 
