@@ -149,7 +149,7 @@ class StorageManifestServiceTest
 
     val nameChecksumMap =
       storageManifest.manifest.files
-        .map { file => (file.name, file.checksum.value) }
+        .map { file => (file.name, file.checksum) }
 
     nameChecksumMap should contain theSameElementsAs filesWithChecksums
   }
@@ -172,7 +172,7 @@ class StorageManifestServiceTest
 
     val nameChecksumMap =
       storageManifest.tagManifest.files
-        .map { file => (file.name, file.checksum.value) }
+        .map { file => (file.name, file.checksum) }
 
     nameChecksumMap should contain theSameElementsAs filesWithChecksums
   }

@@ -4,11 +4,11 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFile, BagId, BagInfo}
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, HashingAlgorithm}
+import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, HashingAlgorithm}
 
 // TODO: These need better names!
 case class StorageManifestFile(
-  checksum: Checksum,
+  checksum: ChecksumValue,
   name: String,
   path: String
 )
@@ -17,7 +17,7 @@ case object StorageManifestFile {
   // TODO: Ditch this, temporary method
   def apply(bagFile: BagFile): StorageManifestFile =
     StorageManifestFile(
-      checksum = bagFile.checksum,
+      checksum = bagFile.checksum.value,
       name = bagFile.path.value,
       path = bagFile.path.value
     )

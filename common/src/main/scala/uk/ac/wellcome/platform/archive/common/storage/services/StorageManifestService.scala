@@ -125,7 +125,7 @@ object StorageManifestService extends Logging {
       val path = entries(bagFile.path)
 
       StorageManifestFile(
-        checksum = bagFile.checksum,
+        checksum = bagFile.checksum.value,
         name = bagFile.path.value,
         path = path
       )
