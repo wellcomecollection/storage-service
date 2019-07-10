@@ -16,11 +16,12 @@ class StorageManifestException(message: String) extends RuntimeException(message
 object StorageManifestService extends Logging {
   def createManifest(
     bag: Bag,
-    replicaRootLocation: ObjectLocation,
+    replicaRoot: ObjectLocation,
+    space: StorageSpace,
     version: Int
   ): Try[StorageManifest] = {
     for {
-      bagRoot <- getBagRoot(replicaRootLocation, version)
+      bagRoot <- getBagRoot(replicaRoot, version)
 
       entries <- createNamePathMap(bag, bagRoot = bagRoot, version = version)
 
@@ -70,15 +71,15 @@ object StorageManifestService extends Logging {
     * the replicator.
     *
     */
-  private def getBagRoot(replicaRootLocation: ObjectLocation, version: Int): Try[ObjectLocationPrefix] =
-    if (replicaRootLocation.path.endsWith(s"/v$version")) {
+  private def getBagRoot(replicaRoot: ObjectLocation, version: Int): Try[ObjectLocationPrefix] =
+    if (replicaRoot.path.endsWith(s"/v$version")) {
       Success(
-        replicaRootLocation.asPrefix.copy(
-          path = replicaRootLocation.path.stripSuffix(s"/v$version")
+        replicaRoot.asPrefix.copy(
+          path = replicaRoot.path.stripSuffix(s"/v$version")
         )
       )
     } else {
-      Failure(new StorageManifestException(s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"))
+      Failure(new StorageManifestException(s"Malformed bag root: $replicaRoot (expected suffix /v$version)"))
     }
 
   /** Every entry in the bag manifest will be either a:
