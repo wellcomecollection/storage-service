@@ -73,8 +73,8 @@ class NotifierFeatureTest
                 ingestType = CreateDisplayIngestType,
                 space = DisplayStorageSpace(ingest.space.underlying),
                 status = DisplayStatus(ingest.status.toString),
-                bag = DisplayBag(
-                  info = DisplayBagInfo(
+                bag = RequestDisplayBag(
+                  info = RequestDisplayBagInfo(
                     externalIdentifier = ingest.externalIdentifier
                   )
                 ),
@@ -148,8 +148,8 @@ class NotifierFeatureTest
                 ingestType = DisplayIngestType(ingest.ingestType),
                 space = DisplayStorageSpace(ingest.space.underlying),
                 status = DisplayStatus(ingest.status.toString),
-                bag = DisplayBag(
-                  info = DisplayBagInfo(
+                bag = RequestDisplayBag(
+                  info = RequestDisplayBagInfo(
                     externalIdentifier = ingest.externalIdentifier
                   )
                 ),

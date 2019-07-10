@@ -2,16 +2,15 @@ package uk.ac.wellcome.platform.archive.common.generators
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagManifest
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StandardStorageProvider,
   StorageLocation
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
+  FileManifest,
   StorageManifest,
+  StorageManifestFile,
   StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.verify.SHA256
@@ -38,20 +37,20 @@ trait StorageManifestGenerators
       space = space,
       info = bagInfo,
       version = version,
-      manifest = BagManifest(
+      manifest = FileManifest(
         checksumAlgorithm,
         files = Seq(
-          createBagFile,
-          createBagFile,
-          createBagFile
+          StorageManifestFile(createBagFile),
+          StorageManifestFile(createBagFile),
+          StorageManifestFile(createBagFile)
         )
       ),
-      tagManifest = BagManifest(
+      tagManifest = FileManifest(
         checksumAlgorithm,
         files = Seq(
-          createBagFile,
-          createBagFile,
-          createBagFile
+          StorageManifestFile(createBagFile),
+          StorageManifestFile(createBagFile),
+          StorageManifestFile(createBagFile)
         )
       ),
       locations = locations.map { StorageLocation(StandardStorageProvider, _) },

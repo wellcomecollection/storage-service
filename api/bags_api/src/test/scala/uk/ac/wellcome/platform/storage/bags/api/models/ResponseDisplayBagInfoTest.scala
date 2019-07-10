@@ -5,11 +5,14 @@ import java.time.format.DateTimeFormatter
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 
-class DisplayBagInfoTest extends FunSpec with Matchers with BagInfoGenerators {
+class ResponseDisplayBagInfoTest
+    extends FunSpec
+    with Matchers
+    with BagInfoGenerators {
 
   it("transforms a BagInfo with all fields into a DisplayBagInfo") {
     val bagInfo = createBagInfo
-    DisplayBagInfo(bagInfo) shouldBe DisplayBagInfo(
+    ResponseDisplayBagInfo(bagInfo) shouldBe ResponseDisplayBagInfo(
       bagInfo.externalIdentifier.underlying,
       s"${bagInfo.payloadOxum.payloadBytes}.${bagInfo.payloadOxum.numberOfPayloadFiles}",
       bagInfo.baggingDate.format(DateTimeFormatter.ISO_LOCAL_DATE),

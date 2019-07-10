@@ -7,7 +7,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagFetch,
   BagFetchEntry,
   BagInfo,
-  BagPath
+  BagPath,
+  ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
@@ -33,6 +34,7 @@ trait BagLocationFixtures[Namespace]
 
   def withBag[R](
     bagInfo: BagInfo = createBagInfo,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     dataFileCount: Int = 1,
     storageSpace: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
@@ -44,9 +46,7 @@ trait BagLocationFixtures[Namespace]
     implicit typedStore: TypedStore[ObjectLocation, String],
     namespace: Namespace
   ): R = {
-    val bagIdentifier = createExternalIdentifier
-
-    info(s"Creating Bag $bagIdentifier")
+    info(s"Creating Bag $externalIdentifier")
 
     val fileEntries = createBag(
       bagInfo,
@@ -62,7 +62,7 @@ trait BagLocationFixtures[Namespace]
     )
 
     val bagRootLocation = storageSpaceRootLocation.join(
-      bagIdentifier.toString
+      externalIdentifier.toString
     )
 
     val unpackedBagLocation = bagRootLocation.join(
@@ -127,6 +127,7 @@ trait S3BagLocationFixtures
   def withS3Bag[R](
     bucket: Bucket,
     bagInfo: BagInfo = createBagInfo,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     dataFileCount: Int = 1,
     storageSpace: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
@@ -139,6 +140,7 @@ trait S3BagLocationFixtures
 
     withBag(
       bagInfo = bagInfo,
+      externalIdentifier = externalIdentifier,
       dataFileCount = dataFileCount,
       storageSpace = storageSpace,
       createDataManifest = createDataManifest,

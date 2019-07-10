@@ -17,7 +17,8 @@ case class DisplayLocation(provider: DisplayProvider,
 object DisplayLocation {
   def apply(location: StorageLocation): DisplayLocation =
     DisplayLocation(
-      DisplayProvider(location.provider),
-      location.location.namespace,
-      location.location.path)
+      provider = DisplayProvider(location.provider),
+      bucket = location.location.namespace,
+      path = location.location.path
+    )
 }

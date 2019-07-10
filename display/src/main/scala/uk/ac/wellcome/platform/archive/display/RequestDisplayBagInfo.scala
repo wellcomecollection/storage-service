@@ -3,12 +3,7 @@ package uk.ac.wellcome.platform.archive.display
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 
-case class DisplayBag(
-  info: DisplayBagInfo,
-  @JsonKey("type") ontologyType: String = "Bag"
-)
-
-case class DisplayBagInfo(
+case class RequestDisplayBagInfo(
   externalIdentifier: ExternalIdentifier,
   @JsonKey("type") ontologyType: String = "BagInfo"
 )
