@@ -131,6 +131,52 @@ class StorageManifestServiceTest
     namePathMap shouldBe files.map { f => (f, s"v$version/$f") }.toMap
   }
 
+  it("uses the checksums from the file manifest") {
+    val filesWithChecksums =
+      Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
+        .map { _ -> ChecksumValue(randomAlphanumeric) }
+
+    val bag = createBagWith(
+      manifestFiles = filesWithChecksums.map { case (f, checksumValue) =>
+        BagFile(
+          checksum = Checksum(SHA256, checksumValue),
+          path = BagPath(f)
+        )
+      }
+    )
+
+    val storageManifest = createManifest(bag = bag)
+
+    val nameChecksumMap =
+      storageManifest.manifest.files
+        .map { file => (file.name, file.checksum.value) }
+
+    nameChecksumMap should contain theSameElementsAs filesWithChecksums
+  }
+
+  it("uses the checksums from the tag manifest") {
+    val filesWithChecksums =
+      Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
+        .map { _ -> ChecksumValue(randomAlphanumeric) }
+
+    val bag = createBagWith(
+      tagManifestFiles = filesWithChecksums.map { case (f, checksumValue) =>
+        BagFile(
+          checksum = Checksum(SHA256, checksumValue),
+          path = BagPath(f)
+        )
+      }
+    )
+
+    val storageManifest = createManifest(bag = bag)
+
+    val nameChecksumMap =
+      storageManifest.tagManifest.files
+        .map { file => (file.name, file.checksum.value) }
+
+    nameChecksumMap should contain theSameElementsAs filesWithChecksums
+  }
+
   // TEST: If the fetch entry is in wrong namespace, reject
   // TEST: If the fetch entry is in the wrong path, reject
   // TEST: Applies the right version prefix to fetch files
@@ -141,8 +187,8 @@ class StorageManifestServiceTest
 
   private def createManifest(
     bag: Bag = createBag,
-    replicaRoot: ObjectLocation,
-    version: Int
+    replicaRoot: ObjectLocation = createObjectLocation.join("/v1"),
+    version: Int = 1
   ): StorageManifest =
     StorageManifestService.createManifest(
       bag = bag,
