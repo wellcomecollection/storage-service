@@ -52,6 +52,12 @@ class StorageManifestServiceTest
     }
   }
 
+  // TEST: If there are no fetch entries, the files are put in the version directory
+
+  // TEST: If the fetch entry is in the wrong place, reject
+
+  // TEST: gets the right version prefix for fetch files
+
   private def assertIsError(
     bag: Bag = createBag,
     replicaRootLocation: ObjectLocation = createObjectLocation.join("/v1"),
