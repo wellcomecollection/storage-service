@@ -1,13 +1,13 @@
-resource "aws_api_gateway_base_path_mapping" "mapping-colbert" {
-  api_id      = "${module.stack-colbert.api_gateway_id}"
+resource "aws_api_gateway_base_path_mapping" "mapping-staging" {
+  api_id      = "${module.stack_staging.api_gateway_id}"
   domain_name = "${local.staging_domain_name}"
   base_path   = "storage"
 }
 
-module "stack-colbert" {
+module "stack_staging" {
   source = "stack"
 
-  namespace = "${local.namespace}-colbert"
+  namespace = "${local.namespace}-staging"
 
   api_url          = "${local.staging_api_url}"
   domain_name      = "${local.staging_domain_name}"

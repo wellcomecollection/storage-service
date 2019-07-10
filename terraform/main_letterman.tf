@@ -1,20 +1,20 @@
-resource "aws_api_gateway_base_path_mapping" "mapping_letterman" {
-  api_id      = "${module.stack_letterman.api_gateway_id}"
+resource "aws_api_gateway_base_path_mapping" "mapping_prod" {
+  api_id      = "${module.stack_prod.api_gateway_id}"
   domain_name = "${local.domain_name}"
   base_path   = "storage"
 }
 
-module "stack_letterman" {
+module "stack_prod" {
   source = "stack"
 
-  namespace = "${local.namespace}-letterman"
+  namespace = "${local.namespace}-prod"
 
   api_url          = "${local.api_url}"
   domain_name      = "${local.domain_name}"
   cert_domain_name = "${local.cert_domain_name}"
 
-  desired_bagger_count  = 3 # 3
-  desired_ec2_instances = 1 # 1
+  desired_bagger_count  = 3
+  desired_ec2_instances = 1
 
   vpc_id   = "${local.vpc_id}"
   vpc_cidr = "${local.vpc_cidr}"
