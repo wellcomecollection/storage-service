@@ -40,18 +40,18 @@ trait StorageManifestGenerators
       manifest = FileManifest(
         checksumAlgorithm,
         files = Seq(
-          createBagFile,
-          createBagFile,
-          createBagFile
-        ).map { StorageManifestFile.apply }
+          StorageManifestFile(createBagFile),
+          StorageManifestFile(createBagFile),
+          StorageManifestFile(createBagFile)
+        )
       ),
       tagManifest = FileManifest(
         checksumAlgorithm,
         files = Seq(
-          createBagFile,
-          createBagFile,
-          createBagFile
-        ).map { StorageManifestFile.apply }
+          StorageManifestFile(createBagFile),
+          StorageManifestFile(createBagFile),
+          StorageManifestFile(createBagFile)
+        )
       ),
       locations = locations.map { StorageLocation(StandardStorageProvider, _) },
       createdDate = Instant.now
