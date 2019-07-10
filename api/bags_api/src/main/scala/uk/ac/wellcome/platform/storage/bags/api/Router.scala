@@ -21,7 +21,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBag
+import uk.ac.wellcome.platform.storage.bags.api.models.ResponseDisplayBag
 import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
 
 import scala.concurrent.ExecutionContext
@@ -54,7 +54,7 @@ class Router(register: StorageManifestDao, contextURL: URL)(
             result match {
               case Right(storageManifest) =>
                 complete(
-                  DisplayBag(
+                  ResponseDisplayBag(
                     storageManifest = storageManifest,
                     contextUrl = contextURL)
                 )

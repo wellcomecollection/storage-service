@@ -130,8 +130,8 @@ class DisplayIngestTest
             status = None
           )
         ),
-        bag = DisplayBag(
-          info = DisplayBagInfo(
+        bag = RequestDisplayBag(
+          info = RequestDisplayBagInfo(
             externalIdentifier = externalIdentifier
           )
         ),
@@ -185,8 +185,8 @@ class DisplayIngestTest
       sourceLocation = sourceLocation,
       callback = callback,
       ingestType = ingestType,
-      bag = DisplayBag(
-        info = DisplayBagInfo(
+      bag = RequestDisplayBag(
+        info = RequestDisplayBagInfo(
           externalIdentifier = createExternalIdentifier,
           ontologyType = "BagInfo"
         ),

@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.storage.bags.api.models
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 
-case class DisplayBagInfo(
+case class ResponseDisplayBagInfo(
   externalIdentifier: String,
   payloadOxum: String,
   baggingDate: String,
@@ -14,8 +14,8 @@ case class DisplayBagInfo(
   @JsonKey("type") ontologyType: String = "BagInfo"
 )
 
-object DisplayBagInfo {
-  def apply(bagInfo: BagInfo): DisplayBagInfo = DisplayBagInfo(
+object ResponseDisplayBagInfo {
+  def apply(bagInfo: BagInfo): ResponseDisplayBagInfo = ResponseDisplayBagInfo(
     externalIdentifier = bagInfo.externalIdentifier.underlying,
     payloadOxum = bagInfo.payloadOxum.toString,
     baggingDate = bagInfo.baggingDate.toString,

@@ -11,12 +11,12 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 sealed trait DisplayIngest
 
 case class RequestDisplayIngest(
-  sourceLocation: DisplayLocation,
-  callback: Option[DisplayCallback],
-  ingestType: DisplayIngestType,
-  space: DisplayStorageSpace,
-  bag: DisplayBag,
-  @JsonKey("type") ontologyType: String = "Ingest"
+                                 sourceLocation: DisplayLocation,
+                                 callback: Option[DisplayCallback],
+                                 ingestType: DisplayIngestType,
+                                 space: DisplayStorageSpace,
+                                 bag: RequestDisplayBag,
+                                 @JsonKey("type") ontologyType: String = "Ingest"
 ) extends DisplayIngest {
   def toIngest: Ingest =
     Ingest(
@@ -39,7 +39,7 @@ case class ResponseDisplayIngest(@JsonKey("@context") context: String,
                                  ingestType: DisplayIngestType,
                                  space: DisplayStorageSpace,
                                  status: DisplayStatus,
-                                 bag: DisplayBag,
+                                 bag: RequestDisplayBag,
                                  events: Seq[DisplayIngestEvent] = Seq.empty,
                                  createdDate: String,
                                  lastModifiedDate: Option[String],
@@ -56,8 +56,8 @@ object ResponseDisplayIngest {
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),
       ingestType = DisplayIngestType(ingest.ingestType),
-      bag = DisplayBag(
-        info = DisplayBagInfo(
+      bag = RequestDisplayBag(
+        info = RequestDisplayBagInfo(
           externalIdentifier = ingest.externalIdentifier
         )
       ),
