@@ -5,15 +5,11 @@ import java.time.Instant
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
-import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepResult, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestDao, StorageManifestService}
 import uk.ac.wellcome.storage.ObjectLocation
 
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 class Register(
   bagReader: BagReader[_],
@@ -32,38 +28,34 @@ class Register(
       storageSpace = storageSpace
     )
 
-    val result = for {
-      bag <- bagReader.get(bagRootLocation)
+    val result: Try[IngestStepResult[RegistrationSummary]] = for {
+      bag <- bagReader.get(bagRootLocation) match {
+        case Right(value) => Success(value)
+        case Left(err)    => Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
+      }
 
-      manifest = StorageManifest(
+      storageManifest <- StorageManifestService.createManifest(
+        bag = bag,
+        replicaRoot = bagRootLocation,
         space = storageSpace,
-        info = bag.info,
-        version = version,
-        manifest = bag.manifest,
-        tagManifest = bag.tagManifest,
-        locations = List(
-          StorageLocation(
-            provider = InfrequentAccessStorageProvider,
-            location = bagRootLocation
-          )
-        ),
-        createdDate = Instant.now()
+        version = version
       )
 
-      registrationWithBagId = registration.copy(bagId = Some(manifest.id))
+      // TODO: Don't we know the BagId already?
+      registrationWithBagId = registration.copy(bagId = Some(storageManifest.id))
 
-      completedRegistration <- storageManifestDao.put(manifest) match {
+      completedRegistration <- storageManifestDao.put(storageManifest) match {
         case Right(_) =>
-          Right(IngestCompleted(registrationWithBagId.complete))
+          Success(IngestCompleted(registrationWithBagId.complete))
         case Left(storageError) =>
           error("Unexpected error updating storage manifest", storageError.e)
-          Right(IngestFailed(registrationWithBagId.complete, storageError.e))
+          Success(IngestFailed(registrationWithBagId.complete, storageError.e))
       }
     } yield completedRegistration
 
     result match {
-      case Right(stepResult) => Success(stepResult)
-      case Left(value)       => Success(IngestFailed(registration.complete, value))
+      case Success(stepResult) => Success(stepResult)
+      case Failure(err)        => Success(IngestFailed(registration.complete, err))
     }
   }
 }
