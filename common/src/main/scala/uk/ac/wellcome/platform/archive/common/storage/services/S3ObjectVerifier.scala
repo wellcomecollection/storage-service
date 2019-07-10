@@ -1,36 +1,31 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
 import java.io.InputStream
+import java.net.URI
 
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.{
-  LocationError,
-  LocationNotFound,
-  LocationParsingError
-}
+import uk.ac.wellcome.platform.archive.common.storage.{LocateFailure, LocationError, LocationNotFound, LocationParsingError}
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.DoesNotExistError
+import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.streaming.{HasLength, InputStreamWithLengthAndMetadata}
 
 import scala.util.{Failure, Success}
 
-class S3ObjectVerifier(implicit s3Client: AmazonS3)
-    extends Verifier
-    with Logging {
+trait BetterVerifier[IS <: InputStream with HasLength] extends Logging {
+  protected val streamStore: StreamStore[ObjectLocation, IS]
 
-  import uk.ac.wellcome.platform.archive.common.storage.Locatable._
-  import uk.ac.wellcome.platform.archive.common.storage.services.S3LocatableInstances._
-
-  private val s3StreamStore = new S3StreamStore()
+  def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
 
   def verify(verifiableLocation: VerifiableLocation): VerifiedLocation = {
-    debug(s"S3ObjectVerifier: Attempting to verify: $verifiableLocation")
+    debug(s"Attempting to verify: $verifiableLocation")
 
     val algorithm = verifiableLocation.checksum.algorithm
 
     val eitherInputStream = for {
-      objectLocation <- verifiableLocation.uri.locate match {
+      objectLocation <- locate(verifiableLocation.uri) match {
         case Right(l) => Right(l)
         case Left(e) =>
           Left(
@@ -38,7 +33,7 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
           )
       }
 
-      inputStream <- s3StreamStore.get(objectLocation) match {
+      inputStream <- streamStore.get(objectLocation) match {
         case Right(stream)                => Right(Some(stream.identifiedT))
         case Left(err: DoesNotExistError) => Right(None)
         case Left(storageError) =>
@@ -116,4 +111,19 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
           VerifiedSuccess(verifiableLocation)
         }
     }
+}
+
+class S3ObjectVerifier(implicit s3Client: AmazonS3)
+    extends Verifier
+    with BetterVerifier[InputStreamWithLengthAndMetadata]
+    with Logging {
+
+  import uk.ac.wellcome.platform.archive.common.storage.Locatable._
+  import uk.ac.wellcome.platform.archive.common.storage.services.S3LocatableInstances._
+
+  override protected val streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata] =
+    new S3StreamStore()
+
+  override def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation] =
+    uri.locate
 }
