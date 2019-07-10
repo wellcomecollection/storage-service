@@ -41,15 +41,12 @@ class Register(
         version = version
       )
 
-      // TODO: Don't we know the BagId already?
-      registrationWithBagId = registration.copy(bagId = Some(storageManifest.id))
-
       completedRegistration <- storageManifestDao.put(storageManifest) match {
         case Right(_) =>
-          Success(IngestCompleted(registrationWithBagId.complete))
+          Success(IngestCompleted(registration.complete))
         case Left(storageError) =>
           error("Unexpected error updating storage manifest", storageError.e)
-          Success(IngestFailed(registrationWithBagId.complete, storageError.e))
+          Success(IngestFailed(registration.complete, storageError.e))
       }
     } yield completedRegistration
 
