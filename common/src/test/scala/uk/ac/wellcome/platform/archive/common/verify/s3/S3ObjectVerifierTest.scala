@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.verify.s3
 
+import java.net.URI
+
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
+import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -24,6 +27,13 @@ class S3ObjectVerifierTest
     testWith(new S3ObjectVerifier())
 
   implicit val context: Unit = ()
+
+  implicit val s3Resolvable: S3Resolvable = new S3Resolvable()
+
+  import uk.ac.wellcome.platform.archive.common.storage.Resolvable._
+
+  override def resolve(location: ObjectLocation): URI =
+    location.resolve
 
   it("fails if the bucket doesn't exist") {
     val checksum = randomChecksum
