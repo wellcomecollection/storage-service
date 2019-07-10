@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, 
 import uk.ac.wellcome.platform.archive.common.generators.BagGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, SHA256}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -175,6 +175,54 @@ class StorageManifestServiceTest
         .map { file => (file.name, file.checksum) }
 
     nameChecksumMap should contain theSameElementsAs filesWithChecksums
+  }
+
+  it("fails if one of the file manifest entries has the wrong hashing algorithm") {
+    // TODO: Rewrite this to use generators
+    val badBagPath = BagPath(randomAlphanumeric)
+    val manifestFiles = Seq(
+      BagFile(
+        checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+        path = BagPath(randomAlphanumeric)
+      ),
+      BagFile(
+        checksum = Checksum(MD5, ChecksumValue(randomAlphanumeric)),
+        path = badBagPath
+      )
+    )
+
+    val bag = createBagWith(
+      manifestFiles = manifestFiles,
+      manifestChecksumAlgorithm = SHA256
+    )
+
+    assertIsError(bag = bag) {
+      _ shouldBe s"Mismatched checksum algorithms in manifest: entry $badBagPath has algorithm MD5, but manifest uses SHA-256"
+    }
+  }
+
+  it("fails if one of the tag manifest entries has the wrong hashing algorithm") {
+    // TODO: Rewrite this to use generators
+    val badBagPath = BagPath(randomAlphanumeric)
+    val tagManifestFiles = Seq(
+      BagFile(
+        checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+        path = BagPath(randomAlphanumeric)
+      ),
+      BagFile(
+        checksum = Checksum(MD5, ChecksumValue(randomAlphanumeric)),
+        path = badBagPath
+      )
+    )
+
+    val bag = createBagWith(
+      tagManifestFiles = tagManifestFiles,
+      tagManifestChecksumAlgorithm = SHA256
+    )
+
+    assertIsError(bag = bag) {
+      _ shouldBe s"Mismatched checksum algorithms in manifest: entry $badBagPath has algorithm MD5, but manifest uses SHA-256"
+    }
   }
 
   // TEST: If the fetch entry is in wrong namespace, reject

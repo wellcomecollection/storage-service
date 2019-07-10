@@ -8,6 +8,7 @@ trait BagGenerators extends BagInfoGenerators {
     manifestFiles: Seq[BagFile] = List.empty,
     manifestChecksumAlgorithm: HashingAlgorithm = SHA256,
     tagManifestFiles: Seq[BagFile] = List.empty,
+    tagManifestChecksumAlgorithm: HashingAlgorithm = SHA256,
     fetchEntries: Seq[BagFetchEntry] = List.empty
   ): Bag =
     Bag(
@@ -17,7 +18,7 @@ trait BagGenerators extends BagInfoGenerators {
         files = manifestFiles
       ),
       tagManifest = BagManifest(
-        checksumAlgorithm = SHA256,
+        checksumAlgorithm = tagManifestChecksumAlgorithm,
         files = tagManifestFiles
       ),
       fetch = if (fetchEntries.isEmpty) None else Some(BagFetch(fetchEntries))

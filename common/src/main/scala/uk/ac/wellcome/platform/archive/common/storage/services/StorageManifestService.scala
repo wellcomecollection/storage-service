@@ -124,6 +124,15 @@ object StorageManifestService extends Logging {
       // throw in practice.
       val path = entries(bagFile.path)
 
+      // If this happens it indicates an error in the pipeline -- we only
+      // support bags with a single manifest, so we should only ever see
+      // a single algorithm.
+      if (bagFile.checksum.algorithm != manifest.checksumAlgorithm) {
+        throw new StorageManifestException(
+          s"Mismatched checksum algorithms in manifest: entry ${bagFile.path} has algorithm ${bagFile.checksum.algorithm}, but manifest uses ${manifest.checksumAlgorithm}"
+        )
+      }
+
       StorageManifestFile(
         checksum = bagFile.checksum.value,
         name = bagFile.path.value,
