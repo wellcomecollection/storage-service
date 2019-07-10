@@ -20,7 +20,7 @@ import scala.util.Try
 class BagVerifier()(
   implicit bagReader: BagReader[_],
   resolvable: Resolvable[ObjectLocation],
-  verifier: Verifier
+  verifier: Verifier[_]
 ) extends Logging {
 
   def verify(root: ObjectLocation): Try[IngestStepResult[VerificationSummary]] =
