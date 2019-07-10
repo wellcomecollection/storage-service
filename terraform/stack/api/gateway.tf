@@ -37,7 +37,7 @@ resource "aws_api_gateway_authorizer" "cognito" {
 # Domains
 
 module "domain" {
-  source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/modules/domain?ref=v18.2.3"
+  source = "./domain"
 
   domain_name      = "${var.domain_name}"
   cert_domain_name = "${var.cert_domain_name}"

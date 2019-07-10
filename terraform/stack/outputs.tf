@@ -9,3 +9,7 @@ output "interservice_sg_id" {
 output "unpacker_task_role_arn" {
   value = "${module.bag_unpacker.task_role_arn}"
 }
+
+output "api_domain_name" {
+  value = "${module.api.gateway_domain_name}"
+}
