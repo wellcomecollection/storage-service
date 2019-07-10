@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.VerifyFixtures
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
@@ -9,7 +9,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.{BucketNamespaceFixtures, NamespaceFixtures}
 
-trait BetterVerifierTestCases[Namespace, Context]
+trait VerifierTestCases[Namespace, Context]
   extends FunSpec
     with Matchers
     with NamespaceFixtures[ObjectLocation, Namespace]
@@ -21,7 +21,7 @@ trait BetterVerifierTestCases[Namespace, Context]
 
   def putString(location: ObjectLocation, contents: String)(implicit context: Context): Unit
 
-  def withVerifier[R](testWith: TestWith[BetterVerifier[_], R])(implicit context: Context): R
+  def withVerifier[R](testWith: TestWith[Verifier[_], R])(implicit context: Context): R
 
   it("returns a success if the checksum is correct") {
     withContext { implicit context =>
@@ -224,7 +224,7 @@ trait BetterVerifierTestCases[Namespace, Context]
 }
 
 class BetterS3ObjectVerifierTest
-  extends BetterVerifierTestCases[Bucket, Unit]
+  extends VerifierTestCases[Bucket, Unit]
     with BucketNamespaceFixtures {
   override def withContext[R](testWith: TestWith[Unit, R]): R =
     testWith(())
@@ -236,7 +236,7 @@ class BetterS3ObjectVerifierTest
       contents
     )
 
-  override def withVerifier[R](testWith: TestWith[BetterVerifier[_], R])(implicit context: Unit): R =
+  override def withVerifier[R](testWith: TestWith[Verifier[_], R])(implicit context: Unit): R =
     testWith(new S3ObjectVerifier())
 
   implicit val context: Unit = ()
