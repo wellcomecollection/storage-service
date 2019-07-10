@@ -43,24 +43,24 @@ class BagsApiFeatureTest
           withMaterializer { implicit materializer =>
             val expectedJson =
               s"""
-                     |{
-                     |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
-                     |  "id": "${storageManifest.id.toString}",
-                     |  "space": {
-                     |    "id": "${storageManifest.space.underlying}",
-                     |    "type": "Space"
-                     |  },
-                     |  "info": ${bagInfo(storageManifest.info)},
-                     |  "manifest": ${manifest(storageManifest.manifest)},
-                     |  "tagManifest": ${manifest(storageManifest.tagManifest)},
-                     |  "locations": [
-                     |    ${asList(storageManifest.locations, location)}
-                     |  ],
-                     |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                   storageManifest.createdDate)}",
-                     |  "type": "Bag"
-                     |}
-                   """.stripMargin
+                |{
+                |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+                |  "id": "${storageManifest.id.toString}",
+                |  "space": {
+                |    "id": "${storageManifest.space.underlying}",
+                |    "type": "Space"
+                |  },
+                |  "info": ${bagInfo(storageManifest.info)},
+                |  "manifest": ${manifest(storageManifest.manifest)},
+                |  "tagManifest": ${manifest(storageManifest.tagManifest)},
+                |  "locations": [
+                |    ${asList(storageManifest.locations, location)}
+                |  ],
+                |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(storageManifest.createdDate)}",
+                |  "version": "v${storageManifest.version}",
+                |  "type": "Bag"
+                |}
+                """.stripMargin
 
             val url =
               s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
@@ -116,6 +116,7 @@ class BagsApiFeatureTest
                    |  ],
                    |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
                      storageManifest.createdDate)}",
+                   |  "version": "v${storageManifest.version}",
                    |  "type": "Bag"
                    |}
                    """.stripMargin

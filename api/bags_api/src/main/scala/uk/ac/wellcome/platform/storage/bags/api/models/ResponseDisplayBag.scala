@@ -18,6 +18,7 @@ case class ResponseDisplayBag(
   tagManifest: DisplayFileManifest,
   locations: Seq[DisplayLocation],
   createdDate: String,
+  version: String,
   @JsonKey("type") ontologyType: String = "Bag"
 )
 
@@ -31,6 +32,7 @@ object ResponseDisplayBag {
       manifest = DisplayFileManifest(storageManifest.manifest),
       tagManifest = DisplayFileManifest(storageManifest.tagManifest),
       locations = storageManifest.locations.map { DisplayLocation(_) },
-      createdDate = storageManifest.createdDate.toString
+      createdDate = storageManifest.createdDate.toString,
+      version = s"v${storageManifest.version}"
     )
 }
