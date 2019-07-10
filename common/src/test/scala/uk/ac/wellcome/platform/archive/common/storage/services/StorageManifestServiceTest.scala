@@ -52,11 +52,16 @@ class StorageManifestServiceTest
     }
   }
 
-  // TEST: If there are no fetch entries, the files are put in the version directory
-
-  // TEST: If the fetch entry is in the wrong place, reject
-
-  // TEST: gets the right version prefix for fetch files
+  // TEST: Creates correct root location
+  // TEST: Puts that location in the manifest with s3-whatever
+  // TEST: If there are no fetch entries, puts all entries with correct versioned path
+  // TEST: If the fetch entry is in wrong namespace, reject
+  // TEST: If the fetch entry is in the wrong path, reject
+  // TEST: Applies the right version prefix to fetch files
+  // TEST: Correct storage space
+  // TEST: Correct bagInfo
+  // TEST: Correct version
+  // TEST: Recent createdDate
 
   private def assertIsError(
     bag: Bag = createBag,
