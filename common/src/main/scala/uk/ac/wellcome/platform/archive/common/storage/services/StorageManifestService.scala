@@ -102,7 +102,22 @@ object StorageManifestService extends Logging {
             // so it's inside the versioned replica directory.
             case None             => s"v$version/${matchedLoc.bagFile.path.value}"
 
-            case Some(fetchEntry) => fetchEntry.uri.getPath
+            // This is referring to a fetch file somewhere else.
+            // We need to check it's in another versioned directory
+            // for this bag.
+            case Some(fetchEntry) =>
+              val fetchLocation = ObjectLocation(
+                namespace = fetchEntry.uri.getHost,
+                path = fetchEntry.uri.getPath
+              )
+
+              if (fetchLocation.namespace != bagRoot.namespace) {
+                throw new StorageManifestException(
+                  s"Fetch entry for ${matchedLoc.bagFile.path.value} refers to an object in the wrong namespace: ${fetchLocation.namespace}"
+                )
+              }
+
+              fetchLocation.path
           }
 
           (matchedLoc.bagFile.path, path)

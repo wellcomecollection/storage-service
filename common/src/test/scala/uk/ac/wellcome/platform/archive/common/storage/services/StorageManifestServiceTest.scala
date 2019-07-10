@@ -18,7 +18,7 @@ class StorageManifestServiceTest
     with ObjectLocationGenerators
     with TryValues {
 
-  it("rejects a bag if the replica root is not a versioned directory") {
+  it("fails if the replica root is not a versioned directory") {
     val replicaRootLocation = createObjectLocation
     val version = randomInt(1, 10)
 
@@ -27,31 +27,12 @@ class StorageManifestServiceTest
     }
   }
 
-  it("rejects a bag if the replica root has the wrong version") {
+  it("fails if the replica root has the wrong version") {
     val version = randomInt(1, 10)
     val replicaRootLocation = createObjectLocation.join(s"/v${version + 1}")
 
     assertIsError(replicaRootLocation = replicaRootLocation, version = version) {
       _ shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
-    }
-  }
-
-  it("rejects a bag if the fetch.txt refers to files that aren't in the manifest") {
-    val fetchEntries = Seq(
-      BagFetchEntry(
-        uri = new URI("https://example.org/file1.txt"),
-        length = None,
-        path = BagPath(randomAlphanumeric)
-      )
-    )
-
-    val bag = createBagWith(
-      fetchEntries = fetchEntries
-    )
-
-    assertIsError(bag = bag) { msg =>
-      msg should startWith("Unable to resolve fetch entries:")
-      msg should include(s"Fetch entry refers to a path that isn't in the bag: ${fetchEntries.head}")
     }
   }
 
@@ -222,6 +203,51 @@ class StorageManifestServiceTest
 
     assertIsError(bag = bag) {
       _ shouldBe s"Mismatched checksum algorithms in manifest: entry $badBagPath has algorithm MD5, but manifest uses SHA-256"
+    }
+  }
+
+  describe("fails if the fetch.txt is wrong") {
+    it("refers to files that aren't in the manifest") {
+      val fetchEntries = Seq(
+        BagFetchEntry(
+          uri = new URI("https://example.org/file1.txt"),
+          length = None,
+          path = BagPath(randomAlphanumeric)
+        )
+      )
+
+      val bag = createBagWith(
+        fetchEntries = fetchEntries
+      )
+
+      assertIsError(bag = bag) { msg =>
+        msg should startWith("Unable to resolve fetch entries:")
+        msg should include(s"Fetch entry refers to a path that isn't in the bag: ${fetchEntries.head}")
+      }
+    }
+
+    it("refers to a file in the wrong namespace") {
+      val fetchEntries = Seq(
+        BagFetchEntry(
+          uri = new URI("s3://not-the-replica-bucket/file1.txt"),
+          length = None,
+          path = BagPath("data/file1.txt")
+        )
+      )
+
+      val bag = createBagWith(
+        manifestFiles = Seq(
+          BagFile(
+            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+            path = BagPath("data/file1.txt")
+          )
+        ),
+        fetchEntries = fetchEntries
+      )
+
+      assertIsError(bag = bag) {
+        _ shouldBe "Fetch entry for data/file1.txt refers to an object in the wrong namespace: not-the-replica-bucket"
+      }
     }
   }
 
