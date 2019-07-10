@@ -73,11 +73,11 @@ class StorageManifestServiceTest
     )
   }
 
-  it("if there are no fetch entries, it puts all the entries under a versioned path") {
+  it("if there are no fetch entries, it puts all the file entries under a versioned path") {
     val version = randomInt(1, 10)
     val replicaRoot = createObjectLocation.join(s"/v$version")
 
-    val files = Seq("file1.txt", "file2.txt", "dir/file3.txt")
+    val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
     val bag = createBagWith(
       manifestFiles = files.map { f =>
@@ -102,7 +102,35 @@ class StorageManifestServiceTest
     namePathMap shouldBe files.map { f => (f, s"v$version/$f") }.toMap
   }
 
-  // TEST: If there are no fetch entries, puts all entries with correct versioned path
+  it("if there are no fetch entries, it puts all the tag manifest under a versioned path") {
+    val version = randomInt(1, 10)
+    val replicaRoot = createObjectLocation.join(s"/v$version")
+
+    val files = Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
+
+    val bag = createBagWith(
+      tagManifestFiles = files.map { f =>
+        BagFile(
+          checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+          path = BagPath(f)
+        )
+      }
+    )
+
+    val storageManifest = createManifest(
+      bag = bag,
+      replicaRoot = replicaRoot,
+      version = version
+    )
+
+    val namePathMap =
+      storageManifest.tagManifest.files
+        .map { file => (file.name, file.path) }
+        .toMap
+
+    namePathMap shouldBe files.map { f => (f, s"v$version/$f") }.toMap
+  }
+
   // TEST: If the fetch entry is in wrong namespace, reject
   // TEST: If the fetch entry is in the wrong path, reject
   // TEST: Applies the right version prefix to fetch files
