@@ -4,6 +4,7 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagManifest}
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
 import uk.ac.wellcome.platform.archive.common.verify.SHA256
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
@@ -20,7 +21,12 @@ object StorageManifestService extends Logging {
   ): Try[StorageManifest] = {
     for {
       bagRoot <- getBagRoot(replicaRootLocation, version)
+
+      entries <- createNamePathMap(bag, bagRoot = bagRoot)
+
+
       _ = debug(s"Bag root is $bagRoot")
+      _ = debug(s"Entries are $entries")
       sm = StorageManifest(
         space = StorageSpace("123"),
         info = bag.info,
@@ -61,4 +67,25 @@ object StorageManifestService extends Logging {
     } else {
       Failure(new StorageManifestException(s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"))
     }
+
+  /** Every entry in the bag manifest will be either a:
+    *
+    *   - concrete file inside the replicated bag, or
+    *   - a file referenced by the fetch file, which should be in a different
+    *     versioned directory under the same bag root
+    *
+    * This function gets a map (name) -> (path), relative to the bag root.
+    *
+    */
+  private def createNamePathMap(bag: Bag, bagRoot: ObjectLocationPrefix): Try[Map[String, String]] = Try {
+    BagMatcher.correlateFetchEntries(bag) match {
+      case Right(matchedLocations) =>
+        throw new NotImplementedError(matchedLocations.toString())
+
+      case Left(err) =>
+        throw new StorageManifestException(
+          s"Unable to resolve fetch entries: $err"
+        )
+    }
+  }
 }
