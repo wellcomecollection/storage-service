@@ -1,7 +1,7 @@
-package uk.ac.wellcome.platform.archive.bagverifier.services
+package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.bagverifier.fixtures.VerifyFixtures
+import uk.ac.wellcome.platform.archive.common.fixtures.VerifyFixtures
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
 
