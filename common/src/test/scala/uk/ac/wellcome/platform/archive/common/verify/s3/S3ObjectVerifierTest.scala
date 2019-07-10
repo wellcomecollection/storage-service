@@ -11,19 +11,21 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.BucketNamespaceFixtures
 
 class S3ObjectVerifierTest
-  extends VerifierTestCases[Bucket, Unit]
+    extends VerifierTestCases[Bucket, Unit]
     with BucketNamespaceFixtures {
   override def withContext[R](testWith: TestWith[Unit, R]): R =
     testWith(())
 
-  override def putString(location: ObjectLocation, contents: String)(implicit context: Unit): Unit =
+  override def putString(location: ObjectLocation, contents: String)(
+    implicit context: Unit): Unit =
     s3Client.putObject(
       location.namespace,
       location.path,
       contents
     )
 
-  override def withVerifier[R](testWith: TestWith[Verifier[_], R])(implicit context: Unit): R =
+  override def withVerifier[R](testWith: TestWith[Verifier[_], R])(
+    implicit context: Unit): R =
     testWith(new S3ObjectVerifier())
 
   implicit val context: Unit = ()

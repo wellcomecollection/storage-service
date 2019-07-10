@@ -4,7 +4,12 @@ import java.io.InputStream
 import java.net.URI
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.{LocateFailure, LocationError, LocationNotFound, LocationParsingError}
+import uk.ac.wellcome.platform.archive.common.storage.{
+  LocateFailure,
+  LocationError,
+  LocationNotFound,
+  LocationParsingError
+}
 import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.HasLength

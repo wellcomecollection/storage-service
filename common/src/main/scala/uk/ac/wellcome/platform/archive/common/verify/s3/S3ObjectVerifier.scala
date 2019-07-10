@@ -18,7 +18,8 @@ class S3ObjectVerifier(implicit s3Client: AmazonS3)
   import uk.ac.wellcome.platform.archive.common.storage.Locatable._
   import uk.ac.wellcome.platform.archive.common.storage.services.S3LocatableInstances._
 
-  override protected val streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata] =
+  override protected val streamStore
+    : StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata] =
     new S3StreamStore()
 
   override def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation] =
