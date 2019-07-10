@@ -56,7 +56,8 @@ class BagsApiFeatureTest
                 |  "locations": [
                 |    ${asList(storageManifest.locations, location)}
                 |  ],
-                |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(storageManifest.createdDate)}",
+                |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                   storageManifest.createdDate)}",
                 |  "version": "v${storageManifest.version}",
                 |  "type": "Bag"
                 |}
@@ -250,19 +251,19 @@ class BagsApiFeatureTest
       withMaterializer { implicit materializer =>
         withConfiguredApp() {
           case (_, metricsSender, baseUrl) =>
-            whenGetRequestReady(
-              s"$baseUrl/bags/$bagId?version=$badVersion") { response =>
-              assertIsUserErrorResponse(
-                response,
-                description =
-                  s"Storage manifest $bagId version $badVersion not found",
-                statusCode = StatusCodes.NotFound,
-                label = "Not Found"
-              )
+            whenGetRequestReady(s"$baseUrl/bags/$bagId?version=$badVersion") {
+              response =>
+                assertIsUserErrorResponse(
+                  response,
+                  description =
+                    s"Storage manifest $bagId version $badVersion not found",
+                  statusCode = StatusCodes.NotFound,
+                  label = "Not Found"
+                )
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.UserError)
+                assertMetricSent(
+                  metricsSender,
+                  result = HttpMetricResults.UserError)
             }
         }
       }

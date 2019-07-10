@@ -11,12 +11,12 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 sealed trait DisplayIngest
 
 case class RequestDisplayIngest(
-                                 sourceLocation: DisplayLocation,
-                                 callback: Option[DisplayCallback],
-                                 ingestType: DisplayIngestType,
-                                 space: DisplayStorageSpace,
-                                 bag: RequestDisplayBag,
-                                 @JsonKey("type") ontologyType: String = "Ingest"
+  sourceLocation: DisplayLocation,
+  callback: Option[DisplayCallback],
+  ingestType: DisplayIngestType,
+  space: DisplayStorageSpace,
+  bag: RequestDisplayBag,
+  @JsonKey("type") ontologyType: String = "Ingest"
 ) extends DisplayIngest {
   def toIngest: Ingest =
     Ingest(

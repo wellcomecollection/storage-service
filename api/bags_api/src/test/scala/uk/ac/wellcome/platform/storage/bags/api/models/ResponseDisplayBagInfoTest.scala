@@ -5,7 +5,10 @@ import java.time.format.DateTimeFormatter
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 
-class ResponseDisplayBagInfoTest extends FunSpec with Matchers with BagInfoGenerators {
+class ResponseDisplayBagInfoTest
+    extends FunSpec
+    with Matchers
+    with BagInfoGenerators {
 
   it("transforms a BagInfo with all fields into a DisplayBagInfo") {
     val bagInfo = createBagInfo

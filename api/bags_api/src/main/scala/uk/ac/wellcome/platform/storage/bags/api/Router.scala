@@ -8,9 +8,18 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.models.ResponseDisplayBag
 import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
@@ -44,10 +53,12 @@ class Router(register: StorageManifestDao, contextURL: URL)(
                 case Some(versionString) =>
                   versionRegex.findFirstMatchIn(versionString) match {
                     case Some(regexMatch) =>
-                      register.get(bagId, version = regexMatch.group("version").toInt)
+                      register.get(
+                        bagId,
+                        version = regexMatch.group("version").toInt)
                     case None => Left(NoVersionExistsError())
                   }
-                case None          => register.getLatest(bagId)
+                case None => register.getLatest(bagId)
               }
 
             result match {
