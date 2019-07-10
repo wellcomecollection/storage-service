@@ -5,6 +5,7 @@ import java.net.URI
 import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, BagFile, BagPath}
 import uk.ac.wellcome.platform.archive.common.generators.{BagGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
 import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5, SHA256}
@@ -17,6 +18,7 @@ class StorageManifestServiceTest
     with BagGenerators
     with ObjectLocationGenerators
     with StorageSpaceGenerators
+    with TimeTestFixture
     with TryValues {
 
   it("fails if the replica root is not a versioned directory") {
@@ -364,10 +366,39 @@ class StorageManifestServiceTest
     }
   }
 
-  // TEST: Correct storage space
-  // TEST: Correct bagInfo
-  // TEST: Correct version
-  // TEST: Recent createdDate
+  describe("passes through metadata correctly") {
+    it("sets the correct storage space") {
+      val space = createStorageSpace
+
+      val manifest = createManifest(space = space)
+
+      manifest.space shouldBe space
+    }
+
+    it("sets the correct bagInfo") {
+      val bag = createBag
+
+      val manifest = createManifest(bag = bag)
+
+      manifest.info shouldBe bag.info
+    }
+
+    it("sets the correct version") {
+      val version = randomInt(1, 10)
+      val bagRoot = createObjectLocation
+      val replicaRoot = bagRoot.join(s"/v$version")
+
+      val manifest = createManifest(replicaRoot = replicaRoot, version = version)
+
+      manifest.version shouldBe version
+    }
+
+    it("sets a recent createdDate") {
+      val manifest = createManifest()
+
+      assertRecent(manifest.createdDate)
+    }
+  }
 
   private def createManifest(
     space: StorageSpace = createStorageSpace,

@@ -36,7 +36,7 @@ object StorageManifestService extends Logging {
       )
 
       storageManifest = StorageManifest(
-        space = StorageSpace("123"),
+        space = space,
         info = bag.info,
         version = version,
         manifest = FileManifest(
