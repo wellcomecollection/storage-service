@@ -42,15 +42,37 @@ trait BetterVerifierTestCases[Namespace, Context]
           checksum = checksum
         )
 
-        val verifiedLocation =
+        val result =
           withVerifier {
             _.verify(verifiableLocation)
           }
 
-        verifiedLocation shouldBe a[VerifiedSuccess]
-        val verifiedSuccess = verifiedLocation.asInstanceOf[VerifiedSuccess]
+        result shouldBe a[VerifiedSuccess]
+        val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
 
         verifiedSuccess.location shouldBe verifiableLocation
+      }
+    }
+  }
+
+  it("fails if the object doesn't exist") {
+    withContext { implicit context =>
+      withNamespace { implicit namespace =>
+        val checksum = randomChecksum
+
+        val location = createObjectLocationWith(namespace)
+
+        val verifiableLocation = createVerifiableLocationWith(
+          location = location,
+          checksum = checksum
+        )
+
+        val result =
+          withVerifier {
+            _.verify(verifiableLocation)
+          }
+
+        result shouldBe a[VerifiedFailure]
       }
     }
   }
@@ -71,6 +93,46 @@ class BetterS3ObjectVerifierTest
 
   override def withVerifier[R](testWith: TestWith[BetterVerifier[_], R])(implicit context: Unit): R =
     testWith(new S3ObjectVerifier())
+
+  implicit val context: Unit = ()
+
+  it("fails if the bucket doesn't exist") {
+    val checksum = randomChecksum
+
+    val location = createObjectLocation
+
+    val verifiableLocation = createVerifiableLocationWith(
+      location = location,
+      checksum = checksum
+    )
+
+    val result =
+      withVerifier {
+        _.verify(verifiableLocation)
+      }
+
+    result shouldBe a[VerifiedFailure]
+  }
+
+  it("fails if the key doesn't exist in the bucket") {
+    withLocalS3Bucket { bucket =>
+      val checksum = randomChecksum
+
+      val location = createObjectLocationWith(bucket)
+
+      val verifiableLocation = createVerifiableLocationWith(
+        location = location,
+        checksum = checksum
+      )
+
+      val result =
+        withVerifier {
+          _.verify(verifiableLocation)
+        }
+
+      result shouldBe a[VerifiedFailure]
+    }
+  }
 }
 
 class S3ObjectVerifierTest
@@ -80,38 +142,6 @@ class S3ObjectVerifierTest
     with VerifyFixtures {
 
   // TODO: Rewrite these tests to use traits and test cases
-
-  it("returns a success if the checksum is correct") {
-    withLocalS3Bucket { bucket =>
-      val contentHashingAlgorithm = MD5
-      val contentString = "HelloWorld"
-      // md5("HelloWorld")
-      val contentStringChecksum = ChecksumValue(
-        "68e109f0f40ca72a15e05cc22786f8e6"
-      )
-
-      val objectLocation = createObjectLocationWith(bucket)
-      val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
-
-      val verifiableLocation = createVerifiableLocationWith(
-        location = objectLocation,
-        checksum = checksum
-      )
-
-      s3Client.putObject(
-        objectLocation.namespace,
-        objectLocation.path,
-        contentString
-      )
-
-      val verifiedLocation = objectVerifier.verify(verifiableLocation)
-
-      verifiedLocation shouldBe a[VerifiedSuccess]
-      val verifiedSuccess = verifiedLocation.asInstanceOf[VerifiedSuccess]
-
-      verifiedSuccess.location shouldBe verifiableLocation
-    }
-  }
 
   it("returns a failure if the bucket doesn't exist") {
     val badVerifiableLocation = createVerifiableLocation
