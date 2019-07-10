@@ -3,10 +3,11 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.net.URI
 
 import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, BagPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, BagFile, BagPath}
 import uk.ac.wellcome.platform.archive.common.generators.BagGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -70,6 +71,35 @@ class StorageManifestServiceTest
         location = bagRoot
       )
     )
+  }
+
+  it("if there are no fetch entries, it puts all the entries under a versioned path") {
+    val version = randomInt(1, 10)
+    val replicaRoot = createObjectLocation.join(s"/v$version")
+
+    val files = Seq("file1.txt", "file2.txt", "dir/file3.txt")
+
+    val bag = createBagWith(
+      manifestFiles = files.map { f =>
+        BagFile(
+          checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+          path = BagPath(f)
+        )
+      }
+    )
+
+    val storageManifest = createManifest(
+      bag = bag,
+      replicaRoot = replicaRoot,
+      version = version
+    )
+
+    val namePathMap =
+      storageManifest.manifest.files
+        .map { file => (file.name, file.path) }
+        .toMap
+
+    namePathMap shouldBe files.map { f => (f, s"v$version/$f") }.toMap
   }
 
   // TEST: If there are no fetch entries, puts all entries with correct versioned path

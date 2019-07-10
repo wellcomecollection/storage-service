@@ -98,7 +98,10 @@ object StorageManifestService extends Logging {
       case Right(matchedLocations) =>
         matchedLocations.map { matchedLoc =>
           val path = matchedLoc.fetchEntry match {
-            case None             => matchedLoc.bagFile.path.value
+            // This is a concrete file inside the replicated bag,
+            // so it's inside the versioned replica directory.
+            case None             => s"v$version/${matchedLoc.bagFile.path.value}"
+
             case Some(fetchEntry) => fetchEntry.uri.getPath
           }
 
