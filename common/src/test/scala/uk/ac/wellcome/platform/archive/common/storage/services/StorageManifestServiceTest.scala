@@ -54,62 +54,140 @@ class StorageManifestServiceTest
     )
   }
 
-  it("if there are no fetch entries, it puts all the file entries under a versioned path") {
-    val version = randomInt(1, 10)
-    val replicaRoot = createObjectLocation.join(s"/v$version")
+  describe("constructs the paths correctly") {
+    it("if there are no fetch entries, it puts all the file entries under a versioned path") {
+      val version = randomInt(1, 10)
+      val replicaRoot = createObjectLocation.join(s"/v$version")
 
-    val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
+      val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
-    val bag = createBagWith(
-      manifestFiles = files.map { f =>
-        BagFile(
-          checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-          path = BagPath(f)
+      val bag = createBagWith(
+        manifestFiles = files.map { f =>
+          BagFile(
+            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+            path = BagPath(f)
+          )
+        }
+      )
+
+      val storageManifest = createManifest(
+        bag = bag,
+        replicaRoot = replicaRoot,
+        version = version
+      )
+
+      val namePathMap =
+        storageManifest.manifest.files
+          .map { file => (file.name, file.path) }
+          .toMap
+
+      namePathMap shouldBe files.map { f => (f, s"v$version/$f") }.toMap
+    }
+
+    it("if there are no fetch entries, it puts all the tag manifest under a versioned path") {
+      val version = randomInt(1, 10)
+      val replicaRoot = createObjectLocation.join(s"/v$version")
+
+      val files = Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
+
+      val bag = createBagWith(
+        tagManifestFiles = files.map { f =>
+          BagFile(
+            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+            path = BagPath(f)
+          )
+        }
+      )
+
+      val storageManifest = createManifest(
+        bag = bag,
+        replicaRoot = replicaRoot,
+        version = version
+      )
+
+      val namePathMap =
+        storageManifest.tagManifest.files
+          .map { file => (file.name, file.path) }
+          .toMap
+
+      namePathMap shouldBe files.map { f => (f, s"v$version/$f") }.toMap
+    }
+
+    it("puts a fetch entry under the right versioned path") {
+      val version = randomInt(1, 10)
+      val fetchVersion = version - 1
+      val bagRoot = createObjectLocation
+      val replicaRoot = bagRoot.join(s"/v$version")
+
+      val fetchEntries = Seq(
+        BagFetchEntry(
+          uri = new URI(s"s3://${bagRoot.namespace}/${bagRoot.path}/v$fetchVersion/data/file1.txt"),
+          length = None,
+          path = BagPath("data/file1.txt")
         )
-      }
-    )
+      )
 
-    val storageManifest = createManifest(
-      bag = bag,
-      replicaRoot = replicaRoot,
-      version = version
-    )
+      val bag = createBagWith(
+        manifestFiles = Seq(
+          BagFile(
+            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+            path = BagPath("data/file1.txt")
+          )
+        ),
+        fetchEntries = fetchEntries
+      )
 
-    val namePathMap =
+      val storageManifest = createManifest(
+        bag = bag,
+        replicaRoot = replicaRoot,
+        version = version
+      )
+
       storageManifest.manifest.files
-        .map { file => (file.name, file.path) }
-        .toMap
+        .map { f => f.name -> f.path }
+        .toMap shouldBe Map("data/file1.txt" -> s"v$fetchVersion/data/file1.txt")
+    }
 
-    namePathMap shouldBe files.map { f => (f, s"v$version/$f") }.toMap
-  }
+    it("uses a mixture of fetch entries and concrete files") {
+      val version = randomInt(1, 10)
+      val fetchVersion = version - 1
+      val bagRoot = createObjectLocation
+      val replicaRoot = bagRoot.join(s"/v$version")
 
-  it("if there are no fetch entries, it puts all the tag manifest under a versioned path") {
-    val version = randomInt(1, 10)
-    val replicaRoot = createObjectLocation.join(s"/v$version")
-
-    val files = Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
-
-    val bag = createBagWith(
-      tagManifestFiles = files.map { f =>
-        BagFile(
-          checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-          path = BagPath(f)
+      val fetchEntries = Seq(
+        BagFetchEntry(
+          uri = new URI(s"s3://${bagRoot.namespace}/${bagRoot.path}/v$fetchVersion/data/file1.txt"),
+          length = None,
+          path = BagPath("data/file1.txt")
         )
-      }
-    )
+      )
 
-    val storageManifest = createManifest(
-      bag = bag,
-      replicaRoot = replicaRoot,
-      version = version
-    )
+      val bag = createBagWith(
+        manifestFiles = Seq(
+          BagFile(
+            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+            path = BagPath("data/file1.txt")
+          ),
+          BagFile(
+            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+            path = BagPath("data/file2.txt")
+          )
+        ),
+        fetchEntries = fetchEntries
+      )
 
-    val namePathMap =
-      storageManifest.tagManifest.files
-        .map { file => (file.name, file.path) }
-        .toMap
+      val storageManifest = createManifest(
+        bag = bag,
+        replicaRoot = replicaRoot,
+        version = version
+      )
 
-    namePathMap shouldBe files.map { f => (f, s"v$version/$f") }.toMap
+      storageManifest.manifest.files
+        .map { f => f.name -> f.path }
+        .toMap shouldBe Map(
+          "data/file1.txt" -> s"v$fetchVersion/data/file1.txt",
+          "data/file2.txt" -> s"v$version/data/file2.txt")
+    }
   }
 
   describe("validates the checksums") {
@@ -284,8 +362,7 @@ class StorageManifestServiceTest
       }
     }
   }
-  
-  // TEST: Applies the right version prefix to fetch files
+
   // TEST: Correct storage space
   // TEST: Correct bagInfo
   // TEST: Correct version
@@ -295,12 +372,19 @@ class StorageManifestServiceTest
     bag: Bag = createBag,
     replicaRoot: ObjectLocation = createObjectLocation.join("/v1"),
     version: Int = 1
-  ): StorageManifest =
-    StorageManifestService.createManifest(
+  ): StorageManifest = {
+    val result = StorageManifestService.createManifest(
       bag = bag,
       replicaRootLocation = replicaRoot,
       version = version
-    ).success.value
+    )
+
+    if (result.isFailure) {
+      println(result)
+    }
+
+    result.success.value
+  }
 
   private def assertIsError(
     bag: Bag = createBag,

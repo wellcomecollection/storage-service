@@ -108,7 +108,7 @@ object StorageManifestService extends Logging {
             case Some(fetchEntry) =>
               val fetchLocation = ObjectLocation(
                 namespace = fetchEntry.uri.getHost,
-                path = fetchEntry.uri.getPath
+                path = fetchEntry.uri.getPath.stripPrefix("/")
               )
 
               if (fetchLocation.namespace != bagRoot.namespace) {
@@ -120,11 +120,11 @@ object StorageManifestService extends Logging {
               // TODO: This check could actually look for a /v1, /v2, etc.
               if (!fetchLocation.path.startsWith(bagRoot.path + "/")) {
                 throw new StorageManifestException(
-                  s"Fetch entry for ${matchedLoc.bagFile.path.value} refers to an object in the wrong path: ${fetchLocation.path}"
+                  s"Fetch entry for ${matchedLoc.bagFile.path.value} refers to an object in the wrong path: /${fetchLocation.path}"
                 )
               }
 
-              fetchLocation.path
+              fetchLocation.path.stripPrefix(bagRoot.path + "/")
           }
 
           (matchedLoc.bagFile.path, path)
