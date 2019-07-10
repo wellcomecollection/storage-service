@@ -14,9 +14,9 @@ case class DisplayBag(
   id: String,
   space: DisplayStorageSpace,
   info: DisplayBagInfo,
-  manifest: DisplayBagManifest,
-  tagManifest: DisplayBagManifest,
-  locations: List[DisplayLocation],
+  manifest: DisplayFileManifest,
+  tagManifest: DisplayFileManifest,
+  locations: Seq[DisplayLocation],
   createdDate: String,
   @JsonKey("type") ontologyType: String = "Bag"
 )
@@ -28,9 +28,9 @@ object DisplayBag {
       id = storageManifest.id.toString,
       space = DisplayStorageSpace(storageManifest.space.underlying),
       info = DisplayBagInfo(storageManifest.info),
-      manifest = DisplayBagManifest(storageManifest.manifest),
-      tagManifest = DisplayBagManifest(storageManifest.tagManifest),
-      locations = storageManifest.locations.map(DisplayLocation(_)),
+      manifest = DisplayFileManifest(storageManifest.manifest),
+      tagManifest = DisplayFileManifest(storageManifest.tagManifest),
+      locations = storageManifest.locations.map { DisplayLocation(_) },
       createdDate = storageManifest.createdDate.toString
     )
 }

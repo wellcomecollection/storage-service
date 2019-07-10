@@ -2,12 +2,9 @@ package uk.ac.wellcome.platform.archive.display.fixtures
 
 import java.time.format.DateTimeFormatter
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFile,
-  BagInfo,
-  BagManifest
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
+import uk.ac.wellcome.platform.archive.common.storage.models.{FileManifest, StorageManifestFile}
 
 trait DisplayJsonHelpers {
   private def stringField[T](t: T): String =
@@ -55,21 +52,22 @@ trait DisplayJsonHelpers {
        |}
      """.stripMargin
 
-  private def bagDigestFile(file: BagFile): String =
+  private def file(f: StorageManifestFile): String =
     s"""
        |{
        |  "type": "File",
-       |  "path": "${file.path}",
-       |  "checksum": "${file.checksum.value}"
+       |  "path": "${f.path}",
+       |  "name": "${f.name}",
+       |  "checksum": "${f.checksum.value}"
        |}
      """.stripMargin
 
-  def manifest(fm: BagManifest): String =
+  def manifest(fm: FileManifest): String =
     s"""
        |{
        |  "type": "BagManifest",
        |  "checksumAlgorithm": "${fm.checksumAlgorithm.value}",
-       |  "files": [ ${asList(fm.files, bagDigestFile)} ]
+       |  "files": [ ${asList(fm.files, file)} ]
        |}
      """.stripMargin
 
