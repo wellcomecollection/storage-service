@@ -40,7 +40,63 @@ class BagsApiFeatureTest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metricsSender, baseUrl) =>
-          withMaterializer { implicit materializer =>
+          val expectedJson =
+            s"""
+              |{
+              |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+              |  "id": "${storageManifest.id.toString}",
+              |  "space": {
+              |    "id": "${storageManifest.space.underlying}",
+              |    "type": "Space"
+              |  },
+              |  "info": ${bagInfo(storageManifest.info)},
+              |  "manifest": ${manifest(storageManifest.manifest)},
+              |  "tagManifest": ${manifest(storageManifest.tagManifest)},
+              |  "locations": [
+              |    ${asList(storageManifest.locations, location)}
+              |  ],
+              |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                 storageManifest.createdDate)}",
+              |  "version": "v${storageManifest.version}",
+              |  "type": "Bag"
+              |}
+              """.stripMargin
+
+          val url =
+            s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
+
+          whenGetRequestReady(url) { response =>
+            response.status shouldBe StatusCodes.OK
+
+            withStringEntity(response.entity) { actualJson =>
+              assertJsonStringsAreEqual(actualJson, expectedJson)
+            }
+
+            assertMetricSent(
+              metricsSender,
+              result = HttpMetricResults.Success
+            )
+          }
+      }
+    }
+
+    it("finds a specific version of a bag") {
+      val externalIdentifier = createExternalIdentifier
+      val storageSpace = createStorageSpace
+
+      val manifests = (1 to 5).map { version =>
+        createStorageManifestWith(
+          bagInfo = createBagInfoWith(
+            externalIdentifier = externalIdentifier
+          ),
+          space = storageSpace,
+          version = version
+        )
+      }
+
+      withConfiguredApp(initialManifests = manifests) {
+        case (_, metricsSender, baseUrl) =>
+          manifests.foreach { storageManifest =>
             val expectedJson =
               s"""
                 |{
@@ -64,7 +120,7 @@ class BagsApiFeatureTest
                 """.stripMargin
 
             val url =
-              s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
+              s"$baseUrl/bags/${storageSpace.underlying}/${externalIdentifier.underlying}?version=v${storageManifest.version}"
 
             whenGetRequestReady(url) { response =>
               response.status shouldBe StatusCodes.OK
@@ -82,114 +138,45 @@ class BagsApiFeatureTest
       }
     }
 
-    it("finds a specific version of a bag") {
-      val externalIdentifier = createExternalIdentifier
-      val storageSpace = createStorageSpace
-
-      val manifests = (1 to 5).map { version =>
-        createStorageManifestWith(
-          bagInfo = createBagInfoWith(
-            externalIdentifier = externalIdentifier
-          ),
-          space = storageSpace,
-          version = version
-        )
-      }
-
-      withConfiguredApp(initialManifests = manifests) {
-        case (_, metricsSender, baseUrl) =>
-          withMaterializer { implicit materializer =>
-            manifests.foreach { storageManifest =>
-              val expectedJson =
-                s"""
-                   |{
-                   |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
-                   |  "id": "${storageManifest.id.toString}",
-                   |  "space": {
-                   |    "id": "${storageManifest.space.underlying}",
-                   |    "type": "Space"
-                   |  },
-                   |  "info": ${bagInfo(storageManifest.info)},
-                   |  "manifest": ${manifest(storageManifest.manifest)},
-                   |  "tagManifest": ${manifest(storageManifest.tagManifest)},
-                   |  "locations": [
-                   |    ${asList(storageManifest.locations, location)}
-                   |  ],
-                   |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                     storageManifest.createdDate)}",
-                   |  "version": "v${storageManifest.version}",
-                   |  "type": "Bag"
-                   |}
-                   """.stripMargin
-
-              val url =
-                s"$baseUrl/bags/${storageSpace.underlying}/${externalIdentifier.underlying}?version=v${storageManifest.version}"
-
-              whenGetRequestReady(url) { response =>
-                response.status shouldBe StatusCodes.OK
-
-                withStringEntity(response.entity) { actualJson =>
-                  assertJsonStringsAreEqual(actualJson, expectedJson)
-                }
-
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.Success
-                )
-              }
-            }
-          }
-      }
-    }
-
     it("does not output null values") {
       val storageManifest = createStorageManifestWith(
         bagInfo = createBagInfoWith(externalDescription = None)
       )
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
-        case (_, metricsSender, baseUrl) =>
-          withMaterializer { implicit materializer =>
-            whenGetRequestReady(
-              s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
-              response =>
-                response.status shouldBe StatusCodes.OK
+        case (_, _, baseUrl) =>
+          whenGetRequestReady(
+            s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
+            response =>
+              response.status shouldBe StatusCodes.OK
 
-                withStringEntity(response.entity) { jsonString =>
-                  val infoJson =
-                    root.info.json
-                      .getOption(parse(jsonString).right.get)
-                      .get
-                  infoJson.findAllByKey("externalDescription") shouldBe empty
-                }
-
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.Success)
-            }
+              withStringEntity(response.entity) { jsonString =>
+                val infoJson =
+                  root.info.json
+                    .getOption(parse(jsonString).right.get)
+                    .get
+                infoJson.findAllByKey("externalDescription") shouldBe empty
+              }
           }
       }
     }
 
     it("returns a 404 NotFound if there are no manifests for this bag ID") {
-      withMaterializer { implicit materializer =>
-        withConfiguredApp() {
-          case (_, metricsSender, baseUrl) =>
-            val bagId = createBagId
-            whenGetRequestReady(
-              s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
-              response =>
-                assertIsUserErrorResponse(
-                  response,
-                  description = s"Storage manifest $bagId not found",
-                  statusCode = StatusCodes.NotFound,
-                  label = "Not Found"
-                )
+      withConfiguredApp() { case (_, metricsSender, baseUrl) =>
+        val bagId = createBagId
+        whenGetRequestReady(
+          s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
+          response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"Storage manifest $bagId not found",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-            }
+            assertMetricSent(
+              metricsSender,
+              result = HttpMetricResults.UserError)
         }
       }
     }
@@ -197,23 +184,21 @@ class BagsApiFeatureTest
     it("returns a 404 NotFound if you ask for a bag ID in the wrong space") {
       val storageManifest = createStorageManifest
 
-      withMaterializer { implicit materializer =>
-        withConfiguredApp(initialManifests = Seq(storageManifest)) {
-          case (_, metricsSender, baseUrl) =>
-            val badId =
-              s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
-            whenGetRequestReady(s"$baseUrl/bags/$badId") { response =>
-              assertIsUserErrorResponse(
-                response,
-                description = s"Storage manifest $badId not found",
-                statusCode = StatusCodes.NotFound,
-                label = "Not Found"
-              )
+      withConfiguredApp(initialManifests = Seq(storageManifest)) {
+        case (_, metricsSender, baseUrl) =>
+          val badId =
+            s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
+          whenGetRequestReady(s"$baseUrl/bags/$badId") { response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"Storage manifest $badId not found",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
 
-              assertMetricSent(
-                metricsSender,
-                result = HttpMetricResults.UserError)
-            }
+            assertMetricSent(
+              metricsSender,
+              result = HttpMetricResults.UserError)
         }
       }
     }
@@ -221,24 +206,22 @@ class BagsApiFeatureTest
     it("returns a 404 NotFound if you ask for a version that doesn't exist") {
       val storageManifest = createStorageManifest
 
-      withMaterializer { implicit materializer =>
-        withConfiguredApp(initialManifests = Seq(storageManifest)) {
-          case (_, metricsSender, baseUrl) =>
-            whenGetRequestReady(
-              s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=v${storageManifest.version + 1}") {
-              response =>
-                assertIsUserErrorResponse(
-                  response,
-                  description =
-                    s"Storage manifest ${storageManifest.id} version v${storageManifest.version + 1} not found",
-                  statusCode = StatusCodes.NotFound,
-                  label = "Not Found"
-                )
+      withConfiguredApp(initialManifests = Seq(storageManifest)) {
+        case (_, metricsSender, baseUrl) =>
+          whenGetRequestReady(
+            s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=v${storageManifest.version + 1}") {
+            response =>
+              assertIsUserErrorResponse(
+                response,
+                description =
+                  s"Storage manifest ${storageManifest.id} version v${storageManifest.version + 1} not found",
+                statusCode = StatusCodes.NotFound,
+                label = "Not Found"
+              )
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-            }
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.UserError)
         }
       }
     }
@@ -248,23 +231,21 @@ class BagsApiFeatureTest
 
       val bagId = createBagId
 
-      withMaterializer { implicit materializer =>
-        withConfiguredApp() {
-          case (_, metricsSender, baseUrl) =>
-            whenGetRequestReady(s"$baseUrl/bags/$bagId?version=$badVersion") {
-              response =>
-                assertIsUserErrorResponse(
-                  response,
-                  description =
-                    s"Storage manifest $bagId version $badVersion not found",
-                  statusCode = StatusCodes.NotFound,
-                  label = "Not Found"
-                )
+      withConfiguredApp() {
+        case (_, metricsSender, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/bags/$bagId?version=$badVersion") {
+            response =>
+              assertIsUserErrorResponse(
+                response,
+                description =
+                  s"Storage manifest $bagId version $badVersion not found",
+                statusCode = StatusCodes.NotFound,
+                label = "Not Found"
+              )
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.UserError)
-            }
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.UserError)
         }
       }
     }
@@ -272,19 +253,17 @@ class BagsApiFeatureTest
     // TODO: Come back and restore this test when we can reliably
     // break the underlying tracker.
     ignore("returns a 500 error if looking up the bag fails") {
-      withMaterializer { implicit materializer =>
-        withBrokenApp {
-          case (_, metricsSender, baseUrl) =>
-            val bagId = createBagId
-            whenGetRequestReady(
-              s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
-              response =>
-                assertIsInternalServerErrorResponse(response)
+      withBrokenApp {
+        case (_, metricsSender, baseUrl) =>
+          val bagId = createBagId
+          whenGetRequestReady(
+            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
+            response =>
+              assertIsInternalServerErrorResponse(response)
 
-                assertMetricSent(
-                  metricsSender,
-                  result = HttpMetricResults.ServerError)
-            }
+              assertMetricSent(
+                metricsSender,
+                result = HttpMetricResults.ServerError)
         }
       }
     }
