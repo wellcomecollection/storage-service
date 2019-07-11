@@ -17,3 +17,7 @@ output "bags_name" {
 output "bags_role_name" {
   value = "${module.services.bags_role_name}"
 }
+
+output "gateway_domain_name" {
+  value = "${module.domain.regional_domain_name}"
+}
