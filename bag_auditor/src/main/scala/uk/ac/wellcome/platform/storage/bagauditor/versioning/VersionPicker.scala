@@ -61,8 +61,8 @@ class VersionPicker(
   private def checkVersionIsAllowed(
     ingestType: IngestType,
     assignedVersion: Int): Either[VersionPickerError, Int] =
-  // TODO: This is stubbed out for the purposes of the migration,
-  // but we should restore it later.
+    // TODO: This is stubbed out for the purposes of the migration,
+    // but we should restore it later.
     Right(assignedVersion)
 //    if (ingestType == CreateIngestType && assignedVersion > 1) {
 //      Left(IngestTypeCreateForExistingBag())
