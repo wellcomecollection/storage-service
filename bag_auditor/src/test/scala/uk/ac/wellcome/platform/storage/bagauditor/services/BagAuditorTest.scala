@@ -51,7 +51,7 @@ class BagAuditorTest
     }
   }
 
-  it("fails if you ask for ingestType 'update' on a new bag") {
+  ignore("fails if you ask for ingestType 'update' on a new bag") {
     val bagRootLocation = createObjectLocation
     val externalIdentifier = createExternalIdentifier
     val storageSpace = createStorageSpace
@@ -77,7 +77,7 @@ class BagAuditorTest
     }
   }
 
-  it("fails if you ask for ingestType 'create' on an existing bag") {
+  ignore("fails if you ask for ingestType 'create' on an existing bag") {
     val bagRootLocation = createObjectLocation
     val externalIdentifier = createExternalIdentifier
     val storageSpace = createStorageSpace
