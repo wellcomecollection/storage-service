@@ -162,22 +162,21 @@ class BagsApiFeatureTest
     }
 
     it("returns a 404 NotFound if there are no manifests for this bag ID") {
-      withConfiguredApp() { case (_, metrics, baseUrl) =>
-        val bagId = createBagId
-        whenGetRequestReady(
-          s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
-          response =>
-            assertIsUserErrorResponse(
-              response,
-              description = s"Storage manifest $bagId not found",
-              statusCode = StatusCodes.NotFound,
-              label = "Not Found"
-            )
+      withConfiguredApp() {
+        case (_, metrics, baseUrl) =>
+          val bagId = createBagId
+          whenGetRequestReady(
+            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
+            response =>
+              assertIsUserErrorResponse(
+                response,
+                description = s"Storage manifest $bagId not found",
+                statusCode = StatusCodes.NotFound,
+                label = "Not Found"
+              )
 
-            assertMetricSent(
-              metrics,
-              result = HttpMetricResults.UserError)
-        }
+              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
       }
     }
 
@@ -196,10 +195,8 @@ class BagsApiFeatureTest
               label = "Not Found"
             )
 
-            assertMetricSent(
-              metrics,
-              result = HttpMetricResults.UserError)
-        }
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
       }
     }
 
@@ -219,10 +216,8 @@ class BagsApiFeatureTest
                 label = "Not Found"
               )
 
-              assertMetricSent(
-                metrics,
-                result = HttpMetricResults.UserError)
-        }
+              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
       }
     }
 
@@ -243,10 +238,8 @@ class BagsApiFeatureTest
                 label = "Not Found"
               )
 
-              assertMetricSent(
-                metrics,
-                result = HttpMetricResults.UserError)
-        }
+              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
       }
     }
 
@@ -261,10 +254,8 @@ class BagsApiFeatureTest
             response =>
               assertIsInternalServerErrorResponse(response)
 
-              assertMetricSent(
-                metrics,
-                result = HttpMetricResults.ServerError)
-        }
+              assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          }
       }
     }
   }
