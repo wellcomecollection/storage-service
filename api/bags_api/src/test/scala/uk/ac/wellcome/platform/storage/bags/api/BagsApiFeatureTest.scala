@@ -39,7 +39,7 @@ class BagsApiFeatureTest
       )
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
-        case (_, metricsSender, baseUrl) =>
+        case (_, metrics, baseUrl) =>
           val expectedJson =
             s"""
               |{
@@ -73,7 +73,7 @@ class BagsApiFeatureTest
             }
 
             assertMetricSent(
-              metricsSender,
+              metrics,
               result = HttpMetricResults.Success
             )
           }
@@ -95,7 +95,7 @@ class BagsApiFeatureTest
       }
 
       withConfiguredApp(initialManifests = manifests) {
-        case (_, metricsSender, baseUrl) =>
+        case (_, metrics, baseUrl) =>
           manifests.foreach { storageManifest =>
             val expectedJson =
               s"""
@@ -130,7 +130,7 @@ class BagsApiFeatureTest
               }
 
               assertMetricSent(
-                metricsSender,
+                metrics,
                 result = HttpMetricResults.Success
               )
             }
@@ -162,7 +162,7 @@ class BagsApiFeatureTest
     }
 
     it("returns a 404 NotFound if there are no manifests for this bag ID") {
-      withConfiguredApp() { case (_, metricsSender, baseUrl) =>
+      withConfiguredApp() { case (_, metrics, baseUrl) =>
         val bagId = createBagId
         whenGetRequestReady(
           s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
@@ -175,7 +175,7 @@ class BagsApiFeatureTest
             )
 
             assertMetricSent(
-              metricsSender,
+              metrics,
               result = HttpMetricResults.UserError)
         }
       }
@@ -185,7 +185,7 @@ class BagsApiFeatureTest
       val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
-        case (_, metricsSender, baseUrl) =>
+        case (_, metrics, baseUrl) =>
           val badId =
             s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
           whenGetRequestReady(s"$baseUrl/bags/$badId") { response =>
@@ -197,7 +197,7 @@ class BagsApiFeatureTest
             )
 
             assertMetricSent(
-              metricsSender,
+              metrics,
               result = HttpMetricResults.UserError)
         }
       }
@@ -207,7 +207,7 @@ class BagsApiFeatureTest
       val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
-        case (_, metricsSender, baseUrl) =>
+        case (_, metrics, baseUrl) =>
           whenGetRequestReady(
             s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=v${storageManifest.version + 1}") {
             response =>
@@ -220,7 +220,7 @@ class BagsApiFeatureTest
               )
 
               assertMetricSent(
-                metricsSender,
+                metrics,
                 result = HttpMetricResults.UserError)
         }
       }
@@ -232,7 +232,7 @@ class BagsApiFeatureTest
       val bagId = createBagId
 
       withConfiguredApp() {
-        case (_, metricsSender, baseUrl) =>
+        case (_, metrics, baseUrl) =>
           whenGetRequestReady(s"$baseUrl/bags/$bagId?version=$badVersion") {
             response =>
               assertIsUserErrorResponse(
@@ -244,7 +244,7 @@ class BagsApiFeatureTest
               )
 
               assertMetricSent(
-                metricsSender,
+                metrics,
                 result = HttpMetricResults.UserError)
         }
       }
@@ -254,7 +254,7 @@ class BagsApiFeatureTest
     // break the underlying tracker.
     ignore("returns a 500 error if looking up the bag fails") {
       withBrokenApp {
-        case (_, metricsSender, baseUrl) =>
+        case (_, metrics, baseUrl) =>
           val bagId = createBagId
           whenGetRequestReady(
             s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
@@ -262,7 +262,7 @@ class BagsApiFeatureTest
               assertIsInternalServerErrorResponse(response)
 
               assertMetricSent(
-                metricsSender,
+                metrics,
                 result = HttpMetricResults.ServerError)
         }
       }
