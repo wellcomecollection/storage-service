@@ -4,6 +4,8 @@ sqs:
     - "9324:9324"
     - "4789:9324"
 s3:
-  image: scality/s3server:mem-latest
+  image: "zenko/cloudserver:8.1.8"
+  environment:
+    - "S3BACKEND=mem"
   ports:
     - "33333:8000"
