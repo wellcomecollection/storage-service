@@ -47,11 +47,7 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
               startTime = startTime,
               endTime = Some(Instant.now())
             ),
-            err,
-            maybeUserFacingMessage =
-              // TODO: Add a toString method on ObjectLocationPrefix
-              Some(
-                s"Unable to find root of the bag at ${unpackLocation.namespace}/${unpackLocation.path}")
+            err
           )
       }
     }
