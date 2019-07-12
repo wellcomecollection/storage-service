@@ -282,7 +282,7 @@ class VersionPickerTest
   }
 
   describe("checking the ingest type") {
-    it("only allows ingest type 'create' once") {
+    ignore("only allows ingest type 'create' once") {
       val externalIdentifier = createExternalIdentifier
       val storageSpace = createStorageSpace
 
@@ -307,7 +307,7 @@ class VersionPickerTest
       }
     }
 
-    it("only allows ingest type 'update' on an already-existing bag") {
+    ignore("only allows ingest type 'update' on an already-existing bag") {
       val externalIdentifier = createExternalIdentifier
       val storageSpace = createStorageSpace
 

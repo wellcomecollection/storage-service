@@ -6,10 +6,8 @@ import java.util.UUID
 import cats.{Id, Monad, MonadError}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CreateIngestType,
   IngestID,
-  IngestType,
-  UpdateIngestType
+  IngestType
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
@@ -63,13 +61,16 @@ class VersionPicker(
   private def checkVersionIsAllowed(
     ingestType: IngestType,
     assignedVersion: Int): Either[VersionPickerError, Int] =
-    if (ingestType == CreateIngestType && assignedVersion > 1) {
-      Left(IngestTypeCreateForExistingBag())
-    } else if (ingestType == UpdateIngestType && assignedVersion == 1) {
-      Left(IngestTypeUpdateForNewBag())
-    } else {
-      Right(assignedVersion)
-    }
+    // TODO: This is stubbed out for the purposes of the migration,
+    // but we should restore it later.
+    Right(assignedVersion)
+//    if (ingestType == CreateIngestType && assignedVersion > 1) {
+//      Left(IngestTypeCreateForExistingBag())
+//    } else if (ingestType == UpdateIngestType && assignedVersion == 1) {
+//      Left(IngestTypeUpdateForNewBag())
+//    } else {
+//      Right(assignedVersion)
+//    }
 
   // Annoyingly, cats doesn't provide an Implicit for MonadError[Id, Throwable],
   // so we have to implement one ourselves.
