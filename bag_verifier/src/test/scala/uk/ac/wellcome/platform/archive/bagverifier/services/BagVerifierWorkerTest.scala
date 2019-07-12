@@ -35,12 +35,20 @@ class BagVerifierWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
+    val externalIdentifier = createExternalIdentifier
+    val bagInfo = createBagInfoWith(
+      externalIdentifier = externalIdentifier
+    )
+
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket) {
+          withS3Bag(bucket, bagInfo = bagInfo) {
             case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  externalIdentifier = externalIdentifier
+                ),
                 bagRootLocation = bagRootLocation
               )
 
@@ -63,15 +71,23 @@ class BagVerifierWorkerTest
   }
 
   describe("passes through the original payload, unmodified") {
+    val externalIdentifier = createExternalIdentifier
+    val bagInfo = createBagInfoWith(
+      externalIdentifier = externalIdentifier
+    )
+
     it("EnrichedBagInformationPayload") {
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
       withBagVerifierWorker(ingests, outgoing) { service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket) {
+          withS3Bag(bucket, bagInfo = bagInfo) {
             case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  externalIdentifier = externalIdentifier
+                ),
                 bagRootLocation = bagRootLocation
               )
 
@@ -90,9 +106,12 @@ class BagVerifierWorkerTest
 
       withBagVerifierWorker(ingests, outgoing) { service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket) {
+          withS3Bag(bucket, bagInfo = bagInfo) {
             case (bagRootLocation, _) =>
               val payload = createBagRootLocationPayloadWith(
+                context = createPipelineContextWith(
+                  externalIdentifier = externalIdentifier
+                ),
                 bagRootLocation = bagRootLocation
               )
 
@@ -180,10 +199,14 @@ class BagVerifierWorkerTest
     val bagInfoExternalIdentifier = ExternalIdentifier(externalIdentifier + "_bag-info")
     val payloadExternalIdentifier = ExternalIdentifier(externalIdentifier + "_payload")
 
+    val bagInfo = createBagInfoWith(
+      externalIdentifier = bagInfoExternalIdentifier
+    )
+
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, externalIdentifier = bagInfoExternalIdentifier) {
+          withS3Bag(bucket, bagInfo = bagInfo) {
             case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
@@ -202,7 +225,7 @@ class BagVerifierWorkerTest
                 val description = events.map {
                   _.description
                 }.head
-                description should startWith("Verification failed: External identifier in bag-info.txt does not match request")
+                description should startWith("Verification failed - External identifier in bag-info.txt does not match request")
               }
           }
         }
@@ -217,12 +240,20 @@ class BagVerifierWorkerTest
         Failure(new Throwable("BOOM!"))
     }
 
+    val externalIdentifier = createExternalIdentifier
+    val bagInfo = createBagInfoWith(
+      externalIdentifier = externalIdentifier
+    )
+
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket) {
+          withS3Bag(bucket, bagInfo = bagInfo) {
             case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  externalIdentifier = externalIdentifier
+                ),
                 bagRootLocation = bagRootLocation
               )
 

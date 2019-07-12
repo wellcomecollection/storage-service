@@ -40,11 +40,16 @@ class BagVerifierTest
     "bag-info.txt").size
 
   it("passes a bag with correct checksum values ") {
+    val externalIdentifier = createExternalIdentifier
+    val bagInfo = createBagInfoWith(
+      externalIdentifier = externalIdentifier
+    )
+
     withLocalS3Bucket { bucket =>
-      withS3Bag(bucket, dataFileCount = dataFileCount) {
+      withS3Bag(bucket, bagInfo = bagInfo, dataFileCount = dataFileCount) {
         case (root, _) =>
           withVerifier { verifier =>
-            val ingestStep = verifier.verify(root, externalIdentifier = createExternalIdentifier)
+            val ingestStep = verifier.verify(root, externalIdentifier = externalIdentifier)
             val result = ingestStep.success.get
 
             result shouldBe a[IngestStepSucceeded[_]]
@@ -61,14 +66,20 @@ class BagVerifierTest
   }
 
   it("fails a bag with an incorrect checksum in the file manifest") {
+    val externalIdentifier = createExternalIdentifier
+    val bagInfo = createBagInfoWith(
+      externalIdentifier = externalIdentifier
+    )
+
     withLocalS3Bucket { bucket =>
       withS3Bag(
         bucket,
+        bagInfo = bagInfo,
         dataFileCount = dataFileCount,
         createDataManifest = dataManifestWithWrongChecksum) {
         case (root, _) =>
           withVerifier { verifier =>
-            val ingestStep = verifier.verify(root, externalIdentifier = createExternalIdentifier)
+            val ingestStep = verifier.verify(root, externalIdentifier = externalIdentifier)
             val result = ingestStep.success.get
 
             result shouldBe a[IngestFailed[_]]
@@ -92,14 +103,20 @@ class BagVerifierTest
   }
 
   it("fails a bag with an incorrect checksum in the tag manifest") {
+    val externalIdentifier = createExternalIdentifier
+    val bagInfo = createBagInfoWith(
+      externalIdentifier = externalIdentifier
+    )
+
     withLocalS3Bucket { bucket =>
       withS3Bag(
         bucket,
+        bagInfo = bagInfo,
         dataFileCount = dataFileCount,
         createTagManifest = tagManifestWithWrongChecksum) {
         case (root, _) =>
           withVerifier { verifier =>
-            val ingestStep = verifier.verify(root, externalIdentifier = createExternalIdentifier)
+            val ingestStep = verifier.verify(root, externalIdentifier = externalIdentifier)
             val result = ingestStep.success.get
 
             result shouldBe a[IngestFailed[_]]
@@ -123,6 +140,11 @@ class BagVerifierTest
   }
 
   it("fails a bag if the file manifest refers to a non-existent file") {
+    val externalIdentifier = createExternalIdentifier
+    val bagInfo = createBagInfoWith(
+      externalIdentifier = externalIdentifier
+    )
+
     def createDataManifestWithExtraFile(
       dataFiles: StringTuple): Option[FileEntry] =
       createValidDataManifest(
@@ -132,11 +154,12 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       withS3Bag(
         bucket,
+        bagInfo = bagInfo,
         dataFileCount = dataFileCount,
         createDataManifest = createDataManifestWithExtraFile) {
         case (root, _) =>
           withVerifier { verifier =>
-            val ingestStep = verifier.verify(root, externalIdentifier = createExternalIdentifier)
+            val ingestStep = verifier.verify(root, externalIdentifier = externalIdentifier)
             val result = ingestStep.success.get
 
             result shouldBe a[IngestFailed[_]]
@@ -213,8 +236,12 @@ class BagVerifierTest
     val bagInfoExternalIdentifier = ExternalIdentifier(externalIdentifier + "_bag-info")
     val payloadExternalIdentifier = ExternalIdentifier(externalIdentifier + "_payload")
 
+    val bagInfo = createBagInfoWith(
+      externalIdentifier = bagInfoExternalIdentifier
+    )
+
     withLocalS3Bucket { bucket =>
-      withS3Bag(bucket, externalIdentifier = bagInfoExternalIdentifier) {
+      withS3Bag(bucket, bagInfo = bagInfo) {
         case (root, _) =>
           withVerifier { verifier =>
             val ingestStep = verifier.verify(
