@@ -127,14 +127,10 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
 
           val ingestResult = result.success.value
           ingestResult shouldBe a[IngestFailed[_]]
-          ingestResult.summary.fileCount shouldBe 0
-          ingestResult.summary.bytesUnpacked shouldBe 0
 
-          val underlyingError =
-            ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
-          underlyingError.e shouldBe a[Throwable]
-          underlyingError.e.getMessage should startWith(
-            "The specified bucket is not valid")
+          val ingestFailed = ingestResult.asInstanceOf[IngestFailed[_]]
+
+          ingestFailed.maybeUserFacingMessage.get shouldBe s"Access denied while trying to read s3://${archiveLocation.namespace}/${archiveLocation.path}"
         }
       }
     }

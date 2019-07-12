@@ -3,13 +3,11 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 import java.io.InputStream
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.bagunpacker.services.Unpacker
+import com.amazonaws.services.s3.model.AmazonS3Exception
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerError, UnpackerStorageError}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{
-  InputStreamWithLength,
-  InputStreamWithLengthAndMetadata
-}
-import uk.ac.wellcome.storage.{ObjectLocation, StorageError}
+import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, InputStreamWithLengthAndMetadata}
+import uk.ac.wellcome.storage.{ObjectLocation, StorageError, StoreReadError}
 
 class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
   private val s3StreamStore = new S3StreamStore()
@@ -27,4 +25,17 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
       .map { _ =>
         ()
       }
+
+  override def buildMessageFor(srcLocation: ObjectLocation,
+                               error: UnpackerError): Option[String] =
+    error match {
+      case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
+        if exc.getMessage.startsWith("Access Denied") =>
+          Some(s"Access denied while trying to read s3://$srcLocation")
+
+
+      case _ =>
+        println(error)
+        super.buildMessageFor(srcLocation, error)
+    }
 }
