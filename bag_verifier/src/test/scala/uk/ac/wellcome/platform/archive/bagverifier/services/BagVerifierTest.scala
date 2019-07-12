@@ -224,15 +224,7 @@ class BagVerifierTest
             val result = ingestStep.success.get
 
             result shouldBe a[IngestFailed[_]]
-            result.summary shouldBe a[VerificationIncompleteSummary]
-
-            val summary = result.summary
-              .asInstanceOf[VerificationIncompleteSummary]
-            val error = summary.e
-
-            error shouldBe a[BagUnavailable]
-            error.getMessage should startWith(
-              "External identifier in bag-info.txt does not match request")
+            result.summary shouldBe a[VerificationFailureSummary]
 
             val userFacingMessage = result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
             userFacingMessage.get should startWith(

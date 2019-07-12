@@ -6,6 +6,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
   EnrichedBagInformationPayload
@@ -165,6 +166,43 @@ class BagVerifierWorkerTest
                   _.description
                 }.head
                 description should startWith("Verification failed")
+              }
+          }
+        }
+    }
+  }
+
+  it("includes a specific error if the bag-info.txt is incorrect") {
+    val ingests = new MemoryMessageSender()
+    val outgoing = new MemoryMessageSender()
+
+    val externalIdentifier = randomAlphanumeric
+    val bagInfoExternalIdentifier = ExternalIdentifier(externalIdentifier + "_bag-info")
+    val payloadExternalIdentifier = ExternalIdentifier(externalIdentifier + "_payload")
+
+    withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
+      service =>
+        withLocalS3Bucket { bucket =>
+          withS3Bag(bucket, externalIdentifier = bagInfoExternalIdentifier) {
+            case (bagRootLocation, _) =>
+              val payload = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  externalIdentifier = payloadExternalIdentifier
+                ),
+                bagRootLocation = bagRootLocation
+              )
+
+              service.processMessage(payload) shouldBe a[Success[_]]
+
+              assertTopicReceivesIngestStatus(
+                payload.ingestId,
+                ingests,
+                status = Ingest.Failed
+              ) { events =>
+                val description = events.map {
+                  _.description
+                }.head
+                description should startWith("Verification failed: External identifier in bag-info.txt does not match request")
               }
           }
         }
