@@ -46,34 +46,33 @@ class BagVerifierFeatureTest
           queue,
           stepName = "verification") { _ =>
           withLocalS3Bucket { bucket =>
-            withS3Bag(bucket, bagInfo = bagInfo) {
-              case (bagRootLocation, _) =>
-                val payload = createEnrichedBagInformationPayloadWith(
-                  context = createPipelineContextWith(
-                    externalIdentifier = externalIdentifier
-                  ),
-                  bagRootLocation = bagRootLocation
+            withS3Bag(bucket, bagInfo = bagInfo) { bagRootLocation =>
+              val payload = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  externalIdentifier = externalIdentifier
+                ),
+                bagRootLocation = bagRootLocation
+              )
+
+              sendNotificationToSQS[BagRootPayload](queue, payload)
+
+              eventually {
+                assertTopicReceivesIngestEvents(
+                  payload.ingestId,
+                  ingests,
+                  expectedDescriptions = Seq(
+                    "Verification started",
+                    "Verification succeeded"
+                  )
                 )
 
-                sendNotificationToSQS[BagRootPayload](queue, payload)
+                outgoing
+                  .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                  payload)
 
-                eventually {
-                  assertTopicReceivesIngestEvents(
-                    payload.ingestId,
-                    ingests,
-                    expectedDescriptions = Seq(
-                      "Verification started",
-                      "Verification succeeded"
-                    )
-                  )
-
-                  outgoing
-                    .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-                    payload)
-
-                  assertQueueEmpty(queue)
-                  assertQueueEmpty(dlq)
-                }
+                assertQueueEmpty(queue)
+                assertQueueEmpty(dlq)
+              }
             }
           }
         }
@@ -101,7 +100,7 @@ class BagVerifierFeatureTest
               bucket,
               bagInfo = bagInfo,
               createDataManifest = dataManifestWithWrongChecksum) {
-              case (bagRootLocation, _) =>
+              bagRootLocation =>
                 val payload = createEnrichedBagInformationPayloadWith(
                   context = createPipelineContextWith(
                     externalIdentifier = externalIdentifier
