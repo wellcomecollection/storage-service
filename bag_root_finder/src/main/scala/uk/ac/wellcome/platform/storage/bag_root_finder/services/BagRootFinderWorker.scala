@@ -38,28 +38,12 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
       summary <- bagRootFinder.getSummary(
-        ingestId = payload.ingestId,
-        unpackLocation = payload.unpackedBagLocation,
-        storageSpace = payload.storageSpace
+        unpackLocation = payload.unpackedBagLocation
       )
 
-      _ <- sendIngestInformation(payload)(summary)
       _ <- ingestUpdater.send(payload.ingestId, summary)
       _ <- sendSuccessful(payload)(summary)
     } yield summary
-
-  private def sendIngestInformation(payload: UnpackedBagLocationPayload)(
-    step: IngestStepResult[RootFinderSummary]): Try[Unit] =
-    step match {
-      case IngestStepSucceeded(summary: RootFinderSuccessSummary) =>
-        ingestUpdater.sendEvent(
-          ingestId = payload.ingestId,
-          messages = Seq(
-            s"Detected bag root as ${summary.bagRootLocation}",
-          )
-        )
-      case _ => Success(())
-    }
 
   private def sendSuccessful(payload: PipelinePayload)(
     step: IngestStepResult[RootFinderSummary]): Try[Unit] =

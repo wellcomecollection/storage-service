@@ -53,7 +53,6 @@ class BagRootFinderFeatureTest
                 ingests,
                 expectedDescriptions = Seq(
                   "Finding bag root started",
-                  s"Detected bag root as $unpackedBagLocation",
                   "Finding bag root succeeded"
                 )
               )
@@ -100,7 +99,6 @@ class BagRootFinderFeatureTest
                   ingests,
                   expectedDescriptions = Seq(
                     "Finding bag root started",
-                    s"Detected bag root as $bagRootLocation",
                     "Finding bag root succeeded"
                   )
                 )
@@ -143,7 +141,7 @@ class BagRootFinderFeatureTest
                     val ingestFailed =
                       ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                     ingestFailed.status shouldBe Ingest.Failed
-                    ingestFailed.events.head.description shouldBe s"Finding bag root failed - Unable to find root of the bag at $unpackedBagLocation"
+                    ingestFailed.events.head.description shouldBe s"Finding bag root failed"
                 }
               }
             }
@@ -179,7 +177,7 @@ class BagRootFinderFeatureTest
                 val ingestFailed =
                   ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                 ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe s"Finding bag root failed - Unable to find root of the bag at $unpackedBagLocation"
+                ingestFailed.events.head.description shouldBe s"Finding bag root failed"
             }
           }
       }
