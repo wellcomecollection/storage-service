@@ -102,7 +102,6 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
     withLocalS3Bucket { srcBucket =>
       withStreamStore { implicit streamStore =>
         withArchive(srcBucket, archiveFile) { archiveLocation =>
-
           // These credentials are one of the preconfigured accounts in the
           // zenko s3server Docker image.
           // See https://s3-server.readthedocs.io/en/latest/DOCKER.html#scality-access-key-id-and-scality-secret-access-key

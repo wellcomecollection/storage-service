@@ -4,9 +4,16 @@ import java.io.InputStream
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerError, UnpackerStorageError}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  Unpacker,
+  UnpackerError,
+  UnpackerStorageError
+}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, InputStreamWithLengthAndMetadata}
+import uk.ac.wellcome.storage.streaming.{
+  InputStreamWithLength,
+  InputStreamWithLengthAndMetadata
+}
 import uk.ac.wellcome.storage.{ObjectLocation, StorageError, StoreReadError}
 
 class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
@@ -30,9 +37,8 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
                                error: UnpackerError): Option[String] =
     error match {
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
-        if exc.getMessage.startsWith("Access Denied") =>
-          Some(s"Access denied while trying to read s3://$srcLocation")
-
+          if exc.getMessage.startsWith("Access Denied") =>
+        Some(s"Access denied while trying to read s3://$srcLocation")
 
       case _ =>
         println(error)

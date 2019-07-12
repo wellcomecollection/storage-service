@@ -145,7 +145,8 @@ trait UnpackerTestCases[Namespace]
           ingestResult.summary.fileCount shouldBe 0
           ingestResult.summary.bytesUnpacked shouldBe 0
 
-          val ingestFailed = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
+          val ingestFailed =
+            ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
           ingestFailed.maybeUserFacingMessage.get should startWith(
             s"Error trying to unpack the archive at $srcLocation")
         }

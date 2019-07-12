@@ -73,7 +73,8 @@ trait Unpacker {
         Some(s"There is no archive at $srcLocation")
 
       case UnpackerUnarchiverError(_) =>
-        Some(s"Error trying to unpack the archive at $srcLocation - is it the correct format?")
+        Some(
+          s"Error trying to unpack the archive at $srcLocation - is it the correct format?")
 
       case _ => None
     }
