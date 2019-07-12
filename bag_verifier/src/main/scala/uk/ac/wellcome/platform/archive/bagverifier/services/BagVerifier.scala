@@ -23,22 +23,42 @@ class BagVerifier()(
   verifier: Verifier[_]
 ) extends Logging {
 
-  def verify(root: ObjectLocation): Try[IngestStepResult[VerificationSummary]] =
+  def verify(root: ObjectLocation, externalIdentifier: ExternalIdentifier)
+    : Try[IngestStepResult[VerificationSummary]] =
     Try {
-      implicit val bagVerifiable = new BagVerifiable(root)
+      implicit val bagVerifiable: BagVerifiable =
+        new BagVerifiable(root)
       val startTime = Instant.now()
 
       bagReader.get(root) match {
+        // TODO: Provide more specific messages here
         case Left(e) =>
           IngestFailed(VerificationSummary.incomplete(root, e, startTime), e)
+
         case Right(bag) =>
-          VerificationSummary.create(root, bag.verify, startTime) match {
-            case success @ VerificationSuccessSummary(_, _, _, _) =>
-              IngestStepSucceeded(success)
-            case failure @ VerificationFailureSummary(_, _, _, _) =>
-              IngestFailed(failure, InvalidBag(bag))
-            case incomplete @ VerificationIncompleteSummary(_, _, _, _) =>
-              IngestFailed(incomplete, incomplete.e)
+          if (bag.info.externalIdentifier != externalIdentifier) {
+            IngestFailed(
+              summary = VerificationFailureSummary(
+                rootLocation = root,
+                verification = None,
+                startTime = startTime,
+                endTime = Some(Instant.now())
+              ),
+              e = new Throwable(
+                "External identifier in bag-info.txt does not match request"),
+              maybeUserFacingMessage = Some(
+                s"External identifier in bag-info.txt does not match request: ${bag.info.externalIdentifier.underlying} is not ${externalIdentifier.underlying}"
+              )
+            )
+          } else {
+            VerificationSummary.create(root, bag.verify, startTime) match {
+              case success @ VerificationSuccessSummary(_, _, _, _) =>
+                IngestStepSucceeded(success)
+              case failure @ VerificationFailureSummary(_, _, _, _) =>
+                IngestFailed(failure, InvalidBag(bag))
+              case incomplete @ VerificationIncompleteSummary(_, _, _, _) =>
+                IngestFailed(incomplete, incomplete.e)
+            }
           }
       }
     }

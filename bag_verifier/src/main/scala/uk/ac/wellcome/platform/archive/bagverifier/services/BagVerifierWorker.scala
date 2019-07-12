@@ -34,7 +34,10 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
     payload: BagRootPayload): Try[IngestStepResult[VerificationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
-      summary <- verifier.verify(payload.bagRootLocation)
+      summary <- verifier.verify(
+        root = payload.bagRootLocation,
+        externalIdentifier = payload.externalIdentifier
+      )
       _ <- ingestUpdater.send(payload.ingestId, summary)
       _ <- outgoingPublisher.sendIfSuccessful(summary, payload)
     } yield summary

@@ -103,7 +103,7 @@ case class VerificationSuccessSummary(rootLocation: ObjectLocation,
     extends VerificationSummary
 
 case class VerificationFailureSummary(rootLocation: ObjectLocation,
-                                      verification: Some[VerificationFailure],
+                                      verification: Option[VerificationFailure],
                                       startTime: Instant,
                                       endTime: Option[Instant] = None)
     extends VerificationSummary
