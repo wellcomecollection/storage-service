@@ -46,8 +46,7 @@ class BagRootFinderFeatureTest
             eventually {
               assertQueueEmpty(queue)
 
-              outgoing.getMessages[BagRootPayload] shouldBe Seq(
-                expectedPayload)
+              outgoing.getMessages[BagRootPayload] shouldBe Seq(expectedPayload)
 
               assertTopicReceivesIngestEvents(
                 payload.ingestId,

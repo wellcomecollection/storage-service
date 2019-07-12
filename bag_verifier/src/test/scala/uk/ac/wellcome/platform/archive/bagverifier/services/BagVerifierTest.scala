@@ -189,9 +189,8 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       withS3Bag(bucket, createDataManifest = noDataManifest) { root =>
         withVerifier { verifier =>
-          val ingestStep = verifier.verify(
-            root,
-            externalIdentifier = createExternalIdentifier)
+          val ingestStep =
+            verifier.verify(root, externalIdentifier = createExternalIdentifier)
           val result = ingestStep.success.get
 
           result shouldBe a[IngestFailed[_]]
@@ -214,9 +213,8 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       withS3Bag(bucket, createTagManifest = noTagManifest) { root =>
         withVerifier { verifier =>
-          val ingestStep = verifier.verify(
-            root,
-            externalIdentifier = createExternalIdentifier)
+          val ingestStep =
+            verifier.verify(root, externalIdentifier = createExternalIdentifier)
           val result = ingestStep.success.get
 
           result shouldBe a[IngestFailed[_]]
@@ -254,8 +252,8 @@ class BagVerifierTest
           )
           val result = ingestStep.success.get
 
-            result shouldBe a[IngestFailed[_]]
-            result.summary shouldBe a[VerificationFailureSummary]
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[VerificationFailureSummary]
 
           val userFacingMessage =
             result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage

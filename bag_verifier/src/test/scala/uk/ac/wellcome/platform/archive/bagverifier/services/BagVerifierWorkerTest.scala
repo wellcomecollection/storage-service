@@ -205,28 +205,27 @@ class BagVerifierWorkerTest
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, bagInfo = bagInfo) {
-            bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  externalIdentifier = payloadExternalIdentifier
-                ),
-                bagRootLocation = bagRootLocation
-              )
+          withS3Bag(bucket, bagInfo = bagInfo) { bagRootLocation =>
+            val payload = createEnrichedBagInformationPayloadWith(
+              context = createPipelineContextWith(
+                externalIdentifier = payloadExternalIdentifier
+              ),
+              bagRootLocation = bagRootLocation
+            )
 
-              service.processMessage(payload) shouldBe a[Success[_]]
+            service.processMessage(payload) shouldBe a[Success[_]]
 
-              assertTopicReceivesIngestStatus(
-                payload.ingestId,
-                ingests,
-                status = Ingest.Failed
-              ) { events =>
-                val description = events.map {
-                  _.description
-                }.head
-                description should startWith(
-                  "Verification failed - External identifier in bag-info.txt does not match request")
-              }
+            assertTopicReceivesIngestStatus(
+              payload.ingestId,
+              ingests,
+              status = Ingest.Failed
+            ) { events =>
+              val description = events.map {
+                _.description
+              }.head
+              description should startWith(
+                "Verification failed - External identifier in bag-info.txt does not match request")
+            }
           }
         }
     }
