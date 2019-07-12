@@ -24,7 +24,6 @@ class BagRootFinderFeatureTest
     withLocalS3Bucket { bucket =>
       withS3Bag(bucket) {
         case (bagRootLocation, storageSpace) =>
-          // TODO: Bag root location should really be a prefix here
           val payload = createUnpackedBagLocationPayloadWith(
             unpackedBagLocation = bagRootLocation.asPrefix,
             storageSpace = storageSpace
@@ -56,7 +55,6 @@ class BagRootFinderFeatureTest
                   ingests,
                   expectedDescriptions = Seq(
                     "Finding bag root started",
-                    s"Detected bag root as $bagRootLocation",
                     "Finding bag root succeeded"
                   )
                 )
@@ -104,7 +102,6 @@ class BagRootFinderFeatureTest
                   ingests,
                   expectedDescriptions = Seq(
                     "Finding bag root started",
-                    s"Detected bag root as $bagRootLocation",
                     "Finding bag root succeeded"
                   )
                 )
@@ -147,7 +144,7 @@ class BagRootFinderFeatureTest
                     val ingestFailed =
                       ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                     ingestFailed.status shouldBe Ingest.Failed
-                    ingestFailed.events.head.description shouldBe s"Finding bag root failed - Unable to find root of the bag at $unpackedBagLocation"
+                    ingestFailed.events.head.description shouldBe s"Finding bag root failed"
                 }
               }
             }
@@ -183,7 +180,7 @@ class BagRootFinderFeatureTest
                 val ingestFailed =
                   ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
                 ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe s"Finding bag root failed - Unable to find root of the bag at $unpackedBagLocation"
+                ingestFailed.events.head.description shouldBe s"Finding bag root failed"
             }
           }
       }
