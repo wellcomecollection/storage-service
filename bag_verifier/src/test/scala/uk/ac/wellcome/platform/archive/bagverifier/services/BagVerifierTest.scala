@@ -8,6 +8,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
   VerificationIncompleteSummary,
   VerificationSuccessSummary
 }
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   FileEntry,
@@ -202,6 +203,40 @@ class BagVerifierTest
             error shouldBe a[BagUnavailable]
             error.getMessage should include(
               "Error loading tagmanifest-sha256.txt")
+          }
+      }
+    }
+  }
+
+  it("fails if the external identifier in the bag-info.txt is incorrect") {
+    val externalIdentifier = randomAlphanumeric
+    val bagInfoExternalIdentifier = ExternalIdentifier(externalIdentifier + "_bag-info")
+    val payloadExternalIdentifier = ExternalIdentifier(externalIdentifier + "_payload")
+
+    withLocalS3Bucket { bucket =>
+      withS3Bag(bucket, externalIdentifier = bagInfoExternalIdentifier) {
+        case (root, _) =>
+          withVerifier { verifier =>
+            val ingestStep = verifier.verify(
+              root,
+              externalIdentifier = payloadExternalIdentifier
+            )
+            val result = ingestStep.success.get
+
+            result shouldBe a[IngestFailed[_]]
+            result.summary shouldBe a[VerificationIncompleteSummary]
+
+            val summary = result.summary
+              .asInstanceOf[VerificationIncompleteSummary]
+            val error = summary.e
+
+            error shouldBe a[BagUnavailable]
+            error.getMessage should startWith(
+              "External identifier in bag-info.txt does not match request")
+
+            val userFacingMessage = result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+            userFacingMessage.get should startWith(
+              "External identifier in bag-info.txt does not match request")
           }
       }
     }
