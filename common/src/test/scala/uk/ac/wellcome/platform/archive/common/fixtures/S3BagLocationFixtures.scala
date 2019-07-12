@@ -133,7 +133,7 @@ trait S3BagLocationFixtures
     createTagManifest: List[(String, String)] => Option[FileEntry] =
       createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
-    testWith: TestWith[(ObjectLocation, StorageSpace), R]): R = {
+    testWith: TestWith[ObjectLocation, R]): R = {
     implicit val namespace: Bucket = bucket
 
     withBag(
@@ -144,7 +144,7 @@ trait S3BagLocationFixtures
       createTagManifest = createTagManifest,
       bagRootDirectory = bagRootDirectory
     ) { bagRootLocation =>
-      testWith((bagRootLocation, storageSpace))
+      testWith(bagRootLocation)
     }
   }
 }

@@ -47,7 +47,7 @@ class BagVerifierTest
 
     withLocalS3Bucket { bucket =>
       withS3Bag(bucket, bagInfo = bagInfo, dataFileCount = dataFileCount) {
-        case (root, _) =>
+        root =>
           withVerifier { verifier =>
             val ingestStep =
               verifier.verify(root, externalIdentifier = externalIdentifier)
@@ -77,29 +77,28 @@ class BagVerifierTest
         bucket,
         bagInfo = bagInfo,
         dataFileCount = dataFileCount,
-        createDataManifest = dataManifestWithWrongChecksum) {
-        case (root, _) =>
-          withVerifier { verifier =>
-            val ingestStep =
-              verifier.verify(root, externalIdentifier = externalIdentifier)
-            val result = ingestStep.success.get
+        createDataManifest = dataManifestWithWrongChecksum) { root =>
+        withVerifier { verifier =>
+          val ingestStep =
+            verifier.verify(root, externalIdentifier = externalIdentifier)
+          val result = ingestStep.success.get
 
-            result shouldBe a[IngestFailed[_]]
-            result.summary shouldBe a[VerificationFailureSummary]
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[VerificationFailureSummary]
 
-            val summary = result.summary
-              .asInstanceOf[VerificationFailureSummary]
-            val verification = summary.verification.value
+          val summary = result.summary
+            .asInstanceOf[VerificationFailureSummary]
+          val verification = summary.verification.value
 
-            verification.success should have size expectedFileCount - 1
-            verification.failure should have size 1
+          verification.success should have size expectedFileCount - 1
+          verification.failure should have size 1
 
-            val location = verification.failure.head
-            val error = location.e
+          val location = verification.failure.head
+          val error = location.e
 
-            error shouldBe a[FailedChecksumNoMatch]
-            error.getMessage should include("Checksum values do not match!")
-          }
+          error shouldBe a[FailedChecksumNoMatch]
+          error.getMessage should include("Checksum values do not match!")
+        }
       }
     }
   }
@@ -115,29 +114,28 @@ class BagVerifierTest
         bucket,
         bagInfo = bagInfo,
         dataFileCount = dataFileCount,
-        createTagManifest = tagManifestWithWrongChecksum) {
-        case (root, _) =>
-          withVerifier { verifier =>
-            val ingestStep =
-              verifier.verify(root, externalIdentifier = externalIdentifier)
-            val result = ingestStep.success.get
+        createTagManifest = tagManifestWithWrongChecksum) { root =>
+        withVerifier { verifier =>
+          val ingestStep =
+            verifier.verify(root, externalIdentifier = externalIdentifier)
+          val result = ingestStep.success.get
 
-            result shouldBe a[IngestFailed[_]]
-            result.summary shouldBe a[VerificationFailureSummary]
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[VerificationFailureSummary]
 
-            val summary = result.summary
-              .asInstanceOf[VerificationFailureSummary]
-            val verification = summary.verification.value
+          val summary = result.summary
+            .asInstanceOf[VerificationFailureSummary]
+          val verification = summary.verification.value
 
-            verification.success should have size expectedFileCount - 1
-            verification.failure should have size 1
+          verification.success should have size expectedFileCount - 1
+          verification.failure should have size 1
 
-            val location = verification.failure.head
-            val error = location.e
+          val location = verification.failure.head
+          val error = location.e
 
-            error shouldBe a[FailedChecksumNoMatch]
-            error.getMessage should include("Checksum values do not match!")
-          }
+          error shouldBe a[FailedChecksumNoMatch]
+          error.getMessage should include("Checksum values do not match!")
+        }
       }
     }
   }
@@ -159,29 +157,28 @@ class BagVerifierTest
         bucket,
         bagInfo = bagInfo,
         dataFileCount = dataFileCount,
-        createDataManifest = createDataManifestWithExtraFile) {
-        case (root, _) =>
-          withVerifier { verifier =>
-            val ingestStep =
-              verifier.verify(root, externalIdentifier = externalIdentifier)
-            val result = ingestStep.success.get
+        createDataManifest = createDataManifestWithExtraFile) { root =>
+        withVerifier { verifier =>
+          val ingestStep =
+            verifier.verify(root, externalIdentifier = externalIdentifier)
+          val result = ingestStep.success.get
 
-            result shouldBe a[IngestFailed[_]]
-            result.summary shouldBe a[VerificationFailureSummary]
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[VerificationFailureSummary]
 
-            val summary = result.summary
-              .asInstanceOf[VerificationFailureSummary]
-            val verification = summary.verification.value
+          val summary = result.summary
+            .asInstanceOf[VerificationFailureSummary]
+          val verification = summary.verification.value
 
-            verification.success should have size expectedFileCount
-            verification.failure should have size 1
+          verification.success should have size expectedFileCount
+          verification.failure should have size 1
 
-            val location = verification.failure.head
-            val error = location.e
+          val location = verification.failure.head
+          val error = location.e
 
-            error shouldBe a[LocationNotFound[_]]
-            error.getMessage should startWith("Location not available!")
-          }
+          error shouldBe a[LocationNotFound[_]]
+          error.getMessage should startWith("Location not available!")
+        }
       }
     }
   }
@@ -190,24 +187,23 @@ class BagVerifierTest
     def noDataManifest(files: StringTuple): Option[FileEntry] = None
 
     withLocalS3Bucket { bucket =>
-      withS3Bag(bucket, createDataManifest = noDataManifest) {
-        case (root, _) =>
-          withVerifier { verifier =>
-            val ingestStep = verifier.verify(
-              root,
-              externalIdentifier = createExternalIdentifier)
-            val result = ingestStep.success.get
+      withS3Bag(bucket, createDataManifest = noDataManifest) { root =>
+        withVerifier { verifier =>
+          val ingestStep = verifier.verify(
+            root,
+            externalIdentifier = createExternalIdentifier)
+          val result = ingestStep.success.get
 
-            result shouldBe a[IngestFailed[_]]
-            result.summary shouldBe a[VerificationIncompleteSummary]
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[VerificationIncompleteSummary]
 
-            val summary = result.summary
-              .asInstanceOf[VerificationIncompleteSummary]
-            val error = summary.e
+          val summary = result.summary
+            .asInstanceOf[VerificationIncompleteSummary]
+          val error = summary.e
 
-            error shouldBe a[BagUnavailable]
-            error.getMessage should include("Error loading manifest-sha256.txt")
-          }
+          error shouldBe a[BagUnavailable]
+          error.getMessage should include("Error loading manifest-sha256.txt")
+        }
       }
     }
   }
@@ -216,25 +212,24 @@ class BagVerifierTest
     def noTagManifest(files: StringTuple): Option[FileEntry] = None
 
     withLocalS3Bucket { bucket =>
-      withS3Bag(bucket, createTagManifest = noTagManifest) {
-        case (root, _) =>
-          withVerifier { verifier =>
-            val ingestStep = verifier.verify(
-              root,
-              externalIdentifier = createExternalIdentifier)
-            val result = ingestStep.success.get
+      withS3Bag(bucket, createTagManifest = noTagManifest) { root =>
+        withVerifier { verifier =>
+          val ingestStep = verifier.verify(
+            root,
+            externalIdentifier = createExternalIdentifier)
+          val result = ingestStep.success.get
 
-            result shouldBe a[IngestFailed[_]]
-            result.summary shouldBe a[VerificationIncompleteSummary]
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[VerificationIncompleteSummary]
 
-            val summary = result.summary
-              .asInstanceOf[VerificationIncompleteSummary]
-            val error = summary.e
+          val summary = result.summary
+            .asInstanceOf[VerificationIncompleteSummary]
+          val error = summary.e
 
-            error shouldBe a[BagUnavailable]
-            error.getMessage should include(
-              "Error loading tagmanifest-sha256.txt")
-          }
+          error shouldBe a[BagUnavailable]
+          error.getMessage should include(
+            "Error loading tagmanifest-sha256.txt")
+        }
       }
     }
   }
@@ -251,23 +246,22 @@ class BagVerifierTest
     )
 
     withLocalS3Bucket { bucket =>
-      withS3Bag(bucket, bagInfo = bagInfo) {
-        case (root, _) =>
-          withVerifier { verifier =>
-            val ingestStep = verifier.verify(
-              root,
-              externalIdentifier = payloadExternalIdentifier
-            )
-            val result = ingestStep.success.get
+      withS3Bag(bucket, bagInfo = bagInfo) { root =>
+        withVerifier { verifier =>
+          val ingestStep = verifier.verify(
+            root,
+            externalIdentifier = payloadExternalIdentifier
+          )
+          val result = ingestStep.success.get
 
             result shouldBe a[IngestFailed[_]]
             result.summary shouldBe a[VerificationFailureSummary]
 
-            val userFacingMessage =
-              result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
-            userFacingMessage.get should startWith(
-              "External identifier in bag-info.txt does not match request")
-          }
+          val userFacingMessage =
+            result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+          userFacingMessage.get should startWith(
+            "External identifier in bag-info.txt does not match request")
+        }
       }
     }
   }

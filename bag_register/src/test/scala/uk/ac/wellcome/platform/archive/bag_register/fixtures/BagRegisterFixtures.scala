@@ -111,8 +111,7 @@ trait BagRegisterFixtures
       bucket,
       bagInfo = bagInfo,
       storageSpace = space,
-      bagRootDirectory = Some(s"v$version")) {
-      case (bagRootLocation, _) =>
-        testWith(bagRootLocation.join(s"v$version"))
+      bagRootDirectory = Some(s"v$version")) { bagRoot =>
+      testWith(bagRoot.join(s"v$version"))
     }
 }
