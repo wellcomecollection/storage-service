@@ -27,7 +27,7 @@ class OutgoingPublisherTest
     forAll(successfulOperations) { operation =>
       val messageSender = new MemoryMessageSender()
       val outgoingPublisher = createOutgoingPublisherWith(messageSender)
-      val outgoing = createSourceLocation
+      val outgoing = createSourceLocationPayload
 
       val notice = outgoingPublisher.sendIfSuccessful(operation, outgoing)
 
@@ -40,7 +40,7 @@ class OutgoingPublisherTest
   it("does not send outgoing if operation failed") {
     val messageSender = new MemoryMessageSender()
     val outgoingPublisher = createOutgoingPublisherWith(messageSender)
-    val outgoing = createSourceLocation
+    val outgoing = createSourceLocationPayload
 
     val notice =
       outgoingPublisher.sendIfSuccessful(createOperationFailure(), outgoing)
