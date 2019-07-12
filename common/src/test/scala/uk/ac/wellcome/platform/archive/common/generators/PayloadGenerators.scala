@@ -53,7 +53,7 @@ trait PayloadGenerators
       sourceLocation = sourceLocation
     )
 
-  def createSourceLocation: SourceLocationPayload =
+  def createSourceLocationPayload: SourceLocationPayload =
     createSourceLocationPayloadWith()
 
   def createUnpackedBagLocationPayloadWith(
