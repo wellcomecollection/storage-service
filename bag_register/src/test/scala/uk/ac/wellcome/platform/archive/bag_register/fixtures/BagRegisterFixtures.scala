@@ -11,10 +11,7 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -108,7 +105,6 @@ trait BagRegisterFixtures
   // hence the version directory.
   def withBag[R](bucket: Bucket,
                  bagInfo: BagInfo,
-                 externalIdentifier: ExternalIdentifier,
                  space: StorageSpace,
                  version: Int)(testWith: TestWith[ObjectLocation, R]): R =
     withS3Bag(

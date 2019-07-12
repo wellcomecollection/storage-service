@@ -34,13 +34,11 @@ class BagRegisterWorkerTest
         val bagInfo = createBagInfo
         val space = createStorageSpace
         val version = randomInt(1, 15)
-        val externalIdentifier = createExternalIdentifier
 
         withLocalS3Bucket { bucket =>
           withBag(
             bucket,
             bagInfo,
-            externalIdentifier,
             space = space,
             version = version) { bagRootLocation =>
             val payload = createEnrichedBagInformationPayloadWith(
@@ -92,19 +90,16 @@ class BagRegisterWorkerTest
       case (service, storageManifestDao, _, _, _) =>
         val bagInfo = createBagInfo
         val space = createStorageSpace
-        val externalIdentifier = createExternalIdentifier
 
         withLocalS3Bucket { bucket =>
           withBag(
             bucket,
             bagInfo,
-            externalIdentifier = externalIdentifier,
             space = space,
             version = 1) { location1 =>
             withBag(
               bucket,
               bagInfo,
-              externalIdentifier = externalIdentifier,
               space = space,
               version = 2) { location2 =>
               val payload1 = createEnrichedBagInformationPayloadWith(
