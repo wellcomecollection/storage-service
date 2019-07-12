@@ -110,7 +110,7 @@ trait BagRegisterFixtures
     withS3Bag(
       bucket,
       bagInfo = bagInfo,
-      storageSpace = space,
+      space = space,
       bagRootDirectory = Some(s"v$version")) { bagRoot =>
       testWith(bagRoot.join(s"v$version"))
     }

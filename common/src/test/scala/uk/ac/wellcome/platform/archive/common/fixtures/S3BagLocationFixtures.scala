@@ -34,7 +34,7 @@ trait BagLocationFixtures[Namespace]
   def withBag[R](
     bagInfo: BagInfo = createBagInfo,
     dataFileCount: Int = 1,
-    storageSpace: StorageSpace = createStorageSpace,
+    space: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
       createValidDataManifest,
     createTagManifest: List[(String, String)] => Option[FileEntry] =
@@ -57,7 +57,7 @@ trait BagLocationFixtures[Namespace]
 
     val storageSpaceRootLocation = createObjectLocationWith(
       namespace,
-      path = storageSpace.toString
+      path = space.toString
     )
 
     val bagRootLocation = storageSpaceRootLocation.join(
@@ -127,7 +127,7 @@ trait S3BagLocationFixtures
     bucket: Bucket,
     bagInfo: BagInfo = createBagInfo,
     dataFileCount: Int = 1,
-    storageSpace: StorageSpace = createStorageSpace,
+    space: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
       createValidDataManifest,
     createTagManifest: List[(String, String)] => Option[FileEntry] =
@@ -139,7 +139,7 @@ trait S3BagLocationFixtures
     withBag(
       bagInfo = bagInfo,
       dataFileCount = dataFileCount,
-      storageSpace = storageSpace,
+      space = space,
       createDataManifest = createDataManifest,
       createTagManifest = createTagManifest,
       bagRootDirectory = bagRootDirectory
