@@ -23,8 +23,8 @@ class BagVerifier()(
   verifier: Verifier[_]
 ) extends Logging {
 
-  def verify(root: ObjectLocation,
-             externalIdentifier: ExternalIdentifier): Try[IngestStepResult[VerificationSummary]] =
+  def verify(root: ObjectLocation, externalIdentifier: ExternalIdentifier)
+    : Try[IngestStepResult[VerificationSummary]] =
     Try {
       implicit val bagVerifiable: BagVerifiable =
         new BagVerifiable(root)
@@ -44,7 +44,8 @@ class BagVerifier()(
                 startTime = startTime,
                 endTime = Some(Instant.now())
               ),
-              e = new Throwable("External identifier in bag-info.txt does not match request"),
+              e = new Throwable(
+                "External identifier in bag-info.txt does not match request"),
               maybeUserFacingMessage = Some(
                 s"External identifier in bag-info.txt does not match request: ${bag.info.externalIdentifier.underlying} is not ${externalIdentifier.underlying}"
               )

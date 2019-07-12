@@ -23,42 +23,41 @@ class BagRegisterFeatureTest
         val version = randomInt(1, 15)
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo, space, version) {
-            bagRootLocation =>
-              val bagId = BagId(
-                space = space,
-                externalIdentifier = bagInfo.externalIdentifier
+          withBag(bucket, bagInfo, space, version) { bagRootLocation =>
+            val bagId = BagId(
+              space = space,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
+
+            val payload = createEnrichedBagInformationPayloadWith(
+              context = createPipelineContextWith(
+                storageSpace = space
+              ),
+              bagRootLocation = bagRootLocation,
+              version = version
+            )
+
+            sendNotificationToSQS(queuePair.queue, payload)
+
+            eventually {
+              val storageManifest =
+                storageManifestDao.getLatest(bagId).right.value
+
+              storageManifest.space shouldBe bagId.space
+              storageManifest.info shouldBe bagInfo
+              storageManifest.manifest.files should have size 1
+
+              storageManifest.locations should have size 1
+
+              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+
+              assertBagRegisterSucceeded(
+                ingestId = payload.ingestId,
+                ingests = ingests
               )
 
-              val payload = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  storageSpace = space
-                ),
-                bagRootLocation = bagRootLocation,
-                version = version
-              )
-
-              sendNotificationToSQS(queuePair.queue, payload)
-
-              eventually {
-                val storageManifest =
-                  storageManifestDao.getLatest(bagId).right.value
-
-                storageManifest.space shouldBe bagId.space
-                storageManifest.info shouldBe bagInfo
-                storageManifest.manifest.files should have size 1
-
-                storageManifest.locations should have size 1
-
-                storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
-
-                assertBagRegisterSucceeded(
-                  ingestId = payload.ingestId,
-                  ingests = ingests
-                )
-
-                assertQueueEmpty(queuePair.queue)
-              }
+              assertQueueEmpty(queuePair.queue)
+            }
           }
         }
     }

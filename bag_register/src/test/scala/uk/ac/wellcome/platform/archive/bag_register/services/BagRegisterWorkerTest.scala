@@ -36,50 +36,47 @@ class BagRegisterWorkerTest
         val version = randomInt(1, 15)
 
         withLocalS3Bucket { bucket =>
-          withBag(
-            bucket,
-            bagInfo,
-            space = space,
-            version = version) { bagRootLocation =>
-            val payload = createEnrichedBagInformationPayloadWith(
-              context = createPipelineContextWith(
-                storageSpace = space
-              ),
-              bagRootLocation = bagRootLocation,
-              version = version
-            )
+          withBag(bucket, bagInfo, space = space, version = version) {
+            bagRootLocation =>
+              val payload = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  storageSpace = space
+                ),
+                bagRootLocation = bagRootLocation,
+                version = version
+              )
 
-            val bagId = BagId(
-              space = space,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+              val bagId = BagId(
+                space = space,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
 
-            val result = service.processMessage(payload)
-            result shouldBe a[Success[_]]
-            result.success.value shouldBe a[IngestCompleted[_]]
+              val result = service.processMessage(payload)
+              result shouldBe a[Success[_]]
+              result.success.value shouldBe a[IngestCompleted[_]]
 
-            val storageManifest =
-              storageManifestDao.getLatest(bagId).right.value
+              val storageManifest =
+                storageManifestDao.getLatest(bagId).right.value
 
-            storageManifest.space shouldBe bagId.space
-            storageManifest.info shouldBe bagInfo
-            storageManifest.manifest.files should have size 1
+              storageManifest.space shouldBe bagId.space
+              storageManifest.info shouldBe bagInfo
+              storageManifest.manifest.files should have size 1
 
-            storageManifest.locations shouldBe List(
-              StorageLocation(
-                provider = InfrequentAccessStorageProvider,
-                location = bagRootLocation.copy(
-                  path = bagRootLocation.path.stripSuffix(s"/v$version")
+              storageManifest.locations shouldBe List(
+                StorageLocation(
+                  provider = InfrequentAccessStorageProvider,
+                  location = bagRootLocation.copy(
+                    path = bagRootLocation.path.stripSuffix(s"/v$version")
+                  )
                 )
               )
-            )
 
-            storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-            assertBagRegisterSucceeded(
-              ingestId = payload.ingestId,
-              ingests = ingests
-            )
+              assertBagRegisterSucceeded(
+                ingestId = payload.ingestId,
+                ingests = ingests
+              )
           }
         }
     }
@@ -92,16 +89,8 @@ class BagRegisterWorkerTest
         val space = createStorageSpace
 
         withLocalS3Bucket { bucket =>
-          withBag(
-            bucket,
-            bagInfo,
-            space = space,
-            version = 1) { location1 =>
-            withBag(
-              bucket,
-              bagInfo,
-              space = space,
-              version = 2) { location2 =>
+          withBag(bucket, bagInfo, space = space, version = 1) { location1 =>
+            withBag(bucket, bagInfo, space = space, version = 2) { location2 =>
               val payload1 = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space

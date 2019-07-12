@@ -196,8 +196,10 @@ class BagVerifierWorkerTest
     val outgoing = new MemoryMessageSender()
 
     val externalIdentifier = randomAlphanumeric
-    val bagInfoExternalIdentifier = ExternalIdentifier(externalIdentifier + "_bag-info")
-    val payloadExternalIdentifier = ExternalIdentifier(externalIdentifier + "_payload")
+    val bagInfoExternalIdentifier =
+      ExternalIdentifier(externalIdentifier + "_bag-info")
+    val payloadExternalIdentifier =
+      ExternalIdentifier(externalIdentifier + "_payload")
 
     val bagInfo = createBagInfoWith(
       externalIdentifier = bagInfoExternalIdentifier
@@ -225,7 +227,8 @@ class BagVerifierWorkerTest
                 val description = events.map {
                   _.description
                 }.head
-                description should startWith("Verification failed - External identifier in bag-info.txt does not match request")
+                description should startWith(
+                  "Verification failed - External identifier in bag-info.txt does not match request")
               }
           }
         }
