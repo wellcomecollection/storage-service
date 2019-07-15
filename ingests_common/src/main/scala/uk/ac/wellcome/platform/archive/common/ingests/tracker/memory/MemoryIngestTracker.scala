@@ -7,11 +7,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
   IngestTrackerError
 }
 import uk.ac.wellcome.storage.Version
-import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 class MemoryIngestTracker(
-  val underlying: MemoryVersionedStore[IngestID, Int, Ingest])
+  val underlying: MemoryVersionedStore[IngestID, Ingest])
     extends IngestTracker {
 
   override def listByBagId(
@@ -34,9 +33,8 @@ class MemoryIngestTracker(
 object MemoryIngestTracker {
   def apply(): MemoryIngestTracker =
     new MemoryIngestTracker(
-      underlying = new MemoryVersionedStore[IngestID, Int, Ingest](
-        new MemoryStore[Version[IngestID, Int], Ingest](
-          initialEntries = Map.empty) with MemoryMaxima[IngestID, Ingest]
+      underlying = MemoryVersionedStore[IngestID, Ingest](
+        initialEntries = Map.empty
       )
     )
 }
