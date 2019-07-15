@@ -68,10 +68,11 @@ object StorageManifestDaoBuilder {
 //        )
 //    }
 
-    type DynamoStoreEntry = HybridIndexedStoreEntry[ObjectLocation,
-                                                    Map[String, String]]
+    type DynamoStoreEntry =
+      HybridIndexedStoreEntry[ObjectLocation, Map[String, String]]
 
-    implicit val indexedStore: DynamoHashRangeStore[String, Int, DynamoStoreEntry] =
+    implicit val indexedStore
+      : DynamoHashRangeStore[String, Int, DynamoStoreEntry] =
       new DynamoHashRangeStore[String, Int, DynamoStoreEntry](dynamoConfig)
 
     new DynamoVersionedHybridStore[

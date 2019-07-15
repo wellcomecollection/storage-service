@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.common.verify.s3
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.storage.{LocationError, LocationNotFound}
+import uk.ac.wellcome.platform.archive.common.storage.{
+  LocationError,
+  LocationNotFound
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
@@ -84,7 +87,8 @@ class S3ObjectVerifierTest
 
     verifiedFailure.location shouldBe verifiableLocation
     verifiedFailure.e shouldBe a[LocationError[_]]
-    verifiedFailure.e.getMessage should include("The specified bucket is not valid")
+    verifiedFailure.e.getMessage should include(
+      "The specified bucket is not valid")
   }
 
   it("fails if the key doesn't exist in the bucket") {

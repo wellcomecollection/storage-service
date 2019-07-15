@@ -14,14 +14,14 @@ trait StorageManifestVHSFixture extends EitherValues {
   type StoreEntry = HybridIndexedStoreEntry[String, Map[String, String]]
 
   type StorageManifestIndex =
-    MemoryStore[Version[String, Int],StoreEntry]
-      with MemoryMaxima[String, StoreEntry]
+    MemoryStore[Version[String, Int], StoreEntry] with MemoryMaxima[String,
+                                                                    StoreEntry]
 
   type StorageManifestTypedStore = MemoryTypedStore[String, StorageManifest]
 
   def createIndex: StorageManifestIndex =
-    new MemoryStore[Version[String, Int], StoreEntry](initialEntries = Map.empty)
-      with MemoryMaxima[String, StoreEntry]
+    new MemoryStore[Version[String, Int], StoreEntry](
+      initialEntries = Map.empty) with MemoryMaxima[String, StoreEntry]
 
   def createTypedStore: StorageManifestTypedStore = {
     val memoryStoreForStreamStore =
