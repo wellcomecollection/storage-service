@@ -14,7 +14,7 @@ import uk.ac.wellcome.storage.streaming.{
   InputStreamWithLength,
   InputStreamWithLengthAndMetadata
 }
-import uk.ac.wellcome.storage.{ObjectLocation, StorageError, StoreReadError}
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, StorageError, StoreReadError}
 
 class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
   private val s3StreamStore = new S3StreamStore()
@@ -39,6 +39,17 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("Access Denied") =>
         Some(s"Access denied while trying to read s3://$srcLocation")
+
+      case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
+          if exc.getMessage.startsWith("The specified bucket is not valid") =>
+        Some(s"${srcLocation.namespace} is not a valid S3 bucket name")
+
+      case UnpackerStorageError(DoesNotExistError(exc: AmazonS3Exception))
+          if exc.getMessage.startsWith("The specified bucket does not exist") =>
+        Some(s"There is no S3 bucket ${srcLocation.namespace}")
+
+      case UnpackerStorageError(DoesNotExistError(exc: AmazonS3Exception)) =>
+        Some(s"There is no archive at s3://$srcLocation")
 
       case _ =>
         println(error)

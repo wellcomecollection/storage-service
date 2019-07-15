@@ -115,8 +115,7 @@ trait UnpackerTestCases[Namespace]
       ingestResult.summary.bytesUnpacked shouldBe 0
 
       val ingestFailed = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
-      ingestFailed.maybeUserFacingMessage shouldBe Some(
-        s"There is no archive at $srcLocation")
+      ingestFailed.maybeUserFacingMessage.get should startWith("There is no archive at")
     }
   }
 
