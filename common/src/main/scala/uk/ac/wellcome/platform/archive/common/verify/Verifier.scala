@@ -36,8 +36,8 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
       }
 
       inputStream <- streamStore.get(objectLocation) match {
-        case Right(stream)                => Right(Some(stream.identifiedT))
-        case Left(err: DoesNotExistError) => Right(None)
+        case Right(stream)              => Right(Some(stream.identifiedT))
+        case Left(_: DoesNotExistError) => Right(None)
         case Left(storageError) =>
           Left(
             LocationError(verifiableLocation, storageError.e.getMessage)

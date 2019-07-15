@@ -55,7 +55,7 @@ trait BagReader[IS <: InputStreamWithLength] {
               BagUnavailable(s"Error loading ${path.value}: ${e.getMessage}"))
         }
 
-      case Left(err: DoesNotExistError) =>
+      case Left(_: DoesNotExistError) =>
         Right(None)
 
       case Left(err) =>
