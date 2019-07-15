@@ -14,7 +14,12 @@ import uk.ac.wellcome.storage.streaming.{
   InputStreamWithLength,
   InputStreamWithLengthAndMetadata
 }
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, StorageError, StoreReadError}
+import uk.ac.wellcome.storage.{
+  DoesNotExistError,
+  ObjectLocation,
+  StorageError,
+  StoreReadError
+}
 
 class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
   private val s3StreamStore = new S3StreamStore()
