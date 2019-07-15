@@ -80,13 +80,11 @@ trait BagsApiFixture
     val brokenIndex =
       new MemoryStore[
         Version[String, Int],
-        HybridIndexedStoreEntry[Version[String, Int],
-                                String,
+        HybridIndexedStoreEntry[String,
                                 Map[String, String]]](
         initialEntries = Map.empty) with MemoryMaxima[
         String,
-        HybridIndexedStoreEntry[Version[String, Int],
-                                String,
+        HybridIndexedStoreEntry[String,
                                 Map[String, String]]] {
         override def max(id: String) =
           Left(NoMaximaValueError(new Throwable("BOOM!")))
