@@ -22,7 +22,7 @@ import uk.ac.wellcome.storage.store.dynamo.{
 import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, Version}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 object StorageManifestDaoBuilder {
   def buildVHS(
@@ -68,18 +68,12 @@ object StorageManifestDaoBuilder {
 //        )
 //    }
 
+    type DynamoStoreEntry =
+      HybridIndexedStoreEntry[ObjectLocation, Map[String, String]]
+
     implicit val indexedStore
-      : DynamoHashRangeStore[String,
-                             Int,
-                             HybridIndexedStoreEntry[Version[String, Int],
-                                                     ObjectLocation,
-                                                     Map[String, String]]] =
-      new DynamoHashRangeStore[
-        String,
-        Int,
-        HybridIndexedStoreEntry[Version[String, Int],
-                                ObjectLocation,
-                                Map[String, String]]](dynamoConfig)
+      : DynamoHashRangeStore[String, Int, DynamoStoreEntry] =
+      new DynamoHashRangeStore[String, Int, DynamoStoreEntry](dynamoConfig)
 
     new DynamoVersionedHybridStore[
       String,

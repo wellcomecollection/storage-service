@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.common.verify.s3
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
+import uk.ac.wellcome.platform.archive.common.storage.{
+  LocationError,
+  LocationNotFound
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
@@ -40,7 +43,7 @@ class S3ObjectVerifierTest
   it("fails if the bucket doesn't exist") {
     val checksum = randomChecksum
 
-    val location = createObjectLocation
+    val location = createObjectLocationWith(bucket = createBucket)
 
     val verifiableLocation = createVerifiableLocationWith(
       location = location,
@@ -61,6 +64,31 @@ class S3ObjectVerifierTest
     verifiedFailure.e.getMessage should include(
       "Location not available!"
     )
+  }
+
+  it("fails if the bucket name is invalid") {
+    val checksum = randomChecksum
+
+    val location = createObjectLocationWith(namespace = "ABCD")
+
+    val verifiableLocation = createVerifiableLocationWith(
+      location = location,
+      checksum = checksum
+    )
+
+    val result =
+      withVerifier {
+        _.verify(verifiableLocation)
+      }
+
+    result shouldBe a[VerifiedFailure]
+
+    val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+
+    verifiedFailure.location shouldBe verifiableLocation
+    verifiedFailure.e shouldBe a[LocationError[_]]
+    verifiedFailure.e.getMessage should include(
+      "The specified bucket is not valid")
   }
 
   it("fails if the key doesn't exist in the bucket") {

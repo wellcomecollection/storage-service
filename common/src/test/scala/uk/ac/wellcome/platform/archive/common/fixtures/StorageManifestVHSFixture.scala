@@ -11,29 +11,17 @@ import uk.ac.wellcome.storage.store.HybridIndexedStoreEntry
 import uk.ac.wellcome.storage.store.memory._
 
 trait StorageManifestVHSFixture extends EitherValues {
+  type StoreEntry = HybridIndexedStoreEntry[String, Map[String, String]]
+
   type StorageManifestIndex =
-    MemoryStore[Version[String, Int],
-                HybridIndexedStoreEntry[Version[String, Int],
-                                        String,
-                                        Map[String, String]]] with MemoryMaxima[
-      String,
-      HybridIndexedStoreEntry[Version[String, Int],
-                              String,
-                              Map[String, String]]]
+    MemoryStore[Version[String, Int], StoreEntry] with MemoryMaxima[String,
+                                                                    StoreEntry]
 
   type StorageManifestTypedStore = MemoryTypedStore[String, StorageManifest]
 
   def createIndex: StorageManifestIndex =
-    new MemoryStore[
-      Version[String, Int],
-      HybridIndexedStoreEntry[Version[String, Int],
-                              String,
-                              Map[String, String]]](initialEntries = Map.empty)
-    with MemoryMaxima[
-      String,
-      HybridIndexedStoreEntry[Version[String, Int],
-                              String,
-                              Map[String, String]]]
+    new MemoryStore[Version[String, Int], StoreEntry](
+      initialEntries = Map.empty) with MemoryMaxima[String, StoreEntry]
 
   def createTypedStore: StorageManifestTypedStore = {
     val memoryStoreForStreamStore =

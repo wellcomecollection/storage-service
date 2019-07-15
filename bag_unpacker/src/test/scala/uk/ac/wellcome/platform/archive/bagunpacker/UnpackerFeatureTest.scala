@@ -80,7 +80,11 @@ class UnpackerFeatureTest
   it("sends a failed Ingest update if it cannot read the bag") {
     withBagUnpackerApp(stepName = "unpacker") {
       case (_, _, queue, ingests, outgoing) =>
-        val payload = createSourceLocationPayload
+        val payload = createSourceLocationPayloadWith(
+          sourceLocation = createObjectLocationWith(
+            bucket = createBucket
+          )
+        )
         sendNotificationToSQS(queue, payload)
 
         eventually {
