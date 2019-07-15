@@ -210,6 +210,24 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
         }
       }
     }
+
+    it("if the bucket name is invalid") {
+      val srcLocation = createObjectLocationWith(namespace = "ABCD")
+      val dstLocation = createObjectLocationPrefix
+
+      withStreamStore { implicit streamStore =>
+        val result =
+          unpacker.unpack(
+            ingestId = createIngestID,
+            srcLocation = srcLocation,
+            dstLocation = dstLocation
+          )
+
+        assertIsError(result) { maybeMessage =>
+          maybeMessage.get shouldBe s"${srcLocation.namespace} is not a valid S3 bucket name"
+        }
+      }
+    }
   }
 
   private def assertIsError(result: Try[IngestStepResult[UnpackSummary]])(
