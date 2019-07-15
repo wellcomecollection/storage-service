@@ -1,13 +1,17 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 
 import com.amazonaws.services.s3.AmazonS3
+import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker,
   UnpackerTestCases
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepResult
+}
 import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -18,6 +22,8 @@ import uk.ac.wellcome.storage.streaming.{
   InputStreamWithLength,
   InputStreamWithLengthAndMetadata
 }
+
+import scala.util.Try
 
 class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
   override val unpacker: Unpacker = new S3Unpacker()
@@ -95,43 +101,53 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
     }
   }
 
-  it("includes a user-facing message if it gets a permissions error") {
-    val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
-    val dstLocation = createObjectLocationPrefix
+  describe("includes users-facing messages if reading the archive fails") {
+    it("includes a user-facing message if it gets a permissions error") {
+      val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
+      val dstLocation = createObjectLocationPrefix
 
-    withLocalS3Bucket { srcBucket =>
-      withStreamStore { implicit streamStore =>
-        withArchive(srcBucket, archiveFile) { archiveLocation =>
-          // These credentials are one of the preconfigured accounts in the
-          // zenko s3server Docker image.
-          // See https://s3-server.readthedocs.io/en/latest/DOCKER.html#scality-access-key-id-and-scality-secret-access-key
-          // https://github.com/scality/cloudserver/blob/5e17ec8343cd181936616efc0ac8d19d06dcd97d/conf/authdata.json
-          implicit val badS3Client: AmazonS3 =
-            S3ClientFactory.create(
-              region = "localhost",
-              endpoint = "http://localhost:33333",
-              accessKey = "accessKey2",
-              secretKey = "verySecretKey2"
-            )
+      withLocalS3Bucket { srcBucket =>
+        withStreamStore { implicit streamStore =>
+          withArchive(srcBucket, archiveFile) { archiveLocation =>
+            // These credentials are one of the preconfigured accounts in the
+            // zenko s3server Docker image.
+            // See https://s3-server.readthedocs.io/en/latest/DOCKER.html#scality-access-key-id-and-scality-secret-access-key
+            // https://github.com/scality/cloudserver/blob/5e17ec8343cd181936616efc0ac8d19d06dcd97d/conf/authdata.json
+            implicit val badS3Client: AmazonS3 =
+              S3ClientFactory.create(
+                region = "localhost",
+                endpoint = "http://localhost:33333",
+                accessKey = "accessKey2",
+                secretKey = "verySecretKey2"
+              )
 
-          val badUnpacker: S3Unpacker =
-            new S3Unpacker()(badS3Client)
+            val badUnpacker: S3Unpacker =
+              new S3Unpacker()(badS3Client)
 
-          val result =
-            badUnpacker.unpack(
-              ingestId = createIngestID,
-              srcLocation = archiveLocation,
-              dstLocation = dstLocation
-            )
+            val result =
+              badUnpacker.unpack(
+                ingestId = createIngestID,
+                srcLocation = archiveLocation,
+                dstLocation = dstLocation
+              )
 
-          val ingestResult = result.success.value
-          ingestResult shouldBe a[IngestFailed[_]]
-
-          val ingestFailed = ingestResult.asInstanceOf[IngestFailed[_]]
-
-          ingestFailed.maybeUserFacingMessage.get shouldBe s"Access denied while trying to read s3://${archiveLocation.namespace}/${archiveLocation.path}"
+            assertIsError(result) { maybeMessage =>
+              maybeMessage.get shouldBe s"Access denied while trying to read s3://${archiveLocation.namespace}/${archiveLocation.path}"
+            }
+          }
         }
       }
     }
+  }
+
+  private def assertIsError(result: Try[IngestStepResult[UnpackSummary]])(
+    checkMessage: Option[String] => Assertion
+  ): Assertion = {
+    val ingestResult = result.success.value
+    ingestResult shouldBe a[IngestFailed[_]]
+
+    val ingestFailed = ingestResult.asInstanceOf[IngestFailed[_]]
+
+    checkMessage(ingestFailed.maybeUserFacingMessage)
   }
 }
