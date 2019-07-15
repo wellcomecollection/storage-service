@@ -102,7 +102,7 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
   }
 
   describe("includes users-facing messages if reading the archive fails") {
-    it("includes a user-facing message if it gets a permissions error") {
+    it("if it gets a permissions error") {
       val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
       val dstLocation = createObjectLocationPrefix
 
@@ -133,6 +133,78 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
 
             assertIsError(result) { maybeMessage =>
               maybeMessage.get shouldBe s"Access denied while trying to read s3://${archiveLocation.namespace}/${archiveLocation.path}"
+            }
+          }
+        }
+      }
+    }
+
+    it("if the bucket does not exist") {
+      val srcLocation = createObjectLocationWith(bucket = createBucket)
+      val dstLocation = createObjectLocationPrefix
+
+      withStreamStore { implicit streamStore =>
+        val result =
+          unpacker.unpack(
+            ingestId = createIngestID,
+            srcLocation = srcLocation,
+            dstLocation = dstLocation
+          )
+
+        assertIsError(result) { maybeMessage =>
+          maybeMessage.get shouldBe s"There is no S3 bucket ${srcLocation.namespace}"
+        }
+      }
+    }
+
+    it("if the key does not exist") {
+      val dstLocation = createObjectLocationPrefix
+
+      withLocalS3Bucket { bucket =>
+        val srcLocation = createObjectLocationWith(bucket = bucket)
+
+        withStreamStore { implicit streamStore =>
+          val result =
+            unpacker.unpack(
+              ingestId = createIngestID,
+              srcLocation = srcLocation,
+              dstLocation = dstLocation
+            )
+
+          assertIsError(result) { maybeMessage =>
+            maybeMessage.get shouldBe s"There is no archive at s3://${srcLocation.namespace}/${srcLocation.path}"
+          }
+        }
+      }
+    }
+
+    it("if the bucket is in the wrong region") {
+      val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
+      val dstLocation = createObjectLocationPrefix
+
+      withLocalS3Bucket { srcBucket =>
+        withStreamStore { implicit streamStore =>
+          withArchive(srcBucket, archiveFile) { archiveLocation =>
+            implicit val badS3Client: AmazonS3 =
+              S3ClientFactory.create(
+                region = "eu-west-1",
+                endpoint = "http://localhost:33333",
+                accessKey = "accessKey1",
+                secretKey = "verySecretKey1"
+              )
+
+            val badUnpacker: S3Unpacker =
+              new S3Unpacker()(badS3Client)
+
+            val result =
+              badUnpacker.unpack(
+                ingestId = createIngestID,
+                srcLocation = archiveLocation,
+                dstLocation = dstLocation
+              )
+
+            assertIsError(result) { maybeMessage =>
+              maybeMessage.get shouldBe s"Cannot read s3://${archiveLocation.namespace}/${archiveLocation.path} -- can only read archives in region eu-west-1, but this is in localhost"
             }
           }
         }
