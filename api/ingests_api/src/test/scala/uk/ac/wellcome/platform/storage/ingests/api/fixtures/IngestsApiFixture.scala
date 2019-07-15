@@ -72,7 +72,7 @@ trait IngestsApiFixture
     val messageSender = new MemoryMessageSender()
 
     val brokenTracker = new MemoryIngestTracker(
-      underlying = new MemoryVersionedStore[IngestID, Int, Ingest](
+      underlying = new MemoryVersionedStore[IngestID, Ingest](
         new MemoryStore[Version[IngestID, Int], Ingest](
           initialEntries = Map.empty) with MemoryMaxima[IngestID, Ingest]
       )
