@@ -178,39 +178,6 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
       }
     }
 
-    it("if the bucket is in the wrong region") {
-      val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
-      val dstLocation = createObjectLocationPrefix
-
-      withLocalS3Bucket { srcBucket =>
-        withStreamStore { implicit streamStore =>
-          withArchive(srcBucket, archiveFile) { archiveLocation =>
-            implicit val badS3Client: AmazonS3 =
-              S3ClientFactory.create(
-                region = "eu-west-1",
-                endpoint = "http://localhost:33333",
-                accessKey = "accessKey1",
-                secretKey = "verySecretKey1"
-              )
-
-            val badUnpacker: S3Unpacker =
-              new S3Unpacker()(badS3Client)
-
-            val result =
-              badUnpacker.unpack(
-                ingestId = createIngestID,
-                srcLocation = archiveLocation,
-                dstLocation = dstLocation
-              )
-
-            assertIsError(result) { maybeMessage =>
-              maybeMessage.get shouldBe s"Cannot read s3://${archiveLocation.namespace}/${archiveLocation.path} -- can only read archives in region eu-west-1, but this is in localhost"
-            }
-          }
-        }
-      }
-    }
-
     it("if the bucket name is invalid") {
       val srcLocation = createObjectLocationWith(namespace = "ABCD")
       val dstLocation = createObjectLocationPrefix
