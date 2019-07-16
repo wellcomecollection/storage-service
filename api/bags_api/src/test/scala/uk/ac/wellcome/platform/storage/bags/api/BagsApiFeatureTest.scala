@@ -457,6 +457,36 @@ class BagsApiFeatureTest
       }
     }
 
+    it("returns a 404 NotFound if there are no manifests before the specified version") {
+      val storageManifest = createStorageManifest
+
+      val multipleManifests = (5 to 10)
+        .map { version =>
+          version -> storageManifest.copy(
+            createdDate = randomInstant,
+            version = version
+          )
+        }
+        .toMap
+
+      val initialManifests = multipleManifests.values.toSeq.sortBy { _.version }
+
+      withConfiguredApp(initialManifests) { case (_, metrics, baseUrl) =>
+        whenGetRequestReady(
+          s"$baseUrl/bags/${storageManifest.id}/versions?before=v4") {
+          response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"No storage manifest versions found for ${storageManifest.id} before v4",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
+
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+        }
+      }
+    }
+
     it("returns a 400 UserError if search for manifests before a non-numeric version") {
       val badBefore = randomAlphanumeric
 

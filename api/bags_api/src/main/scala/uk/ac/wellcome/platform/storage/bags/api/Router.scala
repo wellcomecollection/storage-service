@@ -87,14 +87,16 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
           externalIdentifier = ExternalIdentifier(externalIdentifier)
         )
 
-        def buildResultsList(matchingManifests: Either[ReadError, Seq[StorageManifest]]) =
+        def buildResultsList(
+          matchingManifests: Either[ReadError, Seq[StorageManifest]],
+          notFoundMessage: String) =
           matchingManifests match {
             case Right(Nil) =>
               complete(
                 NotFound -> UserErrorResponse(
                   context = contextURL,
                   statusCode = StatusCodes.NotFound,
-                  description = s"No storage manifest versions found for $bagId"
+                  description = notFoundMessage
                 )
               )
 
@@ -114,12 +116,15 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
             parseVersion(maybeVersion) match {
               case Success(Some(version)) =>
                 buildResultsList(
-                  storageManifestDao.listVersions(bagId, before = version)
+                  storageManifestDao.listVersions(bagId, before = version),
+                  notFoundMessage = s"No storage manifest versions found for $bagId before v$version"
+
                 )
 
               case Success(None) =>
                 buildResultsList(
-                  storageManifestDao.listVersions(bagId)
+                  storageManifestDao.listVersions(bagId),
+                  notFoundMessage = s"No storage manifest versions found for $bagId"
                 )
 
               // Note: if the version is empty, we'll always be able to parse it,
