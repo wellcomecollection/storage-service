@@ -6,10 +6,8 @@ import org.scanamo.{Table => ScanamoTable}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  StorageManifestDao,
-  StorageManifestDaoTestCases
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestDao, StorageManifestDaoTestCases}
+import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.fixtures.{DynamoFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -65,16 +63,76 @@ class DynamoStorageManifestDaoTest
     }
   }
 
-  describe("it handles errors from AWS") {
-    // if table is wrong structure
+  describe("it handles errors from AWS when looking up versions") {
+    it("if the table rows have the wrong structure") {
+      case class BadRow(id: String, version: Int, data: String)
 
-    // if nothing matches
+      val bagId = createBagId
 
-    // if row is wrong format
+      withLocalDynamoDbTable { table =>
+        scanamo.exec(ScanamoTable[BadRow](table.name).put(
+          BadRow(
+            id = DynamoID.createId(bagId.space, bagId.externalIdentifier),
+            version = randomInt(0, 100),
+            data = randomAlphanumeric
+          )
+        ))
 
-    // if dangling pointer
+        withLocalS3Bucket { bucket =>
+          implicit val context: (Table, Bucket) = (table, bucket)
 
-    // if wrong format in S3
+          withDao { dao =>
+            val err = dao.listVersions(bagId).left.value
+
+            err.e.getMessage should startWith("Errors querying DynamoDB")
+          }
+        }
+      }
+    }
+
+    it("if the Dynamo row points to a dangling S3 pointer") {
+      val storageManifest = createStorageManifest
+
+      withLocalDynamoDbTable { table =>
+        withLocalS3Bucket { bucket =>
+          implicit val context: (Table, Bucket) = (table, bucket)
+
+          withDao { dao =>
+            dao.put(storageManifest)
+
+            listKeysInBucket(bucket).foreach {
+              s3Client.deleteObject(bucket.name, _)
+            }
+
+            val err = dao.listVersions(storageManifest.id).left.value
+
+            err.e.getMessage should startWith("Errors fetching S3 objects for manifests")
+          }
+        }
+      }
+    }
+
+    it("if the S3 objects have the wrong format") {
+      val storageManifest = createStorageManifest
+
+      withLocalDynamoDbTable { table =>
+        withLocalS3Bucket { bucket =>
+          implicit val context: (Table, Bucket) = (table, bucket)
+
+          withDao { dao =>
+            dao.put(storageManifest)
+
+            listKeysInBucket(bucket).foreach {
+              s3Client.putObject(bucket.name, _, randomAlphanumeric)
+            }
+
+            val err = dao.listVersions(storageManifest.id).left.value
+
+            err.e.getMessage should startWith("Errors fetching S3 objects for manifests")
+          }
+        }
+      }
+    }
   }
 
   override def createTable(table: Table): Table =
