@@ -259,4 +259,24 @@ class BagsApiFeatureTest
       }
     }
   }
+
+  describe("GET /bags/:space/:id/versions") {
+    it("returns a 404 NotFound if there are no manifests for this bag ID") {
+      withConfiguredApp() { case (_, metrics, baseUrl) =>
+        val bagId = createBagId
+        whenGetRequestReady(
+          s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}/versions") {
+          response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"No storage manifest versions found for $bagId",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
+
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+        }
+      }
+    }
+  }
 }
