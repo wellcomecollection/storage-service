@@ -2,8 +2,15 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, StorageManifestGenerators}
-import uk.ac.wellcome.storage.{NoVersionExistsError, VersionAlreadyExistsError, WriteError}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  StorageManifestGenerators
+}
+import uk.ac.wellcome.storage.{
+  NoVersionExistsError,
+  VersionAlreadyExistsError,
+  WriteError
+}
 
 trait StorageManifestDaoTestCases[Context]
     extends FunSpec
@@ -63,9 +70,13 @@ trait StorageManifestDaoTestCases[Context]
 
       withContext { implicit context =>
         withDao { dao =>
-          manifests.zipWithIndex.foreach { case (manifest, version) =>
-            dao.put(manifest) shouldBe a[Right[_, _]]
-            dao.get(storageManifest.id, version = version).right.value shouldBe manifest
+          manifests.zipWithIndex.foreach {
+            case (manifest, version) =>
+              dao.put(manifest) shouldBe a[Right[_, _]]
+              dao
+                .get(storageManifest.id, version = version)
+                .right
+                .value shouldBe manifest
           }
         }
       }
@@ -102,7 +113,10 @@ trait StorageManifestDaoTestCases[Context]
           }
 
           println(dao.listVersions(bagId = storageManifest.id))
-          dao.listVersions(bagId = storageManifest.id).right.value should contain theSameElementsAs manifests
+          dao
+            .listVersions(bagId = storageManifest.id)
+            .right
+            .value should contain theSameElementsAs manifests
         }
       }
     }
@@ -123,7 +137,10 @@ trait StorageManifestDaoTestCases[Context]
             dao.put(manifest) shouldBe a[Right[_, _]]
           }
 
-          dao.listVersions(bagId = storageManifest.id).right.value shouldBe manifests.reverse
+          dao
+            .listVersions(bagId = storageManifest.id)
+            .right
+            .value shouldBe manifests.reverse
         }
       }
     }
@@ -177,8 +194,9 @@ trait StorageManifestDaoTestCases[Context]
 
       withContext { implicit context =>
         withDao { dao =>
-          manifests.zipWithIndex.foreach { case (manifest, version) =>
-            dao.listVersions(createBagId).right.value shouldBe empty
+          manifests.zipWithIndex.foreach {
+            case (manifest, version) =>
+              dao.listVersions(createBagId).right.value shouldBe empty
           }
         }
       }

@@ -6,7 +6,10 @@ import org.scanamo.{Table => ScanamoTable}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestDao, StorageManifestDaoTestCases}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  StorageManifestDao,
+  StorageManifestDaoTestCases
+}
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.fixtures.{DynamoFixtures, S3Fixtures}
@@ -70,13 +73,14 @@ class DynamoStorageManifestDaoTest
       val bagId = createBagId
 
       withLocalDynamoDbTable { table =>
-        scanamo.exec(ScanamoTable[BadRow](table.name).put(
-          BadRow(
-            id = DynamoID.createId(bagId.space, bagId.externalIdentifier),
-            version = randomInt(0, 100),
-            data = randomAlphanumeric
-          )
-        ))
+        scanamo.exec(
+          ScanamoTable[BadRow](table.name).put(
+            BadRow(
+              id = DynamoID.createId(bagId.space, bagId.externalIdentifier),
+              version = randomInt(0, 100),
+              data = randomAlphanumeric
+            )
+          ))
 
         withLocalS3Bucket { bucket =>
           implicit val context: (Table, Bucket) = (table, bucket)
@@ -106,7 +110,8 @@ class DynamoStorageManifestDaoTest
 
             val err = dao.listVersions(storageManifest.id).left.value
 
-            err.e.getMessage should startWith("Errors fetching S3 objects for manifests")
+            err.e.getMessage should startWith(
+              "Errors fetching S3 objects for manifests")
           }
         }
       }
@@ -128,7 +133,8 @@ class DynamoStorageManifestDaoTest
 
             val err = dao.listVersions(storageManifest.id).left.value
 
-            err.e.getMessage should startWith("Errors fetching S3 objects for manifests")
+            err.e.getMessage should startWith(
+              "Errors fetching S3 objects for manifests")
           }
         }
       }
