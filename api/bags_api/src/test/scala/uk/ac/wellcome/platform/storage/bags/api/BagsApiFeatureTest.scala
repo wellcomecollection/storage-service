@@ -278,5 +278,49 @@ class BagsApiFeatureTest
         }
       }
     }
+
+    it("finds a single version of a storage manifest") {
+      val storageManifest = createStorageManifestWith(
+        locations = List(
+          createObjectLocation,
+          createObjectLocation,
+          createObjectLocation
+        )
+      )
+
+      withConfiguredApp(initialManifests = Seq(storageManifest)) { case (_, metrics, baseUrl) =>
+        val expectedJson =
+          s"""
+             |{
+             |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+             |  "type": "ResultList",
+             |  "results": [
+             |    {
+             |      "type": "Bag",
+             |      "id": "${storageManifest.id.toString}",
+             |      "version": "v${storageManifest.version}",
+             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(storageManifest.createdDate)}"
+             |    }
+             |  ]
+             |}
+              """.stripMargin
+
+        val url =
+          s"$baseUrl/bags/${storageManifest.id.space}/${storageManifest.id.externalIdentifier}/versions"
+
+        whenGetRequestReady(url) { response =>
+          response.status shouldBe StatusCodes.OK
+
+          withStringEntity(response.entity) { actualJson =>
+            assertJsonStringsAreEqual(actualJson, expectedJson)
+          }
+
+          assertMetricSent(
+            metrics,
+            result = HttpMetricResults.Success
+          )
+        }
+      }
+    }
   }
 }
