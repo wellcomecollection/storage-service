@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.{EmptyMetadata, StorageManifestDao}
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, ReadError, StoreReadError}
-import uk.ac.wellcome.storage.dynamo.DynamoConfig
+import uk.ac.wellcome.storage.dynamo.{DynamoConfig, DynamoHashRangeEntry}
 import uk.ac.wellcome.storage.s3.S3Config
 import uk.ac.wellcome.storage.store.{HybridIndexedStoreEntry, HybridStoreEntry, VersionedStore}
 import uk.ac.wellcome.storage.store.dynamo.{DynamoHashRangeStore, DynamoHybridStoreWithMaxima, DynamoVersionedHybridStore}
@@ -114,7 +114,8 @@ class DynamoStorageManifestDao(
   }
 
   private def getDynamoIndexEntries(bagId: BagId, before: Option[Int]): Either[StoreReadError, Seq[HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]]] = {
-    val table = ScanamoTable[HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]](dynamoConfig.tableName)
+    val table = ScanamoTable[
+      DynamoHashRangeEntry[BagId, Int, HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]]](dynamoConfig.tableName)
 
     val baseOps = before match {
       case Some(beforeVersion) => table.descending.from('version -> beforeVersion)
@@ -142,6 +143,6 @@ class DynamoStorageManifestDao(
           right = scanamoSuccesses,
           left = StoreReadError(new Throwable(s"Errors querying DynamoDB for $bagId before=$before: $scanamoErrors"))
         )
-    } yield indexEntries
+    } yield indexEntries.map { _.payload }
   }
 }

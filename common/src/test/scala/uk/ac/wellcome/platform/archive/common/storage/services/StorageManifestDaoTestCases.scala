@@ -100,6 +100,7 @@ trait StorageManifestDaoTestCases[Context]
             dao.put(manifest) shouldBe a[Right[_, _]]
           }
 
+          println(dao.listVersions(bagId = storageManifest.id))
           dao.listVersions(bagId = storageManifest.id).right.value should contain theSameElementsAs manifests
         }
       }
