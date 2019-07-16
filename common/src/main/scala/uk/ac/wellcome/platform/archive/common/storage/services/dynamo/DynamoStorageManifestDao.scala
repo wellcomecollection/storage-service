@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestDao
 }
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, ReadError}
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.s3.S3Config
 import uk.ac.wellcome.storage.store.{
@@ -100,4 +100,6 @@ class DynamoStorageManifestDao(
         )
       )
     )
+
+  override def listVersions(bagId: BagId, before: Option[Int]): Either[ReadError, Seq[StorageManifest]] = ???
 }

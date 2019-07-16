@@ -25,4 +25,6 @@ trait StorageManifestDao {
         HybridStoreEntry(storageManifest, metadata = EmptyMetadata())
       )
       .map { _.identifiedT.t }
+
+  def listVersions(bagId: BagId, before: Option[Int] = None): Either[ReadError, Seq[StorageManifest]]
 }
