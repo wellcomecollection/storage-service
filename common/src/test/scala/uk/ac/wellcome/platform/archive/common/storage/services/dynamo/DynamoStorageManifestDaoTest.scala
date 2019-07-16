@@ -65,6 +65,18 @@ class DynamoStorageManifestDaoTest
     }
   }
 
+  describe("it handles errors from AWS") {
+    // if table is wrong structure
+
+    // if nothing matches
+
+    // if row is wrong format
+
+    // if dangling pointer
+
+    // if wrong format in S3
+  }
+
   override def createTable(table: Table): Table =
     createTableWithHashRangeKey(
       table,

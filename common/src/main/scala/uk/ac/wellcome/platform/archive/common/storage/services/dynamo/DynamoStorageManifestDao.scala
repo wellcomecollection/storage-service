@@ -118,7 +118,9 @@ class DynamoStorageManifestDao(
       DynamoHashRangeEntry[BagId, Int, HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]]](dynamoConfig.tableName)
 
     val baseOps = before match {
-      case Some(beforeVersion) => table.descending.from('version -> beforeVersion)
+      case Some(beforeVersion) => table.descending.from(
+        'id -> DynamoID.createId(bagId.space, bagId.externalIdentifier) and
+          'version -> beforeVersion)
       case None                => table.descending
     }
 
