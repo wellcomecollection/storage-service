@@ -26,8 +26,9 @@ trait StorageManifestDao {
       )
       .map { _.identifiedT.t }
 
-  protected def listVersions(bagId: BagId,
-                             before: Option[Int]): Either[ReadError, Seq[StorageManifest]]
+  protected def listVersions(
+    bagId: BagId,
+    before: Option[Int]): Either[ReadError, Seq[StorageManifest]]
 
   def listVersions(bagId: BagId): Either[ReadError, Seq[StorageManifest]] =
     listVersions(bagId, before = None)

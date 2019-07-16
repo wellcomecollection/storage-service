@@ -8,11 +8,24 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.storage.bags.api.models.{DisplayResultList, ResponseDisplayBag, ResultListEntry}
+import uk.ac.wellcome.platform.storage.bags.api.models.{
+  DisplayResultList,
+  ResponseDisplayBag,
+  ResultListEntry
+}
 import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
 
 import scala.concurrent.ExecutionContext
@@ -71,7 +84,9 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
                   )
                 )
               case Left(storageError) =>
-                error(s"Error while trying to look up $bagId v = $maybeVersion", storageError.e)
+                error(
+                  s"Error while trying to look up $bagId v = $maybeVersion",
+                  storageError.e)
                 complete(
                   InternalServerError -> InternalServerErrorResponse(
                     context = contextURL,
@@ -124,14 +139,15 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
               case Success(Some(version)) =>
                 buildResultsList(
                   storageManifestDao.listVersions(bagId, before = version),
-                  notFoundMessage = s"No storage manifest versions found for $bagId before v$version"
-
+                  notFoundMessage =
+                    s"No storage manifest versions found for $bagId before v$version"
                 )
 
               case Success(None) =>
                 buildResultsList(
                   storageManifestDao.listVersions(bagId),
-                  notFoundMessage = s"No storage manifest versions found for $bagId"
+                  notFoundMessage =
+                    s"No storage manifest versions found for $bagId"
                 )
 
               // Note: if the version is empty, we'll always be able to parse it,
@@ -141,7 +157,8 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
                   BadRequest -> UserErrorResponse(
                     context = contextURL,
                     statusCode = StatusCodes.BadRequest,
-                    description = s"Cannot parse version string: ${maybeVersion.get}"
+                    description =
+                      s"Cannot parse version string: ${maybeVersion.get}"
                   )
                 )
             }
@@ -157,8 +174,11 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
     queryParam match {
       case Some(versionString) =>
         versionRegex.findFirstMatchIn(versionString) match {
-          case Some(regexMatch) => Success(Some(regexMatch.group("version").toInt))
-          case None             => Failure(new Throwable(s"Could not parse version string: $versionString"))
+          case Some(regexMatch) =>
+            Success(Some(regexMatch.group("version").toInt))
+          case None =>
+            Failure(
+              new Throwable(s"Could not parse version string: $versionString"))
         }
 
       case None => Success(None)

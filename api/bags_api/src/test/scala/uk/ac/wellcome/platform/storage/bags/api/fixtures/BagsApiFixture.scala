@@ -78,20 +78,24 @@ trait BagsApiFixture
   }
 
   def withBrokenApp[R](
-    testWith: TestWith[(MemoryMetrics[Unit], String), R])
-    : R = {
-    val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[StorageManifest, EmptyMetadata]](
+    testWith: TestWith[(MemoryMetrics[Unit], String), R]): R = {
+    val versionedStore = MemoryVersionedStore[
+      BagId,
+      HybridStoreEntry[StorageManifest, EmptyMetadata]](
       initialEntries = Map.empty
     )
 
     val brokenDao = new MemoryStorageManifestDao(versionedStore) {
-      override def getLatest(id: BagId): scala.Either[ReadError, StorageManifest] =
+      override def getLatest(
+        id: BagId): scala.Either[ReadError, StorageManifest] =
         Left(StoreReadError(new Throwable("BOOM!")))
 
-      override def get(id: BagId, version: Int): Either[ReadError, StorageManifest] =
+      override def get(id: BagId,
+                       version: Int): Either[ReadError, StorageManifest] =
         Left(StoreReadError(new Throwable("BOOM!")))
 
-      override def listVersions(bagId: BagId): Either[ReadError, Seq[StorageManifest]] =
+      override def listVersions(
+        bagId: BagId): Either[ReadError, Seq[StorageManifest]] =
         Left(StoreReadError(new Throwable("BOOM!")))
     }
 
