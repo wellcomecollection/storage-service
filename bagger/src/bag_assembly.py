@@ -23,12 +23,11 @@ def cleanup(bag_details):
     if os.path.isdir(directory):
         shutil.rmtree(directory)
 
-    zipfile = bag_details["zip_file_path"]
-
-    logging.debug("deleting %s", zipfile)
-
-    if os.path.isfile(zipfile):
-        os.remove(zipfile)
+    zipfile = bag_details.get("zip_file_path", None)
+    if zipfile is not None:
+        logging.debug("deleting %s", zipfile)
+        if os.path.isfile(zipfile):
+            os.remove(zipfile)
 
 
 def prepare_bag_dir(b_number):
