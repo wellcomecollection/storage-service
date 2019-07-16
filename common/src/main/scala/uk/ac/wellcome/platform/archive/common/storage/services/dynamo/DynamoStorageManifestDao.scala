@@ -9,13 +9,23 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.{
-  StorageManifestDao, EmptyMetadata}
+  EmptyMetadata,
+  StorageManifestDao
+}
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.s3.S3Config
-import uk.ac.wellcome.storage.store.{HybridIndexedStoreEntry, HybridStoreEntry, VersionedStore}
-import uk.ac.wellcome.storage.store.dynamo.{DynamoHashRangeStore, DynamoHybridStoreWithMaxima, DynamoVersionedHybridStore}
+import uk.ac.wellcome.storage.store.{
+  HybridIndexedStoreEntry,
+  HybridStoreEntry,
+  VersionedStore
+}
+import uk.ac.wellcome.storage.store.dynamo.{
+  DynamoHashRangeStore,
+  DynamoHybridStoreWithMaxima,
+  DynamoVersionedHybridStore
+}
 import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 import uk.ac.wellcome.storage.streaming.Codec._
 
@@ -32,13 +42,15 @@ class DynamoStorageManifestDao(
   type DynamoStoreEntry =
     HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]
 
-  implicit val evidence: DynamoFormat[EmptyMetadata] = new DynamoFormat[EmptyMetadata] {
-    override def read(av: DynamoValue): scala.Either[DynamoReadError, EmptyMetadata] =
-      Right(EmptyMetadata())
+  implicit val evidence: DynamoFormat[EmptyMetadata] =
+    new DynamoFormat[EmptyMetadata] {
+      override def read(
+        av: DynamoValue): scala.Either[DynamoReadError, EmptyMetadata] =
+        Right(EmptyMetadata())
 
-    override def write(t: EmptyMetadata): DynamoValue =
-      DynamoValue.fromMap(Map.empty)
-  }
+      override def write(t: EmptyMetadata): DynamoValue =
+        DynamoValue.fromMap(Map.empty)
+    }
 
   implicit val bagIdFormat: DynamoFormat[BagId] = new DynamoFormat[BagId] {
     override def read(av: DynamoValue): scala.Either[DynamoReadError, BagId] =
@@ -64,18 +76,24 @@ class DynamoStorageManifestDao(
       )
   }
 
-  implicit val indexedStore: DynamoHashRangeStore[BagId, Int, DynamoStoreEntry] =
+  implicit val indexedStore
+    : DynamoHashRangeStore[BagId, Int, DynamoStoreEntry] =
     new DynamoHashRangeStore[BagId, Int, DynamoStoreEntry](dynamoConfig)
 
   implicit val streamStore: S3StreamStore = new S3StreamStore()
   implicit val typedStore: S3TypedStore[StorageManifest] =
     new S3TypedStore[StorageManifest]()
 
-  override val vhs: VersionedStore[BagId, Int, HybridStoreEntry[StorageManifest, EmptyMetadata]] =
-    new DynamoVersionedHybridStore[
-      BagId, Int, StorageManifest, EmptyMetadata](
+  override val vhs
+    : VersionedStore[BagId,
+                     Int,
+                     HybridStoreEntry[StorageManifest, EmptyMetadata]] =
+    new DynamoVersionedHybridStore[BagId, Int, StorageManifest, EmptyMetadata](
       store = new DynamoHybridStoreWithMaxima[
-        BagId, Int, StorageManifest, EmptyMetadata](
+        BagId,
+        Int,
+        StorageManifest,
+        EmptyMetadata](
         prefix = ObjectLocationPrefix(
           namespace = s3Config.bucketName,
           path = ""

@@ -7,13 +7,15 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.{
-  StorageManifestDao, StorageManifestDaoTestCases}
+  StorageManifestDao,
+  StorageManifestDaoTestCases
+}
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.fixtures.{DynamoFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 class DynamoStorageManifestDaoTest
-  extends StorageManifestDaoTestCases[(Table, Bucket)]
+    extends StorageManifestDaoTestCases[(Table, Bucket)]
     with DynamoFixtures
     with S3Fixtures {
   override def withContext[R](testWith: TestWith[(Table, Bucket), R]): R =
@@ -52,7 +54,8 @@ class DynamoStorageManifestDaoTest
 
           case class Identified(id: String)
 
-          val storedIdentifiers = scanamo.exec(ScanamoTable[Identified](table.name).scan())
+          val storedIdentifiers = scanamo
+            .exec(ScanamoTable[Identified](table.name).scan())
             .map { _.right.value }
             .map { _.id }
 

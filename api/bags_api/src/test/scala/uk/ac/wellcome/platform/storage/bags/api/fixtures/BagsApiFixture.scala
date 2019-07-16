@@ -7,10 +7,17 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageManifestVHSFixture, StorageRandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  HttpFixtures,
+  StorageManifestVHSFixture,
+  StorageRandomThings
+}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.{EmptyMetadata, StorageManifestDao}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  EmptyMetadata,
+  StorageManifestDao
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
@@ -32,8 +39,9 @@ trait BagsApiFixture
   val contextURL = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
-  private def withApp[R](metrics: MemoryMetrics[Unit], storageManifestDao: StorageManifestDao)(
-    testWith: TestWith[BagsApi, R]): R =
+  private def withApp[R](
+    metrics: MemoryMetrics[Unit],
+    storageManifestDao: StorageManifestDao)(testWith: TestWith[BagsApi, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
         val httpMetrics = new HttpMetrics(
@@ -87,7 +95,9 @@ trait BagsApiFixture
       }
 
     val brokenVhs = new MemoryStorageManifestDao(
-      new MemoryVersionedStore[BagId, HybridStoreEntry[StorageManifest, EmptyMetadata]](
+      new MemoryVersionedStore[
+        BagId,
+        HybridStoreEntry[StorageManifest, EmptyMetadata]](
         brokenIndex
       )
     )

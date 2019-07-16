@@ -8,7 +8,9 @@ import uk.ac.wellcome.storage.store.{HybridStoreEntry, VersionedStore}
 case class EmptyMetadata()
 
 trait StorageManifestDao {
-  val vhs: VersionedStore[BagId, Int, HybridStoreEntry[StorageManifest, EmptyMetadata]]
+  val vhs: VersionedStore[BagId,
+                          Int,
+                          HybridStoreEntry[StorageManifest, EmptyMetadata]]
 
   def getLatest(id: BagId): Either[ReadError, StorageManifest] =
     vhs.getLatest(id).map { _.identifiedT.t }
@@ -16,7 +18,8 @@ trait StorageManifestDao {
   def get(id: BagId, version: Int): Either[ReadError, StorageManifest] =
     vhs.get(Version(id, version)).map { _.identifiedT.t }
 
-  def put(storageManifest: StorageManifest): Either[WriteError, StorageManifest] =
+  def put(
+    storageManifest: StorageManifest): Either[WriteError, StorageManifest] =
     vhs
       .put(id = Version(storageManifest.id, storageManifest.version))(
         HybridStoreEntry(storageManifest, metadata = EmptyMetadata())

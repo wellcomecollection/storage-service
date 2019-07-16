@@ -3,16 +3,21 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.storage.{NoVersionExistsError, VersionAlreadyExistsError, WriteError}
+import uk.ac.wellcome.storage.{
+  NoVersionExistsError,
+  VersionAlreadyExistsError,
+  WriteError
+}
 
 trait StorageManifestDaoTestCases[Context]
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with EitherValues
     with StorageManifestGenerators {
   def withContext[R](testWith: TestWith[Context, R]): R
 
-  def withDao[R](testWith: TestWith[StorageManifestDao, R])(implicit context: Context): R
+  def withDao[R](testWith: TestWith[StorageManifestDao, R])(
+    implicit context: Context): R
 
   it("allows storing and retrieving a record") {
     val storageManifest = createStorageManifest
@@ -54,7 +59,10 @@ trait StorageManifestDaoTestCases[Context]
     withContext { implicit context =>
       withDao { dao =>
         dao.put(storageManifest).right.value shouldBe storageManifest
-        dao.put(storageManifest).left.value shouldBe a[VersionAlreadyExistsError]
+        dao
+          .put(storageManifest)
+          .left
+          .value shouldBe a[VersionAlreadyExistsError]
       }
     }
   }

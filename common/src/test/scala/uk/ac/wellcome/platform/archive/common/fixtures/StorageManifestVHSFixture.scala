@@ -4,7 +4,9 @@ import org.scalatest.EitherValues
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.services.{
-  StorageManifestDao, EmptyMetadata}
+  EmptyMetadata,
+  StorageManifestDao
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
@@ -36,7 +38,9 @@ trait StorageManifestVHSFixture extends EitherValues {
 
   def createStorageManifestDao(): StorageManifestDao =
     new MemoryStorageManifestDao(
-      MemoryVersionedStore[BagId, HybridStoreEntry[StorageManifest, EmptyMetadata]](
+      MemoryVersionedStore[
+        BagId,
+        HybridStoreEntry[StorageManifest, EmptyMetadata]](
         initialEntries = Map.empty
       )
     )
