@@ -28,7 +28,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new BagsApi(
-      register = register,
+      storageManifestDao = register,
       httpMetrics = httpMetrics,
       httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
       contextURL = HTTPServerBuilder.buildContextURL(config)

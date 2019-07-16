@@ -7,19 +7,12 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bag_register.services.{
-  BagRegisterWorker,
-  Register
-}
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestStatusUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestStatusUpdate}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.ObjectLocation
@@ -44,7 +37,7 @@ trait BagRegisterFixtures
   def withBagRegisterWorker[R](testWith: TestWith[Fixtures, R]): R =
     withActorSystem { implicit actorSystem =>
       withMonitoringClient { implicit monitoringClient =>
-        val storageManifestDao = createStorageManifestDao
+        val storageManifestDao = createStorageManifestDao()
 
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()

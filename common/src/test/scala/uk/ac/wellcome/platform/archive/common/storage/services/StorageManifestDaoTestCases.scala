@@ -12,7 +12,7 @@ trait StorageManifestDaoTestCases[Context]
     with StorageManifestGenerators {
   def withContext[R](testWith: TestWith[Context, R]): R
 
-  def withDao[R](testWith: TestWith[BetterStorageManifestDao, R])(implicit context: Context): R
+  def withDao[R](testWith: TestWith[StorageManifestDao, R])(implicit context: Context): R
 
   it("allows storing and retrieving a record") {
     val storageManifest = createStorageManifest

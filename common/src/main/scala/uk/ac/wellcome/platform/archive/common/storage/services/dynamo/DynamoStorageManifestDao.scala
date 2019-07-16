@@ -8,7 +8,8 @@ import org.scanamo.error.{DynamoReadError, TypeCoercionError}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.{BetterStorageManifestDao, EmptyMetadata}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  StorageManifestDao, EmptyMetadata}
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
@@ -27,7 +28,7 @@ class DynamoStorageManifestDao(
   implicit
   dynamoClient: AmazonDynamoDB,
   s3Client: AmazonS3
-) extends BetterStorageManifestDao {
+) extends StorageManifestDao {
   type DynamoStoreEntry =
     HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]
 

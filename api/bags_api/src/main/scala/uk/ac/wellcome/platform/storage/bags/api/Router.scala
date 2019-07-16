@@ -8,18 +8,9 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagId,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.http.models.{
-  InternalServerErrorResponse,
-  UserErrorResponse
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageManifest,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.models.ResponseDisplayBag
 import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
@@ -27,7 +18,7 @@ import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
 import scala.concurrent.ExecutionContext
 import scala.util.matching.Regex
 
-class Router(register: StorageManifestDao, contextURL: URL)(
+class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
   implicit val ec: ExecutionContext)
     extends Logging {
 
@@ -53,12 +44,12 @@ class Router(register: StorageManifestDao, contextURL: URL)(
                 case Some(versionString) =>
                   versionRegex.findFirstMatchIn(versionString) match {
                     case Some(regexMatch) =>
-                      register.get(
+                      storageManifestDao.get(
                         bagId,
                         version = regexMatch.group("version").toInt)
                     case None => Left(NoVersionExistsError())
                   }
-                case None => register.getLatest(bagId)
+                case None => storageManifestDao.getLatest(bagId)
               }
 
             result match {
