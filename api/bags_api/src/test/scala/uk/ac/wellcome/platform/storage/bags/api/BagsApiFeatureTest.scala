@@ -475,7 +475,6 @@ class BagsApiFeatureTest
       }
     }
 
-
     it("returns a 500 if looking up the versions fails") {
       true shouldBe false
     }

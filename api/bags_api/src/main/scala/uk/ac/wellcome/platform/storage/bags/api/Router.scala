@@ -10,10 +10,10 @@ import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.models.{DisplayResultList, ResponseDisplayBag, ResultListEntry}
-import uk.ac.wellcome.storage.NoVersionExistsError
+import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
 
 import scala.concurrent.ExecutionContext
 import scala.util.matching.Regex
@@ -87,9 +87,7 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
           externalIdentifier = ExternalIdentifier(externalIdentifier)
         )
 
-        val matchingManifests = storageManifestDao.listVersions(bagId)
-
-        get {
+        def buildResultsList(matchingManifests: Either[ReadError, Seq[StorageManifest]]) =
           matchingManifests match {
             case Right(Nil) =>
               complete(
@@ -109,6 +107,32 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
               )
 
             case Left(err) => throw err.e
+          }
+
+        get {
+          parameter('before.as[String] ?) { maybeVersion =>
+            parseVersion(maybeVersion) match {
+              case Success(Some(version)) =>
+                buildResultsList(
+                  storageManifestDao.listVersions(bagId, before = version)
+                )
+
+              case Success(None) =>
+                buildResultsList(
+                  storageManifestDao.listVersions(bagId)
+                )
+
+              // Note: if the version is empty, we'll always be able to parse it,
+              // so the .get here is safe.
+              case Failure(err) =>
+                complete(
+                  BadRequest -> UserErrorResponse(
+                    context = contextURL,
+                    statusCode = StatusCodes.BadRequest,
+                    description = s"Cannot parse version string: ${maybeVersion.get}"
+                  )
+                )
+            }
           }
         }
       }
