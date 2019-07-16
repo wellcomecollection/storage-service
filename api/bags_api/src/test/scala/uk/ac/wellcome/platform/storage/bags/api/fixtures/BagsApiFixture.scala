@@ -6,6 +6,7 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
   StorageManifestVHSFixture,
@@ -13,12 +14,16 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  EmptyMetadata,
+  StorageManifestDao
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
-import uk.ac.wellcome.storage.store.HybridIndexedStoreEntry
-import uk.ac.wellcome.storage.store.memory.MemoryStore
+import uk.ac.wellcome.storage.store.HybridStoreEntry
+import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -34,8 +39,9 @@ trait BagsApiFixture
   val contextURL = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json")
 
-  private def withApp[R](metrics: MemoryMetrics[Unit], vhs: StorageManifestDao)(
-    testWith: TestWith[BagsApi, R]): R =
+  private def withApp[R](
+    metrics: MemoryMetrics[Unit],
+    storageManifestDao: StorageManifestDao)(testWith: TestWith[BagsApi, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
         val httpMetrics = new HttpMetrics(
@@ -44,7 +50,7 @@ trait BagsApiFixture
         )
 
         val bagsApi = new BagsApi(
-          register = vhs,
+          storageManifestDao = storageManifestDao,
           httpMetrics = httpMetrics,
           httpServerConfig = httpServerConfig,
           contextURL = contextURL
@@ -79,16 +85,22 @@ trait BagsApiFixture
     // TODO: This should be a MaximaReadError really.
     val brokenIndex =
       new MemoryStore[
-        Version[String, Int],
-        HybridIndexedStoreEntry[String, Map[String, String]]](
+        Version[BagId, Int],
+        HybridStoreEntry[StorageManifest, EmptyMetadata]](
         initialEntries = Map.empty) with MemoryMaxima[
-        String,
-        HybridIndexedStoreEntry[String, Map[String, String]]] {
-        override def max(id: String) =
+        BagId,
+        HybridStoreEntry[StorageManifest, EmptyMetadata]] {
+        override def max(id: BagId) =
           Left(NoMaximaValueError(new Throwable("BOOM!")))
       }
 
-    val brokenVhs = createStorageManifestDao(indexStore = brokenIndex)
+    val brokenVhs = new MemoryStorageManifestDao(
+      new MemoryVersionedStore[
+        BagId,
+        HybridStoreEntry[StorageManifest, EmptyMetadata]](
+        brokenIndex
+      )
+    )
 
     val metrics = new MemoryMetrics[Unit]()
 

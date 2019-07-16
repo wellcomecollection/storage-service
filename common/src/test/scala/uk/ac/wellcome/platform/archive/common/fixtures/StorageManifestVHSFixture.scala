@@ -2,9 +2,14 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 
 import org.scalatest.EitherValues
 import uk.ac.wellcome.json.JsonUtil._
-// import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  EmptyMetadata,
+  StorageManifestDao
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
+import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.HybridIndexedStoreEntry
@@ -31,20 +36,12 @@ trait StorageManifestVHSFixture extends EitherValues {
     new MemoryTypedStore[String, StorageManifest](Map.empty)
   }
 
-  def createStorageManifestDao(implicit indexStore: StorageManifestIndex =
-                                 createIndex,
-                               typedStore: StorageManifestTypedStore =
-                                 createTypedStore): StorageManifestDao =
-    // TODO: This should use a companion object
-    new StorageManifestDao(
-      new MemoryVersionedHybridStore[
-        String,
-        StorageManifest,
-        Map[String, String]](
-        new MemoryHybridStoreWithMaxima[
-          String,
-          StorageManifest,
-          Map[String, String]]()
+  def createStorageManifestDao(): StorageManifestDao =
+    new MemoryStorageManifestDao(
+      MemoryVersionedStore[
+        BagId,
+        HybridStoreEntry[StorageManifest, EmptyMetadata]](
+        initialEntries = Map.empty
       )
     )
 }

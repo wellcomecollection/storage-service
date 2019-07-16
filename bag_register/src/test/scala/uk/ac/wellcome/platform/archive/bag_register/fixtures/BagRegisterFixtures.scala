@@ -44,7 +44,7 @@ trait BagRegisterFixtures
   def withBagRegisterWorker[R](testWith: TestWith[Fixtures, R]): R =
     withActorSystem { implicit actorSystem =>
       withMonitoringClient { implicit monitoringClient =>
-        val storageManifestDao = createStorageManifestDao
+        val storageManifestDao = createStorageManifestDao()
 
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
