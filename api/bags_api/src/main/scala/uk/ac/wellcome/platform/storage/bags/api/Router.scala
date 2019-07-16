@@ -93,6 +93,21 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
             }
           }
         }
+      } ~ path(Segment / Segment / "versions") { (space, externalIdentifier) =>
+        val bagId = BagId(
+          space = StorageSpace(space),
+          externalIdentifier = ExternalIdentifier(externalIdentifier)
+        )
+
+        get {
+          complete(
+            NotFound -> UserErrorResponse(
+              context = contextURL,
+              statusCode = StatusCodes.NotFound,
+              description = s"No storage manifest versions found for $bagId"
+            )
+          )
+        }
       }
     }
   }
