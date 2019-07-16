@@ -125,5 +125,34 @@ trait StorageManifestDaoTestCases[Context]
         }
       }
     }
+
+    it("only returns versions less than the 'before' parameter") {
+      val storageManifest = createStorageManifest
+
+      val manifests = (0 to 6).map { version =>
+        storageManifest.copy(
+          createdDate = randomInstant,
+          version = version
+        )
+      }
+
+      withContext { implicit context =>
+        withDao { dao =>
+          manifests.foreach { manifest =>
+            dao.put(manifest) shouldBe a[Right[_, _]]
+          }
+
+          val bagId = storageManifest.id
+
+          dao.listVersions(bagId).right.value should have size 7
+
+          // Omitting versions 5 and 6
+          dao.listVersions(bagId, before = 5).right.value should have size 5
+
+          // Omitting versions 3, 4, 5 and 6
+          dao.listVersions(bagId, before = 3).right.value should have size 3
+        }
+      }
+    }
   }
 }
