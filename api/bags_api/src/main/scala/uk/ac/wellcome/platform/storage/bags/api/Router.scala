@@ -8,20 +8,11 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagId,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.http.models.{
-  InternalServerErrorResponse,
-  UserErrorResponse
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageManifest,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.storage.bags.api.models.ResponseDisplayBag
+import uk.ac.wellcome.platform.storage.bags.api.models.{DisplayResultList, ResponseDisplayBag, ResultListEntry}
 import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
 
 import scala.concurrent.ExecutionContext
@@ -114,7 +105,10 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
 
             case Right(manifests) =>
               complete(
-                manifests
+                DisplayResultList(
+                  context = contextURL.toString,
+                  results = manifests.map { ResultListEntry(_) }
+                )
               )
 
             case Left(err) => throw err.e

@@ -322,5 +322,17 @@ class BagsApiFeatureTest
         }
       }
     }
+
+    it("finds multiple versions of a manifest") {
+      true shouldBe false
+    }
+
+    it("supports searching for manifests before a given version") {
+      true shouldBe false
+    }
+
+    it("returns a 500 if looking up the versions fails") {
+      true shouldBe false
+    }
   }
 }
