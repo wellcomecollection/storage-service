@@ -71,7 +71,7 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
                   )
                 )
               case Left(storageError) =>
-                error("Internal server error", storageError.e)
+                error(s"Error while trying to look up $bagId v = $maybeVersion", storageError.e)
                 complete(
                   InternalServerError -> InternalServerErrorResponse(
                     context = contextURL,
@@ -108,7 +108,14 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
                 )
               )
 
-            case Left(err) => throw err.e
+            case Left(err) =>
+              error(s"Error while trying to look up versions of $bagId", err.e)
+              complete(
+                InternalServerError -> InternalServerErrorResponse(
+                  context = contextURL,
+                  statusCode = StatusCodes.InternalServerError
+                )
+              )
           }
 
         get {
