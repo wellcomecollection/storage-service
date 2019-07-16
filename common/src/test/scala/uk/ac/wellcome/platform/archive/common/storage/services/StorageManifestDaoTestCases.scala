@@ -19,50 +19,93 @@ trait StorageManifestDaoTestCases[Context]
   def withDao[R](testWith: TestWith[StorageManifestDao, R])(
     implicit context: Context): R
 
-  it("allows storing and retrieving a record") {
-    val storageManifest = createStorageManifest
+  describe("behaves as a StorageManifestDao") {
+    it("allows storing and retrieving a manifest") {
+      val storageManifest = createStorageManifest
 
-    val newStorageManifest = createStorageManifestWith(
-      space = storageManifest.space,
-      bagInfo = storageManifest.info,
-      version = storageManifest.version
-    )
+      val newStorageManifest = createStorageManifestWith(
+        space = storageManifest.space,
+        bagInfo = storageManifest.info,
+        version = storageManifest.version
+      )
 
-    storageManifest.id shouldBe newStorageManifest.id
+      storageManifest.id shouldBe newStorageManifest.id
 
-    withContext { implicit context =>
-      withDao { dao =>
-        // Empty get
+      withContext { implicit context =>
+        withDao { dao =>
+          // Empty get
 
-        val getResultPreInsert = dao.getLatest(storageManifest.id)
-        getResultPreInsert.left.value shouldBe a[NoVersionExistsError]
+          val getResultPreInsert = dao.getLatest(storageManifest.id)
+          getResultPreInsert.left.value shouldBe a[NoVersionExistsError]
 
-        // Insert
+          // Insert
 
-        val insertResult = dao.put(storageManifest)
-        insertResult shouldBe a[Right[_, _]]
+          val insertResult = dao.put(storageManifest)
+          insertResult shouldBe a[Right[_, _]]
 
-        val getResultPostInsert = dao.getLatest(storageManifest.id)
-        getResultPostInsert.right.value shouldBe storageManifest
+          val getResultPostInsert = dao.getLatest(storageManifest.id)
+          getResultPostInsert.right.value shouldBe storageManifest
 
-        // Update
+          // Update
 
-        val updateResult = dao.put(newStorageManifest)
-        updateResult.left.value shouldBe a[WriteError]
+          val updateResult = dao.put(newStorageManifest)
+          updateResult.left.value shouldBe a[WriteError]
+        }
       }
     }
-  }
 
-  it("blocks putting two manifests with the same version") {
-    val storageManifest = createStorageManifest
+    it("allows storing multiple versions of the same manifest") {
+      val storageManifest = createStorageManifest
 
-    withContext { implicit context =>
-      withDao { dao =>
-        dao.put(storageManifest).right.value shouldBe storageManifest
-        dao
-          .put(storageManifest)
-          .left
-          .value shouldBe a[VersionAlreadyExistsError]
+      val manifests = (0 to 5).map { version =>
+        storageManifest.copy(
+          createdDate = randomInstant,
+          version = version
+        )
+      }
+
+      withContext { implicit context =>
+        withDao { dao =>
+          manifests.zipWithIndex.foreach { case (manifest, version) =>
+            dao.put(manifest) shouldBe a[Right[_, _]]
+            dao.get(storageManifest.id, version = version).right.value shouldBe manifest
+          }
+        }
+      }
+    }
+
+    it("blocks putting two manifests with the same version") {
+      val storageManifest = createStorageManifest
+
+      withContext { implicit context =>
+        withDao { dao =>
+          dao.put(storageManifest).right.value shouldBe storageManifest
+          dao
+            .put(storageManifest)
+            .left
+            .value shouldBe a[VersionAlreadyExistsError]
+        }
+      }
+    }
+
+    it("retrieves a list of versions") {
+      val storageManifest = createStorageManifest
+
+      val manifests = (0 to 5).map { version =>
+        storageManifest.copy(
+          createdDate = randomInstant,
+          version = version
+        )
+      }
+
+      withContext { implicit context =>
+        withDao { dao =>
+          manifests.foreach { manifest =>
+            dao.put(manifest) shouldBe a[Right[_, _]]
+          }
+
+          dao.listVersions(bagId = storageManifest.id).right.value should contain theSameElementsAs manifests
+        }
       }
     }
   }
