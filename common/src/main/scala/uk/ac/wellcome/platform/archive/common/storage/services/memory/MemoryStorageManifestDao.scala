@@ -22,6 +22,8 @@ class MemoryStorageManifestDao(
         .filter { case (_, HybridStoreEntry(manifest, _)) => manifest.id == bagId }
         .map { case (_, HybridStoreEntry(manifest, _)) => manifest }
         .toSeq
+        .sortBy { _.version }
+        .reverse
     )
   }
 }

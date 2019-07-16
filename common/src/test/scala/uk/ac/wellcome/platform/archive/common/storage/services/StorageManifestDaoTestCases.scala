@@ -3,11 +3,7 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.storage.{
-  NoVersionExistsError,
-  VersionAlreadyExistsError,
-  WriteError
-}
+import uk.ac.wellcome.storage.{NoVersionExistsError, VersionAlreadyExistsError, WriteError}
 
 trait StorageManifestDaoTestCases[Context]
     extends FunSpec
@@ -105,6 +101,27 @@ trait StorageManifestDaoTestCases[Context]
           }
 
           dao.listVersions(bagId = storageManifest.id).right.value should contain theSameElementsAs manifests
+        }
+      }
+    }
+
+    it("retrieves a list of versions in descending order") {
+      val storageManifest = createStorageManifest
+
+      val manifests = (0 to 6).map { version =>
+        storageManifest.copy(
+          createdDate = randomInstant,
+          version = version
+        )
+      }
+
+      withContext { implicit context =>
+        withDao { dao =>
+          manifests.foreach { manifest =>
+            dao.put(manifest) shouldBe a[Right[_, _]]
+          }
+
+          dao.listVersions(bagId = storageManifest.id).right.value shouldBe manifests.reverse
         }
       }
     }
