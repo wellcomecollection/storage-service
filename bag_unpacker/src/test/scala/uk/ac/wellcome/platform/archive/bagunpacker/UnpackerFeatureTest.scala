@@ -80,10 +80,12 @@ class UnpackerFeatureTest
   it("sends a failed Ingest update if it cannot read the bag") {
     withBagUnpackerApp(stepName = "unpacker") {
       case (_, _, queue, ingests, outgoing) =>
+        val sourceLocation = createObjectLocationWith(
+          bucket = createBucket
+        )
+
         val payload = createSourceLocationPayloadWith(
-          sourceLocation = createObjectLocationWith(
-            bucket = createBucket
-          )
+          sourceLocation = sourceLocation
         )
         sendNotificationToSQS(queue, payload)
 
@@ -101,7 +103,7 @@ class UnpackerFeatureTest
                 ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
               ingestFailed.status shouldBe Ingest.Failed
               ingestFailed.events.head.description shouldBe
-                s"Unpacker failed - There is no archive at ${payload.sourceLocation}"
+                s"Unpacker failed - There is no S3 bucket ${sourceLocation.namespace}"
           }
         }
     }
