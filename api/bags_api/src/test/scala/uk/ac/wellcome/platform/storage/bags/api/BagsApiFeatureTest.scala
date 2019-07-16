@@ -397,8 +397,84 @@ class BagsApiFeatureTest
     }
 
     it("supports searching for manifests before a given version") {
-      true shouldBe false
+      val storageManifest = createStorageManifest
+
+      val multipleManifests = (1 to 5)
+        .map { version =>
+          version -> storageManifest.copy(
+            createdDate = randomInstant,
+            version = version
+          )
+        }
+        .toMap
+
+      val initialManifests = multipleManifests.values.toSeq.sortBy { _.version }
+
+      withConfiguredApp(initialManifests) { case (_, metrics, baseUrl) =>
+        val expectedJson =
+          s"""
+             |{
+             |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+             |  "type": "ResultList",
+             |  "results": [
+             |    {
+             |      "type": "Bag",
+             |      "id": "${ storageManifest.id.toString }",
+             |      "version": "v3",
+             |      "createdDate": "${ DateTimeFormatter.ISO_INSTANT.format(multipleManifests(3).createdDate) }"
+             |    },
+             |    {
+             |      "type": "Bag",
+             |      "id": "${ storageManifest.id.toString }",
+             |      "version": "v2",
+             |      "createdDate": "${ DateTimeFormatter.ISO_INSTANT.format(multipleManifests(2).createdDate) }"
+             |    },
+             |    {
+             |      "type": "Bag",
+             |      "id": "${ storageManifest.id.toString }",
+             |      "version": "v1",
+             |      "createdDate": "${ DateTimeFormatter.ISO_INSTANT.format(multipleManifests(1).createdDate) }"
+             |    }
+             |  ]
+             |}
+              """.stripMargin
+
+        val url =
+          s"$baseUrl/bags/${storageManifest.id.space}/${storageManifest.id.externalIdentifier}/versions?before=v4"
+
+        whenGetRequestReady(url) { response =>
+          response.status shouldBe StatusCodes.OK
+
+          withStringEntity(response.entity) { actualJson =>
+            assertJsonStringsAreEqual(actualJson, expectedJson)
+          }
+
+          assertMetricSent(
+            metrics,
+            result = HttpMetricResults.Success
+          )
+        }
+      }
     }
+
+    it("returns a 400 UserError if search for manifests before a non-numeric version") {
+      val badBefore = randomAlphanumeric
+
+      withConfiguredApp() { case (_, metrics, baseUrl) =>
+        whenGetRequestReady(s"$baseUrl/bags/$createBagId/versions?before=$badBefore") {
+          response =>
+            assertIsUserErrorResponse(
+              response,
+              description =
+                s"Cannot parse version string: $badBefore",
+              statusCode = StatusCodes.BadRequest
+            )
+
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+        }
+      }
+    }
+
 
     it("returns a 500 if looking up the versions fails") {
       true shouldBe false
