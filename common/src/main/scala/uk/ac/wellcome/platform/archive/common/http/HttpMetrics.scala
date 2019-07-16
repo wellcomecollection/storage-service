@@ -16,6 +16,7 @@ class HttpMetrics(name: String, metrics: Metrics[Future, _]) extends Logging {
   def sendMetric(resp: HttpResponse): Future[Unit] =
     sendMetricForStatus(resp.status)
 
+  // TODO: Can this pattern match on ClientError, ServerError, etc?
   def sendMetricForStatus(status: StatusCode): Future[Unit] = {
     val httpMetric = if (status.isSuccess()) {
       HttpMetricResults.Success
