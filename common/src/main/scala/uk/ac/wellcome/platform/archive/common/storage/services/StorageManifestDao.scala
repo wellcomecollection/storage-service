@@ -58,7 +58,7 @@ class DynamoStorageManifestDao(
       Right(EmptyMetadata())
 
     override def write(t: EmptyMetadata): DynamoValue =
-      DynamoValue.nil
+      DynamoValue.fromMap(Map.empty)
   }
 
   implicit val bagIdFormat: DynamoFormat[BagId] = new DynamoFormat[BagId] {
