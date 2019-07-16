@@ -244,16 +244,24 @@ class BagsApiFeatureTest
     }
 
     it("returns a 500 error if looking up the bag fails") {
-      withBrokenApp {
-        case (_, metrics, baseUrl) =>
-          val bagId = createBagId
-          whenGetRequestReady(
-            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
-            response =>
-              assertIsInternalServerErrorResponse(response)
+      withBrokenApp { case (metrics, baseUrl) =>
+        whenGetRequestReady(s"$baseUrl/bags/$createBagId") {
+          response =>
+            assertIsInternalServerErrorResponse(response)
 
-              assertMetricSent(metrics, result = HttpMetricResults.ServerError)
-          }
+            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+        }
+      }
+    }
+
+    it("returns a 500 error if looking up a specific version of a bag fails") {
+      withBrokenApp { case (metrics, baseUrl) =>
+        whenGetRequestReady(s"$baseUrl/bags/${createBagId}?version=v1") {
+          response =>
+            assertIsInternalServerErrorResponse(response)
+
+            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+        }
       }
     }
   }
@@ -503,8 +511,15 @@ class BagsApiFeatureTest
       }
     }
 
-    it("returns a 500 if looking up the versions fails") {
-      true shouldBe false
+    it("returns a 500 if looking up the lists of versions fails") {
+      withBrokenApp { case (metrics, baseUrl) =>
+        whenGetRequestReady(s"$baseUrl/bags/$createBagId/versions") {
+          response =>
+            assertIsInternalServerErrorResponse(response)
+
+            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+        }
+      }
     }
   }
 }
