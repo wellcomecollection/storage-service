@@ -91,7 +91,7 @@ trait BagsApiFixture
         BagId,
         HybridStoreEntry[StorageManifest, EmptyMetadata]] {
         override def max(id: BagId) =
-          Left(NoMaximaValueError(new Throwable("BOOM!")))
+          Left(MaximaReadError(new Throwable("BOOM!")))
       }
 
     val brokenVhs = new MemoryStorageManifestDao(
