@@ -21,9 +21,8 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.HybridStoreEntry
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
+import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -79,33 +78,31 @@ trait BagsApiFixture
   }
 
   def withBrokenApp[R](
-    testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R])
-    : R = {
-
-    // TODO: This should be a MaximaReadError really.
-    val brokenIndex =
-      new MemoryStore[
-        Version[BagId, Int],
-        HybridStoreEntry[StorageManifest, EmptyMetadata]](
-        initialEntries = Map.empty) with MemoryMaxima[
-        BagId,
-        HybridStoreEntry[StorageManifest, EmptyMetadata]] {
-        override def max(id: BagId) =
-          Left(NoMaximaValueError(new Throwable("BOOM!")))
-      }
-
-    val brokenVhs = new MemoryStorageManifestDao(
-      new MemoryVersionedStore[
-        BagId,
-        HybridStoreEntry[StorageManifest, EmptyMetadata]](
-        brokenIndex
-      )
+    testWith: TestWith[(MemoryMetrics[Unit], String), R]): R = {
+    val versionedStore = MemoryVersionedStore[
+      BagId,
+      HybridStoreEntry[StorageManifest, EmptyMetadata]](
+      initialEntries = Map.empty
     )
+
+    val brokenDao = new MemoryStorageManifestDao(versionedStore) {
+      override def getLatest(
+        id: BagId): scala.Either[ReadError, StorageManifest] =
+        Left(StoreReadError(new Throwable("BOOM!")))
+
+      override def get(id: BagId,
+                       version: Int): Either[ReadError, StorageManifest] =
+        Left(StoreReadError(new Throwable("BOOM!")))
+
+      override def listVersions(
+        bagId: BagId): Either[ReadError, Seq[StorageManifest]] =
+        Left(StoreReadError(new Throwable("BOOM!")))
+    }
 
     val metrics = new MemoryMetrics[Unit]()
 
-    withApp(metrics, brokenVhs) { _ =>
-      testWith((brokenVhs, metrics, httpServerConfig.externalBaseURL))
+    withApp(metrics, brokenDao) { _ =>
+      testWith((metrics, httpServerConfig.externalBaseURL))
     }
   }
 }

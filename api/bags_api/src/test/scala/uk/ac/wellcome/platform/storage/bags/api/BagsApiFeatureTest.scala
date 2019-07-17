@@ -243,14 +243,291 @@ class BagsApiFeatureTest
       }
     }
 
-    // TODO: Come back and restore this test when we can reliably
-    // break the underlying tracker.
-    ignore("returns a 500 error if looking up the bag fails") {
+    it("returns a 500 error if looking up the bag fails") {
       withBrokenApp {
+        case (metrics, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/bags/$createBagId") { response =>
+            assertIsInternalServerErrorResponse(response)
+
+            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          }
+      }
+    }
+
+    it("returns a 500 error if looking up a specific version of a bag fails") {
+      withBrokenApp {
+        case (metrics, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/bags/${createBagId}?version=v1") {
+            response =>
+              assertIsInternalServerErrorResponse(response)
+
+              assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          }
+      }
+    }
+  }
+
+  describe("GET /bags/:space/:id/versions") {
+    it("returns a 404 NotFound if there are no manifests for this bag ID") {
+      withConfiguredApp() {
         case (_, metrics, baseUrl) =>
           val bagId = createBagId
           whenGetRequestReady(
-            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
+            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}/versions") {
+            response =>
+              assertIsUserErrorResponse(
+                response,
+                description = s"No storage manifest versions found for $bagId",
+                statusCode = StatusCodes.NotFound,
+                label = "Not Found"
+              )
+
+              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
+      }
+    }
+
+    it("finds a single version of a storage manifest") {
+      val storageManifest = createStorageManifestWith(
+        locations = List(
+          createObjectLocation,
+          createObjectLocation,
+          createObjectLocation
+        )
+      )
+
+      withConfiguredApp(initialManifests = Seq(storageManifest)) {
+        case (_, metrics, baseUrl) =>
+          val expectedJson =
+            s"""
+             |{
+             |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+             |  "type": "ResultList",
+             |  "results": [
+             |    {
+             |      "type": "Bag",
+             |      "id": "${storageManifest.id.toString}",
+             |      "version": "v${storageManifest.version}",
+             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                 storageManifest.createdDate)}"
+             |    }
+             |  ]
+             |}
+              """.stripMargin
+
+          val url =
+            s"$baseUrl/bags/${storageManifest.id.space}/${storageManifest.id.externalIdentifier}/versions"
+
+          whenGetRequestReady(url) { response =>
+            response.status shouldBe StatusCodes.OK
+
+            withStringEntity(response.entity) { actualJson =>
+              assertJsonStringsAreEqual(actualJson, expectedJson)
+            }
+
+            assertMetricSent(
+              metrics,
+              result = HttpMetricResults.Success
+            )
+          }
+      }
+    }
+
+    it("finds multiple versions of a manifest") {
+      val storageManifest = createStorageManifest
+
+      val multipleManifests = (1 to 5).map { version =>
+        version -> storageManifest.copy(
+          createdDate = randomInstant,
+          version = version
+        )
+      }.toMap
+
+      val initialManifests = multipleManifests.values.toSeq.sortBy { _.version }
+
+      withConfiguredApp(initialManifests) {
+        case (_, metrics, baseUrl) =>
+          val expectedJson =
+            s"""
+             |{
+             |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+             |  "type": "ResultList",
+             |  "results": [
+             |    {
+             |      "type": "Bag",
+             |      "id": "${storageManifest.id.toString}",
+             |      "version": "v5",
+             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                 multipleManifests(5).createdDate)}"
+             |    },
+             |    {
+             |      "type": "Bag",
+             |      "id": "${storageManifest.id.toString}",
+             |      "version": "v4",
+             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                 multipleManifests(4).createdDate)}"
+             |    },
+             |    {
+             |      "type": "Bag",
+             |      "id": "${storageManifest.id.toString}",
+             |      "version": "v3",
+             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                 multipleManifests(3).createdDate)}"
+             |    },
+             |    {
+             |      "type": "Bag",
+             |      "id": "${storageManifest.id.toString}",
+             |      "version": "v2",
+             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                 multipleManifests(2).createdDate)}"
+             |    },
+             |    {
+             |      "type": "Bag",
+             |      "id": "${storageManifest.id.toString}",
+             |      "version": "v1",
+             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                 multipleManifests(1).createdDate)}"
+             |    }
+             |  ]
+             |}
+              """.stripMargin
+
+          val url =
+            s"$baseUrl/bags/${storageManifest.id.space}/${storageManifest.id.externalIdentifier}/versions"
+
+          whenGetRequestReady(url) { response =>
+            response.status shouldBe StatusCodes.OK
+
+            withStringEntity(response.entity) { actualJson =>
+              assertJsonStringsAreEqual(actualJson, expectedJson)
+            }
+
+            assertMetricSent(
+              metrics,
+              result = HttpMetricResults.Success
+            )
+          }
+      }
+    }
+
+    it("supports searching for manifests before a given version") {
+      val storageManifest = createStorageManifest
+
+      val multipleManifests = (1 to 5).map { version =>
+        version -> storageManifest.copy(
+          createdDate = randomInstant,
+          version = version
+        )
+      }.toMap
+
+      val initialManifests = multipleManifests.values.toSeq.sortBy { _.version }
+
+      withConfiguredApp(initialManifests) {
+        case (_, metrics, baseUrl) =>
+          val expectedJson =
+            s"""
+             |{
+             |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+             |  "type": "ResultList",
+             |  "results": [
+             |    {
+             |      "type": "Bag",
+             |      "id": "${storageManifest.id.toString}",
+             |      "version": "v3",
+             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                 multipleManifests(3).createdDate)}"
+             |    },
+             |    {
+             |      "type": "Bag",
+             |      "id": "${storageManifest.id.toString}",
+             |      "version": "v2",
+             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                 multipleManifests(2).createdDate)}"
+             |    },
+             |    {
+             |      "type": "Bag",
+             |      "id": "${storageManifest.id.toString}",
+             |      "version": "v1",
+             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+                 multipleManifests(1).createdDate)}"
+             |    }
+             |  ]
+             |}
+              """.stripMargin
+
+          val url =
+            s"$baseUrl/bags/${storageManifest.id.space}/${storageManifest.id.externalIdentifier}/versions?before=v4"
+
+          whenGetRequestReady(url) { response =>
+            response.status shouldBe StatusCodes.OK
+
+            withStringEntity(response.entity) { actualJson =>
+              assertJsonStringsAreEqual(actualJson, expectedJson)
+            }
+
+            assertMetricSent(
+              metrics,
+              result = HttpMetricResults.Success
+            )
+          }
+      }
+    }
+
+    it(
+      "returns a 404 NotFound if there are no manifests before the specified version") {
+      val storageManifest = createStorageManifest
+
+      val multipleManifests = (5 to 10).map { version =>
+        version -> storageManifest.copy(
+          createdDate = randomInstant,
+          version = version
+        )
+      }.toMap
+
+      val initialManifests = multipleManifests.values.toSeq.sortBy { _.version }
+
+      withConfiguredApp(initialManifests) {
+        case (_, metrics, baseUrl) =>
+          whenGetRequestReady(
+            s"$baseUrl/bags/${storageManifest.id}/versions?before=v4") {
+            response =>
+              assertIsUserErrorResponse(
+                response,
+                description =
+                  s"No storage manifest versions found for ${storageManifest.id} before v4",
+                statusCode = StatusCodes.NotFound,
+                label = "Not Found"
+              )
+
+              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
+      }
+    }
+
+    it(
+      "returns a 400 UserError if search for manifests before a non-numeric version") {
+      val badBefore = randomAlphanumeric
+
+      withConfiguredApp() {
+        case (_, metrics, baseUrl) =>
+          whenGetRequestReady(
+            s"$baseUrl/bags/$createBagId/versions?before=$badBefore") {
+            response =>
+              assertIsUserErrorResponse(
+                response,
+                description = s"Cannot parse version string: $badBefore",
+                statusCode = StatusCodes.BadRequest
+              )
+
+              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
+      }
+    }
+
+    it("returns a 500 if looking up the lists of versions fails") {
+      withBrokenApp {
+        case (metrics, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/bags/$createBagId/versions") {
             response =>
               assertIsInternalServerErrorResponse(response)
 
