@@ -98,14 +98,6 @@ case class VersionedBagRootLocationPayload(
   version: Int
 ) extends BagRootPayload
 
-case class BagReplicaLocation(
-  bagRoot: ObjectLocation,
-  versionDirectory: String
-) {
-  def asLocation: ObjectLocation =
-    bagRoot.join(versionDirectory)
-}
-
 case class BagReplicaLocationPayload(
   context: PipelineContext,
   replicaLocation: BagReplicaLocation,

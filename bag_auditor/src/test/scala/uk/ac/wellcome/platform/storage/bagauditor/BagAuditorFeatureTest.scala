@@ -6,20 +6,10 @@ import org.scalatest.FunSpec
 import org.scalatest.concurrent.Eventually
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  PayloadGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, PayloadGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CreateIngestType,
-  UpdateIngestType
-}
-import uk.ac.wellcome.platform.archive.common.{
-  BagRootLocationPayload,
-  EnrichedBagInformationPayload
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
+import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, VersionedBagRootLocationPayload}
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -44,7 +34,7 @@ class BagAuditorFeatureTest
       bagRootLocation = bagRootLocation
     )
 
-    val expectedPayload = createEnrichedBagInformationPayloadWith(
+    val expectedPayload = createVersionedBagRootLocationPayloadWith(
       context = payload.context,
       bagRootLocation = bagRootLocation,
       version = 1
@@ -61,7 +51,7 @@ class BagAuditorFeatureTest
             assertQueueEmpty(queue)
 
             outgoing
-              .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+              .getMessages[VersionedBagRootLocationPayload] shouldBe Seq(
               expectedPayload)
 
             assertTopicReceivesIngestEvents(
@@ -113,7 +103,7 @@ class BagAuditorFeatureTest
             assertQueueEmpty(queue)
 
             outgoing
-              .getMessages[EnrichedBagInformationPayload] should have size 1
+              .getMessages[VersionedBagRootLocationPayload] should have size 1
 
             assertTopicReceivesIngestEvents(
               payload1.ingestId,
@@ -133,7 +123,7 @@ class BagAuditorFeatureTest
             assertQueueEmpty(queue)
 
             outgoing
-              .getMessages[EnrichedBagInformationPayload] should have size 2
+              .getMessages[VersionedBagRootLocationPayload] should have size 2
 
             assertTopicReceivesIngestEvents(
               payload1.ingestId,

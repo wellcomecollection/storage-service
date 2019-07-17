@@ -7,7 +7,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.BagReplicaLocationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -38,7 +38,7 @@ class BagReplicatorFeatureTest
             outgoing,
             stepName = "replicating") { _ =>
             withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
+              val payload = createVersionedBagRootLocationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
 
@@ -62,7 +62,7 @@ class BagReplicatorFeatureTest
                 )
 
                 outgoing
-                  .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                  .getMessages[BagReplicaLocationPayload] shouldBe Seq(
                   expectedPayload)
 
                 verifyObjectsCopied(

@@ -27,8 +27,8 @@ class DestinationBuilderTest
       version = 1
     )
 
-    location.namespace shouldBe "MyNamespace"
-    location.path shouldBe s"RootPath/${storageSpace.underlying}/${externalIdentifier.toString}/v1"
+    location.asLocation.namespace shouldBe "MyNamespace"
+    location.asLocation.path shouldBe s"RootPath/${storageSpace.underlying}/${externalIdentifier.toString}/v1"
   }
 
   it("skips the root path if not provided") {
@@ -46,7 +46,7 @@ class DestinationBuilderTest
       version = 2
     )
 
-    location.namespace shouldBe "MyNamespace"
-    location.path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/v2"
+    location.asLocation.namespace shouldBe "MyNamespace"
+    location.asLocation.path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/v2"
   }
 }

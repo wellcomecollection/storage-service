@@ -9,15 +9,11 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.BagReplicaLocationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestShouldRetry,
-  IngestStepResult,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestShouldRetry, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 
@@ -47,7 +43,7 @@ class BagReplicatorWorkerTest
           outgoing = outgoing,
           stepName = "replicating") { service =>
           withBagObjects(ingestsBucket) { srcBagRootLocation =>
-            val payload = createEnrichedBagInformationPayloadWith(
+            val payload = createVersionedBagRootLocationPayloadWith(
               bagRootLocation = srcBagRootLocation
             )
 
@@ -55,7 +51,7 @@ class BagReplicatorWorkerTest
             serviceResult.success.value shouldBe a[IngestStepSucceeded[_]]
 
             val receivedMessages =
-              outgoing.getMessages[EnrichedBagInformationPayload]
+              outgoing.getMessages[BagReplicaLocationPayload]
 
             receivedMessages.size shouldBe 1
 
@@ -89,7 +85,7 @@ class BagReplicatorWorkerTest
         withLocalS3Bucket { archiveBucket =>
           withBagReplicatorWorker(bucket = archiveBucket) { worker =>
             withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
+              val payload = createVersionedBagRootLocationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
 
@@ -112,7 +108,7 @@ class BagReplicatorWorkerTest
             bucket = archiveBucket,
             rootPath = Some(rootPath)) { worker =>
             withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
+              val payload = createVersionedBagRootLocationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
 
@@ -141,7 +137,7 @@ class BagReplicatorWorkerTest
         withLocalS3Bucket { archiveBucket =>
           withBagReplicatorWorker(bucket = archiveBucket) { worker =>
             withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
+              val payload = createVersionedBagRootLocationPayloadWith(
                 bagRootLocation = bagRootLocation,
                 version = 3
               )
@@ -163,7 +159,7 @@ class BagReplicatorWorkerTest
         withLocalS3Bucket { archiveBucket =>
           withBagReplicatorWorker(bucket = archiveBucket) { worker =>
             withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
+              val payload = createVersionedBagRootLocationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
 
@@ -185,7 +181,7 @@ class BagReplicatorWorkerTest
             bucket = archiveBucket,
             rootPath = Some("rootprefix")) { worker =>
             withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
+              val payload = createVersionedBagRootLocationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
 
@@ -208,7 +204,7 @@ class BagReplicatorWorkerTest
       withBagReplicatorWorker(bucket = bucket, lockServiceDao = lockServiceDao) {
         service =>
           withBagObjects(bucket) { bagRootLocation =>
-            val payload = createEnrichedBagInformationPayloadWith(
+            val payload = createVersionedBagRootLocationPayloadWith(
               bagRootLocation = bagRootLocation
             )
 
@@ -237,7 +233,7 @@ class BagReplicatorWorkerTest
         withBagReplicatorWorker(
           bucket = bucket,
           lockServiceDao = lockServiceDao) { worker =>
-          val payload = createEnrichedBagInformationPayloadWith(
+          val payload = createVersionedBagRootLocationPayloadWith(
             bagRootLocation = bagRootLocation
           )
 
@@ -287,7 +283,7 @@ class BagReplicatorWorkerTest
             ingests = ingests,
             outgoing = outgoing,
             lockServiceDao = neverAllowLockDao) { _ =>
-            val payload = createEnrichedBagInformationPayloadWith(
+            val payload = createVersionedBagRootLocationPayloadWith(
               bagRootLocation = bagRootLocation
             )
 

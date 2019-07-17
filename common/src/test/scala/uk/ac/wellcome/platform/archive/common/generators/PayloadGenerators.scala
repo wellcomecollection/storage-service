@@ -67,6 +67,20 @@ trait PayloadGenerators
       unpackedBagLocation = unpackedBagLocation
     )
 
+  def createVersionedBagRootLocationPayloadWith(
+    context: PipelineContext = createPipelineContext,
+    bagRootLocation: ObjectLocation = createObjectLocation,
+    version: Int = Random.nextInt()
+  ): VersionedBagRootLocationPayload =
+    VersionedBagRootLocationPayload(
+      context = context,
+      bagRootLocation = bagRootLocation,
+      version = version
+    )
+
+  def createVersionedBagRootLocationPayload: VersionedBagRootLocationPayload =
+    createVersionedBagRootLocationPayloadWith()
+
   def createBagRootLocationPayloadWith(
     context: PipelineContext = createPipelineContext,
     bagRootLocation: ObjectLocation = createObjectLocation
