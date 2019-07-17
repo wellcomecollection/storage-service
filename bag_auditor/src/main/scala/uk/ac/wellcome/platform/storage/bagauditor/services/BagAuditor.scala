@@ -47,8 +47,8 @@ class BagAuditor(versionPicker: VersionPicker) {
           IngestStepSucceeded(
             AuditSuccessSummary(
               startTime = startTime,
-              version = version,
-              endTime = Some(Instant.now())
+              endTime = Instant.now(),
+              version = version
             )
           )
 
@@ -56,7 +56,7 @@ class BagAuditor(versionPicker: VersionPicker) {
           IngestFailed(
             AuditFailureSummary(
               startTime = startTime,
-              endTime = Some(Instant.now())
+              endTime = Instant.now()
             ),
             e = getUnderlyingThrowable(auditError),
             maybeUserFacingMessage =

@@ -14,8 +14,9 @@ import uk.ac.wellcome.storage.ObjectLocation
 sealed trait VerificationSummary extends Summary {
   val rootLocation: ObjectLocation
   val verification: Option[VerificationResult]
-  val startTime: Instant
-  val endTime: Option[Instant]
+
+  val endTime: Instant
+  override val maybeEndTime: Option[Instant] = Some(endTime)
 
   override def toString: String = {
 
@@ -55,9 +56,13 @@ sealed trait VerificationSummary extends Summary {
 object VerificationSummary {
   def incomplete(root: ObjectLocation,
                  e: Throwable,
-                 t: Instant): VerificationIncompleteSummary = {
-    VerificationIncompleteSummary(root, e, t)
-  }
+                 t: Instant): VerificationIncompleteSummary =
+    VerificationIncompleteSummary(
+      rootLocation = root,
+      e = e,
+      startTime = t,
+      endTime = Instant.now()
+    )
 
   def create(
     root: ObjectLocation,
@@ -66,24 +71,24 @@ object VerificationSummary {
   ): VerificationSummary = v match {
     case i @ VerificationIncomplete(_) =>
       VerificationIncompleteSummary(
-        root,
-        i,
-        t,
-        Some(Instant.now())
+        rootLocation = root,
+        e = i,
+        startTime = t,
+        endTime = Instant.now()
       )
     case f @ VerificationFailure(_, _) =>
       VerificationFailureSummary(
-        root,
-        Some(f),
-        t,
-        Some(Instant.now())
+        rootLocation = root,
+        verification = Some(f),
+        startTime = t,
+        endTime = Instant.now()
       )
     case s @ VerificationSuccess(_) =>
       VerificationSuccessSummary(
-        root,
-        Some(s),
-        t,
-        Some(Instant.now())
+        rootLocation = root,
+        verification = Some(s),
+        startTime = t,
+        endTime = Instant.now()
       )
   }
 }
@@ -91,19 +96,19 @@ object VerificationSummary {
 case class VerificationIncompleteSummary(rootLocation: ObjectLocation,
                                          e: Throwable,
                                          startTime: Instant,
-                                         endTime: Option[Instant] = None)
+                                         endTime: Instant)
     extends VerificationSummary {
-  val verification = None
+  val verification: None.type = None
 }
 
 case class VerificationSuccessSummary(rootLocation: ObjectLocation,
                                       verification: Some[VerificationSuccess],
                                       startTime: Instant,
-                                      endTime: Option[Instant] = None)
+                                      endTime: Instant)
     extends VerificationSummary
 
 case class VerificationFailureSummary(rootLocation: ObjectLocation,
                                       verification: Option[VerificationFailure],
                                       startTime: Instant,
-                                      endTime: Option[Instant] = None)
+                                      endTime: Instant)
     extends VerificationSummary

@@ -11,11 +11,11 @@ case class ReplicationSummary(
   storageSpace: StorageSpace,
   destination: ObjectLocationPrefix,
   startTime: Instant,
-  endTime: Option[Instant] = None,
+  maybeEndTime: Option[Instant] = None,
 ) extends Summary {
   def complete: ReplicationSummary =
     this.copy(
-      endTime = Some(Instant.now())
+      maybeEndTime = Some(Instant.now())
     )
 
   override def toString: String =
