@@ -11,6 +11,50 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
+/** This is the base trait for messages passed between services.
+  *
+  * As of 17 July 2019, this is the way payloads are passed between apps:
+  *
+  *    ┌─────────────────┐
+  *    │   ingests API   │───────────▶ SourceLocationPayload
+  *    └─────────────────┘
+  *
+  *    ┌─────────────────┐
+  *    │  bag unpacker   │
+  *    └─────────────────┘
+  *             │
+  *             └───── +unpack ──────▶ UnpackedBagLocationPayload
+  *                    location
+  *
+  *    ┌─────────────────┐
+  *    │ bag root finder │
+  *    └─────────────────┘
+  *             │
+  *             └────── +root ───────▶ BagRootLocationPayload
+  *                    location
+  *
+  *    ┌─────────────────┐
+  *    │  bag verifier   │───────────▶ BagRootLocationPayload
+  *    └─────────────────┘
+  *
+  *    ┌─────────────────┐
+  *    │  bag versioner  │
+  *    └─────────────────┘
+  *             │
+  *             └───── +version──────▶ VersionedBagRootLocationPayload
+  *
+  *    ┌─────────────────┐
+  *    │ bag replicator  │
+  *    └─────────────────┘
+  *             │
+  *             └───── +replica ─────▶ BagReplicaLocationPayload
+  *                    location
+  *
+  *    ┌─────────────────┐
+  *    │  bag verifier   │───────────▶ BagReplicaLocationPayload
+  *    └─────────────────┘
+  */
+
 sealed trait PipelinePayload {
   val context: PipelineContext
 
@@ -48,8 +92,24 @@ case class BagRootLocationPayload(
   bagRootLocation: ObjectLocation
 ) extends BagRootPayload
 
-case class EnrichedBagInformationPayload(
+case class VersionedBagRootLocationPayload(
   context: PipelineContext,
   bagRootLocation: ObjectLocation,
   version: Int
 ) extends BagRootPayload
+
+case class BagReplicaLocation(
+  bagRoot: ObjectLocation,
+  versionDirectory: String
+) {
+  def asLocation: ObjectLocation =
+    bagRoot.join(versionDirectory)
+}
+
+case class BagReplicaLocationPayload(
+  context: PipelineContext,
+  replicaLocation: BagReplicaLocation,
+  version: Int
+) extends BagRootPayload {
+  override val bagRootLocation: ObjectLocation = replicaLocation.asLocation
+}
