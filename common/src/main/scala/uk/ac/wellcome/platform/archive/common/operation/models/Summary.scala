@@ -11,7 +11,6 @@ trait Summary extends Timed {
   def formatDuration: String =
     duration.getOrElse("<not-completed>").toString
 
-  def formatBytes(bytes: Long) = {
+  def formatBytes(bytes: Long): String =
     FileUtils.byteCountToDisplaySize(bytes)
-  }
 }
