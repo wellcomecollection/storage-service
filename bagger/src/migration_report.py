@@ -15,11 +15,12 @@ ingest_start:     NEW, use ingest date if missing
 ingest_id:
 ingest_date:
 ingest_status:
-dds_called:
-package_date:
-texts_expected:
-texts_cached:
-dlcs_mismatch:
+dds_called:   timestamp for when the migration tool simulates a Goobi call
+dds_call_received:   timestamp from DDS when notified by real or simulated Goobi
+package_date:   date on disk for the DDS's cache for this b number
+texts_expected:   number of text caches expected (searchable manifestations)
+texts_cached:     number of text caches present
+dlcs_mismatch:    the sum across all manifestations of assets with sync issues
 """
 from decimal import Decimal
 import time
