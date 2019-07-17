@@ -11,11 +11,10 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.common.VersionedBagRootLocationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.platform.archive.common.{BagReplicaLocation, BagReplicaLocationPayload, VersionedBagRootLocationPayload}
 import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
 
 import scala.util.Try
@@ -56,33 +55,35 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
 
       result <- lockingService
         .withLock(payload.ingestId.toString) {
-          replicate(payload, destination.asLocation)
+          replicate(payload, destination)
         }
-        .map(lockFailed(payload, destination.asLocation).apply(_))
+        .map(lockFailed(payload, destination).apply(_))
 
     } yield result
 
   def replicate(
     payload: VersionedBagRootLocationPayload,
-    destination: ObjectLocation): Try[IngestStepResult[ReplicationSummary]] =
+    destination: BagReplicaLocation): Try[IngestStepResult[ReplicationSummary]] =
     for {
       replicationSummary <- bagReplicator.replicate(
         bagRootLocation = payload.bagRootLocation,
-        destination = destination.asPrefix,
+        destination = destination,
         storageSpace = payload.storageSpace
       )
       _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         replicationSummary,
-        payload.copy(
-          bagRootLocation = replicationSummary.summary.destination.asLocation()
+        BagReplicaLocationPayload(
+          context = payload.context,
+          version = payload.version,
+          replicaLocation = replicationSummary.summary.destination
         )
       )
     } yield replicationSummary
 
   def lockFailed(
     payload: VersionedBagRootLocationPayload,
-    destination: ObjectLocation
+    destination: BagReplicaLocation
   ): PartialFunction[
     Either[FailedLockingServiceOp, IngestStepResult[ReplicationSummary]],
     IngestStepResult[ReplicationSummary]] = {
@@ -93,7 +94,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
         ReplicationSummary(
           bagRootLocation = payload.bagRootLocation,
           storageSpace = payload.storageSpace,
-          destination = destination.asPrefix,
+          destination = destination,
           startTime = Instant.now
         ),
         new Throwable(

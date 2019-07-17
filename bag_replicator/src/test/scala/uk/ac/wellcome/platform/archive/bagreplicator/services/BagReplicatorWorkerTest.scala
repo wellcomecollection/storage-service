@@ -93,7 +93,7 @@ class BagReplicatorWorkerTest
               result shouldBe a[IngestStepSucceeded[_]]
 
               val destination = result.summary.destination
-              destination.namespace shouldBe archiveBucket.name
+              destination.asLocation.namespace shouldBe archiveBucket.name
             }
           }
         }
@@ -125,7 +125,7 @@ class BagReplicatorWorkerTest
                     s"v${payload.version}"
                   )
                   .toString
-              destination.path shouldBe expectedPath
+              destination.asLocation.path shouldBe expectedPath
             }
           }
         }
@@ -146,7 +146,7 @@ class BagReplicatorWorkerTest
               result shouldBe a[IngestStepSucceeded[_]]
 
               val destination = result.summary.destination
-              destination.path should endWith(
+              destination.asLocation.path should endWith(
                 s"/${payload.externalIdentifier.toString}/v3")
             }
           }
@@ -167,7 +167,7 @@ class BagReplicatorWorkerTest
               result shouldBe a[IngestStepSucceeded[_]]
 
               val destination = result.summary.destination
-              destination.path should startWith(payload.storageSpace.underlying)
+              destination.asLocation.path should startWith(payload.storageSpace.underlying)
             }
           }
         }
@@ -189,7 +189,7 @@ class BagReplicatorWorkerTest
               result shouldBe a[IngestStepSucceeded[_]]
 
               val destination = result.summary.destination
-              destination.path should startWith("rootprefix/")
+              destination.asLocation.path should startWith("rootprefix/")
             }
           }
         }
