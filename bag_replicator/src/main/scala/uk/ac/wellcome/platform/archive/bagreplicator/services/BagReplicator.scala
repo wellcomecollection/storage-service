@@ -20,10 +20,10 @@ import scala.util.{Success, Try}
 class BagReplicator(implicit s3Client: AmazonS3) extends Logging {
   val s3PrefixTransfer = S3PrefixTransfer()
 
-  def replicate(
-    bagRootLocation: ObjectLocation,
-    storageSpace: StorageSpace,
-    destination: BagReplicaLocation): Try[IngestStepResult[ReplicationSummary]] = {
+  def replicate(bagRootLocation: ObjectLocation,
+                storageSpace: StorageSpace,
+                destination: BagReplicaLocation)
+    : Try[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,

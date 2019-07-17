@@ -54,7 +54,6 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
   *    │  bag verifier   │───────────▶ BagReplicaLocationPayload
   *    └─────────────────┘
   */
-
 sealed trait PipelinePayload {
   val context: PipelineContext
 

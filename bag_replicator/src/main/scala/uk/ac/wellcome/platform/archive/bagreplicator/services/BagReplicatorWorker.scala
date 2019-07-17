@@ -14,8 +14,16 @@ import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.{BagReplicaLocation, BagReplicaLocationPayload, VersionedBagRootLocationPayload}
-import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
+import uk.ac.wellcome.platform.archive.common.{
+  BagReplicaLocation,
+  BagReplicaLocationPayload,
+  VersionedBagRootLocationPayload
+}
+import uk.ac.wellcome.storage.locking.{
+  FailedLockingServiceOp,
+  LockDao,
+  LockingService
+}
 
 import scala.util.Try
 
@@ -33,7 +41,9 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
   val wd: Decoder[VersionedBagRootLocationPayload])
-    extends IngestStepWorker[VersionedBagRootLocationPayload, ReplicationSummary] {
+    extends IngestStepWorker[
+      VersionedBagRootLocationPayload,
+      ReplicationSummary] {
   override val visibilityTimeout = 180
 
   val destinationBuilder = new DestinationBuilder(
@@ -61,9 +71,9 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
 
     } yield result
 
-  def replicate(
-    payload: VersionedBagRootLocationPayload,
-    destination: BagReplicaLocation): Try[IngestStepResult[ReplicationSummary]] =
+  def replicate(payload: VersionedBagRootLocationPayload,
+                destination: BagReplicaLocation)
+    : Try[IngestStepResult[ReplicationSummary]] =
     for {
       replicationSummary <- bagReplicator.replicate(
         bagRootLocation = payload.bagRootLocation,

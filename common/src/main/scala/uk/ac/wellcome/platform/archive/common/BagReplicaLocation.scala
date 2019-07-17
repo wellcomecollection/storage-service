@@ -12,4 +12,3 @@ case class BagReplicaLocation(
   def asPrefix: ObjectLocationPrefix =
     this.asLocation.asPrefix
 }
-

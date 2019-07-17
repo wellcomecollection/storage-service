@@ -7,9 +7,19 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
-import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, VersionedBagRootLocationPayload}
-import uk.ac.wellcome.platform.storage.bagauditor.models.{AuditSuccessSummary, AuditSummary}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepSucceeded,
+  IngestStepWorker
+}
+import uk.ac.wellcome.platform.archive.common.{
+  BagRootLocationPayload,
+  VersionedBagRootLocationPayload
+}
+import uk.ac.wellcome.platform.storage.bagauditor.models.{
+  AuditSuccessSummary,
+  AuditSummary
+}
 
 import scala.util.{Success, Try}
 
