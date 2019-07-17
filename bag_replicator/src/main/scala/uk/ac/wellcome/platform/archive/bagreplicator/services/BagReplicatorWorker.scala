@@ -66,9 +66,9 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
 
     } yield result
 
-  def replicate(
-    payload: EnrichedBagInformationPayload,
-    destination: ObjectLocationPrefix): Try[IngestStepResult[ReplicationSummary]] =
+  def replicate(payload: EnrichedBagInformationPayload,
+                destination: ObjectLocationPrefix)
+    : Try[IngestStepResult[ReplicationSummary]] =
     for {
       replicationSummary <- bagReplicator.replicate(
         bagRootLocation = payload.bagRootLocation,
