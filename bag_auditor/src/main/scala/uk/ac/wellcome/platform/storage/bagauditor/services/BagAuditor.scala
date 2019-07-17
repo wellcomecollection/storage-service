@@ -20,7 +20,6 @@ import uk.ac.wellcome.platform.storage.bagauditor.versioning.{
   VersionPicker,
   VersionPickerError
 }
-import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.Try
 
@@ -31,32 +30,24 @@ class BagAuditor(versionPicker: VersionPicker) {
                       ingestDate: Instant,
                       ingestType: IngestType,
                       externalIdentifier: ExternalIdentifier,
-                      root: ObjectLocation,
                       storageSpace: StorageSpace): IngestStep =
     Try {
       val startTime = Instant.now()
 
-      val audit: Either[VersionPickerError, AuditSuccess] = for {
-        version <- versionPicker.chooseVersion(
-          externalIdentifier = externalIdentifier,
-          ingestId = ingestId,
-          ingestType = ingestType,
-          ingestDate = ingestDate,
-          storageSpace = storageSpace
-        )
-        auditSuccess = AuditSuccess(
-          version = version
-        )
-      } yield auditSuccess
+      val maybeVersion = versionPicker.chooseVersion(
+        externalIdentifier = externalIdentifier,
+        ingestId = ingestId,
+        ingestType = ingestType,
+        ingestDate = ingestDate,
+        storageSpace = storageSpace
+      )
 
-      audit match {
-        case Right(auditSuccess) =>
+      maybeVersion match {
+        case Right(version) =>
           IngestStepSucceeded(
             AuditSuccessSummary(
-              root = root,
-              space = storageSpace,
               startTime = startTime,
-              audit = auditSuccess,
+              version = version,
               endTime = Some(Instant.now())
             )
           )
@@ -64,8 +55,6 @@ class BagAuditor(versionPicker: VersionPicker) {
         case Left(auditError) =>
           IngestFailed(
             AuditFailureSummary(
-              root = root,
-              space = storageSpace,
               startTime = startTime,
               endTime = Some(Instant.now())
             ),
