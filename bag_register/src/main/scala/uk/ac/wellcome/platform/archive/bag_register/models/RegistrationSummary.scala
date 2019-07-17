@@ -10,11 +10,11 @@ case class RegistrationSummary(
   bagRootLocation: ObjectLocation,
   storageSpace: StorageSpace,
   startTime: Instant,
-  endTime: Option[Instant] = None
+  maybeEndTime: Option[Instant] = None
 ) extends Summary {
   def complete: RegistrationSummary =
     this.copy(
-      endTime = Some(Instant.now())
+      maybeEndTime = Some(Instant.now())
     )
 
   override def toString: String =

@@ -29,7 +29,6 @@ class BagAuditorTest
     with StorageSpaceGenerators {
 
   it("assigns v1 for a new bag") {
-    val bagRootLocation = createObjectLocation
     val externalIdentifier = createExternalIdentifier
     val storageSpace = createStorageSpace
 
@@ -38,7 +37,6 @@ class BagAuditorTest
         ingestId = createIngestID,
         ingestDate = Instant.now,
         ingestType = CreateIngestType,
-        root = bagRootLocation,
         externalIdentifier = externalIdentifier,
         storageSpace = storageSpace
       )
@@ -47,12 +45,11 @@ class BagAuditorTest
       val summary = result.summary
         .asInstanceOf[AuditSuccessSummary]
 
-      summary.audit.version shouldBe 1
+      summary.version shouldBe 1
     }
   }
 
   ignore("fails if you ask for ingestType 'update' on a new bag") {
-    val bagRootLocation = createObjectLocation
     val externalIdentifier = createExternalIdentifier
     val storageSpace = createStorageSpace
 
@@ -61,7 +58,6 @@ class BagAuditorTest
         ingestId = createIngestID,
         ingestDate = Instant.now,
         ingestType = UpdateIngestType,
-        root = bagRootLocation,
         externalIdentifier = externalIdentifier,
         storageSpace = storageSpace
       )
@@ -78,7 +74,6 @@ class BagAuditorTest
   }
 
   ignore("fails if you ask for ingestType 'create' on an existing bag") {
-    val bagRootLocation = createObjectLocation
     val externalIdentifier = createExternalIdentifier
     val storageSpace = createStorageSpace
 
@@ -87,7 +82,6 @@ class BagAuditorTest
         ingestId = createIngestID,
         ingestDate = Instant.ofEpochSecond(1),
         ingestType = CreateIngestType,
-        root = bagRootLocation,
         externalIdentifier = externalIdentifier,
         storageSpace = storageSpace
       )
@@ -96,7 +90,6 @@ class BagAuditorTest
         ingestId = createIngestID,
         ingestDate = Instant.ofEpochSecond(2),
         ingestType = CreateIngestType,
-        root = bagRootLocation,
         externalIdentifier = externalIdentifier,
         storageSpace = storageSpace
       )

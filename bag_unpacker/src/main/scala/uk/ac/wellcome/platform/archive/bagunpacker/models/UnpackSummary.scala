@@ -12,10 +12,10 @@ case class UnpackSummary(id: IngestID,
                          fileCount: Int = 0,
                          bytesUnpacked: Long = 0L,
                          startTime: Instant,
-                         endTime: Option[Instant] = None)
+                         maybeEndTime: Option[Instant] = None)
     extends Summary {
   def complete: UnpackSummary =
-    this.copy(endTime = Some(Instant.now()))
+    this.copy(maybeEndTime = Some(Instant.now()))
   override def toString: String = {
     f"""|id=$id
         |src=$srcLocation

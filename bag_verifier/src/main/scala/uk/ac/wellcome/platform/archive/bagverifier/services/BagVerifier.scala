@@ -42,7 +42,7 @@ class BagVerifier()(
                 rootLocation = root,
                 verification = None,
                 startTime = startTime,
-                endTime = Some(Instant.now())
+                endTime = Instant.now()
               ),
               e = new Throwable(
                 "External identifier in bag-info.txt does not match request"),

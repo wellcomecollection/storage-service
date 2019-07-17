@@ -43,7 +43,6 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
         ingestId = payload.ingestId,
         ingestDate = payload.ingestDate,
         ingestType = payload.ingestType,
-        root = payload.bagRootLocation,
         externalIdentifier = payload.externalIdentifier,
         storageSpace = payload.storageSpace
       )
@@ -60,7 +59,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
         ingestUpdater.sendEvent(
           ingestId = payload.ingestId,
           messages = Seq(
-            s"Assigned bag version ${summary.audit.version}"
+            s"Assigned bag version ${summary.version}"
           )
         )
       case _ => Success(())
@@ -74,8 +73,8 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
           step,
           EnrichedBagInformationPayload(
             context = payload.context,
-            bagRootLocation = summary.root,
-            version = summary.audit.version
+            bagRootLocation = payload.bagRootLocation,
+            version = summary.version
           )
         )
 

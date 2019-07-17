@@ -7,17 +7,20 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 sealed trait RootFinderSummary extends Summary {
   val location: ObjectLocationPrefix
+
+  val endTime: Instant
+  override val maybeEndTime: Option[Instant] = Some(endTime)
 }
 
 case class RootFinderFailureSummary(
-  location: ObjectLocationPrefix,
   startTime: Instant,
-  endTime: Option[Instant]
+  endTime: Instant,
+  location: ObjectLocationPrefix
 ) extends RootFinderSummary
 
 case class RootFinderSuccessSummary(
-  location: ObjectLocationPrefix,
   startTime: Instant,
+  endTime: Instant,
+  location: ObjectLocationPrefix,
   bagRootLocation: ObjectLocation,
-  endTime: Option[Instant]
 ) extends RootFinderSummary

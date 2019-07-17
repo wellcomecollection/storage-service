@@ -27,19 +27,19 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
         case Success(rootLocation) =>
           IngestStepSucceeded(
             RootFinderSuccessSummary(
-              location = unpackLocation,
-              bagRootLocation = rootLocation,
               startTime = startTime,
-              endTime = Some(Instant.now())
+              endTime = Instant.now(),
+              location = unpackLocation,
+              bagRootLocation = rootLocation
             )
           )
 
         case Failure(err) =>
           IngestFailed(
             RootFinderFailureSummary(
-              location = unpackLocation,
               startTime = startTime,
-              endTime = Some(Instant.now())
+              endTime = Instant.now(),
+              location = unpackLocation
             ),
             err
           )
