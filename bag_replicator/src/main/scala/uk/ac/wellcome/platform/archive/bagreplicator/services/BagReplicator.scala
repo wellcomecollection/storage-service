@@ -11,7 +11,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{
+  ObjectLocation,
+  ObjectLocationPrefix
+}
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 import scala.util.{Success, Try}
@@ -22,7 +25,7 @@ class BagReplicator(implicit s3Client: AmazonS3) extends Logging {
   def replicate(
     bagRootLocation: ObjectLocation,
     storageSpace: StorageSpace,
-    destination: ObjectLocation): Try[IngestStepResult[ReplicationSummary]] = {
+    destination: ObjectLocationPrefix): Try[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,
@@ -34,7 +37,7 @@ class BagReplicator(implicit s3Client: AmazonS3) extends Logging {
     val copyResult =
       s3PrefixTransfer.transferPrefix(
         srcPrefix = bagRootLocation.asPrefix,
-        dstPrefix = destination.asPrefix
+        dstPrefix = destination
       )
 
     copyResult match {

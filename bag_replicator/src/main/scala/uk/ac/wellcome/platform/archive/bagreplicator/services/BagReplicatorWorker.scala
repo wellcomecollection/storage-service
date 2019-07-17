@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.locking.{
   FailedLockingServiceOp,
   LockDao,
@@ -68,7 +68,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
 
   def replicate(
     payload: EnrichedBagInformationPayload,
-    destination: ObjectLocation): Try[IngestStepResult[ReplicationSummary]] =
+    destination: ObjectLocationPrefix): Try[IngestStepResult[ReplicationSummary]] =
     for {
       replicationSummary <- bagReplicator.replicate(
         bagRootLocation = payload.bagRootLocation,
@@ -79,14 +79,14 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
       _ <- outgoingPublisher.sendIfSuccessful(
         replicationSummary,
         payload.copy(
-          bagRootLocation = replicationSummary.summary.destination
+          bagRootLocation = replicationSummary.summary.destination.asLocation()
         )
       )
     } yield replicationSummary
 
   def lockFailed(
     payload: EnrichedBagInformationPayload,
-    destination: ObjectLocation
+    destination: ObjectLocationPrefix
   ): PartialFunction[
     Either[FailedLockingServiceOp, IngestStepResult[ReplicationSummary]],
     IngestStepResult[ReplicationSummary]] = {
