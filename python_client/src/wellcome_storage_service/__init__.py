@@ -136,13 +136,17 @@ class StorageServiceClient:
         Get an individual bag.
         """
         bags_url_suffix = "%s/%s" % (space_id, source_id)
+        params = {}
         if version:
-            bags_url_suffix += "?version=%s" % version
+            params["version"] = version
 
         bags_api_url = self.api_url + "/bags/%s" % bags_url_suffix
-        resp = self.sess.get(bags_api_url)
+        resp = self.sess.get(bags_api_url, params=params)
 
         if resp.status_code == 404:
-            raise BagNotFound("Bags API returned 404 for bag %s" % bags_url_suffix)
+            err = "Bags API returned 404 for bag %s" % bags_url_suffix
+            if version:
+                err += " with version %s" % version
+            raise BagNotFound(err)
         else:
             return resp
