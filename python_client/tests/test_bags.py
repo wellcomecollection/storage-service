@@ -13,7 +13,7 @@ def test_can_get_bag(client):
 
 
 def test_can_get_bag_version(client):
-    resp = client.get_bag(space_id="alex-testing", source_id="b12345", version='v1')
+    resp = client.get_bag(space_id="alex-testing", source_id="b12345", version="v1")
     assert resp["space"]["id"] == "alex-testing"
     assert resp["id"] == "alex-testing/b12345"
     assert len(resp["manifest"]["files"]) == 3
