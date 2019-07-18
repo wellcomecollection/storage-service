@@ -30,6 +30,8 @@ The following tools should be given the appropriate environment variables for st
 
 Put bagging instruction messages onto the bagger queue defined in the environment variable BAGGING_QUEUE
 
+You can also run the bagger directly with `bag.sh <bnumber> <bag|no-bag>` which will write the bag to the configured bucket.
+
 ## Ingesting
 
 `migtool.sh ingest --delay n --filter <filter|bnumber|file>`
@@ -42,17 +44,55 @@ This creates ingest API operations, instructing the storage service to ingest ba
 
 `migtool.sh update_status --delay 0  --filter <filter|bnumber|file>`
 
-A DynamoDB table (specified in DYNAMO_TABLE) holds the status of b numbers. Some processes write directly to it - the bagger records the start and end times of bagging operations. Other data in the table can only be updated by a process that checks various outputs to see what's there (e.g., the errors bucket). This needs to be run to fully update the table.
+A DynamoDB table (specified in DYNAMO_TABLE) holds the status of b numbers. 
 
-Two additional parameters are available:
+The fields of items in this table are listed at the top of this page:
 
-`migtool.sh update_status --delay 0  --filter <filter|bnumber|file> --check-package --check-alto`
+https://github.com/wellcometrust/storage-service/blob/master/bagger/src/migration_report.py
 
-`--check-package` will ask the DDS if it has successfully read the item from the storage service and constructed a _package_. This means it is able to generate a IIIF Manifest for it.
+Some processes write directly to the table. For example, the bagger records the start and end times of bagging operations. Other data in the table can only be updated by a process that checks various outputs to see what's there (e.g., the errors bucket). This needs to be run to fully update the table to get a reliable picture of the overall state of migration.
 
-`--check-alto` will ask the DDS if it can successfully parse the ALTO associated with the object (which may have many manifestations each with many ALTOs). This means the DDS will be able to provide a IIIF Search API endpoint for the item.
+The `update_status` command updates the status of bags and ingests only, not the DDS. For DDS status, see below.
 
-These last two arguments will increase the time the update process takes and are not necessary for checking the bagging and ingest processes.
+
+## Syncing with the DDS
+
+This simulates what Goobi does when it has finished processing (bagged and ingested) a bnumber.
+The DDS receives the b number and:
+
+ - Ensures the assets mentioned are synchronised with the DLCS, fixing any mismatches
+ - builds and caches text for _search within_, line-level annotations and full text download
+ - builds and caches a model of the b number from which it generates IIIF Manifests
+
+While this can be called with a b number filter like the bagging and ingesting tools, it makes more sense to call it so that it only processes:
+
+ - things that have already been bagged and ingested, and
+ - things that have not already been synchronised with the DDS
+
+To do this you can call it with `total` and `after` parameters, instead of a filter:
+
+`migtool.sh simulate_goobi_calls --delay 10 --total 1000 --after 2019-03-15`
+
+...which means process 1000 b numbers that haven't yet been registered with the DDS (or haven't been since 2019-03-15).
+
+
+## Updating the status table with DDS sync information
+
+Warning - some of this information is relatively expensive to determine, so care should be taken when running batch updates. This operation relies on DDS endpoints that work out the information and return it, rather than checking the presence of objects in S3 buckets.
+
+`migtool.sh update_dds_status --delay 10 --filter <filter|bnumber|file> --force`
+
+This updates the following fields in the Dynamo table:
+
+- package_date
+- texts_expected
+- texts_cached
+- dlcs_mismatch
+
+The last three of these are only updated when the packaged found on the DDS is newer than the one recorded in the table, unless --force is provided, in which case this information will be recalculated by the DLCS.
+
+There may be a significant delay between Goobi, or simulated Goobi, calling the DDS, and evidence of change appearing in the above four fields. Notifying the DDS puts the b number into a queue for processing. The DDS will in turn be enqueuing operations on the DLCS.
+
 
 ## Dashboard and reporting
 
