@@ -1,16 +1,17 @@
 {
-  "environments": [
-    {
-      "id": "stage",
-      "name": "Staging"
-    },
-    {
-      "id": "prod",
-      "name": "Production"
-    }
-  ],
-  "id": "storage",
-  "name": "Storage service",
-  "profile": "storage-dev",
-  "github_repository": "wellcometrust/storage-service"
+  "storage": {
+    "environments": [
+      {
+        "id": "stage",
+        "name": "Staging"
+      },
+      {
+        "id": "prod",
+        "name": "Production"
+      }
+    ],
+    "name": "Storage service",
+    "profile": "storage-dev",
+    "github_repository": "wellcometrust/storage-service"
+  }
 }
