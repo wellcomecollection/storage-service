@@ -3,22 +3,12 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, OptionValues, TryValues}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  VerificationFailureSummary,
-  VerificationIncompleteSummary,
-  VerificationSuccessSummary
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  FileEntry,
-  S3BagLocationFixtures
-}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{BagManifestReadError, TagManifestReadError}
+import uk.ac.wellcome.platform.archive.common.fixtures.{FileEntry, S3BagLocationFixtures}
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
 import uk.ac.wellcome.platform.archive.common.verify.FailedChecksumNoMatch
 
 class BagVerifierTest
@@ -200,7 +190,7 @@ class BagVerifierTest
             .asInstanceOf[VerificationIncompleteSummary]
           val error = summary.e
 
-          error shouldBe a[BagUnavailable]
+          error shouldBe a[BagManifestReadError]
           error.getMessage should include("Error loading manifest-sha256.txt")
         }
       }
@@ -224,7 +214,7 @@ class BagVerifierTest
             .asInstanceOf[VerificationIncompleteSummary]
           val error = summary.e
 
-          error shouldBe a[BagUnavailable]
+          error shouldBe a[TagManifestReadError]
           error.getMessage should include(
             "Error loading tagmanifest-sha256.txt")
         }

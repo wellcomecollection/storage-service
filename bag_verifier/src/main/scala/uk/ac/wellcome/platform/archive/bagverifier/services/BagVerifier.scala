@@ -31,7 +31,6 @@ class BagVerifier()(
       val startTime = Instant.now()
 
       bagReader.get(root) match {
-        // TODO: Provide more specific messages here
         case Left(e) =>
           IngestFailed(VerificationSummary.incomplete(root, e, startTime), e)
 
