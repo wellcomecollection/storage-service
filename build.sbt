@@ -51,8 +51,8 @@ def setupProject(
 
 s3CredentialsProvider := { _ =>
   val builder = new STSAssumeRoleSessionCredentialsProvider.Builder(
-    roleArn = "arn:aws:iam::760097843905:role/platform-read_only",
-    roleSessionName = UUID.randomUUID().toString
+    "arn:aws:iam::760097843905:role/platform-read_only",
+    UUID.randomUUID().toString
   )
 
   builder.build()
