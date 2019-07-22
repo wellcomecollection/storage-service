@@ -1,4 +1,7 @@
 import java.io.File
+import java.util.UUID
+
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, STSAssumeRoleSessionCredentialsProvider}
 
 import scala.util.parsing.json.{JSONArray, JSONObject}
 
@@ -44,10 +47,23 @@ def setupProject(
     .settings(libraryDependencies ++= externalDependencies)
 }
 
+// In order to access our libraries in S3 we need to set the following:
+
+s3CredentialsProvider := { _ =>
+  val builder = new STSAssumeRoleSessionCredentialsProvider.Builder(
+    roleArn = "arn:aws:iam::760097843905:role/platform-read_only",
+    roleSessionName = UUID.randomUUID().toString
+  )
+
+  builder.build()
+}
+
 lazy val common = setupProject(
-  project,
-  "common",
-  externalDependencies = StorageDependencies.commonDependencies)
+  project = project,
+  folder = "common",
+  externalDependencies =
+    StorageDependencies.commonDependencies
+)
 
 lazy val bag_auditor =
   setupProject(project, "bag_auditor", localDependencies = Seq(common))
