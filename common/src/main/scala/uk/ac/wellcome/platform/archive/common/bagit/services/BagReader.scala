@@ -32,8 +32,7 @@ trait BagReader[IS <: InputStreamWithLength] {
 
   def get(root: ObjectLocation): Either[BagReadError, Bag] =
     for {
-      bagInfo <- loadRequired[BagInfo](root)(bagInfo)(
-        BagInfo.create) leftMap BagInfoReadError
+      bagInfo <- loadRequired[BagInfo](root)(bagInfo)(BagInfo.create) leftMap BagInfoReadError
 
       fileManifest <- loadRequired[BagManifest](root)(fileManifest(SHA256))(
         BagManifest.create(_, SHA256)) leftMap BagManifestReadError
@@ -41,8 +40,7 @@ trait BagReader[IS <: InputStreamWithLength] {
       tagManifest <- loadRequired[BagManifest](root)(tagManifest(SHA256))(
         BagManifest.create(_, SHA256)) leftMap TagManifestReadError
 
-      bagFetch <- loadOptional[BagFetch](root)(bagFetch)(
-        BagFetch.create) leftMap BagFetchReadError
+      bagFetch <- loadOptional[BagFetch](root)(bagFetch)(BagFetch.create) leftMap BagFetchReadError
 
     } yield Bag(bagInfo, fileManifest, tagManifest, bagFetch)
 
