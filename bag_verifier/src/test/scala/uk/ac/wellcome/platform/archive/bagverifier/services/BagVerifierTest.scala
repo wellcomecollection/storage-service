@@ -27,7 +27,8 @@ class BagVerifierTest
   val expectedFileCount: Int = dataFileCount + List(
     "manifest-sha256.txt",
     "bagit.txt",
-    "bag-info.txt").size
+    "bag-info.txt"
+  ).size
 
   it("passes a bag with correct checksum values ") {
     val externalIdentifier = createExternalIdentifier
