@@ -15,6 +15,7 @@ object Verification extends Logging {
     new Verification[Container] {
       override def verify(container: Container): VerificationResult = {
         debug(s"Verification: Attempting to verify $container")
+
         verifiable.create(container) match {
           case Left(e) => VerificationIncomplete(e.msg)
           case Right(verifiableLocations) =>
