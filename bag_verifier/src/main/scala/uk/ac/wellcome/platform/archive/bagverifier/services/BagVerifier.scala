@@ -53,11 +53,18 @@ class BagVerifier()(
               case success @ VerificationSuccessSummary(_, _, _, _) =>
                 IngestStepSucceeded(success)
               case failure @ VerificationFailureSummary(_, _, _, _) =>
-                IngestFailed(failure, InvalidBag(bag),
-                  failure.verification.map(_.toString)
+                IngestFailed(
+                  summary = failure,
+                  e = InvalidBag(bag),
+                  maybeUserFacingMessage =
+                    failure.verification.map(_.failure.mkString("\n"))
                 )
               case incomplete @ VerificationIncompleteSummary(_, _, _, _) =>
-                IngestFailed(incomplete, incomplete.e)
+                IngestFailed(
+                  summary = incomplete,
+                  e = incomplete.e,
+                  maybeUserFacingMessage =
+                    Some(incomplete.e.getMessage))
             }
           }
       }
