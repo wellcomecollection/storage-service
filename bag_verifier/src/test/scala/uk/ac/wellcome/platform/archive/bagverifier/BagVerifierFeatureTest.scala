@@ -121,10 +121,14 @@ class BagVerifierFeatureTest
                       ingestStart.events.head.description shouldBe "Verification started"
 
                       val ingestFailed =
-                        ingestUpdates.tail.head
-                          .asInstanceOf[IngestStatusUpdate]
-                      ingestFailed.status shouldBe Ingest.Failed
-                      ingestFailed.events.head.description shouldBe "Verification failed"
+                        ingestUpdates
+                          .tail.head.asInstanceOf[IngestStatusUpdate]
+
+                      ingestFailed
+                        .status shouldBe Ingest.Failed
+
+                      ingestFailed
+                        .events.head.description should include("Verification failed")
                   }
 
                   outgoing.messages shouldBe empty
