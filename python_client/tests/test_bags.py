@@ -26,6 +26,8 @@ def test_raises_404_for_missing_bag(client):
 
 
 def test_raises_404_for_missing_bag_with_version(client):
-    expected_message = "Bags API returned 404 for bag alex-testing/doesnotexist with version v1"
+    expected_message = (
+        "Bags API returned 404 for bag alex-testing/doesnotexist with version v1"
+    )
     with pytest.raises(BagNotFound, match=expected_message):
         client.get_bag(space_id="alex-testing", source_id="doesnotexist", version="v1")
