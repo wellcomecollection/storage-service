@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    role_arn = "arn:aws:iam::975596993436:role/developer"
+    role_arn = "arn:aws:iam::975596993436:role/storage-developer"
 
     bucket         = "wellcomecollection-storage-infra"
     key            = "terraform/storage.tfstate"
@@ -11,7 +11,7 @@ terraform {
 
 provider "aws" {
   assume_role {
-    role_arn = "arn:aws:iam::975596993436:role/admin"
+    role_arn = "arn:aws:iam::975596993436:role/storage-developer"
   }
 
   region  = "${var.aws_region}"
@@ -22,7 +22,7 @@ provider "aws" {
   alias = "platform"
 
   assume_role {
-    role_arn = "arn:aws:iam::760097843905:role/developer"
+    role_arn = "arn:aws:iam::760097843905:role/platform-developer"
   }
 
   region  = "${var.aws_region}"
@@ -33,7 +33,7 @@ data "terraform_remote_state" "infra_shared" {
   backend = "s3"
 
   config {
-    role_arn = "arn:aws:iam::760097843905:role/developer"
+    role_arn = "arn:aws:iam::760097843905:role/platform-developer"
 
     bucket = "wellcomecollection-platform-infra"
     key    = "terraform/shared_infra.tfstate"
@@ -45,7 +45,7 @@ data "terraform_remote_state" "infra_critical" {
   backend = "s3"
 
   config {
-    role_arn = "arn:aws:iam::760097843905:role/developer"
+    role_arn = "arn:aws:iam::760097843905:role/platform-developer"
 
     bucket = "wellcomecollection-platform-infra"
     key    = "terraform/catalogue_pipeline_data.tfstate"
@@ -57,7 +57,7 @@ data "terraform_remote_state" "archivematica_infra" {
   backend = "s3"
 
   config {
-    role_arn = "arn:aws:iam::299497370133:role/developer"
+    role_arn = "arn:aws:iam::299497370133:role/workflow-developer"
 
     bucket = "wellcomecollection-workflow-infra"
     key    = "terraform/state/archivematica-infra.tfstate"
