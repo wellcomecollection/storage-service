@@ -40,7 +40,7 @@ class Register(
       bag <- bagReader.get(bagRootLocation) match {
         case Right(value) => Success(value)
         case Left(err) =>
-          Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
+          Failure(new RuntimeException(s"Bag unavailable: ${err.getMessage}"))
       }
 
       storageManifest <- StorageManifestService.createManifest(
@@ -57,6 +57,7 @@ class Register(
           error("Unexpected error updating storage manifest", storageError.e)
           Success(IngestFailed(registration.complete, storageError.e))
       }
+
     } yield completedRegistration
 
     result match {

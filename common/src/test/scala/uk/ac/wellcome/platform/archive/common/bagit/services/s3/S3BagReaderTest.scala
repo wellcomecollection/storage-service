@@ -32,7 +32,8 @@ class S3BagReaderTest extends BagReaderTestCases[Unit, Bucket] with S3Fixtures {
       rootLocation.join(path).path
     )
 
-  override def withContext[R](testWith: TestWith[Unit, R]): R = testWith(())
+  override def withContext[R](testWith: TestWith[Unit, R]): R =
+    testWith(())
 
   override def withBagReader[R](testWith: TestWith[BagReader[_], R])(
     implicit context: Unit): R =
