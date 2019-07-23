@@ -61,7 +61,7 @@ trait BagReaderTestCases[Context, Namespace]
         withBag() { rootLocation =>
           deleteFile(rootLocation, "bag-info.txt")
 
-          bagReader.get(rootLocation).left.value.getMessage should startWith(
+          bagReader.get(rootLocation).left.value.getMessage should include(
             "Error loading bag-info.txt")
         }
       }
@@ -75,7 +75,7 @@ trait BagReaderTestCases[Context, Namespace]
         withBag() { rootLocation =>
           scrambleFile(rootLocation, "bag-info.txt")
 
-          bagReader.get(rootLocation).left.value.getMessage should startWith(
+          bagReader.get(rootLocation).left.value.getMessage should include(
             "Error loading bag-info.txt")
         }
       }
@@ -89,7 +89,7 @@ trait BagReaderTestCases[Context, Namespace]
         withBag() { rootLocation =>
           deleteFile(rootLocation, "manifest-sha256.txt")
 
-          bagReader.get(rootLocation).left.value.getMessage should startWith(
+          bagReader.get(rootLocation).left.value.getMessage should include(
             "Error loading manifest-sha256.txt")
         }
       }
@@ -103,7 +103,7 @@ trait BagReaderTestCases[Context, Namespace]
         withBag() { rootLocation =>
           scrambleFile(rootLocation, "manifest-sha256.txt")
 
-          bagReader.get(rootLocation).left.value.getMessage should startWith(
+          bagReader.get(rootLocation).left.value.getMessage should include(
             "Error loading manifest-sha256.txt")
         }
       }
@@ -117,7 +117,7 @@ trait BagReaderTestCases[Context, Namespace]
         withBag() { rootLocation =>
           deleteFile(rootLocation, "tagmanifest-sha256.txt")
 
-          bagReader.get(rootLocation).left.value.getMessage should startWith(
+          bagReader.get(rootLocation).left.value.getMessage should include(
             "Error loading tagmanifest-sha256.txt")
         }
       }
@@ -131,7 +131,7 @@ trait BagReaderTestCases[Context, Namespace]
         withBag() { rootLocation =>
           scrambleFile(rootLocation, "tagmanifest-sha256.txt")
 
-          bagReader.get(rootLocation).left.value.getMessage should startWith(
+          bagReader.get(rootLocation).left.value.getMessage should include(
             "Error loading tagmanifest-sha256.txt")
         }
       }
@@ -158,7 +158,7 @@ trait BagReaderTestCases[Context, Namespace]
         withBag() { rootLocation =>
           scrambleFile(rootLocation, "fetch.txt")
 
-          bagReader.get(rootLocation).left.value.getMessage should startWith(
+          bagReader.get(rootLocation).left.value.getMessage should include(
             "Error loading fetch.txt")
         }
       }
