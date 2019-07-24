@@ -57,8 +57,19 @@ class BagVerifier()(
             VerificationSummary.create(root, bag.verify, startTime) match {
               case success @ VerificationSuccessSummary(_, _, _, _) =>
                 IngestStepSucceeded(success)
-              case failure @ VerificationFailureSummary(_, _, _, _) =>
+              case failure @ VerificationFailureSummary(_, Some(verification), _, _) =>
+                val verificationFailureMessage =
+                  verification.failure.map { verifiedFailure =>
+                    s"${verifiedFailure.location.uri}: ${verifiedFailure.e.getMessage}"
+                  }
+                  .mkString("\n")
+
+                warn(s"Errors verifying $root:\n$verificationFailureMessage")
                 IngestFailed(failure, InvalidBag(bag))
+
+              case failure @ VerificationFailureSummary(_, None, _, _) =>
+                IngestFailed(failure, InvalidBag(bag))
+
               case incomplete @ VerificationIncompleteSummary(_, _, _, _) =>
                 IngestFailed(incomplete, incomplete.e)
             }
