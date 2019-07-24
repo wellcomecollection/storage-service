@@ -31,9 +31,12 @@ class BagVerifier()(
       val startTime = Instant.now()
 
       bagReader.get(root) match {
-        // TODO: Provide more specific messages here
-        case Left(e) =>
-          IngestFailed(VerificationSummary.incomplete(root, e, startTime), e)
+        case Left(bagUnavailable) =>
+          IngestFailed(
+            summary = VerificationSummary.incomplete(root, bagUnavailable, startTime),
+            e = bagUnavailable,
+            maybeUserFacingMessage = Some(bagUnavailable.msg)
+          )
 
         case Right(bag) =>
           if (bag.info.externalIdentifier != externalIdentifier) {

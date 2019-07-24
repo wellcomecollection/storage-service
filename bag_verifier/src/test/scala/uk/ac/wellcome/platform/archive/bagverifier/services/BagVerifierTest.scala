@@ -202,6 +202,10 @@ class BagVerifierTest
 
           error shouldBe a[BagUnavailable]
           error.getMessage should include("Error loading manifest-sha256.txt")
+
+          val userFacingMessage =
+            result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+          userFacingMessage.get shouldBe "Error loading manifest-sha256.txt: no such file!"
         }
       }
     }
@@ -227,6 +231,10 @@ class BagVerifierTest
           error shouldBe a[BagUnavailable]
           error.getMessage should include(
             "Error loading tagmanifest-sha256.txt")
+
+          val userFacingMessage =
+            result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+          userFacingMessage.get shouldBe "Error loading tagmanifest-sha256.txt: no such file!"
         }
       }
     }
