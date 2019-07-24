@@ -151,36 +151,32 @@ class BagVerifierTest
     )
 
     withLocalS3Bucket { bucket =>
-      withS3Bag(
-        bucket,
-        bagInfo = bagInfo,
-        dataFileCount = dataFileCount) { root =>
-
-        // Now scribble over the contents of all the data files in the bag
-        listKeysInBucket(bucket).foreach { key =>
-          if (key.contains("/data/")) {
-            s3Client.putObject(
-              bucket.name,
-              key,
-              randomAlphanumeric
-            )
+      withS3Bag(bucket, bagInfo = bagInfo, dataFileCount = dataFileCount) {
+        root =>
+          // Now scribble over the contents of all the data files in the bag
+          listKeysInBucket(bucket).foreach { key =>
+            if (key.contains("/data/")) {
+              s3Client.putObject(
+                bucket.name,
+                key,
+                randomAlphanumeric
+              )
+            }
           }
-        }
 
-        withVerifier { verifier =>
-          val ingestStep =
-            verifier.verify(root, externalIdentifier = externalIdentifier)
-          val result = ingestStep.success.get
-          result shouldBe a[IngestFailed[_]]
+          withVerifier { verifier =>
+            val ingestStep =
+              verifier.verify(root, externalIdentifier = externalIdentifier)
+            val result = ingestStep.success.get
+            result shouldBe a[IngestFailed[_]]
 
-          val userFacingMessage =
-            result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
-          userFacingMessage.get shouldBe s"There were $dataFileCount errors verifying the bag"
-        }
+            val userFacingMessage =
+              result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+            userFacingMessage.get shouldBe s"There were $dataFileCount errors verifying the bag"
+          }
       }
     }
   }
-
 
   it("fails a bag if the file manifest refers to a non-existent file") {
     val externalIdentifier = createExternalIdentifier
