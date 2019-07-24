@@ -14,7 +14,10 @@ import scala.util.Try
 case class Checksum(
   algorithm: HashingAlgorithm,
   value: ChecksumValue
-)
+) {
+  override def toString: String =
+    s"${algorithm.pathRepr}:$value"
+}
 
 case object Checksum extends Logging {
   def create(
