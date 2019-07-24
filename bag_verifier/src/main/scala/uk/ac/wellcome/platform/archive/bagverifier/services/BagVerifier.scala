@@ -65,7 +65,16 @@ class BagVerifier()(
                   .mkString("\n")
 
                 warn(s"Errors verifying $root:\n$verificationFailureMessage")
-                IngestFailed(failure, InvalidBag(bag))
+
+                val errorCount = verification.failure.size
+
+                val userFacingMessage =
+                  if (errorCount == 1)
+                    "There was 1 error verifying the bag"
+                  else
+                    s"There were $errorCount errors verifying the bag"
+
+                IngestFailed(failure, InvalidBag(bag), Some(userFacingMessage))
 
               case failure @ VerificationFailureSummary(_, None, _, _) =>
                 IngestFailed(failure, InvalidBag(bag))

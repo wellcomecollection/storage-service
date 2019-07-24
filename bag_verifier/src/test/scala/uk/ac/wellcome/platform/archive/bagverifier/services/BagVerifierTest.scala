@@ -98,6 +98,10 @@ class BagVerifierTest
 
           error shouldBe a[FailedChecksumNoMatch]
           error.getMessage should include("Checksum values do not match!")
+
+          val userFacingMessage =
+            result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+          userFacingMessage.get shouldBe "There was 1 error verifying the bag"
         }
       }
     }
@@ -139,6 +143,44 @@ class BagVerifierTest
       }
     }
   }
+
+  it("fails a bag with multiple incorrect checksums in the file manifest") {
+    val externalIdentifier = createExternalIdentifier
+    val bagInfo = createBagInfoWith(
+      externalIdentifier = externalIdentifier
+    )
+
+    withLocalS3Bucket { bucket =>
+      withS3Bag(
+        bucket,
+        bagInfo = bagInfo,
+        dataFileCount = dataFileCount) { root =>
+
+        // Now scribble over the contents of all the data files in the bag
+        listKeysInBucket(bucket).foreach { key =>
+          if (key.contains("/data/")) {
+            s3Client.putObject(
+              bucket.name,
+              key,
+              randomAlphanumeric
+            )
+          }
+        }
+
+        withVerifier { verifier =>
+          val ingestStep =
+            verifier.verify(root, externalIdentifier = externalIdentifier)
+          val result = ingestStep.success.get
+          result shouldBe a[IngestFailed[_]]
+
+          val userFacingMessage =
+            result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+          userFacingMessage.get shouldBe s"There were $dataFileCount errors verifying the bag"
+        }
+      }
+    }
+  }
+
 
   it("fails a bag if the file manifest refers to a non-existent file") {
     val externalIdentifier = createExternalIdentifier
