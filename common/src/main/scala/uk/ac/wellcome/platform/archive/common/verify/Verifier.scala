@@ -104,8 +104,8 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
           VerifiedFailure(
             verifiableLocation,
             FailedChecksumNoMatch(
-              checksum,
-              verifiableLocation.checksum
+              actual = checksum,
+              expected = verifiableLocation.checksum
             )
           )
         } else {

@@ -93,7 +93,7 @@ sealed trait FailedChecksum
 case class FailedChecksumCreation(algorithm: HashingAlgorithm, e: Throwable)
     extends Throwable(s"Could not create checksum: ${e.getMessage}")
     with FailedChecksum
-case class FailedChecksumNoMatch(a: Checksum, b: Checksum)
+case class FailedChecksumNoMatch(actual: Checksum, expected: Checksum)
     extends Throwable("Checksum values do not match!")
     with FailedChecksum
 case class FailedChecksumLocationNotFound[T](location: VerifiableLocation)
