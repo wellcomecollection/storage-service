@@ -151,7 +151,7 @@ class BagVerifier()(
             if (unreferencedFiles.isEmpty)
               Right(())
             else {
-              val message = s"Bag contains files which are not referenced in the manifest: $unreferencedFiles"
+              val message = s"Bag contains files which are not referenced in the manifest: ${unreferencedFiles.mkString(", ")}"
               Left(BagVerifierError(
                 new Throwable(message),
                 userMessage = Some(message)

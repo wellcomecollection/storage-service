@@ -300,6 +300,34 @@ class BagVerifierTest
     }
   }
 
+  it("fails a bag if there are files in the bag which aren't referenced in a manifest") {
+    withLocalS3Bucket { bucket =>
+      withS3Bag(bucket) { case (root, bagInfo) =>
+        s3Client.putObject(
+          root.namespace,
+          root.path + "/unreferencedfile.txt",
+          randomAlphanumeric
+        )
+
+        withVerifier { verifier =>
+          val ingestStep = verifier.verify(
+            root,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
+          val result = ingestStep.success.get
+
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[VerificationIncompleteSummary]
+
+          val userFacingMessage =
+            result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+          userFacingMessage.get should startWith(
+            "Bag contains files which are not referenced in the manifest")
+        }
+      }
+    }
+  }
+
   describe("checks the Payload-Oxum") {
     it("fails if the Payload-Oxum has the wrong file count") {
       withLocalS3Bucket { bucket =>
