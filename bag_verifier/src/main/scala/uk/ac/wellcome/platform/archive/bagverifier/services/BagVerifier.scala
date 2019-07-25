@@ -151,10 +151,32 @@ class BagVerifier()(
             if (unreferencedFiles.isEmpty)
               Right(())
             else {
-              val message = s"Bag contains files which are not referenced in the manifest: ${unreferencedFiles.mkString(", ")}"
+
+              // For internal logging, we want a message that contains the full
+              // S3 locations for easy debugging, e.g.:
+              //
+              //    Bag contains 5 files which are not referenced in the manifest:
+              //    bukkit/ingest-id/bag-id/unreferenced1.txt, ...
+              //
+              // For the user-facing message, we want to trim the first part,
+              // because it's an internal detail of the storage service, e.g.:
+              //
+              //    Bag contains 5 files which are not referenced in the manifest:
+              //    unreferenced1.txt, ...
+              //
+              val messagePrefix =
+                if (unreferencedFiles.size == 1) {
+                  "Bag contains a file which is not referenced in the manifest: "
+                } else {
+                  s"Bag contains ${unreferencedFiles.size} files which are not referenced in the manifest: "
+                }
+
+              val userMessage = messagePrefix +
+                unreferencedFiles.map { _.path.stripPrefix(root.path) }.mkString(", ")
+
               Left(BagVerifierError(
-                new Throwable(message),
-                userMessage = Some(message)
+                new Throwable(messagePrefix + unreferencedFiles.mkString(", ")),
+                userMessage = Some(userMessage)
               ))
             }
         } yield result
