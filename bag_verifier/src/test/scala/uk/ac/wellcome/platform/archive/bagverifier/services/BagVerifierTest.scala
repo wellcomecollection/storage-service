@@ -128,7 +128,7 @@ class BagVerifierTest
 
   it("fails a bag with multiple incorrect checksums in the file manifest") {
     withLocalS3Bucket { bucket =>
-      withS3Bag(bucket) { case (root, bagInfo) =>
+      withS3Bag(bucket, dataFileCount = dataFileCount) { case (root, bagInfo) =>
         // Now scribble over the contents of all the data files in the bag
         listKeysInBucket(bucket).foreach { key =>
           if (key.contains("/data/")) {
@@ -155,10 +155,11 @@ class BagVerifierTest
   }
 
   it("fails a bag if the file manifest refers to a non-existent file") {
+    // Remove one of the valid files, replace with an invalid entry
     def createDataManifestWithExtraFile(
       dataFiles: StringTuple): Option[FileEntry] =
       createValidDataManifest(
-        dataFiles ++ List(("doesnotexist", "doesnotexist"))
+        dataFiles.tail ++ List(("doesnotexist", "doesnotexist"))
       )
 
     withLocalS3Bucket { bucket =>
@@ -179,7 +180,7 @@ class BagVerifierTest
             .asInstanceOf[VerificationFailureSummary]
           val verification = summary.verification.value
 
-          verification.success should have size expectedFileCount
+          verification.success should have size expectedFileCount - 1
           verification.failure should have size 1
 
           val location = verification.failure.head
@@ -280,7 +281,14 @@ class BagVerifierTest
   describe("checks the Payload-Oxum") {
     it("fails if the Payload-Oxum has the wrong file count") {
       withLocalS3Bucket { bucket =>
-        withS3Bag(bucket, dataFileCount = dataFileCount) {
+        withS3Bag(
+          bucket,
+          payloadOxum = Some(
+            createPayloadOxumWith(
+              numberOfPayloadFiles = dataFileCount - 1
+            )
+          ),
+          dataFileCount = dataFileCount) {
           case (root, bagInfo) =>
             withVerifier { verifier =>
               val ingestStep = verifier.verify(
@@ -294,8 +302,8 @@ class BagVerifierTest
 
               val userFacingMessage =
                 result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
-              userFacingMessage.get should fullyMatch regex
-                """Payload-Oxum has the wrong number of payload files: \d+, but bag manifest has \d+"""
+              userFacingMessage.get shouldBe
+                s"""Payload-Oxum has the wrong number of payload files: ${dataFileCount - 1}, but bag manifest has $dataFileCount"""
             }
         }
       }

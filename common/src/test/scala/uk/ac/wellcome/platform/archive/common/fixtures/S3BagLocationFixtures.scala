@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetch, BagFetchEntry, BagInfo, BagPath, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetch, BagFetchEntry, BagInfo, BagPath, ExternalIdentifier, PayloadOxum}
 import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
@@ -25,7 +25,8 @@ trait BagLocationFixtures[Namespace]
     path: String): ObjectLocation
 
   def withBag[R](
-    bagInfo: BagInfo = createBagInfo,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    payloadOxum: Option[PayloadOxum] = None,
     dataFileCount: Int = 1,
     space: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
@@ -37,8 +38,19 @@ trait BagLocationFixtures[Namespace]
     implicit typedStore: TypedStore[ObjectLocation, String],
     namespace: Namespace
   ): R = {
-    val externalIdentifier = bagInfo.externalIdentifier
     info(s"Creating Bag $externalIdentifier")
+
+    val bagInfo = createBagInfoWith(
+      payloadOxum =
+        payloadOxum match {
+          case Some(oxum) => oxum
+          case _ => createPayloadOxumWith(
+            numberOfPayloadFiles = dataFileCount
+          )
+        }
+      ,
+      externalIdentifier = externalIdentifier
+    )
 
     val fileEntries = createBag(
       bagInfo,
@@ -119,7 +131,8 @@ trait S3BagLocationFixtures
   def withS3Bag[R](
     bucket: Bucket,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
-    dataFileCount: Int = 1,
+    payloadOxum: Option[PayloadOxum] = None,
+    dataFileCount: Int = randomInt(from = 1, to = 10),
     space: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
       createValidDataManifest,
@@ -130,9 +143,8 @@ trait S3BagLocationFixtures
     implicit val namespace: Bucket = bucket
 
     withBag(
-      bagInfo = createBagInfoWith(
-        externalIdentifier = externalIdentifier
-      ),
+      externalIdentifier = externalIdentifier,
+      payloadOxum = payloadOxum,
       dataFileCount = dataFileCount,
       space = space,
       createDataManifest = createDataManifest,
