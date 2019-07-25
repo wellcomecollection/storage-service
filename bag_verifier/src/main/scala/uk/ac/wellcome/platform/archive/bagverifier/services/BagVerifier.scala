@@ -160,7 +160,7 @@ class BagVerifier()(
         val verificationFailureMessage =
           result.failure
             .map { verifiedFailure =>
-              s"${verifiedFailure.location.uri}: ${verifiedFailure.e.getMessage}"
+              s"${verifiedFailure.verifiableLocation.uri}: ${verifiedFailure.e.getMessage}"
             }
             .mkString("\n")
 

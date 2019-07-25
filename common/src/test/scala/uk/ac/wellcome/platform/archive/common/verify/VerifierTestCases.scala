@@ -50,7 +50,7 @@ trait VerifierTestCases[Namespace, Context]
         result shouldBe a[VerifiedSuccess]
 
         val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
-        verifiedSuccess.location shouldBe verifiableLocation
+        verifiedSuccess.verifiableLocation shouldBe verifiableLocation
         verifiedSuccess.size shouldBe contentString.getBytes.size
       }
     }
@@ -77,7 +77,7 @@ trait VerifierTestCases[Namespace, Context]
 
         val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-        verifiedFailure.location shouldBe verifiableLocation
+        verifiedFailure.verifiableLocation shouldBe verifiableLocation
         verifiedFailure.e shouldBe a[LocationNotFound[_]]
         verifiedFailure.e.getMessage should include(
           "Location not available!"
@@ -108,7 +108,7 @@ trait VerifierTestCases[Namespace, Context]
 
         val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-        verifiedFailure.location shouldBe verifiableLocation
+        verifiedFailure.verifiableLocation shouldBe verifiableLocation
         verifiedFailure.e shouldBe a[FailedChecksumNoMatch]
         verifiedFailure.e.getMessage should startWith(
           s"Checksum values do not match! Expected: $checksum"
@@ -147,7 +147,7 @@ trait VerifierTestCases[Namespace, Context]
 
         val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-        verifiedFailure.location shouldBe verifiableLocation
+        verifiedFailure.verifiableLocation shouldBe verifiableLocation
         verifiedFailure.e shouldBe a[Throwable]
         verifiedFailure.e.getMessage should startWith(
           "Lengths do not match:"
@@ -185,7 +185,7 @@ trait VerifierTestCases[Namespace, Context]
         result shouldBe a[VerifiedSuccess]
 
         val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
-        verifiedSuccess.location shouldBe verifiableLocation
+        verifiedSuccess.verifiableLocation shouldBe verifiableLocation
         verifiedSuccess.size shouldBe contentString.getBytes.size
       }
     }
@@ -219,7 +219,7 @@ trait VerifierTestCases[Namespace, Context]
         result shouldBe a[VerifiedSuccess]
 
         val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
-        verifiedSuccess.location shouldBe verifiableLocation
+        verifiedSuccess.verifiableLocation shouldBe verifiableLocation
         verifiedSuccess.size shouldBe contentString.getBytes.size
       }
     }

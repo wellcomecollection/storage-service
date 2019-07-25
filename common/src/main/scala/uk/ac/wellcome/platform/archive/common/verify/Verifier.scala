@@ -48,12 +48,14 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
             LocationError(verifiableLocation, storageError.e.getMessage)
           )
       }
-    } yield inputStream
+    } yield (inputStream, objectLocation)
 
     val result = eitherInputStream match {
-      case Left(e) => VerifiedFailure(verifiableLocation, e)
+      case Left(e) => VerifiedFailure(
+        verifiableLocation,
+        e = e)
 
-      case Right(inputStream) =>
+      case Right((inputStream, objectLocation)) =>
         verifiableLocation.length match {
           case Some(expectedLength) =>
             debug(
@@ -62,12 +64,14 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
             if (expectedLength == inputStream.length) {
               verifyChecksum(
                 verifiableLocation = verifiableLocation,
+                objectLocation = objectLocation,
                 inputStream = inputStream,
                 algorithm = algorithm
               )
             } else {
               VerifiedFailure(
                 verifiableLocation,
+                objectLocation,
                 new Throwable("" +
                   s"Lengths do not match: $expectedLength != ${inputStream.available()}")
               )
@@ -76,6 +80,7 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
           case None =>
             verifyChecksum(
               verifiableLocation = verifiableLocation,
+              objectLocation = objectLocation,
               inputStream = inputStream,
               algorithm = algorithm
             )
@@ -87,6 +92,7 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
   }
 
   private def verifyChecksum(verifiableLocation: VerifiableLocation,
+                             objectLocation: ObjectLocation,
                              inputStream: IS,
                              algorithm: HashingAlgorithm): VerifiedLocation =
     Checksum.create(inputStream, algorithm) match {
@@ -94,21 +100,25 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
       case Failure(e) =>
         VerifiedFailure(
           verifiableLocation,
+          objectLocation,
           FailedChecksumCreation(algorithm, e))
 
       // Checksum does not match that provided
       case Success(checksum) =>
-        if (checksum != verifiableLocation.checksum) {
+        if (checksum != verifiableLocation.checksum)
           VerifiedFailure(
             verifiableLocation,
+            objectLocation,
             FailedChecksumNoMatch(
               actual = checksum,
               expected = verifiableLocation.checksum
             )
           )
-        } else {
-          // Happy path!
-          VerifiedSuccess(verifiableLocation, size = inputStream.length)
-        }
+        else
+          VerifiedSuccess(
+            verifiableLocation,
+            objectLocation,
+            size = inputStream.length
+          )
     }
 }
