@@ -299,7 +299,7 @@ class BagVerifierTest
           val result = ingestStep.success.get
 
           result shouldBe a[IngestFailed[_]]
-          result.summary shouldBe a[VerificationFailureSummary]
+          result.summary shouldBe a[VerificationIncompleteSummary]
 
           val userFacingMessage =
             result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
