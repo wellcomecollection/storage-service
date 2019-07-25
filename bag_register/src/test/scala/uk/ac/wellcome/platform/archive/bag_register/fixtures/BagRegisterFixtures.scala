@@ -11,7 +11,10 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -103,15 +106,19 @@ trait BagRegisterFixtures
   // The bag register inspects the paths to a bag's entries to
   // check they are in the correct format post-replicator,
   // hence the version directory.
-  def withBag[R](bucket: Bucket,
-                 bagInfo: BagInfo,
-                 space: StorageSpace,
-                 version: Int)(testWith: TestWith[ObjectLocation, R]): R =
+  def withBag[R](
+    bucket: Bucket,
+    externalIdentifier: ExternalIdentifier,
+    space: StorageSpace,
+    version: Int,
+    dataFileCount: Int)(testWith: TestWith[(ObjectLocation, BagInfo), R]): R =
     withS3Bag(
       bucket,
-      bagInfo = bagInfo,
+      externalIdentifier = externalIdentifier,
       space = space,
-      bagRootDirectory = Some(s"v$version")) { bagRoot =>
-      testWith(bagRoot.join(s"v$version"))
+      dataFileCount = dataFileCount,
+      bagRootDirectory = Some(s"v$version")) {
+      case (bagRoot, bagInfo) =>
+        testWith((bagRoot.join(s"v$version"), bagInfo))
     }
 }

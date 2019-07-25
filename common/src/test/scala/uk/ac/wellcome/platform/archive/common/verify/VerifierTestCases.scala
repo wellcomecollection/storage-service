@@ -51,6 +51,7 @@ trait VerifierTestCases[Namespace, Context]
 
         val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
         verifiedSuccess.location shouldBe verifiableLocation
+        verifiedSuccess.size shouldBe contentString.getBytes.size
       }
     }
   }
@@ -185,6 +186,7 @@ trait VerifierTestCases[Namespace, Context]
 
         val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
         verifiedSuccess.location shouldBe verifiableLocation
+        verifiedSuccess.size shouldBe contentString.getBytes.size
       }
     }
   }
@@ -218,6 +220,7 @@ trait VerifierTestCases[Namespace, Context]
 
         val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
         verifiedSuccess.location shouldBe verifiableLocation
+        verifiedSuccess.size shouldBe contentString.getBytes.size
       }
     }
   }

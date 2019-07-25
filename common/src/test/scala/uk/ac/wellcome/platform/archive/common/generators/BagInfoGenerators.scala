@@ -4,22 +4,23 @@ import uk.ac.wellcome.platform.archive.common.bagit.models
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   ExternalDescription,
-  ExternalIdentifier
+  ExternalIdentifier,
+  PayloadOxum
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 
 trait BagInfoGenerators
     extends ExternalIdentifierGenerators
-    with StorageRandomThings {
+    with PayloadOxumGenerators {
 
   def createBagInfoWith(
+    payloadOxum: PayloadOxum = createPayloadOxum,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     externalDescription: Option[ExternalDescription] = Some(
       randomExternalDescription)
   ): BagInfo =
     models.BagInfo(
       externalIdentifier = externalIdentifier,
-      payloadOxum = randomPayloadOxum,
+      payloadOxum = payloadOxum,
       baggingDate = randomLocalDate,
       sourceOrganisation = Some(randomSourceOrganisation),
       externalDescription = externalDescription,

@@ -143,9 +143,6 @@ trait StorageRandomThings extends RandomThings {
   def randomExternalDescription =
     ExternalDescription(randomAlphanumericWithLength())
 
-  def randomPayloadOxum =
-    PayloadOxum(Random.nextLong().abs, Random.nextInt().abs)
-
   def randomLocalDate = {
     val startRange = -999999999
     val maxValue = 1999999998

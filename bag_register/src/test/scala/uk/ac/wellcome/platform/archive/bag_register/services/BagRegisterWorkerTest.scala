@@ -31,13 +31,19 @@ class BagRegisterWorkerTest
     withBagRegisterWorker {
       case (service, storageManifestDao, ingests, _, _) =>
         val createdAfterDate = Instant.now()
-        val bagInfo = createBagInfo
         val space = createStorageSpace
         val version = randomInt(1, 15)
+        val dataFileCount = randomInt(1, 15)
+        val externalIdentifier = createExternalIdentifier
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo, space = space, version = version) {
-            bagRootLocation =>
+          withBag(
+            bucket,
+            externalIdentifier,
+            space = space,
+            dataFileCount = dataFileCount,
+            version = version) {
+            case (bagRootLocation, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space
@@ -60,7 +66,7 @@ class BagRegisterWorkerTest
 
               storageManifest.space shouldBe bagId.space
               storageManifest.info shouldBe bagInfo
-              storageManifest.manifest.files should have size 1
+              storageManifest.manifest.files should have size dataFileCount
 
               storageManifest.locations shouldBe List(
                 StorageLocation(
@@ -85,55 +91,68 @@ class BagRegisterWorkerTest
   it("stores multiple versions of a bag") {
     withBagRegisterWorker {
       case (service, storageManifestDao, _, _, _) =>
-        val bagInfo = createBagInfo
         val space = createStorageSpace
+        val dataFileCount = randomInt(1, 15)
+        val externalIdentifier = createExternalIdentifier
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo, space = space, version = 1) { location1 =>
-            withBag(bucket, bagInfo, space = space, version = 2) { location2 =>
-              val payload1 = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  storageSpace = space
-                ),
-                bagRootLocation = location1,
-                version = 1
-              )
-              val payload2 = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  storageSpace = space
-                ),
-                bagRootLocation = location2,
-                version = 2
-              )
-
-              val bagId = BagId(
+          withBag(
+            bucket,
+            externalIdentifier,
+            space = space,
+            version = 1,
+            dataFileCount) {
+            case (location1, bagInfo1) =>
+              withBag(
+                bucket,
+                externalIdentifier,
                 space = space,
-                externalIdentifier = bagInfo.externalIdentifier
-              )
+                version = 2,
+                dataFileCount) {
+                case (location2, bagInfo2) =>
+                  val payload1 = createEnrichedBagInformationPayloadWith(
+                    context = createPipelineContextWith(
+                      storageSpace = space
+                    ),
+                    bagRootLocation = location1,
+                    version = 1
+                  )
+                  val payload2 = createEnrichedBagInformationPayloadWith(
+                    context = createPipelineContextWith(
+                      storageSpace = space
+                    ),
+                    bagRootLocation = location2,
+                    version = 2
+                  )
 
-              Seq(payload1, payload2).map { payload =>
-                val result = service.processMessage(payload)
-                result shouldBe a[Success[_]]
-                result.success.value shouldBe a[IngestCompleted[_]]
+                  val bagId = BagId(
+                    space = space,
+                    externalIdentifier = bagInfo1.externalIdentifier
+                  )
+
+                  Seq(payload1, payload2).map { payload =>
+                    val result = service.processMessage(payload)
+                    result shouldBe a[Success[_]]
+                    result.success.value shouldBe a[IngestCompleted[_]]
+                  }
+
+                  storageManifestDao
+                    .get(bagId, version = 1)
+                    .right
+                    .value
+                    .version shouldBe 1
+                  storageManifestDao
+                    .get(bagId, version = 2)
+                    .right
+                    .value
+                    .version shouldBe 2
+
+                  storageManifestDao
+                    .getLatest(bagId)
+                    .right
+                    .value
+                    .version shouldBe 2
               }
-
-              storageManifestDao
-                .get(bagId, version = 1)
-                .right
-                .value
-                .version shouldBe 1
-              storageManifestDao
-                .get(bagId, version = 2)
-                .right
-                .value
-                .version shouldBe 2
-
-              storageManifestDao
-                .getLatest(bagId)
-                .right
-                .value
-                .version shouldBe 2
-            }
           }
         }
     }

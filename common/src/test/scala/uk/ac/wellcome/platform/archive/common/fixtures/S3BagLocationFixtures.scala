@@ -7,7 +7,9 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagFetch,
   BagFetchEntry,
   BagInfo,
-  BagPath
+  BagPath,
+  ExternalIdentifier,
+  PayloadOxum
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
@@ -32,7 +34,8 @@ trait BagLocationFixtures[Namespace]
                                path: String): ObjectLocation
 
   def withBag[R](
-    bagInfo: BagInfo = createBagInfo,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    payloadOxum: Option[PayloadOxum] = None,
     dataFileCount: Int = 1,
     space: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
@@ -40,12 +43,22 @@ trait BagLocationFixtures[Namespace]
     createTagManifest: List[(String, String)] => Option[FileEntry] =
       createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
-    testWith: TestWith[ObjectLocation, R])(
+    testWith: TestWith[(ObjectLocation, BagInfo), R])(
     implicit typedStore: TypedStore[ObjectLocation, String],
     namespace: Namespace
   ): R = {
-    val externalIdentifier = bagInfo.externalIdentifier
     info(s"Creating Bag $externalIdentifier")
+
+    val bagInfo = createBagInfoWith(
+      payloadOxum = payloadOxum match {
+        case Some(oxum) => oxum
+        case _ =>
+          createPayloadOxumWith(
+            numberOfPayloadFiles = dataFileCount
+          )
+      },
+      externalIdentifier = externalIdentifier
+    )
 
     val fileEntries = createBag(
       bagInfo,
@@ -112,7 +125,7 @@ trait BagLocationFixtures[Namespace]
         metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
-    testWith(bagRootLocation)
+    testWith((bagRootLocation, bagInfo))
   }
 }
 
@@ -125,26 +138,28 @@ trait S3BagLocationFixtures
 
   def withS3Bag[R](
     bucket: Bucket,
-    bagInfo: BagInfo = createBagInfo,
-    dataFileCount: Int = 1,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    payloadOxum: Option[PayloadOxum] = None,
+    dataFileCount: Int = randomInt(from = 1, to = 10),
     space: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
       createValidDataManifest,
     createTagManifest: List[(String, String)] => Option[FileEntry] =
       createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
-    testWith: TestWith[ObjectLocation, R]): R = {
+    testWith: TestWith[(ObjectLocation, BagInfo), R]): R = {
     implicit val namespace: Bucket = bucket
 
     withBag(
-      bagInfo = bagInfo,
+      externalIdentifier = externalIdentifier,
+      payloadOxum = payloadOxum,
       dataFileCount = dataFileCount,
       space = space,
       createDataManifest = createDataManifest,
       createTagManifest = createTagManifest,
       bagRootDirectory = bagRootDirectory
-    ) { bagRootLocation =>
-      testWith(bagRootLocation)
+    ) {
+      testWith
     }
   }
 }
