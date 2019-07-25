@@ -11,8 +11,8 @@
 
   <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashUdpSocketAppender">
     <layout class="net.logstash.logback.layout.LogstashLayout"/>
-    
-    <remoteHost>${logstash_host}</remoteHost>
+
+    <host>${logstash_host}</host>
     <port>514</port>
   </appender>
 
