@@ -34,9 +34,6 @@ class BagVerifierFeatureTest
     val outgoing = new MemoryMessageSender()
 
     val externalIdentifier = createExternalIdentifier
-    val bagInfo = createBagInfoWith(
-      externalIdentifier = externalIdentifier
-    )
 
     withLocalSqsQueueAndDlq {
       case QueuePair(queue, dlq) =>
@@ -46,7 +43,7 @@ class BagVerifierFeatureTest
           queue,
           stepName = "verification") { _ =>
           withLocalS3Bucket { bucket =>
-            withS3Bag(bucket, bagInfo = bagInfo) { bagRootLocation =>
+            withS3Bag(bucket, externalIdentifier = externalIdentifier) { case (bagRootLocation, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   externalIdentifier = externalIdentifier
@@ -84,9 +81,6 @@ class BagVerifierFeatureTest
     val outgoing = new MemoryMessageSender()
 
     val externalIdentifier = createExternalIdentifier
-    val bagInfo = createBagInfoWith(
-      externalIdentifier = externalIdentifier
-    )
 
     withLocalSqsQueueAndDlq {
       case QueuePair(queue, dlq) =>
@@ -98,9 +92,9 @@ class BagVerifierFeatureTest
           withLocalS3Bucket { bucket =>
             withS3Bag(
               bucket,
-              bagInfo = bagInfo,
+              externalIdentifier = externalIdentifier,
               createDataManifest = dataManifestWithWrongChecksum) {
-              bagRootLocation =>
+              case (bagRootLocation, bagInfo) =>
                 val payload = createEnrichedBagInformationPayloadWith(
                   context = createPipelineContextWith(
                     externalIdentifier = externalIdentifier

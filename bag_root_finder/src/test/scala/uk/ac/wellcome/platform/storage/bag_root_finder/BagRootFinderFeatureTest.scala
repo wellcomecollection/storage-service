@@ -22,7 +22,7 @@ class BagRootFinderFeatureTest
 
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      withS3Bag(bucket) { unpackedBagLocation =>
+      withS3Bag(bucket) { case (unpackedBagLocation, _) =>
         // TODO: Bag root location should really be a prefix here
         val payload = createUnpackedBagLocationPayloadWith(
           unpackedBagLocation = unpackedBagLocation.asPrefix
@@ -66,7 +66,7 @@ class BagRootFinderFeatureTest
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
       withS3Bag(bucket, bagRootDirectory = Some("subdir")) {
-        unpackedBagLocation =>
+        case (unpackedBagLocation, _) =>
           val bagRootLocation = unpackedBagLocation.join("subdir")
 
           val payload = createUnpackedBagLocationPayloadWith(
@@ -112,7 +112,7 @@ class BagRootFinderFeatureTest
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
       withS3Bag(bucket, bagRootDirectory = Some("subdir1/subdir2/subdir3")) {
-        unpackedBagLocation =>
+        case (unpackedBagLocation, _) =>
           val payload =
             createUnpackedBagLocationPayloadWith(unpackedBagLocation.asPrefix)
 

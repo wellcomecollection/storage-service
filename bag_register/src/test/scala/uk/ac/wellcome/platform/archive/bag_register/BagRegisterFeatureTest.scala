@@ -18,12 +18,11 @@ class BagRegisterFeatureTest
     withBagRegisterWorker {
       case (_, storageManifestDao, ingests, _, queuePair) =>
         val createdAfterDate = Instant.now()
-        val bagInfo = createBagInfo
         val space = createStorageSpace
         val version = randomInt(1, 15)
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo, space, version) { bagRootLocation =>
+          withBag(bucket, space, version) { case (bagRootLocation, bagInfo) =>
             val bagId = BagId(
               space = space,
               externalIdentifier = bagInfo.externalIdentifier

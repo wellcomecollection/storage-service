@@ -31,13 +31,12 @@ class BagRegisterWorkerTest
     withBagRegisterWorker {
       case (service, storageManifestDao, ingests, _, _) =>
         val createdAfterDate = Instant.now()
-        val bagInfo = createBagInfo
         val space = createStorageSpace
         val version = randomInt(1, 15)
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo, space = space, version = version) {
-            bagRootLocation =>
+          withBag(bucket, space = space, version = version) {
+            case (bagRootLocation, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space
@@ -85,12 +84,11 @@ class BagRegisterWorkerTest
   it("stores multiple versions of a bag") {
     withBagRegisterWorker {
       case (service, storageManifestDao, _, _, _) =>
-        val bagInfo = createBagInfo
         val space = createStorageSpace
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo, space = space, version = 1) { location1 =>
-            withBag(bucket, bagInfo, space = space, version = 2) { location2 =>
+          withBag(bucket, space = space, version = 1) { case (location1, bagInfo) =>
+            withBag(bucket, space = space, version = 2) { case (location2, bagInfo) =>
               val payload1 = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space

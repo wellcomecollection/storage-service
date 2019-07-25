@@ -104,14 +104,12 @@ trait BagRegisterFixtures
   // check they are in the correct format post-replicator,
   // hence the version directory.
   def withBag[R](bucket: Bucket,
-                 bagInfo: BagInfo,
                  space: StorageSpace,
-                 version: Int)(testWith: TestWith[ObjectLocation, R]): R =
+                 version: Int)(testWith: TestWith[(ObjectLocation, BagInfo), R]): R =
     withS3Bag(
       bucket,
-      bagInfo = bagInfo,
       space = space,
-      bagRootDirectory = Some(s"v$version")) { bagRoot =>
-      testWith(bagRoot.join(s"v$version"))
+      bagRootDirectory = Some(s"v$version")) { case (bagRoot, bagInfo) =>
+      testWith((bagRoot.join(s"v$version"), bagInfo))
     }
 }

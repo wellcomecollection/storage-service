@@ -30,23 +30,20 @@ class BagVerifierWorkerTest
     with BagVerifierFixtures
     with PayloadGenerators {
 
+  val dataFileCount = 3
+
   it(
     "updates the ingest monitor and sends an outgoing notification if verification succeeds") {
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val externalIdentifier = createExternalIdentifier
-    val bagInfo = createBagInfoWith(
-      externalIdentifier = externalIdentifier
-    )
-
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, bagInfo = bagInfo) { bagRootLocation =>
+          withS3Bag(bucket, dataFileCount = dataFileCount) { case (bagRootLocation, bagInfo) =>
             val payload = createEnrichedBagInformationPayloadWith(
               context = createPipelineContextWith(
-                externalIdentifier = externalIdentifier
+                externalIdentifier = bagInfo.externalIdentifier
               ),
               bagRootLocation = bagRootLocation
             )
@@ -70,21 +67,16 @@ class BagVerifierWorkerTest
   }
 
   describe("passes through the original payload, unmodified") {
-    val externalIdentifier = createExternalIdentifier
-    val bagInfo = createBagInfoWith(
-      externalIdentifier = externalIdentifier
-    )
-
     it("EnrichedBagInformationPayload") {
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
       withBagVerifierWorker(ingests, outgoing) { service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, bagInfo = bagInfo) { bagRootLocation =>
+          withS3Bag(bucket) { case (bagRootLocation, bagInfo) =>
             val payload = createEnrichedBagInformationPayloadWith(
               context = createPipelineContextWith(
-                externalIdentifier = externalIdentifier
+                externalIdentifier = bagInfo.externalIdentifier
               ),
               bagRootLocation = bagRootLocation
             )
@@ -104,10 +96,10 @@ class BagVerifierWorkerTest
 
       withBagVerifierWorker(ingests, outgoing) { service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, bagInfo = bagInfo) { bagRootLocation =>
+          withS3Bag(bucket) { case (bagRootLocation, bagInfo) =>
             val payload = createBagRootLocationPayloadWith(
               context = createPipelineContextWith(
-                externalIdentifier = externalIdentifier
+                externalIdentifier = bagInfo.externalIdentifier
               ),
               bagRootLocation = bagRootLocation
             )
@@ -129,7 +121,7 @@ class BagVerifierWorkerTest
       service =>
         withLocalS3Bucket { bucket =>
           withS3Bag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
-            bagRootLocation =>
+            case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
@@ -164,7 +156,7 @@ class BagVerifierWorkerTest
       service =>
         withLocalS3Bucket { bucket =>
           withS3Bag(bucket, createDataManifest = dontCreateTheDataManifest) {
-            bagRootLocation =>
+            case (bagRootLocation, _) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
               )
@@ -198,14 +190,10 @@ class BagVerifierWorkerTest
     val payloadExternalIdentifier =
       ExternalIdentifier(externalIdentifier + "_payload")
 
-    val bagInfo = createBagInfoWith(
-      externalIdentifier = bagInfoExternalIdentifier
-    )
-
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, bagInfo = bagInfo) { bagRootLocation =>
+          withS3Bag(bucket, externalIdentifier = bagInfoExternalIdentifier) { case (bagRootLocation, _) =>
             val payload = createEnrichedBagInformationPayloadWith(
               context = createPipelineContextWith(
                 externalIdentifier = payloadExternalIdentifier
@@ -239,18 +227,13 @@ class BagVerifierWorkerTest
         Failure(new Throwable("BOOM!"))
     }
 
-    val externalIdentifier = createExternalIdentifier
-    val bagInfo = createBagInfoWith(
-      externalIdentifier = externalIdentifier
-    )
-
     withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
       service =>
         withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, bagInfo = bagInfo) { bagRootLocation =>
+          withS3Bag(bucket) { case (bagRootLocation, bagInfo) =>
             val payload = createEnrichedBagInformationPayloadWith(
               context = createPipelineContextWith(
-                externalIdentifier = externalIdentifier
+                externalIdentifier = bagInfo.externalIdentifier
               ),
               bagRootLocation = bagRootLocation
             )

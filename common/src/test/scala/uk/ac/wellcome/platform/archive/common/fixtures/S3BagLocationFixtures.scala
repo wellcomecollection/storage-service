@@ -3,16 +3,8 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFetch,
-  BagFetchEntry,
-  BagInfo,
-  BagPath
-}
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagInfoGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetch, BagFetchEntry, BagInfo, BagPath, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -28,8 +20,9 @@ trait BagLocationFixtures[Namespace]
     with BagIt
     with StorageSpaceGenerators
     with ObjectLocationGenerators {
-  def createObjectLocationWith(namespace: Namespace,
-                               path: String): ObjectLocation
+  def createObjectLocationWith(
+    namespace: Namespace,
+    path: String): ObjectLocation
 
   def withBag[R](
     bagInfo: BagInfo = createBagInfo,
@@ -40,7 +33,7 @@ trait BagLocationFixtures[Namespace]
     createTagManifest: List[(String, String)] => Option[FileEntry] =
       createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
-    testWith: TestWith[ObjectLocation, R])(
+    testWith: TestWith[(ObjectLocation, BagInfo), R])(
     implicit typedStore: TypedStore[ObjectLocation, String],
     namespace: Namespace
   ): R = {
@@ -112,7 +105,7 @@ trait BagLocationFixtures[Namespace]
         metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
-    testWith(bagRootLocation)
+    testWith((bagRootLocation, bagInfo))
   }
 }
 
@@ -125,7 +118,7 @@ trait S3BagLocationFixtures
 
   def withS3Bag[R](
     bucket: Bucket,
-    bagInfo: BagInfo = createBagInfo,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     dataFileCount: Int = 1,
     space: StorageSpace = createStorageSpace,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
@@ -133,18 +126,20 @@ trait S3BagLocationFixtures
     createTagManifest: List[(String, String)] => Option[FileEntry] =
       createValidTagManifest,
     bagRootDirectory: Option[String] = None)(
-    testWith: TestWith[ObjectLocation, R]): R = {
+    testWith: TestWith[(ObjectLocation, BagInfo), R]): R = {
     implicit val namespace: Bucket = bucket
 
     withBag(
-      bagInfo = bagInfo,
+      bagInfo = createBagInfoWith(
+        externalIdentifier = externalIdentifier
+      ),
       dataFileCount = dataFileCount,
       space = space,
       createDataManifest = createDataManifest,
       createTagManifest = createTagManifest,
       bagRootDirectory = bagRootDirectory
-    ) { bagRootLocation =>
-      testWith(bagRootLocation)
+    ) {
+      testWith
     }
   }
 }
