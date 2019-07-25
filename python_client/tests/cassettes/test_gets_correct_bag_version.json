@@ -126,12 +126,12 @@
           ]
         },
         "method": "GET",
-        "uri": "https://api.wellcomecollection.org/storage/v1/bags/alex-testing/b12345?version=v1"
+        "uri": "https://api.wellcomecollection.org/storage/v1/bags/alex-testing/b12345?version=v3"
       },
       "response": {
         "body": {
           "encoding": null,
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"alex-testing/b12345\",\"space\":{\"id\":\"alex-testing\",\"type\":\"Space\"},\"info\":{\"externalIdentifier\":\"b12345\",\"payloadOxum\":\"35261.3\",\"baggingDate\":\"2013-03-27\",\"type\":\"BagInfo\"},\"manifest\":{\"checksumAlgorithm\":\"sha256\",\"files\":[{\"checksum\":\"217b51a35163c3c93de301487f4618c14255cdae6324f5af92463a40ff978094\",\"path\":\"data/bagTest/README\",\"type\":\"File\"},{\"checksum\":\"91b65277959ec273763d28ef002e83a6b3fba57c7a35436c9e5b66536333d720\",\"path\":\"data/bagTest/LICENSE\",\"type\":\"File\"},{\"checksum\":\"fafff19b504e660b6ee3261be2c747a9efb36f172efc2ff1a0496224dc15732c\",\"path\":\"data/bagTest/TRADEMARK\",\"type\":\"File\"}],\"type\":\"BagManifest\"},\"tagManifest\":{\"checksumAlgorithm\":\"sha256\",\"files\":[],\"type\":\"BagManifest\"},\"accessLocation\":{\"provider\":{\"id\":\"aws-s3-ia\",\"type\":\"Provider\"},\"bucket\":\"wellcomecollection-storage-staging-access\",\"path\":\"alex-testing/b12345\",\"type\":\"Location\"},\"archiveLocations\":[],\"createdDate\":\"2019-03-26T11:50:53.193124Z\",\"type\":\"Bag\",\"version\":\"v1\"}"
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"alex-testing/b12345\",\"space\":{\"id\":\"alex-testing\",\"type\":\"Space\"},\"info\":{\"externalIdentifier\":\"b12345\",\"payloadOxum\":\"35261.3\",\"baggingDate\":\"2013-03-27\",\"type\":\"BagInfo\"},\"manifest\":{\"checksumAlgorithm\":\"sha256\",\"files\":[{\"checksum\":\"217b51a35163c3c93de301487f4618c14255cdae6324f5af92463a40ff978094\",\"path\":\"data/bagTest/README\",\"type\":\"File\"},{\"checksum\":\"91b65277959ec273763d28ef002e83a6b3fba57c7a35436c9e5b66536333d720\",\"path\":\"data/bagTest/LICENSE\",\"type\":\"File\"},{\"checksum\":\"fafff19b504e660b6ee3261be2c747a9efb36f172efc2ff1a0496224dc15732c\",\"path\":\"data/bagTest/TRADEMARK\",\"type\":\"File\"}],\"type\":\"BagManifest\"},\"tagManifest\":{\"checksumAlgorithm\":\"sha256\",\"files\":[],\"type\":\"BagManifest\"},\"accessLocation\":{\"provider\":{\"id\":\"aws-s3-ia\",\"type\":\"Provider\"},\"bucket\":\"wellcomecollection-storage-staging-access\",\"path\":\"alex-testing/b12345\",\"type\":\"Location\"},\"archiveLocations\":[],\"createdDate\":\"2019-03-26T11:50:53.193124Z\",\"type\":\"Bag\",\"version\":\"v3\"}"
         },
         "headers": {
           "Access-Control-Allow-Credentials": [
