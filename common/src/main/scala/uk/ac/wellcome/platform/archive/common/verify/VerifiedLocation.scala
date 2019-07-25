@@ -4,22 +4,19 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 sealed trait VerifiedLocation
 
-case class VerifiedSuccess(
-  verifiableLocation: VerifiableLocation,
-  objectLocation: ObjectLocation,
-  size: Long)
+case class VerifiedSuccess(verifiableLocation: VerifiableLocation,
+                           objectLocation: ObjectLocation,
+                           size: Long)
     extends VerifiedLocation
 
-case class VerifiedFailure(
-  verifiableLocation: VerifiableLocation,
-  objectLocation: Option[ObjectLocation],
-  e: Throwable)
+case class VerifiedFailure(verifiableLocation: VerifiableLocation,
+                           objectLocation: Option[ObjectLocation],
+                           e: Throwable)
     extends VerifiedLocation
 
 case object VerifiedFailure {
-  def apply(
-    verifiableLocation: VerifiableLocation,
-    e: Throwable): VerifiedFailure =
+  def apply(verifiableLocation: VerifiableLocation,
+            e: Throwable): VerifiedFailure =
     VerifiedFailure(
       verifiableLocation = verifiableLocation,
       objectLocation = None,
