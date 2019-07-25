@@ -52,21 +52,23 @@ class BagVerifier()(
           } else {
             val verificationResult = bag.verify
 
-            VerificationSummary.create(root, verificationResult, startTime) match {
-              case success @ VerificationSuccessSummary(_, _, _, _) =>
+            VerificationSummary.create(
+                root, verificationResult, startTime) match {
+              case success @ VerificationSuccessSummary(
+                _, _, _, _) =>
                 IngestStepSucceeded(success)
-              case failure @ VerificationFailureSummary(_, _, _, _) =>
+              case failure @ VerificationFailureSummary(
+                _, _, _, _) =>
                 IngestFailed(
                   summary = failure,
-                  e = InvalidBag(bag),
-                  maybeUserFacingMessage =
-                    failure.verification.map(_.failure.mkString("\n"))
+                  e = InvalidBag(bag)
                 )
-              case incomplete @ VerificationIncompleteSummary(_, _, _, _) =>
+              case incomplete @ VerificationIncompleteSummary(
+                _, _, _, _) =>
                 IngestFailed(
                   summary = incomplete,
-                  e = incomplete.e,
-                  maybeUserFacingMessage = Some(incomplete.e.getMessage))
+                  e = incomplete.e
+                )
             }
           }
       }
