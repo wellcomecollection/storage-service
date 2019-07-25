@@ -41,17 +41,14 @@ class BagVerifier()(
 
           _ <- verifyExternalIdentifier(
             bag = bag,
-            externalIdentifier = externalIdentifier,
-            root = root,
-            startTime = startTime
+            externalIdentifier = externalIdentifier
           )
 
           _ <- verifyPayloadOxumFileCount(bag)
 
           result <- verifyChecksums(
             root = root,
-            bag = bag,
-            startTime = startTime
+            bag = bag
           )
         } yield result
 
@@ -74,9 +71,7 @@ class BagVerifier()(
 
   private def verifyExternalIdentifier(
     bag: Bag,
-    externalIdentifier: ExternalIdentifier,
-    root: ObjectLocation,
-    startTime: Instant): InternalResult[Unit] =
+    externalIdentifier: ExternalIdentifier): InternalResult[Unit] =
     if (bag.info.externalIdentifier != externalIdentifier) {
       val message =
         "External identifier in bag-info.txt does not match request: " +
@@ -94,8 +89,7 @@ class BagVerifier()(
 
   private def verifyChecksums(
     root: ObjectLocation,
-    bag: Bag,
-    startTime: Instant
+    bag: Bag
   ): InternalResult[VerificationResult] = {
     implicit val bagVerifiable: BagVerifiable =
       new BagVerifiable(root)
