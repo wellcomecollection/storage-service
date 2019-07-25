@@ -42,6 +42,8 @@ class BagAuditorTest
       )
 
       val result = maybeAudit.success.get
+      result.maybeUserFacingMessage shouldBe Some("Assigned bag version v1")
+
       val summary = result.summary
         .asInstanceOf[AuditSuccessSummary]
 
@@ -63,12 +65,10 @@ class BagAuditorTest
       )
 
       val result = maybeAudit.success.get
-
       result shouldBe a[IngestFailed[_]]
 
-      val ingestFailed = result.asInstanceOf[IngestFailed[_]]
-      ingestFailed.summary shouldBe a[AuditFailureSummary]
-      ingestFailed.maybeUserFacingMessage shouldBe Some(
+      result.summary shouldBe a[AuditFailureSummary]
+      result.maybeUserFacingMessage shouldBe Some(
         "Cannot update existing bag: a bag with the supplied external identifier does not exist in this space")
     }
   }
@@ -95,12 +95,10 @@ class BagAuditorTest
       )
 
       val result = maybeAudit.success.get
-
       result shouldBe a[IngestFailed[_]]
 
-      val ingestFailed = result.asInstanceOf[IngestFailed[_]]
-      ingestFailed.summary shouldBe a[AuditFailureSummary]
-      ingestFailed.maybeUserFacingMessage shouldBe Some(
+      result.summary shouldBe a[AuditFailureSummary]
+      result.maybeUserFacingMessage shouldBe Some(
         "Cannot create new bag: a bag with the supplied external identifier already exists in this space")
     }
   }

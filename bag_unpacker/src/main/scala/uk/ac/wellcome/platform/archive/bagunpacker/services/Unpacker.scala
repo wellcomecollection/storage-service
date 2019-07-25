@@ -50,7 +50,14 @@ trait Unpacker {
 
     result match {
       case Right(summary) =>
-        Success(IngestStepSucceeded(summary))
+        val message =
+          s"Unpacked ${summary.bytesUnpacked} bytes from ${summary.fileCount} file${if (summary.fileCount != 1) "s"}"
+        Success(
+          IngestStepSucceeded(
+            summary,
+            maybeUserFacingMessage = Some(message)
+          )
+        )
 
       case Left(unpackerError) =>
         Success(
