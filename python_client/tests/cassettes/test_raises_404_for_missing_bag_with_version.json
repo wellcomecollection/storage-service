@@ -1,0 +1,192 @@
+{
+  "http_interactions": [
+    {
+      "recorded_at": "2019-07-09T12:38:58",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "grant_type=client_credentials"
+        },
+        "headers": {
+          "Accept": [
+            "application/json"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ],
+          "Authorization": [
+            "<AUTH_TOKEN>"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Length": [
+            "29"
+          ],
+          "Content-Type": [
+            "application/x-www-form-urlencoded;charset=UTF-8"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ]
+        },
+        "method": "POST",
+        "uri": "https://auth.wellcomecollection.org/oauth2/token"
+      },
+      "response": {
+        "body": {
+          "encoding": "UTF-8",
+          "string": "{\"access_token\":\"<ACCESS_TOKEN>\",\"expires_in\":3600,\"token_type\":\"Bearer\"}"
+        },
+        "headers": {
+          "Cache-Control": [
+            "no-cache, no-store, max-age=0, must-revalidate"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Type": [
+            "application/json;charset=UTF-8"
+          ],
+          "Date": [
+            "Tue, 09 Jul 2019 12:38:58 GMT"
+          ],
+          "Expires": [
+            "0"
+          ],
+          "Pragma": [
+            "no-cache"
+          ],
+          "Server": [
+            "Server"
+          ],
+          "Set-Cookie": [
+            "XSRF-TOKEN=8740cb58-b0ff-486c-9a9c-1bb6d2e7f1a4; Path=/; Secure; HttpOnly"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000 ; includeSubDomains"
+          ],
+          "Transfer-Encoding": [
+            "chunked"
+          ],
+          "Via": [
+            "1.1 06537b68374202c0bf3dc19dcba08ecb.cloudfront.net (CloudFront)"
+          ],
+          "X-Amz-Cf-Id": [
+            "CeBfJg4M-vXlQxe-227eu-9wRg9hHACWyk-8XaRIpEgXteklQaxOAA=="
+          ],
+          "X-Amz-Cf-Pop": [
+            "LHR61-C1"
+          ],
+          "X-Application-Context": [
+            "application:prod:8443"
+          ],
+          "X-Cache": [
+            "Miss from cloudfront"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "DENY"
+          ],
+          "X-XSS-Protection": [
+            "1; mode=block"
+          ],
+          "x-amz-cognito-request-id": [
+            "74120e63-3bd1-43a0-99f4-6826a8a07d5a"
+          ]
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://auth.wellcomecollection.org/oauth2/token"
+      }
+    },
+    {
+      "recorded_at": "2019-07-09T12:38:59",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": ""
+        },
+        "headers": {
+          "Accept": [
+            "*/*"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ],
+          "Authorization": [
+            "Bearer <ACCESS_TOKEN>"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ]
+        },
+        "method": "GET",
+        "uri": "https://api.wellcomecollection.org/storage/v1/bags/alex-testing/doesnotexist?version=v1"
+      },
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":404,\"description\":\"Storage manifest alex-testing/doesnotexist not found\",\"label\":\"Not Found\",\"type\":\"Error\"}"
+        },
+        "headers": {
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Length": [
+            "183"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "Date": [
+            "Tue, 09 Jul 2019 12:38:59 GMT"
+          ],
+          "Via": [
+            "1.1 06537b68374202c0bf3dc19dcba08ecb.cloudfront.net (CloudFront)"
+          ],
+          "X-Amz-Cf-Id": [
+            "iB6JxO1NYya5YmH-wdvSLBcXUrY2VK2AEznBqD2DByjrGj4OvxQvVA=="
+          ],
+          "X-Amz-Cf-Pop": [
+            "LHR61-C1"
+          ],
+          "X-Cache": [
+            "Error from cloudfront"
+          ],
+          "x-amz-apigw-id": [
+            "cjqjbGTwjoEFgMg="
+          ],
+          "x-amzn-Remapped-Connection": [
+            "keep-alive"
+          ],
+          "x-amzn-Remapped-Content-Length": [
+            "183"
+          ],
+          "x-amzn-Remapped-Date": [
+            "Tue, 09 Jul 2019 12:38:59 GMT"
+          ],
+          "x-amzn-Remapped-Server": [
+            "nginx"
+          ],
+          "x-amzn-RequestId": [
+            "85c43760-a246-11e9-abf9-652477470f4b"
+          ]
+        },
+        "status": {
+          "code": 404,
+          "message": "Not Found"
+        },
+        "url": "https://api.wellcomecollection.org/storage/v1/bags/alex-testing/doesnotexist?version=v1"
+      }
+    }
+  ],
+  "recorded_with": "betamax/0.8.1"
+}
