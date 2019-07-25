@@ -10,7 +10,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.{
   BagVerifiable
 }
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, _}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  _
+}
 import uk.ac.wellcome.platform.archive.common.verify.Verification._
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
@@ -133,13 +136,12 @@ class BagVerifier()(
 
       case Right(incomplete: VerificationIncomplete) =>
         IngestFailed(
-          summary =
-            VerificationIncompleteSummary(
-              rootLocation = root,
-              e = incomplete,
-              startTime = startTime,
-              endTime = Instant.now()
-            ),
+          summary = VerificationIncompleteSummary(
+            rootLocation = root,
+            e = incomplete,
+            startTime = startTime,
+            endTime = Instant.now()
+          ),
           e = incomplete,
           maybeUserFacingMessage = None
         )
@@ -173,13 +175,12 @@ class BagVerifier()(
             s"There were $errorCount errors verifying the bag"
 
         IngestFailed(
-          summary =
-            VerificationFailureSummary(
-              rootLocation = root,
-              verification = Some(result),
-              startTime = startTime,
-              endTime = Instant.now()
-            ),
+          summary = VerificationFailureSummary(
+            rootLocation = root,
+            verification = Some(result),
+            startTime = startTime,
+            endTime = Instant.now()
+          ),
           e = new Throwable(userFacingMessage),
           maybeUserFacingMessage = Some(userFacingMessage)
         )

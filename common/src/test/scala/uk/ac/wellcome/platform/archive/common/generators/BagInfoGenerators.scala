@@ -1,7 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
 import uk.ac.wellcome.platform.archive.common.bagit.models
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, ExternalDescription, ExternalIdentifier, PayloadOxum}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
+  ExternalDescription,
+  ExternalIdentifier,
+  PayloadOxum
+}
 
 trait BagInfoGenerators
     extends ExternalIdentifierGenerators

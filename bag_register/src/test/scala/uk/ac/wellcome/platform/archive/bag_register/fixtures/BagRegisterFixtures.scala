@@ -103,13 +103,10 @@ trait BagRegisterFixtures
   // The bag register inspects the paths to a bag's entries to
   // check they are in the correct format post-replicator,
   // hence the version directory.
-  def withBag[R](bucket: Bucket,
-                 space: StorageSpace,
-                 version: Int)(testWith: TestWith[(ObjectLocation, BagInfo), R]): R =
-    withS3Bag(
-      bucket,
-      space = space,
-      bagRootDirectory = Some(s"v$version")) { case (bagRoot, bagInfo) =>
-      testWith((bagRoot.join(s"v$version"), bagInfo))
+  def withBag[R](bucket: Bucket, space: StorageSpace, version: Int)(
+    testWith: TestWith[(ObjectLocation, BagInfo), R]): R =
+    withS3Bag(bucket, space = space, bagRootDirectory = Some(s"v$version")) {
+      case (bagRoot, bagInfo) =>
+        testWith((bagRoot.join(s"v$version"), bagInfo))
     }
 }

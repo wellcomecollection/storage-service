@@ -3,8 +3,18 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetch, BagFetchEntry, BagInfo, BagPath, ExternalIdentifier, PayloadOxum}
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFetch,
+  BagFetchEntry,
+  BagInfo,
+  BagPath,
+  ExternalIdentifier,
+  PayloadOxum
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -20,9 +30,8 @@ trait BagLocationFixtures[Namespace]
     with BagIt
     with StorageSpaceGenerators
     with ObjectLocationGenerators {
-  def createObjectLocationWith(
-    namespace: Namespace,
-    path: String): ObjectLocation
+  def createObjectLocationWith(namespace: Namespace,
+                               path: String): ObjectLocation
 
   def withBag[R](
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
@@ -41,14 +50,13 @@ trait BagLocationFixtures[Namespace]
     info(s"Creating Bag $externalIdentifier")
 
     val bagInfo = createBagInfoWith(
-      payloadOxum =
-        payloadOxum match {
-          case Some(oxum) => oxum
-          case _ => createPayloadOxumWith(
+      payloadOxum = payloadOxum match {
+        case Some(oxum) => oxum
+        case _ =>
+          createPayloadOxumWith(
             numberOfPayloadFiles = dataFileCount
           )
-        }
-      ,
+      },
       externalIdentifier = externalIdentifier
     )
 

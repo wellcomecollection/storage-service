@@ -87,51 +87,53 @@ class BagRegisterWorkerTest
         val space = createStorageSpace
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, space = space, version = 1) { case (location1, bagInfo) =>
-            withBag(bucket, space = space, version = 2) { case (location2, bagInfo) =>
-              val payload1 = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  storageSpace = space
-                ),
-                bagRootLocation = location1,
-                version = 1
-              )
-              val payload2 = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  storageSpace = space
-                ),
-                bagRootLocation = location2,
-                version = 2
-              )
+          withBag(bucket, space = space, version = 1) {
+            case (location1, bagInfo) =>
+              withBag(bucket, space = space, version = 2) {
+                case (location2, bagInfo) =>
+                  val payload1 = createEnrichedBagInformationPayloadWith(
+                    context = createPipelineContextWith(
+                      storageSpace = space
+                    ),
+                    bagRootLocation = location1,
+                    version = 1
+                  )
+                  val payload2 = createEnrichedBagInformationPayloadWith(
+                    context = createPipelineContextWith(
+                      storageSpace = space
+                    ),
+                    bagRootLocation = location2,
+                    version = 2
+                  )
 
-              val bagId = BagId(
-                space = space,
-                externalIdentifier = bagInfo.externalIdentifier
-              )
+                  val bagId = BagId(
+                    space = space,
+                    externalIdentifier = bagInfo.externalIdentifier
+                  )
 
-              Seq(payload1, payload2).map { payload =>
-                val result = service.processMessage(payload)
-                result shouldBe a[Success[_]]
-                result.success.value shouldBe a[IngestCompleted[_]]
+                  Seq(payload1, payload2).map { payload =>
+                    val result = service.processMessage(payload)
+                    result shouldBe a[Success[_]]
+                    result.success.value shouldBe a[IngestCompleted[_]]
+                  }
+
+                  storageManifestDao
+                    .get(bagId, version = 1)
+                    .right
+                    .value
+                    .version shouldBe 1
+                  storageManifestDao
+                    .get(bagId, version = 2)
+                    .right
+                    .value
+                    .version shouldBe 2
+
+                  storageManifestDao
+                    .getLatest(bagId)
+                    .right
+                    .value
+                    .version shouldBe 2
               }
-
-              storageManifestDao
-                .get(bagId, version = 1)
-                .right
-                .value
-                .version shouldBe 1
-              storageManifestDao
-                .get(bagId, version = 2)
-                .right
-                .value
-                .version shouldBe 2
-
-              storageManifestDao
-                .getLatest(bagId)
-                .right
-                .value
-                .version shouldBe 2
-            }
           }
         }
     }
