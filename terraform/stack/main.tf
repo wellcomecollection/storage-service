@@ -16,6 +16,11 @@ module "logstash_transit" {
 
   env_vars = {
     XPACK_MONITORING_ENABLED = "false"
+
+    OUTPUT_ELASTICSEARCH_HOSTS    = "1bc69fba8b1f4f46a40cf0ae6274958b.eu-west-1.aws.found.io:9243"
+    OUTPUT_ELASTICSEARCH_SSL      = "true"
+    OUTPUT_ELASTICSEARCH_USER     = ""
+    OUTPUT_ELASTICSEARCH_PASSWORD = ""
   }
 
   env_vars_length = 8
@@ -54,6 +59,7 @@ module "bag_unpacker" {
     metrics_namespace       = "${local.bag_unpacker_service_name}"
     operation_name          = "unpacking"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_unpacker_service_name}"
+
     logstash_host           = "${local.logstash_transit_service_name}.${var.namespace}"
   }
 

@@ -78,7 +78,7 @@ object ExternalDependencies {
     val wiremock = "2.18.0"
 
     val logback = "1.2.3"
-    val logstashLogback ="4.9"
+    val logstashLogback ="4.11"
   }
 
   val loggingDependencies = Seq(
