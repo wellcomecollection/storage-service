@@ -10,7 +10,10 @@
   </root>
 
   <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashUdpSocketAppender">
+    <layout class="net.logstash.logback.layout.LogstashLayout"/>
+    
     <remoteHost>${logstash_host}</remoteHost>
+    <port>514</port>
   </appender>
 
   <root level="DEBUG">
