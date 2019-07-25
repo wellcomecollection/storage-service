@@ -46,6 +46,8 @@ class BagVerifier()(
             startTime = startTime
           )
 
+          _ <- verifyPayloadOxumFileCount(bag)
+
           result <- verifyChecksums(
             root = root,
             bag = bag,
@@ -101,6 +103,21 @@ class BagVerifier()(
     Try { bag.verify } match {
       case Failure(err)    => Left(BagVerifierError(err))
       case Success(result) => Right(result)
+    }
+  }
+
+  private def verifyPayloadOxumFileCount(bag: Bag): InternalResult[Unit] = {
+    val payloadOxumCount = bag.info.payloadOxum.numberOfPayloadFiles
+    val manifestCount = bag.manifest.files.size
+
+    if (payloadOxumCount != bag.manifest.files.size) {
+      val message =
+        s"Payload-Oxum has the wrong number of payload files: $payloadOxumCount, but bag manifest has $manifestCount"
+      Left(
+        BagVerifierError(new Throwable(message), userMessage = Some(message))
+      )
+    } else {
+      Right(())
     }
   }
 

@@ -8,12 +8,12 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
   VerificationIncompleteSummary,
   VerificationSuccessSummary
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  FileEntry,
-  S3BagLocationFixtures
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  ExternalIdentifier,
+  PayloadOxum
 }
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
+import uk.ac.wellcome.platform.archive.common.fixtures.{FileEntry, S3BagLocationFixtures}
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
@@ -202,6 +202,7 @@ class BagVerifierTest
           val result = ingestStep.success.get
 
           result shouldBe a[IngestFailed[_]]
+          debug(s"result = $result")
           result.summary shouldBe a[VerificationFailureSummary]
 
           val summary = result.summary
@@ -305,6 +306,38 @@ class BagVerifierTest
             result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
           userFacingMessage.get should startWith(
             "External identifier in bag-info.txt does not match request")
+        }
+      }
+    }
+  }
+
+  describe("checks the Payload-Oxum") {
+    it("fails if the Payload-Oxum has the wrong file count") {
+      val bagInfo = createBagInfoWith(
+        payloadOxum = PayloadOxum(
+          payloadBytes = 10,
+          numberOfPayloadFiles = dataFileCount + 1
+        )
+      )
+
+      withLocalS3Bucket { bucket =>
+        withS3Bag(bucket, bagInfo = bagInfo, dataFileCount = dataFileCount) {
+          root =>
+            withVerifier { verifier =>
+              val ingestStep = verifier.verify(
+                root,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
+              val result = ingestStep.success.get
+
+              result shouldBe a[IngestFailed[_]]
+              result.summary shouldBe a[VerificationFailureSummary]
+
+              val userFacingMessage =
+                result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+              userFacingMessage.get should fullyMatch regex
+                """Payload-Oxum has the wrong number of payload files: \d+, but bag manifest has \d+"""
+            }
         }
       }
     }
