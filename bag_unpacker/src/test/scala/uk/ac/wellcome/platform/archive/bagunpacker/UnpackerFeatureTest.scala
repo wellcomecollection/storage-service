@@ -63,7 +63,9 @@ class UnpackerFeatureTest
               outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
                 expectedPayload)
 
-              assertTopicReceivesIngestUpdates(sourceLocationPayload.ingestId, ingests) { ingestUpdates =>
+              assertTopicReceivesIngestUpdates(
+                sourceLocationPayload.ingestId,
+                ingests) { ingestUpdates =>
                 val eventDescriptions: Seq[String] =
                   ingestUpdates
                     .flatMap { _.events }
