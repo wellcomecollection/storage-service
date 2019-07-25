@@ -2,25 +2,16 @@ package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
+import uk.ac.wellcome.platform.archive.common.ingests.services.{
+  CallbackStatusGoingBackwardsException,
+  IngestStates,
+  IngestStatusGoingBackwardsException,
+  NoCallbackException
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
 
 import scala.util.{Failure, Success, Try}
-
-private class IngestStatusGoingBackwardsException(val existing: Ingest.Status,
-                                                  val update: Ingest.Status)
-    extends RuntimeException(
-      s"Received status update $update, but ingest already has status $existing")
-
-private class CallbackStatusGoingBackwardsException(
-  val existing: Callback.CallbackStatus,
-  val update: Callback.CallbackStatus)
-    extends RuntimeException(
-      s"Received callback status update $update, but ingest already has status $existing")
-
-private class NoCallbackException
-    extends RuntimeException(
-      "Received callback status update, but ingest doesn't have a callback")
 
 trait IngestTracker {
   val underlying: VersionedStore[IngestID, Int, Ingest]
@@ -44,54 +35,11 @@ trait IngestTracker {
     }
 
   def update(update: IngestUpdate): Result = {
+    // We have to do this slightly icky callback because there's no
+    // way to tell VersionedStore.update() to skip the update inside
+    // the callback.
     val updateCallback =
-      update match {
-        case _: IngestEventUpdate =>
-          (ingest: Ingest) =>
-            ingest.copy(
-              events = ingest.events ++ update.events
-            )
-
-        case statusUpdate: IngestStatusUpdate =>
-          (ingest: Ingest) =>
-            {
-              if (!statusUpdateIsAllowed(ingest.status, statusUpdate.status)) {
-                throw new IngestStatusGoingBackwardsException(
-                  ingest.status,
-                  statusUpdate.status)
-              }
-
-              ingest.copy(
-                status = statusUpdate.status,
-                events = ingest.events ++ update.events
-              )
-            }
-
-        case callbackStatusUpdate: IngestCallbackStatusUpdate =>
-          (ingest: Ingest) =>
-            {
-              ingest.callback match {
-                case Some(callback) =>
-                  if (!callbackStatusUpdateIsAllowed(
-                        callback.status,
-                        callbackStatusUpdate.callbackStatus)) {
-                    throw new CallbackStatusGoingBackwardsException(
-                      callback.status,
-                      callbackStatusUpdate.callbackStatus
-                    )
-                  }
-
-                  ingest.copy(
-                    callback = Some(
-                      callback.copy(
-                        status = callbackStatusUpdate.callbackStatus)),
-                    events = ingest.events ++ update.events
-                  )
-
-                case None => throw new NoCallbackException()
-              }
-            }
-      }
+      (ingest: Ingest) => IngestStates.applyUpdate(ingest, update).get
 
     Try { underlying.update(update.id)(updateCallback) } match {
       case Success(Right(result)) => Right(result)
@@ -122,26 +70,4 @@ trait IngestTracker {
     *
     */
   def listByBagId(bagId: BagId): Either[IngestTrackerError, Seq[Ingest]]
-
-  private def statusUpdateIsAllowed(initial: Ingest.Status,
-                                    update: Ingest.Status): Boolean =
-    initial match {
-      case status if status == update => true
-
-      case Ingest.Accepted   => true
-      case Ingest.Processing => update != Ingest.Accepted
-      case Ingest.Completed  => false
-      case Ingest.Failed     => false
-    }
-
-  private def callbackStatusUpdateIsAllowed(
-    initial: Callback.CallbackStatus,
-    update: Callback.CallbackStatus): Boolean =
-    initial match {
-      case status if status == update => true
-
-      case Callback.Pending   => true
-      case Callback.Succeeded => false
-      case Callback.Failed    => false
-    }
 }
