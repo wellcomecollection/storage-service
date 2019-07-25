@@ -55,6 +55,26 @@ class IngestStatesTest
       val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
       updatedIngest.events shouldBe existingEvents ++ newEvents
     }
+
+    val eventStatusUpdates = Table(
+      ("initial", "expected"),
+      (Ingest.Accepted, Ingest.Processing),
+      (Ingest.Processing, Ingest.Processing),
+      (Ingest.Completed, Ingest.Completed),
+      (Ingest.Failed, Ingest.Failed),
+    )
+
+    it("updates the status to Processing when it sees the first event update") {
+      forAll(eventStatusUpdates) {
+        case (initialStatus: Ingest.Status, expectedStatus: Ingest.Status) =>
+          val ingest = createIngestWith(status = initialStatus)
+
+          val update = createIngestEventUpdate
+
+          val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+          updatedIngest.status shouldBe expectedStatus
+      }
+    }
   }
 
   describe("handling an IngestStatusUpdate") {

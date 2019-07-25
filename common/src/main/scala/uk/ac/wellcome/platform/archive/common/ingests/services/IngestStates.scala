@@ -23,7 +23,15 @@ object IngestStates {
   def applyUpdate(ingest: Ingest, update: IngestUpdate): Try[Ingest] = Try {
     update match {
       case _: IngestEventUpdate =>
+        // Update the ingest status to "processing" when we see the first
+        // event update
+        val updatedStatus = ingest.status match {
+          case Ingest.Accepted => Ingest.Processing
+          case _               => ingest.status
+        }
+
         ingest.copy(
+          status = updatedStatus,
           events = ingest.events ++ update.events
         )
 
