@@ -143,7 +143,8 @@ trait Unpacker extends Logging {
       )
     }
 
-    debug(s"Uploading archive entry ${archiveEntry.getName} to ${uploadLocation}")
+    debug(
+      s"Uploading archive entry ${archiveEntry.getName} to ${uploadLocation}")
 
     put(uploadLocation)(
       new InputStreamWithLength(inputStream, length = archiveEntrySize)) match {
