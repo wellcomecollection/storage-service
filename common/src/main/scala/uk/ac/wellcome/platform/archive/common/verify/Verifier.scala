@@ -36,8 +36,13 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
       }
 
       inputStream <- streamStore.get(objectLocation) match {
-        case Right(stream)              => Right(Some(stream.identifiedT))
-        case Left(_: DoesNotExistError) => Right(None)
+        case Right(stream)              => Right(stream.identifiedT)
+
+        case Left(_: DoesNotExistError) =>
+          Left(
+            LocationNotFound(verifiableLocation, "Location not available!")
+          )
+
         case Left(storageError) =>
           Left(
             LocationError(verifiableLocation, storageError.e.getMessage)
@@ -48,14 +53,7 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
     val result = eitherInputStream match {
       case Left(e) => VerifiedFailure(verifiableLocation, e)
 
-      // ObjectLocation was not available to retrieve (permissions/missing)
-      case Right(None) =>
-        VerifiedFailure(
-          verifiableLocation,
-          LocationNotFound(verifiableLocation, "Location not available!")
-        )
-
-      case Right(Some(inputStream)) =>
+      case Right(inputStream) =>
         verifiableLocation.length match {
           case Some(expectedLength) =>
             debug(
