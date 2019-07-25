@@ -37,7 +37,12 @@ class BagRegisterWorkerTest
         val externalIdentifier = createExternalIdentifier
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, externalIdentifier, space = space, dataFileCount = dataFileCount, version = version) {
+          withBag(
+            bucket,
+            externalIdentifier,
+            space = space,
+            dataFileCount = dataFileCount,
+            version = version) {
             case (bagRootLocation, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
@@ -91,9 +96,19 @@ class BagRegisterWorkerTest
         val externalIdentifier = createExternalIdentifier
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, externalIdentifier, space = space, version = 1, dataFileCount) {
+          withBag(
+            bucket,
+            externalIdentifier,
+            space = space,
+            version = 1,
+            dataFileCount) {
             case (location1, bagInfo1) =>
-              withBag(bucket, externalIdentifier, space = space, version = 2, dataFileCount) {
+              withBag(
+                bucket,
+                externalIdentifier,
+                space = space,
+                version = 2,
+                dataFileCount) {
                 case (location2, bagInfo2) =>
                   val payload1 = createEnrichedBagInformationPayloadWith(
                     context = createPipelineContextWith(

@@ -29,7 +29,12 @@ class BagRegisterFeatureTest
         )
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, externalIdentifier, space, version, dataFileCount = dataFileCount) {
+          withBag(
+            bucket,
+            externalIdentifier,
+            space,
+            version,
+            dataFileCount = dataFileCount) {
             case (bagRootLocation, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
