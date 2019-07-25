@@ -10,20 +10,19 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.{
   BagVerifiable
 }
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestStepResult,
-  _
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.verify.Verification._
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.listing.Listing
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
 
 class BagVerifier()(
   implicit bagReader: BagReader[_],
   resolvable: Resolvable[ObjectLocation],
-  verifier: Verifier[_]
+  verifier: Verifier[_],
+  listing: Listing[ObjectLocationPrefix, ObjectLocation],
 ) extends Logging {
 
   case class BagVerifierError(
@@ -49,11 +48,17 @@ class BagVerifier()(
 
           _ <- verifyPayloadOxumFileCount(bag)
 
-          result <- verifyChecksums(
+          verificationResult <- verifyChecksums(
             root = root,
             bag = bag
           )
-        } yield result
+
+          _ <- verifyNoUnreferencedFiles(
+            root = root,
+            verificationResult = verificationResult
+          )
+
+        } yield verificationResult
 
       buildStepResult(internalResult, root = root, startTime = startTime)
     }
@@ -116,6 +121,39 @@ class BagVerifier()(
     } else {
       Right(())
     }
+  }
+
+  // Check that there aren't any files in the bag that aren't referenced in
+  // either the file manifest or the tag manifest.
+  private def verifyNoUnreferencedFiles(root: ObjectLocation, verificationResult: VerificationResult): InternalResult[Unit] = {
+    val expectedFiles: List[ObjectLocation] =
+      verificationResult match {
+        case VerificationSuccess(locations) =>
+          locations.map { _.objectLocation }
+
+        case VerificationFailure(failures, successes) =>
+          failures.flatMap(_.objectLocation) ++ successes.map { _.objectLocation }
+      }
+
+    for {
+      actualFiles <- listing.list(root.asPrefix) match {
+        case Right(iterable) => Right(iterable)
+        case Left(listingFailure) => Left(BagVerifierError(listingFailure.e))
+      }
+
+      unreferencedFiles = actualFiles.filter { expectedFiles.contains(_) }
+
+      result <-
+        if (unreferencedFiles.isEmpty)
+          Right(())
+        else {
+          val message = s"Bag contains files which are not referenced in the manifest: $unreferencedFiles"
+          Left(BagVerifierError(
+            new Throwable(message),
+            userMessage = Some(message)
+          ))
+        }
+    } yield result
   }
 
   private def buildStepResult(
