@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.{
   BagVerifiable
 }
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.storage.models._
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, _}
 import uk.ac.wellcome.platform.archive.common.verify.Verification._
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
@@ -35,89 +35,25 @@ class BagVerifier()(
     Try {
       val startTime = Instant.now()
 
-      val stepResult
-        : Either[BagVerifierError, VerificationResult] = for {
-        bag <- getBag(root, startTime = startTime)
+      val internalResult =
+        for {
+          bag <- getBag(root, startTime = startTime)
 
-        _ <- verifyExternalIdentifier(
-          bag = bag,
-          externalIdentifier = externalIdentifier,
-          root = root,
-          startTime = startTime
-        )
-
-        result <- verifyChecksums(
-          root = root,
-          bag = bag,
-          startTime = startTime
-        )
-      } yield result
-
-      stepResult match {
-        case Left(error) =>
-          IngestFailed(
-            summary = VerificationSummary.incomplete(
-              root = root,
-              e = error.e,
-              t = startTime
-            ),
-            e = error.e,
-            maybeUserFacingMessage = error.userMessage
+          _ <- verifyExternalIdentifier(
+            bag = bag,
+            externalIdentifier = externalIdentifier,
+            root = root,
+            startTime = startTime
           )
 
-        case Right(incomplete: VerificationIncomplete) =>
-          IngestFailed(
-            summary =
-              VerificationIncompleteSummary(
-                rootLocation = root,
-                e = incomplete,
-                startTime = startTime,
-                endTime = Instant.now()
-              ),
-            e = incomplete,
-            maybeUserFacingMessage = None
+          result <- verifyChecksums(
+            root = root,
+            bag = bag,
+            startTime = startTime
           )
+        } yield result
 
-        case Right(success: VerificationSuccess) =>
-          IngestStepSucceeded(
-            VerificationSuccessSummary(
-              rootLocation = root,
-              verification = Some(success),
-              startTime = startTime,
-              endTime = Instant.now()
-            )
-          )
-
-        case Right(result: VerificationFailure) =>
-          val verificationFailureMessage =
-            result.failure
-              .map { verifiedFailure =>
-                s"${verifiedFailure.location.uri}: ${verifiedFailure.e.getMessage}"
-              }
-              .mkString("\n")
-
-          warn(s"Errors verifying $root:\n$verificationFailureMessage")
-
-          val errorCount = result.failure.size
-
-          val userFacingMessage =
-            if (errorCount == 1)
-              "There was 1 error verifying the bag"
-            else
-              s"There were $errorCount errors verifying the bag"
-
-          IngestFailed(
-            summary =
-              VerificationFailureSummary(
-                rootLocation = root,
-                verification = Some(result),
-                startTime = startTime,
-                endTime = Instant.now()
-              ),
-            e = new Throwable(userFacingMessage),
-            maybeUserFacingMessage = Some(userFacingMessage)
-          )
-      }
+      buildStepResult(internalResult, root = root, startTime = startTime)
     }
 
   private def getBag(root: ObjectLocation,
@@ -167,4 +103,74 @@ class BagVerifier()(
       case Success(result) => Right(result)
     }
   }
+
+  private def buildStepResult(
+    internalResult: InternalResult[VerificationResult],
+    root: ObjectLocation,
+    startTime: Instant): IngestStepResult[VerificationSummary] =
+    internalResult match {
+      case Left(error) =>
+        IngestFailed(
+          summary = VerificationSummary.incomplete(
+            root = root,
+            e = error.e,
+            t = startTime
+          ),
+          e = error.e,
+          maybeUserFacingMessage = error.userMessage
+        )
+
+      case Right(incomplete: VerificationIncomplete) =>
+        IngestFailed(
+          summary =
+            VerificationIncompleteSummary(
+              rootLocation = root,
+              e = incomplete,
+              startTime = startTime,
+              endTime = Instant.now()
+            ),
+          e = incomplete,
+          maybeUserFacingMessage = None
+        )
+
+      case Right(success: VerificationSuccess) =>
+        IngestStepSucceeded(
+          VerificationSuccessSummary(
+            rootLocation = root,
+            verification = Some(success),
+            startTime = startTime,
+            endTime = Instant.now()
+          )
+        )
+
+      case Right(result: VerificationFailure) =>
+        val verificationFailureMessage =
+          result.failure
+            .map { verifiedFailure =>
+              s"${verifiedFailure.location.uri}: ${verifiedFailure.e.getMessage}"
+            }
+            .mkString("\n")
+
+        warn(s"Errors verifying $root:\n$verificationFailureMessage")
+
+        val errorCount = result.failure.size
+
+        val userFacingMessage =
+          if (errorCount == 1)
+            "There was 1 error verifying the bag"
+          else
+            s"There were $errorCount errors verifying the bag"
+
+        IngestFailed(
+          summary =
+            VerificationFailureSummary(
+              rootLocation = root,
+              verification = Some(result),
+              startTime = startTime,
+              endTime = Instant.now()
+            ),
+          e = new Throwable(userFacingMessage),
+          maybeUserFacingMessage = Some(userFacingMessage)
+        )
+    }
 }
