@@ -29,6 +29,8 @@ import uk.ac.wellcome.json.JsonUtil._
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
+
+
     implicit val actorSystem: ActorSystem =
       buildActorSystem()
 
