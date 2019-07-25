@@ -15,7 +15,7 @@ module "logstash_transit" {
   service_name = "${local.logstash_transit_service_name}"
 
   env_vars = {
-    foo = "bar"
+    XPACK_MONITORING_ENABLED = "false"
   }
 
   env_vars_length = 8
@@ -57,7 +57,7 @@ module "bag_unpacker" {
     logstash_host           = "${local.logstash_transit_service_name}.${var.namespace}"
   }
 
-  env_vars_length = 8
+  env_vars_length = 9
 
   cpu    = 2048
   memory = 4096
