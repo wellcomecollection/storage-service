@@ -53,36 +53,21 @@ endef
 # Publish a Docker image to ECR, and put its associated release ID in S3.
 #
 # Args:
-#   $1 - Name of the Docker image.
-#
-define publish_service
-	$(ROOT)/docker_run.py \
-	    --aws --dind -- \
-	    wellcome/publish_service:30 \
-	        --project="$(1)" \
-	        --namespace=uk.ac.wellcome \
-	        --infra-bucket="$(INFRA_BUCKET)" \
-			--sns-topic="arn:aws:sns:eu-west-1:760097843905:ecr_pushes"
-endef
-
-
-# Publish a Docker image to ECR, and put its associated release ID in S3.
-#
-# Args:
 #   $1 - Name of the Docker image
 #   $2 - Stack name
 #   $3 - ECR Repository URI
 #   $4 - Registry ID
 #
-define publish_service_ssm
+define publish_service
 	$(ROOT)/docker_run.py \
 	    --aws --dind -- \
-	    wellcome/publish_service:55 \
+	    wellcome/publish_service:84 \
 	    	--service_id="$(1)" \
 	        --project_id=$(2) \
 	        --account_id=$(3) \
 	        --region_id=eu-west-1 \
 	        --namespace=uk.ac.wellcome \
+	        --role_arn=arn:aws:iam::975596993436:role/storage-developer
 	        --label=latest \
 
 endef
@@ -168,7 +153,7 @@ $(1)-build:
 	$(call build_image,$(1),$(2)/Dockerfile)
 
 $(1)-publish: $(1)-build
-	$(call publish_service_ssm,$(1),$(3),$(4),$(5))
+	$(call publish_service,$(1),$(3),$(4),$(5))
 endef
 
 
@@ -182,7 +167,7 @@ $(1)-build:
 	$(call build_image,$(1),$(2)/Dockerfile)
 
 $(1)-publish: $(1)-build
-	$(call publish_service_ssm,$(1),$(3),$(4),$(5))
+	$(call publish_service,$(1),$(3),$(4),$(5))
 endef
 
 
@@ -277,7 +262,7 @@ $(1)-test:
 	$(call test_python,$(STACK_ROOT)/$(1))
 
 $(1)-publish: $(1)-build
-	$(call publish_service_ssm,$(1),$(3),$(4),$(5))
+	$(call publish_service,$(1),$(3),$(4),$(5))
 endef
 
 

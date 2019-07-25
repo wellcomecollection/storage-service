@@ -1,3 +1,34 @@
+# logstash_transit
+
+module "logstash_transit" {
+  source = "../modules/service/worker"
+
+  security_group_ids = [
+    "${aws_security_group.interservice.id}",
+    "${aws_security_group.service_egress.id}",
+  ]
+
+  cluster_name = "${aws_ecs_cluster.cluster.name}"
+  cluster_id   = "${aws_ecs_cluster.cluster.id}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
+  subnets      = "${var.private_subnets}"
+  service_name = "${local.logstash_transit_service_name}"
+
+  env_vars = {
+    foo = "bar"
+  }
+
+  env_vars_length = 8
+
+  cpu    = 1024
+  memory = 2048
+
+  min_capacity = "0"
+  max_capacity = "1"
+
+  container_image = "${local.logstash_transit_image}"
+}
+
 # bag_unpacker
 
 module "bag_unpacker" {
@@ -23,6 +54,7 @@ module "bag_unpacker" {
     metrics_namespace       = "${local.bag_unpacker_service_name}"
     operation_name          = "unpacking"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_unpacker_service_name}"
+    logstash_host           = "${local.logstash_transit_service_name}.${var.namespace}"
   }
 
   env_vars_length = 8
