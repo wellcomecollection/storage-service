@@ -6,18 +6,18 @@ import scala.util.Try
 
 class IngestStatusGoingBackwardsException(val existing: Ingest.Status,
                                           val update: Ingest.Status)
-  extends RuntimeException(
-    s"Received status update $update, but ingest already has status $existing")
+    extends RuntimeException(
+      s"Received status update $update, but ingest already has status $existing")
 
 class CallbackStatusGoingBackwardsException(
-                                             val existing: Callback.CallbackStatus,
-                                             val update: Callback.CallbackStatus)
-  extends RuntimeException(
-    s"Received callback status update $update, but ingest already has status $existing")
+  val existing: Callback.CallbackStatus,
+  val update: Callback.CallbackStatus)
+    extends RuntimeException(
+      s"Received callback status update $update, but ingest already has status $existing")
 
 class NoCallbackException
-  extends RuntimeException(
-    "Received callback status update, but ingest doesn't have a callback")
+    extends RuntimeException(
+      "Received callback status update, but ingest doesn't have a callback")
 
 object IngestStates {
   def applyUpdate(ingest: Ingest, update: IngestUpdate): Try[Ingest] = Try {
@@ -60,8 +60,8 @@ object IngestStates {
             }
 
             ingest.copy(
-              callback =
-                Some(callback.copy(status = callbackStatusUpdate.callbackStatus)),
+              callback = Some(
+                callback.copy(status = callbackStatusUpdate.callbackStatus)),
               events = ingest.events ++ update.events
             )
 
@@ -82,8 +82,8 @@ object IngestStates {
     }
 
   private def callbackStatusUpdateIsAllowed(
-                                             initial: Callback.CallbackStatus,
-                                             update: Callback.CallbackStatus): Boolean =
+    initial: Callback.CallbackStatus,
+    update: Callback.CallbackStatus): Boolean =
     initial match {
       case status if status == update => true
 

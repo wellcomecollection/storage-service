@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest}
 
 class IngestStatesTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with IngestGenerators
     with TryValues
@@ -71,7 +71,8 @@ class IngestStatesTest
 
           val update = createIngestEventUpdate
 
-          val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+          val updatedIngest =
+            IngestStates.applyUpdate(ingest, update).success.value
           updatedIngest.status shouldBe expectedStatus
       }
     }
@@ -88,7 +89,8 @@ class IngestStatesTest
           events = List(event)
         )
 
-        val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
         updatedIngest.events shouldBe Seq(event)
       }
 
@@ -102,7 +104,8 @@ class IngestStatesTest
           events = events
         )
 
-        val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
         updatedIngest.events shouldBe events
       }
 
@@ -116,7 +119,8 @@ class IngestStatesTest
           events = newEvents
         )
 
-        val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
         updatedIngest.events shouldBe existingEvents ++ newEvents
       }
     }
@@ -144,7 +148,8 @@ class IngestStatesTest
               status = updatedStatus
             )
 
-            val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+            val updatedIngest =
+              IngestStates.applyUpdate(ingest, update).success.value
             updatedIngest.status shouldBe updatedStatus
         }
       }
@@ -170,7 +175,10 @@ class IngestStatesTest
               status = updatedStatus
             )
 
-            IngestStates.applyUpdate(ingest, update).failure.exception shouldBe a[IngestStatusGoingBackwardsException]
+            IngestStates
+              .applyUpdate(ingest, update)
+              .failure
+              .exception shouldBe a[IngestStatusGoingBackwardsException]
         }
       }
     }
@@ -187,7 +195,8 @@ class IngestStatesTest
           events = List(event)
         )
 
-        val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
         updatedIngest.events shouldBe Seq(event)
       }
 
@@ -201,7 +210,8 @@ class IngestStatesTest
           events = events
         )
 
-        val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
         updatedIngest.events shouldBe events
       }
 
@@ -215,7 +225,8 @@ class IngestStatesTest
           events = newEvents
         )
 
-        val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
         updatedIngest.events shouldBe existingEvents ++ newEvents
       }
     }
@@ -233,8 +244,8 @@ class IngestStatesTest
       it("updates the status of a callback") {
         forAll(allowedCallbackStatusUpdates) {
           case (
-            initialStatus: Callback.CallbackStatus,
-            updatedStatus: Callback.CallbackStatus) =>
+              initialStatus: Callback.CallbackStatus,
+              updatedStatus: Callback.CallbackStatus) =>
             val ingest = createIngestWith(
               callback = Some(
                 Callback(
@@ -248,7 +259,8 @@ class IngestStatesTest
               callbackStatus = updatedStatus
             )
 
-            val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+            val updatedIngest =
+              IngestStates.applyUpdate(ingest, update).success.value
             updatedIngest.callback.get.status shouldBe updatedStatus
         }
       }
@@ -264,8 +276,8 @@ class IngestStatesTest
       it("does not allow the callback status to go backwards") {
         forAll(disallowedCallbackStatusUpdates) {
           case (
-            initialStatus: Callback.CallbackStatus,
-            updatedStatus: Callback.CallbackStatus) =>
+              initialStatus: Callback.CallbackStatus,
+              updatedStatus: Callback.CallbackStatus) =>
             val ingest = createIngestWith(
               callback = Some(
                 Callback(
