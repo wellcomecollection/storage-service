@@ -89,7 +89,7 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
   }
 
   private def verifyChecksum(verifiableLocation: VerifiableLocation,
-                             inputStream: InputStream,
+                             inputStream: IS,
                              algorithm: HashingAlgorithm): VerifiedLocation =
     Checksum.create(inputStream, algorithm) match {
       // Failure to create a checksum (parsing/algorithm)
@@ -110,7 +110,7 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
           )
         } else {
           // Happy path!
-          VerifiedSuccess(verifiableLocation)
+          VerifiedSuccess(verifiableLocation, size = inputStream.length)
         }
     }
 }
