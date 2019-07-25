@@ -61,7 +61,7 @@ endef
 define publish_service
 	$(ROOT)/docker_run.py \
 	    --aws --dind -- \
-	    wellcome/publish_service:84 \
+	    wellcome/publish_service:86 \
 	    	--service_id="$(1)" \
 	        --project_id=$(2) \
 	        --account_id=$(3) \

@@ -17,6 +17,9 @@ module "logstash_transit" {
   env_vars = {
     XPACK_MONITORING_ENABLED = "false"
 
+    INPUT_UDP_ID ="udp"
+    INPUT_UDP_PORT ="514"
+
 //    OUTPUT_ELASTICSEARCH_HOSTS    = "1bc69fba8b1f4f46a40cf0ae6274958b.eu-west-1.aws.found.io:9243"
 //    OUTPUT_ELASTICSEARCH_SSL      = "true"
 //    OUTPUT_ELASTICSEARCH_USER     = ""
