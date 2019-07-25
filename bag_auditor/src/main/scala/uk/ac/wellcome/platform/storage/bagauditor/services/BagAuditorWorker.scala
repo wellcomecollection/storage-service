@@ -47,24 +47,9 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
         storageSpace = payload.storageSpace
       )
 
-      _ <- sendIngestInformation(payload)(auditStep)
       _ <- ingestUpdater.send(payload.ingestId, auditStep)
       _ <- sendSuccessful(payload)(auditStep)
     } yield auditStep
-
-  // TODO: Use the user-facing message for this
-  private def sendIngestInformation(payload: BagRootLocationPayload)(
-    step: IngestStepResult[AuditSummary]): Try[Unit] =
-    step match {
-      case IngestStepSucceeded(summary: AuditSuccessSummary, _) =>
-        ingestUpdater.sendEvent(
-          ingestId = payload.ingestId,
-          messages = Seq(
-            s"Assigned bag version ${summary.version}"
-          )
-        )
-      case _ => Success(())
-    }
 
   private def sendSuccessful(payload: BagRootLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =

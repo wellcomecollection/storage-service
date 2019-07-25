@@ -69,8 +69,7 @@ class BagAuditorFeatureTest
               ingests,
               expectedDescriptions = Seq(
                 "Auditing bag started",
-                "Assigned bag version 1",
-                "Auditing bag succeeded"
+                "Auditing bag succeeded - Assigned bag version v1"
               )
             )
           }
@@ -120,8 +119,7 @@ class BagAuditorFeatureTest
               ingests,
               expectedDescriptions = Seq(
                 "Auditing bag started",
-                "Assigned bag version 1",
-                "Auditing bag succeeded"
+                "Auditing bag succeeded - Assigned bag version v1"
               )
             )
           }
@@ -140,11 +138,9 @@ class BagAuditorFeatureTest
               ingests,
               expectedDescriptions = Seq(
                 "Auditing bag started",
-                "Assigned bag version 1",
-                "Auditing bag succeeded",
+                "Auditing bag succeeded - Assigned bag version v1",
                 "Auditing bag started",
-                "Assigned bag version 2",
-                "Auditing bag succeeded"
+                "Auditing bag succeeded - Assigned bag version v2"
               )
             )
           }
