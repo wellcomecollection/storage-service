@@ -20,15 +20,17 @@ class BagRegisterFeatureTest
         val createdAfterDate = Instant.now()
         val space = createStorageSpace
         val version = randomInt(1, 15)
+        val dataFileCount = randomInt(1, 15)
+        val externalIdentifier = createExternalIdentifier
+
+        val bagId = BagId(
+          space = space,
+          externalIdentifier = externalIdentifier
+        )
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, space, version) {
+          withBag(bucket, externalIdentifier, space, version, dataFileCount = dataFileCount) {
             case (bagRootLocation, bagInfo) =>
-              val bagId = BagId(
-                space = space,
-                externalIdentifier = bagInfo.externalIdentifier
-              )
-
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space
@@ -45,7 +47,7 @@ class BagRegisterFeatureTest
 
                 storageManifest.space shouldBe bagId.space
                 storageManifest.info shouldBe bagInfo
-                storageManifest.manifest.files should have size 1
+                storageManifest.manifest.files should have size dataFileCount
 
                 storageManifest.locations should have size 1
 

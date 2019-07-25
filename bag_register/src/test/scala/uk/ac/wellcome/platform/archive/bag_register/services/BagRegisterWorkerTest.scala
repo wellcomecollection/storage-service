@@ -33,9 +33,11 @@ class BagRegisterWorkerTest
         val createdAfterDate = Instant.now()
         val space = createStorageSpace
         val version = randomInt(1, 15)
+        val dataFileCount = randomInt(1, 15)
+        val externalIdentifier = createExternalIdentifier
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, space = space, version = version) {
+          withBag(bucket, externalIdentifier, space = space, dataFileCount = dataFileCount, version = version) {
             case (bagRootLocation, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
@@ -59,7 +61,7 @@ class BagRegisterWorkerTest
 
               storageManifest.space shouldBe bagId.space
               storageManifest.info shouldBe bagInfo
-              storageManifest.manifest.files should have size 1
+              storageManifest.manifest.files should have size dataFileCount
 
               storageManifest.locations shouldBe List(
                 StorageLocation(
@@ -85,12 +87,14 @@ class BagRegisterWorkerTest
     withBagRegisterWorker {
       case (service, storageManifestDao, _, _, _) =>
         val space = createStorageSpace
+        val dataFileCount = randomInt(1, 15)
+        val externalIdentifier = createExternalIdentifier
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, space = space, version = 1) {
-            case (location1, bagInfo) =>
-              withBag(bucket, space = space, version = 2) {
-                case (location2, bagInfo) =>
+          withBag(bucket, externalIdentifier, space = space, version = 1, dataFileCount) {
+            case (location1, bagInfo1) =>
+              withBag(bucket, externalIdentifier, space = space, version = 2, dataFileCount) {
+                case (location2, bagInfo2) =>
                   val payload1 = createEnrichedBagInformationPayloadWith(
                     context = createPipelineContextWith(
                       storageSpace = space
@@ -108,7 +112,7 @@ class BagRegisterWorkerTest
 
                   val bagId = BagId(
                     space = space,
-                    externalIdentifier = bagInfo.externalIdentifier
+                    externalIdentifier = bagInfo1.externalIdentifier
                   )
 
                   Seq(payload1, payload2).map { payload =>
