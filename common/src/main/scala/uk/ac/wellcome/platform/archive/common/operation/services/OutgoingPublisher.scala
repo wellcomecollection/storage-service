@@ -15,7 +15,7 @@ class OutgoingPublisher[Destination](
                                                 outgoing: => O): Try[Unit] = {
     debug(s"Sending outgoing message for result $result")
     result match {
-      case IngestStepSucceeded(_) | IngestCompleted(_) =>
+      case IngestStepSucceeded(_, _) | IngestCompleted(_) =>
         debug(
           msg =
             "Ingest step succeeded/completed: " +

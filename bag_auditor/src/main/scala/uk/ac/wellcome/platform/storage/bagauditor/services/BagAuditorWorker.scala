@@ -52,10 +52,11 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       _ <- sendSuccessful(payload)(auditStep)
     } yield auditStep
 
+  // TODO: Use the user-facing message for this
   private def sendIngestInformation(payload: BagRootLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
-      case IngestStepSucceeded(summary: AuditSuccessSummary) =>
+      case IngestStepSucceeded(summary: AuditSuccessSummary, _) =>
         ingestUpdater.sendEvent(
           ingestId = payload.ingestId,
           messages = Seq(
@@ -68,7 +69,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
   private def sendSuccessful(payload: BagRootLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
-      case IngestStepSucceeded(summary: AuditSuccessSummary) =>
+      case IngestStepSucceeded(summary: AuditSuccessSummary, _) =>
         outgoingPublisher.sendIfSuccessful(
           step,
           EnrichedBagInformationPayload(

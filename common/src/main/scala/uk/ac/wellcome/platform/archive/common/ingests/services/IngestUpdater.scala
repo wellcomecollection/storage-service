@@ -35,10 +35,13 @@ class IngestUpdater[Destination](stepName: String,
           )
         )
 
-      case IngestStepSucceeded(_) =>
+      case IngestStepSucceeded(_, maybeMessage) =>
         IngestUpdate.event(
           id = ingestId,
-          description = s"${stepName.capitalize} succeeded"
+          description = eventDescription(
+            s"${stepName.capitalize} succeeded",
+            maybeMessage
+          )
         )
 
       case IngestStepStarted(_) =>

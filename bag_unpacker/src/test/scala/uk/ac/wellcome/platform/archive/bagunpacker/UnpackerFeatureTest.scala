@@ -63,14 +63,18 @@ class UnpackerFeatureTest
               outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
                 expectedPayload)
 
-              assertTopicReceivesIngestEvents(
-                sourceLocationPayload.ingestId,
-                ingests,
-                expectedDescriptions = Seq(
-                  "Unpacker started",
-                  "Unpacker succeeded"
-                )
-              )
+              assertTopicReceivesIngestUpdates(sourceLocationPayload.ingestId, ingests) { ingestUpdates =>
+                val eventDescriptions: Seq[String] =
+                  ingestUpdates
+                    .flatMap { _.events }
+                    .map { _.description }
+                    .distinct
+
+                eventDescriptions should have size 2
+
+                eventDescriptions(0) shouldBe "Unpacker started"
+                eventDescriptions(1) should fullyMatch regex """Unpacker succeeded - Unpacked \d+ bytes from \d+ files"""
+              }
             }
           }
         }
