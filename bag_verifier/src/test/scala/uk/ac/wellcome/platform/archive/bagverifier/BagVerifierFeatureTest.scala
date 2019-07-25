@@ -124,7 +124,7 @@ class BagVerifierFeatureTest
                         ingestUpdates.tail.head
                           .asInstanceOf[IngestStatusUpdate]
                       ingestFailed.status shouldBe Ingest.Failed
-                      ingestFailed.events.head.description shouldBe "Verification failed"
+                      ingestFailed.events.head.description shouldBe "Verification failed - There was 1 error verifying the bag"
                   }
 
                   outgoing.messages shouldBe empty

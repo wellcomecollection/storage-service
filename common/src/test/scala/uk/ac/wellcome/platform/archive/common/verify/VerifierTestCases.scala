@@ -110,7 +110,7 @@ trait VerifierTestCases[Namespace, Context]
         verifiedFailure.location shouldBe verifiableLocation
         verifiedFailure.e shouldBe a[FailedChecksumNoMatch]
         verifiedFailure.e.getMessage should startWith(
-          "Checksum values do not match"
+          s"Checksum values do not match! Expected: $checksum"
         )
       }
     }

@@ -31,9 +31,13 @@ class BagVerifier()(
       val startTime = Instant.now()
 
       bagReader.get(root) match {
-        // TODO: Provide more specific messages here
-        case Left(e) =>
-          IngestFailed(VerificationSummary.incomplete(root, e, startTime), e)
+        case Left(bagUnavailable) =>
+          IngestFailed(
+            summary =
+              VerificationSummary.incomplete(root, bagUnavailable, startTime),
+            e = bagUnavailable,
+            maybeUserFacingMessage = Some(bagUnavailable.msg)
+          )
 
         case Right(bag) =>
           if (bag.info.externalIdentifier != externalIdentifier) {
@@ -54,8 +58,33 @@ class BagVerifier()(
             VerificationSummary.create(root, bag.verify, startTime) match {
               case success @ VerificationSuccessSummary(_, _, _, _) =>
                 IngestStepSucceeded(success)
-              case failure @ VerificationFailureSummary(_, _, _, _) =>
+              case failure @ VerificationFailureSummary(
+                    _,
+                    Some(verification),
+                    _,
+                    _) =>
+                val verificationFailureMessage =
+                  verification.failure
+                    .map { verifiedFailure =>
+                      s"${verifiedFailure.location.uri}: ${verifiedFailure.e.getMessage}"
+                    }
+                    .mkString("\n")
+
+                warn(s"Errors verifying $root:\n$verificationFailureMessage")
+
+                val errorCount = verification.failure.size
+
+                val userFacingMessage =
+                  if (errorCount == 1)
+                    "There was 1 error verifying the bag"
+                  else
+                    s"There were $errorCount errors verifying the bag"
+
+                IngestFailed(failure, InvalidBag(bag), Some(userFacingMessage))
+
+              case failure @ VerificationFailureSummary(_, None, _, _) =>
                 IngestFailed(failure, InvalidBag(bag))
+
               case incomplete @ VerificationIncompleteSummary(_, _, _, _) =>
                 IngestFailed(incomplete, incomplete.e)
             }
