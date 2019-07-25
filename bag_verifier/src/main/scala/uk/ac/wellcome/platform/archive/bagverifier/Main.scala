@@ -30,6 +30,9 @@ import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import scala.concurrent.ExecutionContext
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.verify.s3.S3ObjectVerifier
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.listing.Listing
+import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -59,6 +62,9 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val s3Resolvable =
       new S3Resolvable()
+
+    implicit val s3Listing: Listing[ObjectLocationPrefix, ObjectLocation] =
+      S3ObjectLocationListing()
 
     val verifier =
       new BagVerifier()

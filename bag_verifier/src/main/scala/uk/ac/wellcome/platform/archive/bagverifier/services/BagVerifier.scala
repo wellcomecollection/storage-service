@@ -125,36 +125,42 @@ class BagVerifier()(
 
   // Check that there aren't any files in the bag that aren't referenced in
   // either the file manifest or the tag manifest.
-  private def verifyNoUnreferencedFiles(root: ObjectLocation, verificationResult: VerificationResult): InternalResult[Unit] = {
-    val expectedFiles: List[ObjectLocation] =
-      verificationResult match {
-        case VerificationSuccess(locations) =>
-          locations.map { _.objectLocation }
+  private def verifyNoUnreferencedFiles(root: ObjectLocation, verificationResult: VerificationResult): InternalResult[Unit] =
+    verificationResult match {
+      case VerificationSuccess(locations) =>
+        val expectedLocations = locations.map { _.objectLocation }
 
-        case VerificationFailure(failures, successes) =>
-          failures.flatMap(_.objectLocation) ++ successes.map { _.objectLocation }
-      }
+        debug(s"Expecting the bag to contain: $expectedLocations")
 
-    for {
-      actualFiles <- listing.list(root.asPrefix) match {
-        case Right(iterable) => Right(iterable)
-        case Left(listingFailure) => Left(BagVerifierError(listingFailure.e))
-      }
+        for {
+          actualLocations <- listing.list(root.asPrefix) match {
+            case Right(iterable) => Right(iterable)
+            case Left(listingFailure) => Left(BagVerifierError(listingFailure.e))
+          }
 
-      unreferencedFiles = actualFiles.filter { expectedFiles.contains(_) }
+          unreferencedFiles = actualLocations
+            .filterNot { expectedLocations.contains(_) }
+            .filterNot {
+              // The tag manifest isn't referred to by other files, so we don't have
+              // it in the list of verifier successes/failures.  But we expect to
+              // see it in the bag.
+              _ == root.join("tagmanifest-sha256.txt")
+            }
 
-      result <-
-        if (unreferencedFiles.isEmpty)
-          Right(())
-        else {
-          val message = s"Bag contains files which are not referenced in the manifest: $unreferencedFiles"
-          Left(BagVerifierError(
-            new Throwable(message),
-            userMessage = Some(message)
-          ))
-        }
-    } yield result
-  }
+          result <-
+            if (unreferencedFiles.isEmpty)
+              Right(())
+            else {
+              val message = s"Bag contains files which are not referenced in the manifest: $unreferencedFiles"
+              Left(BagVerifierError(
+                new Throwable(message),
+                userMessage = Some(message)
+              ))
+            }
+        } yield result
+
+      case _ => Right(())
+    }
 
   private def buildStepResult(
     internalResult: InternalResult[VerificationResult],
