@@ -5,19 +5,20 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models
 import uk.ac.wellcome.platform.archive.common.bagit.models.error.InvalidBagInfo
 import uk.ac.wellcome.platform.archive.common.fixtures.BagIt
-import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
+import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, PayloadOxumGenerators}
 
 class BagInfoTest
     extends FunSpec
     with BagIt
     with Matchers
-    with ExternalIdentifierGenerators {
+    with ExternalIdentifierGenerators
+    with PayloadOxumGenerators {
   case class Thing(id: String)
   val t = Thing("a")
 
   it("extracts a BagInfo object from a bagInfo file with only required fields") {
     val externalIdentifier = createExternalIdentifier
-    val payloadOxum = randomPayloadOxum
+    val payloadOxum = createPayloadOxum
     val baggingDate = randomLocalDate
     val bagInfoString =
       bagInfoFileContents(externalIdentifier, payloadOxum, baggingDate)
@@ -29,7 +30,7 @@ class BagInfoTest
   it(
     "extracts a BagInfo object from a bagInfo file with all required and optional fields") {
     val externalIdentifier = createExternalIdentifier
-    val payloadOxum = randomPayloadOxum
+    val payloadOxum = createPayloadOxum
     val baggingDate = randomLocalDate
     val sourceOrganisation = Some(randomSourceOrganisation)
     val externalDescription = Some(randomExternalDescription)
@@ -60,7 +61,7 @@ class BagInfoTest
     "returns a left of invalid bag info error if there is no external identifier in bag-info.txt") {
     val bagInfoString =
       s"""|Source-Organization: $randomSourceOrganisation
-          |Payload-Oxum: ${randomPayloadOxum.payloadBytes}.${randomPayloadOxum.numberOfPayloadFiles}
+          |Payload-Oxum: ${createPayloadOxum.payloadBytes}.${createPayloadOxum.numberOfPayloadFiles}
           |Bagging-Date: $randomLocalDate""".stripMargin
 
     BagInfo.parseBagInfo(t, IOUtils.toInputStream(bagInfoString, "UTF-8")) shouldBe Left(
@@ -95,7 +96,7 @@ class BagInfoTest
     val bagInfoString =
       s"""|External-Identifier: $createExternalIdentifier
           |Source-Organization: $randomSourceOrganisation
-          |Payload-Oxum: ${randomPayloadOxum.payloadBytes}.${randomPayloadOxum.numberOfPayloadFiles}""".stripMargin
+          |Payload-Oxum: ${createPayloadOxum.payloadBytes}.${createPayloadOxum.numberOfPayloadFiles}""".stripMargin
 
     BagInfo.parseBagInfo(t, IOUtils.toInputStream(bagInfoString, "UTF-8")) shouldBe Left(
       InvalidBagInfo(t, List("Bagging-Date")))
@@ -106,7 +107,7 @@ class BagInfoTest
     val bagInfoString =
       s"""|External-Identifier: $createExternalIdentifier
           |Source-Organization: $randomSourceOrganisation
-          |Payload-Oxum: ${randomPayloadOxum.payloadBytes}.${randomPayloadOxum.numberOfPayloadFiles}
+          |Payload-Oxum: ${createPayloadOxum.payloadBytes}.${createPayloadOxum.numberOfPayloadFiles}
           |Bagging-Date: sdfkjghl""".stripMargin
 
     BagInfo.parseBagInfo(t, IOUtils.toInputStream(bagInfoString, "UTF-8")) shouldBe Left(
