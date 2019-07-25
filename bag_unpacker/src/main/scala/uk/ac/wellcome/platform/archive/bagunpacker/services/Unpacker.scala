@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 import java.io.InputStream
 import java.time.Instant
 
+import grizzled.slf4j.Logging
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.Unarchiver
@@ -22,7 +23,7 @@ import uk.ac.wellcome.storage.{
 
 import scala.util.{Failure, Success, Try}
 
-trait Unpacker {
+trait Unpacker extends Logging {
   // The unpacker asks for separate get/put methods rather than a Store
   // because it might be unpacking/uploading to different providers.
   //
@@ -103,6 +104,7 @@ trait Unpacker {
             .filterNot { case (archiveEntry, _) => archiveEntry.isDirectory }
             .foreach {
               case (archiveEntry, entryStream) =>
+                debug(s"Processing archive entry ${archiveEntry.getName}")
                 val uploadedBytes = putObject(
                   inputStream = entryStream,
                   archiveEntry = archiveEntry,
@@ -140,6 +142,8 @@ trait Unpacker {
         s"Unknown entry size for ${archiveEntry.getName}!"
       )
     }
+
+    debug(s"Uploading archive entry ${archiveEntry.getName} to ${uploadLocation}")
 
     put(uploadLocation)(
       new InputStreamWithLength(inputStream, length = archiveEntrySize)) match {
