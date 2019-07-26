@@ -10,20 +10,19 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.{
   BagVerifiable
 }
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestStepResult,
-  _
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.verify.Verification._
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.listing.Listing
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
 
 class BagVerifier()(
   implicit bagReader: BagReader[_],
   resolvable: Resolvable[ObjectLocation],
-  verifier: Verifier[_]
+  verifier: Verifier[_],
+  listing: Listing[ObjectLocationPrefix, ObjectLocation],
 ) extends Logging {
 
   case class BagVerifierError(
@@ -49,11 +48,17 @@ class BagVerifier()(
 
           _ <- verifyPayloadOxumFileCount(bag)
 
-          result <- verifyChecksums(
+          verificationResult <- verifyChecksums(
             root = root,
             bag = bag
           )
-        } yield result
+
+          _ <- verifyNoUnreferencedFiles(
+            root = root,
+            verificationResult = verificationResult
+          )
+
+        } yield verificationResult
 
       buildStepResult(internalResult, root = root, startTime = startTime)
     }
@@ -118,6 +123,72 @@ class BagVerifier()(
     }
   }
 
+  // Check that there aren't any files in the bag that aren't referenced in
+  // either the file manifest or the tag manifest.
+  private def verifyNoUnreferencedFiles(
+    root: ObjectLocation,
+    verificationResult: VerificationResult): InternalResult[Unit] =
+    verificationResult match {
+      case VerificationSuccess(locations) =>
+        val expectedLocations = locations.map { _.objectLocation }
+
+        debug(s"Expecting the bag to contain: $expectedLocations")
+
+        for {
+          actualLocations <- listing.list(root.asPrefix) match {
+            case Right(iterable) => Right(iterable)
+            case Left(listingFailure) =>
+              Left(BagVerifierError(listingFailure.e))
+          }
+
+          unreferencedFiles = actualLocations
+            .filterNot { expectedLocations.contains(_) }
+            .filterNot {
+              // The tag manifest isn't referred to by other files, so we don't have
+              // it in the list of verifier successes/failures.  But we expect to
+              // see it in the bag.
+              _ == root.join("tagmanifest-sha256.txt")
+            }
+
+          result <- if (unreferencedFiles.isEmpty)
+            Right(())
+          else {
+
+            // For internal logging, we want a message that contains the full
+            // S3 locations for easy debugging, e.g.:
+            //
+            //    Bag contains 5 files which are not referenced in the manifest:
+            //    bukkit/ingest-id/bag-id/unreferenced1.txt, ...
+            //
+            // For the user-facing message, we want to trim the first part,
+            // because it's an internal detail of the storage service, e.g.:
+            //
+            //    Bag contains 5 files which are not referenced in the manifest:
+            //    unreferenced1.txt, ...
+            //
+            val messagePrefix =
+              if (unreferencedFiles.size == 1) {
+                "Bag contains a file which is not referenced in the manifest: "
+              } else {
+                s"Bag contains ${unreferencedFiles.size} files which are not referenced in the manifest: "
+              }
+
+            val userMessage = messagePrefix +
+              unreferencedFiles
+                .map { _.path.stripPrefix(root.path) }
+                .mkString(", ")
+
+            Left(
+              BagVerifierError(
+                new Throwable(messagePrefix + unreferencedFiles.mkString(", ")),
+                userMessage = Some(userMessage)
+              ))
+          }
+        } yield result
+
+      case _ => Right(())
+    }
+
   private def buildStepResult(
     internalResult: InternalResult[VerificationResult],
     root: ObjectLocation,
@@ -160,7 +231,7 @@ class BagVerifier()(
         val verificationFailureMessage =
           result.failure
             .map { verifiedFailure =>
-              s"${verifiedFailure.location.uri}: ${verifiedFailure.e.getMessage}"
+              s"${verifiedFailure.verifiableLocation.uri}: ${verifiedFailure.e.getMessage}"
             }
             .mkString("\n")
 

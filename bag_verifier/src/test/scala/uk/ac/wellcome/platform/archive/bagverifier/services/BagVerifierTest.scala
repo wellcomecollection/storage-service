@@ -300,6 +300,75 @@ class BagVerifierTest
     }
   }
 
+  describe("checks for unreferenced files") {
+    it("fails if there is one unreferenced file") {
+      withLocalS3Bucket { bucket =>
+        withS3Bag(bucket) {
+          case (root, bagInfo) =>
+            val location = root.join("unreferencedfile.txt")
+            s3Client.putObject(
+              location.namespace,
+              location.path,
+              randomAlphanumeric
+            )
+
+            withVerifier { verifier =>
+              val ingestStep = verifier.verify(
+                root,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
+              val result = ingestStep.success.get
+
+              result shouldBe a[IngestFailed[_]]
+              val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+
+              ingestFailed.e.getMessage shouldBe
+                s"Bag contains a file which is not referenced in the manifest: $location"
+
+              ingestFailed.maybeUserFacingMessage.get shouldBe
+                "Bag contains a file which is not referenced in the manifest: /unreferencedfile.txt"
+            }
+        }
+      }
+    }
+
+    it("fails if there are multiple unreferenced files") {
+      withLocalS3Bucket { bucket =>
+        withS3Bag(bucket) {
+          case (root, bagInfo) =>
+            val locations = (1 to 3).map { i =>
+              val location = root.join(s"unreferencedfile_$i.txt")
+              s3Client.putObject(
+                location.namespace,
+                location.path,
+                randomAlphanumeric
+              )
+              location
+            }
+
+            withVerifier { verifier =>
+              val ingestStep = verifier.verify(
+                root,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
+              val result = ingestStep.success.get
+
+              result shouldBe a[IngestFailed[_]]
+              val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+
+              ingestFailed.e.getMessage shouldBe
+                s"Bag contains 3 files which are not referenced in the manifest: ${locations.mkString(", ")}"
+
+              ingestFailed.maybeUserFacingMessage.get shouldBe
+                s"Bag contains 3 files which are not referenced in the manifest: " +
+                  "/unreferencedfile_1.txt, /unreferencedfile_2.txt, /unreferencedfile_3.txt"
+            }
+        }
+      }
+    }
+
+  }
+
   describe("checks the Payload-Oxum") {
     it("fails if the Payload-Oxum has the wrong file count") {
       withLocalS3Bucket { bucket =>

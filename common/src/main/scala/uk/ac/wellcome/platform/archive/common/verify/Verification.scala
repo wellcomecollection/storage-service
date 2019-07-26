@@ -22,16 +22,20 @@ object Verification extends Logging {
               .map(verifier.verify)
               .foldLeft[VerificationResult](VerificationSuccess(Nil)) {
 
-                case (VerificationSuccess(sl), s @ VerifiedSuccess(_, _)) =>
+                case (VerificationSuccess(sl), s @ VerifiedSuccess(_, _, _)) =>
                   VerificationSuccess(s :: sl)
 
-                case (VerificationSuccess(sl), f @ VerifiedFailure(_, _)) =>
+                case (VerificationSuccess(sl), f @ VerifiedFailure(_, _, _)) =>
                   VerificationFailure(List(f), sl)
 
-                case (VerificationFailure(fl, sl), s @ VerifiedSuccess(_, _)) =>
+                case (
+                    VerificationFailure(fl, sl),
+                    s @ VerifiedSuccess(_, _, _)) =>
                   VerificationFailure(fl, s :: sl)
 
-                case (VerificationFailure(fl, sl), f @ VerifiedFailure(_, _)) =>
+                case (
+                    VerificationFailure(fl, sl),
+                    f @ VerifiedFailure(_, _, _)) =>
                   VerificationFailure(f :: fl, sl)
 
                 case (i @ VerificationIncomplete(_), _) => i

@@ -59,7 +59,7 @@ class S3ObjectVerifierTest
 
     val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-    verifiedFailure.location shouldBe verifiableLocation
+    verifiedFailure.verifiableLocation shouldBe verifiableLocation
     verifiedFailure.e shouldBe a[LocationNotFound[_]]
     verifiedFailure.e.getMessage should include(
       "Location not available!"
@@ -85,7 +85,7 @@ class S3ObjectVerifierTest
 
     val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-    verifiedFailure.location shouldBe verifiableLocation
+    verifiedFailure.verifiableLocation shouldBe verifiableLocation
     verifiedFailure.e shouldBe a[LocationError[_]]
     verifiedFailure.e.getMessage should include(
       "The specified bucket is not valid")
@@ -111,7 +111,7 @@ class S3ObjectVerifierTest
 
       val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-      verifiedFailure.location shouldBe verifiableLocation
+      verifiedFailure.verifiableLocation shouldBe verifiableLocation
       verifiedFailure.e shouldBe a[LocationNotFound[_]]
       verifiedFailure.e.getMessage should include(
         "Location not available!"
