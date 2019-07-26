@@ -1,24 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.error.ArchiveError
-
 sealed trait IngestUpdate {
   val id: IngestID
   val events: Seq[IngestEvent]
-}
-
-object IngestUpdate {
-
-  def failed[T](id: IngestID, error: ArchiveError[T]) =
-    IngestStatusUpdate(
-      id = id,
-      status = Ingest.Failed,
-      events = List(IngestEvent(error.toString))
-    )
-
-  def event(id: IngestID, description: String) =
-    IngestEventUpdate(id, Seq(IngestEvent(description)))
-
 }
 
 case class IngestEventUpdate(id: IngestID, events: Seq[IngestEvent])
