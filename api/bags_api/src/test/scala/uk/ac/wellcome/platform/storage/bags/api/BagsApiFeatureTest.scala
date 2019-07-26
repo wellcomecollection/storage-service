@@ -8,11 +8,8 @@ import io.circe.parser._
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagIdGenerators,
-  BagInfoGenerators,
-  StorageManifestGenerators
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
+import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators, StorageManifestGenerators}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
@@ -57,7 +54,7 @@ class BagsApiFeatureTest
               |  ],
               |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
                  storageManifest.createdDate)}",
-              |  "version": "v${storageManifest.version}",
+              |  "version": "${storageManifest.version}",
               |  "type": "Bag"
               |}
               """.stripMargin
@@ -90,7 +87,7 @@ class BagsApiFeatureTest
             externalIdentifier = externalIdentifier
           ),
           space = storageSpace,
-          version = version
+          version = BagVersion(version)
         )
       }
 
@@ -114,13 +111,13 @@ class BagsApiFeatureTest
                 |  ],
                 |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
                    storageManifest.createdDate)}",
-                |  "version": "v${storageManifest.version}",
+                |  "version": "${storageManifest.version}",
                 |  "type": "Bag"
                 |}
                 """.stripMargin
 
             val url =
-              s"$baseUrl/bags/${storageSpace.underlying}/${externalIdentifier.underlying}?version=v${storageManifest.version}"
+              s"$baseUrl/bags/${storageSpace.underlying}/${externalIdentifier.underlying}?version=${storageManifest.version}"
 
             whenGetRequestReady(url) { response =>
               response.status shouldBe StatusCodes.OK
@@ -206,12 +203,12 @@ class BagsApiFeatureTest
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>
           whenGetRequestReady(
-            s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=v${storageManifest.version + 1}") {
+            s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=${storageManifest.version.increment}") {
             response =>
               assertIsUserErrorResponse(
                 response,
                 description =
-                  s"Storage manifest ${storageManifest.id} version v${storageManifest.version + 1} not found",
+                  s"Storage manifest ${storageManifest.id} version ${storageManifest.version.increment} not found",
                 statusCode = StatusCodes.NotFound,
                 label = "Not Found"
               )
@@ -307,7 +304,7 @@ class BagsApiFeatureTest
              |    {
              |      "type": "Bag",
              |      "id": "${storageManifest.id.toString}",
-             |      "version": "v${storageManifest.version}",
+             |      "version": "${storageManifest.version}",
              |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
                  storageManifest.createdDate)}"
              |    }
@@ -339,11 +336,11 @@ class BagsApiFeatureTest
       val multipleManifests = (1 to 5).map { version =>
         version -> storageManifest.copy(
           createdDate = randomInstant,
-          version = version
+          version = BagVersion(version)
         )
       }.toMap
 
-      val initialManifests = multipleManifests.values.toSeq.sortBy { _.version }
+      val initialManifests = multipleManifests.values.toSeq.sortBy { _.version.underlying }
 
       withConfiguredApp(initialManifests) {
         case (_, metrics, baseUrl) =>
@@ -416,7 +413,7 @@ class BagsApiFeatureTest
       val multipleManifests = (1 to 5).map { version =>
         version -> storageManifest.copy(
           createdDate = randomInstant,
-          version = version
+          version = BagVersion(version)
         )
       }.toMap
 
@@ -480,7 +477,7 @@ class BagsApiFeatureTest
       val multipleManifests = (5 to 10).map { version =>
         version -> storageManifest.copy(
           createdDate = randomInstant,
-          version = version
+          version = BagVersion(version)
         )
       }.toMap
 

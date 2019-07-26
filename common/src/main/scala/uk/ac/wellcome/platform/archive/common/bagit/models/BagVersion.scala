@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import io.circe.{Decoder, Encoder, HCursor, Json}
+import org.scanamo.DynamoFormat
 
 case class BagVersion(underlying: Int) extends AnyVal {
   override def toString: String = s"v$underlying"
@@ -15,5 +16,15 @@ object BagVersion {
 
   implicit val decoder: Decoder[BagVersion] = (cursor: HCursor) =>
     cursor.value.as[Int].map { BagVersion(_) }
+
+  implicit def evidence: DynamoFormat[BagVersion] =
+    DynamoFormat.iso[BagVersion, Int](
+      BagVersion(_)
+    )(
+      _.underlying
+    )
+
+  implicit val ordering: Ordering[BagVersion] =
+    (x: BagVersion, y: BagVersion) => Ordering[Int].compare(x.underlying, y.underlying)
 }
 
