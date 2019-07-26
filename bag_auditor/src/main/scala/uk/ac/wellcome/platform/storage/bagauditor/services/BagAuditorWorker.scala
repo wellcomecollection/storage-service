@@ -5,12 +5,26 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestEvent, IngestID, IngestVersionUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestEvent,
+  IngestID,
+  IngestVersionUpdate
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
-import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, EnrichedBagInformationPayload}
-import uk.ac.wellcome.platform.storage.bagauditor.models.{AuditSuccessSummary, AuditSummary}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepSucceeded,
+  IngestStepWorker
+}
+import uk.ac.wellcome.platform.archive.common.{
+  BagRootLocationPayload,
+  EnrichedBagInformationPayload
+}
+import uk.ac.wellcome.platform.storage.bagauditor.models.{
+  AuditSuccessSummary,
+  AuditSummary
+}
 
 import scala.util.{Success, Try}
 
@@ -42,7 +56,9 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
       _ <- sendSuccessful(payload)(stepResult)
     } yield stepResult
 
-  private def sendIngestUpdate(ingestId: IngestID, stepResult: IngestStepResult[AuditSummary]): Try[Unit] =
+  private def sendIngestUpdate(
+    ingestId: IngestID,
+    stepResult: IngestStepResult[AuditSummary]): Try[Unit] =
     stepResult match {
       case IngestStepSucceeded(summary: AuditSuccessSummary, _) =>
         val update = IngestVersionUpdate(

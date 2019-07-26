@@ -14,7 +14,10 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.models._
@@ -110,7 +113,7 @@ class IngestsApiFeatureTest
 
             assertMetricSent(metrics, result = HttpMetricResults.Success)
           }
-        }
+      }
     }
 
     it("includes the version, if present") {
@@ -149,28 +152,30 @@ class IngestsApiFeatureTest
     }
 
     it("returns a 404 NotFound if no ingest tracker matches id") {
-      withConfiguredApp() { case (_, _, metrics, baseUrl) =>
-        val id = randomUUID
-        whenGetRequestReady(s"$baseUrl/ingests/$id") { response =>
-          assertIsUserErrorResponse(
-            response,
-            description = s"Ingest $id not found",
-            statusCode = StatusCodes.NotFound,
-            label = "Not Found"
-          )
+      withConfiguredApp() {
+        case (_, _, metrics, baseUrl) =>
+          val id = randomUUID
+          whenGetRequestReady(s"$baseUrl/ingests/$id") { response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"Ingest $id not found",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
 
-          assertMetricSent(metrics, result = HttpMetricResults.UserError)
-        }
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
       }
     }
 
     it("returns a 500 Server Error if reading from DynamoDB fails") {
-      withBrokenApp { case (_, _, metrics, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/ingests/$randomUUID") { response =>
-          assertIsInternalServerErrorResponse(response)
+      withBrokenApp {
+        case (_, _, metrics, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/ingests/$randomUUID") { response =>
+            assertIsInternalServerErrorResponse(response)
 
-          assertMetricSent(metrics, result = HttpMetricResults.ServerError)
-        }
+            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          }
       }
     }
   }
@@ -498,15 +503,14 @@ class IngestsApiFeatureTest
     }
 
     it("returns a 500 Server Error if updating the ingest starter fails") {
-      withBrokenApp { case (_, _, metrics, baseUrl) =>
-        whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
-          response =>
-            assertIsInternalServerErrorResponse(response)
+      withBrokenApp {
+        case (_, _, metrics, baseUrl) =>
+          whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
+            response =>
+              assertIsInternalServerErrorResponse(response)
 
-            assertMetricSent(
-              metrics,
-              result = HttpMetricResults.ServerError)
-        }
+              assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          }
       }
     }
   }

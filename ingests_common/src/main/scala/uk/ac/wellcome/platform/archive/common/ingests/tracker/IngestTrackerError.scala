@@ -2,7 +2,12 @@ package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest}
-import uk.ac.wellcome.storage.{NotFoundError, StorageError, UpdateNoSourceError, VersionAlreadyExistsError}
+import uk.ac.wellcome.storage.{
+  NotFoundError,
+  StorageError,
+  UpdateNoSourceError,
+  VersionAlreadyExistsError
+}
 
 sealed trait IngestTrackerError
 
@@ -27,7 +32,7 @@ case class IngestCallbackStatusGoingBackwards(stored: Callback.CallbackStatus,
 
 case class NoCallbackOnIngest() extends IngestTrackerError
 
-case class IngestBadVersionUpdate(existing: BagVersion,
-                                  update: BagVersion) extends IngestTrackerError
+case class IngestBadVersionUpdate(existing: BagVersion, update: BagVersion)
+    extends IngestTrackerError
 
 case class IngestTrackerUpdateError(err: Throwable) extends IngestTrackerError

@@ -18,7 +18,8 @@ class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem)
     extends Logging {
   implicit val printer: Printer = Printer.noSpaces.copy(dropNullValues = true)
 
-  def getHttpResponse(ingest: Ingest, callbackUri: URI): Future[HttpResponse] = {
+  def getHttpResponse(ingest: Ingest,
+                      callbackUri: URI): Future[HttpResponse] = {
     val jsonString =
       ResponseDisplayIngest(
         ingest = ingest,

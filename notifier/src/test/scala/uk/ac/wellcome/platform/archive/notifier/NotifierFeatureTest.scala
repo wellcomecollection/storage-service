@@ -22,7 +22,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestUpdate
 }
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixtures}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{
+  LocalWireMockFixture,
+  NotifierFixtures
+}
 
 class NotifierFeatureTest
     extends FunSpec
