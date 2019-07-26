@@ -35,7 +35,7 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
     if (matchingVersions.isEmpty)
       Left(NoMaximaValueError())
     else
-      Right(matchingVersions.maxBy { _.version })
+      Right(matchingVersions.maxBy { _.version.underlying })
   }
 
   override def storeNewVersion(record: VersionRecord): Try[Unit] = Try {

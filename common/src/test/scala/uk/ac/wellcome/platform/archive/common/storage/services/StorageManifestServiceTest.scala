@@ -429,7 +429,7 @@ class StorageManifestServiceTest
       bag = bag,
       replicaRoot = replicaRoot,
       space = space,
-      version = version
+      version = BagVersion(version)
     )
 
     if (result.isFailure) {
@@ -448,7 +448,7 @@ class StorageManifestServiceTest
       bag = bag,
       replicaRoot = replicaRoot,
       space = createStorageSpace,
-      version = version
+      version = BagVersion(version)
     )
 
     result.failure.exception shouldBe a[StorageManifestException]

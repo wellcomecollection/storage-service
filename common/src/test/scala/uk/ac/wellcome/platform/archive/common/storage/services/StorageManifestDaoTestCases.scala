@@ -68,7 +68,7 @@ trait StorageManifestDaoTestCases[Context]
             case (manifest, version) =>
               dao.put(manifest) shouldBe a[Right[_, _]]
               dao
-                .get(storageManifest.id, version = version)
+                .get(storageManifest.id, version = BagVersion(version))
                 .right
                 .value shouldBe manifest
           }

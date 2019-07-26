@@ -33,11 +33,11 @@ class MemoryStorageManifestDao(
         .toSeq
         .filter { manifest =>
           before match {
-            case Some(beforeVersion) => manifest.version < beforeVersion
+            case Some(beforeVersion) => manifest.version.underlying < beforeVersion
             case _                   => true
           }
         }
-        .sortBy { _.version }
+        .sortBy { _.version.underlying }
         .reverse
     )
   }
