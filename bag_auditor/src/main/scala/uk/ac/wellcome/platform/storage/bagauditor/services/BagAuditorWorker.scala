@@ -5,21 +5,12 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestEvent, IngestID, IngestVersionUpdate}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestStepResult,
-  IngestStepSucceeded,
-  IngestStepWorker
-}
-import uk.ac.wellcome.platform.archive.common.{
-  BagRootLocationPayload,
-  EnrichedBagInformationPayload
-}
-import uk.ac.wellcome.platform.storage.bagauditor.models.{
-  AuditSuccessSummary,
-  AuditSummary
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
+import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, EnrichedBagInformationPayload}
+import uk.ac.wellcome.platform.storage.bagauditor.models.{AuditSuccessSummary, AuditSummary}
 
 import scala.util.{Success, Try}
 
@@ -39,7 +30,7 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
-      auditStep <- bagAuditor.getAuditSummary(
+      stepResult <- bagAuditor.getAuditSummary(
         ingestId = payload.ingestId,
         ingestDate = payload.ingestDate,
         ingestType = payload.ingestType,
@@ -47,9 +38,28 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
         storageSpace = payload.storageSpace
       )
 
-      _ <- ingestUpdater.send(payload.ingestId, auditStep)
-      _ <- sendSuccessful(payload)(auditStep)
-    } yield auditStep
+      _ <- sendIngestUpdate(payload.ingestId, stepResult)
+      _ <- sendSuccessful(payload)(stepResult)
+    } yield stepResult
+
+  private def sendIngestUpdate(ingestId: IngestID, stepResult: IngestStepResult[AuditSummary]): Try[Unit] =
+    stepResult match {
+      case IngestStepSucceeded(summary: AuditSuccessSummary, _) =>
+        val update = IngestVersionUpdate(
+          id = ingestId,
+          events = Seq(
+            IngestEvent(
+              s"${ingestUpdater.stepName.capitalize} succeeded - assigned bag version ${summary.version}"
+            )
+          ),
+          version = summary.version
+        )
+
+        ingestUpdater.sendUpdate(update)
+
+      case _ =>
+        ingestUpdater.send(ingestId, stepResult)
+    }
 
   private def sendSuccessful(payload: BagRootLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =
