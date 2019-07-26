@@ -3,31 +3,12 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.net.URI
 
 import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  Bag,
-  BagFetchEntry,
-  BagFile,
-  BagPath
-}
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, BagFile, BagPath, BagVersion}
+import uk.ac.wellcome.platform.archive.common.generators.{BagGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageManifest,
-  StorageSpace
-}
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Checksum,
-  ChecksumValue,
-  MD5,
-  SHA256
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -428,7 +409,7 @@ class StorageManifestServiceTest
       val manifest =
         createManifest(replicaRoot = replicaRoot, version = version)
 
-      manifest.version shouldBe version
+      manifest.version shouldBe BagVersion(version)
     }
 
     it("sets a recent createdDate") {

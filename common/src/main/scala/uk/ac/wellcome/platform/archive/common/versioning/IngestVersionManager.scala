@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.versioning
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.NoMaximaValueError
@@ -17,7 +17,7 @@ trait IngestVersionManager {
     ingestId: IngestID,
     ingestDate: Instant,
     storageSpace: StorageSpace
-  ): Either[IngestVersionManagerError, Int] =
+  ): Either[IngestVersionManagerError, BagVersion] =
     dao.lookupLatestVersionFor(externalIdentifier, storageSpace) match {
       case Right(existingRecord) =>
         if (existingRecord.ingestDate.isBefore(ingestDate))
@@ -26,7 +26,7 @@ trait IngestVersionManager {
             ingestId = ingestId,
             ingestDate = ingestDate,
             storageSpace = storageSpace,
-            newVersion = existingRecord.version + 1
+            newVersion = existingRecord.version.increment
           )
         else
           Left(
@@ -41,7 +41,7 @@ trait IngestVersionManager {
           ingestId = ingestId,
           ingestDate = ingestDate,
           storageSpace = storageSpace,
-          newVersion = 1
+          newVersion = BagVersion(1)
         )
 
       // TODO: Can we preserve the StorageError here?
@@ -53,8 +53,8 @@ trait IngestVersionManager {
     ingestId: IngestID,
     ingestDate: Instant,
     storageSpace: StorageSpace,
-    newVersion: Int
-  ): Either[IngestVersionManagerDaoError, Int] = {
+    newVersion: BagVersion
+  ): Either[IngestVersionManagerDaoError, BagVersion] = {
     val newRecord = VersionRecord(
       externalIdentifier = externalIdentifier,
       ingestId = ingestId,
@@ -74,7 +74,7 @@ trait IngestVersionManager {
     ingestId: IngestID,
     ingestDate: Instant,
     storageSpace: StorageSpace
-  ): Either[IngestVersionManagerError, Int] =
+  ): Either[IngestVersionManagerError, BagVersion] =
     dao.lookupExistingVersion(ingestId) match {
       case Success(Some(existingRecord)) =>
         if (existingRecord.externalIdentifier == externalIdentifier &&

@@ -2,15 +2,9 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagIdGenerators,
-  StorageManifestGenerators
-}
-import uk.ac.wellcome.storage.{
-  NoVersionExistsError,
-  VersionAlreadyExistsError,
-  WriteError
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
+import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.storage.{NoVersionExistsError, VersionAlreadyExistsError, WriteError}
 
 trait StorageManifestDaoTestCases[Context]
     extends FunSpec
@@ -64,7 +58,7 @@ trait StorageManifestDaoTestCases[Context]
       val manifests = (0 to 5).map { version =>
         storageManifest.copy(
           createdDate = randomInstant,
-          version = version
+          version = BagVersion(version)
         )
       }
 
@@ -102,7 +96,7 @@ trait StorageManifestDaoTestCases[Context]
       val manifests = (0 to 5).map { version =>
         storageManifest.copy(
           createdDate = randomInstant,
-          version = version
+          version = BagVersion(version)
         )
       }
 
@@ -127,7 +121,7 @@ trait StorageManifestDaoTestCases[Context]
       val manifests = (0 to 6).map { version =>
         storageManifest.copy(
           createdDate = randomInstant,
-          version = version
+          version = BagVersion(version)
         )
       }
 
@@ -151,7 +145,7 @@ trait StorageManifestDaoTestCases[Context]
       val manifests = (0 to 6).map { version =>
         storageManifest.copy(
           createdDate = randomInstant,
-          version = version
+          version = BagVersion(version)
         )
       }
 
@@ -178,26 +172,6 @@ trait StorageManifestDaoTestCases[Context]
       withContext { implicit context =>
         withDao { dao =>
           dao.listVersions(createBagId).right.value shouldBe empty
-        }
-      }
-    }
-
-    it("returns an empty list if there are no matching manifests") {
-      val storageManifest = createStorageManifest
-
-      val manifests = (0 to 5).map { version =>
-        storageManifest.copy(
-          createdDate = randomInstant,
-          version = version
-        )
-      }
-
-      withContext { implicit context =>
-        withDao { dao =>
-          manifests.zipWithIndex.foreach {
-            case (manifest, version) =>
-              dao.listVersions(createBagId).right.value shouldBe empty
-          }
         }
       }
     }

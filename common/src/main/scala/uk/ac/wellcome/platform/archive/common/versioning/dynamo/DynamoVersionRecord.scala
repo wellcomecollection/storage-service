@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.common.versioning.dynamo
 
 import java.time.Instant
 
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.versioning.VersionRecord
 import uk.ac.wellcome.storage.dynamo.DynamoHashRangeKeyPair
@@ -23,7 +24,7 @@ case class DynamoVersionRecord(
         ingestId = ingestId,
         ingestDate = ingestDate,
         storageSpace = storageSpace,
-        version = version
+        version = BagVersion(version)
       )
     } yield record
 
@@ -41,6 +42,6 @@ case object DynamoVersionRecord {
       ),
       ingestId = versionRecord.ingestId,
       ingestDate = versionRecord.ingestDate,
-      version = versionRecord.version
+      version = versionRecord.version.underlying
     )
 }

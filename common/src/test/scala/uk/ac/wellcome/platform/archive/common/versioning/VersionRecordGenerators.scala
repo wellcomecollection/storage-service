@@ -2,13 +2,12 @@ package uk.ac.wellcome.platform.archive.common.versioning
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+
+import scala.util.Random
 
 trait VersionRecordGenerators
     extends ExternalIdentifierGenerators
@@ -17,14 +16,14 @@ trait VersionRecordGenerators
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     ingestId: IngestID = createIngestID,
     storageSpace: StorageSpace = createStorageSpace,
-    version: Int = 1
+    version: Int = Random.nextInt
   ): VersionRecord =
     VersionRecord(
       externalIdentifier = externalIdentifier,
       ingestId = ingestId,
       ingestDate = Instant.now,
       storageSpace = storageSpace,
-      version = version
+      version = BagVersion(version)
     )
 
   def createVersionRecord: VersionRecord = createVersionRecordWith()
