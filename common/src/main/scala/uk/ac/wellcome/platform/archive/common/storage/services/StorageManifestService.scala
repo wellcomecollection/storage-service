@@ -3,10 +3,23 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.time.Instant
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagManifest, BagPath, BagVersion}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagManifest,
+  BagPath,
+  BagVersion
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
-import uk.ac.wellcome.platform.archive.common.storage.models.{FileManifest, StorageManifest, StorageManifestFile, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  FileManifest,
+  StorageManifest,
+  StorageManifestFile,
+  StorageSpace
+}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
@@ -95,9 +108,10 @@ object StorageManifestService extends Logging {
     * This function gets a map (bag name) -> (path), relative to the bag root.
     *
     */
-  private def createNamePathMap(bag: Bag,
-                                bagRoot: ObjectLocationPrefix,
-                                version: BagVersion): Try[Map[BagPath, String]] = Try {
+  private def createNamePathMap(
+    bag: Bag,
+    bagRoot: ObjectLocationPrefix,
+    version: BagVersion): Try[Map[BagPath, String]] = Try {
     BagMatcher.correlateFetchEntries(bag) match {
       case Right(matchedLocations) =>
         matchedLocations.map { matchedLoc =>

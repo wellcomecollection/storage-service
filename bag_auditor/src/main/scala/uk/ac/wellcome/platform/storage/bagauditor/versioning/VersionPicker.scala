@@ -4,11 +4,20 @@ import java.time.Instant
 import java.util.UUID
 
 import cats.{Id, Monad, MonadError}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestID, IngestType}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestID,
+  IngestType
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
-import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManager, IngestVersionManagerError}
+import uk.ac.wellcome.platform.archive.common.versioning.{
+  IngestVersionManager,
+  IngestVersionManagerError
+}
 import uk.ac.wellcome.storage.locking.{FailedProcess, LockDao, LockingService}
 
 class VersionPicker(

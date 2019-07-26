@@ -8,11 +8,25 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  BagVersion,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.storage.bags.api.models.{DisplayResultList, ResponseDisplayBag, ResultListEntry}
+import uk.ac.wellcome.platform.storage.bags.api.models.{
+  DisplayResultList,
+  ResponseDisplayBag,
+  ResultListEntry
+}
 import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
 
 import scala.concurrent.ExecutionContext
@@ -157,14 +171,16 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
 
   private val versionRegex: Regex = new Regex("^v(\\d+)$", "version")
 
-  private def parseVersion(queryParam: Option[String]): Try[Option[BagVersion]] =
+  private def parseVersion(
+    queryParam: Option[String]): Try[Option[BagVersion]] =
     queryParam match {
       case Some(versionString) =>
         versionRegex.findFirstMatchIn(versionString) match {
           case Some(regexMatch) =>
-            Success(Some(
-              BagVersion(regexMatch.group("version").toInt)
-            ))
+            Success(
+              Some(
+                BagVersion(regexMatch.group("version").toInt)
+              ))
           case None =>
             Failure(
               new Throwable(s"Could not parse version string: $versionString"))

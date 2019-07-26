@@ -9,7 +9,11 @@ import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  BagInfoGenerators,
+  StorageManifestGenerators
+}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
@@ -340,7 +344,9 @@ class BagsApiFeatureTest
         )
       }.toMap
 
-      val initialManifests = multipleManifests.values.toSeq.sortBy { _.version.underlying }
+      val initialManifests = multipleManifests.values.toSeq.sortBy {
+        _.version.underlying
+      }
 
       withConfiguredApp(initialManifests) {
         case (_, metrics, baseUrl) =>

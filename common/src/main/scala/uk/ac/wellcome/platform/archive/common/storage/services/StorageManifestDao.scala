@@ -21,7 +21,8 @@ trait StorageManifestDao {
   def put(
     storageManifest: StorageManifest): Either[WriteError, StorageManifest] =
     vhs
-      .put(id = Version(storageManifest.id, storageManifest.version.underlying))(
+      .put(
+        id = Version(storageManifest.id, storageManifest.version.underlying))(
         HybridStoreEntry(storageManifest, metadata = EmptyMetadata())
       )
       .map { _.identifiedT.t }
@@ -33,7 +34,8 @@ trait StorageManifestDao {
   def listVersions(bagId: BagId): Either[ReadError, Seq[StorageManifest]] =
     listVersions(bagId, before = None)
 
-  def listVersions(bagId: BagId,
-                   before: BagVersion): Either[ReadError, Seq[StorageManifest]] =
+  def listVersions(
+    bagId: BagId,
+    before: BagVersion): Either[ReadError, Seq[StorageManifest]] =
     listVersions(bagId, before = Some(before))
 }

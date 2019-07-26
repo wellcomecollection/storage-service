@@ -25,6 +25,6 @@ object BagVersion {
     )
 
   implicit val ordering: Ordering[BagVersion] =
-    (x: BagVersion, y: BagVersion) => Ordering[Int].compare(x.underlying, y.underlying)
+    (x: BagVersion, y: BagVersion) =>
+      Ordering[Int].compare(x.underlying, y.underlying)
 }
-

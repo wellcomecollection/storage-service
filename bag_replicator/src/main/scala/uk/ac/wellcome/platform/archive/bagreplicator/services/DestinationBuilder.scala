@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import java.nio.file.Paths
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 

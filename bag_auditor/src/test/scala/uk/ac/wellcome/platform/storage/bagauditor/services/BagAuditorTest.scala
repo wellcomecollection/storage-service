@@ -4,11 +4,20 @@ import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  UpdateIngestType
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
 import uk.ac.wellcome.platform.storage.bagauditor.fixtures.BagAuditorFixtures
-import uk.ac.wellcome.platform.storage.bagauditor.models.{AuditFailureSummary, AuditSuccessSummary}
+import uk.ac.wellcome.platform.storage.bagauditor.models.{
+  AuditFailureSummary,
+  AuditSuccessSummary
+}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class BagAuditorTest

@@ -3,8 +3,15 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, StorageManifestGenerators}
-import uk.ac.wellcome.storage.{NoVersionExistsError, VersionAlreadyExistsError, WriteError}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  StorageManifestGenerators
+}
+import uk.ac.wellcome.storage.{
+  NoVersionExistsError,
+  VersionAlreadyExistsError,
+  WriteError
+}
 
 trait StorageManifestDaoTestCases[Context]
     extends FunSpec
@@ -160,10 +167,16 @@ trait StorageManifestDaoTestCases[Context]
           dao.listVersions(bagId).right.value should have size 7
 
           // Omitting versions 5 and 6
-          dao.listVersions(bagId, before = BagVersion(5)).right.value should have size 5
+          dao
+            .listVersions(bagId, before = BagVersion(5))
+            .right
+            .value should have size 5
 
           // Omitting versions 3, 4, 5 and 6
-          dao.listVersions(bagId, before = BagVersion(3)).right.value should have size 3
+          dao
+            .listVersions(bagId, before = BagVersion(3))
+            .right
+            .value should have size 3
         }
       }
     }

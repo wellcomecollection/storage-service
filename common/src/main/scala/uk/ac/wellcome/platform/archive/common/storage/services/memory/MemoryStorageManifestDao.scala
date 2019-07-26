@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.common.storage.services.memory
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.{EmptyMetadata, StorageManifestDao}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  EmptyMetadata,
+  StorageManifestDao
+}
 import uk.ac.wellcome.storage.{ReadError, Version}
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
@@ -30,8 +33,9 @@ class MemoryStorageManifestDao(
         .toSeq
         .filter { manifest =>
           before match {
-            case Some(beforeVersion) => manifest.version.underlying < beforeVersion.underlying
-            case _                   => true
+            case Some(beforeVersion) =>
+              manifest.version.underlying < beforeVersion.underlying
+            case _ => true
           }
         }
         .sortBy { _.version.underlying }
