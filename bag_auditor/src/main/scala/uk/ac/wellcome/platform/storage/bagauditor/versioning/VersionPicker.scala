@@ -4,21 +4,15 @@ import java.time.Instant
 import java.util.UUID
 
 import cats.{Id, Monad, MonadError}
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  IngestID,
-  IngestType
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestID, IngestType}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
-import uk.ac.wellcome.platform.archive.common.versioning.{
-  IngestVersionManager,
-  IngestVersionManagerError
-}
+import uk.ac.wellcome.platform.archive.common.versioning.{IngestVersionManager, IngestVersionManagerError}
 import uk.ac.wellcome.storage.locking.{FailedProcess, LockDao, LockingService}
 
 class VersionPicker(
-  lockingService: LockingService[Either[IngestVersionManagerError, Int],
+  lockingService: LockingService[Either[IngestVersionManagerError, BagVersion],
                                  Id,
                                  LockDao[String, UUID]],
   ingestVersionManager: IngestVersionManager
@@ -29,7 +23,7 @@ class VersionPicker(
     ingestType: IngestType,
     ingestDate: Instant,
     storageSpace: StorageSpace
-  ): Either[VersionPickerError, Int] = {
+  ): Either[VersionPickerError, BagVersion] = {
     val assignedVersion: Id[lockingService.Process] = lockingService
       .withLocks(
         Set(
@@ -60,7 +54,7 @@ class VersionPicker(
 
   private def checkVersionIsAllowed(
     ingestType: IngestType,
-    assignedVersion: Int): Either[VersionPickerError, Int] =
+    assignedVersion: BagVersion): Either[VersionPickerError, BagVersion] =
     // TODO: This is stubbed out for the purposes of the migration,
     // but we should restore it later.
     Right(assignedVersion)
