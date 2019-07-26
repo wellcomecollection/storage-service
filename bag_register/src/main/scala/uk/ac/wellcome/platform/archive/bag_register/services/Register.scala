@@ -4,17 +4,10 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  IngestFailed,
-  IngestStepResult,
-  StorageSpace
-}
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  StorageManifestDao,
-  StorageManifestService
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestStepResult, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestDao, StorageManifestService}
 import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
@@ -26,7 +19,7 @@ class Register(
 
   def update(
     bagRootLocation: ObjectLocation,
-    version: Int,
+    version: BagVersion,
     storageSpace: StorageSpace
   ): Try[IngestStepResult[RegistrationSummary]] = {
 

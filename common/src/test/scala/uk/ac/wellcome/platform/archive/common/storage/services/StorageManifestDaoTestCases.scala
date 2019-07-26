@@ -160,10 +160,10 @@ trait StorageManifestDaoTestCases[Context]
           dao.listVersions(bagId).right.value should have size 7
 
           // Omitting versions 5 and 6
-          dao.listVersions(bagId, before = 5).right.value should have size 5
+          dao.listVersions(bagId, before = BagVersion(5)).right.value should have size 5
 
           // Omitting versions 3, 4, 5 and 6
-          dao.listVersions(bagId, before = 3).right.value should have size 3
+          dao.listVersions(bagId, before = BagVersion(3)).right.value should have size 3
         }
       }
     }

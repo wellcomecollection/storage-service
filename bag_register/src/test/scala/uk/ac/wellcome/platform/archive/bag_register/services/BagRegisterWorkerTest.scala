@@ -5,15 +5,9 @@ import java.time.Instant
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagInfoGenerators,
-  PayloadGenerators
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, PayloadGenerators}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestCompleted
 
 import scala.util.Success
@@ -137,12 +131,12 @@ class BagRegisterWorkerTest
                   }
 
                   storageManifestDao
-                    .get(bagId, version = 1)
+                    .get(bagId, version = BagVersion(1))
                     .right
                     .value
                     .version shouldBe 1
                   storageManifestDao
-                    .get(bagId, version = 2)
+                    .get(bagId, version = BagVersion(2))
                     .right
                     .value
                     .version shouldBe 2
