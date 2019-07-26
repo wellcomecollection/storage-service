@@ -134,18 +134,18 @@ class BagRegisterWorkerTest
                     .get(bagId, version = BagVersion(1))
                     .right
                     .value
-                    .version shouldBe 1
+                    .version shouldBe BagVersion(1)
                   storageManifestDao
                     .get(bagId, version = BagVersion(2))
                     .right
                     .value
-                    .version shouldBe 2
+                    .version shouldBe BagVersion(2)
 
                   storageManifestDao
                     .getLatest(bagId)
                     .right
                     .value
-                    .version shouldBe 2
+                    .version shouldBe BagVersion(2)
               }
           }
         }
