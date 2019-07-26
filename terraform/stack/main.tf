@@ -16,13 +16,17 @@ module "logstash_transit" {
 
   env_vars = {
     XPACK_MONITORING_ENABLED = "false"
-
-    ES_HOST    = "1bc69fba8b1f4f46a40cf0ae6274958b.eu-west-1.aws.found.io:9243"
-    ES_USER     = "user"
-    ES_PASS     = "password"
   }
 
-  env_vars_length = 4
+  env_vars_length = 1
+
+  secret_env_vars = {
+    ES_HOST     = "storage/logstash/es_host"
+    ES_USER     = "storage/logstash/es_user"
+    ES_PASS     = "storage/logstash/es_pass"
+  }
+
+  secret_env_vars_length = 3
 
   cpu    = 1024
   memory = 2048
