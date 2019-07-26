@@ -34,8 +34,7 @@ class CallbackUrlServiceTest
         )
 
         whenReady(future) { result =>
-          result.isSuccess shouldBe true
-          result.get.status shouldBe StatusCodes.NotFound
+          result.status shouldBe StatusCodes.NotFound
         }
       }
     }
@@ -51,12 +50,11 @@ class CallbackUrlServiceTest
           callbackUri = new URI(s"http://nope.nope/callback/${ingest.id}")
         )
 
-        whenReady(future) { result =>
-          result.isFailure shouldBe true
+        whenReady(future.failed) { result =>
+          println(result)
+          true shouldBe false
         }
       }
     }
   }
-
-  // TODO: Add a test that it sends the correct POST payload.
 }

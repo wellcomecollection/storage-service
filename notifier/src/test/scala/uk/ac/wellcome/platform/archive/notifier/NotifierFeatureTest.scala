@@ -22,10 +22,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestUpdate
 }
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{
-  LocalWireMockFixture,
-  NotifierFixtures
-}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixtures}
 
 class NotifierFeatureTest
     extends FunSpec
@@ -73,9 +70,10 @@ class NotifierFeatureTest
                 ingestType = CreateDisplayIngestType,
                 space = DisplayStorageSpace(ingest.space.underlying),
                 status = DisplayStatus(ingest.status.toString),
-                bag = RequestDisplayBag(
-                  info = RequestDisplayBagInfo(
-                    externalIdentifier = ingest.externalIdentifier
+                bag = ResponseDisplayBag(
+                  info = ResponseDisplayBagInfo(
+                    externalIdentifier = ingest.externalIdentifier.toString,
+                    version = ingest.version.map { _.toString }
                   )
                 ),
                 events = ingest.events.map { event =>
@@ -110,7 +108,7 @@ class NotifierFeatureTest
       HttpStatus.SC_NO_CONTENT
     )
   describe("Updating status") {
-    it("sends an IngestUpdate when it receives a successful callback") {
+    it("sends an ingest when it receives a successful callback") {
       forAll(successfulStatuscodes) { statusResponse: Int =>
         withLocalWireMockClient { wireMock =>
           withNotifier {
@@ -129,7 +127,9 @@ class NotifierFeatureTest
 
               val ingest = createIngestWith(
                 id = ingestID,
-                callback = Some(createCallbackWith(uri = callbackUri))
+                version = None,
+                callback = Some(createCallbackWith(uri = callbackUri)),
+                events = Seq(createIngestEvent, createIngestEvent)
               )
 
               sendNotificationToSQS(
@@ -137,38 +137,72 @@ class NotifierFeatureTest
                 CallbackNotification(ingestID, callbackUri, ingest)
               )
 
-              val expectedResponse = ResponseDisplayIngest(
-                context = "http://localhost/context.json",
-                id = ingest.id.underlying,
-                sourceLocation = DisplayLocation(
-                  StandardDisplayProvider,
-                  ingest.sourceLocation.location.namespace,
-                  ingest.sourceLocation.location.path),
-                callback = ingest.callback.map(DisplayCallback(_)),
-                ingestType = DisplayIngestType(ingest.ingestType),
-                space = DisplayStorageSpace(ingest.space.underlying),
-                status = DisplayStatus(ingest.status.toString),
-                bag = RequestDisplayBag(
-                  info = RequestDisplayBagInfo(
-                    externalIdentifier = ingest.externalIdentifier
-                  )
-                ),
-                events = ingest.events.map(
-                  event =>
-                    DisplayIngestEvent(
-                      event.description,
-                      event.createdDate.toString)),
-                createdDate = ingest.createdDate.toString,
-                lastModifiedDate = ingest.lastModifiedDate.map {
-                  _.toString
-                }
-              )
+              // TODO: This test is failing because lastModifiedDate is
+              // a null.  We shouldn't be sending nulls in callbacks!
+              // Compare to the ingests API, and add a test for it.
+              val expectedJson =
+                s"""
+                   |{
+                   |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+                   |  "id": "${ingest.id.toString}",
+                   |  "type": "Ingest",
+                   |  "ingestType": {
+                   |    "id": "${ingest.ingestType.id}",
+                   |    "type": "IngestType"
+                   |  },
+                   |  "space": {
+                   |    "id": "${ingest.space.underlying}",
+                   |    "type": "Space"
+                   |  },
+                   |  "bag": {
+                   |    "type": "Bag",
+                   |    "info": {
+                   |      "type": "BagInfo",
+                   |      "externalIdentifier": "${ingest.externalIdentifier.underlying}"
+                   |    }
+                   |  },
+                   |  "status": {
+                   |    "id": "${ingest.status.toString}",
+                   |    "type": "Status"
+                   |  },
+                   |  "sourceLocation": {
+                   |    "type": "Location",
+                   |    "provider": {
+                   |      "type": "Provider",
+                   |      "id": "aws-s3-standard"
+                   |    },
+                   |    "bucket": "${ingest.sourceLocation.location.namespace}",
+                   |    "path": "${ingest.sourceLocation.location.path}"
+                   |  },
+                   |  "callback": {
+                   |    "type": "Callback",
+                   |    "url": "${ingest.callback.get.uri}",
+                   |    "status": {
+                   |      "id": "${ingest.callback.get.status.toString}",
+                   |      "type": "Status"
+                   |    }
+                   |  },
+                   |  "createdDate": "${ingest.createdDate}",
+                   |  "events": [
+                   |    {
+                   |      "type": "IngestEvent",
+                   |      "createdDate": "${ingest.events(0).createdDate}",
+                   |      "description": "${ingest.events(0).description}"
+                   |    },
+                   |    {
+                   |      "type": "IngestEvent",
+                   |      "createdDate": "${ingest.events(1).createdDate}",
+                   |      "description": "${ingest.events(1).description}"
+                   |    }
+                   |  ]
+                   |}
+                 """.stripMargin
 
               eventually {
                 wireMock.verifyThat(
                   1,
                   postRequestedFor(urlPathEqualTo(callbackUri.getPath))
-                    .withRequestBody(equalToJson(toJson(expectedResponse).get))
+                    .withRequestBody(equalToJson(expectedJson))
                 )
 
                 val updates = messageSender.getMessages[IngestUpdate]

@@ -6,39 +6,38 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import grizzled.slf4j.Logging
+import io.circe.Printer
+import io.circe.syntax._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.Future
 
-class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
-                                          ec: ExecutionContext)
+class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem)
     extends Logging {
-  def getHttpResponse(ingest: Ingest,
-                      callbackUri: URI): Future[Try[HttpResponse]] = {
-    for {
-      jsonString <- Future.fromTry(
-        toJson(
-          ResponseDisplayIngest(
-            ingest = ingest,
-            contextUrl = contextUrl
-          ))
-      )
-      entity = HttpEntity(
-        contentType = ContentTypes.`application/json`,
-        string = jsonString
-      )
+  implicit val printer: Printer = Printer.noSpaces.copy(dropNullValues = true)
 
-      _ = debug(s"POST to $callbackUri request:$entity")
+  def getHttpResponse(ingest: Ingest, callbackUri: URI): Future[HttpResponse] = {
+    val jsonString =
+      ResponseDisplayIngest(
+        ingest = ingest,
+        contextUrl = contextUrl
+      ).asJson.noSpaces
 
-      request = HttpRequest(
-        method = HttpMethods.POST,
-        uri = callbackUri.toString,
-        entity = entity
-      )
-      response <- Http().singleRequest(request)
-    } yield Success(response)
-  }.recover { case err => Failure(err) }
+    val entity = HttpEntity(
+      contentType = ContentTypes.`application/json`,
+      string = jsonString
+    )
+
+    debug(s"POST to $callbackUri request:$entity")
+
+    val request = HttpRequest(
+      method = HttpMethods.POST,
+      uri = callbackUri.toString,
+      entity = entity
+    )
+
+    Http().singleRequest(request)
+  }
 }
