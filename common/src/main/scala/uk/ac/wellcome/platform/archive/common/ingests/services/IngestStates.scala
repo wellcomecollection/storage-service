@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.services
 
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 import scala.util.Try
@@ -18,6 +19,11 @@ class CallbackStatusGoingBackwardsException(
 class NoCallbackException
     extends RuntimeException(
       "Received callback status update, but ingest doesn't have a callback")
+
+class MismatchedVersionUpdateException(val existing: BagVersion,
+                                       val update: BagVersion)
+    extends RuntimeException(
+      s"Received bag version update $update, but ingest already has version $existing")
 
 object IngestStates {
   def applyUpdate(ingest: Ingest, update: IngestUpdate): Try[Ingest] = Try {
@@ -67,6 +73,26 @@ object IngestStates {
 
           case None => throw new NoCallbackException()
         }
+
+      case IngestVersionUpdate(_, updateEvents, updateVersion) => {
+        val newEvents = ingest.events ++ updateEvents
+
+        ingest.version match {
+          case None =>
+            ingest.copy(
+              events = newEvents,
+              version = Some(updateVersion)
+            )
+
+          case Some(version) if version == updateVersion =>
+            ingest.copy(
+              events = newEvents
+            )
+
+          case Some(version) =>
+            throw new MismatchedVersionUpdateException(version, updateVersion)
+        }
+      }
     }
   }
 

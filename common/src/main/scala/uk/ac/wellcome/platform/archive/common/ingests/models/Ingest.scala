@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 case class Ingest(
@@ -13,9 +13,10 @@ case class Ingest(
   callback: Option[Callback],
   status: Ingest.Status,
   externalIdentifier: ExternalIdentifier,
+  version: Option[BagVersion] = None,
   createdDate: Instant,
   lastModifiedDate: Option[Instant] = None,
-  events: Seq[IngestEvent] = Seq.empty
+  events: Seq[IngestEvent] = Seq.empty,
 )
 
 case object Ingest {

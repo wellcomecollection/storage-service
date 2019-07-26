@@ -4,6 +4,7 @@ import java.net.URI
 
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{FunSpec, Matchers, TryValues}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest}
 
@@ -308,6 +309,106 @@ class IngestStatesTest
         val err = IngestStates.applyUpdate(ingest, update).failure.exception
 
         err shouldBe a[NoCallbackException]
+      }
+    }
+  }
+
+  describe("handling an IngestVersionUpdate") {
+    describe("updating the events") {
+      it("adds an event to an ingest") {
+        val ingest = createIngestWith(
+          version = None,
+          events = List.empty
+        )
+
+        val event = createIngestEvent
+        val update = createIngestVersionUpdateWith(
+          id = ingest.id,
+          events = List(event)
+        )
+
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
+        updatedIngest.events shouldBe Seq(event)
+      }
+
+      it("adds multiple events to an ingest") {
+        val ingest = createIngestWith(
+          version = None,
+          events = List.empty
+        )
+
+        val events =
+          List(createIngestEvent, createIngestEvent, createIngestEvent)
+        val update = createIngestVersionUpdateWith(
+          id = ingest.id,
+          events = events
+        )
+
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
+        updatedIngest.events shouldBe events
+      }
+
+      it("preserves the existing events on an ingest") {
+        val existingEvents = List(createIngestEvent, createIngestEvent)
+        val ingest = createIngestWith(
+          version = None,
+          events = existingEvents
+        )
+
+        val newEvents = List(createIngestEvent, createIngestEvent)
+        val update = createIngestVersionUpdateWith(
+          id = ingest.id,
+          events = newEvents
+        )
+
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
+        updatedIngest.events shouldBe existingEvents ++ newEvents
+      }
+    }
+
+    describe("updating the version") {
+      it("sets the version if there isn't one already") {
+        val ingest = createIngestWith(
+          version = None
+        )
+        val update = createIngestVersionUpdateWith(
+          id = ingest.id,
+          version = BagVersion(1)
+        )
+
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
+        updatedIngest.version shouldBe Some(BagVersion(1))
+      }
+
+      it("does nothing if the version is already set") {
+        val ingest = createIngestWith(
+          version = Some(BagVersion(1))
+        )
+        val update = createIngestVersionUpdateWith(
+          id = ingest.id,
+          version = BagVersion(1)
+        )
+
+        val updatedIngest =
+          IngestStates.applyUpdate(ingest, update).success.value
+        updatedIngest.version shouldBe Some(BagVersion(1))
+      }
+
+      it("errors if the existing version is different") {
+        val ingest = createIngestWith(
+          version = Some(BagVersion(1))
+        )
+        val update = createIngestVersionUpdateWith(
+          id = ingest.id,
+          version = BagVersion(2)
+        )
+
+        val err = IngestStates.applyUpdate(ingest, update).failure.exception
+        err shouldBe a[MismatchedVersionUpdateException]
       }
     }
   }

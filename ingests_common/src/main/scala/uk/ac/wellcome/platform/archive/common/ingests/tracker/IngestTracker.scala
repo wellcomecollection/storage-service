@@ -2,12 +2,7 @@ package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.ingests.services.{
-  CallbackStatusGoingBackwardsException,
-  IngestStates,
-  IngestStatusGoingBackwardsException,
-  NoCallbackException
-}
+import uk.ac.wellcome.platform.archive.common.ingests.services._
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
 
@@ -55,6 +50,9 @@ trait IngestTracker {
 
       case Failure(_: NoCallbackException) =>
         Left(NoCallbackOnIngest())
+
+      case Failure(err: MismatchedVersionUpdateException) =>
+        Left(IngestBadVersionUpdate(err.existing, err.update))
 
       case Success(Left(err)) => Left(IngestTrackerStoreError(err))
 
