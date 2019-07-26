@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common._
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   CreateIngestType,
   IngestID,
@@ -75,7 +78,7 @@ trait PayloadGenerators
     EnrichedBagInformationPayload(
       context = context,
       bagRootLocation = bagRootLocation,
-      version = version
+      version = BagVersion(version)
     )
 
   def createEnrichedBagInformationPayload: EnrichedBagInformationPayload =

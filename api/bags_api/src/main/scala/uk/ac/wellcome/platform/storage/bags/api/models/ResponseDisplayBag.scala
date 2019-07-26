@@ -34,6 +34,6 @@ object ResponseDisplayBag {
       tagManifest = DisplayFileManifest(storageManifest.tagManifest),
       locations = storageManifest.locations.map { DisplayLocation(_) },
       createdDate = storageManifest.createdDate.toString,
-      version = s"v${storageManifest.version}"
+      version = storageManifest.version.toString
     )
 }

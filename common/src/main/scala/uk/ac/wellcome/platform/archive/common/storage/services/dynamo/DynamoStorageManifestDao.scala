@@ -7,7 +7,8 @@ import org.scanamo.{DynamoFormat, DynamoValue, Scanamo, Table => ScanamoTable}
 import org.scanamo.error.{DynamoReadError, TypeCoercionError}
 import org.scanamo.syntax._
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   EmptyMetadata,
@@ -109,7 +110,7 @@ class DynamoStorageManifestDao(
 
   override def listVersions(
     bagId: BagId,
-    before: Option[Int]): Either[ReadError, Seq[StorageManifest]] =
+    before: Option[BagVersion]): Either[ReadError, Seq[StorageManifest]] =
     for {
       indexEntries <- getDynamoIndexEntries(bagId, before = before)
 
@@ -119,7 +120,7 @@ class DynamoStorageManifestDao(
     } yield manifests
 
   private def getManifests(bagId: BagId,
-                           before: Option[Int],
+                           before: Option[BagVersion],
                            locations: Seq[ObjectLocation])
     : Either[StoreReadError, Seq[StorageManifest]] = {
     val s3Results = locations.map { typedStore.get }
@@ -137,7 +138,7 @@ class DynamoStorageManifestDao(
     )
   }
 
-  private def getDynamoIndexEntries(bagId: BagId, before: Option[Int])
+  private def getDynamoIndexEntries(bagId: BagId, before: Option[BagVersion])
     : Either[StoreReadError,
              Seq[HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]]] = {
     val table = ScanamoTable[DynamoHashRangeEntry[

@@ -6,7 +6,7 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
   StorageManifestVHSFixture,
@@ -90,8 +90,9 @@ trait BagsApiFixture
         id: BagId): scala.Either[ReadError, StorageManifest] =
         Left(StoreReadError(new Throwable("BOOM!")))
 
-      override def get(id: BagId,
-                       version: Int): Either[ReadError, StorageManifest] =
+      override def get(
+        id: BagId,
+        version: BagVersion): Either[ReadError, StorageManifest] =
         Left(StoreReadError(new Throwable("BOOM!")))
 
       override def listVersions(

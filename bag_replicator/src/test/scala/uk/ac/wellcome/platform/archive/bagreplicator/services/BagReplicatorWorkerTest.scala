@@ -126,7 +126,7 @@ class BagReplicatorWorkerTest
                     rootPath,
                     payload.storageSpace.underlying,
                     payload.externalIdentifier.toString,
-                    s"v${payload.version}"
+                    payload.version.toString
                   )
                   .toString
               destination.path shouldBe expectedPath

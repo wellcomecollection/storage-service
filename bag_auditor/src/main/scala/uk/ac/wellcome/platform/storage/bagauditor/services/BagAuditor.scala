@@ -50,7 +50,7 @@ class BagAuditor(versionPicker: VersionPicker) {
               endTime = Instant.now(),
               version = version
             ),
-            maybeUserFacingMessage = Some(s"Assigned bag version v$version")
+            maybeUserFacingMessage = Some(s"Assigned bag version $version")
           )
 
         case Left(auditError) =>

@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.storage.bagauditor.models
 
 import java.time.Instant
 
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 sealed trait AuditSummary extends Summary {
@@ -17,5 +18,5 @@ case class AuditFailureSummary(
 case class AuditSuccessSummary(
   startTime: Instant,
   endTime: Instant,
-  version: Int
+  version: BagVersion
 ) extends AuditSummary

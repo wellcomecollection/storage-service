@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
@@ -47,7 +48,7 @@ class BagAuditorTest
       val summary = result.summary
         .asInstanceOf[AuditSuccessSummary]
 
-      summary.version shouldBe 1
+      summary.version shouldBe BagVersion(1)
     }
   }
 

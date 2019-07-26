@@ -4,6 +4,7 @@ import java.time.Instant
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
@@ -42,7 +43,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                 storageSpace = createStorageSpace
               )
               .right
-              .value shouldBe 1
+              .value shouldBe BagVersion(1)
           }
         }
       }
@@ -64,7 +65,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   storageSpace = storageSpace
                 )
                 .right
-                .value shouldBe version
+                .value shouldBe BagVersion(version)
             }
           }
         }
@@ -129,7 +130,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                 storageSpace = storageSpace
               )
               .right
-              .value shouldBe 1
+              .value shouldBe BagVersion(1)
 
             manager
               .assignVersion(
@@ -139,7 +140,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                 storageSpace = storageSpace
               )
               .right
-              .value shouldBe 1
+              .value shouldBe BagVersion(1)
           }
         }
       }
@@ -160,7 +161,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                 storageSpace = createStorageSpace
               )
               .right
-              .value shouldBe 1
+              .value shouldBe BagVersion(1)
 
             manager
               .assignVersion(
@@ -170,7 +171,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                 storageSpace = createStorageSpace
               )
               .right
-              .value shouldBe 1
+              .value shouldBe BagVersion(1)
           }
         }
       }

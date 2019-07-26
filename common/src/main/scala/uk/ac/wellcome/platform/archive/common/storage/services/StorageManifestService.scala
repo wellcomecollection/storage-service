@@ -6,7 +6,8 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagManifest,
-  BagPath
+  BagPath,
+  BagVersion
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -31,7 +32,7 @@ object StorageManifestService extends Logging {
     bag: Bag,
     replicaRoot: ObjectLocation,
     space: StorageSpace,
-    version: Int
+    version: BagVersion
   ): Try[StorageManifest] = {
     for {
       bagRoot <- getBagRoot(replicaRoot, version)
@@ -85,17 +86,17 @@ object StorageManifestService extends Logging {
     *
     */
   private def getBagRoot(replicaRoot: ObjectLocation,
-                         version: Int): Try[ObjectLocationPrefix] =
-    if (replicaRoot.path.endsWith(s"/v$version")) {
+                         version: BagVersion): Try[ObjectLocationPrefix] =
+    if (replicaRoot.path.endsWith(s"/$version")) {
       Success(
         replicaRoot.asPrefix.copy(
-          path = replicaRoot.path.stripSuffix(s"/v$version")
+          path = replicaRoot.path.stripSuffix(s"/$version")
         )
       )
     } else {
       Failure(
         new StorageManifestException(
-          s"Malformed bag root: $replicaRoot (expected suffix /v$version)"))
+          s"Malformed bag root: $replicaRoot (expected suffix /$version)"))
     }
 
   /** Every entry in the bag manifest will be either a:
@@ -107,16 +108,17 @@ object StorageManifestService extends Logging {
     * This function gets a map (bag name) -> (path), relative to the bag root.
     *
     */
-  private def createNamePathMap(bag: Bag,
-                                bagRoot: ObjectLocationPrefix,
-                                version: Int): Try[Map[BagPath, String]] = Try {
+  private def createNamePathMap(
+    bag: Bag,
+    bagRoot: ObjectLocationPrefix,
+    version: BagVersion): Try[Map[BagPath, String]] = Try {
     BagMatcher.correlateFetchEntries(bag) match {
       case Right(matchedLocations) =>
         matchedLocations.map { matchedLoc =>
           val path = matchedLoc.fetchEntry match {
             // This is a concrete file inside the replicated bag,
             // so it's inside the versioned replica directory.
-            case None => s"v$version/${matchedLoc.bagFile.path.value}"
+            case None => s"$version/${matchedLoc.bagFile.path.value}"
 
             // This is referring to a fetch file somewhere else.
             // We need to check it's in another versioned directory
@@ -168,7 +170,9 @@ object StorageManifestService extends Logging {
       // a single algorithm.
       if (bagFile.checksum.algorithm != manifest.checksumAlgorithm) {
         throw new StorageManifestException(
-          s"Mismatched checksum algorithms in manifest: entry ${bagFile.path} has algorithm ${bagFile.checksum.algorithm}, but manifest uses ${manifest.checksumAlgorithm}"
+          "Mismatched checksum algorithms in manifest: " +
+            s"entry ${bagFile.path} has algorithm ${bagFile.checksum.algorithm}, " +
+            s"but manifest uses ${manifest.checksumAlgorithm}"
         )
       }
 

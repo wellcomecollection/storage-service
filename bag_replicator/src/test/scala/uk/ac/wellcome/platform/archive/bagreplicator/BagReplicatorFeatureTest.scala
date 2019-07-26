@@ -52,7 +52,7 @@ class BagReplicatorFeatureTest
                       rootPath,
                       payload.storageSpace.toString,
                       payload.externalIdentifier.toString,
-                      s"v${payload.version}"
+                      payload.version.toString
                     )
                     .toString
                 )

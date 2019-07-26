@@ -4,7 +4,10 @@ import java.time.Instant
 import java.util.UUID
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
@@ -40,7 +43,7 @@ class VersionPickerTest
         storageSpace = createStorageSpace
       )
 
-      result.right.value shouldBe 1
+      result.right.value shouldBe BagVersion(1)
     }
   }
 
@@ -109,7 +112,7 @@ class VersionPickerTest
             storageSpace = createStorageSpace
           )
           .right
-          .value shouldBe 1
+          .value shouldBe BagVersion(1)
       }
     }
   }
@@ -128,7 +131,7 @@ class VersionPickerTest
           storageSpace = storageSpace
         )
         .right
-        .value shouldBe 1
+        .value shouldBe BagVersion(1)
 
       (2 to 5).map { t =>
         picker
@@ -140,7 +143,7 @@ class VersionPickerTest
             storageSpace = storageSpace
           )
           .right
-          .value shouldBe t
+          .value shouldBe BagVersion(t)
       }
     }
   }
@@ -239,7 +242,7 @@ class VersionPickerTest
     }
 
     withVersionPicker(lockDao) { picker =>
-      val result: Either[VersionPickerError, Int] = picker.chooseVersion(
+      val result: Either[VersionPickerError, BagVersion] = picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
         ingestId = createIngestID,
         ingestType = CreateIngestType,

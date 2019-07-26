@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.generators
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StandardStorageProvider,
   StorageLocation
@@ -30,7 +30,7 @@ trait StorageManifestGenerators
   def createStorageManifestWith(
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
-    version: Int = Random.nextInt,
+    version: BagVersion = BagVersion(Random.nextInt),
     locations: List[ObjectLocation] = List(createObjectLocation)
   ): StorageManifest =
     StorageManifest(

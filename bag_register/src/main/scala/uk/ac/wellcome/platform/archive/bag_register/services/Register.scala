@@ -4,6 +4,7 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
@@ -26,7 +27,7 @@ class Register(
 
   def update(
     bagRootLocation: ObjectLocation,
-    version: Int,
+    version: BagVersion,
     storageSpace: StorageSpace
   ): Try[IngestStepResult[RegistrationSummary]] = {
 
