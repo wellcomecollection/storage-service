@@ -14,7 +14,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.models._
@@ -33,8 +33,9 @@ class IngestsApiFeatureTest
 
   val contextUrl = "http://api.wellcomecollection.org/storage/v1/context.json"
   describe("GET /ingests/:id") {
-    it("returns a ingest tracker when available") {
+    it("returns an ingest when available") {
       val ingest = createIngestWith(
+        version = None,
         createdDate = Instant.now(),
         events = Seq(createIngestEvent, createIngestEvent)
       )
@@ -113,11 +114,31 @@ class IngestsApiFeatureTest
       }
     }
 
+    it("includes the version, if present") {
+      val ingest = createIngestWith(
+        version = Some(BagVersion(3))
+      )
+
+      withConfiguredApp(initialIngests = Seq(ingest)) {
+        case (_, _, _, baseUrl) =>
+          withMaterializer { implicit materializer =>
+            whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
+              result.status shouldBe StatusCodes.OK
+
+              withStringEntity(result.entity) { jsonString =>
+                val json = parse(jsonString).right.value
+                root.bag.info.version.string.getOption(json) shouldBe Some("v3")
+              }
+            }
+          }
+      }
+    }
+
     it("does not output empty values") {
       val ingest = createIngestWith(callback = None)
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
-        case (ingestTracker, _, metrics, baseUrl) =>
+        case (_, _, metrics, baseUrl) =>
           withMaterializer { implicit materialiser =>
             whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
               result.status shouldBe StatusCodes.OK
@@ -222,7 +243,7 @@ class IngestsApiFeatureTest
                   spaceName,
                   "Space")
 
-                actualIngest.bag.info.externalIdentifier shouldBe externalIdentifier
+                actualIngest.bag.info.externalIdentifier shouldBe externalIdentifier.toString
 
                 val expectedIngest = Ingest(
                   id = IngestID(id),
