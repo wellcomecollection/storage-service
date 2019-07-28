@@ -41,6 +41,7 @@ class IngestsApiFeatureTest
       val ingest = createIngestWith(
         version = None,
         createdDate = Instant.now(),
+        lastModifiedDate = Some(Instant.now()),
         events = Seq(createIngestEvent, createIngestEvent)
       )
 
@@ -94,6 +95,7 @@ class IngestsApiFeatureTest
                    |    }
                    |  },
                    |  "createdDate": "${ingest.createdDate}",
+                   |  "lastModifiedDate": "${ingest.lastModifiedDate.get}",
                    |  "events": [
                    |    {
                    |      "type": "IngestEvent",
