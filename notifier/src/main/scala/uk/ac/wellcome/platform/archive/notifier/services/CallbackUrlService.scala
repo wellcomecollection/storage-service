@@ -16,15 +16,18 @@ import scala.concurrent.Future
 
 class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem)
     extends Logging {
-  implicit val printer: Printer = Printer.noSpaces.copy(dropNullValues = true)
-
   def buildHttpRequest(ingest: Ingest,
                         callbackUri: URI): HttpRequest = {
+    val json = ResponseDisplayIngest(
+      ingest = ingest,
+      contextUrl = contextUrl
+    ).asJson
+
     val jsonString =
-      ResponseDisplayIngest(
-        ingest = ingest,
-        contextUrl = contextUrl
-      ).asJson.noSpaces
+      Printer
+        .noSpaces
+        .copy(dropNullValues = true)
+        .pretty(json)
 
     val entity = HttpEntity(
       contentType = ContentTypes.`application/json`,
