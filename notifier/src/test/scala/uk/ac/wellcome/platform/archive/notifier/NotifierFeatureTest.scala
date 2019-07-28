@@ -1,13 +1,9 @@
 package uk.ac.wellcome.platform.archive.notifier
 
 import java.net.URI
+import java.time.Instant
 
-import com.github.tomakehurst.wiremock.client.WireMock.{
-  equalToJson,
-  postRequestedFor,
-  urlPathEqualTo,
-  _
-}
+import com.github.tomakehurst.wiremock.client.WireMock.{equalToJson, postRequestedFor, urlPathEqualTo, _}
 import org.apache.http.HttpStatus
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
@@ -15,17 +11,9 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Callback,
-  CallbackNotification,
-  IngestCallbackStatusUpdate,
-  IngestUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, CallbackNotification, IngestCallbackStatusUpdate, IngestUpdate}
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{
-  LocalWireMockFixture,
-  NotifierFixtures
-}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixtures}
 
 class NotifierFeatureTest
     extends FunSpec
@@ -53,7 +41,7 @@ class NotifierFeatureTest
             val ingest = createIngestWith(
               id = ingestId,
               callback = Some(createCallbackWith(uri = callbackUri)),
-              lastModifiedDate = None
+              lastModifiedDate = Some(Instant.now)
             )
 
             sendNotificationToSQS(
@@ -132,6 +120,7 @@ class NotifierFeatureTest
               val ingest = createIngestWith(
                 id = ingestID,
                 version = None,
+                lastModifiedDate = None,
                 callback = Some(createCallbackWith(uri = callbackUri)),
                 events = Seq(createIngestEvent, createIngestEvent)
               )
@@ -141,13 +130,10 @@ class NotifierFeatureTest
                 CallbackNotification(ingestID, callbackUri, ingest)
               )
 
-              // TODO: This test is failing because lastModifiedDate is
-              // a null.  We shouldn't be sending nulls in callbacks!
-              // Compare to the ingests API, and add a test for it.
               val expectedJson =
                 s"""
                    |{
-                   |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+                   |  "@context": "http://localhost/context.json",
                    |  "id": "${ingest.id.toString}",
                    |  "type": "Ingest",
                    |  "ingestType": {
