@@ -106,7 +106,7 @@ lazy val notifier = setupProject(
   project,
   "notifier",
   localDependencies = Seq(common, display),
-  externalDependencies = ExternalDependencies.wiremockDependencies)
+  externalDependencies = ExternalDependencies.wiremockDependencies ++ ExternalDependencies.circeOpticsDependencies)
 
 lazy val ingests_api = setupProject(
   project,

@@ -1,13 +1,17 @@
 package uk.ac.wellcome.platform.archive.notifier.services
 
 import java.net.URI
+import java.time.Instant
 
 import akka.http.scaladsl.model.{ContentTypes, HttpMethods, HttpRequest, StatusCodes}
 import akka.stream.StreamTcpException
 import akka.stream.scaladsl.Sink
+import io.circe.optics.JsonPath.root
+import io.circe.parser.parse
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{Assertion, FunSpec, Matchers}
+import org.scalatest.{Assertion, EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixtures}
@@ -20,6 +24,7 @@ class CallbackUrlServiceTest
     with NotifierFixtures
     with LocalWireMockFixture
     with IngestGenerators
+    with EitherValues
     with JsonAssertions {
 
   describe("sends the HTTP requests") {
@@ -67,17 +72,17 @@ class CallbackUrlServiceTest
 
       val ingest = createIngestWith(
         id = ingestId,
-        version = None,
         callback = Some(createCallbackWith(uri = callbackUri)),
-        events = Seq(createIngestEvent, createIngestEvent)
+        version = None,
+        events = Seq(createIngestEvent, createIngestEvent),
+        lastModifiedDate = Some(Instant.now())
       )
 
       val request = buildRequest(ingest, callbackUri)
 
-      assertIsJsonRequest(
-        request = request,
-        uri = callbackUri,
-        jsonString =
+      assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
+        assertJsonStringsAreEqual(
+          requestJsonString,
           s"""
              |{
              |  "@context": "http://localhost/context.json",
@@ -120,6 +125,7 @@ class CallbackUrlServiceTest
              |    }
              |  },
              |  "createdDate": "${ingest.createdDate}",
+             |  "lastModifiedDate": "${ingest.lastModifiedDate.get}",
              |  "events": [
              |    {
              |      "type": "IngestEvent",
@@ -134,7 +140,38 @@ class CallbackUrlServiceTest
              |  ]
              |}
                  """.stripMargin
+        )
+      }
+    }
+
+    it("omits null values from the JSON") {
+      val callbackUri = new URI(s"http://example.org/callback/$createIngestID")
+
+      val ingest = createIngestWith(
+        lastModifiedDate = None
       )
+
+      val request = buildRequest(ingest, callbackUri)
+
+      assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
+        val json = parse(requestJsonString).right.value
+        root.lastModifiedDate.string.getOption(json) shouldBe None
+      }
+    }
+
+    it("includes the version, if present") {
+      val callbackUri = new URI(s"http://example.org/callback/$createIngestID")
+
+      val ingest = createIngestWith(
+        version = Some(BagVersion(3))
+      )
+
+      val request = buildRequest(ingest, callbackUri)
+
+      assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
+        val json = parse(requestJsonString).right.value
+        root.bag.info.version.string.getOption(json) shouldBe Some("v3")
+      }
     }
 
     def buildRequest(ingest: Ingest, callbackUri: URI): HttpRequest =
@@ -145,17 +182,14 @@ class CallbackUrlServiceTest
         )
       }
 
-    def assertIsJsonRequest(request: HttpRequest, uri: URI, jsonString: String): Assertion = {
+    def assertIsJsonRequest(request: HttpRequest, uri: URI)(assertJson: String => Assertion): Assertion = {
       request.method shouldBe HttpMethods.POST
       request.uri.toString() shouldBe uri.toString
 
       withMaterializer { implicit materializer =>
         val future = request.entity.dataBytes.runWith(Sink.seq)
         whenReady(future) { byteString =>
-          assertJsonStringsAreEqual(
-            byteString.head.utf8String,
-            jsonString
-          )
+          assertJson(byteString.head.utf8String)
         }
       }
 

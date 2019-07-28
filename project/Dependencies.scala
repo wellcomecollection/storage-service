@@ -88,7 +88,7 @@ object ExternalDependencies {
   )
 
   val circeOpticsDependencies = Seq[ModuleID](
-    "io.circe" %% "circe-optics" % versions.circe
+    "io.circe" %% "circe-optics" % versions.circe % "test"
   )
 
   val scalatestDependencies = Seq[ModuleID](

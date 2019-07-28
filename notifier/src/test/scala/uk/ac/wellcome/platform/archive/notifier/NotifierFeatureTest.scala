@@ -52,7 +52,8 @@ class NotifierFeatureTest
 
             val ingest = createIngestWith(
               id = ingestId,
-              callback = Some(createCallbackWith(uri = callbackUri))
+              callback = Some(createCallbackWith(uri = callbackUri)),
+              lastModifiedDate = None
             )
 
             sendNotificationToSQS(

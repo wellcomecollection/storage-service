@@ -34,6 +34,13 @@ trait IngestGenerators extends BagIdGenerators {
       None
     }
 
+  private def maybeModifiedDate: Option[Instant] =
+    if (Random.nextBoolean()) {
+      Some(randomInstant)
+    } else {
+      None
+    }
+
   def createIngestWith(id: IngestID = createIngestID,
                        ingestType: IngestType = CreateIngestType,
                        sourceLocation: StorageLocation = storageLocation,
@@ -44,6 +51,7 @@ trait IngestGenerators extends BagIdGenerators {
                          createExternalIdentifier,
                        version: Option[BagVersion] = maybeVersion,
                        createdDate: Instant = randomInstant,
+                       lastModifiedDate: Option[Instant] = maybeModifiedDate,
                        events: Seq[IngestEvent] = Seq.empty): Ingest =
     Ingest(
       id = id,
@@ -55,6 +63,7 @@ trait IngestGenerators extends BagIdGenerators {
       externalIdentifier = externalIdentifier,
       version = version,
       createdDate = createdDate,
+      lastModifiedDate = lastModifiedDate,
       events = events
     )
 
