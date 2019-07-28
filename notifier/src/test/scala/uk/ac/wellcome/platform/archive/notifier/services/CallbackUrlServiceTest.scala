@@ -3,7 +3,12 @@ package uk.ac.wellcome.platform.archive.notifier.services
 import java.net.URI
 import java.time.Instant
 
-import akka.http.scaladsl.model.{ContentTypes, HttpMethods, HttpRequest, StatusCodes}
+import akka.http.scaladsl.model.{
+  ContentTypes,
+  HttpMethods,
+  HttpRequest,
+  StatusCodes
+}
 import akka.stream.StreamTcpException
 import akka.stream.scaladsl.Sink
 import io.circe.optics.JsonPath.root
@@ -14,7 +19,10 @@ import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixtures}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{
+  LocalWireMockFixture,
+  NotifierFixtures
+}
 
 class CallbackUrlServiceTest
     extends FunSpec
@@ -35,8 +43,8 @@ class CallbackUrlServiceTest
 
           val future = service.getHttpResponse(
             ingest = ingest,
-            callbackUri =
-              new URI(s"http://$callbackHost:$callbackPort/callback/${ingest.id}")
+            callbackUri = new URI(
+              s"http://$callbackHost:$callbackPort/callback/${ingest.id}")
           )
 
           whenReady(future) { result =>
@@ -182,7 +190,8 @@ class CallbackUrlServiceTest
         )
       }
 
-    def assertIsJsonRequest(request: HttpRequest, uri: URI)(assertJson: String => Assertion): Assertion = {
+    def assertIsJsonRequest(request: HttpRequest, uri: URI)(
+      assertJson: String => Assertion): Assertion = {
       request.method shouldBe HttpMethods.POST
       request.uri.toString() shouldBe uri.toString
 
