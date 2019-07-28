@@ -27,6 +27,12 @@ class MismatchedVersionUpdateException(val existing: BagVersion,
 
 object IngestStates {
   def applyUpdate(ingest: Ingest, update: IngestUpdate): Try[Ingest] = Try {
+    val newEvents = ingest.events ++ update.events
+
+    val newIngest = ingest.copy(
+      events = newEvents
+    )
+
     update match {
       case _: IngestEventUpdate =>
         // Update the ingest status to "processing" when we see the first
@@ -36,9 +42,8 @@ object IngestStates {
           case _               => ingest.status
         }
 
-        ingest.copy(
-          status = updatedStatus,
-          events = ingest.events ++ update.events
+        newIngest.copy(
+          status = updatedStatus
         )
 
       case statusUpdate: IngestStatusUpdate =>
@@ -48,9 +53,8 @@ object IngestStates {
             statusUpdate.status)
         }
 
-        ingest.copy(
-          status = statusUpdate.status,
-          events = ingest.events ++ update.events
+        newIngest.copy(
+          status = statusUpdate.status
         )
 
       case callbackStatusUpdate: IngestCallbackStatusUpdate =>
@@ -65,34 +69,27 @@ object IngestStates {
               )
             }
 
-            ingest.copy(
+            newIngest.copy(
               callback = Some(
-                callback.copy(status = callbackStatusUpdate.callbackStatus)),
-              events = ingest.events ++ update.events
+                callback.copy(status = callbackStatusUpdate.callbackStatus))
             )
 
           case None => throw new NoCallbackException()
         }
 
-      case IngestVersionUpdate(_, updateEvents, updateVersion) => {
-        val newEvents = ingest.events ++ updateEvents
-
+      case IngestVersionUpdate(_, _, updateVersion) =>
         ingest.version match {
           case None =>
-            ingest.copy(
-              events = newEvents,
+            newIngest.copy(
               version = Some(updateVersion)
             )
 
           case Some(version) if version == updateVersion =>
-            ingest.copy(
-              events = newEvents
-            )
+            newIngest
 
           case Some(version) =>
             throw new MismatchedVersionUpdateException(version, updateVersion)
         }
-      }
     }
   }
 
