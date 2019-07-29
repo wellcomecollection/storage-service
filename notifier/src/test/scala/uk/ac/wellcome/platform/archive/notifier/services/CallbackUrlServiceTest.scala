@@ -71,7 +71,7 @@ class CallbackUrlServiceTest
       val ingest = createIngestWith(
         id = ingestId,
         callback = Some(createCallbackWith(uri = callbackUri)),
-        events = Seq(createIngestEvent, createIngestEvent).sortBy { _.createdDate }
+        events = createIngestEvents(count = 2)
       )
 
       val request = buildRequest(ingest, callbackUri)
