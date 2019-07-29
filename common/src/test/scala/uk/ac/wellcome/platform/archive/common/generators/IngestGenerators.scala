@@ -58,7 +58,7 @@ trait IngestGenerators extends BagIdGenerators {
     )
 
   def createIngestEventUpdateWith(id: IngestID,
-                                  events: List[IngestEvent] = List(
+                                  events: Seq[IngestEvent] = List(
                                     createIngestEvent)): IngestEventUpdate =
     IngestEventUpdate(
       id = id,
