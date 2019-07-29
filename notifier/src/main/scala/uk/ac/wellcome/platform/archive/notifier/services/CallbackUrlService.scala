@@ -6,6 +6,8 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import grizzled.slf4j.Logging
+import io.circe.Printer
+import io.circe.syntax._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
@@ -16,29 +18,37 @@ import scala.util.{Failure, Success, Try}
 class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
                                           ec: ExecutionContext)
     extends Logging {
+  def buildHttpRequest(ingest: Ingest, callbackUri: URI): HttpRequest = {
+    val json = ResponseDisplayIngest(
+      ingest = ingest,
+      contextUrl = contextUrl
+    ).asJson
+
+    val jsonString =
+      Printer.noSpaces
+        .copy(dropNullValues = true)
+        .pretty(json)
+
+    val entity = HttpEntity(
+      contentType = ContentTypes.`application/json`,
+      string = jsonString
+    )
+
+    debug(s"POST to $callbackUri request:$entity")
+
+    HttpRequest(
+      method = HttpMethods.POST,
+      uri = callbackUri.toString,
+      entity = entity
+    )
+  }
+
   def getHttpResponse(ingest: Ingest,
                       callbackUri: URI): Future[Try[HttpResponse]] = {
-    for {
-      jsonString <- Future.fromTry(
-        toJson(
-          ResponseDisplayIngest(
-            ingest = ingest,
-            contextUrl = contextUrl
-          ))
-      )
-      entity = HttpEntity(
-        contentType = ContentTypes.`application/json`,
-        string = jsonString
-      )
+    val request = buildHttpRequest(ingest, callbackUri)
 
-      _ = debug(s"POST to $callbackUri request:$entity")
-
-      request = HttpRequest(
-        method = HttpMethods.POST,
-        uri = callbackUri.toString,
-        entity = entity
-      )
-      response <- Http().singleRequest(request)
-    } yield Success(response)
-  }.recover { case err => Failure(err) }
+    Http().singleRequest(request)
+      .map { resp => Success(resp) }
+      .recover { case err => Failure(err) }
+  }
 }
