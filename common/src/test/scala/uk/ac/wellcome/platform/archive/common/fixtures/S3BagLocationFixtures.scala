@@ -11,10 +11,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier,
   PayloadOxum
 }
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagInfoGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.StorageSpaceGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -26,8 +23,7 @@ import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 import scala.util.Random
 
 trait BagLocationFixtures[Namespace]
-    extends BagInfoGenerators
-    with BagIt
+    extends BagIt
     with StorageSpaceGenerators
     with ObjectLocationGenerators {
   def createObjectLocationWith(namespace: Namespace,
@@ -49,22 +45,13 @@ trait BagLocationFixtures[Namespace]
   ): R = {
     info(s"Creating Bag $externalIdentifier")
 
-    val bagInfo = createBagInfoWith(
-      payloadOxum = payloadOxum match {
-        case Some(oxum) => oxum
-        case _ =>
-          createPayloadOxumWith(
-            numberOfPayloadFiles = dataFileCount
-          )
-      },
-      externalIdentifier = externalIdentifier
-    )
-
-    val fileEntries = createBag(
-      bagInfo,
+    val (fileEntries, bagInfo) = createBag(
+      payloadOxum = payloadOxum,
+      externalIdentifier = externalIdentifier,
       dataFileCount = dataFileCount,
       createDataManifest = createDataManifest,
-      createTagManifest = createTagManifest)
+      createTagManifest = createTagManifest
+    )
 
     debug(s"fileEntries: $fileEntries")
 

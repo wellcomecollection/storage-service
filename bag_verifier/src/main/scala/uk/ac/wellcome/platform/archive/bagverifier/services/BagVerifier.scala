@@ -58,6 +58,11 @@ class BagVerifier()(
             verificationResult = verificationResult
           )
 
+          _ <- verifyPayloadOxumFileSize(
+            bag = bag,
+            verificationResult = verificationResult
+          )
+
         } yield verificationResult
 
       buildStepResult(internalResult, root = root, startTime = startTime)
@@ -122,6 +127,41 @@ class BagVerifier()(
       Right(())
     }
   }
+
+  private def verifyPayloadOxumFileSize(
+    bag: Bag,
+    verificationResult: VerificationResult): InternalResult[Unit] =
+    verificationResult match {
+      case VerificationSuccess(locations) =>
+        // The Payload-Oxum octetstream sum only counts the size of files in the payload,
+        // not manifest files such as the bag-info.txt file.
+        // We need to filter those out.
+        val dataFilePaths = bag.manifest.files.map { _.path }
+
+        val actualSize =
+          locations
+            .filter { loc =>
+              dataFilePaths.contains(loc.verifiableLocation.path)
+            }
+            .map { _.size }
+            .sum
+
+        val expectedSize = bag.info.payloadOxum.payloadBytes
+
+        if (actualSize == expectedSize) {
+          Right(())
+        } else {
+          val message =
+            s"Payload-Oxum has the wrong octetstream sum: $expectedSize bytes, but bag actually contains $actualSize bytes"
+          Left(
+            BagVerifierError(
+              new Throwable(message),
+              userMessage = Some(message))
+          )
+        }
+
+      case _ => Right(())
+    }
 
   // Check that there aren't any files in the bag that aren't referenced in
   // either the file manifest or the tag manifest.

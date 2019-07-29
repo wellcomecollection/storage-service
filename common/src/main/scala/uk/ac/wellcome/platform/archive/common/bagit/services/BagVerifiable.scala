@@ -47,6 +47,7 @@ class BagVerifiable(root: ObjectLocation)(
         Right(
           VerifiableLocation(
             uri = fetchEntry.uri,
+            path = bagFile.path,
             checksum = bagFile.checksum,
             length = fetchEntry.length
           ))
@@ -58,6 +59,7 @@ class BagVerifiable(root: ObjectLocation)(
             Right(
               VerifiableLocation(
                 uri = resolvable.resolve(location),
+                path = bagFile.path,
                 checksum = bagFile.checksum,
                 length = None
               ))
