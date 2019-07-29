@@ -10,6 +10,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   FileEntry,
   S3BagLocationFixtures
@@ -35,7 +36,7 @@ class BagVerifierTest
 
   type StringTuple = List[(String, String)]
 
-  val dataFileCount = randomInt(from = 1, to = 10)
+  val dataFileCount = randomInt(from = 10, to = 20)
 
   val expectedFileCount: Int = dataFileCount + List(
     "manifest-sha256.txt",
@@ -181,19 +182,16 @@ class BagVerifierTest
   }
 
   it("fails a bag if the file manifest refers to a non-existent file") {
-    // Remove one of the valid files, replace with an invalid entry
-    def createDataManifestWithExtraFile(
-      dataFiles: StringTuple): Option[FileEntry] =
-      createValidDataManifest(
-        dataFiles.tail ++ List(("doesnotexist", "doesnotexist"))
-      )
-
     withLocalS3Bucket { bucket =>
-      withS3Bag(
-        bucket,
-        dataFileCount = dataFileCount,
-        createDataManifest = createDataManifestWithExtraFile) {
+      withS3Bag(bucket, dataFileCount = dataFileCount) {
         case (root, bagInfo) =>
+
+          // Delete one of the entries in the bag, so the manifest has
+          // an entry that doesn't correspond to a real file.
+          val keyToDelete =
+            listKeysInBucket(bucket).filter { _.contains("/data/") }.head
+          s3Client.deleteObject(root.namespace, keyToDelete)
+
           withVerifier { verifier =>
             val ingestStep =
               verifier.verify(
@@ -360,6 +358,7 @@ class BagVerifierTest
               location
             }
 
+
             withVerifier { verifier =>
               val ingestStep = verifier.verify(
                 root,
@@ -381,6 +380,40 @@ class BagVerifierTest
       }
     }
 
+    it("fails if a file in the fetch.txt also appears in the bag") {
+      withLocalS3Bucket { bucket =>
+        withS3Bag(bucket, dataFileCount = 30) {
+          case (root, bagInfo) =>
+            val bag = new S3BagReader().get(root).right.value
+
+            val fetchEntry = bag.fetch.get
+
+            val badFetchLocation = root.join(fetchEntry.files.head.path.value)
+
+            s3Client.putObject(
+              badFetchLocation.namespace,
+              badFetchLocation.path,
+              randomAlphanumeric
+            )
+
+            val ingestStep = withVerifier {
+              _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+            }
+
+            val result = ingestStep.success.get
+
+            result shouldBe a[IngestFailed[_]]
+            val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+
+            ingestFailed.e.getMessage shouldBe
+              s"Files referred to in the fetch.txt also appear in the bag: $badFetchLocation"
+
+            ingestFailed.maybeUserFacingMessage.get shouldBe
+              s"Files referred to in the fetch.txt also appear in the bag: " +
+                badFetchLocation.path.stripPrefix(root.path)
+        }
+      }
+    }
   }
 
   describe("checks the Payload-Oxum") {
