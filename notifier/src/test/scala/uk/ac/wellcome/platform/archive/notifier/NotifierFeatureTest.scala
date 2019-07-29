@@ -60,38 +60,70 @@ class NotifierFeatureTest
               CallbackNotification(ingestId, callbackUri, ingest)
             )
 
-            val expectedResponse =
-              ResponseDisplayIngest(
-                context = "http://localhost/context.json",
-                id = ingest.id.underlying,
-                sourceLocation = DisplayLocation(
-                  StandardDisplayProvider,
-                  ingest.sourceLocation.location.namespace,
-                  ingest.sourceLocation.location.path
-                ),
-                callback = ingest.callback.map { DisplayCallback(_) },
-                ingestType = CreateDisplayIngestType,
-                space = DisplayStorageSpace(ingest.space.underlying),
-                status = DisplayStatus(ingest.status.toString),
-                bag = RequestDisplayBag(
-                  info = RequestDisplayBagInfo(
-                    externalIdentifier = ingest.externalIdentifier
-                  )
-                ),
-                events = ingest.events.map { event =>
-                  DisplayIngestEvent(
-                    event.description,
-                    event.createdDate.toString)
-                },
-                createdDate = ingest.createdDate.toString,
-                lastModifiedDate = ingest.lastModifiedDate.map { _.toString }
-              )
+            val expectedJson =
+              s"""
+                 |{
+                 |  "@context": "http://localhost/context.json",
+                 |  "id": "${ingest.id.toString}",
+                 |  "type": "Ingest",
+                 |  "ingestType": {
+                 |    "id": "${ingest.ingestType.id}",
+                 |    "type": "IngestType"
+                 |  },
+                 |  "space": {
+                 |    "id": "${ingest.space.underlying}",
+                 |    "type": "Space"
+                 |  },
+                 |  "bag": {
+                 |    "type": "Bag",
+                 |    "info": {
+                 |      "type": "BagInfo",
+                 |      "externalIdentifier": "${ingest.externalIdentifier.underlying}"
+                 |    }
+                 |  },
+                 |  "status": {
+                 |    "id": "${ingest.status.toString}",
+                 |    "type": "Status"
+                 |  },
+                 |  "sourceLocation": {
+                 |    "type": "Location",
+                 |    "provider": {
+                 |      "type": "Provider",
+                 |      "id": "aws-s3-standard"
+                 |    },
+                 |    "bucket": "${ingest.sourceLocation.location.namespace}",
+                 |    "path": "${ingest.sourceLocation.location.path}"
+                 |  },
+                 |  "callback": {
+                 |    "type": "Callback",
+                 |    "url": "${ingest.callback.get.uri}",
+                 |    "status": {
+                 |      "id": "${ingest.callback.get.status.toString}",
+                 |      "type": "Status"
+                 |    }
+                 |  },
+                 |  "createdDate": "${ingest.createdDate}",
+                 |  "lastModifiedDate": "${ingest.lastModifiedDate.get}",
+                 |  "events": [
+                 |    {
+                 |      "type": "IngestEvent",
+                 |      "createdDate": "${ingest.events(0).createdDate}",
+                 |      "description": "${ingest.events(0).description}"
+                 |    },
+                 |    {
+                 |      "type": "IngestEvent",
+                 |      "createdDate": "${ingest.events(1).createdDate}",
+                 |      "description": "${ingest.events(1).description}"
+                 |    }
+                 |  ]
+                 |}
+                 """.stripMargin
 
             eventually {
               wireMock.verifyThat(
                 1,
                 postRequestedFor(urlPathEqualTo(callbackUri.getPath))
-                  .withRequestBody(equalToJson(toJson(expectedResponse).get))
+                  .withRequestBody(equalToJson(expectedJson))
               )
             }
         }
