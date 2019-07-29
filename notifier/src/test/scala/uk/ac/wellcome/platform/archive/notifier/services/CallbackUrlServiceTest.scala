@@ -14,6 +14,7 @@ import io.circe.parser.parse
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{Assertion, EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.notifier.fixtures.{
@@ -79,7 +80,8 @@ class CallbackUrlServiceTest
       val ingest = createIngestWith(
         id = ingestId,
         callback = Some(createCallbackWith(uri = callbackUri)),
-        events = createIngestEvents(count = 2)
+        events = createIngestEvents(count = 2),
+        version = None
       )
 
       val request = buildRequest(ingest, callbackUri)
@@ -145,6 +147,21 @@ class CallbackUrlServiceTest
              |}
                  """.stripMargin
         )
+      }
+    }
+
+    it("includes the version, if present") {
+      val callbackUri = new URI(s"http://example.org/callback/$createIngestID")
+
+      val ingest = createIngestWith(
+        version = Some(BagVersion(3))
+      )
+
+      val request = buildRequest(ingest, callbackUri)
+
+      assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
+        val json = parse(requestJsonString).right.value
+        root.bag.info.version.string.getOption(json) shouldBe Some("v3")
       }
     }
 

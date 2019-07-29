@@ -8,6 +8,7 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.{FunSpec, Inside, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -47,7 +48,8 @@ class NotifierFeatureTest
             val ingest = createIngestWith(
               id = ingestId,
               callback = Some(createCallbackWith(uri = callbackUri)),
-              events = createIngestEvents(count = 2)
+              events = createIngestEvents(count = 2),
+              version = None
             )
 
             sendNotificationToSQS(
@@ -156,7 +158,8 @@ class NotifierFeatureTest
               val ingest = createIngestWith(
                 id = ingestID,
                 callback = Some(createCallbackWith(uri = callbackUri)),
-                events = createIngestEvents(count = 2)
+                events = createIngestEvents(count = 2),
+                version = Some(BagVersion(2))
               )
 
               sendNotificationToSQS(
@@ -182,6 +185,7 @@ class NotifierFeatureTest
                    |    "type": "Bag",
                    |    "info": {
                    |      "type": "BagInfo",
+                   |      "version": "v2",
                    |      "externalIdentifier": "${ingest.externalIdentifier.underlying}"
                    |    }
                    |  },
