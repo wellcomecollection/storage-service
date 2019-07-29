@@ -12,8 +12,8 @@ class IngestStatusGoingBackwardsException(val existing: Ingest.Status,
 
 class MismatchedVersionUpdateException(val existing: BagVersion,
                                        val update: BagVersion)
-  extends RuntimeException(
-    s"Received bag version update $update, but ingest already has version $existing")
+    extends RuntimeException(
+      s"Received bag version update $update, but ingest already has version $existing")
 
 class CallbackStatusGoingBackwardsException(
   val existing: Callback.CallbackStatus,

@@ -68,16 +68,14 @@ class BagAuditorFeatureTest
                 ingestUpdates should have size 2
 
                 ingestUpdates(0) shouldBe a[IngestEventUpdate]
-                ingestUpdates(0)
-                  .events.map { _.description } shouldBe Seq(
+                ingestUpdates(0).events.map { _.description } shouldBe Seq(
                   "Auditing bag started")
 
                 ingestUpdates(1) shouldBe a[IngestVersionUpdate]
                 ingestUpdates(1)
                   .asInstanceOf[IngestVersionUpdate]
                   .version shouldBe BagVersion(1)
-                ingestUpdates(1)
-                  .events.map { _.description } shouldBe Seq(
+                ingestUpdates(1).events.map { _.description } shouldBe Seq(
                   "Auditing bag succeeded - assigned bag version v1")
             }
           }

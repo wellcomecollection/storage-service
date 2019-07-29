@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with IngestGenerators
     with TryValues {
@@ -63,7 +63,7 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
 }
 
 class IngestEventUpdateTest
-  extends IngestUpdateTestCases[IngestEventUpdate]
+    extends IngestUpdateTestCases[IngestEventUpdate]
     with TableDrivenPropertyChecks {
   override def createUpdateWith(id: IngestID,
                                 events: Seq[IngestEvent]): IngestEventUpdate =
@@ -92,7 +92,7 @@ class IngestEventUpdateTest
 }
 
 class IngestStatusUpdateTest
-  extends IngestUpdateTestCases[IngestStatusUpdate]
+    extends IngestUpdateTestCases[IngestStatusUpdate]
     with TableDrivenPropertyChecks {
   override def createUpdateWith(id: IngestID,
                                 events: Seq[IngestEvent]): IngestStatusUpdate =
@@ -158,11 +158,11 @@ class IngestStatusUpdateTest
 }
 
 class IngestCallbackStatusUpdateTest
-  extends IngestUpdateTestCases[IngestCallbackStatusUpdate]
+    extends IngestUpdateTestCases[IngestCallbackStatusUpdate]
     with TableDrivenPropertyChecks {
   override def createUpdateWith(
-                                 id: IngestID,
-                                 events: Seq[IngestEvent]): IngestCallbackStatusUpdate =
+    id: IngestID,
+    events: Seq[IngestEvent]): IngestCallbackStatusUpdate =
     createIngestCallbackStatusUpdateWith(id = id, events = events)
 
   describe("updating the callback status") {
@@ -178,8 +178,8 @@ class IngestCallbackStatusUpdateTest
     it("updates the status of a callback") {
       forAll(allowedCallbackStatusUpdates) {
         case (
-          initialStatus: Callback.CallbackStatus,
-          updatedStatus: Callback.CallbackStatus) =>
+            initialStatus: Callback.CallbackStatus,
+            updatedStatus: Callback.CallbackStatus) =>
           val ingest = createIngestWith(
             callback = Some(
               Callback(
@@ -210,8 +210,8 @@ class IngestCallbackStatusUpdateTest
     it("does not allow the callback status to go backwards") {
       forAll(disallowedCallbackStatusUpdates) {
         case (
-          initialStatus: Callback.CallbackStatus,
-          updatedStatus: Callback.CallbackStatus) =>
+            initialStatus: Callback.CallbackStatus,
+            updatedStatus: Callback.CallbackStatus) =>
           val ingest = createIngestWith(
             callback = Some(
               Callback(
@@ -247,7 +247,7 @@ class IngestCallbackStatusUpdateTest
 }
 
 class IngestVersionUpdateTest
-  extends IngestUpdateTestCases[IngestVersionUpdate] {
+    extends IngestUpdateTestCases[IngestVersionUpdate] {
   override def createUpdateWith(id: IngestID,
                                 events: Seq[IngestEvent]): IngestVersionUpdate =
     createIngestVersionUpdateWith(id = id, events = events)
