@@ -12,8 +12,7 @@
     <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashUdpSocketAppender">
         <layout class="net.logstash.logback.layout.LogstashLayout">
             <customFields>
-                {"introspection": {"namespace": "${NAMESPACE:-unset}","service_id": "${SERVICE_ID:-unset}","task_id":
-                "${TASK_ID:-unset}","image_id": "${IMAGE_ID:-unset}"}}
+                {"introspection": {"namespace":"${NAMESPACE:-unset}","service_id":"${SERVICE_ID:-unset}","task_id": "${TASK_ID:-unset}","image_id": "${IMAGE_ID:-unset}"}}
             </customFields>
         </layout>
 

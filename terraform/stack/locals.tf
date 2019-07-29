@@ -6,7 +6,7 @@ locals {
   bagger_service_name      = "${var.namespace}-bagger"
 
   logstash_transit_service_name = "${var.namespace}-logstash-transit"
-  logstash_transit_image        = "wellcome/logstash_transit:experiment1426290719"
+  logstash_transit_image        = "wellcome/logstash_transit:experiment1448290719"
 
   bag_unpacker_service_name           = "${var.namespace}-bag-unpacker"
   bag_root_finder_service_name        = "${var.namespace}-bag-root-finder"

@@ -63,7 +63,7 @@ module "bag_unpacker" {
     operation_name          = "unpacking"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_unpacker_service_name}"
 
-    logstash_host           = "${local.logstash_transit_service_name}.${var.namespace}:5142"
+    logstash_host           = "${local.logstash_transit_service_name}.${var.namespace}"
   }
 
   env_vars_length = 9
