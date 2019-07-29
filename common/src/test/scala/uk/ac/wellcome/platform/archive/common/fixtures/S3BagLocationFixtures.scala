@@ -75,16 +75,7 @@ trait BagLocationFixtures[Namespace]
       Random.nextFloat() < 0.8
     }
 
-    val realFiles = realDataFiles ++ generatedBag.tagManifestFiles ++ generatedBag.metaManifest.toList
-
-    realFiles.map { entry =>
-      val entryLocation = unpackedBagLocation.join(entry.name)
-
-      typedStore.put(entryLocation)(TypedStoreEntry(
-        entry.contents,
-        metadata = Map.empty)) shouldBe a[Right[_, _]]
-    }
-
+    // Now write the fetch entries to the fetch.txt
     val bagFetchEntries = fetchFiles.map { entry =>
       val entryLocation = createObjectLocationWith(
         namespace,
@@ -101,13 +92,33 @@ trait BagLocationFixtures[Namespace]
         path = BagPath(entry.name)
       )
     }
+    val tagManifest =
+      if (fetchFiles.nonEmpty) {
+        val fetchLocation = unpackedBagLocation.join("fetch.txt")
+        val fetchContents = BagFetch.write(bagFetchEntries)
 
-    if (fetchFiles.nonEmpty) {
-      val fetchLocation = unpackedBagLocation.join("fetch.txt")
-      val fetchContents = BagFetch.write(bagFetchEntries)
+        typedStore.put(fetchLocation)(TypedStoreEntry(
+          fetchContents,
+          metadata = Map.empty)) shouldBe a[Right[_, _]]
 
-      typedStore.put(fetchLocation)(TypedStoreEntry(
-        fetchContents,
+        // Now we need to add an entry for the fetch.txt to the tag manifest
+        // file, or the verifier will complain about it being an unreferenced file.
+        val originalManifest = generatedBag.metaManifest.get
+        originalManifest.copy(
+          contents = originalManifest.contents + s"\n${createValidDigest(fetchContents)} fetch.txt"
+        )
+
+      } else {
+        generatedBag.metaManifest.get
+      }
+
+    val realFiles = realDataFiles ++ generatedBag.tagManifestFiles :+ tagManifest
+
+    realFiles.map { entry =>
+      val entryLocation = unpackedBagLocation.join(entry.name)
+
+      typedStore.put(entryLocation)(TypedStoreEntry(
+        entry.contents,
         metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
