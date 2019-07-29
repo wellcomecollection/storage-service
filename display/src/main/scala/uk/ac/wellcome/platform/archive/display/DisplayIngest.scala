@@ -58,7 +58,8 @@ object ResponseDisplayIngest {
       ingestType = DisplayIngestType(ingest.ingestType),
       bag = ResponseDisplayBag(
         info = ResponseDisplayBagInfo(
-          externalIdentifier = ingest.externalIdentifier
+          externalIdentifier = ingest.externalIdentifier,
+          version = ingest.version.map { _.toString }
         )
       ),
       status = DisplayStatus(ingest.status),

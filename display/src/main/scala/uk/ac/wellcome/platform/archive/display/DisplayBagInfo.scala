@@ -11,5 +11,6 @@ case class RequestDisplayBagInfo(
 
 case class ResponseDisplayBagInfo(
   externalIdentifier: ExternalIdentifier,
+  version: Option[String],
   @JsonKey("type") ontologyType: String = "BagInfo"
 )
