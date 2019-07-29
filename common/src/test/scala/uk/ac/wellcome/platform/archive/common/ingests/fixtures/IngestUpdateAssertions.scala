@@ -4,6 +4,7 @@ import grizzled.slf4j.Logging
 import org.scalatest.{Assertion, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 import scala.util.Try
