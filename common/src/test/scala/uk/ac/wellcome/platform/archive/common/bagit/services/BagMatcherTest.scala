@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.MatchedLocation
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagPath,
+  MatchedLocation
+}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagFileGenerators,
   FetchEntryGenerators
@@ -101,13 +104,29 @@ class BagMatcherTest
 
   describe("error cases") {
     it("there's a fetch entry for a file that isn't in the bag") {
+      val fetchEntries = Seq(createFetchEntry)
+
       val result = BagMatcher.correlateFetchEntryToBagFile(
         bagFiles = Seq.empty,
-        fetchEntries = Seq(createFetchEntry)
+        fetchEntries = fetchEntries
       )
 
-      result.left.value.head.getMessage should startWith(
-        "Fetch entry refers to a path that isn't in the bag")
+      result.left.value.head.getMessage shouldBe
+        s"Fetch entry refers to a path that isn't in the bag manifest: ${fetchEntries.head.uri}"
+    }
+
+    it("there are multiple fetch entries for files that aren't in the bag") {
+      val bagPath = BagPath(randomAlphanumeric)
+      val fetchEntries = (1 to 3).map { _ => createFetchEntryWith(path = bagPath) }
+
+      val result = BagMatcher.correlateFetchEntryToBagFile(
+        bagFiles = Seq.empty,
+        fetchEntries = fetchEntries
+      )
+
+      result.left.value.head.getMessage shouldBe
+        "Multiple fetch entries refer to a path that isn't in the bag manifest: " +
+          fetchEntries.map { _.uri }.mkString(", ")
     }
 
     it("has multiple, differing fetch entries for the same file") {

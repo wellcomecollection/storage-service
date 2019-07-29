@@ -59,12 +59,18 @@ object BagMatcher {
         case (Seq(bagFile), Seq(fetchEntry)) =>
           Right(
             MatchedLocation(bagFile = bagFile, fetchEntry = Some(fetchEntry)))
-        case (Seq(), Seq(fetchEntry)) =>
-          Left(
-            s"Fetch entry refers to a path that isn't in the bag: $fetchEntry")
+
         case (Seq(), fetchEntriesForPath) =>
-          Left(
-            s"Multiple fetch entries refers to a path that isn't in the bag: $fetchEntriesForPath")
+          val uriString = fetchEntriesForPath.map { _.uri }.mkString(", ")
+          val message =
+            if (fetchEntriesForPath.size == 1) {
+              s"Fetch entry refers to a path that isn't in the bag manifest: $uriString"
+            } else {
+              s"Multiple fetch entries refer to a path that isn't in the bag manifest: $uriString"
+            }
+
+          Left(message)
+
         case _ =>
           Left(s"Multiple, ambiguous entries for the same path: $pathInfo")
       }
