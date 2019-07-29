@@ -30,7 +30,7 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
         .partition(_.isSuccess)
 
       if (success.size != 1) {
-        println(s"Failures: $failures")
+        debug(s"Failures: $failures")
       }
 
       success should have size 1
@@ -65,7 +65,7 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
 
       val (success, _) = ingestUpdates
         .map { ingestUpdate =>
-          println(s"Received IngestUpdate: $ingestUpdate")
+          debug(s"Received IngestUpdate: $ingestUpdate")
           Try(inside(ingestUpdate) {
             case IngestEventUpdate(id, events) =>
               id shouldBe ingestId
