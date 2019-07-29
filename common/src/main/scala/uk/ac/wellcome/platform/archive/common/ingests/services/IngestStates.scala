@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.services
 
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 import scala.util.Try
@@ -8,6 +9,11 @@ class IngestStatusGoingBackwardsException(val existing: Ingest.Status,
                                           val update: Ingest.Status)
     extends RuntimeException(
       s"Received status update $update, but ingest already has status $existing")
+
+class MismatchedVersionUpdateException(val existing: BagVersion,
+                                       val update: BagVersion)
+  extends RuntimeException(
+    s"Received bag version update $update, but ingest already has version $existing")
 
 class CallbackStatusGoingBackwardsException(
   val existing: Callback.CallbackStatus,
@@ -21,6 +27,12 @@ class NoCallbackException
 
 object IngestStates {
   def applyUpdate(ingest: Ingest, update: IngestUpdate): Try[Ingest] = Try {
+    val newEvents = ingest.events ++ update.events
+
+    val newIngest = ingest.copy(
+      events = newEvents
+    )
+
     update match {
       case _: IngestEventUpdate =>
         // Update the ingest status to "processing" when we see the first
@@ -30,9 +42,8 @@ object IngestStates {
           case _               => ingest.status
         }
 
-        ingest.copy(
-          status = updatedStatus,
-          events = ingest.events ++ update.events
+        newIngest.copy(
+          status = updatedStatus
         )
 
       case statusUpdate: IngestStatusUpdate =>
@@ -42,9 +53,8 @@ object IngestStates {
             statusUpdate.status)
         }
 
-        ingest.copy(
-          status = statusUpdate.status,
-          events = ingest.events ++ update.events
+        newIngest.copy(
+          status = statusUpdate.status
         )
 
       case callbackStatusUpdate: IngestCallbackStatusUpdate =>
@@ -59,13 +69,26 @@ object IngestStates {
               )
             }
 
-            ingest.copy(
+            newIngest.copy(
               callback = Some(
-                callback.copy(status = callbackStatusUpdate.callbackStatus)),
-              events = ingest.events ++ update.events
+                callback.copy(status = callbackStatusUpdate.callbackStatus))
             )
 
           case None => throw new NoCallbackException()
+        }
+
+      case IngestVersionUpdate(_, _, updateVersion) =>
+        ingest.version match {
+          case None =>
+            newIngest.copy(
+              version = Some(updateVersion)
+            )
+
+          case Some(version) if version == updateVersion =>
+            newIngest
+
+          case Some(version) =>
+            throw new MismatchedVersionUpdateException(version, updateVersion)
         }
     }
   }

@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
+
 sealed trait IngestUpdate {
   val id: IngestID
   val events: Seq[IngestEvent]
@@ -10,7 +12,7 @@ case class IngestEventUpdate(id: IngestID, events: Seq[IngestEvent])
 
 case class IngestStatusUpdate(id: IngestID,
                               status: Ingest.Status,
-                              events: Seq[IngestEvent] = List.empty)
+                              events: Seq[IngestEvent] = Seq.empty)
     extends IngestUpdate
 
 case class IngestCallbackStatusUpdate(
@@ -29,3 +31,9 @@ case object IngestCallbackStatusUpdate {
       events = List(IngestEvent(description))
     )
 }
+
+case class IngestVersionUpdate(
+  id: IngestID,
+  events: Seq[IngestEvent],
+  version: BagVersion
+) extends IngestUpdate

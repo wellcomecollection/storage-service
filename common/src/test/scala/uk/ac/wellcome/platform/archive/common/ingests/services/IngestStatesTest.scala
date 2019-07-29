@@ -4,6 +4,7 @@ import java.net.URI
 
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{FunSpec, Matchers, TryValues}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
@@ -241,6 +242,62 @@ class IngestCallbackStatusUpdateTest
       val err = IngestStates.applyUpdate(ingest, update).failure.exception
 
       err shouldBe a[NoCallbackException]
+    }
+  }
+}
+
+class IngestVersionUpdateTest
+  extends IngestUpdateTestCases[IngestVersionUpdate] {
+  override def createUpdateWith(id: IngestID,
+                                events: Seq[IngestEvent]): IngestVersionUpdate =
+    createIngestVersionUpdateWith(id = id, events = events)
+
+  override def createInitialIngestWith(events: Seq[IngestEvent]): Ingest =
+    createIngestWith(
+      events = events,
+      version = None
+    )
+
+  describe("updating the version") {
+    it("sets the version if there isn't one already") {
+      val ingest = createIngestWith(
+        version = None
+      )
+      val update = createIngestVersionUpdateWith(
+        id = ingest.id,
+        version = BagVersion(1)
+      )
+
+      val updatedIngest =
+        IngestStates.applyUpdate(ingest, update).success.value
+      updatedIngest.version shouldBe Some(BagVersion(1))
+    }
+
+    it("does nothing if the version is already set") {
+      val ingest = createIngestWith(
+        version = Some(BagVersion(1))
+      )
+      val update = createIngestVersionUpdateWith(
+        id = ingest.id,
+        version = BagVersion(1)
+      )
+
+      val updatedIngest =
+        IngestStates.applyUpdate(ingest, update).success.value
+      updatedIngest.version shouldBe Some(BagVersion(1))
+    }
+
+    it("errors if the existing version is different") {
+      val ingest = createIngestWith(
+        version = Some(BagVersion(1))
+      )
+      val update = createIngestVersionUpdateWith(
+        id = ingest.id,
+        version = BagVersion(2)
+      )
+
+      val err = IngestStates.applyUpdate(ingest, update).failure.exception
+      err shouldBe a[MismatchedVersionUpdateException]
     }
   }
 }

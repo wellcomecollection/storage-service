@@ -3,11 +3,13 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.net.URI
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Status
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
+
+import scala.util.Random
 
 trait IngestGenerators extends BagIdGenerators {
 
@@ -22,6 +24,13 @@ trait IngestGenerators extends BagIdGenerators {
   val testCallbackUri =
     new URI("http://www.wellcomecollection.org/callback/ok")
 
+  private def maybeVersion: Option[BagVersion] =
+    if (Random.nextBoolean()) {
+      Some(BagVersion(Random.nextInt))
+    } else {
+      None
+    }
+
   def createIngestWith(id: IngestID = createIngestID,
                        ingestType: IngestType = CreateIngestType,
                        sourceLocation: StorageLocation = storageLocation,
@@ -30,6 +39,7 @@ trait IngestGenerators extends BagIdGenerators {
                        status: Status = Ingest.Accepted,
                        externalIdentifier: ExternalIdentifier =
                          createExternalIdentifier,
+                       version: Option[BagVersion] = maybeVersion,
                        createdDate: Instant = randomInstant,
                        events: Seq[IngestEvent] = Seq.empty): Ingest =
     Ingest(
@@ -40,6 +50,7 @@ trait IngestGenerators extends BagIdGenerators {
       space = space,
       status = status,
       externalIdentifier = externalIdentifier,
+      version = version,
       createdDate = createdDate,
       events = events
     )
@@ -94,6 +105,18 @@ trait IngestGenerators extends BagIdGenerators {
 
   def createIngestStatusUpdate: IngestStatusUpdate =
     createIngestStatusUpdateWith()
+
+  def createIngestVersionUpdateWith(
+    id: IngestID = createIngestID,
+    events: Seq[IngestEvent] = Seq(createIngestEvent),
+    version: BagVersion = BagVersion(Random.nextInt)
+  ): IngestVersionUpdate =
+    IngestVersionUpdate(
+      id = id,
+      events = events,
+      version = version
+    )
+
 
   def createCallback(): Callback = createCallbackWith()
 
