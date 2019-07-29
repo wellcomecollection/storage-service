@@ -18,46 +18,53 @@ class BagRegisterFeatureTest
     withBagRegisterWorker {
       case (_, storageManifestDao, ingests, _, queuePair) =>
         val createdAfterDate = Instant.now()
-        val bagInfo = createBagInfo
         val space = createStorageSpace
         val version = randomInt(1, 15)
+        val dataFileCount = randomInt(1, 15)
+        val externalIdentifier = createExternalIdentifier
+
+        val bagId = BagId(
+          space = space,
+          externalIdentifier = externalIdentifier
+        )
 
         withLocalS3Bucket { bucket =>
-          withBag(bucket, bagInfo, space, version) { bagRootLocation =>
-            val bagId = BagId(
-              space = space,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
-
-            val payload = createEnrichedBagInformationPayloadWith(
-              context = createPipelineContextWith(
-                storageSpace = space
-              ),
-              bagRootLocation = bagRootLocation,
-              version = version
-            )
-
-            sendNotificationToSQS(queuePair.queue, payload)
-
-            eventually {
-              val storageManifest =
-                storageManifestDao.getLatest(bagId).right.value
-
-              storageManifest.space shouldBe bagId.space
-              storageManifest.info shouldBe bagInfo
-              storageManifest.manifest.files should have size 1
-
-              storageManifest.locations should have size 1
-
-              storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
-
-              assertBagRegisterSucceeded(
-                ingestId = payload.ingestId,
-                ingests = ingests
+          withBag(
+            bucket,
+            externalIdentifier,
+            space,
+            version,
+            dataFileCount = dataFileCount) {
+            case (bagRootLocation, bagInfo) =>
+              val payload = createEnrichedBagInformationPayloadWith(
+                context = createPipelineContextWith(
+                  storageSpace = space
+                ),
+                bagRootLocation = bagRootLocation,
+                version = version
               )
 
-              assertQueueEmpty(queuePair.queue)
-            }
+              sendNotificationToSQS(queuePair.queue, payload)
+
+              eventually {
+                val storageManifest =
+                  storageManifestDao.getLatest(bagId).right.value
+
+                storageManifest.space shouldBe bagId.space
+                storageManifest.info shouldBe bagInfo
+                storageManifest.manifest.files should have size dataFileCount
+
+                storageManifest.locations should have size 1
+
+                storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+
+                assertBagRegisterSucceeded(
+                  ingestId = payload.ingestId,
+                  ingests = ingests
+                )
+
+                assertQueueEmpty(queuePair.queue)
+              }
           }
         }
     }

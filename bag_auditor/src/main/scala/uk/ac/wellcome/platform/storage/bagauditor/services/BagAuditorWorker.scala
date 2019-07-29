@@ -47,28 +47,14 @@ class BagAuditorWorker[IngestDestination, OutgoingDestination](
         storageSpace = payload.storageSpace
       )
 
-      _ <- sendIngestInformation(payload)(auditStep)
       _ <- ingestUpdater.send(payload.ingestId, auditStep)
       _ <- sendSuccessful(payload)(auditStep)
     } yield auditStep
 
-  private def sendIngestInformation(payload: BagRootLocationPayload)(
-    step: IngestStepResult[AuditSummary]): Try[Unit] =
-    step match {
-      case IngestStepSucceeded(summary: AuditSuccessSummary) =>
-        ingestUpdater.sendEvent(
-          ingestId = payload.ingestId,
-          messages = Seq(
-            s"Assigned bag version ${summary.version}"
-          )
-        )
-      case _ => Success(())
-    }
-
   private def sendSuccessful(payload: BagRootLocationPayload)(
     step: IngestStepResult[AuditSummary]): Try[Unit] =
     step match {
-      case IngestStepSucceeded(summary: AuditSuccessSummary) =>
+      case IngestStepSucceeded(summary: AuditSuccessSummary, _) =>
         outgoingPublisher.sendIfSuccessful(
           step,
           EnrichedBagInformationPayload(

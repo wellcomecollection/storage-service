@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.storage.bagauditor.services
 import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
@@ -42,10 +43,12 @@ class BagAuditorTest
       )
 
       val result = maybeAudit.success.get
+      result.maybeUserFacingMessage shouldBe Some("Assigned bag version v1")
+
       val summary = result.summary
         .asInstanceOf[AuditSuccessSummary]
 
-      summary.version shouldBe 1
+      summary.version shouldBe BagVersion(1)
     }
   }
 
@@ -63,12 +66,10 @@ class BagAuditorTest
       )
 
       val result = maybeAudit.success.get
-
       result shouldBe a[IngestFailed[_]]
 
-      val ingestFailed = result.asInstanceOf[IngestFailed[_]]
-      ingestFailed.summary shouldBe a[AuditFailureSummary]
-      ingestFailed.maybeUserFacingMessage shouldBe Some(
+      result.summary shouldBe a[AuditFailureSummary]
+      result.maybeUserFacingMessage shouldBe Some(
         "Cannot update existing bag: a bag with the supplied external identifier does not exist in this space")
     }
   }
@@ -95,12 +96,10 @@ class BagAuditorTest
       )
 
       val result = maybeAudit.success.get
-
       result shouldBe a[IngestFailed[_]]
 
-      val ingestFailed = result.asInstanceOf[IngestFailed[_]]
-      ingestFailed.summary shouldBe a[AuditFailureSummary]
-      ingestFailed.maybeUserFacingMessage shouldBe Some(
+      result.summary shouldBe a[AuditFailureSummary]
+      result.maybeUserFacingMessage shouldBe Some(
         "Cannot create new bag: a bag with the supplied external identifier already exists in this space")
     }
   }

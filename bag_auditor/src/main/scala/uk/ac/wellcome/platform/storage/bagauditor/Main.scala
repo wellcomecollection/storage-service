@@ -38,8 +38,8 @@ import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
 import scala.concurrent.ExecutionContextExecutor
-
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -66,7 +66,9 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val lockingService =
-      new DynamoLockingService[Either[IngestVersionManagerError, Int], Id]()
+      new DynamoLockingService[
+        Either[IngestVersionManagerError, BagVersion],
+        Id]()
 
     val ingestVersionManagerDao = new DynamoIngestVersionManagerDao(
       dynamoClient = DynamoBuilder.buildDynamoClient(config),

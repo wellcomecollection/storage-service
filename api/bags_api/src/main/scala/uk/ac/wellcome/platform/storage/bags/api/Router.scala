@@ -10,6 +10,7 @@ import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
+  BagVersion,
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.http.models.{
@@ -140,7 +141,7 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
                 buildResultsList(
                   storageManifestDao.listVersions(bagId, before = version),
                   notFoundMessage =
-                    s"No storage manifest versions found for $bagId before v$version"
+                    s"No storage manifest versions found for $bagId before $version"
                 )
 
               case Success(None) =>
@@ -170,12 +171,16 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
 
   private val versionRegex: Regex = new Regex("^v(\\d+)$", "version")
 
-  private def parseVersion(queryParam: Option[String]): Try[Option[Int]] =
+  private def parseVersion(
+    queryParam: Option[String]): Try[Option[BagVersion]] =
     queryParam match {
       case Some(versionString) =>
         versionRegex.findFirstMatchIn(versionString) match {
           case Some(regexMatch) =>
-            Success(Some(regexMatch.group("version").toInt))
+            Success(
+              Some(
+                BagVersion(regexMatch.group("version").toInt)
+              ))
           case None =>
             Failure(
               new Throwable(s"Could not parse version string: $versionString"))

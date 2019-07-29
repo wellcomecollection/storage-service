@@ -33,14 +33,18 @@ case class IngestStepStarted(
 
 sealed trait IngestStepResult[+T] extends IngestStep[T] {
   val summary: T
+  val maybeUserFacingMessage: Option[String]
 }
 
 case class IngestCompleted[T](
   summary: T
-) extends IngestStepResult[T]
+) extends IngestStepResult[T] {
+  override val maybeUserFacingMessage: Option[String] = None
+}
 
 case class IngestStepSucceeded[T](
-  summary: T
+  summary: T,
+  maybeUserFacingMessage: Option[String] = None
 ) extends IngestStepResult[T]
 
 case class IngestFailed[T](
@@ -84,7 +88,7 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
 
   def toResult[T](ingestResult: IngestStepResult[T]): Result[T] =
     ingestResult match {
-      case IngestStepSucceeded(s)     => Successful(Some(s))
+      case IngestStepSucceeded(s, _)  => Successful(Some(s))
       case IngestCompleted(s)         => Successful(Some(s))
       case IngestFailed(s, t, _)      => DeterministicFailure(t, Some(s))
       case IngestShouldRetry(s, t, _) => NonDeterministicFailure(t, Some(s))

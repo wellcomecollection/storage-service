@@ -14,7 +14,7 @@ case object ResultListEntry {
   def apply(manifest: StorageManifest): ResultListEntry =
     ResultListEntry(
       id = manifest.id.toString,
-      version = s"v${manifest.version}",
+      version = manifest.version.toString,
       createdDate = manifest.createdDate.toString
     )
 }

@@ -7,13 +7,14 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetchEntry,
   BagFile,
-  BagPath
+  BagPath,
+  BagVersion
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagGenerators,
   StorageSpaceGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
@@ -428,7 +429,7 @@ class StorageManifestServiceTest
       val manifest =
         createManifest(replicaRoot = replicaRoot, version = version)
 
-      manifest.version shouldBe version
+      manifest.version shouldBe BagVersion(version)
     }
 
     it("sets a recent createdDate") {
@@ -448,7 +449,7 @@ class StorageManifestServiceTest
       bag = bag,
       replicaRoot = replicaRoot,
       space = space,
-      version = version
+      version = BagVersion(version)
     )
 
     if (result.isFailure) {
@@ -467,7 +468,7 @@ class StorageManifestServiceTest
       bag = bag,
       replicaRoot = replicaRoot,
       space = createStorageSpace,
-      version = version
+      version = BagVersion(version)
     )
 
     result.failure.exception shouldBe a[StorageManifestException]

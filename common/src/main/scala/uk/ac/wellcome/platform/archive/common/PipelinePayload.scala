@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.common
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestID,
@@ -51,5 +54,5 @@ case class BagRootLocationPayload(
 case class EnrichedBagInformationPayload(
   context: PipelineContext,
   bagRootLocation: ObjectLocation,
-  version: Int
+  version: BagVersion
 ) extends BagRootPayload

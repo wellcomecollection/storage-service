@@ -5,7 +5,8 @@ import java.time.Instant
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagFile,
   BagId,
-  BagInfo
+  BagInfo,
+  BagVersion
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
 import uk.ac.wellcome.platform.archive.common.verify.{
@@ -38,7 +39,7 @@ case class FileManifest(
 case class StorageManifest(
   space: StorageSpace,
   info: BagInfo,
-  version: Int,
+  version: BagVersion,
   manifest: FileManifest,
   tagManifest: FileManifest,
   locations: Seq[StorageLocation],

@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
@@ -24,7 +25,7 @@ class DestinationBuilderTest
     val location = builder.buildDestination(
       storageSpace = storageSpace,
       externalIdentifier = externalIdentifier,
-      version = 1
+      version = BagVersion(1)
     )
 
     location.namespace shouldBe "MyNamespace"
@@ -43,7 +44,7 @@ class DestinationBuilderTest
     val location = builder.buildDestination(
       storageSpace = storageSpace,
       externalIdentifier = externalIdentifier,
-      version = 2
+      version = BagVersion(2)
     )
 
     location.namespace shouldBe "MyNamespace"

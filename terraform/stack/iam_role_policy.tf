@@ -109,6 +109,13 @@ resource "aws_iam_role_policy" "bag_verifier_pre_repl_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
+# The fetch files in the bag may refer to objects in the access bucket,
+# so we need to grant this verifier read perms to that bucket as well.
+resource "aws_iam_role_policy" "bag_verifier_pre_repl_read_replicator_bucket" {
+  role   = "${module.bag_verifier_pre_replication.task_role_name}"
+  policy = "${data.aws_iam_policy_document.storage_access_read.json}"
+}
+
 # bag_replicator
 
 resource "aws_iam_role_policy" "bag_replicator_task_read_ingests_s3" {

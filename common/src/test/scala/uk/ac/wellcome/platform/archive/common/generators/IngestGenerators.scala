@@ -45,7 +45,17 @@ trait IngestGenerators extends BagIdGenerators {
     )
 
   def createIngestEvent: IngestEvent =
-    IngestEvent(randomAlphanumeric)
+    createIngestEventWith()
+
+  def createIngestEventWith(
+    description: String = randomAlphanumeric,
+    createdDate: Instant =
+      Instant.now().plusSeconds(randomInt(from = 0, to = 30))
+  ): IngestEvent =
+    IngestEvent(
+      description = description,
+      createdDate = createdDate
+    )
 
   def createIngestEventUpdateWith(id: IngestID,
                                   events: List[IngestEvent] = List(

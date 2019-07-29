@@ -53,6 +53,9 @@ trait UnpackerTestCases[Namespace]
             val unpacked = summaryResult.success.value
             unpacked shouldBe a[IngestStepSucceeded[_]]
 
+            unpacked.maybeUserFacingMessage.get should fullyMatch regex
+              """Unpacked \d+ bytes from \d+ files"""
+
             val summary = unpacked.summary
             summary.fileCount shouldBe filesInArchive.size
             summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
@@ -86,6 +89,9 @@ trait UnpackerTestCases[Namespace]
 
             val unpacked = summaryResult.success.value
             unpacked shouldBe a[IngestStepSucceeded[_]]
+
+            unpacked.maybeUserFacingMessage.get should fullyMatch regex
+              """Unpacked \d+ bytes from \d+ files"""
 
             val summary = unpacked.summary
             summary.fileCount shouldBe filesInArchive.size

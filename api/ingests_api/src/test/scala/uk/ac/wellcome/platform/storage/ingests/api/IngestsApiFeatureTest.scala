@@ -36,7 +36,9 @@ class IngestsApiFeatureTest
     it("returns a ingest tracker when available") {
       val ingest = createIngestWith(
         createdDate = Instant.now(),
-        events = Seq(createIngestEvent, createIngestEvent)
+        events = Seq(createIngestEvent, createIngestEvent).sortBy {
+          _.createdDate
+        }
       )
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
@@ -90,6 +92,7 @@ class IngestsApiFeatureTest
                      |    }
                      |  },
                      |  "createdDate": "${ingest.createdDate}",
+                     |  "lastModifiedDate": "${ingest.lastModifiedDate.get}",
                      |  "events": [
                      |    {
                      |      "type": "IngestEvent",
@@ -236,7 +239,6 @@ class IngestsApiFeatureTest
                   status = Ingest.Accepted,
                   externalIdentifier = externalIdentifier,
                   createdDate = Instant.parse(actualIngest.createdDate),
-                  lastModifiedDate = None,
                   events = Nil
                 )
 

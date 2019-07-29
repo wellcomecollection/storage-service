@@ -20,6 +20,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.verify.s3.S3ObjectVerifier
+import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
@@ -69,6 +70,8 @@ trait BagVerifierFixtures
 
       implicit val _s3Resolvable: S3Resolvable =
         new S3Resolvable()
+
+      implicit val listing: S3ObjectLocationListing = S3ObjectLocationListing()
 
       val verifier = new BagVerifier()
 

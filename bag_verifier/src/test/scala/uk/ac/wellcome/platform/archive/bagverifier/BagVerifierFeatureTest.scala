@@ -34,9 +34,6 @@ class BagVerifierFeatureTest
     val outgoing = new MemoryMessageSender()
 
     val externalIdentifier = createExternalIdentifier
-    val bagInfo = createBagInfoWith(
-      externalIdentifier = externalIdentifier
-    )
 
     withLocalSqsQueueAndDlq {
       case QueuePair(queue, dlq) =>
@@ -46,33 +43,34 @@ class BagVerifierFeatureTest
           queue,
           stepName = "verification") { _ =>
           withLocalS3Bucket { bucket =>
-            withS3Bag(bucket, bagInfo = bagInfo) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  externalIdentifier = externalIdentifier
-                ),
-                bagRootLocation = bagRootLocation
-              )
-
-              sendNotificationToSQS[BagRootPayload](queue, payload)
-
-              eventually {
-                assertTopicReceivesIngestEvents(
-                  payload.ingestId,
-                  ingests,
-                  expectedDescriptions = Seq(
-                    "Verification started",
-                    "Verification succeeded"
-                  )
+            withS3Bag(bucket, externalIdentifier = externalIdentifier) {
+              case (bagRootLocation, bagInfo) =>
+                val payload = createEnrichedBagInformationPayloadWith(
+                  context = createPipelineContextWith(
+                    externalIdentifier = externalIdentifier
+                  ),
+                  bagRootLocation = bagRootLocation
                 )
 
-                outgoing
-                  .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-                  payload)
+                sendNotificationToSQS[BagRootPayload](queue, payload)
 
-                assertQueueEmpty(queue)
-                assertQueueEmpty(dlq)
-              }
+                eventually {
+                  assertTopicReceivesIngestEvents(
+                    payload.ingestId,
+                    ingests,
+                    expectedDescriptions = Seq(
+                      "Verification started",
+                      "Verification succeeded"
+                    )
+                  )
+
+                  outgoing
+                    .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                    payload)
+
+                  assertQueueEmpty(queue)
+                  assertQueueEmpty(dlq)
+                }
             }
           }
         }
@@ -84,9 +82,6 @@ class BagVerifierFeatureTest
     val outgoing = new MemoryMessageSender()
 
     val externalIdentifier = createExternalIdentifier
-    val bagInfo = createBagInfoWith(
-      externalIdentifier = externalIdentifier
-    )
 
     withLocalSqsQueueAndDlq {
       case QueuePair(queue, dlq) =>
@@ -98,9 +93,9 @@ class BagVerifierFeatureTest
           withLocalS3Bucket { bucket =>
             withS3Bag(
               bucket,
-              bagInfo = bagInfo,
+              externalIdentifier = externalIdentifier,
               createDataManifest = dataManifestWithWrongChecksum) {
-              bagRootLocation =>
+              case (bagRootLocation, bagInfo) =>
                 val payload = createEnrichedBagInformationPayloadWith(
                   context = createPipelineContextWith(
                     externalIdentifier = externalIdentifier

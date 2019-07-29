@@ -14,9 +14,17 @@ case class Ingest(
   status: Ingest.Status,
   externalIdentifier: ExternalIdentifier,
   createdDate: Instant,
-  lastModifiedDate: Option[Instant] = None,
   events: Seq[IngestEvent] = Seq.empty
-)
+) {
+  def lastModifiedDate: Option[Instant] =
+    if (events.isEmpty) {
+      None
+    } else {
+      Some(
+        events.map { _.createdDate }.max
+      )
+    }
+}
 
 case object Ingest {
   sealed trait Status

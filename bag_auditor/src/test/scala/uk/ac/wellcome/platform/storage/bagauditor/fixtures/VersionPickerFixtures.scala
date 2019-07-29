@@ -4,6 +4,7 @@ import java.util.UUID
 
 import cats.Id
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerError
 import uk.ac.wellcome.platform.archive.common.versioning.memory.MemoryIngestVersionManager
 import uk.ac.wellcome.platform.storage.bagauditor.versioning.VersionPicker
@@ -22,7 +23,7 @@ trait VersionPickerFixtures {
   def withVersionPicker[R](dao: LockDao[String, UUID])(
     testWith: TestWith[VersionPicker, R]): R = {
     val lockingService = new LockingService[
-      Either[IngestVersionManagerError, Int],
+      Either[IngestVersionManagerError, BagVersion],
       Id,
       LockDao[String, UUID]] {
       override implicit val lockDao: LockDao[String, UUID] = dao
