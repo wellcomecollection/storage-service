@@ -236,7 +236,6 @@ class IngestsApiFeatureTest
                   status = Ingest.Accepted,
                   externalIdentifier = externalIdentifier,
                   createdDate = Instant.parse(actualIngest.createdDate),
-                  lastModifiedDate = None,
                   events = Nil
                 )
 
