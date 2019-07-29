@@ -112,7 +112,7 @@ class BagMatcherTest
       )
 
       result.left.value.head.getMessage shouldBe
-        s"Fetch entry refers to a path that isn't in the bag manifest: ${fetchEntries.head.uri}"
+        s"Fetch entry refers to a path that isn't in the bag manifest: ${fetchEntries.head.path}"
     }
 
     it("there are multiple fetch entries for files that aren't in the bag") {
@@ -125,8 +125,7 @@ class BagMatcherTest
       )
 
       result.left.value.head.getMessage shouldBe
-        "Multiple fetch entries refer to a path that isn't in the bag manifest: " +
-          fetchEntries.map { _.uri }.mkString(", ")
+        s"Fetch entry refers to a path that isn't in the bag manifest: $bagPath"
     }
 
     it("has multiple, differing fetch entries for the same file") {
