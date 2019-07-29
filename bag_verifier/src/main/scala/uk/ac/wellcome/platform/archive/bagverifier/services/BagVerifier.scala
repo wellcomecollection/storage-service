@@ -220,7 +220,8 @@ class BagVerifier()(
               s"Bag contains ${unreferencedLocations.size} files which are not referenced in the manifest: "
             }
 
-          val internalMessage = messagePrefix + unreferencedLocations.mkString(", ")
+          val internalMessage = messagePrefix + unreferencedLocations.mkString(
+            ", ")
 
           val userMessage = messagePrefix +
             unreferencedLocations
@@ -251,11 +252,13 @@ class BagVerifier()(
 
         val bagFetchLocations = bag.fetch match {
           case Some(fetchEntry) =>
-            fetchEntry
-              .files.map { _.path }
-              .map { path => root.join(path.value) }
+            fetchEntry.files
+              .map { _.path }
+              .map { path =>
+                root.join(path.value)
+              }
 
-          case None             => Seq.empty
+          case None => Seq.empty
         }
 
         debug(s"Expecting the bag to contain: $expectedLocations")
@@ -277,7 +280,8 @@ class BagVerifier()(
           val messagePrefix =
             "Files referred to in the fetch.txt also appear in the bag: "
 
-          val internalMessage = messagePrefix + concreteFetchLocations.mkString(", ")
+          val internalMessage = messagePrefix + concreteFetchLocations.mkString(
+            ", ")
 
           val userMessage = messagePrefix +
             concreteFetchLocations

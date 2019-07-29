@@ -43,8 +43,11 @@ class BagVerifierTest
     "bagit.txt",
     "bag-info.txt").size
 
-  private def verifyResultsSize(locations: Seq[VerifiedLocation], expectedSize: Int): Assertion =
-    if (locations.exists { _.verifiableLocation.path.value.endsWith("fetch.txt") }) {
+  private def verifyResultsSize(locations: Seq[VerifiedLocation],
+                                expectedSize: Int): Assertion =
+    if (locations.exists {
+          _.verifiableLocation.path.value.endsWith("fetch.txt")
+        }) {
       locations.size shouldBe expectedSize + 1
     } else {
       locations.size shouldBe expectedSize
@@ -68,7 +71,9 @@ class BagVerifierTest
               .asInstanceOf[VerificationSuccessSummary]
             val verification = summary.verification.value
 
-            verifyResultsSize(verification.locations, expectedSize = expectedFileCount)
+            verifyResultsSize(
+              verification.locations,
+              expectedSize = expectedFileCount)
           }
       }
     }
@@ -95,7 +100,9 @@ class BagVerifierTest
               .asInstanceOf[VerificationFailureSummary]
             val verification = summary.verification.value
 
-            verifyResultsSize(verification.success, expectedSize = expectedFileCount - 1)
+            verifyResultsSize(
+              verification.success,
+              expectedSize = expectedFileCount - 1)
             verification.failure should have size 1
 
             val location = verification.failure.head
@@ -133,7 +140,9 @@ class BagVerifierTest
               .asInstanceOf[VerificationFailureSummary]
             val verification = summary.verification.value
 
-            verifyResultsSize(verification.success, expectedSize = expectedFileCount - 1)
+            verifyResultsSize(
+              verification.success,
+              expectedSize = expectedFileCount - 1)
             verification.failure should have size 1
 
             val location = verification.failure.head
@@ -185,7 +194,6 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       withS3Bag(bucket, dataFileCount = dataFileCount) {
         case (root, bagInfo) =>
-
           // Delete one of the entries in the bag, so the manifest has
           // an entry that doesn't correspond to a real file.
           val keyToDelete =
@@ -207,7 +215,9 @@ class BagVerifierTest
               .asInstanceOf[VerificationFailureSummary]
             val verification = summary.verification.value
 
-            verifyResultsSize(verification.success, expectedSize = expectedFileCount - 1)
+            verifyResultsSize(
+              verification.success,
+              expectedSize = expectedFileCount - 1)
             verification.failure should have size 1
 
             val location = verification.failure.head
@@ -357,7 +367,6 @@ class BagVerifierTest
               )
               location
             }
-
 
             withVerifier { verifier =>
               val ingestStep = verifier.verify(
