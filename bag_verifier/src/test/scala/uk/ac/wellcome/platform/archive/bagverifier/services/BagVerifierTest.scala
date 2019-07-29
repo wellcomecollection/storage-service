@@ -32,7 +32,7 @@ class BagVerifierTest
 
   type StringTuple = List[(String, String)]
 
-  val dataFileCount = 3
+  val dataFileCount = randomInt(from = 1, to = 10)
 
   val expectedFileCount: Int = dataFileCount + List(
     "manifest-sha256.txt",
@@ -395,6 +395,37 @@ class BagVerifierTest
                 result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
               userFacingMessage.get shouldBe
                 s"""Payload-Oxum has the wrong number of payload files: ${dataFileCount - 1}, but bag manifest has $dataFileCount"""
+            }
+        }
+      }
+    }
+
+    it("fails if the Payload-Oxum has the wrong octet count") {
+      withLocalS3Bucket { bucket =>
+        withS3Bag(
+          bucket,
+          payloadOxum = Some(
+            createPayloadOxumWith(
+              payloadBytes = 0,
+              numberOfPayloadFiles = dataFileCount
+            )
+          ),
+          dataFileCount = dataFileCount) {
+          case (root, bagInfo) =>
+            withVerifier { verifier =>
+              val ingestStep = verifier.verify(
+                root,
+                externalIdentifier = bagInfo.externalIdentifier
+              )
+              val result = ingestStep.success.get
+
+              result shouldBe a[IngestFailed[_]]
+              result.summary shouldBe a[VerificationIncompleteSummary]
+
+              val userFacingMessage =
+                result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+              userFacingMessage.get should fullyMatch regex
+                s"""Payload-Oxum has the wrong octetstream sum: 0 bytes, but bag actually contains \\d+ bytes"""
             }
         }
       }
