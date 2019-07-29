@@ -117,7 +117,9 @@ class BagMatcherTest
 
     it("there are multiple fetch entries for files that aren't in the bag") {
       val bagPath = BagPath(randomAlphanumeric)
-      val fetchEntries = (1 to 3).map { _ => createFetchEntryWith(path = bagPath) }
+      val fetchEntries = (1 to 3).map { _ =>
+        createFetchEntryWith(path = bagPath)
+      }
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
         bagFiles = Seq.empty,
