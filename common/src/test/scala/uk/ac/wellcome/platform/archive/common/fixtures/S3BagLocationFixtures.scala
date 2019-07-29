@@ -45,7 +45,7 @@ trait BagLocationFixtures[Namespace]
   ): R = {
     info(s"Creating Bag $externalIdentifier")
 
-    val (fileEntries, bagInfo) = createBag(
+    val generatedBag = createBag(
       payloadOxum = payloadOxum,
       externalIdentifier = externalIdentifier,
       dataFileCount = dataFileCount,
@@ -53,7 +53,7 @@ trait BagLocationFixtures[Namespace]
       createTagManifest = createTagManifest
     )
 
-    debug(s"fileEntries: $fileEntries")
+    debug(s"generatedBag: $generatedBag")
 
     val storageSpaceRootLocation = createObjectLocationWith(
       namespace,
@@ -69,14 +69,13 @@ trait BagLocationFixtures[Namespace]
     )
 
     // To simulate a bag that contains both concrete objects and
-    // fetch files, siphon off some of the entries to be written
-    // as a fetch file.
-    //
-    // We need to make sure bag-info.txt, manifest.txt, and so on,
-    // are written into the bag proper.
-    val (realFiles, fetchFiles) = fileEntries.partition { file =>
-      file.name.endsWith(".txt") || Random.nextFloat() < 0.8
+    // fetch files, siphon off some of the payload files to be
+    // written as a fetch file.
+    val (realDataFiles, fetchFiles) = generatedBag.dataFiles.partition { _ =>
+      Random.nextFloat() < 0.8
     }
+
+    val realFiles = realDataFiles ++ generatedBag.tagManifestFiles ++ generatedBag.metaManifest.toList
 
     realFiles.map { entry =>
       val entryLocation = unpackedBagLocation.join(entry.name)
@@ -112,7 +111,7 @@ trait BagLocationFixtures[Namespace]
         metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
-    testWith((bagRootLocation, bagInfo))
+    testWith((bagRootLocation, generatedBag.bagInfo))
   }
 }
 

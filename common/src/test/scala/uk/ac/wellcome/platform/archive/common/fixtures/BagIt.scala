@@ -15,6 +15,16 @@ trait BagIt extends BagInfoGenerators {
     """.stripMargin.trim
   }
 
+  case class GeneratedBag(
+    dataFiles: Seq[FileEntry],
+    tagManifestFiles: Seq[FileEntry],
+    metaManifest: Option[FileEntry],
+    bagInfo: BagInfo
+  ) {
+    def allFiles: Seq[FileEntry] =
+      dataFiles ++ tagManifestFiles ++ metaManifest.toList
+  }
+
   def createBag(
     payloadOxum: Option[PayloadOxum],
     externalIdentifier: ExternalIdentifier,
@@ -26,7 +36,7 @@ trait BagIt extends BagInfoGenerators {
       createValidTagManifest,
     createBagItFile: => Option[FileEntry] = createValidBagItFile,
     createBagInfoFile: BagInfo => Option[FileEntry] = createValidBagInfoFile
-  ): (Seq[FileEntry], BagInfo) = {
+  ): GeneratedBag = {
 
     val dataFiles = createDataFiles(dataFileCount)
 
@@ -58,7 +68,7 @@ trait BagIt extends BagInfoGenerators {
 
     val metaManifest = createTagManifest(tagManifestFileAndDigests)
 
-    (dataFiles ++ tagManifestFiles ++ metaManifest.toList, bagInfo)
+    GeneratedBag(dataFiles, tagManifestFiles, metaManifest, bagInfo)
   }
 
   def createValidBagItFile =
