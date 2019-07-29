@@ -15,9 +15,12 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
     with TryValues {
   def createUpdateWith(id: IngestID, events: Seq[IngestEvent]): UpdateType
 
+  def createInitialIngestWith(events: Seq[IngestEvent]): Ingest =
+    createIngestWith(events = events)
+
   describe("updating the events") {
     it("adds an event") {
-      val ingest = createIngestWith(events = List.empty)
+      val ingest = createInitialIngestWith(events = List.empty)
 
       val event = createIngestEvent
       val update = createUpdateWith(
@@ -30,7 +33,7 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
     }
 
     it("adds multiple events") {
-      val ingest = createIngestWith(events = List.empty)
+      val ingest = createInitialIngestWith(events = List.empty)
 
       val events =
         List(createIngestEvent, createIngestEvent, createIngestEvent)
@@ -45,7 +48,7 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
 
     it("preserves the existing events") {
       val existingEvents = List(createIngestEvent, createIngestEvent)
-      val ingest = createIngestWith(events = existingEvents)
+      val ingest = createInitialIngestWith(events = existingEvents)
 
       val newEvents = List(createIngestEvent, createIngestEvent)
       val update = createUpdateWith(
@@ -248,6 +251,12 @@ class IngestVersionUpdateTest
   override def createUpdateWith(id: IngestID,
                                 events: Seq[IngestEvent]): IngestVersionUpdate =
     createIngestVersionUpdateWith(id = id, events = events)
+
+  override def createInitialIngestWith(events: Seq[IngestEvent]): Ingest =
+    createIngestWith(
+      events = events,
+      version = None
+    )
 
   describe("updating the version") {
     it("sets the version if there isn't one already") {
