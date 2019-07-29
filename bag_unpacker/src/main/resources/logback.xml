@@ -1,39 +1,31 @@
 <configuration>
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-    </encoder>
-  </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
 
-  <root level="${log_level:-INFO}">
-    <appender-ref ref="STDOUT" />
-  </root>
+    <root level="${log_level:-INFO}">
+        <appender-ref ref="STDOUT"/>
+    </root>
 
-  <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashUdpSocketAppender">
-    <layout class="net.logstash.logback.layout.LogstashLayout"/>
-      <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-          <customFields>
-              {
-                  "introspection": {
-                      "namespace": "${NAMESPACE:-unset}",
-                      "service_id": "${SERVICE_ID:-unset}",
-                      "task_id": "${TASK_ID:-unset}",
-                      "image_id": "${IMAGE_ID:-unset}"
-                  }
-              }
-          </customFields>
-      </encoder>
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashUdpSocketAppender">
+        <layout class="net.logstash.logback.layout.LogstashLayout"/>
+        <destination>${logstash_host}</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>
+                {"introspection": { "namespace": "${NAMESPACE:-unset}", "service_id": "${SERVICE_ID:-unset}", "task_id": "${TASK_ID:-unset}", "image_id": "${IMAGE_ID:-unset}" }}
+            </customFields>
+        </encoder>
 
-    <host>${logstash_host}</host>
-    <port>514</port>
-  </appender>
+    </appender>
 
-  <root level="DEBUG">
-    <appender-ref ref="LOGSTASH" />
-  </root>
+    <root level="DEBUG">
+        <appender-ref ref="LOGSTASH"/>
+    </root>
 
-  <!-- reduce external logging -->
-  <logger name="org.apache.http" level="ERROR"/>
-  <logger name="io.netty" level="ERROR"/>
-  <logger name="com.amazonaws" level="WARN"/>
+    <!-- reduce external logging -->
+    <logger name="org.apache.http" level="ERROR"/>
+    <logger name="io.netty" level="ERROR"/>
+    <logger name="com.amazonaws" level="WARN"/>
 </configuration>
