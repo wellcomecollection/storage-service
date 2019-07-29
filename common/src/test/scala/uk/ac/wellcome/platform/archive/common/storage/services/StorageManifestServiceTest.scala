@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   BagGenerators,
   StorageSpaceGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation

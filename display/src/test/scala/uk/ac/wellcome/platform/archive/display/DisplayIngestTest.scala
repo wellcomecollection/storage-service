@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   IngestGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingest.fixtures.TimeTestFixture
+import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
@@ -26,7 +26,6 @@ class DisplayIngestTest
   private val callbackUrl = "http://www.example.com/callback"
   private val spaceId = "space-id"
   private val createdDate = "2018-10-10T09:38:55.321Z"
-  private val modifiedDate = "2018-10-10T09:38:55.322Z"
   private val eventDate = "2018-10-10T09:38:55.323Z"
   private val eventDescription = "Event description"
   private val contextUrl = new URL(
@@ -48,7 +47,6 @@ class DisplayIngestTest
         status = Ingest.Processing,
         externalIdentifier = externalIdentifier,
         createdDate = Instant.parse(createdDate),
-        lastModifiedDate = Some(Instant.parse(modifiedDate)),
         events = List(IngestEvent(eventDescription, Instant.parse(eventDate)))
       )
 
@@ -70,7 +68,7 @@ class DisplayIngestTest
       displayIngest.status shouldBe DisplayStatus("processing")
       displayIngest.bag.info.externalIdentifier shouldBe externalIdentifier
       displayIngest.createdDate shouldBe createdDate
-      displayIngest.lastModifiedDate.get shouldBe modifiedDate
+      displayIngest.lastModifiedDate.get shouldBe eventDate
       displayIngest.events shouldBe List(
         DisplayIngestEvent(eventDescription, eventDate)
       )
@@ -150,7 +148,6 @@ class DisplayIngestTest
       ingest.status shouldBe Ingest.Accepted
       ingest.externalIdentifier shouldBe externalIdentifier
       assertRecent(ingest.createdDate)
-      ingest.lastModifiedDate shouldBe None
       ingest.events shouldBe empty
     }
 
