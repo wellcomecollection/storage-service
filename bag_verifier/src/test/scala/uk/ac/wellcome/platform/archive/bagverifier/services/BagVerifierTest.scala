@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers, OptionValues, TryValues}
+import org.scalatest._
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   VerificationFailureSummary,
@@ -19,7 +19,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepSucceeded
 }
-import uk.ac.wellcome.platform.archive.common.verify.FailedChecksumNoMatch
+import uk.ac.wellcome.platform.archive.common.verify.{
+  FailedChecksumNoMatch,
+  VerifiedLocation
+}
 
 class BagVerifierTest
     extends FunSpec
@@ -39,6 +42,13 @@ class BagVerifierTest
     "bagit.txt",
     "bag-info.txt").size
 
+  private def verifyResultsSize(locations: Seq[VerifiedLocation], expectedSize: Int): Assertion =
+    if (locations.exists { _.verifiableLocation.path.value.endsWith("fetch.txt") }) {
+      locations.size shouldBe expectedSize + 1
+    } else {
+      locations.size shouldBe expectedSize
+    }
+
   it("passes a bag with correct checksum values") {
     withLocalS3Bucket { bucket =>
       withS3Bag(bucket, dataFileCount = dataFileCount) {
@@ -57,7 +67,7 @@ class BagVerifierTest
               .asInstanceOf[VerificationSuccessSummary]
             val verification = summary.verification.value
 
-            verification.locations should have size expectedFileCount
+            verifyResultsSize(verification.locations, expectedSize = expectedFileCount)
           }
       }
     }
@@ -84,7 +94,7 @@ class BagVerifierTest
               .asInstanceOf[VerificationFailureSummary]
             val verification = summary.verification.value
 
-            verification.success should have size expectedFileCount - 1
+            verifyResultsSize(verification.success, expectedSize = expectedFileCount - 1)
             verification.failure should have size 1
 
             val location = verification.failure.head
@@ -122,7 +132,7 @@ class BagVerifierTest
               .asInstanceOf[VerificationFailureSummary]
             val verification = summary.verification.value
 
-            verification.success should have size expectedFileCount - 1
+            verifyResultsSize(verification.success, expectedSize = expectedFileCount - 1)
             verification.failure should have size 1
 
             val location = verification.failure.head
@@ -137,31 +147,35 @@ class BagVerifierTest
 
   it("fails a bag with multiple incorrect checksums in the file manifest") {
     withLocalS3Bucket { bucket =>
-      withS3Bag(bucket, dataFileCount = dataFileCount) {
+      withS3Bag(bucket, dataFileCount = 20) {
         case (root, bagInfo) =>
-          // Now scribble over the contents of all the data files in the bag
-          listKeysInBucket(bucket).foreach { key =>
-            if (key.contains("/data/")) {
-              s3Client.putObject(
-                bucket.name,
-                key,
-                randomAlphanumeric
-              )
-            }
+          // Now scribble over the contents of all the data files in the bag.
+          // Note: anything referred to by the fetch file will *not* be
+          // affected by this scribbling.
+          val bucketKeys = listKeysInBucket(bucket)
+          val badChecksumFiles =
+            bucketKeys
+              .filter { _.contains("/data/") }
+              .map { key =>
+                s3Client.putObject(
+                  bucket.name,
+                  key,
+                  randomAlphanumeric
+                )
+
+                key
+              }
+
+          val ingestStep = withVerifier {
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
           }
 
-          withVerifier { verifier =>
-            val ingestStep =
-              verifier.verify(
-                root,
-                externalIdentifier = bagInfo.externalIdentifier)
-            val result = ingestStep.success.get
-            result shouldBe a[IngestFailed[_]]
+          val result = ingestStep.success.get
+          result shouldBe a[IngestFailed[_]]
 
-            val userFacingMessage =
-              result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
-            userFacingMessage.get shouldBe s"There were $dataFileCount errors verifying the bag"
-          }
+          val userFacingMessage =
+            result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
+          userFacingMessage.get shouldBe s"There were ${badChecksumFiles.size} errors verifying the bag"
       }
     }
   }
@@ -195,7 +209,7 @@ class BagVerifierTest
               .asInstanceOf[VerificationFailureSummary]
             val verification = summary.verification.value
 
-            verification.success should have size expectedFileCount - 1
+            verifyResultsSize(verification.success, expectedSize = expectedFileCount - 1)
             verification.failure should have size 1
 
             val location = verification.failure.head

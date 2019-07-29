@@ -103,16 +103,16 @@ trait BagLocationFixtures[Namespace]
 
         // Now we need to add an entry for the fetch.txt to the tag manifest
         // file, or the verifier will complain about it being an unreferenced file.
-        val originalManifest = generatedBag.metaManifest.get
-        originalManifest.copy(
-          contents = originalManifest.contents + s"\n${createValidDigest(fetchContents)} fetch.txt"
-        )
-
+        generatedBag.metaManifest.map { originalManifest =>
+          originalManifest.copy(
+            contents = originalManifest.contents + s"\n${createValidDigest(fetchContents)} fetch.txt"
+          )
+        }
       } else {
-        generatedBag.metaManifest.get
+        generatedBag.metaManifest
       }
 
-    val realFiles = realDataFiles ++ generatedBag.tagManifestFiles :+ tagManifest
+    val realFiles = realDataFiles ++ generatedBag.tagManifestFiles ++ tagManifest.toList
 
     realFiles.map { entry =>
       val entryLocation = unpackedBagLocation.join(entry.name)

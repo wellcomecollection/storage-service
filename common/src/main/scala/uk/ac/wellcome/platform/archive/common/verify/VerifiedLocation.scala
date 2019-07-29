@@ -2,7 +2,9 @@ package uk.ac.wellcome.platform.archive.common.verify
 
 import uk.ac.wellcome.storage.ObjectLocation
 
-sealed trait VerifiedLocation
+sealed trait VerifiedLocation {
+  val verifiableLocation: VerifiableLocation
+}
 
 case class VerifiedSuccess(verifiableLocation: VerifiableLocation,
                            objectLocation: ObjectLocation,
