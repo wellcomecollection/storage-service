@@ -7,7 +7,6 @@ case class RequestDisplayBag(
   @JsonKey("type") ontologyType: String = "Bag"
 )
 
-
 case class ResponseDisplayBag(
   info: ResponseDisplayBagInfo,
   @JsonKey("type") ontologyType: String = "Bag"

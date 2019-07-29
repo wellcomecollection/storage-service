@@ -8,7 +8,6 @@ case class RequestDisplayBagInfo(
   @JsonKey("type") ontologyType: String = "BagInfo"
 )
 
-
 case class ResponseDisplayBagInfo(
   externalIdentifier: ExternalIdentifier,
   version: Option[String],

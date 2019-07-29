@@ -14,7 +14,10 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.models._
@@ -149,28 +152,30 @@ class IngestsApiFeatureTest
     }
 
     it("returns a 404 NotFound if no ingest tracker matches id") {
-      withConfiguredApp() { case (_, _, metrics, baseUrl) =>
-        val id = randomUUID
-        whenGetRequestReady(s"$baseUrl/ingests/$id") { response =>
-          assertIsUserErrorResponse(
-            response,
-            description = s"Ingest $id not found",
-            statusCode = StatusCodes.NotFound,
-            label = "Not Found"
-          )
+      withConfiguredApp() {
+        case (_, _, metrics, baseUrl) =>
+          val id = randomUUID
+          whenGetRequestReady(s"$baseUrl/ingests/$id") { response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"Ingest $id not found",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
 
-          assertMetricSent(metrics, result = HttpMetricResults.UserError)
-        }
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
       }
     }
 
     it("returns a 500 Server Error if reading from DynamoDB fails") {
-      withBrokenApp { case (_, _, metrics, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/ingests/$randomUUID") { response =>
-          assertIsInternalServerErrorResponse(response)
+      withBrokenApp {
+        case (_, _, metrics, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/ingests/$randomUUID") { response =>
+            assertIsInternalServerErrorResponse(response)
 
-          assertMetricSent(metrics, result = HttpMetricResults.ServerError)
-        }
+            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          }
       }
     }
   }
@@ -262,48 +267,50 @@ class IngestsApiFeatureTest
     }
 
     it("allows requesting an ingestType 'create'") {
-      withConfiguredApp() { case (_, messageSender, metrics, baseUrl) =>
-        val url = s"$baseUrl/ingests"
+      withConfiguredApp() {
+        case (_, messageSender, metrics, baseUrl) =>
+          val url = s"$baseUrl/ingests"
 
-        val entity = createRequestWith(
-          ingestType = "create"
-        )
+          val entity = createRequestWith(
+            ingestType = "create"
+          )
 
-        whenPostRequestReady(url, entity) { response: HttpResponse =>
-          response.status shouldBe StatusCodes.Created
+          whenPostRequestReady(url, entity) { response: HttpResponse =>
+            response.status shouldBe StatusCodes.Created
 
-          val actualIngest = getT[ResponseDisplayIngest](response.entity)
-          actualIngest.ingestType.id shouldBe "create"
+            val actualIngest = getT[ResponseDisplayIngest](response.entity)
+            actualIngest.ingestType.id shouldBe "create"
 
-          val payload =
-            messageSender.getMessages[SourceLocationPayload].head
-          payload.context.ingestType shouldBe CreateIngestType
+            val payload =
+              messageSender.getMessages[SourceLocationPayload].head
+            payload.context.ingestType shouldBe CreateIngestType
 
-          assertMetricSent(metrics, result = HttpMetricResults.Success)
-        }
+            assertMetricSent(metrics, result = HttpMetricResults.Success)
+          }
       }
     }
 
     it("allows requesting an ingestType 'update'") {
-      withConfiguredApp() { case (_, messageSender, metrics, baseUrl) =>
-        val url = s"$baseUrl/ingests"
+      withConfiguredApp() {
+        case (_, messageSender, metrics, baseUrl) =>
+          val url = s"$baseUrl/ingests"
 
-        val entity = createRequestWith(
-          ingestType = "update"
-        )
+          val entity = createRequestWith(
+            ingestType = "update"
+          )
 
-        whenPostRequestReady(url, entity) { response: HttpResponse =>
-          response.status shouldBe StatusCodes.Created
+          whenPostRequestReady(url, entity) { response: HttpResponse =>
+            response.status shouldBe StatusCodes.Created
 
-          val actualIngest = getT[ResponseDisplayIngest](response.entity)
+            val actualIngest = getT[ResponseDisplayIngest](response.entity)
 
-          actualIngest.ingestType.id shouldBe "update"
+            actualIngest.ingestType.id shouldBe "update"
 
-          val payload = messageSender.getMessages[SourceLocationPayload].head
-          payload.context.ingestType shouldBe UpdateIngestType
+            val payload = messageSender.getMessages[SourceLocationPayload].head
+            payload.context.ingestType shouldBe UpdateIngestType
 
-          assertMetricSent(metrics, result = HttpMetricResults.Success)
-        }
+            assertMetricSent(metrics, result = HttpMetricResults.Success)
+          }
       }
     }
 
@@ -495,15 +502,14 @@ class IngestsApiFeatureTest
     }
 
     it("returns a 500 Server Error if updating the ingest starter fails") {
-      withBrokenApp { case (_, _, metrics, baseUrl) =>
-        whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
-          response =>
-            assertIsInternalServerErrorResponse(response)
+      withBrokenApp {
+        case (_, _, metrics, baseUrl) =>
+          whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
+            response =>
+              assertIsInternalServerErrorResponse(response)
 
-            assertMetricSent(
-              metrics,
-              result = HttpMetricResults.ServerError)
-        }
+              assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          }
       }
     }
   }
