@@ -131,7 +131,17 @@ class BagVerifier()(
   private def verifyPayloadOxumFileSize(bag: Bag, verificationResult: VerificationResult): InternalResult[Unit] =
     verificationResult match {
       case VerificationSuccess(locations) =>
-        val actualSize = locations.map { _.size }.sum
+        // The Payload-Oxum octetstream sum only counts the size of files in the payload,
+        // not manifest files such as the bag-info.txt file.
+        // We need to filter those out.
+        val dataFilePaths = bag.manifest.files.map { _.path }
+
+        val actualSize =
+          locations
+            .filter { loc => dataFilePaths.contains(loc.verifiableLocation.path) }
+            .map { _.size }
+            .sum
+
         val expectedSize = bag.info.payloadOxum.payloadBytes
 
         if (actualSize == expectedSize) {

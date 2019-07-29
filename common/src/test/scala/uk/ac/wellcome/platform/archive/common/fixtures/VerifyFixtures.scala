@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.net.URI
 
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
@@ -23,6 +24,7 @@ trait VerifyFixtures extends StorageRandomThings with ObjectLocationGenerators {
   ): VerifiableLocation = {
     VerifiableLocation(
       uri = resolve(location),
+      path = BagPath(randomAlphanumeric),
       checksum = checksum,
       length = length
     )

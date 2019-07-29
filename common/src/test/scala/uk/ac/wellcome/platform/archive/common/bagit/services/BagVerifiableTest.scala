@@ -250,11 +250,12 @@ class BagVerifiableTest
     root.join(randomAlphanumericWithLength(), randomAlphanumericWithLength())
 
   def getExpectedLocations(bagFiles: Seq[BagFile]): Seq[VerifiableLocation] =
-    bagFiles.map { mf =>
+    bagFiles.map { bagFile =>
       VerifiableLocation(
+        path = bagFile.path,
         uri = new URI(
-          s"example://${root.namespace}/${root.path}/${mf.path.toString}"),
-        checksum = mf.checksum,
+          s"example://${root.namespace}/${root.path}/${bagFile.path.toString}"),
+        checksum = bagFile.checksum,
         length = None
       )
     }
@@ -266,6 +267,7 @@ class BagVerifiableTest
       case (bagFile, fetchEntry) =>
         VerifiableLocation(
           uri = fetchEntry.uri,
+          path = bagFile.path,
           checksum = bagFile.checksum,
           length = fetchEntry.length
         )
