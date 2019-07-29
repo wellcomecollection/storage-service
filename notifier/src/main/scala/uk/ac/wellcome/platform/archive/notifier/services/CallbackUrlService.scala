@@ -47,8 +47,11 @@ class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
                       callbackUri: URI): Future[Try[HttpResponse]] = {
     val request = buildHttpRequest(ingest, callbackUri)
 
-    Http().singleRequest(request)
-      .map { resp => Success(resp) }
+    Http()
+      .singleRequest(request)
+      .map { resp =>
+        Success(resp)
+      }
       .recover { case err => Failure(err) }
   }
 }

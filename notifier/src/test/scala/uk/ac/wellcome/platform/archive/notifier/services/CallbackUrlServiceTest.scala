@@ -2,7 +2,12 @@ package uk.ac.wellcome.platform.archive.notifier.services
 
 import java.net.URI
 
-import akka.http.scaladsl.model.{ContentTypes, HttpMethods, HttpRequest, StatusCodes}
+import akka.http.scaladsl.model.{
+  ContentTypes,
+  HttpMethods,
+  HttpRequest,
+  StatusCodes
+}
 import akka.stream.scaladsl.Sink
 import io.circe.optics.JsonPath.root
 import io.circe.parser.parse
@@ -11,7 +16,10 @@ import org.scalatest.{Assertion, EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{LocalWireMockFixture, NotifierFixtures}
+import uk.ac.wellcome.platform.archive.notifier.fixtures.{
+  LocalWireMockFixture,
+  NotifierFixtures
+}
 
 class CallbackUrlServiceTest
     extends FunSpec
@@ -32,8 +40,8 @@ class CallbackUrlServiceTest
 
           val future = service.getHttpResponse(
             ingest = ingest,
-            callbackUri =
-              new URI(s"http://$callbackHost:$callbackPort/callback/${ingest.id}")
+            callbackUri = new URI(
+              s"http://$callbackHost:$callbackPort/callback/${ingest.id}")
           )
 
           whenReady(future) { result =>
