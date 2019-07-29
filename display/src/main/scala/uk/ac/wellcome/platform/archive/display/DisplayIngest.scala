@@ -39,7 +39,7 @@ case class ResponseDisplayIngest(@JsonKey("@context") context: String,
                                  ingestType: DisplayIngestType,
                                  space: DisplayStorageSpace,
                                  status: DisplayStatus,
-                                 bag: RequestDisplayBag,
+                                 bag: ResponseDisplayBag,
                                  events: Seq[DisplayIngestEvent] = Seq.empty,
                                  createdDate: String,
                                  lastModifiedDate: Option[String],
@@ -56,8 +56,8 @@ object ResponseDisplayIngest {
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),
       ingestType = DisplayIngestType(ingest.ingestType),
-      bag = RequestDisplayBag(
-        info = RequestDisplayBagInfo(
+      bag = ResponseDisplayBag(
+        info = ResponseDisplayBagInfo(
           externalIdentifier = ingest.externalIdentifier
         )
       ),
