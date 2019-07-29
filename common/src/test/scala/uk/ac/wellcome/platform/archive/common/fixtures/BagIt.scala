@@ -4,10 +4,11 @@ import java.security.MessageDigest
 import java.time.LocalDate
 
 import uk.ac.wellcome.platform.archive.common.bagit.models._
+import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 
 import scala.util.Random
 
-trait BagIt extends StorageRandomThings {
+trait BagIt extends BagInfoGenerators {
   private val bagItFileContents = {
     """BagIt-Version: 0.97
       |Tag-File-Character-Encoding: UTF-8
@@ -15,7 +16,8 @@ trait BagIt extends StorageRandomThings {
   }
 
   def createBag(
-    bagInfo: BagInfo,
+    payloadOxum: Option[PayloadOxum],
+    externalIdentifier: ExternalIdentifier,
     dataFileCount: Int = 1,
     createDigest: String => String = createValidDigest,
     createDataManifest: List[(String, String)] => Option[FileEntry] =
@@ -23,8 +25,8 @@ trait BagIt extends StorageRandomThings {
     createTagManifest: List[(String, String)] => Option[FileEntry] =
       createValidTagManifest,
     createBagItFile: => Option[FileEntry] = createValidBagItFile,
-    createBagInfoFile: (BagInfo) => Option[FileEntry] = createValidBagInfoFile
-  ): Seq[FileEntry] = {
+    createBagInfoFile: BagInfo => Option[FileEntry] = createValidBagInfoFile
+  ): (Seq[FileEntry], BagInfo) = {
 
     val dataFiles = createDataFiles(dataFileCount)
 
@@ -36,6 +38,17 @@ trait BagIt extends StorageRandomThings {
 
     val maybeBagItFile = createBagItFile
 
+    val bagInfo = createBagInfoWith(
+      payloadOxum =
+        payloadOxum.getOrElse(
+          PayloadOxum(
+            payloadBytes = dataFiles.map { _.contents.getBytes.length }.sum,
+            numberOfPayloadFiles = dataFiles.size
+          )
+        ),
+      externalIdentifier = externalIdentifier
+    )
+
     val maybeBagInfoFile = createBagInfoFile(bagInfo)
 
     val tagManifestFiles = dataManifest.toList ++ maybeBagItFile.toList ++ maybeBagInfoFile.toList
@@ -46,7 +59,7 @@ trait BagIt extends StorageRandomThings {
 
     val metaManifest = createTagManifest(tagManifestFileAndDigests)
 
-    dataFiles ++ tagManifestFiles ++ metaManifest.toList
+    (dataFiles ++ tagManifestFiles ++ metaManifest.toList, bagInfo)
   }
 
   def createValidBagItFile =
