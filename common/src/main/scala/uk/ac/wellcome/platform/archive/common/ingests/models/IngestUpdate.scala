@@ -1,24 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.error.ArchiveError
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 
 sealed trait IngestUpdate {
   val id: IngestID
   val events: Seq[IngestEvent]
-}
-
-object IngestUpdate {
-
-  def failed[T](id: IngestID, error: ArchiveError[T]) =
-    IngestStatusUpdate(
-      id = id,
-      status = Ingest.Failed,
-      events = List(IngestEvent(error.toString))
-    )
-
-  def event(id: IngestID, description: String) =
-    IngestEventUpdate(id, Seq(IngestEvent(description)))
-
 }
 
 case class IngestEventUpdate(id: IngestID, events: Seq[IngestEvent])
@@ -26,7 +12,7 @@ case class IngestEventUpdate(id: IngestID, events: Seq[IngestEvent])
 
 case class IngestStatusUpdate(id: IngestID,
                               status: Ingest.Status,
-                              events: Seq[IngestEvent] = List.empty)
+                              events: Seq[IngestEvent] = Seq.empty)
     extends IngestUpdate
 
 case class IngestCallbackStatusUpdate(
@@ -45,3 +31,9 @@ case object IngestCallbackStatusUpdate {
       events = List(IngestEvent(description))
     )
 }
+
+case class IngestVersionUpdate(
+  id: IngestID,
+  events: Seq[IngestEvent],
+  version: BagVersion
+) extends IngestUpdate

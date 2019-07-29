@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 
 import scala.util.Try
 
-class IngestUpdater[Destination](stepName: String,
+class IngestUpdater[Destination](val stepName: String,
                                  messageSender: MessageSender[Destination])
     extends Logging {
 
@@ -36,26 +36,38 @@ class IngestUpdater[Destination](stepName: String,
         )
 
       case IngestStepSucceeded(_, maybeMessage) =>
-        IngestUpdate.event(
+        IngestEventUpdate(
           id = ingestId,
-          description = eventDescription(
-            s"${stepName.capitalize} succeeded",
-            maybeMessage
+          events = Seq(
+            IngestEvent(
+              description = eventDescription(
+                s"${stepName.capitalize} succeeded",
+                maybeMessage
+              )
+            )
           )
         )
 
       case IngestStepStarted(_) =>
-        IngestUpdate.event(
+        IngestEventUpdate(
           id = ingestId,
-          description = s"${stepName.capitalize} started"
+          events = Seq(
+            IngestEvent(
+              description = s"${stepName.capitalize} started"
+            )
+          )
         )
 
       case IngestShouldRetry(_, _, maybeMessage) =>
-        IngestUpdate.event(
+        IngestEventUpdate(
           id = ingestId,
-          description = eventDescription(
-            s"${stepName.capitalize} retrying",
-            maybeMessage
+          events = Seq(
+            IngestEvent(
+              description = eventDescription(
+                s"${stepName.capitalize} retrying",
+                maybeMessage
+              )
+            )
           )
         )
 
@@ -71,8 +83,11 @@ class IngestUpdater[Destination](stepName: String,
         )
     }
 
-    messageSender.sendT[IngestUpdate](update)
+    sendUpdate(update)
   }
+
+  def sendUpdate(update: IngestUpdate): Try[Unit] =
+    messageSender.sendT[IngestUpdate](update)
 
   def sendEvent(ingestId: IngestID, messages: Seq[String]): Try[Unit] = {
     debug(s"Sending an ingest event for ID=$ingestId messages=$messages")
