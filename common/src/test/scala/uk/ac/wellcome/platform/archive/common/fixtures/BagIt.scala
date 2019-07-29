@@ -39,13 +39,12 @@ trait BagIt extends BagInfoGenerators {
     val maybeBagItFile = createBagItFile
 
     val bagInfo = createBagInfoWith(
-      payloadOxum =
-        payloadOxum.getOrElse(
-          PayloadOxum(
-            payloadBytes = dataFiles.map { _.contents.getBytes.length }.sum,
-            numberOfPayloadFiles = dataFiles.size
-          )
-        ),
+      payloadOxum = payloadOxum.getOrElse(
+        PayloadOxum(
+          payloadBytes = dataFiles.map { _.contents.getBytes.length }.sum,
+          numberOfPayloadFiles = dataFiles.size
+        )
+      ),
       externalIdentifier = externalIdentifier
     )
 

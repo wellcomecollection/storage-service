@@ -50,7 +50,8 @@ trait BagLocationFixtures[Namespace]
       externalIdentifier = externalIdentifier,
       dataFileCount = dataFileCount,
       createDataManifest = createDataManifest,
-      createTagManifest = createTagManifest)
+      createTagManifest = createTagManifest
+    )
 
     debug(s"fileEntries: $fileEntries")
 

@@ -128,7 +128,9 @@ class BagVerifier()(
     }
   }
 
-  private def verifyPayloadOxumFileSize(bag: Bag, verificationResult: VerificationResult): InternalResult[Unit] =
+  private def verifyPayloadOxumFileSize(
+    bag: Bag,
+    verificationResult: VerificationResult): InternalResult[Unit] =
     verificationResult match {
       case VerificationSuccess(locations) =>
         // The Payload-Oxum octetstream sum only counts the size of files in the payload,
@@ -138,7 +140,9 @@ class BagVerifier()(
 
         val actualSize =
           locations
-            .filter { loc => dataFilePaths.contains(loc.verifiableLocation.path) }
+            .filter { loc =>
+              dataFilePaths.contains(loc.verifiableLocation.path)
+            }
             .map { _.size }
             .sum
 
@@ -150,7 +154,9 @@ class BagVerifier()(
           val message =
             s"Payload-Oxum has the wrong octetstream sum: $expectedSize bytes, but bag actually contains $actualSize bytes"
           Left(
-            BagVerifierError(new Throwable(message), userMessage = Some(message))
+            BagVerifierError(
+              new Throwable(message),
+              userMessage = Some(message))
           )
         }
 
