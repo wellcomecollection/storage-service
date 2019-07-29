@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 
 import scala.util.Try
 
-class IngestUpdater[Destination](stepName: String,
+class IngestUpdater[Destination](val stepName: String,
                                  messageSender: MessageSender[Destination])
     extends Logging {
 
@@ -83,8 +83,11 @@ class IngestUpdater[Destination](stepName: String,
         )
     }
 
-    messageSender.sendT[IngestUpdate](update)
+    sendUpdate(update)
   }
+
+  def sendUpdate(update: IngestUpdate): Try[Unit] =
+    messageSender.sendT[IngestUpdate](update)
 
   def sendEvent(ingestId: IngestID, messages: Seq[String]): Try[Unit] = {
     debug(s"Sending an ingest event for ID=$ingestId messages=$messages")
