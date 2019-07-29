@@ -97,7 +97,7 @@ trait BagLocationFixtures[Namespace]
 
       BagFetchEntry(
         uri = new URI(s"s3://${entryLocation.namespace}/${entryLocation.path}"),
-        length = Some(entry.contents.length),
+        length = Some(entry.contents.getBytes.length),
         path = BagPath(entry.name)
       )
     }
