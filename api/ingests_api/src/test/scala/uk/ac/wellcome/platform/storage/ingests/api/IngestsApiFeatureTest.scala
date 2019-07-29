@@ -14,7 +14,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.models._
@@ -38,7 +38,8 @@ class IngestsApiFeatureTest
         createdDate = Instant.now(),
         events = Seq(createIngestEvent, createIngestEvent).sortBy {
           _.createdDate
-        }
+        },
+        version = None
       )
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
@@ -111,6 +112,24 @@ class IngestsApiFeatureTest
               }
 
               assertMetricSent(metrics, result = HttpMetricResults.Success)
+            }
+          }
+      }
+    }
+
+    it("includes the version, if available") {
+      val ingest = createIngestWith(
+        version = Some(BagVersion(3))
+      )
+
+      withConfiguredApp(initialIngests = Seq(ingest)) {
+        case (_, _, _, baseUrl) =>
+          withMaterializer { implicit materializer =>
+            whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
+              withStringEntity(result.entity) { jsonString =>
+                val json = parse(jsonString).right.value
+                root.bag.info.version.string.getOption(json) shouldBe Some("v3")
+              }
             }
           }
       }
