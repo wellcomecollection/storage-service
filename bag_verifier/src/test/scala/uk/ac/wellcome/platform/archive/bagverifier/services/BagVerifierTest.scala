@@ -328,6 +328,46 @@ class BagVerifierTest
     }
   }
 
+  describe("checks the fetch file") {
+    it("fails if the fetch file refers to a file not in the manifest") {
+      withLocalS3Bucket { bucket =>
+        val badBuilder = new S3BagBuilderBase {
+          override protected def createFetchFile(entries: Seq[PayloadEntry])(
+            implicit namespace: String): Option[String] =
+            super.createFetchFile(entries :+
+              PayloadEntry(
+                bagPath = BagPath("data/doesnotexist"),
+                path = "data/doesnotexist",
+                contents = randomAlphanumeric
+              )
+            )
+        }
+
+        val (root, bagInfo) =
+          badBuilder.createS3BagWith(bucket)
+
+        val ingestStep =
+          withVerifier {
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+          }
+
+        val result = ingestStep.success.get
+
+        result shouldBe a[IngestFailed[_]]
+        debug(s"result = $result")
+        result.summary shouldBe a[VerificationIncompleteSummary]
+
+        val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+
+        ingestFailed.e.getMessage should startWith(
+          "Fetch entry refers to a path that isn't in the bag:")
+
+        ingestFailed.maybeUserFacingMessage.get should startWith(
+          "Fetch entry refers to a path that isn't in the bag:")
+      }
+    }
+  }
+
   describe("checks for unreferenced files") {
     it("fails if there is one unreferenced file") {
       withLocalS3Bucket { bucket =>

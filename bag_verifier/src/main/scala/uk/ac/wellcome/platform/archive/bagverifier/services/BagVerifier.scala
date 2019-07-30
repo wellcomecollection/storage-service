@@ -254,7 +254,7 @@ class BagVerifier()(
             endTime = Instant.now()
           ),
           e = incomplete,
-          maybeUserFacingMessage = None
+          maybeUserFacingMessage = Some(incomplete.getMessage)
         )
 
       case Right(success: VerificationSuccess) =>
