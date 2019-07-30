@@ -41,6 +41,9 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
         metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
+  protected def getFetchEntryCount(payloadFileCount: Int) =
+    randomInt(from = 0, to = payloadFileCount)
+
   def createBagContentsWith(
     space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
@@ -51,7 +54,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
   ): (Seq[BagObject], ObjectLocation, BagInfo) = {
     val bagRoot = createBagRoot(space, externalIdentifier, version)
 
-    val fetchEntryCount = randomInt(from = 0, to = payloadFileCount)
+    val fetchEntryCount = getFetchEntryCount(payloadFileCount)
 
     val payloadFiles = createPayloadFiles(
       space = space,

@@ -196,6 +196,10 @@ class BagVerifierTest
               path = randomAlphanumeric,
               contents = randomAlphanumeric)
           )
+
+        // This ensures that the fetch file won't refer to the entry
+        // we've deleted from the manifest.
+        override protected def getFetchEntryCount(payloadFileCount: Int) = 0
       }
 
       val (root, bagInfo) =
