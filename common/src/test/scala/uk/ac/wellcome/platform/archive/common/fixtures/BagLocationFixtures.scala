@@ -115,38 +115,3 @@ trait BagLocationFixtures[Namespace]
     testWith((bagRootLocation, bagInfo))
   }
 }
-
-trait S3BagLocationFixtures
-    extends S3Fixtures
-    with BagLocationFixtures[Bucket] {
-
-  implicit val s3StreamStore: S3StreamStore = new S3StreamStore()
-  implicit val s3TypedStore: S3TypedStore[String] = new S3TypedStore[String]()
-
-  def withS3Bag[R](
-    bucket: Bucket,
-    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
-    payloadOxum: Option[PayloadOxum] = None,
-    dataFileCount: Int = randomInt(from = 1, to = 10),
-    space: StorageSpace = createStorageSpace,
-    createDataManifest: List[(String, String)] => Option[FileEntry] =
-      createValidDataManifest,
-    createTagManifest: List[(String, String)] => Option[FileEntry] =
-      createValidTagManifest,
-    bagRootDirectory: Option[String] = None)(
-    testWith: TestWith[(ObjectLocation, BagInfo), R]): R = {
-    implicit val namespace: Bucket = bucket
-
-    withBag(
-      externalIdentifier = externalIdentifier,
-      payloadOxum = payloadOxum,
-      dataFileCount = dataFileCount,
-      space = space,
-      createDataManifest = createDataManifest,
-      createTagManifest = createTagManifest,
-      bagRootDirectory = bagRootDirectory
-    ) {
-      testWith
-    }
-  }
-}
