@@ -359,11 +359,11 @@ class BagVerifierTest
 
         val ingestFailed = result.asInstanceOf[IngestFailed[_]]
 
-        ingestFailed.e.getMessage should startWith(
-          "Fetch entry refers to a path that isn't in the bag:")
+        ingestFailed.e.getMessage shouldBe
+          "Fetch entry refers to a path that isn't in the bag manifest: data/doesnotexist"
 
-        ingestFailed.maybeUserFacingMessage.get should startWith(
-          "Fetch entry refers to a path that isn't in the bag:")
+        ingestFailed.maybeUserFacingMessage.get shouldBe
+          "Fetch entry refers to a path that isn't in the bag manifest: data/doesnotexist"
       }
     }
   }
