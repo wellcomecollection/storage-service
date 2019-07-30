@@ -15,6 +15,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StorageLocation
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestCompleted
+import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 import scala.util.Success
 
@@ -28,6 +30,9 @@ class BagRegisterWorkerTest
     with TryValues {
 
   it("sends a successful IngestUpdate upon registration") {
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
     withBagRegisterWorker {
       case (service, storageManifestDao, ingests, _, _) =>
         val createdAfterDate = Instant.now()
@@ -36,9 +41,8 @@ class BagRegisterWorkerTest
         val dataFileCount = randomInt(1, 15)
         val externalIdentifier = createExternalIdentifier
 
-        withLocalS3Bucket { bucket =>
-          withBag(
-            bucket,
+        withNamespace { implicit namespace =>
+          withRegisterBag(
             externalIdentifier,
             space = space,
             dataFileCount = dataFileCount,
@@ -89,22 +93,23 @@ class BagRegisterWorkerTest
   }
 
   it("stores multiple versions of a bag") {
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
     withBagRegisterWorker {
       case (service, storageManifestDao, _, _, _) =>
         val space = createStorageSpace
         val dataFileCount = randomInt(1, 15)
         val externalIdentifier = createExternalIdentifier
 
-        withLocalS3Bucket { bucket =>
-          withBag(
-            bucket,
+        withNamespace { implicit namespace =>
+          withRegisterBag(
             externalIdentifier,
             space = space,
             version = 1,
             dataFileCount) {
             case (location1, bagInfo1) =>
-              withBag(
-                bucket,
+              withRegisterBag(
                 externalIdentifier,
                 space = space,
                 version = 2,
@@ -159,6 +164,9 @@ class BagRegisterWorkerTest
   }
 
   it("sends a failed IngestUpdate if storing fails") {
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
     withBagRegisterWorker {
       case (service, _, ingests, _, _) =>
         val payload = createEnrichedBagInformationPayload

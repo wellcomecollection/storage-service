@@ -13,9 +13,10 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
+  BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
+import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -26,7 +27,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
+import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 trait BagRegisterFixtures
     extends StorageRandomThings
@@ -36,7 +38,7 @@ trait BagRegisterFixtures
     with StorageManifestVHSFixture
     with MonitoringClientFixture
     with IngestUpdateAssertions
-    with S3BagLocationFixtures {
+    with StringNamespaceFixtures {
 
   type Fixtures = (BagRegisterWorker[String, String],
                    StorageManifestDao,
@@ -44,7 +46,8 @@ trait BagRegisterFixtures
                    MemoryMessageSender,
                    QueuePair)
 
-  def withBagRegisterWorker[R](testWith: TestWith[Fixtures, R]): R =
+  def withBagRegisterWorker[R](testWith: TestWith[Fixtures, R])(
+    implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
     withActorSystem { implicit actorSystem =>
       withMonitoringClient { implicit monitoringClient =>
         val storageManifestDao = createStorageManifestDao()
@@ -52,9 +55,11 @@ trait BagRegisterFixtures
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
+        val bagReader = new MemoryBagReader()
+
         withLocalSqsQueueAndDlq { queuePair =>
           val register = new Register(
-            bagReader = new S3BagReader(),
+            bagReader = bagReader,
             storageManifestDao
           )
 
@@ -106,19 +111,27 @@ trait BagRegisterFixtures
   // The bag register inspects the paths to a bag's entries to
   // check they are in the correct format post-replicator,
   // hence the version directory.
-  def withBag[R](
-    bucket: Bucket,
+  def withRegisterBag[R](
     externalIdentifier: ExternalIdentifier,
     space: StorageSpace,
     version: Int,
-    dataFileCount: Int)(testWith: TestWith[(ObjectLocation, BagInfo), R]): R =
-    withS3Bag(
-      bucket,
-      externalIdentifier = externalIdentifier,
-      space = space,
-      dataFileCount = dataFileCount,
-      bagRootDirectory = Some(s"v$version")) {
-      case (bagRoot, bagInfo) =>
-        testWith((bagRoot.join(s"v$version"), bagInfo))
-    }
+    dataFileCount: Int)(testWith: TestWith[(ObjectLocation, BagInfo), R])(
+    implicit
+    namespace: String,
+    streamStore: MemoryStreamStore[ObjectLocation]): R = {
+    implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
+      new MemoryTypedStore[ObjectLocation, String]()
+
+    val (bagObjects, bagRoot, bagInfo) =
+      BagBuilder.createBagContentsWith(
+        space = space,
+        externalIdentifier = externalIdentifier,
+        version = BagVersion(version),
+        payloadFileCount = dataFileCount
+      )
+
+    BagBuilder.uploadBagObjects(bagObjects)
+
+    testWith((bagRoot, bagInfo))
+  }
 }
