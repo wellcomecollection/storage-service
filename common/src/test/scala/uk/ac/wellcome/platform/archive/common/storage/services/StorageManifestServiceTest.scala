@@ -347,7 +347,7 @@ class StorageManifestServiceTest
       assertIsError(bag = bag) { msg =>
         msg should startWith("Unable to resolve fetch entries:")
         msg should include(
-          s"Fetch entry refers to a path that isn't in the bag: ${fetchEntries.head}")
+          s"Fetch entry refers to a path that isn't in the bag manifest: ${fetchEntries.head.path}")
       }
     }
 
