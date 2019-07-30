@@ -2,11 +2,24 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.security.MessageDigest
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagPath, BagVersion, ExternalIdentifier, PayloadOxum}
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
+  BagPath,
+  BagVersion,
+  ExternalIdentifier,
+  PayloadOxum
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.store.{TypedStore, TypedStoreEntry}
+import uk.ac.wellcome.storage.streaming.Codec._
 
 import scala.util.Random
 
@@ -195,7 +208,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
       .map { case (name, digest) => s"""$digest  $name"""}
       .mkString("\n")
 
-  private def createBagRoot(
+  protected def createBagRoot(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     version: BagVersion,
@@ -240,3 +253,21 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
 }
 
 object BagBuilder extends BagBuilderBase
+
+trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
+  def createS3BagWith(bucket: Bucket,
+                      payloadFileCount: Int = randomInt(from = 5, to = 50)): (ObjectLocation, BagInfo) = {
+    implicit val namespace: String = bucket.name
+
+    val (bagObjects, bagRoot, bagInfo) = createBagWith(
+      payloadFileCount = payloadFileCount
+    )
+
+    implicit val typedStore: S3TypedStore[String] = S3TypedStore[String]
+    uploadBagObjects(bagObjects)
+
+    (bagRoot, bagInfo)
+  }
+}
+
+object S3BagBuilder extends S3BagBuilderBase
