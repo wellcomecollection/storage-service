@@ -14,6 +14,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
 }
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 trait BagUnpackerFixtures
@@ -21,7 +22,8 @@ trait BagUnpackerFixtures
     with OperationFixtures
     with Akka
     with AlpakkaSQSWorkerFixtures
-    with MonitoringClientFixture {
+    with MonitoringClientFixture
+    with S3Fixtures {
 
   def withBagUnpackerWorker[R](
     queue: Queue,
