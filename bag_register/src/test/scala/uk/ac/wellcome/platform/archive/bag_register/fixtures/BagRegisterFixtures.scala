@@ -16,7 +16,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, 
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.store.TypedStoreEntry
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
@@ -113,19 +112,15 @@ trait BagRegisterFixtures
     implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
       new MemoryTypedStore[ObjectLocation, String]()
 
-    val bagBuilder = new BetterBagBuilder {}
-
     val (bagObjects, bagRoot, bagInfo) =
-      bagBuilder.createBagWith(
+      BagBuilder.createBagWith(
         space = space,
         externalIdentifier = externalIdentifier,
         version = BagVersion(version),
         payloadFileCount = dataFileCount
       )
 
-    bagObjects.foreach { bagObj =>
-      typedStore.put(bagObj.location)(TypedStoreEntry(bagObj.contents, metadata = Map.empty)) shouldBe a[Right[_, _]]
-    }
+    BagBuilder.uploadBagObjects(bagObjects)
 
     testWith((bagRoot, bagInfo))
   }
