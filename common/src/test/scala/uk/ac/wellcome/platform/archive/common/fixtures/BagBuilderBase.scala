@@ -149,14 +149,16 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     } else {
       Some(
         entries
-          .map { entry =>
-            val displaySize = if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
-
-            s"""bag://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
-          }
+          .map { buildFetchEntryLine }
           .mkString("\n")
       )
     }
+
+  protected def buildFetchEntryLine(entry: PayloadEntry)(implicit namespace: String): String = {
+    val displaySize = if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
+
+    s"""bag://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
+  }
 
   protected def createPayloadOxum(entries: Seq[PayloadEntry]): PayloadOxum =
     PayloadOxum(
@@ -225,10 +227,10 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     val bagRoot = createBagRoot(space, externalIdentifier, version)
 
     (1 to payloadFileCount).map { _ =>
-      val bagPath = BagPath(randomPath)
+      val bagPath = BagPath(s"data/$randomPath")
       PayloadEntry(
         bagPath = bagPath,
-        path = s"$bagRoot/data/$bagPath",
+        path = s"$bagRoot/$bagPath",
         contents = Random.nextString(length = randomInt(1, 256))
       )
     }
@@ -256,6 +258,7 @@ object BagBuilder extends BagBuilderBase
 
 trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
   def createS3BagWith(bucket: Bucket,
+                      externalIdentifier: ExternalIdentifier = createExternalIdentifier,
                       payloadFileCount: Int = randomInt(from = 5, to = 50)): (ObjectLocation, BagInfo) = {
     implicit val namespace: String = bucket.name
 
@@ -267,6 +270,12 @@ trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
     uploadBagObjects(bagObjects)
 
     (bagRoot, bagInfo)
+  }
+
+  override protected def buildFetchEntryLine(entry: PayloadEntry)(implicit namespace: String): String = {
+    val displaySize = if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
+
+    s"""s3://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
   }
 }
 
