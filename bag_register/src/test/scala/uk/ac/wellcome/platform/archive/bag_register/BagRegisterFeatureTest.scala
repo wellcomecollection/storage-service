@@ -2,19 +2,26 @@ package uk.ac.wellcome.platform.archive.bag_register
 
 import java.time.Instant
 
+import org.scalatest.concurrent.Eventually
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
+import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 class BagRegisterFeatureTest
     extends FunSpec
     with Matchers
     with BagRegisterFixtures
-    with PayloadGenerators {
+    with PayloadGenerators
+    with Eventually {
 
   it("sends an update if it registers a bag") {
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
     withBagRegisterWorker {
       case (_, storageManifestDao, ingests, _, queuePair) =>
         val createdAfterDate = Instant.now()
@@ -28,9 +35,8 @@ class BagRegisterFeatureTest
           externalIdentifier = externalIdentifier
         )
 
-        withLocalS3Bucket { bucket =>
-          withBag(
-            bucket,
+        withNamespace { implicit namespace =>
+          withRegisterBag(
             externalIdentifier,
             space,
             version,
@@ -71,6 +77,9 @@ class BagRegisterFeatureTest
   }
 
   it("sends a failed update and discards the work on error") {
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
     withBagRegisterWorker {
       case (_, _, ingests, _, queuePair) =>
         val payload = createEnrichedBagInformationPayload
