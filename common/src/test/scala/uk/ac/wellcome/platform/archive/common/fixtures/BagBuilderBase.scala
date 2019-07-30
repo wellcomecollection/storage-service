@@ -33,9 +33,12 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
 
   case class ManifestFile(name: String, contents: String)
 
-  def uploadBagObjects(objects: Seq[BagObject])(implicit typedStore: TypedStore[ObjectLocation, String]): Unit =
+  def uploadBagObjects(objects: Seq[BagObject])(
+    implicit typedStore: TypedStore[ObjectLocation, String]): Unit =
     objects.foreach { bagObj =>
-      typedStore.put(bagObj.location)(TypedStoreEntry(bagObj.contents, metadata = Map.empty)) shouldBe a[Right[_, _]]
+      typedStore.put(bagObj.location)(TypedStoreEntry(
+        bagObj.contents,
+        metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
   def createBagContentsWith(
@@ -81,8 +84,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     val bagItFile =
       ManifestFile(
         name = s"bagit.txt",
-        contents =
-          """
+        contents = """
             |BagIt-Version: 0.97
             |Tag-File-Character-Encoding: UTF-8
           """.stripMargin.trim
@@ -123,27 +125,26 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     )
 
     val manifestObjects =
-      (tagManifestFiles ++ tagManifest.toList).map {
-        manifestFile =>
-          BagObject(
-            location = rootLocation.join(manifestFile.name),
-            contents = manifestFile.contents
-          )
+      (tagManifestFiles ++ tagManifest.toList).map { manifestFile =>
+        BagObject(
+          location = rootLocation.join(manifestFile.name),
+          contents = manifestFile.contents
+        )
       }
 
     val payloadObjects =
-      (payloadFiles ++ fetchEntries).map {
-        payloadEntry =>
-          BagObject(
-            location = rootLocation.copy(path = payloadEntry.path),
-            contents = payloadEntry.contents
-          )
+      (payloadFiles ++ fetchEntries).map { payloadEntry =>
+        BagObject(
+          location = rootLocation.copy(path = payloadEntry.path),
+          contents = payloadEntry.contents
+        )
       }
 
     (manifestObjects ++ payloadObjects, rootLocation, bagInfo)
   }
 
-  protected def createFetchFile(entries: Seq[PayloadEntry])(implicit namespace: String): Option[String] =
+  protected def createFetchFile(entries: Seq[PayloadEntry])(
+    implicit namespace: String): Option[String] =
     if (entries.isEmpty) {
       None
     } else {
@@ -154,8 +155,10 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
       )
     }
 
-  protected def buildFetchEntryLine(entry: PayloadEntry)(implicit namespace: String): String = {
-    val displaySize = if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
+  protected def buildFetchEntryLine(entry: PayloadEntry)(
+    implicit namespace: String): String = {
+    val displaySize =
+      if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
 
     s"""bag://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
   }
@@ -166,17 +169,22 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
       numberOfPayloadFiles = entries.size
     )
 
-  protected def createPayloadManifest(entries: Seq[PayloadEntry]): Option[String] =
+  protected def createPayloadManifest(
+    entries: Seq[PayloadEntry]): Option[String] =
     Some(
       createManifest(
-        entries.map { entry => (entry.bagPath.value, createDigest(entry.contents)) }
+        entries.map { entry =>
+          (entry.bagPath.value, createDigest(entry.contents))
+        }
       )
     )
 
   protected def createTagManifest(entries: Seq[ManifestFile]): Option[String] =
     Some(
       createManifest(
-        entries.map { entry => (entry.name, createDigest(entry.contents)) }
+        entries.map { entry =>
+          (entry.name, createDigest(entry.contents))
+        }
       )
     )
 
@@ -189,9 +197,13 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     val descriptionLine =
       optionalLine(bagInfo.externalDescription, "External-Description")
     val internalSenderIdentifierLine =
-      optionalLine(bagInfo.internalSenderIdentifier, "Internal-Sender-Identifier")
+      optionalLine(
+        bagInfo.internalSenderIdentifier,
+        "Internal-Sender-Identifier")
     val internalSenderDescriptionLine =
-      optionalLine(bagInfo.internalSenderDescription, "Internal-Sender-Description")
+      optionalLine(
+        bagInfo.internalSenderDescription,
+        "Internal-Sender-Description")
 
     Some(
       s"""External-Identifier: ${bagInfo.externalIdentifier}
@@ -207,7 +219,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
 
   private def createManifest(entries: Seq[(String, String)]): String =
     entries
-      .map { case (name, digest) => s"""$digest  $name"""}
+      .map { case (name, digest) => s"""$digest  $name""" }
       .mkString("\n")
 
   protected def createBagRoot(
@@ -238,7 +250,9 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
 
   private def randomPath: String =
     (1 to randomInt(from = 1, to = 5))
-      .map { _ => randomAlphanumeric }
+      .map { _ =>
+        randomAlphanumeric
+      }
       .mkString("/")
 
   private def createDigest(string: String): String =
@@ -258,8 +272,10 @@ object BagBuilder extends BagBuilderBase
 
 trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
   def createS3BagWith(bucket: Bucket,
-                      externalIdentifier: ExternalIdentifier = createExternalIdentifier,
-                      payloadFileCount: Int = randomInt(from = 5, to = 50)): (ObjectLocation, BagInfo) = {
+                      externalIdentifier: ExternalIdentifier =
+                        createExternalIdentifier,
+                      payloadFileCount: Int = randomInt(from = 5, to = 50))
+    : (ObjectLocation, BagInfo) = {
     implicit val namespace: String = bucket.name
 
     val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
@@ -272,8 +288,10 @@ trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
     (bagRoot, bagInfo)
   }
 
-  override protected def buildFetchEntryLine(entry: PayloadEntry)(implicit namespace: String): String = {
-    val displaySize = if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
+  override protected def buildFetchEntryLine(entry: PayloadEntry)(
+    implicit namespace: String): String = {
+    val displaySize =
+      if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
 
     s"""s3://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
   }

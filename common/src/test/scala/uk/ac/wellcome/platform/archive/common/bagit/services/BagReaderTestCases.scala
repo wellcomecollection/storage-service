@@ -82,7 +82,7 @@ trait BagReaderTestCases[Context, Namespace]
 
       withBagReader {
         _.get(rootLocation).left.value.msg should startWith(
-              "Error loading bag-info.txt")
+          "Error loading bag-info.txt")
       }
     }
   }
@@ -172,10 +172,10 @@ trait BagReaderTestCases[Context, Namespace]
 
   protected def toString(ns: Namespace): String = ns.toString
 
-  protected def createBag()(
-    implicit
-    ns: Namespace,
-    typedStore: TypedStore[ObjectLocation, String]): (ObjectLocation, BagInfo) = {
+  protected def createBag()(implicit
+                            ns: Namespace,
+                            typedStore: TypedStore[ObjectLocation, String])
+    : (ObjectLocation, BagInfo) = {
     implicit val namespace: String = toString(ns)
 
     val (bagObjects, bagRoot, bagInfo) = BagBuilder.createBagContentsWith()

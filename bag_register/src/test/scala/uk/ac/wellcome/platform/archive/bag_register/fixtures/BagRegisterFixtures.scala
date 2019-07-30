@@ -46,8 +46,7 @@ trait BagRegisterFixtures
                    MemoryMessageSender,
                    QueuePair)
 
-  def withBagRegisterWorker[R](
-    testWith: TestWith[Fixtures, R])(
+  def withBagRegisterWorker[R](testWith: TestWith[Fixtures, R])(
     implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
     withActorSystem { implicit actorSystem =>
       withMonitoringClient { implicit monitoringClient =>

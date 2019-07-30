@@ -43,7 +43,8 @@ class BagVerifierFeatureTest
           queue,
           stepName = "verification") { _ =>
           withLocalS3Bucket { bucket =>
-            val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+            val (bagRootLocation, bagInfo) =
+              S3BagBuilder.createS3BagWith(bucket)
 
             val payload = createEnrichedBagInformationPayloadWith(
               context = createPipelineContextWith(
@@ -89,7 +90,8 @@ class BagVerifierFeatureTest
           stepName = "verification") { _ =>
           withLocalS3Bucket { bucket =>
             val builder = new S3BagBuilderBase {
-              override protected def createPayloadManifest(entries: Seq[PayloadEntry]): Option[String] =
+              override protected def createPayloadManifest(
+                entries: Seq[PayloadEntry]): Option[String] =
                 super.createPayloadManifest(entries).map { manifest =>
                   manifest + "\nbadDigest  badName"
                 }
@@ -120,7 +122,8 @@ class BagVerifierFeatureTest
                     ingestUpdates.tail.head
                       .asInstanceOf[IngestStatusUpdate]
                   ingestFailed.status shouldBe Ingest.Failed
-                  ingestFailed.events.head.description should startWith("Verification failed")
+                  ingestFailed.events.head.description should startWith(
+                    "Verification failed")
               }
 
               outgoing.messages shouldBe empty

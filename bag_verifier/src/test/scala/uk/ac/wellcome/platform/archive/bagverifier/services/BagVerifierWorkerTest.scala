@@ -50,17 +50,16 @@ class BagVerifierWorkerTest
         _.processMessage(payload) shouldBe a[Success[_]]
       }
 
-       assertTopicReceivesIngestEvents(
-         payload.ingestId,
-         ingests,
-         expectedDescriptions = Seq(
-           "Verification started",
-           "Verification succeeded"
-         )
-       )
+      assertTopicReceivesIngestEvents(
+        payload.ingestId,
+        ingests,
+        expectedDescriptions = Seq(
+          "Verification started",
+          "Verification succeeded"
+        )
+      )
 
-      outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-        payload)
+      outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(payload)
     }
   }
 
@@ -117,7 +116,8 @@ class BagVerifierWorkerTest
 
     withLocalS3Bucket { bucket =>
       val badBuilder = new S3BagBuilderBase {
-        override protected def createPayloadManifest(entries: Seq[PayloadEntry]): Option[String] =
+        override protected def createPayloadManifest(
+          entries: Seq[PayloadEntry]): Option[String] =
           super.createPayloadManifest(
             entries.head.copy(contents = randomAlphanumeric) +: entries.tail
           )
@@ -155,7 +155,8 @@ class BagVerifierWorkerTest
 
     withLocalS3Bucket { bucket =>
       val badBuilder = new S3BagBuilderBase {
-        override protected def createPayloadManifest(entries: Seq[PayloadEntry]): Option[String] =
+        override protected def createPayloadManifest(
+          entries: Seq[PayloadEntry]): Option[String] =
           None
       }
 
@@ -196,7 +197,9 @@ class BagVerifierWorkerTest
       ExternalIdentifier(externalIdentifier + "_payload")
 
     withLocalS3Bucket { bucket =>
-      val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(bucket, externalIdentifier = bagInfoExternalIdentifier)
+      val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+        bucket,
+        externalIdentifier = bagInfoExternalIdentifier)
 
       val payload = createEnrichedBagInformationPayloadWith(
         context = createPipelineContextWith(
@@ -243,11 +246,10 @@ class BagVerifierWorkerTest
         _.processMessage(payload) shouldBe a[Failure[_]]
       }
 
-      assertTopicReceivesIngestEvent(payload.ingestId, ingests) {
-        events =>
-          events.map {
-            _.description
-          } shouldBe List("Verification succeeded")
+      assertTopicReceivesIngestEvent(payload.ingestId, ingests) { events =>
+        events.map {
+          _.description
+        } shouldBe List("Verification succeeded")
       }
     }
   }

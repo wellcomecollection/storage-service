@@ -54,8 +54,7 @@ class BagRootFinderFeatureTest
           eventually {
             assertQueueEmpty(queue)
 
-            outgoing.getMessages[BagRootPayload] shouldBe Seq(
-              expectedPayload)
+            outgoing.getMessages[BagRootPayload] shouldBe Seq(expectedPayload)
 
             assertTopicReceivesIngestEvents(
               payload.ingestId,
@@ -79,12 +78,14 @@ class BagRootFinderFeatureTest
           externalIdentifier: ExternalIdentifier,
           version: BagVersion
         ): String =
-          Seq(super.createBagRoot(space, externalIdentifier, version), "subdir").mkString("/")
+          Seq(super.createBagRoot(space, externalIdentifier, version), "subdir")
+            .mkString("/")
       }
 
       val (unpackedBagLocation, _) = builder.createS3BagWith(bucket)
 
-      val (parentDirectory, _) = unpackedBagLocation.path.splitAt(unpackedBagLocation.path.lastIndexOf("/"))
+      val (parentDirectory, _) = unpackedBagLocation.path.splitAt(
+        unpackedBagLocation.path.lastIndexOf("/"))
 
       val parentLocation = unpackedBagLocation.copy(
         path = parentDirectory
