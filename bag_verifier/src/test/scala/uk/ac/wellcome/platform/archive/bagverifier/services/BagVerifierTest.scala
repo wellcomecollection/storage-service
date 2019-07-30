@@ -334,13 +334,13 @@ class BagVerifierTest
         val badBuilder = new S3BagBuilderBase {
           override protected def createFetchFile(entries: Seq[PayloadEntry])(
             implicit namespace: String): Option[String] =
-            super.createFetchFile(entries :+
-              PayloadEntry(
-                bagPath = BagPath("data/doesnotexist"),
-                path = "data/doesnotexist",
-                contents = randomAlphanumeric
-              )
-            )
+            super.createFetchFile(
+              entries :+
+                PayloadEntry(
+                  bagPath = BagPath("data/doesnotexist"),
+                  path = "data/doesnotexist",
+                  contents = randomAlphanumeric
+                ))
         }
 
         val (root, bagInfo) =
