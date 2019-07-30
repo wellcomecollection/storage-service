@@ -6,6 +6,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagPath, Ba
 import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.store.{TypedStore, TypedStoreEntry}
 
 import scala.util.Random
 
@@ -14,10 +15,15 @@ case class BagObject(
   contents: String
 )
 
-trait BetterBagBuilder extends StorageSpaceGenerators with BagInfoGenerators {
+trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
   case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
 
   case class ManifestFile(name: String, contents: String)
+
+  def uploadBagObjects(objects: Seq[BagObject])(implicit typedStore: TypedStore[ObjectLocation, String]): Unit =
+    objects.foreach { bagObj =>
+      typedStore.put(bagObj.location)(TypedStoreEntry(bagObj.contents, metadata = Map.empty)) shouldBe a[Right[_, _]]
+    }
 
   def createBagWith(
     space: StorageSpace = createStorageSpace,
@@ -232,3 +238,5 @@ trait BetterBagBuilder extends StorageSpaceGenerators with BagInfoGenerators {
         _ + _
       }
 }
+
+object BagBuilder extends BagBuilderBase
