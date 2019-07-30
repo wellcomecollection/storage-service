@@ -14,11 +14,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 import uk.ac.wellcome.platform.archive.common.generators.StorageSpaceGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.store.{TypedStore, TypedStoreEntry}
-import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 
 import scala.util.Random
 

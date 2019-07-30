@@ -38,7 +38,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
       typedStore.put(bagObj.location)(TypedStoreEntry(bagObj.contents, metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
-  def createBagWith(
+  def createBagContentsWith(
     space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
@@ -262,7 +262,7 @@ trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
                       payloadFileCount: Int = randomInt(from = 5, to = 50)): (ObjectLocation, BagInfo) = {
     implicit val namespace: String = bucket.name
 
-    val (bagObjects, bagRoot, bagInfo) = createBagWith(
+    val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
       payloadFileCount = payloadFileCount
     )
 
