@@ -333,12 +333,14 @@ class BagVerifier()(
         warn(s"Errors verifying $root:\n$verificationFailureMessage")
 
         val errorCount = result.failure.size
+        val pathList =
+          result.failure.map { _.verifiableLocation.path.value }.mkString(", ")
 
         val userFacingMessage =
           if (errorCount == 1)
-            "There was 1 error verifying the bag"
+            s"Unable to verify one file in the bag: $pathList"
           else
-            s"There were $errorCount errors verifying the bag"
+            s"Unable to verify $errorCount files in the bag: $pathList"
 
         IngestFailed(
           summary = VerificationFailureSummary(
