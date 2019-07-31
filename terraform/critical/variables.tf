@@ -15,3 +15,8 @@ variable "access_read_principles" {
   type    = "list"
   default = []
 }
+
+variable "ingest_read_principles" {
+  type    = "list"
+  default = []
+}

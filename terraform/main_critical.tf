@@ -19,7 +19,7 @@ module "critical" {
 
   archive_read_principles = [
     "${local.goobi_task_role_arn}",
-    "${aws_iam_user.dds_digirati.arn}",
+    "${aws_iam_user.dds_digirati.arn}"
   ]
 
   access_read_principles = [
@@ -27,6 +27,11 @@ module "critical" {
     "${aws_iam_user.dds_digirati.arn}",
     "arn:aws:iam::653428163053:user/echo-fs",
     "arn:aws:iam::653428163053:user/api",
+    "${local.digitisation_account_principal}"
+  ]
+
+  ingest_read_principles = [
+    "${local.workflow_account_principal}"
   ]
 }
 
@@ -38,7 +43,7 @@ module "critical-staging" {
 
   archive_read_principles = [
     "${local.goobi_task_role_arn}",
-    "${aws_iam_user.dds_digirati.arn}",
+    "${aws_iam_user.dds_digirati.arn}"
   ]
 
   access_read_principles = [
@@ -46,6 +51,11 @@ module "critical-staging" {
     "${aws_iam_user.dds_digirati.arn}",
     "arn:aws:iam::653428163053:user/echo-fs",
     "arn:aws:iam::653428163053:user/api",
+    "${local.digitisation_account_principal}"
+  ]
+
+  ingest_read_principles = [
+    "${local.workflow_account_principal}"
   ]
 }
 

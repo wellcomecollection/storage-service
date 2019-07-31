@@ -16,6 +16,11 @@ resource "aws_s3_bucket" "ingests_drop" {
   }
 }
 
+resource "aws_s3_bucket_policy" "ingests_drop" {
+  bucket = "${aws_s3_bucket.ingests_drop.id}"
+  policy = "${data.aws_iam_policy_document.ingests_drop_read.json}"
+}
+
 resource "aws_s3_bucket" "access" {
   bucket = "wellcomecollection-${var.namespace}-access"
   acl    = "private"
@@ -43,6 +48,28 @@ data "aws_iam_policy_document" "access_read" {
 
       identifiers = [
         "${var.access_read_principles}",
+      ]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "ingests_drop_read" {
+  statement {
+    actions = [
+      "s3:List*",
+      "s3:Get*",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.ingests_drop.arn}",
+      "${aws_s3_bucket.ingests_drop.arn}/*",
+    ]
+
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        "${var.ingest_read_principles}",
       ]
     }
   }
