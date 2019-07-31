@@ -435,7 +435,8 @@ class BagVerifierTest
     it("fails if a file in the fetch.txt also appears in the bag") {
       withLocalS3Bucket { bucket =>
         val alwaysWriteAsFetchBuilder = new S3BagBuilderBase {
-          override protected def getFetchEntryCount(payloadFileCount: Int): Int =
+          override protected def getFetchEntryCount(
+            payloadFileCount: Int): Int =
             payloadFileCount
         }
 
@@ -464,7 +465,8 @@ class BagVerifierTest
         val ingestFailed = result.asInstanceOf[IngestFailed[_]]
 
         ingestFailed.e.getMessage shouldBe
-          s"Files referred to in the fetch.txt also appear in the bag: ${root.join(badFetchEntry.path.value)}"
+          s"Files referred to in the fetch.txt also appear in the bag: ${root
+            .join(badFetchEntry.path.value)}"
 
         ingestFailed.maybeUserFacingMessage.get shouldBe
           s"Files referred to in the fetch.txt also appear in the bag: ${badFetchEntry.path}"

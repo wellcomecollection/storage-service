@@ -190,7 +190,9 @@ class BagVerifier()(
           case Some(fetchEntry) =>
             fetchEntry.files
               .map { _.path }
-              .map { path => root.join(path.value) }
+              .map { path =>
+                root.join(path.value)
+              }
 
           case None => Seq.empty
         }
@@ -261,11 +263,11 @@ class BagVerifier()(
           //    unreferenced1.txt, ...
           //
           val messagePrefix =
-          if (unreferencedFiles.size == 1) {
-            "Bag contains a file which is not referenced in the manifest: "
-          } else {
-            s"Bag contains ${unreferencedFiles.size} files which are not referenced in the manifest: "
-          }
+            if (unreferencedFiles.size == 1) {
+              "Bag contains a file which is not referenced in the manifest: "
+            } else {
+              s"Bag contains ${unreferencedFiles.size} files which are not referenced in the manifest: "
+            }
 
           val userMessage = messagePrefix +
             unreferencedFiles
