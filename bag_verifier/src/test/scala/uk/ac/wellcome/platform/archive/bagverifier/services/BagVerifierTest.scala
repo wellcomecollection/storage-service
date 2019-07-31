@@ -14,6 +14,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   PayloadOxum
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   S3BagBuilder,
   S3BagBuilderBase
@@ -428,6 +429,47 @@ class BagVerifierTest
         ingestFailed.maybeUserFacingMessage.get shouldBe
           s"Bag contains 3 files which are not referenced in the manifest: " +
             "/unreferencedfile_1.txt, /unreferencedfile_2.txt, /unreferencedfile_3.txt"
+      }
+    }
+
+    it("fails if a file in the fetch.txt also appears in the bag") {
+      withLocalS3Bucket { bucket =>
+        val alwaysWriteAsFetchBuilder = new S3BagBuilderBase {
+          override protected def getFetchEntryCount(
+            payloadFileCount: Int): Int =
+            payloadFileCount
+        }
+
+        val (root, bagInfo) = alwaysWriteAsFetchBuilder.createS3BagWith(bucket)
+
+        val bag = new S3BagReader().get(root).right.value
+
+        // Write one of the fetch.txt entries as a concrete file
+        val badFetchEntry = bag.fetch.get.files.head
+        val badFetchLocation = root.join(badFetchEntry.path.value)
+
+        s3Client.putObject(
+          badFetchLocation.namespace,
+          badFetchLocation.path,
+          randomAlphanumeric
+        )
+
+        val ingestStep =
+          withVerifier {
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+          }
+
+        val result = ingestStep.success.get
+
+        result shouldBe a[IngestFailed[_]]
+        val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+
+        ingestFailed.e.getMessage shouldBe
+          s"Files referred to in the fetch.txt also appear in the bag: ${root
+            .join(badFetchEntry.path.value)}"
+
+        ingestFailed.maybeUserFacingMessage.get shouldBe
+          s"Files referred to in the fetch.txt also appear in the bag: ${badFetchEntry.path}"
       }
     }
   }
