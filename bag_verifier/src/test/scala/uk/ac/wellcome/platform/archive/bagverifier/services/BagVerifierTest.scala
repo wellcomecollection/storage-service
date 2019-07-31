@@ -115,7 +115,7 @@ class BagVerifierTest
 
       val userFacingMessage =
         result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
-      userFacingMessage.get shouldBe "There was 1 error verifying the bag"
+      userFacingMessage.get should startWith("Unable to verify one file in the bag:")
     }
   }
 
@@ -182,7 +182,7 @@ class BagVerifierTest
 
       val userFacingMessage =
         result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
-      userFacingMessage.get shouldBe s"There were $payloadFileCount errors verifying the bag"
+      userFacingMessage.get should startWith(s"Unable to verify $payloadFileCount files in the bag:")
     }
   }
 
