@@ -41,7 +41,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
         metadata = Map.empty)) shouldBe a[Right[_, _]]
     }
 
-  protected def getFetchEntryCount(payloadFileCount: Int) =
+  protected def getFetchEntryCount(payloadFileCount: Int): Int =
     randomInt(from = 0, to = payloadFileCount)
 
   def createBagContentsWith(
