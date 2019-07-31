@@ -333,7 +333,8 @@ class BagVerifier()(
         warn(s"Errors verifying $root:\n$verificationFailureMessage")
 
         val errorCount = result.failure.size
-        val pathList = result.failure.map { _.verifiableLocation.path.value }.mkString(", ")
+        val pathList =
+          result.failure.map { _.verifiableLocation.path.value }.mkString(", ")
 
         val userFacingMessage =
           if (errorCount == 1)
