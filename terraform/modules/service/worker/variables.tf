@@ -9,9 +9,7 @@ variable "secret_env_vars" {
   default = {}
 }
 
-variable "secret_env_vars_length" {
-  default = 0
-}
+variable "secret_env_vars_length" {}
 
 variable "subnets" {
   type = "list"
