@@ -41,6 +41,7 @@ locals {
   bagger_ingest_table_stage_arn = "arn:aws:dynamodb:eu-west-1:975596993436:table/storage-staging-migration-status"
 
   goobi_task_role_arn = "arn:aws:iam::299497370133:role/goobi_task_role"
+
   workflow_account_principal = "arn:aws:iam::299497370133:root"
   digitisation_account_principal = "arn:aws:iam::404315009621:root"
 
