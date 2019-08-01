@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
-  SizeFinder,
   StorageManifestDao,
   StorageManifestService
 }
@@ -24,7 +23,7 @@ import scala.util.{Failure, Success, Try}
 class Register(
   bagReader: BagReader[_],
   storageManifestDao: StorageManifestDao,
-  sizeFinder: SizeFinder,
+  storageManifestService: StorageManifestService,
 ) extends Logging {
 
   def update(
@@ -46,17 +45,11 @@ class Register(
           Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
       }
 
-      sizes <- sizeFinder.getSizesUnder(bagRootLocation.asPrefix) match {
-        case Right(value)  => Success(value)
-        case Left(failure) => Failure(failure.e)
-      }
-
-      storageManifest <- StorageManifestService.createManifest(
+      storageManifest <- storageManifestService.createManifest(
         bag = bag,
         replicaRoot = bagRootLocation,
         space = storageSpace,
-        version = version,
-        sizes = sizes
+        version = version
       )
 
       completedRegistration <- storageManifestDao.put(storageManifest) match {
