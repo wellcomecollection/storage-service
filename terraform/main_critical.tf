@@ -32,6 +32,7 @@ module "critical" {
     "arn:aws:iam::653428163053:user/echo-fs",
     "arn:aws:iam::653428163053:user/api",
     "${local.digitisation_account_principal}",
+    "${local.digitisation_mediaconvert_role_arn}",
     "${local.workflow_account_principal}",
   ]
 
@@ -64,6 +65,7 @@ module "critical-staging" {
     "arn:aws:iam::653428163053:user/echo-fs",
     "arn:aws:iam::653428163053:user/api",
     "${local.digitisation_account_principal}",
+    "${local.digitisation_mediaconvert_role_arn}",
     "${local.workflow_account_principal}",
   ]
 
