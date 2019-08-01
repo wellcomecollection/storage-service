@@ -32,6 +32,8 @@ import uk.ac.wellcome.platform.archive.common.verify.{
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
+import scala.util.Random
+
 class StorageManifestServiceTest
     extends FunSpec
     with Matchers
@@ -97,7 +99,8 @@ class StorageManifestServiceTest
       val storageManifest = createManifest(
         bag = bag,
         replicaRoot = replicaRoot,
-        version = version
+        version = version,
+        sizes = files.map { replicaRoot.join(_) -> Random.nextLong().abs }.toMap
       )
 
       val namePathMap =
@@ -130,7 +133,8 @@ class StorageManifestServiceTest
       val storageManifest = createManifest(
         bag = bag,
         replicaRoot = replicaRoot,
-        version = version
+        version = version,
+        sizes = files.map { replicaRoot.join(_) -> Random.nextLong().abs }.toMap
       )
 
       val namePathMap =
@@ -149,10 +153,13 @@ class StorageManifestServiceTest
       val bagRoot = createObjectLocation
       val replicaRoot = bagRoot.join(s"/v$version")
 
+      val fetchLocation = bagRoot.copy(
+        path = s"${bagRoot.path}/v$fetchVersion/data/file1.txt"
+      )
+
       val fetchEntries = Seq(
         BagFetchEntry(
-          uri = new URI(
-            s"s3://${bagRoot.namespace}/${bagRoot.path}/v$fetchVersion/data/file1.txt"),
+          uri = new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
           length = None,
           path = BagPath("data/file1.txt")
         )
@@ -168,10 +175,16 @@ class StorageManifestServiceTest
         fetchEntries = fetchEntries
       )
 
+      val files = Seq(
+        fetchLocation,
+        bagRoot.join(s"v$version/data/file1.txt")
+      )
+
       val storageManifest = createManifest(
         bag = bag,
         replicaRoot = replicaRoot,
-        version = version
+        version = version,
+        sizes = files.map { _ -> Random.nextLong().abs }.toMap
       )
 
       storageManifest.manifest.files.map { f =>
@@ -185,10 +198,13 @@ class StorageManifestServiceTest
       val bagRoot = createObjectLocation
       val replicaRoot = bagRoot.join(s"/v$version")
 
+      val fetchLocation = bagRoot.copy(
+        path = s"${bagRoot.path}/v$fetchVersion/data/file1.txt"
+      )
+
       val fetchEntries = Seq(
         BagFetchEntry(
-          uri = new URI(
-            s"s3://${bagRoot.namespace}/${bagRoot.path}/v$fetchVersion/data/file1.txt"),
+          uri = new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
           length = None,
           path = BagPath("data/file1.txt")
         )
@@ -208,10 +224,17 @@ class StorageManifestServiceTest
         fetchEntries = fetchEntries
       )
 
+      val files = Seq(
+        fetchLocation,
+        bagRoot.join(s"v$version/data/file1.txt"),
+        bagRoot.join(s"v$version/data/file2.txt")
+      )
+
       val storageManifest = createManifest(
         bag = bag,
         replicaRoot = replicaRoot,
-        version = version
+        version = version,
+        sizes = files.map { _ -> Random.nextLong().abs }.toMap
       )
 
       storageManifest.manifest.files.map { f =>
@@ -224,11 +247,10 @@ class StorageManifestServiceTest
 
   describe("validates the checksums") {
     it("uses the checksum values from the file manifest") {
+      val paths = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
+
       val filesWithChecksums =
-        Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
-          .map {
-            _ -> ChecksumValue(randomAlphanumeric)
-          }
+        paths.map { _ -> ChecksumValue(randomAlphanumeric) }
 
       val bag = createBagWith(
         manifestFiles = filesWithChecksums.map {
@@ -240,7 +262,16 @@ class StorageManifestServiceTest
         }
       )
 
-      val storageManifest = createManifest(bag = bag)
+      val version = randomInt(from = 1, to = 10)
+      val replicaRoot = createObjectLocation.join(s"v$version")
+      val sizes = paths.map { replicaRoot.join(_) -> Random.nextLong() }.toMap
+
+      val storageManifest = createManifest(
+        bag = bag,
+        replicaRoot = replicaRoot,
+        version = version,
+        sizes = sizes
+      )
 
       val nameChecksumMap =
         storageManifest.manifest.files
@@ -252,11 +283,10 @@ class StorageManifestServiceTest
     }
 
     it("uses the checksum values from the tag manifest") {
+      val paths = Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
+
       val filesWithChecksums =
-        Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
-          .map {
-            _ -> ChecksumValue(randomAlphanumeric)
-          }
+        paths.map { _ -> ChecksumValue(randomAlphanumeric) }
 
       val bag = createBagWith(
         tagManifestFiles = filesWithChecksums.map {
@@ -268,7 +298,16 @@ class StorageManifestServiceTest
         }
       )
 
-      val storageManifest = createManifest(bag = bag)
+      val version = randomInt(from = 1, to = 10)
+      val replicaRoot = createObjectLocation.join(s"v$version")
+      val sizes = paths.map { replicaRoot.join(_) -> Random.nextLong() }.toMap
+
+      val storageManifest = createManifest(
+        bag = bag,
+        replicaRoot = replicaRoot,
+        version = version,
+        sizes = sizes
+      )
 
       val nameChecksumMap =
         storageManifest.tagManifest.files
@@ -284,10 +323,6 @@ class StorageManifestServiceTest
       // TODO: Rewrite this to use generators
       val badBagPath = BagPath(randomAlphanumeric)
       val manifestFiles = Seq(
-        BagFile(
-          checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-          path = BagPath(randomAlphanumeric)
-        ),
         BagFile(
           checksum = Checksum(MD5, ChecksumValue(randomAlphanumeric)),
           path = badBagPath
@@ -309,10 +344,6 @@ class StorageManifestServiceTest
       // TODO: Rewrite this to use generators
       val badBagPath = BagPath(randomAlphanumeric)
       val tagManifestFiles = Seq(
-        BagFile(
-          checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-          path = BagPath(randomAlphanumeric)
-        ),
         BagFile(
           checksum = Checksum(MD5, ChecksumValue(randomAlphanumeric)),
           path = badBagPath
@@ -439,17 +470,39 @@ class StorageManifestServiceTest
     }
   }
 
+  it("fails if it cannot get the size of a file") {
+    val version = randomInt(1, 10)
+    val replicaRoot = createObjectLocation.join(s"/v$version")
+
+    val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
+
+    val bag = createBagWith(
+      manifestFiles = files.map { f =>
+        BagFile(
+          checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+          path = BagPath(f)
+        )
+      }
+    )
+
+    assertIsError(bag, replicaRoot = replicaRoot, version = version, sizes = Map.empty) {
+      _ should startWith("Could not find size for location")
+    }
+  }
+
   private def createManifest(
     space: StorageSpace = createStorageSpace,
     bag: Bag = createBag,
     replicaRoot: ObjectLocation = createObjectLocation.join("/v1"),
-    version: Int = 1
+    version: Int = 1,
+    sizes: Map[ObjectLocation, Long] = Map.empty
   ): StorageManifest = {
     val result = StorageManifestService.createManifest(
       bag = bag,
       replicaRoot = replicaRoot,
       space = space,
-      version = BagVersion(version)
+      version = BagVersion(version),
+      sizes = sizes
     )
 
     if (result.isFailure) {
@@ -462,13 +515,15 @@ class StorageManifestServiceTest
   private def assertIsError(
     bag: Bag = createBag,
     replicaRoot: ObjectLocation = createObjectLocation.join("/v1"),
-    version: Int = 1
+    version: Int = 1,
+    sizes: Map[ObjectLocation, Long] = Map.empty
   )(assertMessage: String => Assertion): Assertion = {
     val result = StorageManifestService.createManifest(
       bag = bag,
       replicaRoot = replicaRoot,
       space = createStorageSpace,
-      version = BagVersion(version)
+      version = BagVersion(version),
+      sizes = sizes
     )
 
     result.failure.exception shouldBe a[StorageManifestException]

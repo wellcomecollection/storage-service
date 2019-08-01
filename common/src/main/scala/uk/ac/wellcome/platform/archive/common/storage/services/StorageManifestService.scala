@@ -31,6 +31,7 @@ object StorageManifestService extends Logging {
   def createManifest(
     bag: Bag,
     replicaRoot: ObjectLocation,
+    sizes: Map[ObjectLocation, Long],
     space: StorageSpace,
     version: BagVersion
   ): Try[StorageManifest] = {
@@ -42,13 +43,15 @@ object StorageManifestService extends Logging {
       fileManifestFiles <- createManifestFiles(
         bagRoot = bagRoot,
         manifest = bag.manifest,
-        entries = entries
+        entries = entries,
+        sizes = sizes
       )
 
       tagManifestFiles <- createManifestFiles(
         bagRoot = bagRoot,
         manifest = bag.tagManifest,
-        entries = entries
+        entries = entries,
+        sizes = sizes
       )
 
       storageManifest = StorageManifest(
@@ -157,6 +160,7 @@ object StorageManifestService extends Logging {
 
   private def createManifestFiles(manifest: BagManifest,
                                   entries: Map[BagPath, ObjectLocation],
+                                  sizes: Map[ObjectLocation, Long],
                                   bagRoot: ObjectLocationPrefix) = Try {
     manifest.files.map { bagFile =>
       // This lookup should never file -- the BagMatcher populates the
@@ -177,6 +181,15 @@ object StorageManifestService extends Logging {
             s"but manifest uses ${manifest.checksumAlgorithm}"
         )
       }
+
+      val size: Long = sizes.get(location) match {
+        case Some(s) => s
+        case None => throw new StorageManifestException(
+          s"Could not find size for location $location"
+        )
+      }
+
+      debug(s"size = $size")
 
       StorageManifestFile(
         checksum = bagFile.checksum.value,
