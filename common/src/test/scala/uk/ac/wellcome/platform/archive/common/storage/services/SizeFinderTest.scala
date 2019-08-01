@@ -10,14 +10,19 @@ import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 
-trait SizeFinderTestCases[Context] extends FunSpec with Matchers with EitherValues {
+trait SizeFinderTestCases[Context]
+    extends FunSpec
+    with Matchers
+    with EitherValues {
   def withContext[R](testWith: TestWith[Context, R]): R
 
-  def withSizeFinder[R](testWith: TestWith[SizeFinder, R])(implicit context: Context): R
+  def withSizeFinder[R](testWith: TestWith[SizeFinder, R])(
+    implicit context: Context): R
 
   def createLocation(implicit context: Context): ObjectLocation
 
-  def createObjectAtLocation(location: ObjectLocation, contents: String)(implicit context: Context): Unit
+  def createObjectAtLocation(location: ObjectLocation, contents: String)(
+    implicit context: Context): Unit
 
   describe("it behaves as a size finder") {
     it("finds the sizes of objects in a prefix") {
@@ -47,8 +52,11 @@ trait SizeFinderTestCases[Context] extends FunSpec with Matchers with EitherValu
   }
 }
 
-class MemorySizeFinderTest extends SizeFinderTestCases[MemoryStreamStore[ObjectLocation]] with ObjectLocationGenerators {
-  override def withContext[R](testWith: TestWith[MemoryStreamStore[ObjectLocation], R]): R =
+class MemorySizeFinderTest
+    extends SizeFinderTestCases[MemoryStreamStore[ObjectLocation]]
+    with ObjectLocationGenerators {
+  override def withContext[R](
+    testWith: TestWith[MemoryStreamStore[ObjectLocation], R]): R =
     testWith(MemoryStreamStore[ObjectLocation]())
 
   override def withSizeFinder[R](testWith: TestWith[SizeFinder, R])(
@@ -61,9 +69,9 @@ class MemorySizeFinderTest extends SizeFinderTestCases[MemoryStreamStore[ObjectL
     implicit streamStore: MemoryStreamStore[ObjectLocation]): ObjectLocation =
     createObjectLocation
 
-  override def createObjectAtLocation(
-    location: ObjectLocation,
-    contents: String)(implicit streamStore: MemoryStreamStore[ObjectLocation]): Unit = {
+  override def createObjectAtLocation(location: ObjectLocation,
+                                      contents: String)(
+    implicit streamStore: MemoryStreamStore[ObjectLocation]): Unit = {
     val is = stringCodec.toStream(contents).right.value
     streamStore.put(location)(
       InputStreamWithLengthAndMetadata(is, metadata = Map.empty)
@@ -75,7 +83,8 @@ class S3SizeFinderTest extends SizeFinderTestCases[Bucket] with S3Fixtures {
   override def withContext[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { testWith }
 
-  override def withSizeFinder[R](testWith: TestWith[SizeFinder, R])(implicit bucket: Bucket): R =
+  override def withSizeFinder[R](testWith: TestWith[SizeFinder, R])(
+    implicit bucket: Bucket): R =
     testWith(
       new S3SizeFinder()
     )
@@ -83,7 +92,9 @@ class S3SizeFinderTest extends SizeFinderTestCases[Bucket] with S3Fixtures {
   override def createLocation(implicit bucket: Bucket): ObjectLocation =
     createObjectLocationWith(bucket)
 
-  override def createObjectAtLocation(location: ObjectLocation, contents:  String)(implicit context: Bucket): Unit =
+  override def createObjectAtLocation(
+    location: ObjectLocation,
+    contents: String)(implicit context: Bucket): Unit =
     s3Client.putObject(
       location.namespace,
       location.path,

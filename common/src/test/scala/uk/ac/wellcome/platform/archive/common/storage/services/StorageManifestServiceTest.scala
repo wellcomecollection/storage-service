@@ -159,7 +159,8 @@ class StorageManifestServiceTest
 
       val fetchEntries = Seq(
         BagFetchEntry(
-          uri = new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
+          uri =
+            new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
           length = None,
           path = BagPath("data/file1.txt")
         )
@@ -204,7 +205,8 @@ class StorageManifestServiceTest
 
       val fetchEntries = Seq(
         BagFetchEntry(
-          uri = new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
+          uri =
+            new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
           length = None,
           path = BagPath("data/file1.txt")
         )
@@ -283,7 +285,8 @@ class StorageManifestServiceTest
     }
 
     it("uses the checksum values from the tag manifest") {
-      val paths = Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
+      val paths =
+        Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
 
       val filesWithChecksums =
         paths.map { _ -> ChecksumValue(randomAlphanumeric) }
@@ -514,7 +517,9 @@ class StorageManifestServiceTest
 
       val version = randomInt(from = 1, to = 10)
       val replicaRoot = createObjectLocation.join(s"v$version")
-      val sizes = expectedSizes.map { case (path, size) => replicaRoot.join(path) -> size }
+      val sizes = expectedSizes.map {
+        case (path, size) => replicaRoot.join(path) -> size
+      }
 
       val storageManifest = createManifest(
         bag = bag,

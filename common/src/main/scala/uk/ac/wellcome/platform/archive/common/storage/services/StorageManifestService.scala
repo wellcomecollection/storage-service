@@ -38,7 +38,10 @@ object StorageManifestService extends Logging {
     for {
       bagRoot <- getBagRoot(replicaRoot, version)
 
-      entries <- createPathLocationMap(bag, bagRoot = bagRoot, version = version)
+      entries <- createPathLocationMap(
+        bag,
+        bagRoot = bagRoot,
+        version = version)
 
       fileManifestFiles <- createManifestFiles(
         bagRoot = bagRoot,
@@ -121,7 +124,10 @@ object StorageManifestService extends Logging {
           val location = matchedLoc.fetchEntry match {
             // This is a concrete file inside the replicated bag,
             // so it's inside the versioned replica directory.
-            case None => bagRoot.asLocation(version.toString, matchedLoc.bagFile.path.value)
+            case None =>
+              bagRoot.asLocation(
+                version.toString,
+                matchedLoc.bagFile.path.value)
 
             // This is referring to a fetch file somewhere else.
             // We need to check it's in another versioned directory
@@ -184,9 +190,10 @@ object StorageManifestService extends Logging {
 
       val size: Long = sizes.get(location) match {
         case Some(s) => s
-        case None => throw new StorageManifestException(
-          s"Could not find size for location $location"
-        )
+        case None =>
+          throw new StorageManifestException(
+            s"Could not find size for location $location"
+          )
       }
 
       StorageManifestFile(
