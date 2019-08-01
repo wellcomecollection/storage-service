@@ -360,13 +360,13 @@ module "api" {
   ingests_container_image = "${local.ingests_api_image}"
   ingests_container_port  = "9001"
   ingests_env_vars = {
-    context_url                   = "${var.api_url}/context.json"
-    app_base_url                  = "${var.api_url}/storage/v1/ingests"
-    unpacker_topic_arn            = "${module.bag_unpacker_input_topic.arn}"
-    archive_ingest_table_name     = "${var.ingests_table_name}"
-    bag_id_lookup_table_name      = "${var.bag_id_lookup_table_name}"
-    metrics_namespace             = "${local.ingests_api_service_name}"
-    JAVA_OPTS                     = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
+    context_url               = "${var.api_url}/context.json"
+    app_base_url              = "${var.api_url}/storage/v1/ingests"
+    unpacker_topic_arn        = "${module.bag_unpacker_input_topic.arn}"
+    archive_ingest_table_name = "${var.ingests_table_name}"
+    bag_id_lookup_table_name  = "${var.bag_id_lookup_table_name}"
+    metrics_namespace         = "${local.ingests_api_service_name}"
+    JAVA_OPTS                 = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
   }
   ingests_env_vars_length        = 7
   ingests_nginx_container_image  = "${var.nginx_image}"
