@@ -547,6 +547,67 @@ class StorageManifestServiceTest
 
       actualSizes should contain theSameElementsAs expectedSizes.toSeq
     }
+
+    it("uses the size from the fetch file") {
+      val version = randomInt(1, 10)
+      val fetchVersion = version - 1
+      val bagRoot = createObjectLocation
+      val replicaRoot = bagRoot.join(s"/v$version")
+
+      val fetchLocation = bagRoot.copy(
+        path = s"${bagRoot.path}/v$fetchVersion/data/file1.txt"
+      )
+
+      val bag = createBagWith(
+        manifestFiles = Seq(
+          BagFile(
+            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+            path = BagPath("data/1.txt")
+          ),
+          BagFile(
+            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+            path = BagPath("data/2.txt")
+          )
+        ),
+        fetchEntries = Seq(
+          BagFetchEntry(
+            uri = new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
+            length = Some(10),
+            path = BagPath("data/1.txt")
+          ),
+          BagFetchEntry(
+            uri = new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
+            length = Some(20),
+            path = BagPath("data/2.txt")
+          )
+        )
+      )
+
+      val brokenSizeFinder = new SizeFinder {
+        override def getSize(location: ObjectLocation): Try[Long] =
+          Failure(new Throwable("This should never be called!"))
+      }
+
+      val service = new StorageManifestService(brokenSizeFinder)
+
+      val storageManifest = service.createManifest(
+        bag = bag,
+        replicaRoot = replicaRoot,
+        space = createStorageSpace,
+        version = BagVersion(version)
+      ).success.value
+
+      val actualSizes =
+        storageManifest.manifest.files
+          .map { file =>
+            (file.name, file.size)
+          }
+
+      actualSizes should contain theSameElementsAs Seq(
+        ("data/1.txt", 10L),
+        ("data/2.txt", 20L),
+      )
+    }
   }
 
   private def createManifest(
