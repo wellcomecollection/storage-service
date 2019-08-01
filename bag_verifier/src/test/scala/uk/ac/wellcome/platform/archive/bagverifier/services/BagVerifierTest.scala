@@ -475,7 +475,8 @@ class BagVerifierTest
       }
     }
 
-    it("passes a bag that includes a manifest/tag manifest for another algorithm") {
+    it(
+      "passes a bag that includes a manifest/tag manifest for another algorithm") {
       withLocalS3Bucket { bucket =>
         val (root, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
