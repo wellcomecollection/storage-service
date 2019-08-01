@@ -471,7 +471,8 @@ class StorageManifestServiceTest
       )
 
       result.failed.get shouldBe a[StorageManifestException]
-      result.failed.get.getMessage should startWith(s"Error getting size of ${replicaRoot.join("data/file1.txt")}")
+      result.failed.get.getMessage should startWith(
+        s"Error getting size of ${replicaRoot.join("data/file1.txt")}")
     }
 
     it("uses the provided sizes") {
@@ -527,12 +528,14 @@ class StorageManifestServiceTest
         ),
         fetchEntries = Seq(
           BagFetchEntry(
-            uri = new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
+            uri =
+              new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
             length = Some(10),
             path = BagPath("data/1.txt")
           ),
           BagFetchEntry(
-            uri = new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
+            uri =
+              new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
             length = Some(20),
             path = BagPath("data/2.txt")
           )
@@ -546,12 +549,15 @@ class StorageManifestServiceTest
 
       val service = new StorageManifestService(brokenSizeFinder)
 
-      val storageManifest = service.createManifest(
-        bag = bag,
-        replicaRoot = replicaRoot,
-        space = createStorageSpace,
-        version = BagVersion(version)
-      ).success.value
+      val storageManifest = service
+        .createManifest(
+          bag = bag,
+          replicaRoot = replicaRoot,
+          space = createStorageSpace,
+          version = BagVersion(version)
+        )
+        .success
+        .value
 
       val actualSizes =
         storageManifest.manifest.files
@@ -575,9 +581,9 @@ class StorageManifestServiceTest
   ): StorageManifest = {
     val sizeFinder = new SizeFinder {
       override def getSize(location: ObjectLocation): Try[Long] = Try {
-        sizes.getOrElse(location,
-          throw new Throwable(s"No such size for location $location!")
-        )
+        sizes.getOrElse(
+          location,
+          throw new Throwable(s"No such size for location $location!"))
       }
     }
 

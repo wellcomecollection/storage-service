@@ -83,7 +83,10 @@ class MemorySizeFinderTest
   }
 }
 
-class S3SizeFinderTest extends SizeFinderTestCases[Bucket] with S3Fixtures with EitherValues {
+class S3SizeFinderTest
+    extends SizeFinderTestCases[Bucket]
+    with S3Fixtures
+    with EitherValues {
   override def withContext[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { testWith }
 

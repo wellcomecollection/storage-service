@@ -14,12 +14,10 @@ class MemorySizeFinder(
   memoryStore: MemoryStore[ObjectLocation, MemoryStreamStoreEntry])
     extends SizeFinder {
   override def getSize(location: ObjectLocation): Try[Long] = Try {
-    memoryStore
-      .entries
-      .getOrElse(location,
-        throw new Throwable(s"No such entry $location!")
-      )
-      .bytes.length
+    memoryStore.entries
+      .getOrElse(location, throw new Throwable(s"No such entry $location!"))
+      .bytes
+      .length
   }
 }
 

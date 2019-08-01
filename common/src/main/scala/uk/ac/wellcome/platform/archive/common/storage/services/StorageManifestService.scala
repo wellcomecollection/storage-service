@@ -118,59 +118,61 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
   private def createPathLocationMap(
     bag: Bag,
     bagRoot: ObjectLocationPrefix,
-    version: BagVersion): Try[Map[BagPath, (ObjectLocation, Option[Long])]] = Try {
-    BagMatcher.correlateFetchEntries(bag) match {
-      case Right(matchedLocations) =>
-        matchedLocations.map { matchedLoc =>
-          val location = matchedLoc.fetchEntry match {
-            // This is a concrete file inside the replicated bag,
-            // so it's inside the versioned replica directory.
-            case None =>
-              (
-                bagRoot.asLocation(
-                  version.toString,
-                  matchedLoc.bagFile.path.value),
-                None
-              )
-
-            // This is referring to a fetch file somewhere else.
-            // We need to check it's in another versioned directory
-            // for this bag.
-            case Some(fetchEntry) =>
-              val fetchLocation = ObjectLocation(
-                namespace = fetchEntry.uri.getHost,
-                path = fetchEntry.uri.getPath.stripPrefix("/")
-              )
-
-              if (fetchLocation.namespace != bagRoot.namespace) {
-                throw new StorageManifestException(
-                  s"Fetch entry for ${matchedLoc.bagFile.path.value} refers to an object in the wrong namespace: ${fetchLocation.namespace}"
+    version: BagVersion): Try[Map[BagPath, (ObjectLocation, Option[Long])]] =
+    Try {
+      BagMatcher.correlateFetchEntries(bag) match {
+        case Right(matchedLocations) =>
+          matchedLocations.map { matchedLoc =>
+            val location = matchedLoc.fetchEntry match {
+              // This is a concrete file inside the replicated bag,
+              // so it's inside the versioned replica directory.
+              case None =>
+                (
+                  bagRoot.asLocation(
+                    version.toString,
+                    matchedLoc.bagFile.path.value),
+                  None
                 )
-              }
 
-              // TODO: This check could actually look for a /v1, /v2, etc.
-              if (!fetchLocation.path.startsWith(bagRoot.path + "/")) {
-                throw new StorageManifestException(
-                  s"Fetch entry for ${matchedLoc.bagFile.path.value} refers to an object in the wrong path: /${fetchLocation.path}"
+              // This is referring to a fetch file somewhere else.
+              // We need to check it's in another versioned directory
+              // for this bag.
+              case Some(fetchEntry) =>
+                val fetchLocation = ObjectLocation(
+                  namespace = fetchEntry.uri.getHost,
+                  path = fetchEntry.uri.getPath.stripPrefix("/")
                 )
-              }
 
-              (fetchLocation, fetchEntry.length)
-          }
+                if (fetchLocation.namespace != bagRoot.namespace) {
+                  throw new StorageManifestException(
+                    s"Fetch entry for ${matchedLoc.bagFile.path.value} refers to an object in the wrong namespace: ${fetchLocation.namespace}"
+                  )
+                }
 
-          (matchedLoc.bagFile.path, location)
-        }.toMap
+                // TODO: This check could actually look for a /v1, /v2, etc.
+                if (!fetchLocation.path.startsWith(bagRoot.path + "/")) {
+                  throw new StorageManifestException(
+                    s"Fetch entry for ${matchedLoc.bagFile.path.value} refers to an object in the wrong path: /${fetchLocation.path}"
+                  )
+                }
 
-      case Left(err) =>
-        throw new StorageManifestException(
-          s"Unable to resolve fetch entries: $err"
-        )
+                (fetchLocation, fetchEntry.length)
+            }
+
+            (matchedLoc.bagFile.path, location)
+          }.toMap
+
+        case Left(err) =>
+          throw new StorageManifestException(
+            s"Unable to resolve fetch entries: $err"
+          )
+      }
     }
-  }
 
-  private def createManifestFiles(manifest: BagManifest,
-                                  entries: Map[BagPath, (ObjectLocation, Option[Long])],
-                                  bagRoot: ObjectLocationPrefix) = Try {
+  private def createManifestFiles(
+    manifest: BagManifest,
+    entries: Map[BagPath, (ObjectLocation, Option[Long])],
+    bagRoot: ObjectLocationPrefix) = Try {
     manifest.files.map { bagFile =>
       // This lookup should never file -- the BagMatcher populates the
       // entries from the original manifests in the bag.
@@ -193,11 +195,13 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
 
       val size = maybeSize match {
         case Some(s) => s
-        case None => sizeFinder.getSize(location) match {
-          case Success(value) => value
-          case Failure(err) =>
-            throw new StorageManifestException(s"Error getting size of $location: $err")
-        }
+        case None =>
+          sizeFinder.getSize(location) match {
+            case Success(value) => value
+            case Failure(err) =>
+              throw new StorageManifestException(
+                s"Error getting size of $location: $err")
+          }
       }
 
       StorageManifestFile(
