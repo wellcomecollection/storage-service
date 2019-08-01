@@ -11,7 +11,7 @@
       }
     ],
     "name": "Storage service",
-    "profile": "storage-dev",
+    "role_arn": "arn:aws:iam::975596993436:role/storage-developer",
     "github_repository": "wellcometrust/storage-service"
   }
 }
