@@ -1,8 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import com.amazonaws.services.s3.model.AmazonS3Exception
+import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.storage.{ListingFailure, ObjectLocation}
+import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
@@ -10,10 +11,12 @@ import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 
+import scala.util.Failure
+
 trait SizeFinderTestCases[Context]
     extends FunSpec
     with Matchers
-    with EitherValues {
+    with TryValues {
   def withContext[R](testWith: TestWith[Context, R]): R
 
   def withSizeFinder[R](testWith: TestWith[SizeFinder, R])(
@@ -31,22 +34,22 @@ trait SizeFinderTestCases[Context]
         createObjectAtLocation(location, "the quick brown fox")
 
         val result = withSizeFinder {
-          _.getSizesUnder(location.asPrefix)
+          _.getSize(location)
         }
 
-        result.right.value shouldBe Map(location -> 19L)
+        result.success.value shouldBe 19L
       }
     }
 
     it("returns an empty list if there's nothing under the prefix") {
       withContext { implicit context =>
-        val prefix = createLocation.asPrefix
+        val location = createLocation
 
         val result = withSizeFinder {
-          _.getSizesUnder(prefix)
+          _.getSize(location)
         }
 
-        result.right.value shouldBe Map.empty
+        result shouldBe a[Failure[_]]
       }
     }
   }
@@ -54,7 +57,8 @@ trait SizeFinderTestCases[Context]
 
 class MemorySizeFinderTest
     extends SizeFinderTestCases[MemoryStreamStore[ObjectLocation]]
-    with ObjectLocationGenerators {
+    with ObjectLocationGenerators
+    with EitherValues {
   override def withContext[R](
     testWith: TestWith[MemoryStreamStore[ObjectLocation], R]): R =
     testWith(MemoryStreamStore[ObjectLocation]())
@@ -79,7 +83,7 @@ class MemorySizeFinderTest
   }
 }
 
-class S3SizeFinderTest extends SizeFinderTestCases[Bucket] with S3Fixtures {
+class S3SizeFinderTest extends SizeFinderTestCases[Bucket] with S3Fixtures with EitherValues {
   override def withContext[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { testWith }
 
@@ -104,8 +108,8 @@ class S3SizeFinderTest extends SizeFinderTestCases[Bucket] with S3Fixtures {
   it("fails if the prefix is for a non-existent S3 bucket") {
     val finder = new S3SizeFinder()
 
-    val result = finder.getSizesUnder(createObjectLocationPrefix)
+    val result = finder.getSize(createObjectLocation)
 
-    result.left.value shouldBe a[ListingFailure[_]]
+    result.failed.get shouldBe a[AmazonS3Exception]
   }
 }
