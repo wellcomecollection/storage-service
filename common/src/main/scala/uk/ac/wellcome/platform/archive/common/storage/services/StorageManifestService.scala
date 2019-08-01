@@ -27,11 +27,10 @@ import scala.util.{Failure, Success, Try}
 class StorageManifestException(message: String)
     extends RuntimeException(message)
 
-object StorageManifestService extends Logging {
+class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
   def createManifest(
     bag: Bag,
     replicaRoot: ObjectLocation,
-    sizes: Map[ObjectLocation, Long],
     space: StorageSpace,
     version: BagVersion
   ): Try[StorageManifest] = {
@@ -46,15 +45,13 @@ object StorageManifestService extends Logging {
       fileManifestFiles <- createManifestFiles(
         bagRoot = bagRoot,
         manifest = bag.manifest,
-        entries = entries,
-        sizes = sizes
+        entries = entries
       )
 
       tagManifestFiles <- createManifestFiles(
         bagRoot = bagRoot,
         manifest = bag.tagManifest,
-        entries = entries,
-        sizes = sizes
+        entries = entries
       )
 
       storageManifest = StorageManifest(
@@ -113,11 +110,15 @@ object StorageManifestService extends Logging {
     *   - a file referenced by the fetch file, which should be in a different
     *     versioned directory under the same bag root
     *
+    * The map contains data
+    *
+    *   (bag path) -> (location, size if known)
+    *
     */
   private def createPathLocationMap(
     bag: Bag,
     bagRoot: ObjectLocationPrefix,
-    version: BagVersion): Try[Map[BagPath, ObjectLocation]] = Try {
+    version: BagVersion): Try[Map[BagPath, (ObjectLocation, Option[Long])]] = Try {
     BagMatcher.correlateFetchEntries(bag) match {
       case Right(matchedLocations) =>
         matchedLocations.map { matchedLoc =>
@@ -125,9 +126,12 @@ object StorageManifestService extends Logging {
             // This is a concrete file inside the replicated bag,
             // so it's inside the versioned replica directory.
             case None =>
-              bagRoot.asLocation(
-                version.toString,
-                matchedLoc.bagFile.path.value)
+              (
+                bagRoot.asLocation(
+                  version.toString,
+                  matchedLoc.bagFile.path.value),
+                None
+              )
 
             // This is referring to a fetch file somewhere else.
             // We need to check it's in another versioned directory
@@ -151,7 +155,7 @@ object StorageManifestService extends Logging {
                 )
               }
 
-              fetchLocation
+              (fetchLocation, fetchEntry.length)
           }
 
           (matchedLoc.bagFile.path, location)
@@ -165,8 +169,7 @@ object StorageManifestService extends Logging {
   }
 
   private def createManifestFiles(manifest: BagManifest,
-                                  entries: Map[BagPath, ObjectLocation],
-                                  sizes: Map[ObjectLocation, Long],
+                                  entries: Map[BagPath, (ObjectLocation, Option[Long])],
                                   bagRoot: ObjectLocationPrefix) = Try {
     manifest.files.map { bagFile =>
       // This lookup should never file -- the BagMatcher populates the
@@ -174,7 +177,7 @@ object StorageManifestService extends Logging {
       //
       // We wrap it in a Try block just in case, but this should never
       // throw in practice.
-      val location = entries(bagFile.path)
+      val (location, maybeSize) = entries(bagFile.path)
       val path = location.path.stripPrefix(bagRoot.path + "/")
 
       // If this happens it indicates an error in the pipeline -- we only
@@ -188,12 +191,13 @@ object StorageManifestService extends Logging {
         )
       }
 
-      val size: Long = sizes.get(location) match {
+      val size = maybeSize match {
         case Some(s) => s
-        case None =>
-          throw new StorageManifestException(
-            s"Could not find size for location $location"
-          )
+        case None => sizeFinder.getSize(location) match {
+          case Success(value) => value
+          case Failure(err) =>
+            throw new StorageManifestException(s"Error getting size of $location: $err")
+        }
       }
 
       StorageManifestFile(

@@ -32,7 +32,7 @@ import uk.ac.wellcome.platform.archive.common.verify.{
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
-import scala.util.Random
+import scala.util.{Failure, Random, Success, Try}
 
 class StorageManifestServiceTest
     extends FunSpec
@@ -489,13 +489,24 @@ class StorageManifestServiceTest
         }
       )
 
-      assertIsError(
-        bag,
-        replicaRoot = replicaRoot,
-        version = version,
-        sizes = Map.empty) {
-        _ should startWith("Could not find size for location")
+      val err = new Throwable("BOOM!")
+
+      val brokenSizeFinder = new SizeFinder {
+        override def getSize(location: ObjectLocation): Try[Long] =
+          Failure(err)
       }
+
+      val service = new StorageManifestService(brokenSizeFinder)
+
+      val result = service.createManifest(
+        bag = bag,
+        replicaRoot = replicaRoot,
+        space = createStorageSpace,
+        version = BagVersion(version)
+      )
+
+      result.failed.get shouldBe a[StorageManifestException]
+      result.failed.get.getMessage should startWith(s"Error getting size of ${replicaRoot.join("data/file1.txt")}")
     }
 
     it("uses the provided sizes") {
@@ -545,12 +556,21 @@ class StorageManifestServiceTest
     version: Int = 1,
     sizes: Map[ObjectLocation, Long] = Map.empty
   ): StorageManifest = {
-    val result = StorageManifestService.createManifest(
+    val sizeFinder = new SizeFinder {
+      override def getSize(location: ObjectLocation): Try[Long] = Try {
+        sizes.getOrElse(location,
+          throw new Throwable(s"No such size for location $location!")
+        )
+      }
+    }
+
+    val service = new StorageManifestService(sizeFinder)
+
+    val result = service.createManifest(
       bag = bag,
       replicaRoot = replicaRoot,
       space = space,
-      version = BagVersion(version),
-      sizes = sizes
+      version = BagVersion(version)
     )
 
     if (result.isFailure) {
@@ -563,15 +583,19 @@ class StorageManifestServiceTest
   private def assertIsError(
     bag: Bag = createBag,
     replicaRoot: ObjectLocation = createObjectLocation.join("/v1"),
-    version: Int = 1,
-    sizes: Map[ObjectLocation, Long] = Map.empty
+    version: Int = 1
   )(assertMessage: String => Assertion): Assertion = {
-    val result = StorageManifestService.createManifest(
+    val sizeFinder = new SizeFinder {
+      override def getSize(location: ObjectLocation): Try[Long] = Success(1)
+    }
+
+    val service = new StorageManifestService(sizeFinder)
+
+    val result = service.createManifest(
       bag = bag,
       replicaRoot = replicaRoot,
       space = createStorageSpace,
-      version = BagVersion(version),
-      sizes = sizes
+      version = BagVersion(version)
     )
 
     result.failure.exception shouldBe a[StorageManifestException]
