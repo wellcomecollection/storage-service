@@ -119,9 +119,10 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
         )
     }
 
-  private def getSizeAndLocation(matchedLocation: MatchedLocation,
-                                 bagRoot: ObjectLocationPrefix,
-                                 version: BagVersion): (ObjectLocation, Option[Long]) =
+  private def getSizeAndLocation(
+    matchedLocation: MatchedLocation,
+    bagRoot: ObjectLocationPrefix,
+    version: BagVersion): (ObjectLocation, Option[Long]) =
     matchedLocation.fetchEntry match {
       // This is a concrete file inside the replicated bag,
       // so it's inside the versioned replica directory.
@@ -175,7 +176,9 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
     version: BagVersion): Try[Map[BagPath, (ObjectLocation, Option[Long])]] =
     Try {
       matchedLocations.map { matchedLoc =>
-        (matchedLoc.bagFile.path, getSizeAndLocation(matchedLoc, bagRoot, version))
+        (
+          matchedLoc.bagFile.path,
+          getSizeAndLocation(matchedLoc, bagRoot, version))
       }.toMap
     }
 
