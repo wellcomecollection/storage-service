@@ -37,14 +37,16 @@ object StorageManifestService extends Logging {
     for {
       bagRoot <- getBagRoot(replicaRoot, version)
 
-      entries <- createNamePathMap(bag, bagRoot = bagRoot, version = version)
+      entries <- createPathLocationMap(bag, bagRoot = bagRoot, version = version)
 
       fileManifestFiles <- createManifestFiles(
+        bagRoot = bagRoot,
         manifest = bag.manifest,
         entries = entries
       )
 
       tagManifestFiles <- createManifestFiles(
+        bagRoot = bagRoot,
         manifest = bag.tagManifest,
         entries = entries
       )
@@ -105,20 +107,18 @@ object StorageManifestService extends Logging {
     *   - a file referenced by the fetch file, which should be in a different
     *     versioned directory under the same bag root
     *
-    * This function gets a map (bag name) -> (path), relative to the bag root.
-    *
     */
-  private def createNamePathMap(
+  private def createPathLocationMap(
     bag: Bag,
     bagRoot: ObjectLocationPrefix,
-    version: BagVersion): Try[Map[BagPath, String]] = Try {
+    version: BagVersion): Try[Map[BagPath, ObjectLocation]] = Try {
     BagMatcher.correlateFetchEntries(bag) match {
       case Right(matchedLocations) =>
         matchedLocations.map { matchedLoc =>
-          val path = matchedLoc.fetchEntry match {
+          val location = matchedLoc.fetchEntry match {
             // This is a concrete file inside the replicated bag,
             // so it's inside the versioned replica directory.
-            case None => s"$version/${matchedLoc.bagFile.path.value}"
+            case None => bagRoot.asLocation(version.toString, matchedLoc.bagFile.path.value)
 
             // This is referring to a fetch file somewhere else.
             // We need to check it's in another versioned directory
@@ -142,10 +142,10 @@ object StorageManifestService extends Logging {
                 )
               }
 
-              fetchLocation.path.stripPrefix(bagRoot.path + "/")
+              fetchLocation
           }
 
-          (matchedLoc.bagFile.path, path)
+          (matchedLoc.bagFile.path, location)
         }.toMap
 
       case Left(err) =>
@@ -156,14 +156,16 @@ object StorageManifestService extends Logging {
   }
 
   private def createManifestFiles(manifest: BagManifest,
-                                  entries: Map[BagPath, String]) = Try {
+                                  entries: Map[BagPath, ObjectLocation],
+                                  bagRoot: ObjectLocationPrefix) = Try {
     manifest.files.map { bagFile =>
       // This lookup should never file -- the BagMatcher populates the
       // entries from the original manifests in the bag.
       //
       // We wrap it in a Try block just in case, but this should never
       // throw in practice.
-      val path = entries(bagFile.path)
+      val location = entries(bagFile.path)
+      val path = location.path.stripPrefix(bagRoot.path + "/")
 
       // If this happens it indicates an error in the pipeline -- we only
       // support bags with a single manifest, so we should only ever see
