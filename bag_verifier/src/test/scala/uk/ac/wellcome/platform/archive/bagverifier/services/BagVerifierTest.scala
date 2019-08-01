@@ -474,6 +474,28 @@ class BagVerifierTest
           s"Files referred to in the fetch.txt also appear in the bag: ${badFetchEntry.path}"
       }
     }
+
+    it(
+      "passes a bag that includes a manifest/tag manifest for another algorithm") {
+      withLocalS3Bucket { bucket =>
+        val (root, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+
+        val location = root.join("tagmanifest-sha512.txt")
+
+        s3Client.putObject(
+          location.namespace,
+          location.path,
+          "<empty SHA512 tag manifest>"
+        )
+
+        val ingestStep =
+          withVerifier {
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+          }
+
+        ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
+      }
+    }
   }
 
   describe("checks the Payload-Oxum") {
