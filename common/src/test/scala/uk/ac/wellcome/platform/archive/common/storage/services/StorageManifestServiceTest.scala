@@ -470,23 +470,66 @@ class StorageManifestServiceTest
     }
   }
 
-  it("fails if it cannot get the size of a file") {
-    val version = randomInt(1, 10)
-    val replicaRoot = createObjectLocation.join(s"/v$version")
+  describe("adds the size to the manifest files") {
+    it("fails if it cannot get the size of a file") {
+      val version = randomInt(1, 10)
+      val replicaRoot = createObjectLocation.join(s"/v$version")
 
-    val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
+      val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
-    val bag = createBagWith(
-      manifestFiles = files.map { f =>
-        BagFile(
-          checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-          path = BagPath(f)
-        )
+      val bag = createBagWith(
+        manifestFiles = files.map { f =>
+          BagFile(
+            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
+            path = BagPath(f)
+          )
+        }
+      )
+
+      assertIsError(
+        bag,
+        replicaRoot = replicaRoot,
+        version = version,
+        sizes = Map.empty) {
+        _ should startWith("Could not find size for location")
       }
-    )
+    }
 
-    assertIsError(bag, replicaRoot = replicaRoot, version = version, sizes = Map.empty) {
-      _ should startWith("Could not find size for location")
+    it("uses the provided sizes") {
+      val paths = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
+      val expectedSizes = paths.map { _ -> Random.nextLong().abs }.toMap
+
+      val filesWithChecksums =
+        paths.map { _ -> ChecksumValue(randomAlphanumeric) }
+
+      val bag = createBagWith(
+        manifestFiles = filesWithChecksums.map {
+          case (f, checksumValue) =>
+            BagFile(
+              checksum = Checksum(SHA256, checksumValue),
+              path = BagPath(f)
+            )
+        }
+      )
+
+      val version = randomInt(from = 1, to = 10)
+      val replicaRoot = createObjectLocation.join(s"v$version")
+      val sizes = expectedSizes.map { case (path, size) => replicaRoot.join(path) -> size }
+
+      val storageManifest = createManifest(
+        bag = bag,
+        replicaRoot = replicaRoot,
+        version = version,
+        sizes = sizes
+      )
+
+      val actualSizes =
+        storageManifest.manifest.files
+          .map { file =>
+            (file.name, file.size)
+          }
+
+      actualSizes should contain theSameElementsAs expectedSizes.toSeq
     }
   }
 

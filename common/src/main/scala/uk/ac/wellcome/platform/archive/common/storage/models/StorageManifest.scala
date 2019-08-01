@@ -16,7 +16,8 @@ import uk.ac.wellcome.platform.archive.common.verify.{
 case class StorageManifestFile(
   checksum: ChecksumValue,
   name: String,
-  path: String
+  path: String,
+  size: Long
 )
 
 case class FileManifest(

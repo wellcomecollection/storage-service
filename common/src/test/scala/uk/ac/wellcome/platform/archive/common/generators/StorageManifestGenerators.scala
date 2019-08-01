@@ -32,7 +32,8 @@ trait StorageManifestGenerators
     StorageManifestFile(
       checksum = bagFile.checksum.value,
       name = bagFile.path.value,
-      path = bagFile.path.value
+      path = bagFile.path.value,
+      size = Random.nextLong().abs
     )
   }
 

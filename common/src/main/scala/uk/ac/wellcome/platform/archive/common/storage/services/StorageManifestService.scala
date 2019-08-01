@@ -189,12 +189,11 @@ object StorageManifestService extends Logging {
         )
       }
 
-      debug(s"size = $size")
-
       StorageManifestFile(
         checksum = bagFile.checksum.value,
         name = bagFile.path.value,
-        path = path
+        path = path,
+        size = size
       )
     }
   }
