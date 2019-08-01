@@ -21,9 +21,9 @@ module "logstash_transit" {
   env_vars_length = 1
 
   secret_env_vars = {
-    ES_HOST     = "storage/logstash/es_host"
-    ES_USER     = "storage/logstash/es_user"
-    ES_PASS     = "storage/logstash/es_pass"
+    ES_HOST = "storage/logstash/es_host"
+    ES_USER = "storage/logstash/es_user"
+    ES_PASS = "storage/logstash/es_pass"
   }
 
   secret_env_vars_length = 3
@@ -63,7 +63,7 @@ module "bag_unpacker" {
     operation_name          = "unpacking"
     JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_unpacker_service_name}"
 
-    logstash_host           = "${local.logstash_transit_service_name}.${var.namespace}"
+    logstash_host = "${local.logstash_transit_service_name}.${var.namespace}"
   }
 
   env_vars_length = 9
@@ -401,13 +401,13 @@ module "api" {
   ingests_container_image = "${local.ingests_api_image}"
   ingests_container_port  = "9001"
   ingests_env_vars = {
-    context_url                   = "${var.api_url}/context.json"
-    app_base_url                  = "${var.api_url}/storage/v1/ingests"
-    unpacker_topic_arn            = "${module.bag_unpacker_input_topic.arn}"
-    archive_ingest_table_name     = "${var.ingests_table_name}"
-    bag_id_lookup_table_name      = "${var.bag_id_lookup_table_name}"
-    metrics_namespace             = "${local.ingests_api_service_name}"
-    JAVA_OPTS                     = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
+    context_url               = "${var.api_url}/context.json"
+    app_base_url              = "${var.api_url}/storage/v1/ingests"
+    unpacker_topic_arn        = "${module.bag_unpacker_input_topic.arn}"
+    archive_ingest_table_name = "${var.ingests_table_name}"
+    bag_id_lookup_table_name  = "${var.bag_id_lookup_table_name}"
+    metrics_namespace         = "${local.ingests_api_service_name}"
+    JAVA_OPTS                 = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
   }
   ingests_env_vars_length        = 7
   ingests_nginx_container_image  = "${var.nginx_image}"
