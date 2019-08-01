@@ -6,11 +6,11 @@ import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetchEntry,
-  BagFile,
   BagPath,
   BagVersion
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
+  BagFileGenerators,
   BagGenerators,
   StorageSpaceGenerators
 }
@@ -23,12 +23,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Checksum,
-  ChecksumValue,
-  MD5,
-  SHA256
-}
+import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -38,6 +33,7 @@ class StorageManifestServiceTest
     extends FunSpec
     with Matchers
     with BagGenerators
+    with BagFileGenerators
     with ObjectLocationGenerators
     with StorageSpaceGenerators
     with TimeTestFixture
@@ -88,11 +84,8 @@ class StorageManifestServiceTest
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
       val bag = createBagWith(
-        manifestFiles = files.map { f =>
-          BagFile(
-            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-            path = BagPath(f)
-          )
+        manifestFiles = files.map { path =>
+          createBagFileWith(path = path)
         }
       )
 
@@ -122,11 +115,8 @@ class StorageManifestServiceTest
         Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
 
       val bag = createBagWith(
-        tagManifestFiles = files.map { f =>
-          BagFile(
-            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-            path = BagPath(f)
-          )
+        tagManifestFiles = files.map { path =>
+          createBagFileWith(path = path)
         }
       )
 
@@ -168,10 +158,7 @@ class StorageManifestServiceTest
 
       val bag = createBagWith(
         manifestFiles = Seq(
-          BagFile(
-            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-            path = BagPath("data/file1.txt")
-          )
+          createBagFileWith("data/file1.txt")
         ),
         fetchEntries = fetchEntries
       )
@@ -214,14 +201,8 @@ class StorageManifestServiceTest
 
       val bag = createBagWith(
         manifestFiles = Seq(
-          BagFile(
-            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-            path = BagPath("data/file1.txt")
-          ),
-          BagFile(
-            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-            path = BagPath("data/file2.txt")
-          )
+          createBagFileWith("data/file1.txt"),
+          createBagFileWith("data/file2.txt")
         ),
         fetchEntries = fetchEntries
       )
@@ -252,15 +233,12 @@ class StorageManifestServiceTest
       val paths = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
       val filesWithChecksums =
-        paths.map { _ -> ChecksumValue(randomAlphanumeric) }
+        paths.map { _ -> randomAlphanumeric }
 
       val bag = createBagWith(
         manifestFiles = filesWithChecksums.map {
-          case (f, checksumValue) =>
-            BagFile(
-              checksum = Checksum(SHA256, checksumValue),
-              path = BagPath(f)
-            )
+          case (path, checksumValue) =>
+            createBagFileWith(path = path, checksum = checksumValue)
         }
       )
 
@@ -278,7 +256,7 @@ class StorageManifestServiceTest
       val nameChecksumMap =
         storageManifest.manifest.files
           .map { file =>
-            (file.name, file.checksum)
+            (file.name, file.checksum.value)
           }
 
       nameChecksumMap should contain theSameElementsAs filesWithChecksums
@@ -289,15 +267,12 @@ class StorageManifestServiceTest
         Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
 
       val filesWithChecksums =
-        paths.map { _ -> ChecksumValue(randomAlphanumeric) }
+        paths.map { _ -> randomAlphanumeric }
 
       val bag = createBagWith(
         tagManifestFiles = filesWithChecksums.map {
-          case (f, checksumValue) =>
-            BagFile(
-              checksum = Checksum(SHA256, checksumValue),
-              path = BagPath(f)
-            )
+          case (path, checksum) =>
+            createBagFileWith(path = path, checksum = checksum)
         }
       )
 
@@ -315,7 +290,7 @@ class StorageManifestServiceTest
       val nameChecksumMap =
         storageManifest.tagManifest.files
           .map { file =>
-            (file.name, file.checksum)
+            (file.name, file.checksum.value)
           }
 
       nameChecksumMap should contain theSameElementsAs filesWithChecksums
@@ -323,12 +298,11 @@ class StorageManifestServiceTest
 
     it(
       "fails if one of the file manifest entries has the wrong hashing algorithm") {
-      // TODO: Rewrite this to use generators
-      val badBagPath = BagPath(randomAlphanumeric)
+      val badPath = randomAlphanumeric
       val manifestFiles = Seq(
-        BagFile(
-          checksum = Checksum(MD5, ChecksumValue(randomAlphanumeric)),
-          path = badBagPath
+        createBagFileWith(
+          path = badPath,
+          checksumAlgorithm = MD5
         )
       )
 
@@ -338,18 +312,18 @@ class StorageManifestServiceTest
       )
 
       assertIsError(bag = bag) {
-        _ shouldBe s"Mismatched checksum algorithms in manifest: entry $badBagPath has algorithm MD5, but manifest uses SHA-256"
+        _ shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
       }
     }
 
     it(
       "fails if one of the tag manifest entries has the wrong hashing algorithm") {
       // TODO: Rewrite this to use generators
-      val badBagPath = BagPath(randomAlphanumeric)
+      val badPath = randomAlphanumeric
       val tagManifestFiles = Seq(
-        BagFile(
-          checksum = Checksum(MD5, ChecksumValue(randomAlphanumeric)),
-          path = badBagPath
+        createBagFileWith(
+          path = badPath,
+          checksumAlgorithm = MD5
         )
       )
 
@@ -359,7 +333,7 @@ class StorageManifestServiceTest
       )
 
       assertIsError(bag = bag) {
-        _ shouldBe s"Mismatched checksum algorithms in manifest: entry $badBagPath has algorithm MD5, but manifest uses SHA-256"
+        _ shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
       }
     }
   }
@@ -396,10 +370,7 @@ class StorageManifestServiceTest
 
       val bag = createBagWith(
         manifestFiles = Seq(
-          BagFile(
-            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-            path = BagPath("data/file1.txt")
-          )
+          createBagFileWith("data/file1.txt")
         ),
         fetchEntries = fetchEntries
       )
@@ -424,10 +395,7 @@ class StorageManifestServiceTest
 
       val bag = createBagWith(
         manifestFiles = Seq(
-          BagFile(
-            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-            path = BagPath("data/file1.txt")
-          )
+          createBagFileWith("data/file1.txt")
         ),
         fetchEntries = fetchEntries
       )
@@ -481,11 +449,8 @@ class StorageManifestServiceTest
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
       val bag = createBagWith(
-        manifestFiles = files.map { f =>
-          BagFile(
-            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-            path = BagPath(f)
-          )
+        manifestFiles = files.map { path =>
+          createBagFileWith(path)
         }
       )
 
@@ -514,15 +479,12 @@ class StorageManifestServiceTest
       val expectedSizes = paths.map { _ -> Random.nextLong().abs }.toMap
 
       val filesWithChecksums =
-        paths.map { _ -> ChecksumValue(randomAlphanumeric) }
+        paths.map { _ -> randomAlphanumeric }
 
       val bag = createBagWith(
         manifestFiles = filesWithChecksums.map {
-          case (f, checksumValue) =>
-            BagFile(
-              checksum = Checksum(SHA256, checksumValue),
-              path = BagPath(f)
-            )
+          case (path, checksum) =>
+            createBagFileWith(path = path, checksum = checksum)
         }
       )
 
@@ -560,14 +522,8 @@ class StorageManifestServiceTest
 
       val bag = createBagWith(
         manifestFiles = Seq(
-          BagFile(
-            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-            path = BagPath("data/1.txt")
-          ),
-          BagFile(
-            checksum = Checksum(SHA256, ChecksumValue(randomAlphanumeric)),
-            path = BagPath("data/2.txt")
-          )
+          createBagFileWith("data/1.txt"),
+          createBagFileWith("data/2.txt")
         ),
         fetchEntries = Seq(
           BagFetchEntry(
@@ -605,7 +561,7 @@ class StorageManifestServiceTest
 
       actualSizes should contain theSameElementsAs Seq(
         ("data/1.txt", 10L),
-        ("data/2.txt", 20L),
+        ("data/2.txt", 20L)
       )
     }
   }
