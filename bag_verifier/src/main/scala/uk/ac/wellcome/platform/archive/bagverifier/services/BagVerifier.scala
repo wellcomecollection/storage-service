@@ -226,6 +226,36 @@ class BagVerifier()(
       case _ => Right(())
     }
 
+  // Files that it's okay not to be referenced by any other manifests/files.
+  //
+  // The BagIt spec supports four checksum algorithms, and you can send
+  // multiple manifests with different algorithms in the same bag.
+  // See https://tools.ietf.org/html/rfc8493#section-2.4
+  //
+  // The bag verifier only requires that bags include SHA256 manifests,
+  // so we ignore tag/file manifests for other algorithms without
+  // checking them.
+  //
+  // We ignore the tag manifests because they're not referred to by the
+  // checksum lists in any other manifests:
+  //
+  //        (tag manifest) -> (file manifest) -> (files)
+  //
+  // The files are checked by the file manifest, the file manifest is
+  // checked by the tag manifest, but at the top you can't check the
+  // tag manifest -- how would you check the thing that checks that?
+  //
+  // We don't ignore the file manifests (e.g. manifest-md5.txt), because
+  // those should be included in the SHA256 tag manifest.  Every tag manifest
+  // should include checksums for every file manifest.
+  //
+  private val excludedFiles = Seq(
+    "tagmanifest-md5.txt",
+    "tagmanifest-sha1.txt",
+    "tagmanifest-sha256.txt",
+    "tagmanifest-sha512.txt",
+  )
+
   // Check that there aren't any files in the bag that aren't referenced in
   // either the file manifest or the tag manifest.
   private def verifyNoUnreferencedFiles(
@@ -240,11 +270,8 @@ class BagVerifier()(
 
         val unreferencedFiles = actualLocations
           .filterNot { expectedLocations.contains(_) }
-          .filterNot {
-            // The tag manifest isn't referred to by other files, so we don't have
-            // it in the list of verifier successes/failures.  But we expect to
-            // see it in the bag.
-            _ == root.join("tagmanifest-sha256.txt")
+          .filterNot { location =>
+            excludedFiles.exists { root.join(_) == location }
           }
 
         if (unreferencedFiles.isEmpty) {
