@@ -52,22 +52,22 @@ object BagMatcher {
           fetchEntries = existing.fetchEntries :+ fetchEntry))
     }
 
-    val matchedLocations = paths.values.map { pathInfo =>
-      (pathInfo.bagFiles.distinct, pathInfo.fetchEntries.distinct) match {
-        case (Seq(bagFile), Seq()) =>
-          Right(MatchedLocation(bagFile = bagFile, fetchEntry = None))
-        case (Seq(bagFile), Seq(fetchEntry)) =>
-          Right(
-            MatchedLocation(bagFile = bagFile, fetchEntry = Some(fetchEntry)))
-        case (Seq(), Seq(fetchEntry)) =>
-          Left(
-            s"Fetch entry refers to a path that isn't in the bag: $fetchEntry")
-        case (Seq(), fetchEntriesForPath) =>
-          Left(
-            s"Multiple fetch entries refers to a path that isn't in the bag: $fetchEntriesForPath")
-        case _ =>
-          Left(s"Multiple, ambiguous entries for the same path: $pathInfo")
-      }
+    val matchedLocations = paths.map {
+      case (path, pathInfo) =>
+        (pathInfo.bagFiles.distinct, pathInfo.fetchEntries.distinct) match {
+          case (Seq(bagFile), Seq()) =>
+            Right(MatchedLocation(bagFile = bagFile, fetchEntry = None))
+          case (Seq(bagFile), Seq(fetchEntry)) =>
+            Right(
+              MatchedLocation(bagFile = bagFile, fetchEntry = Some(fetchEntry)))
+
+          case (Seq(), fetchEntriesForPath) if fetchEntriesForPath.nonEmpty =>
+            Left(
+              s"Fetch entry refers to a path that isn't in the bag manifest: $path")
+
+          case _ =>
+            Left(s"Multiple, ambiguous entries for the same path: $pathInfo")
+        }
     }
 
     val successes = matchedLocations.collect { case Right(t) => t }.toSeq

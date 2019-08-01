@@ -202,8 +202,8 @@ class BagVerifiableTest
 
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith(
-        "Multiple fetch entries refers to a path that isn't in the bag")
+      result.left.get.msg shouldBe
+        "Fetch entry refers to a path that isn't in the bag manifest: example.txt"
     }
 
     it("has multiple references to the same file with different checksums") {

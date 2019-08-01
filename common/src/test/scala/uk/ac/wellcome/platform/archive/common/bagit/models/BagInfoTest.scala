@@ -4,7 +4,6 @@ import org.apache.commons.io.IOUtils
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models
 import uk.ac.wellcome.platform.archive.common.bagit.models.error.InvalidBagInfo
-import uk.ac.wellcome.platform.archive.common.fixtures.BagIt
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   PayloadOxumGenerators
@@ -12,7 +11,6 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 
 class BagInfoTest
     extends FunSpec
-    with BagIt
     with Matchers
     with ExternalIdentifierGenerators
     with PayloadOxumGenerators {
@@ -23,8 +21,12 @@ class BagInfoTest
     val externalIdentifier = createExternalIdentifier
     val payloadOxum = createPayloadOxum
     val baggingDate = randomLocalDate
+
     val bagInfoString =
-      bagInfoFileContents(externalIdentifier, payloadOxum, baggingDate)
+      s"""|External-Identifier: $externalIdentifier
+          |Payload-Oxum: ${payloadOxum.payloadBytes}.${payloadOxum.numberOfPayloadFiles}
+          |Bagging-Date: $baggingDate
+          |""".stripMargin
 
     BagInfo.parseBagInfo(t, IOUtils.toInputStream(bagInfoString, "UTF-8")) shouldBe Right(
       BagInfo(externalIdentifier, payloadOxum, baggingDate))
@@ -40,14 +42,15 @@ class BagInfoTest
     val internalSenderIdentifier = Some(randomInternalSenderIdentifier)
     val internalSenderDescription = Some(randomInternalSenderDescription)
 
-    val bagInfoString = bagInfoFileContents(
-      externalIdentifier,
-      payloadOxum,
-      baggingDate,
-      sourceOrganisation,
-      externalDescription,
-      internalSenderIdentifier,
-      internalSenderDescription)
+    val bagInfoString =
+      s"""|External-Identifier: $externalIdentifier
+          |Payload-Oxum: ${payloadOxum.payloadBytes}.${payloadOxum.numberOfPayloadFiles}
+          |Bagging-Date: $baggingDate
+          |Source-Organization: ${sourceOrganisation.get}
+          |External-Description: ${externalDescription.get}
+          |Internal-Sender-Identifier: ${internalSenderIdentifier.get}
+          |Internal-Sender-Description: ${internalSenderDescription.get}
+          |""".stripMargin
 
     BagInfo.parseBagInfo(t, IOUtils.toInputStream(bagInfoString, "UTF-8")) shouldBe Right(
       models.BagInfo(

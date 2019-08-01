@@ -53,8 +53,22 @@ class BagVerifier()(
             bag = bag
           )
 
+          actualLocations <- listing.list(root.asPrefix) match {
+            case Right(iterable) => Right(iterable.toSeq)
+            case Left(listingFailure) =>
+              Left(BagVerifierError(listingFailure.e))
+          }
+
+          _ <- verifyNoConcreteFetchEntries(
+            bag = bag,
+            root = root,
+            actualLocations = actualLocations,
+            verificationResult = verificationResult
+          )
+
           _ <- verifyNoUnreferencedFiles(
             root = root,
+            actualLocations = actualLocations,
             verificationResult = verificationResult
           )
 
@@ -163,10 +177,90 @@ class BagVerifier()(
       case _ => Right(())
     }
 
+  // Check that the user hasn't sent any files in the bag which
+  // also have a fetch file entry.
+  private def verifyNoConcreteFetchEntries(
+    bag: Bag,
+    root: ObjectLocation,
+    actualLocations: Seq[ObjectLocation],
+    verificationResult: VerificationResult): InternalResult[Unit] =
+    verificationResult match {
+      case VerificationSuccess(_) =>
+        val bagFetchLocations = bag.fetch match {
+          case Some(fetchEntry) =>
+            fetchEntry.files
+              .map { _.path }
+              .map { path =>
+                root.join(path.value)
+              }
+
+          case None => Seq.empty
+        }
+
+        val concreteFetchLocations =
+          bagFetchLocations
+            .filter { actualLocations.contains(_) }
+
+        if (concreteFetchLocations.isEmpty) {
+          Right(())
+        } else {
+          val messagePrefix =
+            "Files referred to in the fetch.txt also appear in the bag: "
+
+          val internalMessage = messagePrefix + concreteFetchLocations.mkString(
+            ", ")
+
+          val userMessage = messagePrefix +
+            concreteFetchLocations
+              .map { _.path.stripPrefix(root.path).stripPrefix("/") }
+              .mkString(", ")
+
+          Left(
+            BagVerifierError(
+              new Throwable(internalMessage),
+              userMessage = Some(userMessage)
+            )
+          )
+        }
+
+      case _ => Right(())
+    }
+
+  // Files that it's okay not to be referenced by any other manifests/files.
+  //
+  // The BagIt spec supports four checksum algorithms, and you can send
+  // multiple manifests with different algorithms in the same bag.
+  // See https://tools.ietf.org/html/rfc8493#section-2.4
+  //
+  // The bag verifier only requires that bags include SHA256 manifests,
+  // so we ignore tag/file manifests for other algorithms without
+  // checking them.
+  //
+  // We ignore the tag manifests because they're not referred to by the
+  // checksum lists in any other manifests:
+  //
+  //        (tag manifest) -> (file manifest) -> (files)
+  //
+  // The files are checked by the file manifest, the file manifest is
+  // checked by the tag manifest, but at the top you can't check the
+  // tag manifest -- how would you check the thing that checks that?
+  //
+  // We don't ignore the file manifests (e.g. manifest-md5.txt), because
+  // those should be included in the SHA256 tag manifest.  Every tag manifest
+  // should include checksums for every file manifest.
+  //
+  private val excludedFiles = Seq(
+    "tagmanifest-md5.txt",
+    "tagmanifest-sha1.txt",
+    "tagmanifest-sha256.txt",
+    "tagmanifest-sha512.txt",
+  )
+
   // Check that there aren't any files in the bag that aren't referenced in
   // either the file manifest or the tag manifest.
   private def verifyNoUnreferencedFiles(
     root: ObjectLocation,
+    actualLocations: Seq[ObjectLocation],
     verificationResult: VerificationResult): InternalResult[Unit] =
     verificationResult match {
       case VerificationSuccess(locations) =>
@@ -174,57 +268,45 @@ class BagVerifier()(
 
         debug(s"Expecting the bag to contain: $expectedLocations")
 
-        for {
-          actualLocations <- listing.list(root.asPrefix) match {
-            case Right(iterable) => Right(iterable)
-            case Left(listingFailure) =>
-              Left(BagVerifierError(listingFailure.e))
+        val unreferencedFiles = actualLocations
+          .filterNot { expectedLocations.contains(_) }
+          .filterNot { location =>
+            excludedFiles.exists { root.join(_) == location }
           }
 
-          unreferencedFiles = actualLocations
-            .filterNot { expectedLocations.contains(_) }
-            .filterNot {
-              // The tag manifest isn't referred to by other files, so we don't have
-              // it in the list of verifier successes/failures.  But we expect to
-              // see it in the bag.
-              _ == root.join("tagmanifest-sha256.txt")
+        if (unreferencedFiles.isEmpty) {
+          Right(())
+        } else {
+          // For internal logging, we want a message that contains the full
+          // S3 locations for easy debugging, e.g.:
+          //
+          //    Bag contains 5 files which are not referenced in the manifest:
+          //    bukkit/ingest-id/bag-id/unreferenced1.txt, ...
+          //
+          // For the user-facing message, we want to trim the first part,
+          // because it's an internal detail of the storage service, e.g.:
+          //
+          //    Bag contains 5 files which are not referenced in the manifest:
+          //    unreferenced1.txt, ...
+          //
+          val messagePrefix =
+            if (unreferencedFiles.size == 1) {
+              "Bag contains a file which is not referenced in the manifest: "
+            } else {
+              s"Bag contains ${unreferencedFiles.size} files which are not referenced in the manifest: "
             }
 
-          result <- if (unreferencedFiles.isEmpty)
-            Right(())
-          else {
+          val userMessage = messagePrefix +
+            unreferencedFiles
+              .map { _.path.stripPrefix(root.path) }
+              .mkString(", ")
 
-            // For internal logging, we want a message that contains the full
-            // S3 locations for easy debugging, e.g.:
-            //
-            //    Bag contains 5 files which are not referenced in the manifest:
-            //    bukkit/ingest-id/bag-id/unreferenced1.txt, ...
-            //
-            // For the user-facing message, we want to trim the first part,
-            // because it's an internal detail of the storage service, e.g.:
-            //
-            //    Bag contains 5 files which are not referenced in the manifest:
-            //    unreferenced1.txt, ...
-            //
-            val messagePrefix =
-              if (unreferencedFiles.size == 1) {
-                "Bag contains a file which is not referenced in the manifest: "
-              } else {
-                s"Bag contains ${unreferencedFiles.size} files which are not referenced in the manifest: "
-              }
-
-            val userMessage = messagePrefix +
-              unreferencedFiles
-                .map { _.path.stripPrefix(root.path) }
-                .mkString(", ")
-
-            Left(
-              BagVerifierError(
-                new Throwable(messagePrefix + unreferencedFiles.mkString(", ")),
-                userMessage = Some(userMessage)
-              ))
-          }
-        } yield result
+          Left(
+            BagVerifierError(
+              new Throwable(messagePrefix + unreferencedFiles.mkString(", ")),
+              userMessage = Some(userMessage)
+            ))
+        }
 
       case _ => Right(())
     }
@@ -254,7 +336,7 @@ class BagVerifier()(
             endTime = Instant.now()
           ),
           e = incomplete,
-          maybeUserFacingMessage = None
+          maybeUserFacingMessage = Some(incomplete.getMessage)
         )
 
       case Right(success: VerificationSuccess) =>
@@ -278,12 +360,14 @@ class BagVerifier()(
         warn(s"Errors verifying $root:\n$verificationFailureMessage")
 
         val errorCount = result.failure.size
+        val pathList =
+          result.failure.map { _.verifiableLocation.path.value }.mkString(", ")
 
         val userFacingMessage =
           if (errorCount == 1)
-            "There was 1 error verifying the bag"
+            s"Unable to verify one file in the bag: $pathList"
           else
-            s"There were $errorCount errors verifying the bag"
+            s"Unable to verify $errorCount files in the bag: $pathList"
 
         IngestFailed(
           summary = VerificationFailureSummary(

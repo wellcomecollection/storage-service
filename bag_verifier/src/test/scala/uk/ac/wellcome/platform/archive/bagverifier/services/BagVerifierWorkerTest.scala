@@ -7,63 +7,59 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.{
-  BagRootLocationPayload,
-  EnrichedBagInformationPayload
-}
 import uk.ac.wellcome.platform.archive.common.fixtures.{
-  FileEntry,
-  S3BagLocationFixtures
+  S3BagBuilder,
+  S3BagBuilderBase
 }
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.{
+  BagRootLocationPayload,
+  EnrichedBagInformationPayload
+}
 
 import scala.util.{Failure, Success, Try}
 
 class BagVerifierWorkerTest
     extends FunSpec
     with Matchers
-    with S3BagLocationFixtures
     with IngestUpdateAssertions
     with IntegrationPatience
     with BagVerifierFixtures
     with PayloadGenerators {
 
-  val dataFileCount = 3
+  val dataFileCount: Int = randomInt(from = 2, to = 10)
 
   it(
     "updates the ingest monitor and sends an outgoing notification if verification succeeds") {
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
-      service =>
-        withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, dataFileCount = dataFileCount) {
-            case (bagRootLocation, bagInfo) =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  externalIdentifier = bagInfo.externalIdentifier
-                ),
-                bagRootLocation = bagRootLocation
-              )
+    withLocalS3Bucket { bucket =>
+      val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
-              service.processMessage(payload) shouldBe a[Success[_]]
+      val payload = createEnrichedBagInformationPayloadWith(
+        context = createPipelineContextWith(
+          externalIdentifier = bagInfo.externalIdentifier
+        ),
+        bagRootLocation = bagRootLocation
+      )
 
-              assertTopicReceivesIngestEvents(
-                payload.ingestId,
-                ingests,
-                expectedDescriptions = Seq(
-                  "Verification started",
-                  "Verification succeeded"
-                )
-              )
+      withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
+        _.processMessage(payload) shouldBe a[Success[_]]
+      }
 
-              outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-                payload)
-          }
-        }
+      assertTopicReceivesIngestEvents(
+        payload.ingestId,
+        ingests,
+        expectedDescriptions = Seq(
+          "Verification started",
+          "Verification succeeded"
+        )
+      )
+
+      outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(payload)
     }
   }
 
@@ -72,23 +68,22 @@ class BagVerifierWorkerTest
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
-      withBagVerifierWorker(ingests, outgoing) { service =>
-        withLocalS3Bucket { bucket =>
-          withS3Bag(bucket) {
-            case (bagRootLocation, bagInfo) =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  externalIdentifier = bagInfo.externalIdentifier
-                ),
-                bagRootLocation = bagRootLocation
-              )
+      withLocalS3Bucket { bucket =>
+        val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
-              service.processMessage(payload) shouldBe a[Success[_]]
+        val payload = createEnrichedBagInformationPayloadWith(
+          context = createPipelineContextWith(
+            externalIdentifier = bagInfo.externalIdentifier
+          ),
+          bagRootLocation = bagRootLocation
+        )
 
-              outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-                payload)
-          }
+        withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
+          _.processMessage(payload) shouldBe a[Success[_]]
         }
+
+        outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+          payload)
       }
     }
 
@@ -96,22 +91,21 @@ class BagVerifierWorkerTest
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
-      withBagVerifierWorker(ingests, outgoing) { service =>
-        withLocalS3Bucket { bucket =>
-          withS3Bag(bucket) {
-            case (bagRootLocation, bagInfo) =>
-              val payload = createBagRootLocationPayloadWith(
-                context = createPipelineContextWith(
-                  externalIdentifier = bagInfo.externalIdentifier
-                ),
-                bagRootLocation = bagRootLocation
-              )
+      withLocalS3Bucket { bucket =>
+        val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
-              service.processMessage(payload) shouldBe a[Success[_]]
+        val payload = createBagRootLocationPayloadWith(
+          context = createPipelineContextWith(
+            externalIdentifier = bagInfo.externalIdentifier
+          ),
+          bagRootLocation = bagRootLocation
+        )
 
-              outgoing.getMessages[BagRootLocationPayload] shouldBe Seq(payload)
-          }
+        withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
+          _.processMessage(payload) shouldBe a[Success[_]]
         }
+
+        outgoing.getMessages[BagRootLocationPayload] shouldBe Seq(payload)
       }
     }
   }
@@ -120,66 +114,75 @@ class BagVerifierWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
-      service =>
-        withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, createDataManifest = dataManifestWithWrongChecksum) {
-            case (bagRootLocation, _) =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+    withLocalS3Bucket { bucket =>
+      val badBuilder = new S3BagBuilderBase {
+        override protected def createPayloadManifest(
+          entries: Seq[PayloadEntry]): Option[String] =
+          super.createPayloadManifest(
+            entries.head.copy(contents = randomAlphanumeric) +: entries.tail
+          )
+      }
 
-              service.processMessage(payload) shouldBe a[Success[_]]
+      val (bagRootLocation, bagInfo) = badBuilder.createS3BagWith(bucket)
 
-              outgoing.messages shouldBe empty
+      val payload = createEnrichedBagInformationPayloadWith(
+        context = createPipelineContextWith(
+          externalIdentifier = bagInfo.externalIdentifier
+        ),
+        bagRootLocation = bagRootLocation
+      )
 
-              assertTopicReceivesIngestStatus(
-                payload.ingestId,
-                ingests,
-                status = Ingest.Failed
-              ) { events =>
-                val description = events.map {
-                  _.description
-                }.head
-                description should startWith("Verification failed")
-              }
-          }
-        }
+      withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
+        _.processMessage(payload) shouldBe a[Success[_]]
+      }
+
+      outgoing.messages shouldBe empty
+
+      assertTopicReceivesIngestStatus(
+        payload.ingestId,
+        ingests,
+        status = Ingest.Failed
+      ) { events =>
+        val description = events.map { _.description }.head
+        description should startWith("Verification failed")
+      }
     }
   }
 
   it("only updates the ingest monitor if it cannot perform the verification") {
-    def dontCreateTheDataManifest(
-      dataFiles: List[(String, String)]): Option[FileEntry] = None
-
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
-      service =>
-        withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, createDataManifest = dontCreateTheDataManifest) {
-            case (bagRootLocation, _) =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+    withLocalS3Bucket { bucket =>
+      val badBuilder = new S3BagBuilderBase {
+        override protected def createPayloadManifest(
+          entries: Seq[PayloadEntry]): Option[String] =
+          None
+      }
 
-              service.processMessage(payload) shouldBe a[Success[_]]
+      val (bagRootLocation, bagInfo) = badBuilder.createS3BagWith(bucket)
 
-              outgoing.messages shouldBe empty
+      val payload = createEnrichedBagInformationPayloadWith(
+        context = createPipelineContextWith(
+          externalIdentifier = bagInfo.externalIdentifier
+        ),
+        bagRootLocation = bagRootLocation
+      )
 
-              assertTopicReceivesIngestStatus(
-                payload.ingestId,
-                ingests,
-                status = Ingest.Failed
-              ) { events =>
-                val description = events.map {
-                  _.description
-                }.head
-                description should startWith("Verification failed")
-              }
-          }
-        }
+      withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
+        _.processMessage(payload) shouldBe a[Success[_]]
+      }
+
+      outgoing.messages shouldBe empty
+
+      assertTopicReceivesIngestStatus(
+        payload.ingestId,
+        ingests,
+        status = Ingest.Failed
+      ) { events =>
+        val description = events.map { _.description }.head
+        description should startWith("Verification failed")
+      }
     }
   }
 
@@ -193,33 +196,31 @@ class BagVerifierWorkerTest
     val payloadExternalIdentifier =
       ExternalIdentifier(externalIdentifier + "_payload")
 
-    withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
-      service =>
-        withLocalS3Bucket { bucket =>
-          withS3Bag(bucket, externalIdentifier = bagInfoExternalIdentifier) {
-            case (bagRootLocation, _) =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  externalIdentifier = payloadExternalIdentifier
-                ),
-                bagRootLocation = bagRootLocation
-              )
+    withLocalS3Bucket { bucket =>
+      val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+        bucket,
+        externalIdentifier = bagInfoExternalIdentifier)
 
-              service.processMessage(payload) shouldBe a[Success[_]]
+      val payload = createEnrichedBagInformationPayloadWith(
+        context = createPipelineContextWith(
+          externalIdentifier = payloadExternalIdentifier
+        ),
+        bagRootLocation = bagRootLocation
+      )
 
-              assertTopicReceivesIngestStatus(
-                payload.ingestId,
-                ingests,
-                status = Ingest.Failed
-              ) { events =>
-                val description = events.map {
-                  _.description
-                }.head
-                description should startWith(
-                  "Verification failed - External identifier in bag-info.txt does not match request")
-              }
-          }
-        }
+      withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
+        _.processMessage(payload) shouldBe a[Success[_]]
+      }
+
+      assertTopicReceivesIngestStatus(
+        payload.ingestId,
+        ingests,
+        status = Ingest.Failed
+      ) { events =>
+        val description = events.map { _.description }.head
+        description should startWith(
+          "Verification failed - External identifier in bag-info.txt does not match request")
+      }
     }
   }
 
@@ -231,28 +232,25 @@ class BagVerifierWorkerTest
         Failure(new Throwable("BOOM!"))
     }
 
-    withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
-      service =>
-        withLocalS3Bucket { bucket =>
-          withS3Bag(bucket) {
-            case (bagRootLocation, bagInfo) =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                context = createPipelineContextWith(
-                  externalIdentifier = bagInfo.externalIdentifier
-                ),
-                bagRootLocation = bagRootLocation
-              )
+    withLocalS3Bucket { bucket =>
+      val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
-              service.processMessage(payload) shouldBe a[Failure[_]]
+      val payload = createEnrichedBagInformationPayloadWith(
+        context = createPipelineContextWith(
+          externalIdentifier = bagInfo.externalIdentifier
+        ),
+        bagRootLocation = bagRootLocation
+      )
 
-              assertTopicReceivesIngestEvent(payload.ingestId, ingests) {
-                events =>
-                  events.map {
-                    _.description
-                  } shouldBe List("Verification succeeded")
-              }
-          }
-        }
+      withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
+        _.processMessage(payload) shouldBe a[Failure[_]]
+      }
+
+      assertTopicReceivesIngestEvent(payload.ingestId, ingests) { events =>
+        events.map {
+          _.description
+        } shouldBe List("Verification succeeded")
+      }
     }
   }
 }

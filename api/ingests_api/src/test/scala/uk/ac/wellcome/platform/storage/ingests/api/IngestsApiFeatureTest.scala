@@ -14,7 +14,10 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.models._
@@ -38,79 +41,94 @@ class IngestsApiFeatureTest
         createdDate = Instant.now(),
         events = Seq(createIngestEvent, createIngestEvent).sortBy {
           _.createdDate
-        }
+        },
+        version = None
       )
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
         case (_, _, metrics, baseUrl) =>
-          withMaterializer { implicit materializer =>
-            whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
-              result.status shouldBe StatusCodes.OK
+          whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
+            result.status shouldBe StatusCodes.OK
 
-              withStringEntity(result.entity) { jsonString =>
-                assertJsonStringsAreEqual(
-                  jsonString,
-                  s"""
-                     |{
-                     |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
-                     |  "id": "${ingest.id.toString}",
-                     |  "type": "Ingest",
-                     |  "ingestType": {
-                     |    "id": "${ingest.ingestType.id}",
-                     |    "type": "IngestType"
-                     |  },
-                     |  "space": {
-                     |    "id": "${ingest.space.underlying}",
-                     |    "type": "Space"
-                     |  },
-                     |  "bag": {
-                     |    "type": "Bag",
-                     |    "info": {
-                     |      "type": "BagInfo",
-                     |      "externalIdentifier": "${ingest.externalIdentifier.underlying}"
-                     |    }
-                     |  },
-                     |  "status": {
-                     |    "id": "${ingest.status.toString}",
-                     |    "type": "Status"
-                     |  },
-                     |  "sourceLocation": {
-                     |    "type": "Location",
-                     |    "provider": {
-                     |      "type": "Provider",
-                     |      "id": "aws-s3-standard"
-                     |    },
-                     |    "bucket": "${ingest.sourceLocation.location.namespace}",
-                     |    "path": "${ingest.sourceLocation.location.path}"
-                     |  },
-                     |  "callback": {
-                     |    "type": "Callback",
-                     |    "url": "${ingest.callback.get.uri}",
-                     |    "status": {
-                     |      "id": "${ingest.callback.get.status.toString}",
-                     |      "type": "Status"
-                     |    }
-                     |  },
-                     |  "createdDate": "${ingest.createdDate}",
-                     |  "lastModifiedDate": "${ingest.lastModifiedDate.get}",
-                     |  "events": [
-                     |    {
-                     |      "type": "IngestEvent",
-                     |      "createdDate": "${ingest.events(0).createdDate}",
-                     |      "description": "${ingest.events(0).description}"
-                     |    },
-                     |    {
-                     |      "type": "IngestEvent",
-                     |      "createdDate": "${ingest.events(1).createdDate}",
-                     |      "description": "${ingest.events(1).description}"
-                     |    }
-                     |  ]
-                     |}
-                   """.stripMargin
-                )
-              }
+            withStringEntity(result.entity) { jsonString =>
+              assertJsonStringsAreEqual(
+                jsonString,
+                s"""
+                   |{
+                   |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+                   |  "id": "${ingest.id.toString}",
+                   |  "type": "Ingest",
+                   |  "ingestType": {
+                   |    "id": "${ingest.ingestType.id}",
+                   |    "type": "IngestType"
+                   |  },
+                   |  "space": {
+                   |    "id": "${ingest.space.underlying}",
+                   |    "type": "Space"
+                   |  },
+                   |  "bag": {
+                   |    "type": "Bag",
+                   |    "info": {
+                   |      "type": "BagInfo",
+                   |      "externalIdentifier": "${ingest.externalIdentifier.underlying}"
+                   |    }
+                   |  },
+                   |  "status": {
+                   |    "id": "${ingest.status.toString}",
+                   |    "type": "Status"
+                   |  },
+                   |  "sourceLocation": {
+                   |    "type": "Location",
+                   |    "provider": {
+                   |      "type": "Provider",
+                   |      "id": "aws-s3-standard"
+                   |    },
+                   |    "bucket": "${ingest.sourceLocation.location.namespace}",
+                   |    "path": "${ingest.sourceLocation.location.path}"
+                   |  },
+                   |  "callback": {
+                   |    "type": "Callback",
+                   |    "url": "${ingest.callback.get.uri}",
+                   |    "status": {
+                   |      "id": "${ingest.callback.get.status.toString}",
+                   |      "type": "Status"
+                   |    }
+                   |  },
+                   |  "createdDate": "${ingest.createdDate}",
+                   |  "lastModifiedDate": "${ingest.lastModifiedDate.get}",
+                   |  "events": [
+                   |    {
+                   |      "type": "IngestEvent",
+                   |      "createdDate": "${ingest.events(0).createdDate}",
+                   |      "description": "${ingest.events(0).description}"
+                   |    },
+                   |    {
+                   |      "type": "IngestEvent",
+                   |      "createdDate": "${ingest.events(1).createdDate}",
+                   |      "description": "${ingest.events(1).description}"
+                   |    }
+                   |  ]
+                   |}
+                   |""".stripMargin
+              )
+            }
 
-              assertMetricSent(metrics, result = HttpMetricResults.Success)
+            assertMetricSent(metrics, result = HttpMetricResults.Success)
+          }
+      }
+    }
+
+    it("includes the version, if available") {
+      val ingest = createIngestWith(
+        version = Some(BagVersion(3))
+      )
+
+      withConfiguredApp(initialIngests = Seq(ingest)) {
+        case (_, _, _, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
+            withStringEntity(result.entity) { jsonString =>
+              val json = parse(jsonString).right.value
+              root.bag.info.version.string.getOption(json) shouldBe Some("v3")
             }
           }
       }
@@ -120,50 +138,44 @@ class IngestsApiFeatureTest
       val ingest = createIngestWith(callback = None)
 
       withConfiguredApp(initialIngests = Seq(ingest)) {
-        case (ingestTracker, _, metrics, baseUrl) =>
-          withMaterializer { implicit materialiser =>
-            whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
-              result.status shouldBe StatusCodes.OK
-              withStringEntity(result.entity) { jsonString =>
-                val infoJson = parse(jsonString).right.get
-                infoJson.findAllByKey("callback") shouldBe empty
-              }
-
-              assertMetricSent(metrics, result = HttpMetricResults.Success)
+        case (_, _, metrics, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
+            result.status shouldBe StatusCodes.OK
+            withStringEntity(result.entity) { jsonString =>
+              val infoJson = parse(jsonString).right.get
+              infoJson.findAllByKey("callback") shouldBe empty
             }
+
+            assertMetricSent(metrics, result = HttpMetricResults.Success)
           }
       }
     }
 
     it("returns a 404 NotFound if no ingest tracker matches id") {
-      withMaterializer { implicit materializer =>
-        withConfiguredApp() {
-          case (_, _, metrics, baseUrl) =>
-            val id = randomUUID
-            whenGetRequestReady(s"$baseUrl/ingests/$id") { response =>
-              assertIsUserErrorResponse(
-                response,
-                description = s"Ingest $id not found",
-                statusCode = StatusCodes.NotFound,
-                label = "Not Found"
-              )
+      withConfiguredApp() {
+        case (_, _, metrics, baseUrl) =>
+          val id = randomUUID
+          whenGetRequestReady(s"$baseUrl/ingests/$id") { response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"Ingest $id not found",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
 
-              assertMetricSent(metrics, result = HttpMetricResults.UserError)
-            }
-        }
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
       }
     }
 
     it("returns a 500 Server Error if reading from DynamoDB fails") {
-      withMaterializer { implicit materializer =>
-        withBrokenApp {
-          case (_, _, metrics, baseUrl) =>
-            whenGetRequestReady(s"$baseUrl/ingests/$randomUUID") { response =>
-              assertIsInternalServerErrorResponse(response)
+      withBrokenApp {
+        case (_, _, metrics, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/ingests/$randomUUID") { response =>
+            assertIsInternalServerErrorResponse(response)
 
-              assertMetricSent(metrics, result = HttpMetricResults.ServerError)
-            }
-        }
+            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          }
       }
     }
   }
@@ -172,85 +184,83 @@ class IngestsApiFeatureTest
     it("creates an ingest") {
       withConfiguredApp() {
         case (ingestTracker, messageSender, metrics, baseUrl) =>
-          withMaterializer { implicit mat =>
-            val url = s"$baseUrl/ingests"
+          val url = s"$baseUrl/ingests"
 
-            val bucketName = "bucket"
-            val s3key = "key.txt"
-            val spaceName = "somespace"
+          val bucketName = "bucket"
+          val s3key = "key.txt"
+          val spaceName = "somespace"
 
-            val externalIdentifier = createExternalIdentifier
+          val externalIdentifier = createExternalIdentifier
 
-            val entity = createRequestWith(
-              bucket = bucketName,
-              key = s3key,
-              space = spaceName,
-              externalIdentifier = externalIdentifier
-            )
+          val entity = createRequestWith(
+            bucket = bucketName,
+            key = s3key,
+            space = spaceName,
+            externalIdentifier = externalIdentifier
+          )
 
-            val expectedLocationR = s"$baseUrl/(.+)".r
+          val expectedLocationR = s"$baseUrl/(.+)".r
 
-            whenPostRequestReady(url, entity) { response: HttpResponse =>
-              response.status shouldBe StatusCodes.Created
+          whenPostRequestReady(url, entity) { response: HttpResponse =>
+            response.status shouldBe StatusCodes.Created
 
-              val maybeId = response.headers.collectFirst {
-                case HttpHeader("location", expectedLocationR(id)) => id
-              }
+            val maybeId = response.headers.collectFirst {
+              case HttpHeader("location", expectedLocationR(id)) => id
+            }
 
-              maybeId.isEmpty shouldBe false
-              val id = UUID.fromString(maybeId.get)
+            maybeId.isEmpty shouldBe false
+            val id = UUID.fromString(maybeId.get)
 
-              val ingestFuture =
+            val ingestFuture =
+              withMaterializer { implicit materializer =>
                 Unmarshal(response.entity).to[ResponseDisplayIngest]
-
-              whenReady(ingestFuture) { actualIngest =>
-                actualIngest.context shouldBe contextUrl
-                actualIngest.id shouldBe id
-                actualIngest.sourceLocation shouldBe DisplayLocation(
-                  provider = StandardDisplayProvider,
-                  bucket = bucketName,
-                  path = s3key
-                )
-
-                actualIngest.callback.isDefined shouldBe true
-                actualIngest.callback.get.url shouldBe testCallbackUri.toString
-                actualIngest.callback.get.status.get shouldBe DisplayStatus(
-                  "processing")
-
-                actualIngest.ingestType shouldBe CreateDisplayIngestType
-
-                actualIngest.status shouldBe DisplayStatus("accepted")
-
-                actualIngest.space shouldBe DisplayStorageSpace(
-                  spaceName,
-                  "Space")
-
-                actualIngest.bag.info.externalIdentifier shouldBe externalIdentifier
-
-                val expectedIngest = Ingest(
-                  id = IngestID(id),
-                  ingestType = CreateIngestType,
-                  sourceLocation = StorageLocation(
-                    StandardStorageProvider,
-                    ObjectLocation(bucketName, s3key)
-                  ),
-                  space = StorageSpace(spaceName),
-                  callback = Some(Callback(testCallbackUri, Callback.Pending)),
-                  status = Ingest.Accepted,
-                  externalIdentifier = externalIdentifier,
-                  createdDate = Instant.parse(actualIngest.createdDate),
-                  events = Nil
-                )
-
-                assertIngestCreated(expectedIngest)(ingestTracker)
-
-                val expectedPayload = SourceLocationPayload(expectedIngest)
-                messageSender
-                  .getMessages[SourceLocationPayload] shouldBe Seq(
-                  expectedPayload)
-
-                assertMetricSent(metrics, result = HttpMetricResults.Success)
               }
+
+            whenReady(ingestFuture) { actualIngest =>
+              actualIngest.context shouldBe contextUrl
+              actualIngest.id shouldBe id
+              actualIngest.sourceLocation shouldBe DisplayLocation(
+                provider = StandardDisplayProvider,
+                bucket = bucketName,
+                path = s3key
+              )
+
+              actualIngest.callback.isDefined shouldBe true
+              actualIngest.callback.get.url shouldBe testCallbackUri.toString
+              actualIngest.callback.get.status.get shouldBe DisplayStatus(
+                "processing")
+
+              actualIngest.ingestType shouldBe CreateDisplayIngestType
+
+              actualIngest.status shouldBe DisplayStatus("accepted")
+
+              actualIngest.space shouldBe DisplayStorageSpace(spaceName)
+
+              actualIngest.bag.info.externalIdentifier shouldBe externalIdentifier
+
+              val expectedIngest = Ingest(
+                id = IngestID(id),
+                ingestType = CreateIngestType,
+                sourceLocation = StorageLocation(
+                  StandardStorageProvider,
+                  ObjectLocation(bucketName, s3key)
+                ),
+                space = StorageSpace(spaceName),
+                callback = Some(Callback(testCallbackUri, Callback.Pending)),
+                status = Ingest.Accepted,
+                externalIdentifier = externalIdentifier,
+                createdDate = Instant.parse(actualIngest.createdDate),
+                events = Nil
+              )
+
+              assertIngestCreated(expectedIngest)(ingestTracker)
+
+              val expectedPayload = SourceLocationPayload(expectedIngest)
+              messageSender
+                .getMessages[SourceLocationPayload] shouldBe Seq(
+                expectedPayload)
+
+              assertMetricSent(metrics, result = HttpMetricResults.Success)
             }
           }
       }
@@ -492,18 +502,14 @@ class IngestsApiFeatureTest
     }
 
     it("returns a 500 Server Error if updating the ingest starter fails") {
-      withMaterializer { implicit materializer =>
-        withBrokenApp {
-          case (_, _, metrics, baseUrl) =>
-            whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
-              response =>
-                assertIsInternalServerErrorResponse(response)
+      withBrokenApp {
+        case (_, _, metrics, baseUrl) =>
+          whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
+            response =>
+              assertIsInternalServerErrorResponse(response)
 
-                assertMetricSent(
-                  metrics,
-                  result = HttpMetricResults.ServerError)
-            }
-        }
+              assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          }
       }
     }
   }

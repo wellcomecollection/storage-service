@@ -6,16 +6,15 @@ import org.scalatest.FunSpec
 import org.scalatest.concurrent.Eventually
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   PayloadGenerators,
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CreateIngestType,
-  UpdateIngestType
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
   EnrichedBagInformationPayload
@@ -64,14 +63,21 @@ class BagAuditorFeatureTest
               .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
               expectedPayload)
 
-            assertTopicReceivesIngestEvents(
-              payload.ingestId,
-              ingests,
-              expectedDescriptions = Seq(
-                "Auditing bag started",
-                "Auditing bag succeeded - Assigned bag version v1"
-              )
-            )
+            assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+              ingestUpdates =>
+                ingestUpdates should have size 2
+
+                ingestUpdates(0) shouldBe a[IngestEventUpdate]
+                ingestUpdates(0).events.map { _.description } shouldBe Seq(
+                  "Auditing bag started")
+
+                ingestUpdates(1) shouldBe a[IngestVersionUpdate]
+                ingestUpdates(1)
+                  .asInstanceOf[IngestVersionUpdate]
+                  .version shouldBe BagVersion(1)
+                ingestUpdates(1).events.map { _.description } shouldBe Seq(
+                  "Auditing bag succeeded - assigned bag version v1")
+            }
           }
       }
     }
@@ -114,14 +120,21 @@ class BagAuditorFeatureTest
             outgoing
               .getMessages[EnrichedBagInformationPayload] should have size 1
 
-            assertTopicReceivesIngestEvents(
-              payload1.ingestId,
-              ingests,
-              expectedDescriptions = Seq(
-                "Auditing bag started",
-                "Auditing bag succeeded - Assigned bag version v1"
-              )
-            )
+            assertTopicReceivesIngestUpdates(payload1.ingestId, ingests) {
+              ingestUpdates =>
+                ingestUpdates should have size 2
+
+                ingestUpdates(0) shouldBe a[IngestEventUpdate]
+                ingestUpdates(0).events.map { _.description } shouldBe Seq(
+                  "Auditing bag started")
+
+                ingestUpdates(1) shouldBe a[IngestVersionUpdate]
+                ingestUpdates(1)
+                  .asInstanceOf[IngestVersionUpdate]
+                  .version shouldBe BagVersion(1)
+                ingestUpdates(1).events.map { _.description } shouldBe Seq(
+                  "Auditing bag succeeded - assigned bag version v1")
+            }
           }
 
           // Now send the payload with "update"
@@ -133,21 +146,34 @@ class BagAuditorFeatureTest
             outgoing
               .getMessages[EnrichedBagInformationPayload] should have size 2
 
-            assertTopicReceivesIngestEvents(
-              payload1.ingestId,
-              ingests,
-              expectedDescriptions = Seq(
-                "Auditing bag started",
-                "Auditing bag succeeded - Assigned bag version v1",
-                "Auditing bag started",
-                "Auditing bag succeeded - Assigned bag version v2"
-              )
-            )
+            assertTopicReceivesIngestUpdates(payload1.ingestId, ingests) {
+              ingestUpdates =>
+                ingestUpdates should have size 4
+
+                ingestUpdates(0) shouldBe a[IngestEventUpdate]
+                ingestUpdates(0).events.map { _.description } shouldBe Seq(
+                  "Auditing bag started")
+
+                ingestUpdates(1) shouldBe a[IngestVersionUpdate]
+                ingestUpdates(1)
+                  .asInstanceOf[IngestVersionUpdate]
+                  .version shouldBe BagVersion(1)
+                ingestUpdates(1).events.map { _.description } shouldBe Seq(
+                  "Auditing bag succeeded - assigned bag version v1")
+
+                ingestUpdates(2) shouldBe a[IngestEventUpdate]
+                ingestUpdates(2).events.map { _.description } shouldBe Seq(
+                  "Auditing bag started")
+
+                ingestUpdates(3) shouldBe a[IngestVersionUpdate]
+                ingestUpdates(3)
+                  .asInstanceOf[IngestVersionUpdate]
+                  .version shouldBe BagVersion(2)
+                ingestUpdates(3).events.map { _.description } shouldBe Seq(
+                  "Auditing bag succeeded - assigned bag version v2")
+            }
           }
       }
     }
   }
-
-  // TODO: When we pass an ingest type in the bag auditor payload, check it sends
-  // an appropriate user-facing message in the ingests app.
 }

@@ -18,11 +18,11 @@ import uk.ac.wellcome.platform.archive.bagreplicator.services.{
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
-  OperationFixtures,
-  S3BagLocationFixtures
+  OperationFixtures
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.locking.memory.{
   MemoryLockDao,
@@ -34,12 +34,12 @@ import scala.collection.JavaConverters._
 import scala.util.{Random, Try}
 
 trait BagReplicatorFixtures
-    extends S3BagLocationFixtures
-    with Akka
+    extends Akka
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture
-    with MemoryLockDaoFixtures {
+    with MemoryLockDaoFixtures
+    with S3Fixtures {
 
   def withBagReplicatorWorker[R](
     queue: Queue =

@@ -10,7 +10,6 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
-import uk.ac.wellcome.platform.archive.common.fixtures.S3BagLocationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -28,7 +27,6 @@ import scala.concurrent.Future
 class BagReplicatorWorkerTest
     extends FunSpec
     with Matchers
-    with S3BagLocationFixtures
     with BagReplicatorFixtures
     with IngestUpdateAssertions
     with PayloadGenerators
