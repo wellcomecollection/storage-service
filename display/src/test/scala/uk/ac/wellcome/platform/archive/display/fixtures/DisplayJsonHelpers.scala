@@ -61,7 +61,8 @@ trait DisplayJsonHelpers {
        |  "type": "File",
        |  "path": "${f.path}",
        |  "name": "${f.name}",
-       |  "checksum": "${f.checksum.value}"
+       |  "checksum": "${f.checksum.value}",
+       |  "size": ${f.size}
        |}
      """.stripMargin
 

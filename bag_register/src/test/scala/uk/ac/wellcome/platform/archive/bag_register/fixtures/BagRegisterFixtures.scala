@@ -25,7 +25,11 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestStatusUpdate
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  MemorySizeFinder,
+  StorageManifestDao,
+  StorageManifestService
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
@@ -57,10 +61,15 @@ trait BagRegisterFixtures
 
         val bagReader = new MemoryBagReader()
 
+        val storageManifestService = new StorageManifestService(
+          sizeFinder = new MemorySizeFinder(streamStore.memoryStore)
+        )
+
         withLocalSqsQueueAndDlq { queuePair =>
           val register = new Register(
             bagReader = bagReader,
-            storageManifestDao
+            storageManifestDao,
+            storageManifestService = storageManifestService
           )
 
           val service = new BagRegisterWorker(

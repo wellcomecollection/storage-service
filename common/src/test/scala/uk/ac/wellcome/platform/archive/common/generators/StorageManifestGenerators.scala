@@ -27,6 +27,16 @@ trait StorageManifestGenerators
 
   val checksumAlgorithm = SHA256
 
+  private def createStorageManifestFile: StorageManifestFile = {
+    val bagFile = createBagFile
+    StorageManifestFile(
+      checksum = bagFile.checksum.value,
+      name = bagFile.path.value,
+      path = bagFile.path.value,
+      size = Random.nextLong().abs
+    )
+  }
+
   def createStorageManifestWith(
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
@@ -40,17 +50,17 @@ trait StorageManifestGenerators
       manifest = FileManifest(
         checksumAlgorithm,
         files = Seq(
-          StorageManifestFile(createBagFile),
-          StorageManifestFile(createBagFile),
-          StorageManifestFile(createBagFile)
+          createStorageManifestFile,
+          createStorageManifestFile,
+          createStorageManifestFile
         )
       ),
       tagManifest = FileManifest(
         checksumAlgorithm,
         files = Seq(
-          StorageManifestFile(createBagFile),
-          StorageManifestFile(createBagFile),
-          StorageManifestFile(createBagFile)
+          createStorageManifestFile,
+          createStorageManifestFile,
+          createStorageManifestFile
         )
       ),
       locations = locations.map { StorageLocation(StandardStorageProvider, _) },

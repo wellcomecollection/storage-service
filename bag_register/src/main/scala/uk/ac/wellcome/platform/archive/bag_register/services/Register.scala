@@ -22,7 +22,8 @@ import scala.util.{Failure, Success, Try}
 
 class Register(
   bagReader: BagReader[_],
-  storageManifestDao: StorageManifestDao
+  storageManifestDao: StorageManifestDao,
+  storageManifestService: StorageManifestService,
 ) extends Logging {
 
   def update(
@@ -44,7 +45,7 @@ class Register(
           Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
       }
 
-      storageManifest <- StorageManifestService.createManifest(
+      storageManifest <- storageManifestService.createManifest(
         bag = bag,
         replicaRoot = bagRootLocation,
         space = storageSpace,
