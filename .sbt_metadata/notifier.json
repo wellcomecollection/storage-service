@@ -1,1 +1,1 @@
-{"id" : "notifier", "folder" : "notifier", "dependencyIds" : ["common", "display"]}
+{"id" : "notifier", "folder" : "notifier", "dependencyIds" : ["display"]}
