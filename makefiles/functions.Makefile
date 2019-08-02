@@ -1,4 +1,10 @@
 ROOT = $(shell git rev-parse --show-toplevel)
+
+ifneq ($(TRAVIS),true)
+DEV_ROLE_ARN := arn:aws:iam::975596993436:role/storage-developer
+endif
+
+
 INFRA_BUCKET = wellcomecollection-platform-infra
 
 
@@ -67,9 +73,8 @@ define publish_service
 	        --account_id=$(3) \
 	        --region_id=eu-west-1 \
 	        --namespace=uk.ac.wellcome \
-	        --role_arn=arn:aws:iam::975596993436:role/storage-developer
-	        --label=latest \
-
+	        --role_arn="$(DEV_ROLE_ARN)" \
+	        --label=latest
 endef
 
 
@@ -145,7 +150,7 @@ endef
 #   $4 - ECS Base URI
 #   $5 - Registry ID
 #
-define __sbt_ssm_docker_target_template
+define __sbt_docker_target_template
 $(eval $(call __sbt_base_docker_template,$(1),$(2)))
 
 $(1)-build:
@@ -158,7 +163,7 @@ endef
 
 
 
-define __sbt_ssm_target_template
+define __sbt_no_docker_target_template
 $(1)-test:
 	$(call sbt_test_no_docker,$(1))
 
@@ -293,8 +298,8 @@ define stack_setup
 # It can't actually be written that way because Make is very sensitive to
 # whitespace, but that's the general idea.
 
-$(foreach proj,$(SBT_APPS),$(eval $(call __sbt_ssm_docker_target_template,$(proj),$(STACK_ROOT)/$(proj),$(PROJECT_ID),$(ACCOUNT_ID))))
-$(foreach proj,$(SBT_NO_DOCKER_APPS),$(eval $(call __sbt_ssm_target_template,$(proj),$(STACK_ROOT)/$(proj),$(PROJECT_ID),$(ACCOUNT_ID))))
+$(foreach proj,$(SBT_APPS),$(eval $(call __sbt_docker_target_template,$(proj),$(STACK_ROOT)/$(proj),$(PROJECT_ID),$(ACCOUNT_ID))))
+$(foreach proj,$(SBT_NO_DOCKER_APPS),$(eval $(call __sbt_no_docker_target_template,$(proj),$(STACK_ROOT)/$(proj),$(PROJECT_ID),$(ACCOUNT_ID))))
 $(foreach library,$(SBT_DOCKER_LIBRARIES),$(eval $(call __sbt_library_docker_template,$(library),$(STACK_ROOT)/$(library))))
 $(foreach library,$(SBT_NO_DOCKER_LIBRARIES),$(eval $(call __sbt_library_template,$(library))))
 $(foreach task,$(PYTHON_APPS),$(eval $(call __python_ssm_target,$(task),$(STACK_ROOT)/$(task)/Dockerfile,$(PROJECT_ID),$(ACCOUNT_ID))))
