@@ -1,4 +1,10 @@
 ROOT = $(shell git rev-parse --show-toplevel)
+
+ifneq ($(TRAVIS),true)
+DEV_ROLE_ARN := arn:aws:iam::975596993436:role/storage-developer
+endif
+
+
 INFRA_BUCKET = wellcomecollection-platform-infra
 
 
@@ -67,9 +73,8 @@ define publish_service
 	        --account_id=$(3) \
 	        --region_id=eu-west-1 \
 	        --namespace=uk.ac.wellcome \
-	        --role_arn=arn:aws:iam::975596993436:role/storage-developer
-	        --label=latest \
-
+	        --role_arn="$(DEV_ROLE_ARN)" \
+	        --label=latest
 endef
 
 
