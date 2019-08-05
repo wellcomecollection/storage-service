@@ -15,7 +15,7 @@ module "logstash_transit" {
 
   env_vars = {
     XPACK_MONITORING_ENABLED = "false"
-    NAMESPACE = "Bloop_${var.namespace}"
+    NAMESPACE = "${var.namespace}"
   }
 
   env_vars_length = 2
