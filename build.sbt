@@ -65,8 +65,8 @@ lazy val common = setupProject(
     StorageDependencies.commonDependencies
 )
 
-lazy val bag_auditor =
-  setupProject(project, "bag_auditor", localDependencies = Seq(common))
+lazy val bag_versioner =
+  setupProject(project, "bag_versioner", localDependencies = Seq(common))
 
 lazy val bag_root_finder =
   setupProject(project, "bag_root_finder", localDependencies = Seq(common))
