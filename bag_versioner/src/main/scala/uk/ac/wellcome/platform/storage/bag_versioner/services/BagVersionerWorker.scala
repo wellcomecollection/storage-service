@@ -39,8 +39,8 @@ class BagVersionerWorker[IngestDestination, OutgoingDestination](
   val wd: Decoder[BagRootLocationPayload])
     extends IngestStepWorker[BagRootLocationPayload, BagVersionerSummary] {
 
-  override def processMessage(
-    payload: BagRootLocationPayload): Try[IngestStepResult[BagVersionerSummary]] =
+  override def processMessage(payload: BagRootLocationPayload)
+    : Try[IngestStepResult[BagVersionerSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
