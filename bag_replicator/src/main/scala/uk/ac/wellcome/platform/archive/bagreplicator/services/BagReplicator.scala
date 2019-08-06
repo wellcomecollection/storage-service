@@ -17,7 +17,8 @@ import scala.util.{Success, Try}
 
 class BagReplicator(
   implicit
-  prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation]) extends Logging {
+  prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation])
+    extends Logging {
 
   def replicate(bagRootLocation: ObjectLocation,
                 storageSpace: StorageSpace,
