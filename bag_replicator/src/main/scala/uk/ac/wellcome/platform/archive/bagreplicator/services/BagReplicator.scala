@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import java.time.Instant
 
-import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -11,13 +10,14 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
+import uk.ac.wellcome.storage.transfer.PrefixTransfer
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
-import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 import scala.util.{Success, Try}
 
-class BagReplicator(implicit s3Client: AmazonS3) extends Logging {
-  val s3PrefixTransfer = S3PrefixTransfer()
+class BagReplicator(
+  implicit
+  prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation]) extends Logging {
 
   def replicate(bagRootLocation: ObjectLocation,
                 storageSpace: StorageSpace,
@@ -32,7 +32,7 @@ class BagReplicator(implicit s3Client: AmazonS3) extends Logging {
 
     // TODO: Plumb the LocationPrefix type back up through destination
     val copyResult =
-      s3PrefixTransfer.transferPrefix(
+      prefixTransfer.transferPrefix(
         srcPrefix = bagRootLocation.asPrefix,
         dstPrefix = destination
       )

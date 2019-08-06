@@ -12,23 +12,15 @@ import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.locking.memory.{
-  MemoryLockDao,
-  MemoryLockDaoFixtures
-}
+import uk.ac.wellcome.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
+import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 import scala.collection.JavaConverters._
 import scala.util.{Random, Try}
@@ -69,6 +61,9 @@ trait BagReplicatorFixtures
 
         val replicatorDestinationConfig =
           createReplicatorDestinationConfigWith(bucket, rootPath)
+
+        implicit val prefixTransfer: S3PrefixTransfer =
+          S3PrefixTransfer()
 
         val service = new BagReplicatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
