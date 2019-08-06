@@ -78,21 +78,21 @@ resource "aws_iam_role_policy" "bag_root_finder_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
-# bag auditor
+# bag versioner
 
-resource "aws_iam_role_policy" "bag_auditor_metrics" {
-  role   = "${module.bag_auditor.task_role_name}"
+resource "aws_iam_role_policy" "bag_versioner_metrics" {
+  role   = "${module.bag_versioner.task_role_name}"
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
-resource "aws_iam_role_policy" "bag_auditor_locking_table" {
-  role   = "${module.bag_auditor.task_role_name}"
-  policy = "${module.auditor_lock_table.iam_policy}"
+resource "aws_iam_role_policy" "bag_versioner_locking_table" {
+  role   = "${module.bag_versioner.task_role_name}"
+  policy = "${module.versioner_lock_table.iam_policy}"
 }
 
-resource "aws_iam_role_policy" "bag_auditor_versions_table" {
-  role   = "${module.bag_auditor.task_role_name}"
-  policy = "${data.aws_iam_policy_document.auditor_versions_table_table_readwrite.json}"
+resource "aws_iam_role_policy" "bag_versioner_versions_table" {
+  role   = "${module.bag_versioner.task_role_name}"
+  policy = "${data.aws_iam_policy_document.versioner_versions_table_table_readwrite.json}"
 }
 
 # bag_verifier pre-replication
