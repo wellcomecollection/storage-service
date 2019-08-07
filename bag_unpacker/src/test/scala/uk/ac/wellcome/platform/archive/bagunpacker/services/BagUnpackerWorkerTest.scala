@@ -1,32 +1,27 @@
-package uk.ac.wellcome.platform.archive.bagunpacker
+package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import java.nio.file.Paths
 
-import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
-  BagUnpackerFixtures,
-  CompressFixture
-}
+import uk.ac.wellcome.messaging.fixtures.SQS.Queue
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{BagUnpackerFixtures, CompressFixture}
 import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
-class UnpackerFeatureTest
-    extends FunSpec
+class BagUnpackerWorkerTest
+  extends FunSpec
     with Matchers
-    with Eventually
     with BagUnpackerFixtures
-    with IntegrationPatience
     with CompressFixture[Bucket]
     with IngestUpdateAssertions
     with PayloadGenerators {
-
-  it("receives and processes a notification") {
+  it("processes a message") {
     val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
     withBagUnpackerApp(stepName = "unpacker") {
       case (_, srcBucket, queue, ingests, outgoing) =>
@@ -73,35 +68,16 @@ class UnpackerFeatureTest
     }
   }
 
-  it("sends a failed Ingest update if it cannot read the bag") {
-    withBagUnpackerApp(stepName = "unpacker") {
-      case (_, _, queue, ingests, outgoing) =>
-        val sourceLocation = createObjectLocationWith(
-          bucket = createBucket
-        )
-
-        val payload = createSourceLocationPayloadWith(
-          sourceLocation = sourceLocation
-        )
-        sendNotificationToSQS(queue, payload)
-
-        eventually {
-          outgoing.messages shouldBe empty
-
-          assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
-            ingestUpdates =>
-              ingestUpdates.size shouldBe 2
-
-              val ingestStart = ingestUpdates.head
-              ingestStart.events.head.description shouldBe "Unpacker started"
-
-              val ingestFailed =
-                ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-              ingestFailed.status shouldBe Ingest.Failed
-              ingestFailed.events.head.description shouldBe
-                s"Unpacker failed - There is no S3 bucket ${sourceLocation.namespace}"
-          }
-        }
+  def withWorker[R](
+    ingests: MemoryMessageSender,
+    outgoing: MemoryMessageSender,
+    dstBucket: Bucket)(testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
+    withBagUnpackerWorker(
+      queue = Queue("any", "any"),
+      ingests = ingests,
+      outgoing = outgoing,
+      dstBucket = dstBucket
+    ) {
+      testWith(_)
     }
-  }
 }
