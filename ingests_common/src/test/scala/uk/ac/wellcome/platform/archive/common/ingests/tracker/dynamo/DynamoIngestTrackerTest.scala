@@ -84,6 +84,12 @@ class DynamoIngestTrackerTest
       ) {
         override val underlying = new VersionedStore[IngestID, Int, Ingest](
           new DynamoHashStore[IngestID, Int, Ingest](config) {
+            override def max(hashKey: IngestID): Either[ReadError, Int] =
+              Left(StoreReadError(new Throwable("BOOM!")))
+
+            override def get(id: Version[IngestID, Int]): ReadEither =
+              Left(StoreReadError(new Throwable("BOOM!")))
+
             override def put(id: Version[IngestID, Int])(
               t: Ingest): WriteEither =
               Left(StoreWriteError(new Throwable("BOOM!")))
