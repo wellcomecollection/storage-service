@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
+  BadFetchLocationException,
   StorageManifestDao,
   StorageManifestService
 }
@@ -63,7 +64,17 @@ class Register(
 
     result match {
       case Success(stepResult) => Success(stepResult)
-      case Failure(err)        => Success(IngestFailed(registration.complete, err))
+
+      case Failure(err: BadFetchLocationException) =>
+        Success(
+          IngestFailed(
+            registration.complete,
+            err,
+            maybeUserFacingMessage = Some(err.getMessage)
+          )
+        )
+
+      case Failure(err) => Success(IngestFailed(registration.complete, err))
     }
   }
 }

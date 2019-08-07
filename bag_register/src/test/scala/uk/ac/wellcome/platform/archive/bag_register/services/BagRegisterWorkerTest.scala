@@ -114,7 +114,7 @@ class BagRegisterWorkerTest
                 space = space,
                 version = 2,
                 dataFileCount) {
-                case (location2, bagInfo2) =>
+                case (location2, _) =>
                   val payload1 = createEnrichedBagInformationPayloadWith(
                     context = createPipelineContextWith(
                       storageSpace = space
