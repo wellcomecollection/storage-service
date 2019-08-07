@@ -24,4 +24,8 @@ locals {
   bag_replicator_image  = "${module.images.services["bag_replicator"]}"
   bag_verifier_image    = "${module.images.services["bag_verifier"]}"
   bag_unpacker_image    = "${module.images.services["bag_unpacker"]}"
+
+  logstash_transit_service_name = "${var.namespace}_logstash_transit"
+  logstash_transit_image        = "wellcome/logstash_transit:104"
+  logstash_host                 = "${local.logstash_transit_service_name}.${var.namespace}"
 }

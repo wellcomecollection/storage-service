@@ -73,11 +73,15 @@ object ExternalDependencies {
     val scalatest = "3.0.1"
     val wiremock = "2.18.0"
     val logback = "1.2.3"
+    val logstashLogback ="6.1"
   }
 
   val logbackDependencies = Seq(
-    "ch.qos.logback" % "logback-classic" % versions.logback
-  )
+    "ch.qos.logback" % "logback-classic" % versions.logback,
+    "ch.qos.logback" % "logback-core" % versions.logback,
+    "ch.qos.logback" % "logback-access" % versions.logback,
+
+    "net.logstash.logback" % "logstash-logback-encoder" % versions.logstashLogback  )
 
   val commonsCompressDependencies = Seq(
     "org.apache.commons" % "commons-compress" % versions.commonsCompress
