@@ -12,7 +12,10 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
 import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 

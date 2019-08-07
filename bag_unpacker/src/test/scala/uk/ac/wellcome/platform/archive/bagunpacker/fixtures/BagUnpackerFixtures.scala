@@ -18,7 +18,10 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, InputStreamWithLengthAndMetadata}
+import uk.ac.wellcome.storage.streaming.{
+  InputStreamWithLength,
+  InputStreamWithLengthAndMetadata
+}
 import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 
 trait BagUnpackerFixtures
@@ -88,7 +91,7 @@ trait BagUnpackerFixtures
   // TODO: Add covariance to StreamStore
   def withStreamStore[R](
     testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R])
-  : R = {
+    : R = {
     val s3StreamStore = new S3StreamStore()
 
     val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
