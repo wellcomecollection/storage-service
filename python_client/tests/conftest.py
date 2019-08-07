@@ -42,7 +42,7 @@ betamax.Betamax.register_serializer(PrettyJSONSerializer)
 with betamax.Betamax.configure() as config:
     config.cassette_library_dir = "tests/cassettes"
     config.before_record(callback=sanitize_token)
-    config.default_cassette_options['serialize_with'] = PrettyJSONSerializer.name
+    config.default_cassette_options["serialize_with"] = PrettyJSONSerializer.name
 
 
 @pytest.fixture
