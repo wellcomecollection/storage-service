@@ -313,9 +313,8 @@ class StorageManifestServiceTest
         manifestChecksumAlgorithm = SHA256
       )
 
-      assertIsError(bag = bag) {
-        err =>
-          err.getMessage shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
+      assertIsError(bag = bag) { err =>
+        err.getMessage shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
       }
     }
 

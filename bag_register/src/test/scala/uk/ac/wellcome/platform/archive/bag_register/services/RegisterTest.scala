@@ -20,7 +20,7 @@ import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 class RegisterTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with StorageManifestVHSFixture
     with RandomThings
@@ -28,7 +28,8 @@ class RegisterTest
     with StringNamespaceFixtures
     with TryValues {
 
-  it("includes a user-facing message if the fetch.txt refers to the wrong namespace") {
+  it(
+    "includes a user-facing message if the fetch.txt refers to the wrong namespace") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
