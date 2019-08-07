@@ -8,14 +8,14 @@ module "logstash_transit" {
     "${aws_security_group.service_egress.id}",
   ]
 
-  cluster_id = "${aws_ecs_cluster.cluster.id}"
+  cluster_id   = "${aws_ecs_cluster.cluster.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
-  subnets = "${var.private_subnets}"
+  subnets      = "${var.private_subnets}"
   service_name = "${local.logstash_transit_service_name}"
 
   env_vars = {
     XPACK_MONITORING_ENABLED = "false"
-    NAMESPACE = "${var.namespace}"
+    NAMESPACE                = "${var.namespace}"
   }
 
   env_vars_length = 2
@@ -28,7 +28,7 @@ module "logstash_transit" {
 
   secret_env_vars_length = 3
 
-  cpu = 1024
+  cpu    = 1024
   memory = 2048
 
   container_image = "${local.logstash_transit_image}"
@@ -135,7 +135,7 @@ module "bag_verifier_pre_replication" {
     operation_name     = "verification (pre-replicating to archive storage)"
     logstash_host      = "${local.logstash_host}"
 
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_pre_repl_service_name}"
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_pre_repl_service_name}"
   }
 
   env_vars_length = 7
@@ -218,10 +218,10 @@ module "bag_replicator" {
     operation_name          = "replicating to archive storage"
     logstash_host           = "${local.logstash_host}"
 
-    locking_table_name      = "${module.replicator_lock_table.table_name}"
-    locking_table_index     = "${module.replicator_lock_table.index_name}"
+    locking_table_name  = "${module.replicator_lock_table.table_name}"
+    locking_table_index = "${module.replicator_lock_table.index_name}"
 
-    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
   }
 
   env_vars_length = 10
@@ -259,7 +259,7 @@ module "bag_verifier_post_replication" {
     operation_name     = "verification (inside archive storage)"
     logstash_host      = "${local.logstash_host}"
 
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_post_repl_service_name}"
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_post_repl_service_name}"
   }
 
   env_vars_length = 7
@@ -295,7 +295,7 @@ module "bag_register" {
     operation_name    = "register"
     logstash_host     = "${local.logstash_host}"
 
-    JAVA_OPTS         = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_register_service_name}"
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_register_service_name}"
   }
 
   env_vars_length = 10
@@ -329,7 +329,7 @@ module "notifier" {
     metrics_namespace  = "${local.notifier_service_name}"
     logstash_host      = "${local.logstash_host}"
 
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.notifier_service_name}"
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.notifier_service_name}"
   }
 
   env_vars_length = 6
@@ -357,7 +357,7 @@ module "ingests" {
     metrics_namespace         = "${local.ingests_service_name}"
     logstash_host             = "${local.logstash_host}"
 
-    JAVA_OPTS                 = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
   }
 
   env_vars_length = 7
@@ -403,10 +403,9 @@ module "api" {
     metrics_namespace = "${local.bags_api_service_name}"
     logstash_host     = "${local.logstash_host}"
 
-    JAVA_OPTS         = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bags_api_service_name}"
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bags_api_service_name}"
   }
   bags_env_vars_length = 7
-
   bags_nginx_container_image = "${var.nginx_image}"
   bags_nginx_container_port  = "9000"
 
@@ -423,11 +422,9 @@ module "api" {
     metrics_namespace         = "${local.ingests_api_service_name}"
     logstash_host             = "${local.logstash_host}"
 
-    JAVA_OPTS                 = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
   }
-
   ingests_env_vars_length = 8
-
   ingests_nginx_container_image  = "${var.nginx_image}"
   ingests_nginx_container_port   = "9000"
   static_content_bucket_name     = "${var.static_content_bucket_name}"

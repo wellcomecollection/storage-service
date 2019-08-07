@@ -5,11 +5,6 @@
     </encoder>
   </appender>
 
-  <root level="${log_level:-INFO}">
-    <appender-ref ref="STDOUT"/>
-    <appender-ref ref="LOGSTASH"/>
-  </root>
-
   <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashUdpSocketAppender">
     <layout class="net.logstash.logback.layout.LogstashLayout">
       <customFields>
@@ -20,6 +15,11 @@
     <host>${logstash_host}</host>
     <port>514</port>
   </appender>
+
+  <root level="${log_level:-INFO}">
+    <appender-ref ref="STDOUT"/>
+    <appender-ref ref="LOGSTASH"/>
+  </root>
 
   <!-- reduce external logging -->
   <logger name="org.apache.http" level="ERROR"/>
