@@ -149,9 +149,9 @@ module "bag_verifier_pre_replication" {
   container_image = "${local.bag_verifier_image}"
 }
 
-# bag auditor
+# bag versioner
 
-module "bag_auditor" {
+module "bag_versioner" {
   source = "../modules/service/worker"
 
   security_group_ids = [
@@ -163,23 +163,23 @@ module "bag_auditor" {
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
-  service_name = "${local.bag_auditor_service_name}"
+  service_name = "${local.bag_versioner_service_name}"
 
   env_vars = {
-    queue_url          = "${module.bag_auditor_queue.url}"
+    queue_url          = "${module.bag_versioner_queue.url}"
     ingest_topic_arn   = "${module.ingests_topic.arn}"
     outgoing_topic_arn = "${module.bag_auditor_output_topic.arn}"
     metrics_namespace  = "${local.bag_auditor_service_name}"
-    operation_name     = "auditing bag"
+    operation_name     = "assigning bag version"
     logstash_host      = "${local.logstash_host}"
 
-    locking_table_name  = "${module.auditor_lock_table.table_name}"
-    locking_table_index = "${module.auditor_lock_table.index_name}"
+    locking_table_name  = "${module.versioner_lock_table.table_name}"
+    locking_table_index = "${module.versioner_lock_table.index_name}"
 
-    versions_table_name  = "${local.auditor_versions_table_name}"
-    versions_table_index = "${local.auditor_versions_table_index}"
+    versions_table_name  = "${local.versioner_versions_table_name}"
+    versions_table_index = "${local.versioner_versions_table_index}"
 
-    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_auditor_service_name}"
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_versioner_service_name}"
   }
 
   env_vars_length = 11
@@ -190,7 +190,7 @@ module "bag_auditor" {
   min_capacity = 1
   max_capacity = 10
 
-  container_image = "${local.bag_auditor_image}"
+  container_image = "${local.bag_versioner_image}"
 }
 
 # bag_replicator

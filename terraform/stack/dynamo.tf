@@ -1,8 +1,8 @@
-module "auditor_lock_table" {
+module "versioner_lock_table" {
   source = "../modules/lock_table"
 
   namespace = "${var.namespace}"
-  owner     = "auditor"
+  owner     = "versioner"
 }
 
 module "replicator_lock_table" {
@@ -13,13 +13,13 @@ module "replicator_lock_table" {
 }
 
 locals {
-  auditor_versions_table_name  = "${aws_dynamodb_table.auditor_versions_table.name}"
-  auditor_versions_table_index = "ingestId_index"
+  versioner_versions_table_name  = "${aws_dynamodb_table.versioner_versions_table.name}"
+  versioner_versions_table_index = "ingestId_index"
 }
 
 # TODO: MOve this into the 'critical' part
-resource "aws_dynamodb_table" "auditor_versions_table" {
-  name      = "${var.namespace}_auditor_versions_table"
+resource "aws_dynamodb_table" "versioner_versions_table" {
+  name      = "${var.namespace}_versioner_versions_table"
   hash_key  = "id"
   range_key = "version"
 
@@ -41,13 +41,13 @@ resource "aws_dynamodb_table" "auditor_versions_table" {
   }
 
   global_secondary_index {
-    name            = "${local.auditor_versions_table_index}"
+    name            = "${local.versioner_versions_table_index}"
     hash_key        = "ingestId"
     projection_type = "ALL"
   }
 }
 
-data "aws_iam_policy_document" "auditor_versions_table_table_readwrite" {
+data "aws_iam_policy_document" "versioner_versions_table_table_readwrite" {
   statement {
     actions = [
       "dynamodb:DeleteItem",
@@ -58,7 +58,7 @@ data "aws_iam_policy_document" "auditor_versions_table_table_readwrite" {
     ]
 
     resources = [
-      "${aws_dynamodb_table.auditor_versions_table.arn}",
+      "${aws_dynamodb_table.versioner_versions_table.arn}",
     ]
   }
 
@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "auditor_versions_table_table_readwrite" {
     ]
 
     resources = [
-      "${aws_dynamodb_table.auditor_versions_table.arn}/index/*",
+      "${aws_dynamodb_table.versioner_versions_table.arn}/index/*",
     ]
   }
 }

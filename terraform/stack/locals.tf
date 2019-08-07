@@ -7,13 +7,13 @@ locals {
 
   bag_unpacker_service_name           = "${var.namespace}-bag-unpacker"
   bag_root_finder_service_name        = "${var.namespace}-bag-root-finder"
-  bag_auditor_service_name            = "${var.namespace}-bag-auditor"
+  bag_versioner_service_name            = "${var.namespace}-bag-versioner"
   bag_replicator_service_name         = "${var.namespace}-bag-replicator"
   bag_register_service_name           = "${var.namespace}-bag-register"
   bag_verifier_post_repl_service_name = "${var.namespace}-bag-verifier-post-replication"
   bag_verifier_pre_repl_service_name  = "${var.namespace}-bag-verifier-pre-replication"
 
-  bag_auditor_image     = "${module.images.services["bag_auditor"]}"
+  bag_versioner_image     = "${module.images.services["bag_versioner"]}"
   bag_register_image    = "${module.images.services["bag_register"]}"
   bag_root_finder_image = "${module.images.services["bag_root_finder"]}"
   bags_api_image        = "${module.images.services["bags_api"]}"

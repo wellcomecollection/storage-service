@@ -14,7 +14,7 @@ module "ingests_topic" {
     "${module.bag_unpacker.task_role_name}",
     "${module.ingests.task_role_name}",
     "${module.notifier.task_role_name}",
-    "${module.bag_auditor.task_role_name}",
+    "${module.bag_versioner.task_role_name}",
   ]
 }
 
@@ -205,36 +205,36 @@ module "bag_verifier_pre_replicate_output_topic" {
   ]
 }
 
-# bag auditor
+# bag versioner
 
-module "bag_auditor_queue" {
+module "bag_versioner_queue" {
   source = "../modules/queue"
 
-  name = "${var.namespace}_bag_auditor_input"
+  name = "${var.namespace}_bag_versioner_input"
 
   topic_names = ["${module.bag_verifier_pre_replicate_output_topic.name}"]
 
-  role_names = ["${module.bag_auditor.task_role_name}"]
+  role_names = ["${module.bag_versioner.task_role_name}"]
 
   queue_high_actions = [
-    "${module.bag_auditor.scale_up_arn}",
+    "${module.bag_versioner.scale_up_arn}",
   ]
 
   queue_low_actions = [
-    "${module.bag_auditor.scale_down_arn}",
+    "${module.bag_versioner.scale_down_arn}",
   ]
 
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
-module "bag_auditor_output_topic" {
+module "bag_versioner_output_topic" {
   source = "../modules/topic"
 
-  name = "${var.namespace}_bag_auditor_output"
+  name = "${var.namespace}_bag_versioner_output"
 
   role_names = [
-    "${module.bag_auditor.task_role_name}",
+    "${module.bag_versioner.task_role_name}",
   ]
 }
 
@@ -245,7 +245,7 @@ module "bag_replicator_input_queue" {
 
   name = "${var.namespace}_bag_replicator_input"
 
-  topic_names = ["${module.bag_auditor_output_topic.name}"]
+  topic_names = ["${module.bag_versioner_output_topic.name}"]
 
   role_names = ["${module.bag_replicator.task_role_name}"]
 
