@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{BagUnpackerFixtures
 import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepSucceeded
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
@@ -80,10 +80,39 @@ class BagUnpackerWorkerTest
     }
   }
 
+  it("reports a compressor error to the user") {
+    val ingests = new MemoryMessageSender()
+    val outgoing = new MemoryMessageSender()
+
+    withLocalS3Bucket { srcBucket =>
+      val location = createObjectLocationWith(srcBucket)
+
+      s3Client.putObject(
+        location.namespace,
+        location.path,
+        "hello world"
+      )
+
+      val payload =
+        createSourceLocationPayloadWith(location)
+
+      val result =
+        withWorker(ingests, outgoing) { worker =>
+          worker.processMessage(payload)
+        }
+
+      result.success.value shouldBe a[IngestFailed[_]]
+      val failure = result.success.value.asInstanceOf[IngestFailed[_]]
+
+      failure.maybeUserFacingMessage.get shouldBe
+        s"Error trying to unpack the archive at $location - is it the correct format?"
+    }
+  }
+
   def withWorker[R](
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
-    dstBucket: Bucket)(testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
+    dstBucket: Bucket = createBucket)(testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
     withBagUnpackerWorker(
       queue = Queue("any", "any"),
       ingests = ingests,
