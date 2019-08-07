@@ -168,8 +168,8 @@ module "bag_versioner" {
   env_vars = {
     queue_url          = "${module.bag_versioner_queue.url}"
     ingest_topic_arn   = "${module.ingests_topic.arn}"
-    outgoing_topic_arn = "${module.bag_auditor_output_topic.arn}"
-    metrics_namespace  = "${local.bag_auditor_service_name}"
+    outgoing_topic_arn = "${module.bag_versioner_output_topic.arn}"
+    metrics_namespace  = "${local.bag_versioner_service_name}"
     operation_name     = "assigning bag version"
     logstash_host      = "${local.logstash_host}"
 
