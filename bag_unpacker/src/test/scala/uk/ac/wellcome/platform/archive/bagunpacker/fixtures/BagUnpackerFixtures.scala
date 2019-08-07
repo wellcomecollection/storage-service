@@ -61,7 +61,7 @@ trait BagUnpackerFixtures
                         MemoryMessageSender,
                         MemoryMessageSender),
                        R]): R =
-    withLocalS3Bucket { sourceBucket =>
+    withLocalS3Bucket { dstBucket =>
       withLocalSqsQueue { queue =>
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
@@ -69,13 +69,13 @@ trait BagUnpackerFixtures
           queue,
           ingests,
           outgoing,
-          sourceBucket,
+          dstBucket,
           stepName = stepName
         )({ bagUnpackerProcess =>
           testWith(
             (
               bagUnpackerProcess,
-              sourceBucket,
+              dstBucket,
               queue,
               ingests,
               outgoing

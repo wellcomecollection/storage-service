@@ -29,43 +29,45 @@ class UnpackerFeatureTest
   it("receives and processes a notification") {
     val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
     withBagUnpackerApp(stepName = "unpacker") {
-      case (_, srcBucket, queue, ingests, outgoing) =>
+      case (_, dstBucket, queue, ingests, outgoing) =>
         withStreamStore { implicit streamStore =>
-          withArchive(srcBucket, archiveFile) { archiveLocation =>
-            val sourceLocationPayload =
-              createSourceLocationPayloadWith(archiveLocation)
-            sendNotificationToSQS(queue, sourceLocationPayload)
+          withLocalS3Bucket { srcBucket =>
+            withArchive(srcBucket, archiveFile) { archiveLocation =>
+              val sourceLocationPayload =
+                createSourceLocationPayloadWith(archiveLocation)
+              sendNotificationToSQS(queue, sourceLocationPayload)
 
-            eventually {
-              val expectedPayload = UnpackedBagLocationPayload(
-                context = sourceLocationPayload.context,
-                unpackedBagLocation = ObjectLocationPrefix(
-                  namespace = srcBucket.name,
-                  path = Paths
-                    .get(
-                      sourceLocationPayload.storageSpace.toString,
-                      sourceLocationPayload.ingestId.toString
-                    )
-                    .toString
+              eventually {
+                val expectedPayload = UnpackedBagLocationPayload(
+                  context = sourceLocationPayload.context,
+                  unpackedBagLocation = ObjectLocationPrefix(
+                    namespace = dstBucket.name,
+                    path = Paths
+                      .get(
+                        sourceLocationPayload.storageSpace.toString,
+                        sourceLocationPayload.ingestId.toString
+                      )
+                      .toString
+                  )
                 )
-              )
 
-              outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
-                expectedPayload)
+                outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
+                  expectedPayload)
 
-              assertTopicReceivesIngestUpdates(
-                sourceLocationPayload.ingestId,
-                ingests) { ingestUpdates =>
-                val eventDescriptions: Seq[String] =
-                  ingestUpdates
-                    .flatMap { _.events }
-                    .map { _.description }
-                    .distinct
+                assertTopicReceivesIngestUpdates(
+                  sourceLocationPayload.ingestId,
+                  ingests) { ingestUpdates =>
+                  val eventDescriptions: Seq[String] =
+                    ingestUpdates
+                      .flatMap { _.events }
+                      .map { _.description }
+                      .distinct
 
-                eventDescriptions should have size 2
+                  eventDescriptions should have size 2
 
-                eventDescriptions(0) shouldBe "Unpacker started"
-                eventDescriptions(1) should fullyMatch regex """Unpacker succeeded - Unpacked \d+ bytes from \d+ files"""
+                  eventDescriptions(0) shouldBe "Unpacker started"
+                  eventDescriptions(1) should fullyMatch regex """Unpacker succeeded - Unpacked \d+ bytes from \d+ files"""
+                }
               }
             }
           }
