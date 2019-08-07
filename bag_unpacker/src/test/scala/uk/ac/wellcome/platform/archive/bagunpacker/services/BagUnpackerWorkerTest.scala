@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import java.nio.file.Paths
 
+import com.amazonaws.services.s3.model.ObjectMetadata
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
@@ -104,8 +105,72 @@ class BagUnpackerWorkerTest
       result.success.value shouldBe a[IngestFailed[_]]
       val failure = result.success.value.asInstanceOf[IngestFailed[_]]
 
-      failure.maybeUserFacingMessage.get shouldBe
-        s"Error trying to unpack the archive at $location - is it the correct format?"
+      val message = s"Error trying to unpack the archive at $location - is it the correct format?"
+
+      failure.maybeUserFacingMessage.get shouldBe message
+
+      assertTopicReceivesIngestUpdates(
+        payload.ingestId,
+        ingests) { ingestUpdates =>
+        val eventDescriptions: Seq[String] =
+          ingestUpdates
+            .flatMap { _.events }
+            .map { _.description }
+            .distinct
+
+        eventDescriptions shouldBe Seq(
+          "Unpacker started",
+          s"Unpacker failed - $message"
+        )
+      }
+    }
+  }
+
+  it("reports an error if passed a 7z file") {
+    val ingests = new MemoryMessageSender()
+    val outgoing = new MemoryMessageSender()
+
+    withLocalS3Bucket { srcBucket =>
+      val location = createObjectLocationWith(srcBucket)
+
+      val inputStream = getClass.getResourceAsStream("/crockery.7z")
+
+      s3Client.putObject(
+        location.namespace,
+        location.path,
+        inputStream,
+        new ObjectMetadata()
+      )
+
+      val payload =
+        createSourceLocationPayloadWith(location)
+
+      val result =
+        withWorker(ingests, outgoing) { worker =>
+          worker.processMessage(payload)
+        }
+
+      result.success.value shouldBe a[IngestFailed[_]]
+      val failure = result.success.value.asInstanceOf[IngestFailed[_]]
+
+      val message = s"Error trying to unpack the archive at $location - is it the correct format?"
+
+      failure.maybeUserFacingMessage.get shouldBe message
+
+      assertTopicReceivesIngestUpdates(
+        payload.ingestId,
+        ingests) { ingestUpdates =>
+        val eventDescriptions: Seq[String] =
+          ingestUpdates
+            .flatMap { _.events }
+            .map { _.description }
+            .distinct
+
+        eventDescriptions shouldBe Seq(
+          "Unpacker started",
+          s"Unpacker failed - $message"
+        )
+      }
     }
   }
 
