@@ -5,6 +5,7 @@ import os
 
 import betamax
 from betamax.cassette import cassette
+from betamax_serializers.pretty_json import PrettyJSONSerializer
 import pytest
 
 from wellcome_storage_service import StorageServiceClient
@@ -30,9 +31,12 @@ def sanitize_token(interaction, current_cassette):
         pass
 
 
+betamax.Betamax.register_serializer(PrettyJSONSerializer)
+
 with betamax.Betamax.configure() as config:
     config.cassette_library_dir = "tests/cassettes"
     config.before_record(callback=sanitize_token)
+    config.default_cassette_options['serialize_with'] = PrettyJSONSerializer.name
 
 
 @pytest.fixture
