@@ -381,7 +381,8 @@ class StorageManifestServiceTest
       )
 
       assertIsError(bag = bag) { err =>
-        err.getMessage shouldBe "Fetch entry for data/file1.txt refers to an object in the wrong namespace: not-the-replica-bucket"
+        err shouldBe a[BadFetchLocationException]
+        err.getMessage shouldBe "Fetch entry for data/file1.txt refers to a file in the wrong namespace: not-the-replica-bucket"
       }
     }
 
@@ -407,7 +408,8 @@ class StorageManifestServiceTest
 
       assertIsError(bag = bag, replicaRoot = replicaRoot, version = version) {
         err =>
-          err.getMessage shouldBe "Fetch entry for data/file1.txt refers to an object in the wrong path: /file1.txt"
+          err shouldBe a[BadFetchLocationException]
+          err.getMessage shouldBe "Fetch entry for data/file1.txt refers to a file in the wrong path: /file1.txt"
       }
     }
   }
