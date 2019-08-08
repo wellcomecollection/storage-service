@@ -43,8 +43,9 @@ class StorageManifestServiceTest
     val replicaRootLocation = createObjectLocation
     val version = randomInt(1, 10)
 
-    assertIsError(replicaRoot = replicaRootLocation, version = version) {
-      _ shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
+    assertIsError(replicaRoot = replicaRootLocation, version = version) { err =>
+      err shouldBe a[StorageManifestException]
+      err.getMessage shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
     }
   }
 
@@ -52,8 +53,9 @@ class StorageManifestServiceTest
     val version = randomInt(1, 10)
     val replicaRootLocation = createObjectLocation.join(s"/v${version + 1}")
 
-    assertIsError(replicaRoot = replicaRootLocation, version = version) {
-      _ shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
+    assertIsError(replicaRoot = replicaRootLocation, version = version) { err =>
+      err shouldBe a[StorageManifestException]
+      err.getMessage shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
     }
   }
 
@@ -311,8 +313,8 @@ class StorageManifestServiceTest
         manifestChecksumAlgorithm = SHA256
       )
 
-      assertIsError(bag = bag) {
-        _ shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
+      assertIsError(bag = bag) { err =>
+        err.getMessage shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
       }
     }
 
@@ -332,8 +334,9 @@ class StorageManifestServiceTest
         tagManifestChecksumAlgorithm = SHA256
       )
 
-      assertIsError(bag = bag) {
-        _ shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
+      assertIsError(bag = bag) { err =>
+        err shouldBe a[StorageManifestException]
+        err.getMessage shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
       }
     }
   }
@@ -352,9 +355,10 @@ class StorageManifestServiceTest
         fetchEntries = fetchEntries
       )
 
-      assertIsError(bag = bag) { msg =>
-        msg should startWith("Unable to resolve fetch entries:")
-        msg should include(
+      assertIsError(bag = bag) { err =>
+        err shouldBe a[StorageManifestException]
+        err.getMessage should startWith("Unable to resolve fetch entries:")
+        err.getMessage should include(
           s"Fetch entry refers to a path that isn't in the bag manifest: ${fetchEntries.head.path}")
       }
     }
@@ -375,8 +379,9 @@ class StorageManifestServiceTest
         fetchEntries = fetchEntries
       )
 
-      assertIsError(bag = bag) {
-        _ shouldBe "Fetch entry for data/file1.txt refers to an object in the wrong namespace: not-the-replica-bucket"
+      assertIsError(bag = bag) { err =>
+        err shouldBe a[BadFetchLocationException]
+        err.getMessage shouldBe "Fetch entry for data/file1.txt refers to a file in the wrong namespace: not-the-replica-bucket"
       }
     }
 
@@ -401,7 +406,9 @@ class StorageManifestServiceTest
       )
 
       assertIsError(bag = bag, replicaRoot = replicaRoot, version = version) {
-        _ shouldBe "Fetch entry for data/file1.txt refers to an object in the wrong path: /file1.txt"
+        err =>
+          err shouldBe a[BadFetchLocationException]
+          err.getMessage shouldBe "Fetch entry for data/file1.txt refers to a file in the wrong path: /file1.txt"
       }
     }
   }
@@ -607,7 +614,7 @@ class StorageManifestServiceTest
     bag: Bag = createBag,
     replicaRoot: ObjectLocation = createObjectLocation.join("/v1"),
     version: Int = 1
-  )(assertMessage: String => Assertion): Assertion = {
+  )(assertError: Throwable => Assertion): Assertion = {
     val sizeFinder = new SizeFinder {
       override def getSize(location: ObjectLocation): Try[Long] = Success(1)
     }
@@ -621,7 +628,6 @@ class StorageManifestServiceTest
       version = BagVersion(version)
     )
 
-    result.failure.exception shouldBe a[StorageManifestException]
-    assertMessage(result.failure.exception.getMessage)
+    assertError(result.failure.exception)
   }
 }

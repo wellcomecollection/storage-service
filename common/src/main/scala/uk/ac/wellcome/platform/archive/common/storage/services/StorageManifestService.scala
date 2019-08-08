@@ -28,6 +28,9 @@ import scala.util.{Failure, Success, Try}
 class StorageManifestException(message: String)
     extends RuntimeException(message)
 
+class BadFetchLocationException(message: String)
+    extends StorageManifestException(message)
+
 class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
   def createManifest(
     bag: Bag,
@@ -144,15 +147,15 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
         )
 
         if (fetchLocation.namespace != bagRoot.namespace) {
-          throw new StorageManifestException(
-            s"Fetch entry for ${matchedLocation.bagFile.path.value} refers to an object in the wrong namespace: ${fetchLocation.namespace}"
+          throw new BadFetchLocationException(
+            s"Fetch entry for ${matchedLocation.bagFile.path.value} refers to a file in the wrong namespace: ${fetchLocation.namespace}"
           )
         }
 
         // TODO: This check could actually look for a /v1, /v2, etc.
         if (!fetchLocation.path.startsWith(bagRoot.path + "/")) {
-          throw new StorageManifestException(
-            s"Fetch entry for ${matchedLocation.bagFile.path.value} refers to an object in the wrong path: /${fetchLocation.path}"
+          throw new BadFetchLocationException(
+            s"Fetch entry for ${matchedLocation.bagFile.path.value} refers to a file in the wrong path: /${fetchLocation.path}"
           )
         }
 
