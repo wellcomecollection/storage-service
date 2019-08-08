@@ -31,4 +31,7 @@ class MemoryUnpacker()(implicit streamStore: MemoryStreamStore[ObjectLocation])
       .map { _ =>
         ()
       }
+
+  override def formatLocation(location: ObjectLocation): String =
+    s"mem://$location"
 }

@@ -112,7 +112,7 @@ class BagUnpackerWorkerTest
       val failure = result.success.value.asInstanceOf[IngestFailed[_]]
 
       val message =
-        s"Error trying to unpack the archive at $location - is it the correct format?"
+        s"Error trying to unpack the archive at s3://$location - is it the correct format?"
 
       failure.maybeUserFacingMessage.get shouldBe message
 
@@ -160,7 +160,7 @@ class BagUnpackerWorkerTest
       val failure = result.success.value.asInstanceOf[IngestFailed[_]]
 
       val message =
-        s"Error trying to unpack the archive at $location - is it the correct format?"
+        s"Error trying to unpack the archive at s3://$location - is it the correct format?"
 
       failure.maybeUserFacingMessage.get shouldBe message
 
