@@ -23,10 +23,8 @@ jobs:
     - env: TASK=python_client-test
 
 script:
-  # Wait 45 minutes for the entire build to finish.  Primarily this stops the
-  # build timing out if we're taking a really long time to compile something.
-  # See https://docs.travis-ci.com/user/common-build-problems/#build-times-out-because-no-output-was-received
-  - travis_wait 45 ./.travis/run_job.py
+  - ./docker_run.py --sbt --root -- wellcome/sbt_wrapper:107 -version
+  - ./.travis/run_job.py
 
 cache:
   directories:
