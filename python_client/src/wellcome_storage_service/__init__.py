@@ -1,6 +1,7 @@
 # -*- encoding: utf-8
 
 import functools
+import time
 
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
@@ -30,7 +31,11 @@ def check_api_resp(f):
 def needs_token(f):
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
-        if not self.sess.token:
+        # We need to refresh the token if:
+        #   1. We've never asked for a token before
+        #   2. The existing token is close to expiry
+        #
+        if not self.sess.token or (time.time() - 10 > self.sess.token["expires_at"]):
             self.sess.fetch_token(
                 token_url=self.token_url,
                 client_id=self.client_id,

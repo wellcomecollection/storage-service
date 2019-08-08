@@ -2,44 +2,48 @@
   "http_interactions": [
     {
       "recorded_at": "2019-03-27T14:37:33",
-      "response": {
+      "request": {
         "body": {
-          "string": "{\"access_token\":\"<ACCESS_TOKEN>\",\"expires_in\":3600,\"token_type\":\"Bearer\"}",
-          "encoding": "UTF-8"
+          "encoding": "utf-8",
+          "string": "grant_type=client_credentials"
         },
         "headers": {
-          "x-amz-cognito-request-id": [
-            "e2d2ffc9-8866-466f-a3a5-d2fe6fcd8dfe"
+          "Accept": [
+            "application/json"
           ],
-          "Cache-Control": [
-            "no-cache, no-store, max-age=0, must-revalidate"
+          "Accept-Encoding": [
+            "gzip, deflate"
           ],
-          "Pragma": [
-            "no-cache"
-          ],
-          "Expires": [
-            "0"
-          ],
-          "X-XSS-Protection": [
-            "1; mode=block"
+          "Authorization": [
+            "<AUTH_TOKEN>"
           ],
           "Connection": [
             "keep-alive"
           ],
-          "X-Content-Type-Options": [
-            "nosniff"
+          "Content-Length": [
+            "29"
           ],
-          "Transfer-Encoding": [
-            "chunked"
+          "Content-Type": [
+            "application/x-www-form-urlencoded;charset=UTF-8"
           ],
-          "Via": [
-            "1.1 77b70daab6366766b49607e666ee5cb6.cloudfront.net (CloudFront)"
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ]
+        },
+        "method": "POST",
+        "uri": "https://auth.wellcomecollection.org/oauth2/token"
+      },
+      "response": {
+        "body": {
+          "encoding": "UTF-8",
+          "string": "{\"access_token\":\"<ACCESS_TOKEN>\",\"expires_in\":3600,\"token_type\":\"Bearer\"}"
+        },
+        "headers": {
+          "Cache-Control": [
+            "no-cache, no-store, max-age=0, must-revalidate"
           ],
-          "X-Frame-Options": [
-            "DENY"
-          ],
-          "Set-Cookie": [
-            "XSRF-TOKEN=754ee846-c8df-44a4-9eee-8fbbab6fd7d4; Path=/; Secure; HttpOnly"
+          "Connection": [
+            "keep-alive"
           ],
           "Content-Type": [
             "application/json;charset=UTF-8"
@@ -47,138 +51,134 @@
           "Date": [
             "Wed, 27 Mar 2019 14:37:33 GMT"
           ],
-          "X-Amz-Cf-Id": [
-            "loent4RhA2IuIKqBecGdN-gk5xPl_hOvpGAThNN8WubLPnE4u-hrhQ=="
+          "Expires": [
+            "0"
           ],
-          "Strict-Transport-Security": [
-            "max-age=31536000 ; includeSubDomains"
+          "Pragma": [
+            "no-cache"
           ],
           "Server": [
             "Server"
           ],
-          "X-Cache": [
-            "Miss from cloudfront"
+          "Set-Cookie": [
+            "XSRF-TOKEN=754ee846-c8df-44a4-9eee-8fbbab6fd7d4; Path=/; Secure; HttpOnly"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000 ; includeSubDomains"
+          ],
+          "Transfer-Encoding": [
+            "chunked"
+          ],
+          "Via": [
+            "1.1 77b70daab6366766b49607e666ee5cb6.cloudfront.net (CloudFront)"
+          ],
+          "X-Amz-Cf-Id": [
+            "loent4RhA2IuIKqBecGdN-gk5xPl_hOvpGAThNN8WubLPnE4u-hrhQ=="
           ],
           "X-Application-Context": [
             "application:prod:8443"
+          ],
+          "X-Cache": [
+            "Miss from cloudfront"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "DENY"
+          ],
+          "X-XSS-Protection": [
+            "1; mode=block"
+          ],
+          "x-amz-cognito-request-id": [
+            "e2d2ffc9-8866-466f-a3a5-d2fe6fcd8dfe"
           ]
         },
-        "url": "https://auth.wellcomecollection.org/oauth2/token",
         "status": {
-          "message": "OK",
-          "code": 200
-        }
-      },
-      "request": {
-        "body": {
-          "string": "grant_type=client_credentials",
-          "encoding": "utf-8"
+          "code": 200,
+          "message": "OK"
         },
-        "headers": {
-          "User-Agent": [
-            "python-requests/2.21.0"
-          ],
-          "Content-Length": [
-            "29"
-          ],
-          "Accept": [
-            "application/json"
-          ],
-          "Connection": [
-            "keep-alive"
-          ],
-          "Authorization": [
-            "<AUTH_TOKEN>"
-          ],
-          "Content-Type": [
-            "application/x-www-form-urlencoded;charset=UTF-8"
-          ],
-          "Accept-Encoding": [
-            "gzip, deflate"
-          ]
-        },
-        "method": "POST",
-        "uri": "https://auth.wellcomecollection.org/oauth2/token"
+        "url": "https://auth.wellcomecollection.org/oauth2/token"
       }
     },
     {
       "recorded_at": "2019-03-27T14:37:33",
-      "response": {
-        "body": {
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":500,\"label\":\"Server Error\",\"type\":\"Error\"}",
-          "encoding": null
-        },
-        "headers": {
-          "X-Cache": [
-            "Error from cloudfront"
-          ],
-          "Content-Length": [
-            "188"
-          ],
-          "x-amzn-Remapped-Date": [
-            "Wed, 27 Mar 2019 14:37:33 GMT"
-          ],
-          "Connection": [
-            "keep-alive"
-          ],
-          "x-amzn-Remapped-Connection": [
-            "keep-alive"
-          ],
-          "x-amzn-Remapped-Server": [
-            "nginx"
-          ],
-          "Via": [
-            "1.1 f781469e78b7a441c6f692b1629e1519.cloudfront.net (CloudFront)"
-          ],
-          "x-amzn-RequestId": [
-            "db7c3a5c-509d-11e9-af53-155902a70a0a"
-          ],
-          "Content-Type": [
-            "application/json"
-          ],
-          "x-amz-apigw-id": [
-            "XNKbFHOZjoEF8pA="
-          ],
-          "Allow": [
-            "POST"
-          ],
-          "X-Amz-Cf-Id": [
-            "xU5lGmh3X4M0Y5Y6eN9YDE2tYR8gqIhB9T8o6qyGei0HPWfVdfNiyA=="
-          ],
-          "Date": [
-            "Wed, 27 Mar 2019 14:37:33 GMT"
-          ]
-        },
-        "url": "https://api.wellcomecollection.org/storage/v1/ingests/trigger_server_error",
-        "status": {
-          "message": "Server Error",
-          "code": 500
-        }
-      },
       "request": {
         "body": {
-          "string": "",
-          "encoding": "utf-8"
+          "encoding": "utf-8",
+          "string": ""
         },
         "headers": {
-          "User-Agent": [
-            "python-requests/2.21.0"
-          ],
           "Accept": [
             "*/*"
-          ],
-          "Authorization": [
-            "Bearer <ACCESS_TOKEN>"
           ],
           "Accept-Encoding": [
             "gzip, deflate"
           ],
+          "Authorization": [
+            "Bearer <ACCESS_TOKEN>"
+          ],
           "Connection": [
             "keep-alive"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
           ]
         },
         "method": "GET",
         "uri": "https://api.wellcomecollection.org/storage/v1/ingests/trigger_server_error"
+      },
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":500,\"label\":\"Server Error\",\"type\":\"Error\"}"
+        },
+        "headers": {
+          "Allow": [
+            "POST"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Length": [
+            "188"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "Date": [
+            "Wed, 27 Mar 2019 14:37:33 GMT"
+          ],
+          "Via": [
+            "1.1 f781469e78b7a441c6f692b1629e1519.cloudfront.net (CloudFront)"
+          ],
+          "X-Amz-Cf-Id": [
+            "xU5lGmh3X4M0Y5Y6eN9YDE2tYR8gqIhB9T8o6qyGei0HPWfVdfNiyA=="
+          ],
+          "X-Cache": [
+            "Error from cloudfront"
+          ],
+          "x-amz-apigw-id": [
+            "XNKbFHOZjoEF8pA="
+          ],
+          "x-amzn-Remapped-Connection": [
+            "keep-alive"
+          ],
+          "x-amzn-Remapped-Date": [
+            "Wed, 27 Mar 2019 14:37:33 GMT"
+          ],
+          "x-amzn-Remapped-Server": [
+            "nginx"
+          ],
+          "x-amzn-RequestId": [
+            "db7c3a5c-509d-11e9-af53-155902a70a0a"
+          ]
+        },
+        "status": {
+          "code": 500,
+          "message": "Server Error"
+        },
+        "url": "https://api.wellcomecollection.org/storage/v1/ingests/trigger_server_error"
       }
     }
   ],
