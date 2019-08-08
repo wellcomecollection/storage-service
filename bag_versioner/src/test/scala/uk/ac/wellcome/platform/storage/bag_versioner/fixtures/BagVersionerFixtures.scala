@@ -36,8 +36,9 @@ trait BagVersionerFixtures
       }
     }
 
-  def withBagAuditor[R](versionPicker: VersionPicker)(
-    testWith: TestWith[BagVersioner, R]): R = {
+  def withBagAuditor[R](
+    versionPicker: VersionPicker
+  )(testWith: TestWith[BagVersioner, R]): R = {
     val bagAuditor = new BagVersioner(versionPicker)
 
     testWith(bagAuditor)

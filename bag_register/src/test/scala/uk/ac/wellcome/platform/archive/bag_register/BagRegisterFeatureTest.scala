@@ -40,7 +40,8 @@ class BagRegisterFeatureTest
             externalIdentifier,
             space,
             version,
-            dataFileCount = dataFileCount) {
+            dataFileCount = dataFileCount
+          ) {
             case (bagRootLocation, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(

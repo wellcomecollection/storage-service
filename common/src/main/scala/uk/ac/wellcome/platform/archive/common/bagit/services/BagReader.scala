@@ -33,17 +33,20 @@ trait BagReader[IS <: InputStreamWithLength] {
       bagInfo <- loadRequired[BagInfo](root)(bagInfo)(BagInfo.create)
 
       fileManifest <- loadRequired[BagManifest](root)(fileManifest(SHA256))(
-        BagManifest.create(_, SHA256))
+        BagManifest.create(_, SHA256)
+      )
 
       tagManifest <- loadRequired[BagManifest](root)(tagManifest(SHA256))(
-        BagManifest.create(_, SHA256))
+        BagManifest.create(_, SHA256)
+      )
 
       bagFetch <- loadOptional[BagFetch](root)(bagFetch)(BagFetch.create)
 
     } yield Bag(bagInfo, fileManifest, tagManifest, bagFetch)
 
-  private def loadOptional[T](root: ObjectLocation)(path: BagPath)(
-    f: Stream[T]): Either[BagUnavailable, Option[T]] = {
+  private def loadOptional[T](
+    root: ObjectLocation
+  )(path: BagPath)(f: Stream[T]): Either[BagUnavailable, Option[T]] = {
     val location = root.join(path.value)
 
     streamStore.get(location) match {
@@ -52,7 +55,8 @@ trait BagReader[IS <: InputStreamWithLength] {
           case Success(r) => Right(Some(r))
           case Failure(e) =>
             Left(
-              BagUnavailable(s"Error loading ${path.value}: ${e.getMessage}"))
+              BagUnavailable(s"Error loading ${path.value}: ${e.getMessage}")
+            )
         }
 
       case Left(_: DoesNotExistError) =>
@@ -63,8 +67,9 @@ trait BagReader[IS <: InputStreamWithLength] {
     }
   }
 
-  private def loadRequired[T](root: ObjectLocation)(path: BagPath)(
-    f: Stream[T]): Either[BagUnavailable, T] =
+  private def loadRequired[T](
+    root: ObjectLocation
+  )(path: BagPath)(f: Stream[T]): Either[BagUnavailable, T] =
     loadOptional[T](root)(path)(f) match {
       case Right(Some(result)) => Right(result)
       case Right(None) =>

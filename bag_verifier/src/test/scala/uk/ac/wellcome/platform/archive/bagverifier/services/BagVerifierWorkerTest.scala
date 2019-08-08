@@ -32,7 +32,8 @@ class BagVerifierWorkerTest
   val dataFileCount: Int = randomInt(from = 2, to = 10)
 
   it(
-    "updates the ingest monitor and sends an outgoing notification if verification succeeds") {
+    "updates the ingest monitor and sends an outgoing notification if verification succeeds"
+  ) {
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
@@ -83,7 +84,8 @@ class BagVerifierWorkerTest
         }
 
         outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-          payload)
+          payload
+        )
       }
     }
 
@@ -117,7 +119,8 @@ class BagVerifierWorkerTest
     withLocalS3Bucket { bucket =>
       val badBuilder = new S3BagBuilderBase {
         override protected def createPayloadManifest(
-          entries: Seq[PayloadEntry]): Option[String] =
+          entries: Seq[PayloadEntry]
+        ): Option[String] =
           super.createPayloadManifest(
             entries.head.copy(contents = randomAlphanumeric) +: entries.tail
           )
@@ -156,7 +159,8 @@ class BagVerifierWorkerTest
     withLocalS3Bucket { bucket =>
       val badBuilder = new S3BagBuilderBase {
         override protected def createPayloadManifest(
-          entries: Seq[PayloadEntry]): Option[String] =
+          entries: Seq[PayloadEntry]
+        ): Option[String] =
           None
       }
 
@@ -199,7 +203,8 @@ class BagVerifierWorkerTest
     withLocalS3Bucket { bucket =>
       val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
         bucket,
-        externalIdentifier = bagInfoExternalIdentifier)
+        externalIdentifier = bagInfoExternalIdentifier
+      )
 
       val payload = createEnrichedBagInformationPayloadWith(
         context = createPipelineContextWith(
@@ -219,7 +224,8 @@ class BagVerifierWorkerTest
       ) { events =>
         val description = events.map { _.description }.head
         description should startWith(
-          "Verification failed - External identifier in bag-info.txt does not match request")
+          "Verification failed - External identifier in bag-info.txt does not match request"
+        )
       }
     }
   }

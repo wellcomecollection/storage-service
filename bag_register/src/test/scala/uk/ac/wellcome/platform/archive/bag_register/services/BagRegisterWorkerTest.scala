@@ -46,7 +46,8 @@ class BagRegisterWorkerTest
             externalIdentifier,
             space = space,
             dataFileCount = dataFileCount,
-            version = version) {
+            version = version
+          ) {
             case (bagRootLocation, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
@@ -107,13 +108,15 @@ class BagRegisterWorkerTest
             externalIdentifier,
             space = space,
             version = 1,
-            dataFileCount) {
+            dataFileCount
+          ) {
             case (location1, bagInfo1) =>
               withRegisterBag(
                 externalIdentifier,
                 space = space,
                 version = 2,
-                dataFileCount) {
+                dataFileCount
+              ) {
                 case (location2, _) =>
                   val payload1 = createEnrichedBagInformationPayloadWith(
                     context = createPipelineContextWith(

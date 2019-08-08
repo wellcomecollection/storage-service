@@ -78,7 +78,8 @@ class UnarchiverTest extends FunSpec with Matchers with EitherValues {
 
     error shouldBe a[ArchiveFormatError]
     error.e.getMessage should startWith(
-      "No Archiver found for the stream signature")
+      "No Archiver found for the stream signature"
+    )
   }
 
   it("fails if the file is not a compressed stream") {
@@ -88,7 +89,8 @@ class UnarchiverTest extends FunSpec with Matchers with EitherValues {
 
     error shouldBe a[CompressorError]
     error.e.getMessage should startWith(
-      "No Compressor found for the stream signature")
+      "No Compressor found for the stream signature"
+    )
   }
 
   it("fails if the input stream is null") {

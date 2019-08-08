@@ -13,7 +13,8 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
   def assertTopicReceivesIngestStatus[R](
     ingestId: IngestID,
     ingests: MemoryMessageSender,
-    status: Ingest.Status)(assert: Seq[IngestEvent] => R): Assertion =
+    status: Ingest.Status
+  )(assert: Seq[IngestEvent] => R): Assertion =
     assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size should be > 0
 
@@ -38,7 +39,7 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
 
   def assertTopicReceivesIngestUpdates(
     ingestId: IngestID,
-    ingests: MemoryMessageSender,
+    ingests: MemoryMessageSender
   )(assert: Seq[IngestUpdate] => Assertion): Assertion =
     assert(ingests.getMessages[IngestUpdate])
 
@@ -57,9 +58,10 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
       eventDescriptions should contain theSameElementsAs expectedDescriptions.distinct
     }
 
-  def assertTopicReceivesIngestEvent(ingestId: IngestID,
-                                     ingests: MemoryMessageSender)(
-    assert: Seq[IngestEvent] => Assertion): Assertion =
+  def assertTopicReceivesIngestEvent(
+    ingestId: IngestID,
+    ingests: MemoryMessageSender
+  )(assert: Seq[IngestEvent] => Assertion): Assertion =
     assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size should be > 0
 

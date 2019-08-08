@@ -23,13 +23,16 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class WellcomeHttpApp(routes: Route,
-                      httpMetrics: HttpMetrics,
-                      httpServerConfig: HTTPServerConfig,
-                      contextURL: URL)(implicit actorSystem: ActorSystem,
-                                       materializer: Materializer,
-                                       ec: ExecutionContext)
-    extends Logging {
+class WellcomeHttpApp(
+  routes: Route,
+  httpMetrics: HttpMetrics,
+  httpServerConfig: HTTPServerConfig,
+  contextURL: URL
+)(
+  implicit actorSystem: ActorSystem,
+  materializer: Materializer,
+  ec: ExecutionContext
+) extends Logging {
 
   import akka.http.scaladsl.server.Directives._
   import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
@@ -60,7 +63,8 @@ class WellcomeHttpApp(routes: Route,
   }
 
   private def handleDecodingFailures(
-    causes: DecodingFailures): StandardRoute = {
+    causes: DecodingFailures
+  ): StandardRoute = {
     val message = causes.failures.map { cause =>
       val path = CursorOp.opsToPath(cause.history)
 
@@ -106,7 +110,8 @@ class WellcomeHttpApp(routes: Route,
               statusCode,
               _,
               HttpEntity.Strict(contentType, _),
-              _) if contentType != ContentTypes.`application/json` =>
+              _
+            ) if contentType != ContentTypes.`application/json` =>
           transformToJsonErrorResponse(statusCode, res)
         case x => x
       }
@@ -127,8 +132,10 @@ class WellcomeHttpApp(routes: Route,
         complete(InternalServerError -> error)
     }
 
-  private def transformToJsonErrorResponse(statusCode: StatusCode,
-                                           res: HttpResponse): HttpResponse = {
+  private def transformToJsonErrorResponse(
+    statusCode: StatusCode,
+    res: HttpResponse
+  ): HttpResponse = {
     val errorResponseMarshallingFlow = Flow[ByteString]
       .mapAsync(parallelism = 1)(data => {
         val description = data.utf8String
@@ -151,7 +158,8 @@ class WellcomeHttpApp(routes: Route,
 
     res
       .transformEntityDataBytes(errorResponseMarshallingFlow)
-      .mapEntity(entity =>
-        entity.withContentType(ContentTypes.`application/json`))
+      .mapEntity(
+        entity => entity.withContentType(ContentTypes.`application/json`)
+      )
   }
 }

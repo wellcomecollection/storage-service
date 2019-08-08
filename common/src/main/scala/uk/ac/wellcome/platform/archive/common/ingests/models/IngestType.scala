@@ -23,7 +23,8 @@ object IngestType {
       case UpdateIngestType.id => UpdateIngestType
       case invalidId =>
         throw new IllegalArgumentException(
-          s"""got "$invalidId", valid values are: ${CreateIngestType.id}, ${UpdateIngestType.id}.""")
+          s"""got "$invalidId", valid values are: ${CreateIngestType.id}, ${UpdateIngestType.id}."""
+        )
     }
 
   implicit val decoder: Decoder[IngestType] = (cursor: HCursor) =>

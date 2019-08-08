@@ -10,9 +10,10 @@ sealed trait IngestVersionManagerError
 case class IngestVersionManagerDaoError(e: Throwable)
     extends IngestVersionManagerError
 
-case class ExternalIdentifiersMismatch(stored: ExternalIdentifier,
-                                       request: ExternalIdentifier)
-    extends IngestVersionManagerError
+case class ExternalIdentifiersMismatch(
+  stored: ExternalIdentifier,
+  request: ExternalIdentifier
+) extends IngestVersionManagerError
 
 case class StorageSpaceMismatch(stored: StorageSpace, request: StorageSpace)
     extends IngestVersionManagerError

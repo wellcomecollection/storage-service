@@ -14,8 +14,9 @@ import scala.util.{Failure, Success, Try}
 
 object S3LocatableInstances {
   implicit val s3UriLocatable = new Locatable[URI] {
-    override def locate(t: URI)(maybeRoot: Option[ObjectLocation])
-      : Either[LocateFailure[URI], ObjectLocation] =
+    override def locate(t: URI)(
+      maybeRoot: Option[ObjectLocation]
+    ): Either[LocateFailure[URI], ObjectLocation] =
       Try { new AmazonS3URI(t) } match {
         case Success(s3Uri) =>
           Right(ObjectLocation(s3Uri.getBucket, s3Uri.getKey))
@@ -30,13 +31,16 @@ object S3LocatableInstances {
                 LocationParsingError(
                   t,
                   s"Failed to parse S3 URI: invalid path trying to parse local URL (${default
-                    .mkString("/")})"))
+                    .mkString("/")})"
+                )
+              )
           }
 
         // We are running in AWS - fail as usual.
         case Failure(e) =>
           Left(
-            LocationParsingError(t, s"Failed to parse S3 URI: ${e.getMessage}"))
+            LocationParsingError(t, s"Failed to parse S3 URI: ${e.getMessage}")
+          )
 
       }
   }

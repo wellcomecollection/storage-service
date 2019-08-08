@@ -22,7 +22,7 @@ class BagVerifier()(
   implicit bagReader: BagReader[_],
   resolvable: Resolvable[ObjectLocation],
   verifier: Verifier[_],
-  listing: Listing[ObjectLocationPrefix, ObjectLocation],
+  listing: Listing[ObjectLocationPrefix, ObjectLocation]
 ) extends Logging {
 
   case class BagVerifierError(
@@ -32,8 +32,10 @@ class BagVerifier()(
 
   type InternalResult[T] = Either[BagVerifierError, T]
 
-  def verify(root: ObjectLocation, externalIdentifier: ExternalIdentifier)
-    : Try[IngestStepResult[VerificationSummary]] =
+  def verify(
+    root: ObjectLocation,
+    externalIdentifier: ExternalIdentifier
+  ): Try[IngestStepResult[VerificationSummary]] =
     Try {
       val startTime = Instant.now()
 
@@ -82,8 +84,10 @@ class BagVerifier()(
       buildStepResult(internalResult, root = root, startTime = startTime)
     }
 
-  private def getBag(root: ObjectLocation,
-                     startTime: Instant): InternalResult[Bag] =
+  private def getBag(
+    root: ObjectLocation,
+    startTime: Instant
+  ): InternalResult[Bag] =
     bagReader.get(root) match {
       case Left(bagUnavailable) =>
         Left(
@@ -98,7 +102,8 @@ class BagVerifier()(
 
   private def verifyExternalIdentifier(
     bag: Bag,
-    externalIdentifier: ExternalIdentifier): InternalResult[Unit] =
+    externalIdentifier: ExternalIdentifier
+  ): InternalResult[Unit] =
     if (bag.info.externalIdentifier != externalIdentifier) {
       val message =
         "External identifier in bag-info.txt does not match request: " +
@@ -144,7 +149,8 @@ class BagVerifier()(
 
   private def verifyPayloadOxumFileSize(
     bag: Bag,
-    verificationResult: VerificationResult): InternalResult[Unit] =
+    verificationResult: VerificationResult
+  ): InternalResult[Unit] =
     verificationResult match {
       case VerificationSuccess(locations) =>
         // The Payload-Oxum octetstream sum only counts the size of files in the payload,
@@ -170,7 +176,8 @@ class BagVerifier()(
           Left(
             BagVerifierError(
               new Throwable(message),
-              userMessage = Some(message))
+              userMessage = Some(message)
+            )
           )
         }
 
@@ -183,7 +190,8 @@ class BagVerifier()(
     bag: Bag,
     root: ObjectLocation,
     actualLocations: Seq[ObjectLocation],
-    verificationResult: VerificationResult): InternalResult[Unit] =
+    verificationResult: VerificationResult
+  ): InternalResult[Unit] =
     verificationResult match {
       case VerificationSuccess(_) =>
         val bagFetchLocations = bag.fetch match {
@@ -208,7 +216,8 @@ class BagVerifier()(
             "Files referred to in the fetch.txt also appear in the bag: "
 
           val internalMessage = messagePrefix + concreteFetchLocations.mkString(
-            ", ")
+            ", "
+          )
 
           val userMessage = messagePrefix +
             concreteFetchLocations
@@ -253,7 +262,7 @@ class BagVerifier()(
     "tagmanifest-md5.txt",
     "tagmanifest-sha1.txt",
     "tagmanifest-sha256.txt",
-    "tagmanifest-sha512.txt",
+    "tagmanifest-sha512.txt"
   )
 
   // Check that there aren't any files in the bag that aren't referenced in
@@ -261,7 +270,8 @@ class BagVerifier()(
   private def verifyNoUnreferencedFiles(
     root: ObjectLocation,
     actualLocations: Seq[ObjectLocation],
-    verificationResult: VerificationResult): InternalResult[Unit] =
+    verificationResult: VerificationResult
+  ): InternalResult[Unit] =
     verificationResult match {
       case VerificationSuccess(locations) =>
         val expectedLocations = locations.map { _.objectLocation }
@@ -305,7 +315,8 @@ class BagVerifier()(
             BagVerifierError(
               new Throwable(messagePrefix + unreferencedFiles.mkString(", ")),
               userMessage = Some(userMessage)
-            ))
+            )
+          )
         }
 
       case _ => Right(())
@@ -314,7 +325,8 @@ class BagVerifier()(
   private def buildStepResult(
     internalResult: InternalResult[VerificationResult],
     root: ObjectLocation,
-    startTime: Instant): IngestStepResult[VerificationSummary] =
+    startTime: Instant
+  ): IngestStepResult[VerificationSummary] =
     internalResult match {
       case Left(error) =>
         IngestFailed(

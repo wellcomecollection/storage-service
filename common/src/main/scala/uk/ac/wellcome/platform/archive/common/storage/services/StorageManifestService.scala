@@ -97,8 +97,10 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
     * the replicator.
     *
     */
-  private def getBagRoot(replicaRoot: ObjectLocation,
-                         version: BagVersion): Try[ObjectLocationPrefix] =
+  private def getBagRoot(
+    replicaRoot: ObjectLocation,
+    version: BagVersion
+  ): Try[ObjectLocationPrefix] =
     if (replicaRoot.path.endsWith(s"/$version")) {
       Success(
         replicaRoot.asPrefix.copy(
@@ -108,7 +110,9 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
     } else {
       Failure(
         new StorageManifestException(
-          s"Malformed bag root: $replicaRoot (expected suffix /$version)"))
+          s"Malformed bag root: $replicaRoot (expected suffix /$version)"
+        )
+      )
     }
 
   private def resolveFetchLocations(bag: Bag): Try[Seq[MatchedLocation]] =
@@ -125,7 +129,8 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
   private def getSizeAndLocation(
     matchedLocation: MatchedLocation,
     bagRoot: ObjectLocationPrefix,
-    version: BagVersion): (ObjectLocation, Option[Long]) =
+    version: BagVersion
+  ): (ObjectLocation, Option[Long]) =
     matchedLocation.fetchEntry match {
       // This is a concrete file inside the replicated bag,
       // so it's inside the versioned replica directory.
@@ -133,7 +138,8 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
         (
           bagRoot.asLocation(
             version.toString,
-            matchedLocation.bagFile.path.value),
+            matchedLocation.bagFile.path.value
+          ),
           None
         )
 
@@ -176,19 +182,22 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
   private def createPathLocationMap(
     matchedLocations: Seq[MatchedLocation],
     bagRoot: ObjectLocationPrefix,
-    version: BagVersion): Try[Map[BagPath, (ObjectLocation, Option[Long])]] =
+    version: BagVersion
+  ): Try[Map[BagPath, (ObjectLocation, Option[Long])]] =
     Try {
       matchedLocations.map { matchedLoc =>
         (
           matchedLoc.bagFile.path,
-          getSizeAndLocation(matchedLoc, bagRoot, version))
+          getSizeAndLocation(matchedLoc, bagRoot, version)
+        )
       }.toMap
     }
 
   private def createManifestFiles(
     manifest: BagManifest,
     entries: Map[BagPath, (ObjectLocation, Option[Long])],
-    bagRoot: ObjectLocationPrefix) = Try {
+    bagRoot: ObjectLocationPrefix
+  ) = Try {
     manifest.files.map { bagFile =>
       // This lookup should never file -- the BagMatcher populates the
       // entries from the original manifests in the bag.
@@ -216,7 +225,8 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
             case Success(value) => value
             case Failure(err) =>
               throw new StorageManifestException(
-                s"Error getting size of $location: $err")
+                s"Error getting size of $location: $err"
+              )
           }
       }
 

@@ -18,10 +18,12 @@ trait VerifierTestCases[Namespace, Context]
   def createObjectLocationWith(namespace: Namespace): ObjectLocation
 
   def putString(location: ObjectLocation, contents: String)(
-    implicit context: Context): Unit
+    implicit context: Context
+  ): Unit
 
   def withVerifier[R](testWith: TestWith[Verifier[_], R])(
-    implicit context: Context): R
+    implicit context: Context
+  ): R
 
   it("returns a success if the checksum is correct") {
     withContext { implicit context =>

@@ -26,11 +26,13 @@ import scala.util.Try
 class BagVersioner(versionPicker: VersionPicker) {
   type IngestStep = Try[IngestStepResult[BagVersionerSummary]]
 
-  def getSummary(ingestId: IngestID,
-                 ingestDate: Instant,
-                 ingestType: IngestType,
-                 externalIdentifier: ExternalIdentifier,
-                 storageSpace: StorageSpace): IngestStep =
+  def getSummary(
+    ingestId: IngestID,
+    ingestDate: Instant,
+    ingestType: IngestType,
+    externalIdentifier: ExternalIdentifier,
+    storageSpace: StorageSpace
+  ): IngestStep =
     Try {
       val startTime = Instant.now()
 

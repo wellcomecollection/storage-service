@@ -26,7 +26,8 @@ class CallbackNotificationServiceTest
   )
 
   it(
-    "sends a notification if there's a pending callback and the ingest is complete") {
+    "sends a notification if there's a pending callback and the ingest is complete"
+  ) {
     forAll(sendsCallbackStatus) { (ingestStatus, callbackStatus) =>
       val messageSender = new MemoryMessageSender()
       val service = new CallbackNotificationService(messageSender)
@@ -47,7 +48,8 @@ class CallbackNotificationServiceTest
       )
 
       messageSender.getMessages[CallbackNotification] shouldBe Seq(
-        expectedNotification)
+        expectedNotification
+      )
     }
   }
 

@@ -142,9 +142,11 @@ class DisplayIngestTest
       ingest.id shouldBe a[IngestID]
       ingest.sourceLocation shouldBe StorageLocation(
         InfrequentAccessStorageProvider,
-        ObjectLocation(bucket, path))
+        ObjectLocation(bucket, path)
+      )
       ingest.callback shouldBe Some(
-        Callback(URI.create(ingestCreateRequest.callback.get.url)))
+        Callback(URI.create(ingestCreateRequest.callback.get.url))
+      )
       ingest.status shouldBe Ingest.Accepted
       ingest.externalIdentifier shouldBe externalIdentifier
       assertRecent(ingest.createdDate)

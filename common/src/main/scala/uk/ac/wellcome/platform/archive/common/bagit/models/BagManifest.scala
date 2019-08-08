@@ -23,8 +23,10 @@ object BagManifest {
 
   val LINE_REGEX: Regex = """(.+?)\s+(.+)""".r
 
-  def create(inputStream: InputStream,
-             algorithm: HashingAlgorithm): Try[BagManifest] = {
+  def create(
+    inputStream: InputStream,
+    algorithm: HashingAlgorithm
+  ): Try[BagManifest] = {
 
     val bufferedReader = new BufferedReader(
       new InputStreamReader(inputStream)

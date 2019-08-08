@@ -39,11 +39,13 @@ trait StorageRandomThings extends RandomThings {
     str.updated(spaceIndex, ' ')
   }
 
-  def randomFilesInDirs(fileCount: Int = 10,
-                        dirs: Int = 4,
-                        maxDepth: Int = 4,
-                        minSize: Int = 265,
-                        maxSize: Int = 1024): Seq[File] = {
+  def randomFilesInDirs(
+    fileCount: Int = 10,
+    dirs: Int = 4,
+    maxDepth: Int = 4,
+    minSize: Int = 265,
+    maxSize: Int = 1024
+  ): Seq[File] = {
 
     def createFile(name: String) = {
       val fileSize =
@@ -75,10 +77,12 @@ trait StorageRandomThings extends RandomThings {
 
   val tmpDir: String = System.getProperty("java.io.tmpdir")
 
-  def randomFilesWithNames(fileNames: List[String],
-                           maxDepth: Int = 4,
-                           minSize: Int = 265,
-                           maxSize: Int = 1024): Seq[File] = {
+  def randomFilesWithNames(
+    fileNames: List[String],
+    maxDepth: Int = 4,
+    minSize: Int = 265,
+    maxSize: Int = 1024
+  ): Seq[File] = {
     def createFile(name: String) = {
       val fileSize =
         Random.nextInt(maxSize - minSize) + minSize
@@ -95,8 +99,9 @@ trait StorageRandomThings extends RandomThings {
     }
   }
 
-  def writeToOutputStream(path: String = s"${randomUUID.toString}.test")(
-    writeTo: FileOutputStream => Unit): File = {
+  def writeToOutputStream(
+    path: String = s"${randomUUID.toString}.test"
+  )(writeTo: FileOutputStream => Unit): File = {
     val absolutePath = Paths.get(tmpDir, path)
 
     val file = absolutePath.toFile

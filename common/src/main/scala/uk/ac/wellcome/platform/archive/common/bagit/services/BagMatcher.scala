@@ -17,7 +17,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 object BagMatcher {
 
   def correlateFetchEntries(
-    bag: Bag): Either[Seq[Throwable], Seq[MatchedLocation]] =
+    bag: Bag
+  ): Either[Seq[Throwable], Seq[MatchedLocation]] =
     correlateFetchEntryToBagFile(
       bagFiles = bag.manifest.files ++ bag.tagManifest.files,
       fetchEntries = bag.fetch match {
@@ -42,14 +43,16 @@ object BagMatcher {
     bagFiles.foreach { file =>
       val existing = paths(file.path)
       paths = paths ++ Map(
-        file.path -> existing.copy(bagFiles = existing.bagFiles :+ file))
+        file.path -> existing.copy(bagFiles = existing.bagFiles :+ file)
+      )
     }
 
     fetchEntries.foreach { fetchEntry =>
       val existing = paths(fetchEntry.path)
       paths = paths ++ Map(
-        fetchEntry.path -> existing.copy(
-          fetchEntries = existing.fetchEntries :+ fetchEntry))
+        fetchEntry.path -> existing
+          .copy(fetchEntries = existing.fetchEntries :+ fetchEntry)
+      )
     }
 
     val matchedLocations = paths.map {
@@ -59,11 +62,13 @@ object BagMatcher {
             Right(MatchedLocation(bagFile = bagFile, fetchEntry = None))
           case (Seq(bagFile), Seq(fetchEntry)) =>
             Right(
-              MatchedLocation(bagFile = bagFile, fetchEntry = Some(fetchEntry)))
+              MatchedLocation(bagFile = bagFile, fetchEntry = Some(fetchEntry))
+            )
 
           case (Seq(), fetchEntriesForPath) if fetchEntriesForPath.nonEmpty =>
             Left(
-              s"Fetch entry refers to a path that isn't in the bag manifest: $path")
+              s"Fetch entry refers to a path that isn't in the bag manifest: $path"
+            )
 
           case _ =>
             Left(s"Multiple, ambiguous entries for the same path: $pathInfo")

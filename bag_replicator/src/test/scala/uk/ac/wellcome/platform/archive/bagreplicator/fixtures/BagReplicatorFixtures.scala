@@ -50,17 +50,17 @@ trait BagReplicatorFixtures
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
-    stepName: String = randomAlphanumericWithLength())(
+    stepName: String = randomAlphanumericWithLength()
+  )(
     testWith: TestWith[BagReplicatorWorker[String, String], R]
   ): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
       withMonitoringClient { implicit monitoringClient =>
-        val lockingService = new LockingService[
-          IngestStepResult[ReplicationSummary],
-          Try,
-          LockDao[String, UUID]] {
+        val lockingService = new LockingService[IngestStepResult[
+          ReplicationSummary
+        ], Try, LockDao[String, UUID]] {
           override implicit val lockDao: LockDao[String, UUID] =
             lockServiceDao
 
@@ -102,7 +102,8 @@ trait BagReplicatorFixtures
   // the bag structure, so we just put a random collection of objects
   // in the "bag".
   def withBagObjects[R](bucket: Bucket, objectCount: Int = 50)(
-    testWith: TestWith[ObjectLocation, R]): R = {
+    testWith: TestWith[ObjectLocation, R]
+  ): R = {
     val rootLocation = createObjectLocationWith(bucket)
 
     (1 to objectCount).map { _ =>
@@ -122,8 +123,10 @@ trait BagReplicatorFixtures
     testWith(rootLocation)
   }
 
-  def verifyObjectsCopied(src: ObjectLocation,
-                          dst: ObjectLocation): Assertion = {
+  def verifyObjectsCopied(
+    src: ObjectLocation,
+    dst: ObjectLocation
+  ): Assertion = {
     val sourceItems = getObjectSummaries(src)
     val sourceKeyEtags = sourceItems.map {
       _.getETag
@@ -138,7 +141,8 @@ trait BagReplicatorFixtures
   }
 
   private def getObjectSummaries(
-    objectLocation: ObjectLocation): List[S3ObjectSummary] =
+    objectLocation: ObjectLocation
+  ): List[S3ObjectSummary] =
     s3Client
       .listObjects(objectLocation.namespace, objectLocation.path)
       .getObjectSummaries

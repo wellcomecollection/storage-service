@@ -4,7 +4,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 trait Locatable[T] {
   def locate(t: T)(
-    maybeRoot: Option[ObjectLocation]): Either[LocateFailure[T], ObjectLocation]
+    maybeRoot: Option[ObjectLocation]
+  ): Either[LocateFailure[T], ObjectLocation]
 }
 
 object Locatable {
@@ -12,7 +13,8 @@ object Locatable {
     implicit locator: Locatable[T]
   ) {
     def locateWith(
-      root: ObjectLocation): Either[LocateFailure[T], ObjectLocation] =
+      root: ObjectLocation
+    ): Either[LocateFailure[T], ObjectLocation] =
       locator.locate(t)(Some(root))
 
     def locate: Either[LocateFailure[T], ObjectLocation] =

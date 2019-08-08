@@ -10,10 +10,11 @@ sealed trait IngestUpdate {
 case class IngestEventUpdate(id: IngestID, events: Seq[IngestEvent])
     extends IngestUpdate
 
-case class IngestStatusUpdate(id: IngestID,
-                              status: Ingest.Status,
-                              events: Seq[IngestEvent] = Seq.empty)
-    extends IngestUpdate
+case class IngestStatusUpdate(
+  id: IngestID,
+  status: Ingest.Status,
+  events: Seq[IngestEvent] = Seq.empty
+) extends IngestUpdate
 
 case class IngestCallbackStatusUpdate(
   id: IngestID,
@@ -22,9 +23,11 @@ case class IngestCallbackStatusUpdate(
 ) extends IngestUpdate
 
 case object IngestCallbackStatusUpdate {
-  def apply(id: IngestID,
-            callbackStatus: Callback.CallbackStatus,
-            description: String): IngestCallbackStatusUpdate =
+  def apply(
+    id: IngestID,
+    callbackStatus: Callback.CallbackStatus,
+    description: String
+  ): IngestCallbackStatusUpdate =
     IngestCallbackStatusUpdate(
       id = id,
       callbackStatus = callbackStatus,

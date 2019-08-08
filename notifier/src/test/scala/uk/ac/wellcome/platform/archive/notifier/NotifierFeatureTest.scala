@@ -242,7 +242,8 @@ class NotifierFeatureTest
                   case IngestCallbackStatusUpdate(
                       id,
                       callbackStatus,
-                      List(ingestEvent)) =>
+                      List(ingestEvent)
+                      ) =>
                     id shouldBe ingest.id
                     ingestEvent.description shouldBe "Callback fulfilled."
                     callbackStatus shouldBe Callback.Succeeded
@@ -255,7 +256,8 @@ class NotifierFeatureTest
     }
 
     it(
-      "sends an IngestUpdate when it receives an Ingest with a callback it cannot fulfill") {
+      "sends an IngestUpdate when it receives an Ingest with a callback it cannot fulfill"
+    ) {
       withNotifier {
         case (queue, messageSender) =>
           val ingestId = createIngestID
@@ -283,7 +285,8 @@ class NotifierFeatureTest
               case IngestCallbackStatusUpdate(
                   id,
                   callbackStatus,
-                  List(ingestEvent)) =>
+                  List(ingestEvent)
+                  ) =>
                 id shouldBe ingest.id
                 ingestEvent.description shouldBe s"Callback failed for: ${ingest.id}, got 404 Not Found!"
                 callbackStatus shouldBe Callback.Failed

@@ -19,7 +19,7 @@ class ResponseDisplayBagInfoTest
       Some(bagInfo.sourceOrganisation.get.underlying),
       Some(bagInfo.externalDescription.get.underlying),
       Some(bagInfo.internalSenderIdentifier.get.underlying),
-      Some(bagInfo.internalSenderDescription.get.underlying),
+      Some(bagInfo.internalSenderDescription.get.underlying)
     )
   }
 

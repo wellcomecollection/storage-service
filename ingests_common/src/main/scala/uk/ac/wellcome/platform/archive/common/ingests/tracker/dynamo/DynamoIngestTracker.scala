@@ -25,8 +25,8 @@ import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 import scala.util.{Failure, Success, Try}
 
 class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)(
-  implicit client: AmazonDynamoDB)
-    extends IngestTracker
+  implicit client: AmazonDynamoDB
+) extends IngestTracker
     with Logging {
 
   // TODO: This should be upstreamed to the scala-storage library
@@ -68,7 +68,8 @@ class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)
   )
 
   private def storeBagIdLookup(
-    ingest: Ingest): Try[Option[Either[DynamoReadError, BagIdLookup]]] = {
+    ingest: Ingest
+  ): Try[Option[Either[DynamoReadError, BagIdLookup]]] = {
     val ops = ScanamoTable[BagIdLookup](bagIdLookupConfig.tableName)
       .put(
         BagIdLookup(
@@ -82,7 +83,8 @@ class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)
   }
 
   override def listByBagId(
-    bagId: BagId): Either[IngestTrackerError, Seq[Ingest]] = {
+    bagId: BagId
+  ): Either[IngestTrackerError, Seq[Ingest]] = {
     val query = ScanamoTable[BagIdLookup](bagIdLookupConfig.tableName)
       .limit(30)
       .descending

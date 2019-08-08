@@ -17,26 +17,32 @@ trait BagReaderTestCases[Context, Namespace]
     with StorageRandomThings {
   def withContext[R](testWith: TestWith[Context, R]): R
   def withTypedStore[R](
-    testWith: TestWith[TypedStore[ObjectLocation, String], R])(
-    implicit context: Context): R
+    testWith: TestWith[TypedStore[ObjectLocation, String], R]
+  )(implicit context: Context): R
 
   def withBagReader[R](testWith: TestWith[BagReader[_], R])(
-    implicit context: Context): R
+    implicit context: Context
+  ): R
 
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
   def deleteFile(rootLocation: ObjectLocation, path: String)(
-    implicit context: Context)
+    implicit context: Context
+  )
 
   def scrambleFile(rootLocation: ObjectLocation, path: String)(
-    implicit typedStore: TypedStore[ObjectLocation, String]): Assertion =
-    typedStore.put(rootLocation.join(path))(TypedStoreEntry(
-      randomAlphanumeric,
-      metadata = Map.empty)) shouldBe a[Right[_, _]]
+    implicit typedStore: TypedStore[ObjectLocation, String]
+  ): Assertion =
+    typedStore.put(rootLocation.join(path))(
+      TypedStoreEntry(randomAlphanumeric, metadata = Map.empty)
+    ) shouldBe a[Right[_, _]]
 
   def withFixtures[R](
-    testWith: TestWith[(Context, TypedStore[ObjectLocation, String], Namespace),
-                       R]): R =
+    testWith: TestWith[
+      (Context, TypedStore[ObjectLocation, String], Namespace),
+      R
+    ]
+  ): R =
     withContext { implicit context =>
       withTypedStore { typedStore =>
         withNamespace { namespace =>
@@ -68,7 +74,8 @@ trait BagReaderTestCases[Context, Namespace]
 
       withBagReader {
         _.get(rootLocation).left.value.msg should startWith(
-          "Error loading bag-info.txt")
+          "Error loading bag-info.txt"
+        )
       }
     }
   }
@@ -82,7 +89,8 @@ trait BagReaderTestCases[Context, Namespace]
 
       withBagReader {
         _.get(rootLocation).left.value.msg should startWith(
-          "Error loading bag-info.txt")
+          "Error loading bag-info.txt"
+        )
       }
     }
   }
@@ -96,7 +104,8 @@ trait BagReaderTestCases[Context, Namespace]
 
       withBagReader {
         _.get(rootLocation).left.value.msg should startWith(
-          "Error loading manifest-sha256.txt")
+          "Error loading manifest-sha256.txt"
+        )
       }
     }
   }
@@ -110,7 +119,8 @@ trait BagReaderTestCases[Context, Namespace]
 
       withBagReader {
         _.get(rootLocation).left.value.msg should startWith(
-          "Error loading manifest-sha256.txt")
+          "Error loading manifest-sha256.txt"
+        )
       }
     }
   }
@@ -124,7 +134,8 @@ trait BagReaderTestCases[Context, Namespace]
 
       withBagReader {
         _.get(rootLocation).left.value.msg should startWith(
-          "Error loading tagmanifest-sha256.txt")
+          "Error loading tagmanifest-sha256.txt"
+        )
       }
     }
   }
@@ -138,7 +149,8 @@ trait BagReaderTestCases[Context, Namespace]
 
       withBagReader {
         _.get(rootLocation).left.value.msg should startWith(
-          "Error loading tagmanifest-sha256.txt")
+          "Error loading tagmanifest-sha256.txt"
+        )
       }
     }
   }
@@ -165,17 +177,19 @@ trait BagReaderTestCases[Context, Namespace]
 
       withBagReader {
         _.get(rootLocation).left.value.msg should startWith(
-          "Error loading fetch.txt")
+          "Error loading fetch.txt"
+        )
       }
     }
   }
 
   protected def toString(ns: Namespace): String = ns.toString
 
-  protected def createBag()(implicit
-                            ns: Namespace,
-                            typedStore: TypedStore[ObjectLocation, String])
-    : (ObjectLocation, BagInfo) = {
+  protected def createBag()(
+    implicit
+    ns: Namespace,
+    typedStore: TypedStore[ObjectLocation, String]
+  ): (ObjectLocation, BagInfo) = {
     implicit val namespace: String = toString(ns)
 
     val (bagObjects, bagRoot, bagInfo) = BagBuilder.createBagContentsWith()

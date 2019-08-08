@@ -52,7 +52,8 @@ class DynamoStorageManifestDao(
   implicit val evidence: DynamoFormat[EmptyMetadata] =
     new DynamoFormat[EmptyMetadata] {
       override def read(
-        av: DynamoValue): scala.Either[DynamoReadError, EmptyMetadata] =
+        av: DynamoValue
+      ): scala.Either[DynamoReadError, EmptyMetadata] =
         Right(EmptyMetadata())
 
       override def write(t: EmptyMetadata): DynamoValue =
@@ -91,16 +92,17 @@ class DynamoStorageManifestDao(
   implicit val typedStore: S3TypedStore[StorageManifest] =
     new S3TypedStore[StorageManifest]()
 
-  override val vhs
-    : VersionedStore[BagId,
-                     Int,
-                     HybridStoreEntry[StorageManifest, EmptyMetadata]] =
+  override val vhs: VersionedStore[BagId, Int, HybridStoreEntry[
+    StorageManifest,
+    EmptyMetadata
+  ]] =
     new DynamoVersionedHybridStore[BagId, Int, StorageManifest, EmptyMetadata](
       store = new DynamoHybridStoreWithMaxima[
         BagId,
         Int,
         StorageManifest,
-        EmptyMetadata](
+        EmptyMetadata
+      ](
         prefix = ObjectLocationPrefix(
           namespace = s3Config.bucketName,
           path = ""
@@ -110,7 +112,8 @@ class DynamoStorageManifestDao(
 
   override def listVersions(
     bagId: BagId,
-    before: Option[BagVersion]): Either[ReadError, Seq[StorageManifest]] =
+    before: Option[BagVersion]
+  ): Either[ReadError, Seq[StorageManifest]] =
     for {
       indexEntries <- getDynamoIndexEntries(bagId, before = before)
 
@@ -119,10 +122,11 @@ class DynamoStorageManifestDao(
       manifests <- getManifests(bagId, before, locations = s3Locations)
     } yield manifests
 
-  private def getManifests(bagId: BagId,
-                           before: Option[BagVersion],
-                           locations: Seq[ObjectLocation])
-    : Either[StoreReadError, Seq[StorageManifest]] = {
+  private def getManifests(
+    bagId: BagId,
+    before: Option[BagVersion],
+    locations: Seq[ObjectLocation]
+  ): Either[StoreReadError, Seq[StorageManifest]] = {
     val s3Results = locations.map { typedStore.get }
 
     val successes = s3Results.collect {
@@ -133,25 +137,32 @@ class DynamoStorageManifestDao(
     Either.cond(
       errors.isEmpty,
       right = successes,
-      left = StoreReadError(new Throwable(
-        s"Errors fetching S3 objects for manifests $bagId before=$before: $errors"))
+      left = StoreReadError(
+        new Throwable(
+          s"Errors fetching S3 objects for manifests $bagId before=$before: $errors"
+        )
+      )
     )
   }
 
-  private def getDynamoIndexEntries(bagId: BagId, before: Option[BagVersion])
-    : Either[StoreReadError,
-             Seq[HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]]] = {
+  private def getDynamoIndexEntries(
+    bagId: BagId,
+    before: Option[BagVersion]
+  ): Either[StoreReadError, Seq[
+    HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]
+  ]] = {
     val table = ScanamoTable[DynamoHashRangeEntry[
       BagId,
       Int,
-      HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]]](
-      dynamoConfig.tableName)
+      HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]
+    ]](dynamoConfig.tableName)
 
     val baseOps = before match {
       case Some(beforeVersion) =>
         table.descending.from(
           'id -> DynamoID.createId(bagId.space, bagId.externalIdentifier) and
-            'version -> beforeVersion)
+            'version -> beforeVersion
+        )
       case None => table.descending
     }
 
@@ -172,8 +183,11 @@ class DynamoStorageManifestDao(
       indexEntries <- Either.cond(
         scanamoErrors.isEmpty,
         right = scanamoSuccesses,
-        left = StoreReadError(new Throwable(
-          s"Errors querying DynamoDB for $bagId before=$before: $scanamoErrors"))
+        left = StoreReadError(
+          new Throwable(
+            s"Errors querying DynamoDB for $bagId before=$before: $scanamoErrors"
+          )
+        )
       )
     } yield indexEntries.map { _.payload }
   }

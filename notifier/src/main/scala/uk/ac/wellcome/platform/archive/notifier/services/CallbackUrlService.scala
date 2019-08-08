@@ -15,9 +15,10 @@ import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
-                                          ec: ExecutionContext)
-    extends Logging {
+class CallbackUrlService(contextUrl: URL)(
+  implicit actorSystem: ActorSystem,
+  ec: ExecutionContext
+) extends Logging {
   def buildHttpRequest(ingest: Ingest, callbackUri: URI): HttpRequest = {
     val json = ResponseDisplayIngest(
       ingest = ingest,
@@ -43,8 +44,10 @@ class CallbackUrlService(contextUrl: URL)(implicit actorSystem: ActorSystem,
     )
   }
 
-  def getHttpResponse(ingest: Ingest,
-                      callbackUri: URI): Future[Try[HttpResponse]] = {
+  def getHttpResponse(
+    ingest: Ingest,
+    callbackUri: URI
+  ): Future[Try[HttpResponse]] = {
     val request = buildHttpRequest(ingest, callbackUri)
 
     Http()

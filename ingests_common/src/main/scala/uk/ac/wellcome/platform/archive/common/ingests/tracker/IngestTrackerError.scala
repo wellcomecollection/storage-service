@@ -20,13 +20,15 @@ case class IngestDoesNotExistError(err: NotFoundError)
 case class UpdateNonExistentIngestError(err: UpdateNoSourceError)
     extends IngestTrackerError
 
-case class IngestStatusGoingBackwards(stored: Ingest.Status,
-                                      update: Ingest.Status)
-    extends IngestTrackerError
+case class IngestStatusGoingBackwards(
+  stored: Ingest.Status,
+  update: Ingest.Status
+) extends IngestTrackerError
 
-case class IngestCallbackStatusGoingBackwards(stored: Callback.CallbackStatus,
-                                              update: Callback.CallbackStatus)
-    extends IngestTrackerError
+case class IngestCallbackStatusGoingBackwards(
+  stored: Callback.CallbackStatus,
+  update: Callback.CallbackStatus
+) extends IngestTrackerError
 
 case class NoCallbackOnIngest() extends IngestTrackerError
 

@@ -44,14 +44,17 @@ trait BagRegisterFixtures
     with IngestUpdateAssertions
     with StringNamespaceFixtures {
 
-  type Fixtures = (BagRegisterWorker[String, String],
-                   StorageManifestDao,
-                   MemoryMessageSender,
-                   MemoryMessageSender,
-                   QueuePair)
+  type Fixtures = (
+    BagRegisterWorker[String, String],
+    StorageManifestDao,
+    MemoryMessageSender,
+    MemoryMessageSender,
+    QueuePair
+  )
 
-  def withBagRegisterWorker[R](testWith: TestWith[Fixtures, R])(
-    implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
+  def withBagRegisterWorker[R](
+    testWith: TestWith[Fixtures, R]
+  )(implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
     withActorSystem { implicit actorSystem =>
       withMonitoringClient { implicit monitoringClient =>
         val storageManifestDao = createStorageManifestDao()
@@ -89,8 +92,10 @@ trait BagRegisterFixtures
       }
     }
 
-  def assertBagRegisterSucceeded(ingestId: IngestID,
-                                 ingests: MemoryMessageSender): Assertion =
+  def assertBagRegisterSucceeded(
+    ingestId: IngestID,
+    ingests: MemoryMessageSender
+  ): Assertion =
     assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
@@ -103,8 +108,10 @@ trait BagRegisterFixtures
       ingestCompleted.events.head.description shouldBe "Register succeeded (completed)"
     }
 
-  def assertBagRegisterFailed(ingestId: IngestID,
-                              ingests: MemoryMessageSender): Assertion =
+  def assertBagRegisterFailed(
+    ingestId: IngestID,
+    ingests: MemoryMessageSender
+  ): Assertion =
     assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
@@ -124,10 +131,12 @@ trait BagRegisterFixtures
     externalIdentifier: ExternalIdentifier,
     space: StorageSpace,
     version: Int,
-    dataFileCount: Int)(testWith: TestWith[(ObjectLocation, BagInfo), R])(
+    dataFileCount: Int
+  )(testWith: TestWith[(ObjectLocation, BagInfo), R])(
     implicit
     namespace: String,
-    streamStore: MemoryStreamStore[ObjectLocation]): R = {
+    streamStore: MemoryStreamStore[ObjectLocation]
+  ): R = {
     implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
       new MemoryTypedStore[ObjectLocation, String]()
 

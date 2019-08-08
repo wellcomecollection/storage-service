@@ -18,11 +18,12 @@ trait IngestTrackerTestCases[Context]
   def withContext[R](testWith: TestWith[Context, R]): R
 
   def withIngestTracker[R](initialIngests: Seq[Ingest] = Seq.empty)(
-    testWith: TestWith[IngestTracker, R])(implicit context: Context): R
+    testWith: TestWith[IngestTracker, R]
+  )(implicit context: Context): R
 
-  private def withIngestTrackerFixtures[R](initialIngests: Seq[Ingest] =
-                                             Seq.empty)(
-    testWith: TestWith[IngestTracker, R]): R =
+  private def withIngestTrackerFixtures[R](
+    initialIngests: Seq[Ingest] = Seq.empty
+  )(testWith: TestWith[IngestTracker, R]): R =
     withContext { implicit context =>
       withIngestTracker(initialIngests) { tracker =>
         testWith(tracker)
@@ -30,11 +31,14 @@ trait IngestTrackerTestCases[Context]
     }
 
   def withBrokenUnderlyingInitTracker[R](testWith: TestWith[IngestTracker, R])(
-    implicit context: Context): R
+    implicit context: Context
+  ): R
   def withBrokenUnderlyingGetTracker[R](testWith: TestWith[IngestTracker, R])(
-    implicit context: Context): R
+    implicit context: Context
+  ): R
   def withBrokenUnderlyingUpdateTracker[R](
-    testWith: TestWith[IngestTracker, R])(implicit context: Context): R
+    testWith: TestWith[IngestTracker, R]
+  )(implicit context: Context): R
 
   describe("init()") {
     it("creates an ingest") {
@@ -42,7 +46,8 @@ trait IngestTrackerTestCases[Context]
         val ingest = createIngest
         tracker.init(ingest).right.value shouldBe Identified(
           Version(ingest.id, 0),
-          ingest)
+          ingest
+        )
       }
     }
 
@@ -82,7 +87,8 @@ trait IngestTrackerTestCases[Context]
       withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
         tracker.get(ingest.id).right.value shouldBe Identified(
           Version(ingest.id, 0),
-          ingest)
+          ingest
+        )
       }
     }
 
@@ -246,7 +252,7 @@ trait IngestTrackerTestCases[Context]
           (Ingest.Processing, Ingest.Completed),
           (Ingest.Processing, Ingest.Failed),
           (Ingest.Completed, Ingest.Completed),
-          (Ingest.Failed, Ingest.Failed),
+          (Ingest.Failed, Ingest.Failed)
         )
 
         it("updates the status of an ingest") {
@@ -275,7 +281,7 @@ trait IngestTrackerTestCases[Context]
           (Ingest.Completed, Ingest.Failed),
           (Ingest.Completed, Ingest.Processing),
           (Ingest.Completed, Ingest.Accepted),
-          (Ingest.Processing, Ingest.Accepted),
+          (Ingest.Processing, Ingest.Accepted)
         )
 
         it("does not allow the status to go backwards") {
@@ -373,20 +379,22 @@ trait IngestTrackerTestCases[Context]
           (Callback.Pending, Callback.Succeeded),
           (Callback.Pending, Callback.Failed),
           (Callback.Succeeded, Callback.Succeeded),
-          (Callback.Failed, Callback.Failed),
+          (Callback.Failed, Callback.Failed)
         )
 
         it("updates the status of a callback") {
           forAll(allowedCallbackStatusUpdates) {
             case (
                 initialStatus: Callback.CallbackStatus,
-                updatedStatus: Callback.CallbackStatus) =>
+                updatedStatus: Callback.CallbackStatus
+                ) =>
               val ingest = createIngestWith(
                 callback = Some(
                   Callback(
                     uri = new URI("https://example.org/callback"),
                     status = initialStatus
-                  ))
+                  )
+                )
               )
 
               val update = createIngestCallbackStatusUpdateWith(
@@ -408,20 +416,22 @@ trait IngestTrackerTestCases[Context]
           (Callback.Succeeded, Callback.Pending),
           (Callback.Succeeded, Callback.Failed),
           (Callback.Failed, Callback.Pending),
-          (Callback.Failed, Callback.Succeeded),
+          (Callback.Failed, Callback.Succeeded)
         )
 
         it("does not allow the callback status to go backwards") {
           forAll(disallowedCallbackStatusUpdates) {
             case (
                 initialStatus: Callback.CallbackStatus,
-                updatedStatus: Callback.CallbackStatus) =>
+                updatedStatus: Callback.CallbackStatus
+                ) =>
               val ingest = createIngestWith(
                 callback = Some(
                   Callback(
                     uri = new URI("https://example.org/callback"),
                     status = initialStatus
-                  ))
+                  )
+                )
               )
 
               val update = createIngestCallbackStatusUpdateWith(
@@ -434,7 +444,8 @@ trait IngestTrackerTestCases[Context]
                   val result = tracker.update(update)
                   result.left.value shouldBe IngestCallbackStatusGoingBackwards(
                     initialStatus,
-                    updatedStatus)
+                    updatedStatus
+                  )
               }
           }
         }

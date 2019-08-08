@@ -4,7 +4,7 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 case class BagVerifierConfig(
-  parallelism: Int,
+  parallelism: Int
 )
 
 object BagVerifierConfig {

@@ -35,8 +35,8 @@ class Router[UnpackerDestination](
   ingestTracker: IngestTracker,
   ingestStarter: IngestStarter[UnpackerDestination],
   httpServerConfig: HTTPServerConfig,
-  contextURL: URL)
-    extends Logging {
+  contextURL: URL
+) extends Logging {
 
   import akka.http.scaladsl.server.Directives._
   import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
@@ -55,12 +55,15 @@ class Router[UnpackerDestination](
                 complete(
                   StatusCodes.Created -> ResponseDisplayIngest(
                     ingest,
-                    contextURL))
+                    contextURL
+                  )
+                )
               }
             case Failure(err) =>
               error(
                 s"Unexpected error while creating an ingest $requestDisplayIngest",
-                err)
+                err
+              )
               complete(
                 StatusCodes.InternalServerError -> InternalServerErrorResponse(
                   contextURL,
@@ -81,7 +84,8 @@ class Router[UnpackerDestination](
                   context = contextURL,
                   statusCode = StatusCodes.NotFound,
                   description = s"Ingest $id not found"
-                ))
+                )
+              )
             case Left(err) =>
               error(s"Unexpected error while fetching ingest $id: $err")
               complete(

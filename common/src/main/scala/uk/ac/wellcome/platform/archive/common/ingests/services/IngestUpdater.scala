@@ -8,9 +8,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 
 import scala.util.Try
 
-class IngestUpdater[Destination](val stepName: String,
-                                 messageSender: MessageSender[Destination])
-    extends Logging {
+class IngestUpdater[Destination](
+  val stepName: String,
+  messageSender: MessageSender[Destination]
+) extends Logging {
 
   def start(ingestId: IngestID): Try[Unit] =
     send(
@@ -104,14 +105,16 @@ class IngestUpdater[Destination](val stepName: String,
   val descriptionMaxLength = 250
   private def eventDescription(
     main: String,
-    maybeInformation: Option[String] = None): String = {
+    maybeInformation: Option[String] = None
+  ): String = {
     val separator: String = " - "
     truncate(
       Seq(
         Some(main),
         maybeInformation
       ).flatten.mkString(separator),
-      descriptionMaxLength)
+      descriptionMaxLength
+    )
   }
 
   private def truncate(text: String, maxLength: Int): String = {
@@ -119,7 +122,8 @@ class IngestUpdater[Destination](val stepName: String,
       val truncatedText = text.take(maxLength).trim
       if (truncatedText.length == maxLength && maxLength > 3) {
         warn(
-          s"Truncated message, too long to send as an ingest progress message (>$maxLength)")
+          s"Truncated message, too long to send as an ingest progress message (>$maxLength)"
+        )
         truncatedText.dropRight(3).concat("...")
       } else {
         truncatedText

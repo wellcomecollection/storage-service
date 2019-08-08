@@ -12,23 +12,27 @@ import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 class MemoryStorageManifestDaoTest
-    extends StorageManifestDaoTestCases[
-      MemoryVersionedStore[BagId,
-                           HybridStoreEntry[StorageManifest, EmptyMetadata]]] {
+    extends StorageManifestDaoTestCases[MemoryVersionedStore[
+      BagId,
+      HybridStoreEntry[StorageManifest, EmptyMetadata]
+    ]] {
   type MemoryStore =
-    MemoryVersionedStore[BagId,
-                         HybridStoreEntry[StorageManifest, EmptyMetadata]]
+    MemoryVersionedStore[
+      BagId,
+      HybridStoreEntry[StorageManifest, EmptyMetadata]
+    ]
 
   override def withContext[R](testWith: TestWith[MemoryStore, R]): R =
     testWith(
-      MemoryVersionedStore[
-        BagId,
-        HybridStoreEntry[StorageManifest, EmptyMetadata]](
-        initialEntries = Map.empty)
+      MemoryVersionedStore[BagId, HybridStoreEntry[
+        StorageManifest,
+        EmptyMetadata
+      ]](initialEntries = Map.empty)
     )
 
-  override def withDao[R](testWith: TestWith[StorageManifestDao, R])(
-    implicit store: MemoryStore): R =
+  override def withDao[R](
+    testWith: TestWith[StorageManifestDao, R]
+  )(implicit store: MemoryStore): R =
     testWith(
       new MemoryStorageManifestDao(store)
     )

@@ -30,12 +30,14 @@ object Verification extends Logging {
 
                 case (
                     VerificationFailure(fl, sl),
-                    s @ VerifiedSuccess(_, _, _)) =>
+                    s @ VerifiedSuccess(_, _, _)
+                    ) =>
                   VerificationFailure(fl, s :: sl)
 
                 case (
                     VerificationFailure(fl, sl),
-                    f @ VerifiedFailure(_, _, _)) =>
+                    f @ VerifiedFailure(_, _, _)
+                    ) =>
                   VerificationFailure(f :: fl, sl)
 
                 case (i @ VerificationIncomplete(_), _) => i

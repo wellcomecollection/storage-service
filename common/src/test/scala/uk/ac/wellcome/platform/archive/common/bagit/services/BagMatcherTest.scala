@@ -145,7 +145,8 @@ class BagMatcherTest
       )
 
       result.left.value.head.getMessage should startWith(
-        "Multiple, ambiguous entries for the same path")
+        "Multiple, ambiguous entries for the same path"
+      )
     }
   }
 }

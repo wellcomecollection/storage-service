@@ -20,7 +20,9 @@ trait IngestGenerators extends BagIdGenerators {
     StandardStorageProvider,
     ObjectLocation(
       randomAlphanumericWithLength(),
-      randomAlphanumericWithLength()))
+      randomAlphanumericWithLength()
+    )
+  )
 
   def createIngest: Ingest = createIngestWith()
 
@@ -34,17 +36,18 @@ trait IngestGenerators extends BagIdGenerators {
       None
     }
 
-  def createIngestWith(id: IngestID = createIngestID,
-                       ingestType: IngestType = CreateIngestType,
-                       sourceLocation: StorageLocation = storageLocation,
-                       callback: Option[Callback] = Some(createCallback()),
-                       space: StorageSpace = createStorageSpace,
-                       status: Status = Ingest.Accepted,
-                       externalIdentifier: ExternalIdentifier =
-                         createExternalIdentifier,
-                       version: Option[BagVersion] = maybeVersion,
-                       createdDate: Instant = randomInstant,
-                       events: Seq[IngestEvent] = Seq.empty): Ingest =
+  def createIngestWith(
+    id: IngestID = createIngestID,
+    ingestType: IngestType = CreateIngestType,
+    sourceLocation: StorageLocation = storageLocation,
+    callback: Option[Callback] = Some(createCallback()),
+    space: StorageSpace = createStorageSpace,
+    status: Status = Ingest.Accepted,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    version: Option[BagVersion] = maybeVersion,
+    createdDate: Instant = randomInstant,
+    events: Seq[IngestEvent] = Seq.empty
+  ): Ingest =
     Ingest(
       id = id,
       ingestType = ingestType,
@@ -78,9 +81,10 @@ trait IngestGenerators extends BagIdGenerators {
       createdDate = createdDate
     )
 
-  def createIngestEventUpdateWith(id: IngestID,
-                                  events: Seq[IngestEvent] = List(
-                                    createIngestEvent)): IngestEventUpdate =
+  def createIngestEventUpdateWith(
+    id: IngestID,
+    events: Seq[IngestEvent] = List(createIngestEvent)
+  ): IngestEventUpdate =
     IngestEventUpdate(
       id = id,
       events = events
@@ -89,10 +93,11 @@ trait IngestGenerators extends BagIdGenerators {
   def createIngestEventUpdate: IngestEventUpdate =
     createIngestEventUpdateWith(id = createIngestID)
 
-  def createIngestStatusUpdateWith(id: IngestID = createIngestID,
-                                   status: Status = Ingest.Accepted,
-                                   events: Seq[IngestEvent] = List(
-                                     createIngestEvent)): IngestStatusUpdate =
+  def createIngestStatusUpdateWith(
+    id: IngestID = createIngestID,
+    status: Status = Ingest.Accepted,
+    events: Seq[IngestEvent] = List(createIngestEvent)
+  ): IngestStatusUpdate =
     IngestStatusUpdate(
       id = id,
       status = status,
@@ -131,7 +136,8 @@ trait IngestGenerators extends BagIdGenerators {
 
   def createCallbackWith(
     uri: URI = testCallbackUri,
-    status: Callback.CallbackStatus = Callback.Pending): Callback =
+    status: Callback.CallbackStatus = Callback.Pending
+  ): Callback =
     Callback(uri = uri, status = status)
 
 }

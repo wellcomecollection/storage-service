@@ -70,7 +70,8 @@ class BagVersionerTest
 
       result.summary shouldBe a[BagVersionerFailureSummary]
       result.maybeUserFacingMessage shouldBe Some(
-        "Cannot update existing bag: a bag with the supplied external identifier does not exist in this space")
+        "Cannot update existing bag: a bag with the supplied external identifier does not exist in this space"
+      )
     }
   }
 
@@ -100,7 +101,8 @@ class BagVersionerTest
 
       result.summary shouldBe a[BagVersionerFailureSummary]
       result.maybeUserFacingMessage shouldBe Some(
-        "Cannot create new bag: a bag with the supplied external identifier already exists in this space")
+        "Cannot create new bag: a bag with the supplied external identifier already exists in this space"
+      )
     }
   }
 }
