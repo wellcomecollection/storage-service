@@ -7,7 +7,7 @@ object WellcomeDependencies {
     val messaging  = "5.3.1"
     val monitoring = "2.3.0"
     val storage    = "7.18.9"
-    val typesafe = "1.0.0"
+    val typesafe   = "1.0.0"
   }
 
   val jsonLibrary: Seq[ModuleID] = library(

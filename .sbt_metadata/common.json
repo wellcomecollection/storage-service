@@ -1,1 +1,6 @@
-{"id" : "common", "folder" : "common", "dependencyIds" : []}
+{
+  "id" : "common",
+  "folder" : "common",
+  "dependencyIds" : [
+  ]
+}
