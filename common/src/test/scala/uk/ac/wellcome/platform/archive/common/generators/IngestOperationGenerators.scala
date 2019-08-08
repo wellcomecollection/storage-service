@@ -29,9 +29,10 @@ trait IngestOperationGenerators extends StorageRandomThings {
 
   def createOperationFailure() = createIngestFailureWith()
 
-  def createIngestFailureWith(summary: TestSummary = createTestSummary(),
-                              throwable: Throwable = new RuntimeException(
-                                "error"),
-                              maybeFailureMessage: Option[String] = None) =
+  def createIngestFailureWith(
+    summary: TestSummary = createTestSummary(),
+    throwable: Throwable = new RuntimeException("error"),
+    maybeFailureMessage: Option[String] = None
+  ) =
     IngestFailed(summary, throwable, maybeFailureMessage)
 }

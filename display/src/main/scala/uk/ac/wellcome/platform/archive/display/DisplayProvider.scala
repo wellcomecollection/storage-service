@@ -38,27 +38,33 @@ object DisplayProvider {
     }
 
   implicit val decoder
-    : Decoder[DisplayProvider] = Decoder.instance[DisplayProvider](cursor =>
-    for {
-      id <- cursor.downField("id").as[String]
-      provider <- id match {
-        case StandardDisplayProvider.id => Right(StandardDisplayProvider)
-        case InfrequentAccessDisplayProvider.id =>
-          Right(InfrequentAccessDisplayProvider)
-        case invalidId =>
-          val fields = DownField("id") +: cursor.history
-          Left(DecodingFailure(
-            s"""got "$invalidId", valid values are: ${StandardDisplayProvider.id}, ${InfrequentAccessDisplayProvider.id}.""",
-            fields))
+    : Decoder[DisplayProvider] = Decoder.instance[DisplayProvider](
+    cursor =>
+      for {
+        id <- cursor.downField("id").as[String]
+        provider <- id match {
+          case StandardDisplayProvider.id => Right(StandardDisplayProvider)
+          case InfrequentAccessDisplayProvider.id =>
+            Right(InfrequentAccessDisplayProvider)
+          case invalidId =>
+            val fields = DownField("id") +: cursor.history
+            Left(
+              DecodingFailure(
+                s"""got "$invalidId", valid values are: ${StandardDisplayProvider.id}, ${InfrequentAccessDisplayProvider.id}.""",
+                fields
+              )
+            )
+        }
+      } yield {
+        provider
       }
-    } yield {
-      provider
-  })
+  )
 
   implicit val encoder: Encoder[DisplayProvider] =
     Encoder.instance[DisplayProvider] { provider =>
       Json.obj(
         "id" -> Json.fromString(provider.id),
-        "type" -> Json.fromString("Provider"))
+        "type" -> Json.fromString("Provider")
+      )
     }
 }

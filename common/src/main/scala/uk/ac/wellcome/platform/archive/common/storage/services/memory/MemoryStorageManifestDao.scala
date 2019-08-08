@@ -13,16 +13,19 @@ import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 class MemoryStorageManifestDao(
   val vhs: MemoryVersionedStore[
     BagId,
-    HybridStoreEntry[StorageManifest, EmptyMetadata]]
+    HybridStoreEntry[StorageManifest, EmptyMetadata]
+  ]
 ) extends StorageManifestDao {
   override def listVersions(
     bagId: BagId,
-    before: Option[BagVersion]): Either[ReadError, Seq[StorageManifest]] = {
+    before: Option[BagVersion]
+  ): Either[ReadError, Seq[StorageManifest]] = {
     val underlying =
       vhs.store
         .asInstanceOf[MemoryStore[
           Version[BagId, Int],
-          HybridStoreEntry[StorageManifest, EmptyMetadata]]]
+          HybridStoreEntry[StorageManifest, EmptyMetadata]
+        ]]
 
     Right(
       underlying.entries

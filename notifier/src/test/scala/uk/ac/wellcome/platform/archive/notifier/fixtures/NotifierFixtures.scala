@@ -21,8 +21,9 @@ trait NotifierFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture {
 
-  def withCallbackUrlService[R](testWith: TestWith[CallbackUrlService, R])(
-    implicit actorSystem: ActorSystem): R = {
+  def withCallbackUrlService[R](
+    testWith: TestWith[CallbackUrlService, R]
+  )(implicit actorSystem: ActorSystem): R = {
     val callbackUrlService = new CallbackUrlService(
       contextUrl = new URL("http://localhost/context.json")
     )
@@ -30,7 +31,8 @@ trait NotifierFixtures
   }
 
   private def withApp[R](queue: Queue, messageSender: MemoryMessageSender)(
-    testWith: TestWith[NotifierWorker[String], R]): R =
+    testWith: TestWith[NotifierWorker[String], R]
+  ): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         withMaterializer(actorSystem) { implicit materializer =>

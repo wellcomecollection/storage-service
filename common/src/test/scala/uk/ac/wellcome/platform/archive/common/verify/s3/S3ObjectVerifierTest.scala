@@ -20,15 +20,17 @@ class S3ObjectVerifierTest
     testWith(())
 
   override def putString(location: ObjectLocation, contents: String)(
-    implicit context: Unit): Unit =
+    implicit context: Unit
+  ): Unit =
     s3Client.putObject(
       location.namespace,
       location.path,
       contents
     )
 
-  override def withVerifier[R](testWith: TestWith[Verifier[_], R])(
-    implicit context: Unit): R =
+  override def withVerifier[R](
+    testWith: TestWith[Verifier[_], R]
+  )(implicit context: Unit): R =
     testWith(new S3ObjectVerifier())
 
   implicit val context: Unit = ()
@@ -88,7 +90,8 @@ class S3ObjectVerifierTest
     verifiedFailure.verifiableLocation shouldBe verifiableLocation
     verifiedFailure.e shouldBe a[LocationError[_]]
     verifiedFailure.e.getMessage should include(
-      "The specified bucket is not valid")
+      "The specified bucket is not valid"
+    )
   }
 
   it("fails if the key doesn't exist in the bucket") {

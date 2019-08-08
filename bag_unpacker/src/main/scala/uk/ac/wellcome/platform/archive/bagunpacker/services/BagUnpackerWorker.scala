@@ -27,14 +27,16 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   unpacker: Unpacker
-)(implicit val mc: MonitoringClient,
+)(
+  implicit val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[SourceLocationPayload])
-    extends IngestStepWorker[SourceLocationPayload, UnpackSummary] {
+  val wd: Decoder[SourceLocationPayload]
+) extends IngestStepWorker[SourceLocationPayload, UnpackSummary] {
 
   def processMessage(
-    payload: SourceLocationPayload): Try[IngestStepResult[UnpackSummary]] =
+    payload: SourceLocationPayload
+  ): Try[IngestStepResult[UnpackSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 

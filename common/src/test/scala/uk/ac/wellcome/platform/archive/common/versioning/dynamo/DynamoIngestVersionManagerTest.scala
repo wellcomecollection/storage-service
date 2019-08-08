@@ -19,8 +19,9 @@ import scala.util.{Failure, Try}
 class DynamoIngestVersionManagerTest
     extends IngestVersionManagerTestCases[DynamoIngestVersionManagerDao, Table]
     with IngestVersionManagerTable {
-  override def withDao[R](testWith: TestWith[DynamoIngestVersionManagerDao, R])(
-    implicit table: Table): R =
+  override def withDao[R](
+    testWith: TestWith[DynamoIngestVersionManagerDao, R]
+  )(implicit table: Table): R =
     testWith(
       new DynamoIngestVersionManagerDao(
         dynamoClient = dynamoClient,
@@ -29,22 +30,23 @@ class DynamoIngestVersionManagerTest
     )
 
   override def withBrokenLookupExistingVersionDao[R](
-    testWith: TestWith[DynamoIngestVersionManagerDao, R])(
-    implicit table: Table): R =
+    testWith: TestWith[DynamoIngestVersionManagerDao, R]
+  )(implicit table: Table): R =
     testWith(
       new DynamoIngestVersionManagerDao(
         dynamoClient = dynamoClient,
         dynamoConfig = createDynamoConfigWith(table)
       ) {
         override def lookupExistingVersion(
-          ingestId: IngestID): Try[Option[VersionRecord]] =
+          ingestId: IngestID
+        ): Try[Option[VersionRecord]] =
           Failure(new Throwable("BOOM!"))
       }
     )
 
   override def withBrokenLookupLatestVersionForDao[R](
-    testWith: TestWith[DynamoIngestVersionManagerDao, R])(
-    implicit table: Table): R =
+    testWith: TestWith[DynamoIngestVersionManagerDao, R]
+  )(implicit table: Table): R =
     testWith(
       new DynamoIngestVersionManagerDao(
         dynamoClient = dynamoClient,
@@ -52,14 +54,15 @@ class DynamoIngestVersionManagerTest
       ) {
         override def lookupLatestVersionFor(
           externalIdentifier: ExternalIdentifier,
-          storageSpace: StorageSpace): Either[MaximaError, VersionRecord] =
+          storageSpace: StorageSpace
+        ): Either[MaximaError, VersionRecord] =
           Left(MaximaReadError(new Throwable("BOOM!")))
       }
     )
 
   override def withBrokenStoreNewVersionDao[R](
-    testWith: TestWith[DynamoIngestVersionManagerDao, R])(
-    implicit table: Table): R =
+    testWith: TestWith[DynamoIngestVersionManagerDao, R]
+  )(implicit table: Table): R =
     testWith(
       new DynamoIngestVersionManagerDao(
         dynamoClient = dynamoClient,
@@ -70,8 +73,9 @@ class DynamoIngestVersionManagerTest
       }
     )
 
-  override def withManager[R](dao: DynamoIngestVersionManagerDao)(
-    testWith: TestWith[IngestVersionManager, R])(implicit context: Table): R =
+  override def withManager[R](
+    dao: DynamoIngestVersionManagerDao
+  )(testWith: TestWith[IngestVersionManager, R])(implicit context: Table): R =
     testWith(
       new DynamoIngestVersionManager(dao)
     )

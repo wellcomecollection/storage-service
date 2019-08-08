@@ -58,12 +58,17 @@ trait BagUnpackerFixtures
     }
 
   def withBagUnpackerApp[R](stepName: String)(
-    testWith: TestWith[(BagUnpackerWorker[String, String],
-                        Bucket,
-                        Queue,
-                        MemoryMessageSender,
-                        MemoryMessageSender),
-                       R]): R =
+    testWith: TestWith[
+      (
+        BagUnpackerWorker[String, String],
+        Bucket,
+        Queue,
+        MemoryMessageSender,
+        MemoryMessageSender
+      ),
+      R
+    ]
+  ): R =
     withLocalS3Bucket { dstBucket =>
       withLocalSqsQueue { queue =>
         val ingests = new MemoryMessageSender()
@@ -90,8 +95,8 @@ trait BagUnpackerFixtures
 
   // TODO: Add covariance to StreamStore
   def withStreamStore[R](
-    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R])
-    : R = {
+    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]
+  ): R = {
     val s3StreamStore = new S3StreamStore()
 
     val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
@@ -103,23 +108,28 @@ trait BagUnpackerFixtures
               is.id,
               new InputStreamWithLength(
                 is.identifiedT,
-                length = is.identifiedT.length))
+                length = is.identifiedT.length
+              )
+            )
           }
 
-      override def put(location: ObjectLocation)(
-        is: InputStreamWithLength): WriteEither =
+      override def put(
+        location: ObjectLocation
+      )(is: InputStreamWithLength): WriteEither =
         s3StreamStore
           .put(location)(
             new InputStreamWithLengthAndMetadata(
               is,
               length = is.length,
-              metadata = Map.empty)
+              metadata = Map.empty
+            )
           )
           .map { is =>
             is.copy(
               identifiedT = new InputStreamWithLength(
                 is.identifiedT,
-                length = is.identifiedT.length)
+                length = is.identifiedT.length
+              )
             )
           }
     }

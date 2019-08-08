@@ -14,20 +14,25 @@ import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
 }
 
 object UserFacingMessages extends Logging {
-  def createMessage(ingestId: IngestID,
-                    error: VersionPickerError): Option[String] =
+  def createMessage(
+    ingestId: IngestID,
+    error: VersionPickerError
+  ): Option[String] =
     error match {
       case IngestTypeUpdateForNewBag() =>
         Some(
-          "Cannot update existing bag: a bag with the supplied external identifier does not exist in this space")
+          "Cannot update existing bag: a bag with the supplied external identifier does not exist in this space"
+        )
 
       case IngestTypeCreateForExistingBag() =>
         Some(
-          "Cannot create new bag: a bag with the supplied external identifier already exists in this space")
+          "Cannot create new bag: a bag with the supplied external identifier already exists in this space"
+        )
 
       case UnableToAssignVersion(e: NewerIngestAlreadyExists) =>
         Some(
-          s"Another version of this bag was ingested at ${e.stored}, which is newer than the current ingest ${e.request}")
+          s"Another version of this bag was ingested at ${e.stored}, which is newer than the current ingest ${e.request}"
+        )
 
       // This should be impossible, and it strongly points to an error somewhere in
       // the pipeline -- an ingest ID should be used once, and the underlying bag

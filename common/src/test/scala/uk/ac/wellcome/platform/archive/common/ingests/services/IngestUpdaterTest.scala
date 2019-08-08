@@ -60,7 +60,8 @@ class IngestUpdaterTest
     assertTopicReceivesIngestStatus(
       ingestId = ingestId,
       ingests = messageSender,
-      status = Ingest.Completed) { events =>
+      status = Ingest.Completed
+    ) { events =>
       events should have size 1
       events.head.description shouldBe s"${stepName.capitalize} succeeded (completed)"
     }
@@ -83,7 +84,8 @@ class IngestUpdaterTest
     assertTopicReceivesIngestStatus(
       ingestId = ingestId,
       ingests = messageSender,
-      status = Ingest.Failed) { events =>
+      status = Ingest.Failed
+    ) { events =>
       events should have size 1
       events.head.description shouldBe s"${stepName.capitalize} failed"
     }
@@ -131,7 +133,8 @@ class IngestUpdaterTest
     assertTopicReceivesIngestStatus(
       ingestId = ingestId,
       ingests = messageSender,
-      status = Ingest.Failed) { events =>
+      status = Ingest.Failed
+    ) { events =>
       events should have size 1
       events.head.description shouldBe s"${stepName.capitalize} failed - $failureMessage"
     }

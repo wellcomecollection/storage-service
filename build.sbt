@@ -4,11 +4,11 @@ import java.util.UUID
 import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider
 
 def setupProject(
-                  project: Project,
-                  folder: String,
-                  localDependencies: Seq[Project] = Seq(),
-                  externalDependencies: Seq[ModuleID] = Seq()
-                ): Project = {
+  project: Project,
+  folder: String,
+  localDependencies: Seq[Project] = Seq(),
+  externalDependencies: Seq[ModuleID] = Seq()
+): Project = {
 
   Metadata.write(project, folder, localDependencies)
 
@@ -45,8 +45,7 @@ def setupProject(
 lazy val common = setupProject(
   project = project,
   folder = "common",
-  externalDependencies =
-    StorageDependencies.commonDependencies
+  externalDependencies = StorageDependencies.commonDependencies
 )
 
 lazy val bag_versioner =
@@ -56,8 +55,11 @@ lazy val bag_root_finder =
   setupProject(project, "bag_root_finder", localDependencies = Seq(common))
 
 lazy val bag_register = setupProject(
-  project, "bag_register", localDependencies = Seq(common),
-  externalDependencies = ExternalDependencies.circeOpticsDependencies)
+  project,
+  "bag_register",
+  localDependencies = Seq(common),
+  externalDependencies = ExternalDependencies.circeOpticsDependencies
+)
 
 lazy val bag_replicator =
   setupProject(project, "bag_replicator", localDependencies = Seq(common))
@@ -79,7 +81,8 @@ lazy val ingests = setupProject(
   project,
   "ingests",
   localDependencies = Seq(ingests_common),
-  externalDependencies = ExternalDependencies.wiremockDependencies)
+  externalDependencies = ExternalDependencies.wiremockDependencies
+)
 
 lazy val display =
   setupProject(project, "display", localDependencies = Seq(common))
@@ -88,16 +91,19 @@ lazy val notifier = setupProject(
   project,
   "notifier",
   localDependencies = Seq(display),
-  externalDependencies = ExternalDependencies.wiremockDependencies ++ ExternalDependencies.circeOpticsDependencies)
+  externalDependencies = ExternalDependencies.wiremockDependencies ++ ExternalDependencies.circeOpticsDependencies
+)
 
 lazy val ingests_api = setupProject(
   project,
   "api/ingests_api",
   localDependencies = Seq(ingests_common, display),
-  externalDependencies = ExternalDependencies.circeOpticsDependencies)
+  externalDependencies = ExternalDependencies.circeOpticsDependencies
+)
 
 lazy val bags_api = setupProject(
   project,
   "api/bags_api",
   localDependencies = Seq(display),
-  externalDependencies = ExternalDependencies.circeOpticsDependencies)
+  externalDependencies = ExternalDependencies.circeOpticsDependencies
+)

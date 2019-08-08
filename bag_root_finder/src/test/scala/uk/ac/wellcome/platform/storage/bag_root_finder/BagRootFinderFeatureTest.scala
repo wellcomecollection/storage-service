@@ -48,7 +48,8 @@ class BagRootFinderFeatureTest
           queue,
           ingests,
           outgoing,
-          stepName = "finding bag root") { _ =>
+          stepName = "finding bag root"
+        ) { _ =>
           sendNotificationToSQS(queue, payload)
 
           eventually {
@@ -85,7 +86,8 @@ class BagRootFinderFeatureTest
       val (unpackedBagLocation, _) = builder.createS3BagWith(bucket)
 
       val (parentDirectory, _) = unpackedBagLocation.path.splitAt(
-        unpackedBagLocation.path.lastIndexOf("/"))
+        unpackedBagLocation.path.lastIndexOf("/")
+      )
 
       val parentLocation = unpackedBagLocation.copy(
         path = parentDirectory
@@ -107,7 +109,8 @@ class BagRootFinderFeatureTest
           queue,
           ingests,
           outgoing,
-          stepName = "finding bag root") { _ =>
+          stepName = "finding bag root"
+        ) { _ =>
           sendNotificationToSQS(queue, payload)
 
           eventually {
@@ -146,7 +149,8 @@ class BagRootFinderFeatureTest
           queue,
           ingests,
           outgoing,
-          stepName = "finding bag root") { _ =>
+          stepName = "finding bag root"
+        ) { _ =>
           sendNotificationToSQS(queue, payload)
 
           eventually {

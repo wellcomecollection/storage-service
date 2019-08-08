@@ -30,8 +30,8 @@ trait UnpackerTestCases[Namespace]
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
   def withStreamStore[R](
-    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R])
-    : R
+    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]
+  ): R
 
   it("unpacks a tgz archive") {
     val (archiveFile, filesInArchive, _) = createTgzArchiveWithRandomFiles()
@@ -72,7 +72,8 @@ trait UnpackerTestCases[Namespace]
       createTgzArchiveWithFiles(
         randomFilesWithNames(
           List("./testA", "/testB", "/./testC", "//testD")
-        ))
+        )
+      )
 
     withNamespace { srcNamespace =>
       withNamespace { dstNamespace =>
@@ -122,7 +123,8 @@ trait UnpackerTestCases[Namespace]
 
       val ingestFailed = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
       ingestFailed.maybeUserFacingMessage.get should startWith(
-        "There is no archive at")
+        "There is no archive at"
+      )
     }
   }
 
@@ -154,15 +156,16 @@ trait UnpackerTestCases[Namespace]
           val ingestFailed =
             ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
           ingestFailed.maybeUserFacingMessage.get should startWith(
-            s"Error trying to unpack the archive at $srcLocation")
+            s"Error trying to unpack the archive at $srcLocation"
+          )
         }
       }
     }
   }
 
   def assertEqual(prefix: ObjectLocationPrefix, expectedFiles: Seq[File])(
-    implicit store: StreamStore[ObjectLocation, InputStreamWithLength])
-    : Seq[Assertion] = {
+    implicit store: StreamStore[ObjectLocation, InputStreamWithLength]
+  ): Seq[Assertion] = {
     expectedFiles.map { file =>
       val name = Paths
         .get(relativeToTmpDir(file))

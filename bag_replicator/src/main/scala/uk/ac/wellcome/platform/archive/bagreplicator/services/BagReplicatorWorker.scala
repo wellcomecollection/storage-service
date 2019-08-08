@@ -29,16 +29,18 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   bagReplicator: BagReplicator,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  lockingService: LockingService[IngestStepResult[ReplicationSummary],
-                                 Try,
-                                 LockDao[String, UUID]],
+  lockingService: LockingService[IngestStepResult[ReplicationSummary], Try, LockDao[
+    String,
+    UUID
+  ]],
   replicatorDestinationConfig: ReplicatorDestinationConfig
-)(implicit
+)(
+  implicit
   val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[EnrichedBagInformationPayload])
-    extends IngestStepWorker[EnrichedBagInformationPayload, ReplicationSummary] {
+  val wd: Decoder[EnrichedBagInformationPayload]
+) extends IngestStepWorker[EnrichedBagInformationPayload, ReplicationSummary] {
   override val visibilityTimeout = 180
 
   val destinationBuilder = new DestinationBuilder(
@@ -47,7 +49,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   )
 
   override def processMessage(
-    payload: EnrichedBagInformationPayload,
+    payload: EnrichedBagInformationPayload
   ): Try[IngestStepResult[ReplicationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
@@ -66,9 +68,10 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
 
     } yield result
 
-  def replicate(payload: EnrichedBagInformationPayload,
-                destination: ObjectLocationPrefix)
-    : Try[IngestStepResult[ReplicationSummary]] =
+  def replicate(
+    payload: EnrichedBagInformationPayload,
+    destination: ObjectLocationPrefix
+  ): Try[IngestStepResult[ReplicationSummary]] =
     for {
       replicationSummary <- bagReplicator.replicate(
         bagRootLocation = payload.bagRootLocation,
@@ -87,9 +90,9 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   def lockFailed(
     payload: EnrichedBagInformationPayload,
     destination: ObjectLocationPrefix
-  ): PartialFunction[
-    Either[FailedLockingServiceOp, IngestStepResult[ReplicationSummary]],
-    IngestStepResult[ReplicationSummary]] = {
+  ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
+    ReplicationSummary
+  ]], IngestStepResult[ReplicationSummary]] = {
     case Right(result) => result
     case Left(failedLockingServiceOp) =>
       warn(s"Unable to lock successfully: $failedLockingServiceOp")

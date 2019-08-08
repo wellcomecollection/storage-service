@@ -31,7 +31,8 @@ class BagVerifierFeatureTest
     with PayloadGenerators {
 
   it(
-    "updates the ingests service and sends an outgoing notification if verification succeeds") {
+    "updates the ingests service and sends an outgoing notification if verification succeeds"
+  ) {
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
@@ -41,7 +42,8 @@ class BagVerifierFeatureTest
           ingests,
           outgoing,
           queue,
-          stepName = "verification") { _ =>
+          stepName = "verification"
+        ) { _ =>
           withLocalS3Bucket { bucket =>
             val (bagRootLocation, bagInfo) =
               S3BagBuilder.createS3BagWith(bucket)
@@ -67,7 +69,8 @@ class BagVerifierFeatureTest
 
               outgoing
                 .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-                payload)
+                payload
+              )
 
               assertQueueEmpty(queue)
               assertQueueEmpty(dlq)
@@ -87,11 +90,13 @@ class BagVerifierFeatureTest
           ingests,
           outgoing,
           queue,
-          stepName = "verification") { _ =>
+          stepName = "verification"
+        ) { _ =>
           withLocalS3Bucket { bucket =>
             val builder = new S3BagBuilderBase {
               override protected def createPayloadManifest(
-                entries: Seq[PayloadEntry]): Option[String] =
+                entries: Seq[PayloadEntry]
+              ): Option[String] =
                 super.createPayloadManifest(entries).map { manifest =>
                   manifest + "\nbadDigest  badName"
                 }
@@ -123,7 +128,8 @@ class BagVerifierFeatureTest
                       .asInstanceOf[IngestStatusUpdate]
                   ingestFailed.status shouldBe Ingest.Failed
                   ingestFailed.events.head.description should startWith(
-                    "Verification failed")
+                    "Verification failed"
+                  )
               }
 
               outgoing.messages shouldBe empty

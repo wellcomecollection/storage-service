@@ -57,7 +57,8 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
         verifiableLocation.length match {
           case Some(expectedLength) =>
             debug(
-              "Location specifies an expected length, checking it's correct")
+              "Location specifies an expected length, checking it's correct"
+            )
 
             if (expectedLength == inputStream.length) {
               verifyChecksum(
@@ -70,8 +71,10 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
               VerifiedFailure(
                 verifiableLocation,
                 objectLocation,
-                new Throwable("" +
-                  s"Lengths do not match: $expectedLength != ${inputStream.available()}")
+                new Throwable(
+                  "" +
+                    s"Lengths do not match: $expectedLength != ${inputStream.available()}"
+                )
               )
             }
 
@@ -89,17 +92,20 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
     result
   }
 
-  private def verifyChecksum(verifiableLocation: VerifiableLocation,
-                             objectLocation: ObjectLocation,
-                             inputStream: IS,
-                             algorithm: HashingAlgorithm): VerifiedLocation =
+  private def verifyChecksum(
+    verifiableLocation: VerifiableLocation,
+    objectLocation: ObjectLocation,
+    inputStream: IS,
+    algorithm: HashingAlgorithm
+  ): VerifiedLocation =
     Checksum.create(inputStream, algorithm) match {
       // Failure to create a checksum (parsing/algorithm)
       case Failure(e) =>
         VerifiedFailure(
           verifiableLocation,
           objectLocation,
-          FailedChecksumCreation(algorithm, e))
+          FailedChecksumCreation(algorithm, e)
+        )
 
       // Checksum does not match that provided
       case Success(checksum) =>

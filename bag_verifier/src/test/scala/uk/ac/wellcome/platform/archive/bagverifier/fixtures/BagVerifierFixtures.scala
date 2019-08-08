@@ -33,8 +33,8 @@ trait BagVerifierFixtures
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
     queue: Queue = Queue("fixture", arn = "arn::fixture"),
-    stepName: String = randomAlphanumericWithLength())(
-    testWith: TestWith[BagVerifierWorker[String, String], R]): R =
+    stepName: String = randomAlphanumericWithLength()
+  )(testWith: TestWith[BagVerifierWorker[String, String], R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         withMaterializer(actorSystem) { implicit mat =>

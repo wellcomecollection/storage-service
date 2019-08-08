@@ -27,8 +27,9 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import uk.ac.wellcome.json.JsonUtil._
 
-  private def whenRequestReady[R](r: HttpRequest)(
-    testWith: TestWith[HttpResponse, R]): R =
+  private def whenRequestReady[R](
+    r: HttpRequest
+  )(testWith: TestWith[HttpResponse, R]): R =
     withActorSystem { implicit actorSystem =>
       val request = Http().singleRequest(r)
       whenReady(request) { response: HttpResponse =>
@@ -36,14 +37,16 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
       }
     }
 
-  def whenGetRequestReady[R](path: String)(
-    testWith: TestWith[HttpResponse, R]): R =
+  def whenGetRequestReady[R](
+    path: String
+  )(testWith: TestWith[HttpResponse, R]): R =
     whenRequestReady(HttpRequest(GET, path)) { response =>
       testWith(response)
     }
 
   def whenPostRequestReady[R](url: String, entity: RequestEntity)(
-    testWith: TestWith[HttpResponse, R]): R = {
+    testWith: TestWith[HttpResponse, R]
+  ): R = {
     val request = HttpRequest(
       method = POST,
       uri = url,
@@ -70,8 +73,9 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
       fromJson[T](stringBody).get
     }
 
-  def withStringEntity[R](httpEntity: HttpEntity)(
-    testWith: TestWith[String, R]): R =
+  def withStringEntity[R](
+    httpEntity: HttpEntity
+  )(testWith: TestWith[String, R]): R =
     withMaterializer { implicit materializer =>
       val value =
         httpEntity.dataBytes.runWith(Sink.fold("") {
@@ -94,17 +98,22 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
 
   val metricsName: String
 
-  def assertMetricSent(metrics: MemoryMetrics[_],
-                       result: HttpMetricResults.Value): Assertion =
+  def assertMetricSent(
+    metrics: MemoryMetrics[_],
+    result: HttpMetricResults.Value
+  ): Assertion =
     metrics.incrementedCounts should contain(
-      s"${metricsName}_HttpResponse_$result")
+      s"${metricsName}_HttpResponse_$result"
+    )
 
   val contextURL: URL
 
-  def assertIsUserErrorResponse(response: HttpResponse,
-                                description: String,
-                                statusCode: StatusCode = StatusCodes.BadRequest,
-                                label: String = "Bad Request"): Assertion =
+  def assertIsUserErrorResponse(
+    response: HttpResponse,
+    description: String,
+    statusCode: StatusCode = StatusCodes.BadRequest,
+    label: String = "Bad Request"
+  ): Assertion =
     withMaterializer { implicit materializer =>
       response.status shouldBe statusCode
       response.entity.contentType shouldBe ContentTypes.`application/json`

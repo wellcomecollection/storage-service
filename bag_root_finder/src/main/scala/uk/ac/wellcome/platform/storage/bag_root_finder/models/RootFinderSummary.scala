@@ -22,5 +22,5 @@ case class RootFinderSuccessSummary(
   startTime: Instant,
   endTime: Instant,
   location: ObjectLocationPrefix,
-  bagRootLocation: ObjectLocation,
+  bagRootLocation: ObjectLocation
 ) extends RootFinderSummary

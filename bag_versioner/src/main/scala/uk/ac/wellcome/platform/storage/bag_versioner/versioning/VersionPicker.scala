@@ -21,9 +21,11 @@ import uk.ac.wellcome.platform.archive.common.versioning.{
 import uk.ac.wellcome.storage.locking.{FailedProcess, LockDao, LockingService}
 
 class VersionPicker(
-  lockingService: LockingService[Either[IngestVersionManagerError, BagVersion],
-                                 Id,
-                                 LockDao[String, UUID]],
+  lockingService: LockingService[
+    Either[IngestVersionManagerError, BagVersion],
+    Id,
+    LockDao[String, UUID]
+  ],
   ingestVersionManager: IngestVersionManager
 ) {
   def chooseVersion(
@@ -37,7 +39,9 @@ class VersionPicker(
       .withLocks(
         Set(
           s"ingest:$ingestId",
-          s"external:${DynamoID.createId(storageSpace, externalIdentifier)}")) {
+          s"external:${DynamoID.createId(storageSpace, externalIdentifier)}"
+        )
+      ) {
         ingestVersionManager.assignVersion(
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
@@ -63,7 +67,8 @@ class VersionPicker(
 
   private def checkVersionIsAllowed(
     ingestType: IngestType,
-    assignedVersion: BagVersion): Either[VersionPickerError, BagVersion] =
+    assignedVersion: BagVersion
+  ): Either[VersionPickerError, BagVersion] =
     // TODO: This is stubbed out for the purposes of the migration,
     // but we should restore it later.
     Right(assignedVersion)

@@ -34,7 +34,8 @@ class BagReplicatorFeatureTest
             rootPath = Some(rootPath),
             ingests,
             outgoing,
-            stepName = "replicating") { _ =>
+            stepName = "replicating"
+          ) { _ =>
             withBagObjects(ingestsBucket) { bagRootLocation =>
               val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
@@ -61,7 +62,8 @@ class BagReplicatorFeatureTest
 
                 outgoing
                   .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-                  expectedPayload)
+                  expectedPayload
+                )
 
                 verifyObjectsCopied(
                   src = bagRootLocation,

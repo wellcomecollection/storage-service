@@ -29,7 +29,8 @@ class RegisterTest
     with TryValues {
 
   it(
-    "includes a user-facing message if the fetch.txt refers to the wrong namespace") {
+    "includes a user-facing message if the fetch.txt refers to the wrong namespace"
+  ) {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 

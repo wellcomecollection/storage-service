@@ -8,9 +8,11 @@ import uk.ac.wellcome.storage.store.{HybridStoreEntry, VersionedStore}
 case class EmptyMetadata()
 
 trait StorageManifestDao {
-  val vhs: VersionedStore[BagId,
-                          Int,
-                          HybridStoreEntry[StorageManifest, EmptyMetadata]]
+  val vhs: VersionedStore[
+    BagId,
+    Int,
+    HybridStoreEntry[StorageManifest, EmptyMetadata]
+  ]
 
   def getLatest(id: BagId): Either[ReadError, StorageManifest] =
     vhs.getLatest(id).map { _.identifiedT.t }
@@ -19,23 +21,27 @@ trait StorageManifestDao {
     vhs.get(Version(id, version.underlying)).map { _.identifiedT.t }
 
   def put(
-    storageManifest: StorageManifest): Either[WriteError, StorageManifest] =
+    storageManifest: StorageManifest
+  ): Either[WriteError, StorageManifest] =
     vhs
       .put(
-        id = Version(storageManifest.id, storageManifest.version.underlying))(
+        id = Version(storageManifest.id, storageManifest.version.underlying)
+      )(
         HybridStoreEntry(storageManifest, metadata = EmptyMetadata())
       )
       .map { _.identifiedT.t }
 
   protected def listVersions(
     bagId: BagId,
-    before: Option[BagVersion]): Either[ReadError, Seq[StorageManifest]]
+    before: Option[BagVersion]
+  ): Either[ReadError, Seq[StorageManifest]]
 
   def listVersions(bagId: BagId): Either[ReadError, Seq[StorageManifest]] =
     listVersions(bagId, before = None)
 
   def listVersions(
     bagId: BagId,
-    before: BagVersion): Either[ReadError, Seq[StorageManifest]] =
+    before: BagVersion
+  ): Either[ReadError, Seq[StorageManifest]] =
     listVersions(bagId, before = Some(before))
 }

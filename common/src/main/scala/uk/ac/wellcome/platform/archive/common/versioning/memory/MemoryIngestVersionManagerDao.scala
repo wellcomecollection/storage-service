@@ -15,7 +15,8 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
   var records: Seq[VersionRecord] = Seq.empty
 
   override def lookupExistingVersion(
-    ingestID: IngestID): Try[Option[VersionRecord]] =
+    ingestID: IngestID
+  ): Try[Option[VersionRecord]] =
     records.filter { _.ingestId == ingestID } match {
       case Seq(record) => Success(Some(record))
       case Nil         => Success(None)
@@ -24,7 +25,8 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
 
   override def lookupLatestVersionFor(
     externalIdentifier: ExternalIdentifier,
-    storageSpace: StorageSpace): Either[MaximaError, VersionRecord] = {
+    storageSpace: StorageSpace
+  ): Either[MaximaError, VersionRecord] = {
     val matchingVersions =
       records
         .filter { record =>

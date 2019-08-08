@@ -53,7 +53,8 @@ class PrepareNotificationServiceTest
       (400, s"Callback failed for: $id, got 400 Bad Request!")
     )
   it(
-    "returns a failed IngestUpdate when a callback returns with a failed status code") {
+    "returns a failed IngestUpdate when a callback returns with a failed status code"
+  ) {
     forAll(failedStatusCodes) {
       (responseStatus: Int, expectedDescription: String) =>
         assertPreparedNotificationIsCorrect(

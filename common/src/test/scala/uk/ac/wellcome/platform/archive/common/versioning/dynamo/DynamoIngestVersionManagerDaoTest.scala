@@ -21,12 +21,13 @@ class DynamoIngestVersionManagerDaoTest
     with IngestVersionManagerTable
     with EitherValues {
   override def withDao[R](initialRecords: Seq[VersionRecord])(
-    testWith: TestWith[IngestVersionManagerDao, R])(
-    implicit table: Table): R = {
+    testWith: TestWith[IngestVersionManagerDao, R]
+  )(implicit table: Table): R = {
     scanamo.exec(
       ScanamoTable[DynamoVersionRecord](table.name).putAll(initialRecords.map {
         DynamoVersionRecord(_)
-      }.toSet))
+      }.toSet)
+    )
 
     testWith(
       new DynamoIngestVersionManagerDao(
@@ -46,7 +47,8 @@ class DynamoIngestVersionManagerDaoTest
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[ResourceNotFoundException]
         result.failed.get.getMessage should startWith(
-          "Cannot do operations on a non-existent table")
+          "Cannot do operations on a non-existent table"
+        )
       }
     }
 
@@ -72,7 +74,8 @@ class DynamoIngestVersionManagerDaoTest
           result shouldBe a[Failure[_]]
           result.failed.get shouldBe a[RuntimeException]
           result.failed.get.getMessage should startWith(
-            "Did not find exactly one row with ingest ID")
+            "Did not find exactly one row with ingest ID"
+          )
         }
       }
     }
@@ -90,7 +93,8 @@ class DynamoIngestVersionManagerDaoTest
 
         result.left.value.e shouldBe a[ResourceNotFoundException]
         result.left.value.e.getMessage should startWith(
-          "Cannot do operations on a non-existent table")
+          "Cannot do operations on a non-existent table"
+        )
       }
     }
   }
@@ -105,7 +109,8 @@ class DynamoIngestVersionManagerDaoTest
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[ResourceNotFoundException]
         result.failed.get.getMessage should startWith(
-          "Cannot do operations on a non-existent table")
+          "Cannot do operations on a non-existent table"
+        )
       }
     }
   }

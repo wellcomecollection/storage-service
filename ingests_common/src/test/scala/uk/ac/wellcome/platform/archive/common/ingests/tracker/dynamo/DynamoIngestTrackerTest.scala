@@ -28,7 +28,8 @@ class DynamoIngestTrackerTest
     with DynamoFixtures
     with RandomThings {
   override def withContext[R](
-    testWith: TestWith[(DynamoTable, DynamoTable), R]): R =
+    testWith: TestWith[(DynamoTable, DynamoTable), R]
+  ): R =
     withSpecifiedTable(createIngestTrackerTable) { ingestTrackerTable =>
       withSpecifiedTable(createBagIdLookupTable) { bagIdLookupTable =>
         testWith((ingestTrackerTable, bagIdLookupTable))
@@ -36,8 +37,8 @@ class DynamoIngestTrackerTest
     }
 
   override def withIngestTracker[R](initialIngests: Seq[Ingest])(
-    testWith: TestWith[IngestTracker, R])(
-    implicit tables: (DynamoTable, DynamoTable)): R = {
+    testWith: TestWith[IngestTracker, R]
+  )(implicit tables: (DynamoTable, DynamoTable)): R = {
     val (ingestTrackerTable, bagIdLookupTable) = tables
 
     val tracker = new DynamoIngestTracker(
@@ -71,8 +72,9 @@ class DynamoIngestTrackerTest
       rangeKeyType = ScalarAttributeType.N
     )
 
-  private def withBrokenPutTracker[R](testWith: TestWith[IngestTracker, R])(
-    implicit tables: (DynamoTable, DynamoTable)): R = {
+  private def withBrokenPutTracker[R](
+    testWith: TestWith[IngestTracker, R]
+  )(implicit tables: (DynamoTable, DynamoTable)): R = {
     val (ingestTrackerTable, bagIdLookupTable) = tables
 
     val config = createDynamoConfigWith(ingestTrackerTable)
@@ -90,8 +92,9 @@ class DynamoIngestTrackerTest
             override def get(id: Version[IngestID, Int]): ReadEither =
               Left(StoreReadError(new Throwable("BOOM!")))
 
-            override def put(id: Version[IngestID, Int])(
-              t: Ingest): WriteEither =
+            override def put(
+              id: Version[IngestID, Int]
+            )(t: Ingest): WriteEither =
               Left(StoreWriteError(new Throwable("BOOM!")))
           }
         )
@@ -100,15 +103,15 @@ class DynamoIngestTrackerTest
   }
 
   override def withBrokenUnderlyingInitTracker[R](
-    testWith: TestWith[IngestTracker, R])(
-    implicit tables: (DynamoTable, DynamoTable)): R =
+    testWith: TestWith[IngestTracker, R]
+  )(implicit tables: (DynamoTable, DynamoTable)): R =
     withBrokenPutTracker { tracker =>
       testWith(tracker)
     }
 
   override def withBrokenUnderlyingGetTracker[R](
-    testWith: TestWith[IngestTracker, R])(
-    implicit tables: (DynamoTable, DynamoTable)): R = {
+    testWith: TestWith[IngestTracker, R]
+  )(implicit tables: (DynamoTable, DynamoTable)): R = {
     val (ingestTrackerTable, bagIdLookupTable) = tables
 
     val config = createDynamoConfigWith(ingestTrackerTable)
@@ -129,8 +132,8 @@ class DynamoIngestTrackerTest
   }
 
   override def withBrokenUnderlyingUpdateTracker[R](
-    testWith: TestWith[IngestTracker, R])(
-    implicit tables: (DynamoTable, DynamoTable)): R =
+    testWith: TestWith[IngestTracker, R]
+  )(implicit tables: (DynamoTable, DynamoTable)): R =
     withBrokenPutTracker { tracker =>
       testWith(tracker)
     }

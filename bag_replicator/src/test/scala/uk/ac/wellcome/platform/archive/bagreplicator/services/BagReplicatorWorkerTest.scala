@@ -43,7 +43,8 @@ class BagReplicatorWorkerTest
           bucket = archiveBucket,
           ingests = ingests,
           outgoing = outgoing,
-          stepName = "replicating") { service =>
+          stepName = "replicating"
+        ) { service =>
           withBagObjects(ingestsBucket) { srcBagRootLocation =>
             val payload = createEnrichedBagInformationPayloadWith(
               bagRootLocation = srcBagRootLocation
@@ -108,7 +109,8 @@ class BagReplicatorWorkerTest
           val rootPath = randomAlphanumericWithLength()
           withBagReplicatorWorker(
             bucket = archiveBucket,
-            rootPath = Some(rootPath)) { worker =>
+            rootPath = Some(rootPath)
+          ) { worker =>
             withBagObjects(ingestsBucket) { bagRootLocation =>
               val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
@@ -149,7 +151,8 @@ class BagReplicatorWorkerTest
 
               val destination = result.summary.destination
               destination.path should endWith(
-                s"/${payload.externalIdentifier.toString}/v3")
+                s"/${payload.externalIdentifier.toString}/v3"
+              )
             }
           }
         }
@@ -181,7 +184,8 @@ class BagReplicatorWorkerTest
         withLocalS3Bucket { archiveBucket =>
           withBagReplicatorWorker(
             bucket = archiveBucket,
-            rootPath = Some("rootprefix")) { worker =>
+            rootPath = Some("rootprefix")
+          ) { worker =>
             withBagObjects(ingestsBucket) { bagRootLocation =>
               val payload = createEnrichedBagInformationPayloadWith(
                 bagRootLocation = bagRootLocation
@@ -234,7 +238,8 @@ class BagReplicatorWorkerTest
       withBagObjects(bucket, objectCount = 500) { bagRootLocation =>
         withBagReplicatorWorker(
           bucket = bucket,
-          lockServiceDao = lockServiceDao) { worker =>
+          lockServiceDao = lockServiceDao
+        ) { worker =>
           val payload = createEnrichedBagInformationPayloadWith(
             bagRootLocation = bagRootLocation
           )
@@ -284,7 +289,8 @@ class BagReplicatorWorkerTest
             bucket = bucket,
             ingests = ingests,
             outgoing = outgoing,
-            lockServiceDao = neverAllowLockDao) { _ =>
+            lockServiceDao = neverAllowLockDao
+          ) { _ =>
             val payload = createEnrichedBagInformationPayloadWith(
               bagRootLocation = bagRootLocation
             )
@@ -302,7 +308,8 @@ class BagReplicatorWorkerTest
                     queue.url,
                     List(
                       "ApproximateNumberOfMessagesNotVisible",
-                      "ApproximateNumberOfMessages").asJava
+                      "ApproximateNumberOfMessages"
+                    ).asJava
                   )
                   .getAttributes
 

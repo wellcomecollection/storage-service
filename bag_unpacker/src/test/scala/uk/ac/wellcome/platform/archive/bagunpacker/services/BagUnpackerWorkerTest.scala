@@ -65,7 +65,8 @@ class BagUnpackerWorkerTest
             )
 
             outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
-              expectedPayload)
+              expectedPayload
+            )
 
             assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
               ingestUpdates =>
@@ -179,10 +180,11 @@ class BagUnpackerWorkerTest
     }
   }
 
-  def withWorker[R](ingests: MemoryMessageSender,
-                    outgoing: MemoryMessageSender,
-                    dstBucket: Bucket = createBucket)(
-    testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
+  def withWorker[R](
+    ingests: MemoryMessageSender,
+    outgoing: MemoryMessageSender,
+    dstBucket: Bucket = createBucket
+  )(testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
     withBagUnpackerWorker(
       queue = Queue("any", "any"),
       ingests = ingests,

@@ -35,7 +35,8 @@ class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
       val entries = Seq(
         "example\rnumber\r1.txt",
         "example\nnumber\n2.txt",
-        "example\r\nnumber\r\n3.txt").map { path =>
+        "example\r\nnumber\r\n3.txt"
+      ).map { path =>
         createBagFetchEntryWith(
           uri = "http://example.org/",
           path = path
@@ -158,9 +159,11 @@ class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
       path = BagPath(path)
     )
 
-  def createBagFetchEntryWith(uri: String,
-                              length: Long,
-                              path: String): BagFetchEntry =
+  def createBagFetchEntryWith(
+    uri: String,
+    length: Long,
+    path: String
+  ): BagFetchEntry =
     createFetchEntryWith(
       uri = uri,
       length = Some(length),

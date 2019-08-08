@@ -15,8 +15,8 @@ trait IngestVersionManagerDaoTestCases[Context]
   def withContext[R](testWith: TestWith[Context, R]): R
 
   def withDao[R](initialRecords: Seq[VersionRecord])(
-    testWith: TestWith[IngestVersionManagerDao, R])(
-    implicit context: Context): R
+    testWith: TestWith[IngestVersionManagerDao, R]
+  )(implicit context: Context): R
 
   it("is internally consistent") {
     val storageSpaceA = createStorageSpace
@@ -74,27 +74,31 @@ trait IngestVersionManagerDaoTestCases[Context]
 
         records.foreach { r =>
           dao.lookupExistingVersion(ingestId = r.ingestId) shouldBe Success(
-            Some(r))
+            Some(r)
+          )
         }
 
         dao
           .lookupLatestVersionFor(
             externalIdentifier = ExternalIdentifier("acorn"),
-            storageSpace = storageSpaceA)
+            storageSpace = storageSpaceA
+          )
           .right
           .value shouldBe recordA3
 
         dao
           .lookupLatestVersionFor(
             externalIdentifier = ExternalIdentifier("barley"),
-            storageSpace = storageSpaceB)
+            storageSpace = storageSpaceB
+          )
           .right
           .value shouldBe recordB2
 
         dao
           .lookupLatestVersionFor(
             externalIdentifier = ExternalIdentifier("chestnut"),
-            storageSpace = createStorageSpace)
+            storageSpace = createStorageSpace
+          )
           .left
           .value shouldBe a[NoMaximaValueError]
       }
@@ -111,12 +115,14 @@ trait IngestVersionManagerDaoTestCases[Context]
 
       withDao(initialRecords = Seq.empty) { dao2 =>
         dao2.lookupExistingVersion(record.ingestId) shouldBe Success(
-          Some(record))
+          Some(record)
+        )
 
         dao2
           .lookupLatestVersionFor(
             externalIdentifier = record.externalIdentifier,
-            storageSpace = record.storageSpace)
+            storageSpace = record.storageSpace
+          )
           .right
           .value shouldBe record
       }
@@ -138,7 +144,8 @@ trait IngestVersionManagerDaoTestCases[Context]
       withContext { implicit context =>
         withDao(initialRecords = Seq(record)) { dao =>
           dao.lookupExistingVersion(record.ingestId) shouldBe Success(
-            Some(record))
+            Some(record)
+          )
         }
       }
     }
@@ -164,7 +171,8 @@ trait IngestVersionManagerDaoTestCases[Context]
           dao
             .lookupLatestVersionFor(
               externalIdentifier = createExternalIdentifier,
-              storageSpace = createStorageSpace)
+              storageSpace = createStorageSpace
+            )
             .left
             .value shouldBe a[NoMaximaValueError]
         }
@@ -179,7 +187,8 @@ trait IngestVersionManagerDaoTestCases[Context]
         createVersionRecordWith(
           externalIdentifier = externalIdentifier,
           storageSpace = storageSpace,
-          version = version)
+          version = version
+        )
       }
 
       withContext { implicit context =>

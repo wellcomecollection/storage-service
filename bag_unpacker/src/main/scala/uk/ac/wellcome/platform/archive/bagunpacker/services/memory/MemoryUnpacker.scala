@@ -13,11 +13,13 @@ import uk.ac.wellcome.storage.streaming.{
 class MemoryUnpacker()(implicit streamStore: MemoryStreamStore[ObjectLocation])
     extends Unpacker {
   override def get(
-    location: ObjectLocation): Either[StorageError, InputStream] =
+    location: ObjectLocation
+  ): Either[StorageError, InputStream] =
     streamStore.get(location).map { _.identifiedT }
 
-  override def put(location: ObjectLocation)(
-    inputStream: InputStreamWithLength): Either[StorageError, Unit] =
+  override def put(
+    location: ObjectLocation
+  )(inputStream: InputStreamWithLength): Either[StorageError, Unit] =
     streamStore
       .put(location)(
         new InputStreamWithLengthAndMetadata(

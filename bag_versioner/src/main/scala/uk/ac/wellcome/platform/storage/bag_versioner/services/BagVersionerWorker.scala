@@ -33,14 +33,16 @@ class BagVersionerWorker[IngestDestination, OutgoingDestination](
   bagVersioner: BagVersioner,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination]
-)(implicit val mc: MonitoringClient,
+)(
+  implicit val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[BagRootLocationPayload])
-    extends IngestStepWorker[BagRootLocationPayload, BagVersionerSummary] {
+  val wd: Decoder[BagRootLocationPayload]
+) extends IngestStepWorker[BagRootLocationPayload, BagVersionerSummary] {
 
-  override def processMessage(payload: BagRootLocationPayload)
-    : Try[IngestStepResult[BagVersionerSummary]] =
+  override def processMessage(
+    payload: BagRootLocationPayload
+  ): Try[IngestStepResult[BagVersionerSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
@@ -58,7 +60,8 @@ class BagVersionerWorker[IngestDestination, OutgoingDestination](
 
   private def sendIngestUpdate(
     ingestId: IngestID,
-    stepResult: IngestStepResult[BagVersionerSummary]): Try[Unit] =
+    stepResult: IngestStepResult[BagVersionerSummary]
+  ): Try[Unit] =
     stepResult match {
       case IngestStepSucceeded(summary: BagVersionerSuccessSummary, _) =>
         val update = IngestVersionUpdate(
@@ -77,8 +80,9 @@ class BagVersionerWorker[IngestDestination, OutgoingDestination](
         ingestUpdater.send(ingestId, stepResult)
     }
 
-  private def sendSuccessful(payload: BagRootLocationPayload)(
-    step: IngestStepResult[BagVersionerSummary]): Try[Unit] =
+  private def sendSuccessful(
+    payload: BagRootLocationPayload
+  )(step: IngestStepResult[BagVersionerSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: BagVersionerSuccessSummary, _) =>
         outgoingPublisher.sendIfSuccessful(

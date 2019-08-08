@@ -11,7 +11,7 @@ case class ReplicationSummary(
   storageSpace: StorageSpace,
   destination: ObjectLocationPrefix,
   startTime: Instant,
-  maybeEndTime: Option[Instant] = None,
+  maybeEndTime: Option[Instant] = None
 ) extends Summary {
   def complete: ReplicationSummary =
     this.copy(

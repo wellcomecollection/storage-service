@@ -11,12 +11,16 @@ trait IngestVersionManagerTable extends DynamoFixtures {
       table,
       new CreateTableRequest()
         .withTableName(table.name)
-        .withKeySchema(new KeySchemaElement()
-          .withAttributeName("id")
-          .withKeyType(KeyType.HASH))
-        .withKeySchema(new KeySchemaElement()
-          .withAttributeName("version")
-          .withKeyType(KeyType.RANGE))
+        .withKeySchema(
+          new KeySchemaElement()
+            .withAttributeName("id")
+            .withKeyType(KeyType.HASH)
+        )
+        .withKeySchema(
+          new KeySchemaElement()
+            .withAttributeName("version")
+            .withKeyType(KeyType.RANGE)
+        )
         .withAttributeDefinitions(
           new AttributeDefinition()
             .withAttributeName("id")
@@ -40,13 +44,17 @@ trait IngestVersionManagerTable extends DynamoFixtures {
                 .withAttributeName("ingestId")
                 .withKeyType(KeyType.HASH)
             )
-            .withProvisionedThroughput(new ProvisionedThroughput()
-              .withReadCapacityUnits(1L)
-              .withWriteCapacityUnits(1L))
+            .withProvisionedThroughput(
+              new ProvisionedThroughput()
+                .withReadCapacityUnits(1L)
+                .withWriteCapacityUnits(1L)
+            )
         )
-        .withProvisionedThroughput(new ProvisionedThroughput()
-          .withReadCapacityUnits(1L)
-          .withWriteCapacityUnits(1L))
+        .withProvisionedThroughput(
+          new ProvisionedThroughput()
+            .withReadCapacityUnits(1L)
+            .withWriteCapacityUnits(1L)
+        )
     )
 
   def withContext[R](testWith: TestWith[Table, R]): R =

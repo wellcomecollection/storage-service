@@ -228,7 +228,8 @@ class IngestsApiFeatureTest
               actualIngest.callback.isDefined shouldBe true
               actualIngest.callback.get.url shouldBe testCallbackUri.toString
               actualIngest.callback.get.status.get shouldBe DisplayStatus(
-                "processing")
+                "processing"
+              )
 
               actualIngest.ingestType shouldBe CreateDisplayIngestType
 
@@ -258,7 +259,8 @@ class IngestsApiFeatureTest
               val expectedPayload = SourceLocationPayload(expectedIngest)
               messageSender
                 .getMessages[SourceLocationPayload] shouldBe Seq(
-                expectedPayload)
+                expectedPayload
+              )
 
               assertMetricSent(metrics, result = HttpMetricResults.Success)
             }
@@ -551,19 +553,19 @@ class IngestsApiFeatureTest
       withConfiguredApp(initialIngests = Seq(ingest)) {
         case (_, _, metrics, baseUrl) =>
           whenGetRequestReady(
-            s"$baseUrl/ingests/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}") {
-            response =>
-              response.status shouldBe StatusCodes.OK
-              response.entity.contentType shouldBe ContentTypes.`application/json`
+            s"$baseUrl/ingests/find-by-bag-id/${bagId.space}:${bagId.externalIdentifier}"
+          ) { response =>
+            response.status shouldBe StatusCodes.OK
+            response.entity.contentType shouldBe ContentTypes.`application/json`
 
-              val ingests = getT[List[DisplayIngestMinimal]](response.entity)
+            val ingests = getT[List[DisplayIngestMinimal]](response.entity)
 
-              ingests shouldBe List(DisplayIngestMinimal(ingest))
+            ingests shouldBe List(DisplayIngestMinimal(ingest))
 
-              assertMetricSent(
-                metrics,
-                result = HttpMetricResults.Success
-              )
+            assertMetricSent(
+              metrics,
+              result = HttpMetricResults.Success
+            )
           }
       }
     }
@@ -656,7 +658,8 @@ class IngestsApiFeatureTest
     contentType: ContentType.NonBinary = ContentTypes.`application/json`,
     expectedStatusCode: StatusCode = StatusCodes.BadRequest,
     expectedMessage: String,
-    expectedLabel: String = "Bad Request") = {
+    expectedLabel: String = "Bad Request"
+  ) = {
     withConfiguredApp() {
       case (_, messageSender, metrics, baseUrl) =>
         val url = s"$baseUrl/ingests"

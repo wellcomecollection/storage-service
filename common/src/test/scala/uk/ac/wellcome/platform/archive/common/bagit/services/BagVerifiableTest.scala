@@ -177,7 +177,8 @@ class BagVerifiableTest
       val fetchEntries = Seq(
         createFetchEntryWith(
           uri = "s3://example/example.txt",
-          path = BagPath("example.txt"))
+          path = BagPath("example.txt")
+        )
       )
 
       val bag = createBagWith(fetchEntries = fetchEntries)
@@ -185,17 +186,20 @@ class BagVerifiableTest
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
       result.left.get.msg should startWith(
-        "Fetch entry refers to a path that isn't in the bag")
+        "Fetch entry refers to a path that isn't in the bag"
+      )
     }
 
     it("there's are multiple fetch entries for a file that isn't in the bag") {
       val fetchEntries = Seq(
         createFetchEntryWith(
           uri = "s3://example/example.txt",
-          path = BagPath("example.txt")),
+          path = BagPath("example.txt")
+        ),
         createFetchEntryWith(
           uri = "s3://example/red.txt",
-          path = BagPath("example.txt"))
+          path = BagPath("example.txt")
+        )
       )
 
       val bag = createBagWith(fetchEntries = fetchEntries)
@@ -217,21 +221,24 @@ class BagVerifiableTest
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
       result.left.get.msg should startWith(
-        "Multiple, ambiguous entries for the same path")
+        "Multiple, ambiguous entries for the same path"
+      )
     }
 
     it("has multiple, differing fetch entries for the same file") {
       val manifestFiles = List(
-        createBagFileWith("example.txt", checksum = "123"),
+        createBagFileWith("example.txt", checksum = "123")
       )
 
       val fetchEntries = Seq(
         createFetchEntryWith(
           uri = "s3://example/example.txt",
-          path = BagPath("example.txt")),
+          path = BagPath("example.txt")
+        ),
         createFetchEntryWith(
           uri = "https://example.net/example.txt",
-          path = BagPath("example.txt"))
+          path = BagPath("example.txt")
+        )
       )
 
       val bag = createBagWith(
@@ -242,7 +249,8 @@ class BagVerifiableTest
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
       result.left.get.msg should startWith(
-        "Multiple, ambiguous entries for the same path")
+        "Multiple, ambiguous entries for the same path"
+      )
     }
   }
 
@@ -254,7 +262,8 @@ class BagVerifiableTest
       VerifiableLocation(
         path = bagFile.path,
         uri = new URI(
-          s"example://${root.namespace}/${root.path}/${bagFile.path.toString}"),
+          s"example://${root.namespace}/${root.path}/${bagFile.path.toString}"
+        ),
         checksum = bagFile.checksum,
         length = None
       )
@@ -262,7 +271,8 @@ class BagVerifiableTest
 
   def getExpectedLocations(
     bagFiles: Seq[BagFile],
-    fetchEntries: Seq[BagFetchEntry]): Seq[VerifiableLocation] =
+    fetchEntries: Seq[BagFetchEntry]
+  ): Seq[VerifiableLocation] =
     bagFiles.zip(fetchEntries).map {
       case (bagFile, fetchEntry) =>
         VerifiableLocation(

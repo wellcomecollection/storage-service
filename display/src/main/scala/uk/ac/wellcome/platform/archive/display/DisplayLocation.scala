@@ -5,14 +5,17 @@ import uk.ac.wellcome.platform.archive.common.ingests.models
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
 import uk.ac.wellcome.storage.ObjectLocation
 
-case class DisplayLocation(provider: DisplayProvider,
-                           bucket: String,
-                           path: String,
-                           @JsonKey("type") ontologyType: String = "Location") {
+case class DisplayLocation(
+  provider: DisplayProvider,
+  bucket: String,
+  path: String,
+  @JsonKey("type") ontologyType: String = "Location"
+) {
   def toStorageLocation: StorageLocation =
     models.StorageLocation(
       provider.toStorageProvider,
-      ObjectLocation(bucket, path))
+      ObjectLocation(bucket, path)
+    )
 }
 object DisplayLocation {
   def apply(location: StorageLocation): DisplayLocation =

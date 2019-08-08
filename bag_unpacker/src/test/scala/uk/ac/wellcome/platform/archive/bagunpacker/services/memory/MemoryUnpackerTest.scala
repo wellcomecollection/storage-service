@@ -23,8 +23,8 @@ class MemoryUnpackerTest extends UnpackerTestCases[String] {
 
   // TODO: Add covariance to StreamStore
   override def withStreamStore[R](
-    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R])
-    : R = {
+    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]
+  ): R = {
     val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
       override def get(location: ObjectLocation): ReadEither =
         streamStore
@@ -34,23 +34,28 @@ class MemoryUnpackerTest extends UnpackerTestCases[String] {
               is.id,
               new InputStreamWithLength(
                 is.identifiedT,
-                length = is.identifiedT.length))
+                length = is.identifiedT.length
+              )
+            )
           }
 
-      override def put(location: ObjectLocation)(
-        is: InputStreamWithLength): WriteEither =
+      override def put(
+        location: ObjectLocation
+      )(is: InputStreamWithLength): WriteEither =
         streamStore
           .put(location)(
             new InputStreamWithLengthAndMetadata(
               is,
               length = is.length,
-              metadata = Map.empty)
+              metadata = Map.empty
+            )
           )
           .map { is =>
             is.copy(
               identifiedT = new InputStreamWithLength(
                 is.identifiedT,
-                length = is.identifiedT.length)
+                length = is.identifiedT.length
+              )
             )
           }
     }

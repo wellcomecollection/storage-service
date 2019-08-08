@@ -19,7 +19,8 @@ case class BagInfo(
   sourceOrganisation: Option[SourceOrganisation] = None,
   externalDescription: Option[ExternalDescription] = None,
   internalSenderIdentifier: Option[InternalSenderIdentifier] = None,
-  internalSenderDescription: Option[InternalSenderDescription] = None)
+  internalSenderDescription: Option[InternalSenderDescription] = None
+)
 
 object BagInfo {
 
@@ -51,13 +52,15 @@ object BagInfo {
       extractInternalSenderIdentifier(bagInfoLines),
       extractInternalSenderDescription(bagInfoLines)
     ).mapN(
-      (externalIdentifier: ExternalIdentifier,
-       payloadOxum: PayloadOxum,
-       baggingDate: LocalDate,
-       sourceOrganisation: Option[SourceOrganisation],
-       externalDescription: Option[ExternalDescription],
-       internalSenderIdentifier: Option[InternalSenderIdentifier],
-       internalSenderDescription: Option[InternalSenderDescription]) =>
+      (
+        externalIdentifier: ExternalIdentifier,
+        payloadOxum: PayloadOxum,
+        baggingDate: LocalDate,
+        sourceOrganisation: Option[SourceOrganisation],
+        externalDescription: Option[ExternalDescription],
+        internalSenderIdentifier: Option[InternalSenderIdentifier],
+        internalSenderDescription: Option[InternalSenderDescription]
+      ) =>
         BagInfo.apply(
           externalIdentifier,
           payloadOxum,
@@ -65,7 +68,9 @@ object BagInfo {
           sourceOrganisation,
           externalDescription,
           internalSenderIdentifier,
-          internalSenderDescription))
+          internalSenderDescription
+        )
+    )
 
     validated
   }
@@ -97,7 +102,8 @@ object BagInfo {
       dateString =>
         Try(LocalDate.parse(dateString)).toEither
           .leftMap(_ => BagInfoKeys.baggingDate)
-          .toValidatedNel)
+          .toValidatedNel
+    )
 
   private def extractSourceOrganisation(bagInfoLines: Array[String]) =
     extractOptionalValue(bagInfoLines, BagInfoKeys.sourceOrganisation)
@@ -119,13 +125,17 @@ object BagInfo {
       .map(InternalSenderDescription)
       .validNel
 
-  private def extractRequiredValue(bagInfoLines: Array[String],
-                                   bagInfoKey: String) =
+  private def extractRequiredValue(
+    bagInfoLines: Array[String],
+    bagInfoKey: String
+  ) =
     extractOptionalValue(bagInfoLines, bagInfoKey)
       .toValidNel(bagInfoKey)
 
-  private def extractOptionalValue(bagInfoLines: Array[String],
-                                   bagInfoKey: String) =
+  private def extractOptionalValue(
+    bagInfoLines: Array[String],
+    bagInfoKey: String
+  ) =
     bagInfoLines
       .collectFirst {
         case BAG_INFO_FIELD_REGEX(key, value) if key == bagInfoKey =>

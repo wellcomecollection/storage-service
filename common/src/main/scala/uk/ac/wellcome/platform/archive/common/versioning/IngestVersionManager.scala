@@ -36,7 +36,8 @@ trait IngestVersionManager {
             NewerIngestAlreadyExists(
               stored = existingRecord.ingestDate,
               request = ingestDate
-            ))
+            )
+          )
 
       case Left(NoMaximaValueError(_)) =>
         storeNewVersion(
@@ -88,13 +89,15 @@ trait IngestVersionManager {
             ExternalIdentifiersMismatch(
               stored = existingRecord.externalIdentifier,
               request = externalIdentifier
-            ))
+            )
+          )
         else
           Left(
             StorageSpaceMismatch(
               stored = existingRecord.storageSpace,
               request = storageSpace
-            ))
+            )
+          )
 
       case Success(None) =>
         createNewVersionFor(

@@ -40,7 +40,8 @@ class IngestStarterTest
 
         val expectedPayload = SourceLocationPayload(ingest)
         messageSender.getMessages[SourceLocationPayload] shouldBe Seq(
-          expectedPayload)
+          expectedPayload
+        )
       }
     }
   }
@@ -54,7 +55,8 @@ class IngestStarterTest
         val result = ingestStarter.initialise(ingest)
         result.failed shouldBe a[Success[_]]
         result.failed.get.getMessage should startWith(
-          "Error from the ingest tracker: IngestAlreadyExistsError")
+          "Error from the ingest tracker: IngestAlreadyExistsError"
+        )
 
         messageSender.messages shouldBe empty
       }
@@ -67,7 +69,8 @@ class IngestStarterTest
     val brokenTracker = new MemoryIngestTracker(
       underlying = new MemoryVersionedStore[IngestID, Ingest](
         new MemoryStore[Version[IngestID, Int], Ingest](
-          initialEntries = Map.empty) with MemoryMaxima[IngestID, Ingest]
+          initialEntries = Map.empty
+        ) with MemoryMaxima[IngestID, Ingest]
       )
     ) {
       override def init(ingest: Ingest): Result =

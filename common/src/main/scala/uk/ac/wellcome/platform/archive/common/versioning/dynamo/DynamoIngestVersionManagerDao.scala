@@ -45,7 +45,8 @@ class DynamoIngestVersionManagerDao(
 
   // TODO: Rewrite this to use Either
   override def lookupExistingVersion(
-    ingestId: IngestID): Try[Option[VersionRecord]] = {
+    ingestId: IngestID
+  ): Try[Option[VersionRecord]] = {
     val ops = index.query('ingestId -> ingestId)
 
     Try { Scanamo(dynamoClient).exec(ops) } match {
@@ -65,7 +66,8 @@ class DynamoIngestVersionManagerDao(
 
   override def lookupLatestVersionFor(
     externalIdentifier: ExternalIdentifier,
-    storageSpace: StorageSpace): Either[MaximaError, VersionRecord] = {
+    storageSpace: StorageSpace
+  ): Either[MaximaError, VersionRecord] = {
     val id = DynamoID.createId(
       storageSpace = storageSpace,
       externalIdentifier = externalIdentifier

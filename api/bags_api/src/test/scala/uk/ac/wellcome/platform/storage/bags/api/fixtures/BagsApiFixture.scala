@@ -36,11 +36,13 @@ trait BagsApiFixture
   val metricsName = "BagsApiFixture"
 
   val contextURL = new URL(
-    "http://api.wellcomecollection.org/storage/v1/context.json")
+    "http://api.wellcomecollection.org/storage/v1/context.json"
+  )
 
   private def withApp[R](
     metrics: MemoryMetrics[Unit],
-    storageManifestDao: StorageManifestDao)(testWith: TestWith[BagsApi, R]): R =
+    storageManifestDao: StorageManifestDao
+  )(testWith: TestWith[BagsApi, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
         val httpMetrics = new HttpMetrics(
@@ -62,8 +64,8 @@ trait BagsApiFixture
     }
 
   def withConfiguredApp[R](initialManifests: Seq[StorageManifest] = Seq.empty)(
-    testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R])
-    : R = {
+    testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R]
+  ): R = {
     val dao = createStorageManifestDao()
 
     initialManifests.foreach { manifest =>
@@ -78,25 +80,30 @@ trait BagsApiFixture
   }
 
   def withBrokenApp[R](
-    testWith: TestWith[(MemoryMetrics[Unit], String), R]): R = {
-    val versionedStore = MemoryVersionedStore[
-      BagId,
-      HybridStoreEntry[StorageManifest, EmptyMetadata]](
+    testWith: TestWith[(MemoryMetrics[Unit], String), R]
+  ): R = {
+    val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[
+      StorageManifest,
+      EmptyMetadata
+    ]](
       initialEntries = Map.empty
     )
 
     val brokenDao = new MemoryStorageManifestDao(versionedStore) {
       override def getLatest(
-        id: BagId): scala.Either[ReadError, StorageManifest] =
+        id: BagId
+      ): scala.Either[ReadError, StorageManifest] =
         Left(StoreReadError(new Throwable("BOOM!")))
 
       override def get(
         id: BagId,
-        version: BagVersion): Either[ReadError, StorageManifest] =
+        version: BagVersion
+      ): Either[ReadError, StorageManifest] =
         Left(StoreReadError(new Throwable("BOOM!")))
 
       override def listVersions(
-        bagId: BagId): Either[ReadError, Seq[StorageManifest]] =
+        bagId: BagId
+      ): Either[ReadError, Seq[StorageManifest]] =
         Left(StoreReadError(new Throwable("BOOM!")))
     }
 

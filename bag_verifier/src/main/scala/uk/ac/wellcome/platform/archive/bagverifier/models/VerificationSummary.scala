@@ -54,9 +54,11 @@ sealed trait VerificationSummary extends Summary {
 }
 
 object VerificationSummary {
-  def incomplete(root: ObjectLocation,
-                 e: Throwable,
-                 t: Instant): VerificationIncompleteSummary =
+  def incomplete(
+    root: ObjectLocation,
+    e: Throwable,
+    t: Instant
+  ): VerificationIncompleteSummary =
     VerificationIncompleteSummary(
       rootLocation = root,
       e = e,
@@ -93,22 +95,25 @@ object VerificationSummary {
   }
 }
 
-case class VerificationIncompleteSummary(rootLocation: ObjectLocation,
-                                         e: Throwable,
-                                         startTime: Instant,
-                                         endTime: Instant)
-    extends VerificationSummary {
+case class VerificationIncompleteSummary(
+  rootLocation: ObjectLocation,
+  e: Throwable,
+  startTime: Instant,
+  endTime: Instant
+) extends VerificationSummary {
   val verification: None.type = None
 }
 
-case class VerificationSuccessSummary(rootLocation: ObjectLocation,
-                                      verification: Some[VerificationSuccess],
-                                      startTime: Instant,
-                                      endTime: Instant)
-    extends VerificationSummary
+case class VerificationSuccessSummary(
+  rootLocation: ObjectLocation,
+  verification: Some[VerificationSuccess],
+  startTime: Instant,
+  endTime: Instant
+) extends VerificationSummary
 
-case class VerificationFailureSummary(rootLocation: ObjectLocation,
-                                      verification: Option[VerificationFailure],
-                                      startTime: Instant,
-                                      endTime: Instant)
-    extends VerificationSummary
+case class VerificationFailureSummary(
+  rootLocation: ObjectLocation,
+  verification: Option[VerificationFailure],
+  startTime: Instant,
+  endTime: Instant
+) extends VerificationSummary

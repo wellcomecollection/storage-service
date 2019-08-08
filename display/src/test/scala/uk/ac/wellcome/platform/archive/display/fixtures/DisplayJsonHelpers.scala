@@ -22,22 +22,27 @@ trait DisplayJsonHelpers {
        |  ${optionalField(
          "externalDescription",
          stringField,
-         info.externalDescription)}
+         info.externalDescription
+       )}
        |  ${optionalField(
          "internalSenderIdentifier",
          stringField,
-         info.internalSenderIdentifier)}
+         info.internalSenderIdentifier
+       )}
        |  ${optionalField(
          "internalSenderDescription",
          stringField,
-         info.internalSenderDescription)}
+         info.internalSenderDescription
+       )}
        |  ${optionalField(
          "sourceOrganization",
          stringField,
-         info.sourceOrganisation)}
+         info.sourceOrganisation
+       )}
        |  "payloadOxum": "${info.payloadOxum.toString}",
        |  "baggingDate": "${info.baggingDate.format(
-         DateTimeFormatter.ISO_LOCAL_DATE)}",
+         DateTimeFormatter.ISO_LOCAL_DATE
+       )}",
        |  "type": "BagInfo"
        |}
      """.stripMargin
@@ -78,10 +83,12 @@ trait DisplayJsonHelpers {
   def asList[T](elements: Seq[T], formatter: T => String): String =
     elements.map { formatter(_) }.mkString(",")
 
-  def optionalField[T](fieldName: String,
-                       formatter: T => String,
-                       maybeObjectValue: Option[T],
-                       lastField: Boolean = false): String =
+  def optionalField[T](
+    fieldName: String,
+    formatter: T => String,
+    maybeObjectValue: Option[T],
+    lastField: Boolean = false
+  ): String =
     maybeObjectValue match {
       case None => ""
       case Some(o) =>

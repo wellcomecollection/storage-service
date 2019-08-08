@@ -23,8 +23,10 @@ case class ResponseDisplayBag(
 )
 
 object ResponseDisplayBag {
-  def apply(storageManifest: StorageManifest,
-            contextUrl: URL): ResponseDisplayBag =
+  def apply(
+    storageManifest: StorageManifest,
+    contextUrl: URL
+  ): ResponseDisplayBag =
     ResponseDisplayBag(
       context = contextUrl.toString,
       id = storageManifest.id.toString,

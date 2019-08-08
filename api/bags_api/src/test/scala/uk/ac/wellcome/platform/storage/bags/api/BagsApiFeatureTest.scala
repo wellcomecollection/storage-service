@@ -57,7 +57,8 @@ class BagsApiFeatureTest
               |    ${asList(storageManifest.locations, location)}
               |  ],
               |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 storageManifest.createdDate)}",
+                 storageManifest.createdDate
+               )}",
               |  "version": "${storageManifest.version}",
               |  "type": "Bag"
               |}
@@ -114,7 +115,8 @@ class BagsApiFeatureTest
                 |    ${asList(storageManifest.locations, location)}
                 |  ],
                 |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                   storageManifest.createdDate)}",
+                   storageManifest.createdDate
+                 )}",
                 |  "version": "${storageManifest.version}",
                 |  "type": "Bag"
                 |}
@@ -147,17 +149,17 @@ class BagsApiFeatureTest
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, _, baseUrl) =>
           whenGetRequestReady(
-            s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}") {
-            response =>
-              response.status shouldBe StatusCodes.OK
+            s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
+          ) { response =>
+            response.status shouldBe StatusCodes.OK
 
-              withStringEntity(response.entity) { jsonString =>
-                val infoJson =
-                  root.info.json
-                    .getOption(parse(jsonString).right.get)
-                    .get
-                infoJson.findAllByKey("externalDescription") shouldBe empty
-              }
+            withStringEntity(response.entity) { jsonString =>
+              val infoJson =
+                root.info.json
+                  .getOption(parse(jsonString).right.get)
+                  .get
+              infoJson.findAllByKey("externalDescription") shouldBe empty
+            }
           }
       }
     }
@@ -167,16 +169,16 @@ class BagsApiFeatureTest
         case (_, metrics, baseUrl) =>
           val bagId = createBagId
           whenGetRequestReady(
-            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}") {
-            response =>
-              assertIsUserErrorResponse(
-                response,
-                description = s"Storage manifest $bagId not found",
-                statusCode = StatusCodes.NotFound,
-                label = "Not Found"
-              )
+            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}"
+          ) { response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"Storage manifest $bagId not found",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
 
-              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
           }
       }
     }
@@ -207,17 +209,17 @@ class BagsApiFeatureTest
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>
           whenGetRequestReady(
-            s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=${storageManifest.version.increment}") {
-            response =>
-              assertIsUserErrorResponse(
-                response,
-                description =
-                  s"Storage manifest ${storageManifest.id} version ${storageManifest.version.increment} not found",
-                statusCode = StatusCodes.NotFound,
-                label = "Not Found"
-              )
+            s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=${storageManifest.version.increment}"
+          ) { response =>
+            assertIsUserErrorResponse(
+              response,
+              description =
+                s"Storage manifest ${storageManifest.id} version ${storageManifest.version.increment} not found",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
 
-              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
           }
       }
     }
@@ -274,16 +276,16 @@ class BagsApiFeatureTest
         case (_, metrics, baseUrl) =>
           val bagId = createBagId
           whenGetRequestReady(
-            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}/versions") {
-            response =>
-              assertIsUserErrorResponse(
-                response,
-                description = s"No storage manifest versions found for $bagId",
-                statusCode = StatusCodes.NotFound,
-                label = "Not Found"
-              )
+            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}/versions"
+          ) { response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"No storage manifest versions found for $bagId",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
 
-              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
           }
       }
     }
@@ -310,7 +312,8 @@ class BagsApiFeatureTest
              |      "id": "${storageManifest.id.toString}",
              |      "version": "${storageManifest.version}",
              |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 storageManifest.createdDate)}"
+                 storageManifest.createdDate
+               )}"
              |    }
              |  ]
              |}
@@ -361,35 +364,40 @@ class BagsApiFeatureTest
              |      "id": "${storageManifest.id.toString}",
              |      "version": "v5",
              |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(5).createdDate)}"
+                 multipleManifests(5).createdDate
+               )}"
              |    },
              |    {
              |      "type": "Bag",
              |      "id": "${storageManifest.id.toString}",
              |      "version": "v4",
              |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(4).createdDate)}"
+                 multipleManifests(4).createdDate
+               )}"
              |    },
              |    {
              |      "type": "Bag",
              |      "id": "${storageManifest.id.toString}",
              |      "version": "v3",
              |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(3).createdDate)}"
+                 multipleManifests(3).createdDate
+               )}"
              |    },
              |    {
              |      "type": "Bag",
              |      "id": "${storageManifest.id.toString}",
              |      "version": "v2",
              |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(2).createdDate)}"
+                 multipleManifests(2).createdDate
+               )}"
              |    },
              |    {
              |      "type": "Bag",
              |      "id": "${storageManifest.id.toString}",
              |      "version": "v1",
              |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(1).createdDate)}"
+                 multipleManifests(1).createdDate
+               )}"
              |    }
              |  ]
              |}
@@ -438,21 +446,24 @@ class BagsApiFeatureTest
              |      "id": "${storageManifest.id.toString}",
              |      "version": "v3",
              |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(3).createdDate)}"
+                 multipleManifests(3).createdDate
+               )}"
              |    },
              |    {
              |      "type": "Bag",
              |      "id": "${storageManifest.id.toString}",
              |      "version": "v2",
              |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(2).createdDate)}"
+                 multipleManifests(2).createdDate
+               )}"
              |    },
              |    {
              |      "type": "Bag",
              |      "id": "${storageManifest.id.toString}",
              |      "version": "v1",
              |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(1).createdDate)}"
+                 multipleManifests(1).createdDate
+               )}"
              |    }
              |  ]
              |}
@@ -477,7 +488,8 @@ class BagsApiFeatureTest
     }
 
     it(
-      "returns a 404 NotFound if there are no manifests before the specified version") {
+      "returns a 404 NotFound if there are no manifests before the specified version"
+    ) {
       val storageManifest = createStorageManifest
 
       val multipleManifests = (5 to 10).map { version =>
@@ -492,37 +504,38 @@ class BagsApiFeatureTest
       withConfiguredApp(initialManifests) {
         case (_, metrics, baseUrl) =>
           whenGetRequestReady(
-            s"$baseUrl/bags/${storageManifest.id}/versions?before=v4") {
-            response =>
-              assertIsUserErrorResponse(
-                response,
-                description =
-                  s"No storage manifest versions found for ${storageManifest.id} before v4",
-                statusCode = StatusCodes.NotFound,
-                label = "Not Found"
-              )
+            s"$baseUrl/bags/${storageManifest.id}/versions?before=v4"
+          ) { response =>
+            assertIsUserErrorResponse(
+              response,
+              description =
+                s"No storage manifest versions found for ${storageManifest.id} before v4",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
 
-              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
           }
       }
     }
 
     it(
-      "returns a 400 UserError if search for manifests before a non-numeric version") {
+      "returns a 400 UserError if search for manifests before a non-numeric version"
+    ) {
       val badBefore = randomAlphanumeric
 
       withConfiguredApp() {
         case (_, metrics, baseUrl) =>
           whenGetRequestReady(
-            s"$baseUrl/bags/$createBagId/versions?before=$badBefore") {
-            response =>
-              assertIsUserErrorResponse(
-                response,
-                description = s"Cannot parse version string: $badBefore",
-                statusCode = StatusCodes.BadRequest
-              )
+            s"$baseUrl/bags/$createBagId/versions?before=$badBefore"
+          ) { response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"Cannot parse version string: $badBefore",
+              statusCode = StatusCodes.BadRequest
+            )
 
-              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
           }
       }
     }

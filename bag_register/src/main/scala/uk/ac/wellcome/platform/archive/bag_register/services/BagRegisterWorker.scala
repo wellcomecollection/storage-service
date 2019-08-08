@@ -21,14 +21,16 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   register: Register
-)(implicit val mc: MonitoringClient,
+)(
+  implicit val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[EnrichedBagInformationPayload])
-    extends IngestStepWorker[EnrichedBagInformationPayload, RegistrationSummary] {
+  val wd: Decoder[EnrichedBagInformationPayload]
+) extends IngestStepWorker[EnrichedBagInformationPayload, RegistrationSummary] {
 
-  override def processMessage(payload: EnrichedBagInformationPayload)
-    : Try[IngestStepResult[RegistrationSummary]] =
+  override def processMessage(
+    payload: EnrichedBagInformationPayload
+  ): Try[IngestStepResult[RegistrationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
