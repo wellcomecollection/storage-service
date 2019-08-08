@@ -9,7 +9,7 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorkerConfig
 }
 import uk.ac.wellcome.messaging.worker.models.{
-  DeterministicFailure,
+  NonDeterministicFailure,
   Result,
   Successful
 }
@@ -49,7 +49,15 @@ class IngestsWorker[CallbackDestination](
 
     result match {
       case Success(ingest) => Success(Successful(Some(ingest)))
-      case Failure(err)    => Success(DeterministicFailure(err, summary = None))
+
+      // It's possible for an ingest update to fail in a flaky way
+      // (e.g. a DynamoDB conditional update failure).
+      //
+      // Rather than trying to distinguish these, we just send all
+      // failed updates back onto the queue and log the reason.
+      case Failure(err) =>
+        warn(s"Error trying to apply update $ingestUpdate: $err")
+        Success(NonDeterministicFailure(err, summary = None))
     }
   }
 

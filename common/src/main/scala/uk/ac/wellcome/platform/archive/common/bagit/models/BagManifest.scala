@@ -38,12 +38,10 @@ object BagManifest {
 
     val eitherFiles = lines.map(createBagFile(_, None, algorithm))
 
-    // Collect left
     val errorStrings = eitherFiles.collect {
       case Left(errorString) => errorString
     }
 
-    // Collect right
     val files = eitherFiles.collect {
       case Right(bagFile) => bagFile
     }

@@ -16,6 +16,13 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.streaming.{
+  InputStreamWithLength,
+  InputStreamWithLengthAndMetadata
+}
+import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 
 trait BagUnpackerFixtures
     extends SQS
@@ -57,7 +64,7 @@ trait BagUnpackerFixtures
                         MemoryMessageSender,
                         MemoryMessageSender),
                        R]): R =
-    withLocalS3Bucket { sourceBucket =>
+    withLocalS3Bucket { dstBucket =>
       withLocalSqsQueue { queue =>
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
@@ -65,13 +72,13 @@ trait BagUnpackerFixtures
           queue,
           ingests,
           outgoing,
-          sourceBucket,
+          dstBucket,
           stepName = stepName
         )({ bagUnpackerProcess =>
           testWith(
             (
               bagUnpackerProcess,
-              sourceBucket,
+              dstBucket,
               queue,
               ingests,
               outgoing
@@ -80,4 +87,43 @@ trait BagUnpackerFixtures
         })
       }
     }
+
+  // TODO: Add covariance to StreamStore
+  def withStreamStore[R](
+    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R])
+    : R = {
+    val s3StreamStore = new S3StreamStore()
+
+    val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
+      override def get(location: ObjectLocation): ReadEither =
+        s3StreamStore
+          .get(location)
+          .map { is =>
+            Identified(
+              is.id,
+              new InputStreamWithLength(
+                is.identifiedT,
+                length = is.identifiedT.length))
+          }
+
+      override def put(location: ObjectLocation)(
+        is: InputStreamWithLength): WriteEither =
+        s3StreamStore
+          .put(location)(
+            new InputStreamWithLengthAndMetadata(
+              is,
+              length = is.length,
+              metadata = Map.empty)
+          )
+          .map { is =>
+            is.copy(
+              identifiedT = new InputStreamWithLength(
+                is.identifiedT,
+                length = is.identifiedT.length)
+            )
+          }
+    }
+
+    testWith(store)
+  }
 }

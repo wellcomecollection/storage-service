@@ -28,6 +28,10 @@ import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
 import scala.concurrent.ExecutionContext
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  S3SizeFinder,
+  StorageManifestService
+}
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -55,9 +59,14 @@ object Main extends WellcomeTypesafeApp {
       operationName
     )
 
+    val storageManifestService = new StorageManifestService(
+      sizeFinder = new S3SizeFinder()
+    )
+
     val register = new Register(
       bagReader = new S3BagReader(),
-      storageManifestVHS
+      storageManifestDao = storageManifestVHS,
+      storageManifestService = storageManifestService
     )
 
     val outgoingPublisher = OutgoingPublisherBuilder.build(

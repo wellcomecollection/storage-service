@@ -7,6 +7,7 @@ case class DisplayFile(
   checksum: String,
   name: String,
   path: String,
+  size: Long,
   @JsonKey("type") ontologyType: String = "File"
 )
 
@@ -15,6 +16,7 @@ case object DisplayFile {
     DisplayFile(
       checksum = file.checksum.value,
       name = file.name,
-      path = file.path
+      path = file.path,
+      size = file.size
     )
 }

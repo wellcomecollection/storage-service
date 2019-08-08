@@ -17,7 +17,7 @@ jobs:
     - env: SBT_PROJECT=bag_root_finder
     - env: SBT_PROJECT=bag_verifier
     - env: SBT_PROJECT=bag_unpacker
-    - env: SBT_PROJECT=bag_auditor
+    - env: SBT_PROJECT=bag_versioner
     - env: SBT_PROJECT=notifier
     - env: TASK=bagger-publish
     - env: TASK=python_client-test
@@ -37,12 +37,12 @@ cache:
 
     - api/bags_api/target
     - api/ingests_api/target
-    - bag_auditor/target
     - bag_replicator/target
     - bag_register/target
     - bag_root_finder/target
     - bag_unpacker/target
     - bag_verifier/target
+    - bag_versioner/target
     - common/target
     - display/target
     - ingests/target

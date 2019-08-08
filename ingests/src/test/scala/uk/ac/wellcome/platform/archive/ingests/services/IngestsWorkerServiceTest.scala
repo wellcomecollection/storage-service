@@ -6,7 +6,10 @@ import io.circe.Encoder
 import org.scalatest.{FunSpec, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
@@ -137,10 +140,10 @@ class IngestsWorkerServiceTest
             )
 
           val result = service.processMessage(ingestStatusUpdate)
-          result.success.value shouldBe a[DeterministicFailure[_]]
+          result.success.value shouldBe a[NonDeterministicFailure[_]]
 
           result.success.value
-            .asInstanceOf[DeterministicFailure[_]]
+            .asInstanceOf[NonDeterministicFailure[_]]
             .failure shouldBe a[Throwable]
         }
       }
@@ -170,9 +173,9 @@ class IngestsWorkerServiceTest
 
             val result = service.processMessage(ingestStatusUpdate)
 
-            result.success.value shouldBe a[DeterministicFailure[_]]
+            result.success.value shouldBe a[NonDeterministicFailure[_]]
             result.success.value
-              .asInstanceOf[DeterministicFailure[_]]
+              .asInstanceOf[NonDeterministicFailure[_]]
               .failure shouldBe exception
           }
       }

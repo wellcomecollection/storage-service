@@ -4,7 +4,6 @@ import java.nio.file.Paths
 
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   BagUnpackerFixtures,
@@ -17,14 +16,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestStatusUpdate
 }
-import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{
-  InputStreamWithLength,
-  InputStreamWithLengthAndMetadata
-}
 
 class UnpackerFeatureTest
     extends FunSpec
@@ -39,43 +32,45 @@ class UnpackerFeatureTest
   it("receives and processes a notification") {
     val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
     withBagUnpackerApp(stepName = "unpacker") {
-      case (_, srcBucket, queue, ingests, outgoing) =>
+      case (_, dstBucket, queue, ingests, outgoing) =>
         withStreamStore { implicit streamStore =>
-          withArchive(srcBucket, archiveFile) { archiveLocation =>
-            val sourceLocationPayload =
-              createSourceLocationPayloadWith(archiveLocation)
-            sendNotificationToSQS(queue, sourceLocationPayload)
+          withLocalS3Bucket { srcBucket =>
+            withArchive(srcBucket, archiveFile) { archiveLocation =>
+              val sourceLocationPayload =
+                createSourceLocationPayloadWith(archiveLocation)
+              sendNotificationToSQS(queue, sourceLocationPayload)
 
-            eventually {
-              val expectedPayload = UnpackedBagLocationPayload(
-                context = sourceLocationPayload.context,
-                unpackedBagLocation = ObjectLocationPrefix(
-                  namespace = srcBucket.name,
-                  path = Paths
-                    .get(
-                      sourceLocationPayload.storageSpace.toString,
-                      sourceLocationPayload.ingestId.toString
-                    )
-                    .toString
+              eventually {
+                val expectedPayload = UnpackedBagLocationPayload(
+                  context = sourceLocationPayload.context,
+                  unpackedBagLocation = ObjectLocationPrefix(
+                    namespace = dstBucket.name,
+                    path = Paths
+                      .get(
+                        sourceLocationPayload.storageSpace.toString,
+                        sourceLocationPayload.ingestId.toString
+                      )
+                      .toString
+                  )
                 )
-              )
 
-              outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
-                expectedPayload)
+                outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
+                  expectedPayload)
 
-              assertTopicReceivesIngestUpdates(
-                sourceLocationPayload.ingestId,
-                ingests) { ingestUpdates =>
-                val eventDescriptions: Seq[String] =
-                  ingestUpdates
-                    .flatMap { _.events }
-                    .map { _.description }
-                    .distinct
+                assertTopicReceivesIngestUpdates(
+                  sourceLocationPayload.ingestId,
+                  ingests) { ingestUpdates =>
+                  val eventDescriptions: Seq[String] =
+                    ingestUpdates
+                      .flatMap { _.events }
+                      .map { _.description }
+                      .distinct
 
-                eventDescriptions should have size 2
+                  eventDescriptions should have size 2
 
-                eventDescriptions(0) shouldBe "Unpacker started"
-                eventDescriptions(1) should fullyMatch regex """Unpacker succeeded - Unpacked \d+ bytes from \d+ files"""
+                  eventDescriptions(0) shouldBe "Unpacker started"
+                  eventDescriptions(1) should fullyMatch regex """Unpacker succeeded - Unpacked \d+ bytes from \d+ files"""
+                }
               }
             }
           }
@@ -113,44 +108,5 @@ class UnpackerFeatureTest
           }
         }
     }
-  }
-
-  // TODO: Add covariance to StreamStore
-  def withStreamStore[R](
-    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R])
-    : R = {
-    val s3StreamStore = new S3StreamStore()
-
-    val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
-      override def get(location: ObjectLocation): ReadEither =
-        s3StreamStore
-          .get(location)
-          .map { is =>
-            Identified(
-              is.id,
-              new InputStreamWithLength(
-                is.identifiedT,
-                length = is.identifiedT.length))
-          }
-
-      override def put(location: ObjectLocation)(
-        is: InputStreamWithLength): WriteEither =
-        s3StreamStore
-          .put(location)(
-            new InputStreamWithLengthAndMetadata(
-              is,
-              length = is.length,
-              metadata = Map.empty)
-          )
-          .map { is =>
-            is.copy(
-              identifiedT = new InputStreamWithLength(
-                is.identifiedT,
-                length = is.identifiedT.length)
-            )
-          }
-    }
-
-    testWith(store)
   }
 }

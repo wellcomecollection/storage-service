@@ -37,6 +37,7 @@ import scala.util.Try
 import uk.ac.wellcome.json.JsonUtil._
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
+import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -51,6 +52,9 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
+
+    implicit val prefixTransfer: S3PrefixTransfer =
+      S3PrefixTransfer()
 
     implicit val monitoringClient: CloudwatchMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)

@@ -11,7 +11,7 @@ terraform {
 
 provider "aws" {
   assume_role {
-    role_arn = "arn:aws:iam::975596993436:role/storage-developer"
+    role_arn = "arn:aws:iam::975596993436:role/storage-admin"
   }
 
   region  = "${var.aws_region}"
@@ -49,6 +49,18 @@ data "terraform_remote_state" "infra_critical" {
 
     bucket = "wellcomecollection-platform-infra"
     key    = "terraform/catalogue_pipeline_data.tfstate"
+    region = "eu-west-1"
+  }
+}
+
+data "terraform_remote_state" "digitisation_private" {
+  backend = "s3"
+
+  config {
+    role_arn = "arn:aws:iam::404315009621:role/digitisation-developer"
+
+    bucket = "wellcomedigitisation-infra"
+    key    = "terraform/digitisation-private.tfstate"
     region = "eu-west-1"
   }
 }

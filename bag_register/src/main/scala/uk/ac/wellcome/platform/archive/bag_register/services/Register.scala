@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
+  BadFetchLocationException,
   StorageManifestDao,
   StorageManifestService
 }
@@ -22,7 +23,8 @@ import scala.util.{Failure, Success, Try}
 
 class Register(
   bagReader: BagReader[_],
-  storageManifestDao: StorageManifestDao
+  storageManifestDao: StorageManifestDao,
+  storageManifestService: StorageManifestService,
 ) extends Logging {
 
   def update(
@@ -44,7 +46,7 @@ class Register(
           Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
       }
 
-      storageManifest <- StorageManifestService.createManifest(
+      storageManifest <- storageManifestService.createManifest(
         bag = bag,
         replicaRoot = bagRootLocation,
         space = storageSpace,
@@ -62,7 +64,17 @@ class Register(
 
     result match {
       case Success(stepResult) => Success(stepResult)
-      case Failure(err)        => Success(IngestFailed(registration.complete, err))
+
+      case Failure(err: BadFetchLocationException) =>
+        Success(
+          IngestFailed(
+            registration.complete,
+            err,
+            maybeUserFacingMessage = Some(err.getMessage)
+          )
+        )
+
+      case Failure(err) => Success(IngestFailed(registration.complete, err))
     }
   }
 }

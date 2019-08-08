@@ -47,16 +47,17 @@ def setupProject(
     .settings(libraryDependencies ++= externalDependencies)
 }
 
+// Temporarily commented out until https://github.com/wellcometrust/platform/issues/3806
 // In order to access our libraries in S3 we need to set the following:
-
-s3CredentialsProvider := { _ =>
-  val builder = new STSAssumeRoleSessionCredentialsProvider.Builder(
-    "arn:aws:iam::760097843905:role/platform-read_only",
-    UUID.randomUUID().toString
-  )
-
-  builder.build()
-}
+//
+// s3CredentialsProvider := { _ =>
+//   val builder = new STSAssumeRoleSessionCredentialsProvider.Builder(
+//     "arn:aws:iam::760097843905:role/platform-read_only",
+//     UUID.randomUUID().toString
+//   )
+//
+//   builder.build()
+// }
 
 lazy val common = setupProject(
   project = project,
@@ -65,8 +66,8 @@ lazy val common = setupProject(
     StorageDependencies.commonDependencies
 )
 
-lazy val bag_auditor =
-  setupProject(project, "bag_auditor", localDependencies = Seq(common))
+lazy val bag_versioner =
+  setupProject(project, "bag_versioner", localDependencies = Seq(common))
 
 lazy val bag_root_finder =
   setupProject(project, "bag_root_finder", localDependencies = Seq(common))
@@ -105,7 +106,7 @@ lazy val display =
 lazy val notifier = setupProject(
   project,
   "notifier",
-  localDependencies = Seq(common, display),
+  localDependencies = Seq(display),
   externalDependencies = ExternalDependencies.wiremockDependencies ++ ExternalDependencies.circeOpticsDependencies)
 
 lazy val ingests_api = setupProject(
@@ -117,5 +118,5 @@ lazy val ingests_api = setupProject(
 lazy val bags_api = setupProject(
   project,
   "api/bags_api",
-  localDependencies = Seq(common, display),
+  localDependencies = Seq(display),
   externalDependencies = ExternalDependencies.circeOpticsDependencies)
