@@ -22,7 +22,7 @@ format-python:
 format-scala:
 	$(ROOT)/docker_run.py --sbt -- \
 		--volume $(ROOT):/repo \
-		wellcome/scalafmt:112
+		wellcome/scalafmt:edge
 
 format: format-terraform format-scala format-python
 
