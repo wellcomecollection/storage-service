@@ -7,8 +7,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
+  IngestStepSucceeded
 }
 import uk.ac.wellcome.storage.transfer.PrefixTransfer
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
@@ -22,14 +21,12 @@ class BagReplicator(
 
   def replicate(
     srcPrefix: ObjectLocationPrefix,
-    space: StorageSpace,
     dstPrefix: ObjectLocationPrefix
   ): Try[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       srcPrefix = srcPrefix,
-      dstPrefix = dstPrefix,
-      space = space
+      dstPrefix = dstPrefix
     )
 
     // TODO: Plumb the LocationPrefix type back up through destination

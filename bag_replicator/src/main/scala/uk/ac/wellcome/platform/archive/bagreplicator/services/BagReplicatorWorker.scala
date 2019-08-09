@@ -54,7 +54,9 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
-      destination = destinationBuilder.buildDestination(
+      srcPrefix = payload.bagRootLocation.asPrefix
+
+      dstPrefix = destinationBuilder.buildDestination(
         storageSpace = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier,
         version = payload.version
@@ -62,20 +64,20 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
 
       result <- lockingService
         .withLock(payload.ingestId.toString) {
-          replicate(payload, destination)
+          replicate(payload, dstPrefix)
         }
-        .map(lockFailed(payload, destination).apply(_))
+        .map(lockFailed(srcPrefix, dstPrefix).apply(_))
 
     } yield result
 
-  def replicate(payload: EnrichedBagInformationPayload,
+  def replicate(
+    payload: EnrichedBagInformationPayload,
     dstPrefix: ObjectLocationPrefix
   ): Try[IngestStepResult[ReplicationSummary]] =
     for {
       replicationSummary <- bagReplicator.replicate(
         srcPrefix = payload.bagRootLocation.asPrefix,
-        dstPrefix = dstPrefix,
-        space = payload.storageSpace
+        dstPrefix = dstPrefix
       )
       _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
@@ -87,7 +89,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
     } yield replicationSummary
 
   def lockFailed(
-    payload: EnrichedBagInformationPayload,
+    srcPrefix: ObjectLocationPrefix,
     dstPrefix: ObjectLocationPrefix
   ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
     ReplicationSummary
@@ -97,9 +99,8 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
       warn(s"Unable to lock successfully: $failedLockingServiceOp")
       IngestShouldRetry(
         ReplicationSummary(
-          srcPrefix = payload.bagRootLocation.asPrefix,
+          srcPrefix = srcPrefix,
           dstPrefix = dstPrefix,
-          space = payload.storageSpace,
           startTime = Instant.now
         ),
         new Throwable(
