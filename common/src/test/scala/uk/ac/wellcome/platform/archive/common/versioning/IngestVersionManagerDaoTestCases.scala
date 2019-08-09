@@ -75,7 +75,8 @@ trait IngestVersionManagerDaoTestCases[Context]
 
         records.foreach { record =>
           val storedRecord =
-            dao.lookupExistingVersion(ingestId = record.ingestId)
+            dao
+              .lookupExistingVersion(ingestId = record.ingestId)
               .success
               .value
               .get
@@ -126,10 +127,7 @@ trait IngestVersionManagerDaoTestCases[Context]
 
       withDao(initialRecords = Seq.empty) { dao2 =>
         val storedRecord =
-          dao2.lookupExistingVersion(record.ingestId)
-            .success
-            .value
-            .get
+          dao2.lookupExistingVersion(record.ingestId).success.value.get
 
         assertRecordsEqual(storedRecord, record)
 
@@ -162,9 +160,7 @@ trait IngestVersionManagerDaoTestCases[Context]
       withContext { implicit context =>
         withDao(initialRecords = Seq(record)) { dao =>
           val storedRecord =
-            dao.lookupExistingVersion(record.ingestId)
-              .success.value
-              .get
+            dao.lookupExistingVersion(record.ingestId).success.value.get
 
           assertRecordsEqual(storedRecord, record)
         }
@@ -282,6 +278,9 @@ trait IngestVersionManagerDaoTestCases[Context]
     }
   }
 
-  protected def assertRecordsEqual(r1: VersionRecord, r2: VersionRecord): Assertion =
+  protected def assertRecordsEqual(
+    r1: VersionRecord,
+    r2: VersionRecord
+  ): Assertion =
     r1 shouldBe r2
 }

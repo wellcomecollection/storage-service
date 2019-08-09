@@ -151,7 +151,10 @@ class DynamoIngestTrackerTest
 
   // TODO: Add tests that failing to store the bag ID lookup don't fail the overall result
 
-  override protected def assertIngestsEqual(ingest1: Ingest, ingest2: Ingest): Assertion = {
+  override protected def assertIngestsEqual(
+    ingest1: Ingest,
+    ingest2: Ingest
+  ): Assertion = {
     // DynamoDB only serialises an Instant to the nearest second, but
     // an Instant can have millisecond precision.
     //
@@ -159,15 +162,26 @@ class DynamoIngestTrackerTest
     // gets stored, e.g. 2001-01-01:01:01:01.000999Z gets returned as
     //                   2001-01-01:01:01:01.000Z
     //
-    val adjusted1 = ingest1.copy(createdDate = ingest1.createdDate.truncatedTo(ChronoUnit.SECONDS))
-    val adjusted2 = ingest2.copy(createdDate = ingest2.createdDate.truncatedTo(ChronoUnit.SECONDS))
+    val adjusted1 = ingest1.copy(
+      createdDate = ingest1.createdDate.truncatedTo(ChronoUnit.SECONDS)
+    )
+    val adjusted2 = ingest2.copy(
+      createdDate = ingest2.createdDate.truncatedTo(ChronoUnit.SECONDS)
+    )
 
     adjusted1 shouldBe adjusted2
   }
 
-  override protected def assertIngestEventsEqual(event1: IngestEvent, event2: IngestEvent): Assertion = {
-    val adjusted1 = event1.copy(createdDate = event1.createdDate.truncatedTo(ChronoUnit.SECONDS))
-    val adjusted2 = event2.copy(createdDate = event2.createdDate.truncatedTo(ChronoUnit.SECONDS))
+  override protected def assertIngestEventsEqual(
+    event1: IngestEvent,
+    event2: IngestEvent
+  ): Assertion = {
+    val adjusted1 = event1.copy(
+      createdDate = event1.createdDate.truncatedTo(ChronoUnit.SECONDS)
+    )
+    val adjusted2 = event2.copy(
+      createdDate = event2.createdDate.truncatedTo(ChronoUnit.SECONDS)
+    )
 
     adjusted1 shouldBe adjusted2
   }

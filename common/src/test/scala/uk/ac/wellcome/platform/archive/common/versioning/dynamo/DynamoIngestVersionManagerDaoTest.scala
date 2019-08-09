@@ -117,7 +117,10 @@ class DynamoIngestVersionManagerDaoTest
     }
   }
 
-  override protected def assertRecordsEqual(r1: VersionRecord, r2: VersionRecord): Assertion = {
+  override protected def assertRecordsEqual(
+    r1: VersionRecord,
+    r2: VersionRecord
+  ): Assertion = {
     // DynamoDB only serialises an Instant to the nearest second, but
     // an Instant can have millisecond precision.
     //
@@ -125,8 +128,10 @@ class DynamoIngestVersionManagerDaoTest
     // gets stored, e.g. 2001-01-01:01:01:01.000999Z gets returned as
     //                   2001-01-01:01:01:01.000Z
     //
-    val adjusted1 = r1.copy(ingestDate = r1.ingestDate.truncatedTo(ChronoUnit.SECONDS))
-    val adjusted2 = r2.copy(ingestDate = r2.ingestDate.truncatedTo(ChronoUnit.SECONDS))
+    val adjusted1 =
+      r1.copy(ingestDate = r1.ingestDate.truncatedTo(ChronoUnit.SECONDS))
+    val adjusted2 =
+      r2.copy(ingestDate = r2.ingestDate.truncatedTo(ChronoUnit.SECONDS))
 
     adjusted1 shouldBe adjusted2
   }

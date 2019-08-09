@@ -639,25 +639,39 @@ trait IngestTrackerTestCases[Context]
     }
   }
 
-  protected def assertIngestsEqual(ingest1: Ingest, ingest2: Ingest): Assertion =
+  protected def assertIngestsEqual(
+    ingest1: Ingest,
+    ingest2: Ingest
+  ): Assertion =
     ingest1 shouldBe ingest2
 
-  def assertIngestSeqEqual(seq1: Seq[Ingest], seq2: Seq[Ingest]): Seq[Assertion] = {
+  def assertIngestSeqEqual(
+    seq1: Seq[Ingest],
+    seq2: Seq[Ingest]
+  ): Seq[Assertion] = {
     seq1.size shouldBe seq2.size
 
-    seq1.zip(seq2).map { case (ingest1, ingest2) =>
-      assertIngestsEqual(ingest1, ingest2)
+    seq1.zip(seq2).map {
+      case (ingest1, ingest2) =>
+        assertIngestsEqual(ingest1, ingest2)
     }
   }
 
-  protected def assertIngestEventsEqual(event1: IngestEvent, event2: IngestEvent): Assertion =
+  protected def assertIngestEventsEqual(
+    event1: IngestEvent,
+    event2: IngestEvent
+  ): Assertion =
     event1 shouldBe event2
 
-  def assertIngestEventSeqEqual(seq1: Seq[IngestEvent], seq2: Seq[IngestEvent]): Seq[Assertion] = {
+  def assertIngestEventSeqEqual(
+    seq1: Seq[IngestEvent],
+    seq2: Seq[IngestEvent]
+  ): Seq[Assertion] = {
     seq1.size shouldBe seq2.size
 
-    seq1.zip(seq2).map { case (event1, event2) =>
-      assertIngestEventsEqual(event1, event2)
+    seq1.zip(seq2).map {
+      case (event1, event2) =>
+        assertIngestEventsEqual(event1, event2)
     }
   }
 }
