@@ -22,7 +22,8 @@ trait StorageManifestDaoTestCases[Context]
   def withContext[R](testWith: TestWith[Context, R]): R
 
   def withDao[R](testWith: TestWith[StorageManifestDao, R])(
-    implicit context: Context): R
+    implicit context: Context
+  ): R
 
   describe("behaves as a StorageManifestDao") {
     it("allows storing and retrieving a manifest") {

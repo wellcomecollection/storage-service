@@ -25,15 +25,17 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
   bagRootFinder: BagRootFinder,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination]
-)(implicit
+)(
+  implicit
   val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[UnpackedBagLocationPayload])
-    extends IngestStepWorker[UnpackedBagLocationPayload, RootFinderSummary] {
+  val wd: Decoder[UnpackedBagLocationPayload]
+) extends IngestStepWorker[UnpackedBagLocationPayload, RootFinderSummary] {
 
-  override def processMessage(payload: UnpackedBagLocationPayload)
-    : Try[IngestStepResult[RootFinderSummary]] =
+  override def processMessage(
+    payload: UnpackedBagLocationPayload
+  ): Try[IngestStepResult[RootFinderSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
@@ -45,13 +47,14 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
       _ <- sendSuccessful(payload)(summary)
     } yield summary
 
-  private def sendSuccessful(payload: PipelinePayload)(
-    step: IngestStepResult[RootFinderSummary]): Try[Unit] =
+  private def sendSuccessful(
+    payload: PipelinePayload
+  )(step: IngestStepResult[RootFinderSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: RootFinderSuccessSummary, _) =>
         val outgoingPayload: BagRootPayload = BagRootLocationPayload(
           context = payload.context,
-          bagRootLocation = summary.bagRootLocation,
+          bagRootLocation = summary.bagRootLocation
         )
         outgoingPublisher.sendIfSuccessful(step, outgoingPayload)
       case _ => Success(())

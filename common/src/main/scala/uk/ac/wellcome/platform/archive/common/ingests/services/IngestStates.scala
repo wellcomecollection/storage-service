@@ -5,25 +5,31 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 import scala.util.Try
 
-class IngestStatusGoingBackwardsException(val existing: Ingest.Status,
-                                          val update: Ingest.Status)
-    extends RuntimeException(
-      s"Received status update $update, but ingest already has status $existing")
+class IngestStatusGoingBackwardsException(
+  val existing: Ingest.Status,
+  val update: Ingest.Status
+) extends RuntimeException(
+      s"Received status update $update, but ingest already has status $existing"
+    )
 
-class MismatchedVersionUpdateException(val existing: BagVersion,
-                                       val update: BagVersion)
-    extends RuntimeException(
-      s"Received bag version update $update, but ingest already has version $existing")
+class MismatchedVersionUpdateException(
+  val existing: BagVersion,
+  val update: BagVersion
+) extends RuntimeException(
+      s"Received bag version update $update, but ingest already has version $existing"
+    )
 
 class CallbackStatusGoingBackwardsException(
   val existing: Callback.CallbackStatus,
-  val update: Callback.CallbackStatus)
-    extends RuntimeException(
-      s"Received callback status update $update, but ingest already has status $existing")
+  val update: Callback.CallbackStatus
+) extends RuntimeException(
+      s"Received callback status update $update, but ingest already has status $existing"
+    )
 
 class NoCallbackException
     extends RuntimeException(
-      "Received callback status update, but ingest doesn't have a callback")
+      "Received callback status update, but ingest doesn't have a callback"
+    )
 
 object IngestStates {
   def applyUpdate(ingest: Ingest, update: IngestUpdate): Try[Ingest] = Try {
@@ -50,7 +56,8 @@ object IngestStates {
         if (!statusUpdateIsAllowed(ingest.status, statusUpdate.status)) {
           throw new IngestStatusGoingBackwardsException(
             ingest.status,
-            statusUpdate.status)
+            statusUpdate.status
+          )
         }
 
         newIngest.copy(
@@ -62,7 +69,8 @@ object IngestStates {
           case Some(callback) =>
             if (!callbackStatusUpdateIsAllowed(
                   callback.status,
-                  callbackStatusUpdate.callbackStatus)) {
+                  callbackStatusUpdate.callbackStatus
+                )) {
               throw new CallbackStatusGoingBackwardsException(
                 callback.status,
                 callbackStatusUpdate.callbackStatus
@@ -71,7 +79,8 @@ object IngestStates {
 
             newIngest.copy(
               callback = Some(
-                callback.copy(status = callbackStatusUpdate.callbackStatus))
+                callback.copy(status = callbackStatusUpdate.callbackStatus)
+              )
             )
 
           case None => throw new NoCallbackException()
@@ -93,8 +102,10 @@ object IngestStates {
     }
   }
 
-  private def statusUpdateIsAllowed(initial: Ingest.Status,
-                                    update: Ingest.Status): Boolean =
+  private def statusUpdateIsAllowed(
+    initial: Ingest.Status,
+    update: Ingest.Status
+  ): Boolean =
     initial match {
       case status if status == update => true
 
@@ -106,7 +117,8 @@ object IngestStates {
 
   private def callbackStatusUpdateIsAllowed(
     initial: Callback.CallbackStatus,
-    update: Callback.CallbackStatus): Boolean =
+    update: Callback.CallbackStatus
+  ): Boolean =
     initial match {
       case status if status == update => true
 

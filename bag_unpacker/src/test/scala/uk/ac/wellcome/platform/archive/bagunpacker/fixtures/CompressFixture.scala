@@ -27,8 +27,10 @@ trait CompressFixture[Namespace]
 
   val defaultFileCount = 10
 
-  def createObjectLocationWith(namespace: Namespace,
-                               path: String): ObjectLocation
+  def createObjectLocationWith(
+    namespace: Namespace,
+    path: String
+  ): ObjectLocation
 
   def withArchive[R](
     namespace: Namespace,
@@ -44,7 +46,8 @@ trait CompressFixture[Namespace]
     streamStore.put(location)(
       new InputStreamWithLength(
         new FileInputStream(archiveFile),
-        length = archiveFile.length())
+        length = archiveFile.length()
+      )
     ) shouldBe a[Right[_, _]]
 
     testWith(location)
@@ -54,7 +57,8 @@ trait CompressFixture[Namespace]
     fileCount: Int = 10,
     maxDepth: Int = 4,
     minSize: Int = 265,
-    maxSize: Int = 1024): (File, Seq[File], Set[ArchiveEntry]) =
+    maxSize: Int = 1024
+  ): (File, Seq[File], Set[ArchiveEntry]) =
     createTgzArchiveWithFiles(
       randomFilesInDirs(
         fileCount = fileCount,
@@ -66,7 +70,8 @@ trait CompressFixture[Namespace]
     )
 
   def createTgzArchiveWithFiles(
-    files: Seq[File]): (File, Seq[File], Set[ArchiveEntry]) =
+    files: Seq[File]
+  ): (File, Seq[File], Set[ArchiveEntry]) =
     createArchiveWith(
       archiverName = "tar",
       compressorName = "gz",

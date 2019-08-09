@@ -1,7 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.versioning.dynamo
 
+import java.time.temporal.ChronoUnit
+
 import com.amazonaws.services.dynamodbv2.model._
-import org.scalatest.EitherValues
+import org.scalatest.{Assertion, EitherValues}
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
 import org.scanamo.{Table => ScanamoTable}
@@ -21,12 +23,13 @@ class DynamoIngestVersionManagerDaoTest
     with IngestVersionManagerTable
     with EitherValues {
   override def withDao[R](initialRecords: Seq[VersionRecord])(
-    testWith: TestWith[IngestVersionManagerDao, R])(
-    implicit table: Table): R = {
+    testWith: TestWith[IngestVersionManagerDao, R]
+  )(implicit table: Table): R = {
     scanamo.exec(
       ScanamoTable[DynamoVersionRecord](table.name).putAll(initialRecords.map {
         DynamoVersionRecord(_)
-      }.toSet))
+      }.toSet)
+    )
 
     testWith(
       new DynamoIngestVersionManagerDao(
@@ -46,7 +49,8 @@ class DynamoIngestVersionManagerDaoTest
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[ResourceNotFoundException]
         result.failed.get.getMessage should startWith(
-          "Cannot do operations on a non-existent table")
+          "Cannot do operations on a non-existent table"
+        )
       }
     }
 
@@ -72,7 +76,8 @@ class DynamoIngestVersionManagerDaoTest
           result shouldBe a[Failure[_]]
           result.failed.get shouldBe a[RuntimeException]
           result.failed.get.getMessage should startWith(
-            "Did not find exactly one row with ingest ID")
+            "Did not find exactly one row with ingest ID"
+          )
         }
       }
     }
@@ -90,7 +95,8 @@ class DynamoIngestVersionManagerDaoTest
 
         result.left.value.e shouldBe a[ResourceNotFoundException]
         result.left.value.e.getMessage should startWith(
-          "Cannot do operations on a non-existent table")
+          "Cannot do operations on a non-existent table"
+        )
       }
     }
   }
@@ -105,8 +111,28 @@ class DynamoIngestVersionManagerDaoTest
         result shouldBe a[Failure[_]]
         result.failed.get shouldBe a[ResourceNotFoundException]
         result.failed.get.getMessage should startWith(
-          "Cannot do operations on a non-existent table")
+          "Cannot do operations on a non-existent table"
+        )
       }
     }
+  }
+
+  override protected def assertRecordsEqual(
+    r1: VersionRecord,
+    r2: VersionRecord
+  ): Assertion = {
+    // DynamoDB only serialises an Instant to the nearest second, but
+    // an Instant can have millisecond precision.
+    //
+    // This means the Instant we send in may not be the Instant that
+    // gets stored, e.g. 2001-01-01:01:01:01.000999Z gets returned as
+    //                   2001-01-01:01:01:01.000Z
+    //
+    val adjusted1 =
+      r1.copy(ingestDate = r1.ingestDate.truncatedTo(ChronoUnit.SECONDS))
+    val adjusted2 =
+      r2.copy(ingestDate = r2.ingestDate.truncatedTo(ChronoUnit.SECONDS))
+
+    adjusted1 shouldBe adjusted2
   }
 }

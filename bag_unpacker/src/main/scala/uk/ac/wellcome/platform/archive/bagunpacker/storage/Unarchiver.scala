@@ -41,16 +41,18 @@ import scala.util.{Failure, Success, Try}
   *
   */
 object Unarchiver {
-  def open(inputStream: InputStream)
-    : Either[UnarchiverError, Iterator[(ArchiveEntry, InputStream)]] =
+  def open(
+    inputStream: InputStream
+  ): Either[UnarchiverError, Iterator[(ArchiveEntry, InputStream)]] =
     for {
       uncompressedStream <- uncompress(inputStream)
       archiveInputStream <- extract(uncompressedStream)
       iterator = createIterator(archiveInputStream)
     } yield iterator
 
-  private def createIterator(archiveInputStream: ArchiveInputStream)
-    : Iterator[(ArchiveEntry, InputStream)] =
+  private def createIterator(
+    archiveInputStream: ArchiveInputStream
+  ): Iterator[(ArchiveEntry, InputStream)] =
     new Iterator[(ArchiveEntry, InputStream)] {
       private var latest: ArchiveEntry = _
 
@@ -63,8 +65,9 @@ object Unarchiver {
         (latest, new CloseShieldInputStream(archiveInputStream))
     }
 
-  private def uncompress(compressedStream: InputStream)
-    : Either[UnarchiverError, CompressorInputStream] =
+  private def uncompress(
+    compressedStream: InputStream
+  ): Either[UnarchiverError, CompressorInputStream] =
     Try {
       // We have to wrap in a BufferedInputStream because this method
       // only takes InputStreams that support the `mark()` method.
@@ -77,7 +80,8 @@ object Unarchiver {
     }
 
   private def extract(
-    inputStream: InputStream): Either[UnarchiverError, ArchiveInputStream] =
+    inputStream: InputStream
+  ): Either[UnarchiverError, ArchiveInputStream] =
     Try {
       // We have to wrap in a BufferedInputStream because this method
       // only takes InputStreams that support the `mark()` method.

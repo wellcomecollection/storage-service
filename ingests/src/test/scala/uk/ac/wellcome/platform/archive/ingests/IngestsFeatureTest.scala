@@ -49,7 +49,8 @@ class IngestsFeatureTest
           )
 
           messageSender.getMessages[CallbackNotification] shouldBe Seq(
-            expectedMessage)
+            expectedMessage
+          )
 
           assertIngestCreated(ingest)
 

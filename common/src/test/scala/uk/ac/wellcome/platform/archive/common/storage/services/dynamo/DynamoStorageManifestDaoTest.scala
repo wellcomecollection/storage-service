@@ -26,8 +26,9 @@ class DynamoStorageManifestDaoTest
       }
     }
 
-  override def withDao[R](testWith: TestWith[StorageManifestDao, R])(
-    implicit context: (Table, Bucket)): R = {
+  override def withDao[R](
+    testWith: TestWith[StorageManifestDao, R]
+  )(implicit context: (Table, Bucket)): R = {
     val (table, bucket) = context
 
     testWith(
@@ -80,7 +81,8 @@ class DynamoStorageManifestDaoTest
               version = randomInt(0, 100),
               data = randomAlphanumeric
             )
-          ))
+          )
+        )
 
         withLocalS3Bucket { bucket =>
           implicit val context: (Table, Bucket) = (table, bucket)
@@ -111,7 +113,8 @@ class DynamoStorageManifestDaoTest
             val err = dao.listVersions(storageManifest.id).left.value
 
             err.e.getMessage should startWith(
-              "Errors fetching S3 objects for manifests")
+              "Errors fetching S3 objects for manifests"
+            )
           }
         }
       }
@@ -134,7 +137,8 @@ class DynamoStorageManifestDaoTest
             val err = dao.listVersions(storageManifest.id).left.value
 
             err.e.getMessage should startWith(
-              "Errors fetching S3 objects for manifests")
+              "Errors fetching S3 objects for manifests"
+            )
           }
         }
       }

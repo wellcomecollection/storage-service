@@ -17,12 +17,12 @@ format-terraform:
 format-python:
 	$(ROOT)/docker_run.py -- \
 		--volume $(ROOT):/repo \
-		wellcome/format_python
+		wellcome/format_python:112
 
 format-scala:
 	$(ROOT)/docker_run.py --sbt -- \
 		--volume $(ROOT):/repo \
-		wellcome/scalafmt
+		wellcome/scalafmt:edge
 
 format: format-terraform format-scala format-python
 

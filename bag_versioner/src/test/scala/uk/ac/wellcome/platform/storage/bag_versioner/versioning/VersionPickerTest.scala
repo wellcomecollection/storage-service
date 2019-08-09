@@ -33,7 +33,8 @@ class VersionPickerTest
     with EitherValues {
 
   it(
-    "assigns version 1 if it hasn't seen this external ID/storage space before") {
+    "assigns version 1 if it hasn't seen this external ID/storage space before"
+  ) {
     withVersionPicker { picker =>
       val result = picker.chooseVersion(
         externalIdentifier = createExternalIdentifier,
@@ -98,7 +99,8 @@ class VersionPickerTest
   }
 
   it(
-    "assigns independent versions for the same external ID in different storage spaces") {
+    "assigns independent versions for the same external ID in different storage spaces"
+  ) {
     withVersionPicker { picker =>
       val externalIdentifier = createExternalIdentifier
 

@@ -24,7 +24,8 @@ case class RequestDisplayIngest(
       ingestType = IngestType.create(ingestType.id),
       sourceLocation = sourceLocation.toStorageLocation,
       callback = Callback(
-        callback.map(displayCallback => URI.create(displayCallback.url))),
+        callback.map(displayCallback => URI.create(displayCallback.url))
+      ),
       space = StorageSpace(space.id),
       externalIdentifier = bag.info.externalIdentifier,
       status = Ingest.Accepted,
@@ -32,20 +33,20 @@ case class RequestDisplayIngest(
     )
 }
 
-case class ResponseDisplayIngest(@JsonKey("@context") context: String,
-                                 id: UUID,
-                                 sourceLocation: DisplayLocation,
-                                 callback: Option[DisplayCallback],
-                                 ingestType: DisplayIngestType,
-                                 space: DisplayStorageSpace,
-                                 status: DisplayStatus,
-                                 bag: ResponseDisplayBag,
-                                 events: Seq[DisplayIngestEvent] = Seq.empty,
-                                 createdDate: String,
-                                 lastModifiedDate: Option[String],
-                                 @JsonKey("type") ontologyType: String =
-                                   "Ingest")
-    extends DisplayIngest
+case class ResponseDisplayIngest(
+  @JsonKey("@context") context: String,
+  id: UUID,
+  sourceLocation: DisplayLocation,
+  callback: Option[DisplayCallback],
+  ingestType: DisplayIngestType,
+  space: DisplayStorageSpace,
+  status: DisplayStatus,
+  bag: ResponseDisplayBag,
+  events: Seq[DisplayIngestEvent] = Seq.empty,
+  createdDate: String,
+  lastModifiedDate: Option[String],
+  @JsonKey("type") ontologyType: String = "Ingest"
+) extends DisplayIngest
 
 object ResponseDisplayIngest {
   def apply(ingest: Ingest, contextUrl: URL): ResponseDisplayIngest =

@@ -1,1 +1,7 @@
-{"id" : "bags_api", "folder" : "api\/bags_api", "dependencyIds" : ["display"]}
+{
+  "id" : "bags_api",
+  "folder" : "api/bags_api",
+  "dependencyIds" : [
+    "display"
+  ]
+}

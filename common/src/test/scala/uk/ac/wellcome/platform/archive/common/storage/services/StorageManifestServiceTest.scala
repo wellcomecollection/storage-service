@@ -79,7 +79,8 @@ class StorageManifestServiceTest
 
   describe("constructs the paths correctly") {
     it(
-      "if there are no fetch entries, it puts all the file entries under a versioned path") {
+      "if there are no fetch entries, it puts all the file entries under a versioned path"
+    ) {
       val version = randomInt(1, 10)
       val replicaRoot = createObjectLocation.join(s"/v$version")
 
@@ -109,7 +110,8 @@ class StorageManifestServiceTest
     }
 
     it(
-      "if there are no fetch entries, it puts all the tag manifest under a versioned path") {
+      "if there are no fetch entries, it puts all the tag manifest under a versioned path"
+    ) {
       val version = randomInt(1, 10)
       val replicaRoot = createObjectLocation.join(s"/v$version")
 
@@ -226,7 +228,8 @@ class StorageManifestServiceTest
         f.name -> f.path
       }.toMap shouldBe Map(
         "data/file1.txt" -> s"v$fetchVersion/data/file1.txt",
-        "data/file2.txt" -> s"v$version/data/file2.txt")
+        "data/file2.txt" -> s"v$version/data/file2.txt"
+      )
     }
   }
 
@@ -299,7 +302,8 @@ class StorageManifestServiceTest
     }
 
     it(
-      "fails if one of the file manifest entries has the wrong hashing algorithm") {
+      "fails if one of the file manifest entries has the wrong hashing algorithm"
+    ) {
       val badPath = randomAlphanumeric
       val manifestFiles = Seq(
         createBagFileWith(
@@ -319,7 +323,8 @@ class StorageManifestServiceTest
     }
 
     it(
-      "fails if one of the tag manifest entries has the wrong hashing algorithm") {
+      "fails if one of the tag manifest entries has the wrong hashing algorithm"
+    ) {
       // TODO: Rewrite this to use generators
       val badPath = randomAlphanumeric
       val tagManifestFiles = Seq(
@@ -359,7 +364,8 @@ class StorageManifestServiceTest
         err shouldBe a[StorageManifestException]
         err.getMessage should startWith("Unable to resolve fetch entries:")
         err.getMessage should include(
-          s"Fetch entry refers to a path that isn't in the bag manifest: ${fetchEntries.head.path}")
+          s"Fetch entry refers to a path that isn't in the bag manifest: ${fetchEntries.head.path}"
+        )
       }
     }
 
@@ -479,7 +485,8 @@ class StorageManifestServiceTest
 
       result.failed.get shouldBe a[StorageManifestException]
       result.failed.get.getMessage should startWith(
-        s"Error getting size of ${replicaRoot.join("data/file1.txt")}")
+        s"Error getting size of ${replicaRoot.join("data/file1.txt")}"
+      )
     }
 
     it("uses the provided sizes") {
@@ -590,7 +597,8 @@ class StorageManifestServiceTest
       override def getSize(location: ObjectLocation): Try[Long] = Try {
         sizes.getOrElse(
           location,
-          throw new Throwable(s"No such size for location $location!"))
+          throw new Throwable(s"No such size for location $location!")
+        )
       }
     }
 

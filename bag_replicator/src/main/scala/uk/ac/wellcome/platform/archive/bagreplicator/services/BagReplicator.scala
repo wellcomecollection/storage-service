@@ -17,13 +17,14 @@ import scala.util.{Success, Try}
 
 class BagReplicator(
   implicit
-  prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation])
-    extends Logging {
+  prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation]
+) extends Logging {
 
-  def replicate(bagRootLocation: ObjectLocation,
-                storageSpace: StorageSpace,
-                destination: ObjectLocationPrefix)
-    : Try[IngestStepResult[ReplicationSummary]] = {
+  def replicate(
+    bagRootLocation: ObjectLocation,
+    storageSpace: StorageSpace,
+    destination: ObjectLocationPrefix
+  ): Try[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       bagRootLocation = bagRootLocation,
@@ -52,7 +53,8 @@ class BagReplicator(
           IngestFailed(
             replicationSummary.complete,
             storageError.e
-          ))
+          )
+        )
     }
   }
 }

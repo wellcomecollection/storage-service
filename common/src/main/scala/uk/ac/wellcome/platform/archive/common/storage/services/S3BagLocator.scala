@@ -77,7 +77,8 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     *
     */
   private def findBagInfoInDirectory(
-    prefix: ObjectLocationPrefix): Try[String] = Try {
+    prefix: ObjectLocationPrefix
+  ): Try[String] = Try {
     val listObjectsRequest = new ListObjectsV2Request()
       .withBucketName(prefix.namespace)
       .withPrefix(prefix.path + "/")

@@ -65,8 +65,10 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
 class IngestEventUpdateTest
     extends IngestUpdateTestCases[IngestEventUpdate]
     with TableDrivenPropertyChecks {
-  override def createUpdateWith(id: IngestID,
-                                events: Seq[IngestEvent]): IngestEventUpdate =
+  override def createUpdateWith(
+    id: IngestID,
+    events: Seq[IngestEvent]
+  ): IngestEventUpdate =
     createIngestEventUpdateWith(id = id, events = events)
 
   val eventStatusUpdates = Table(
@@ -74,7 +76,7 @@ class IngestEventUpdateTest
     (Ingest.Accepted, Ingest.Processing),
     (Ingest.Processing, Ingest.Processing),
     (Ingest.Completed, Ingest.Completed),
-    (Ingest.Failed, Ingest.Failed),
+    (Ingest.Failed, Ingest.Failed)
   )
 
   it("updates the status to Processing when it sees the first event update") {
@@ -94,8 +96,10 @@ class IngestEventUpdateTest
 class IngestStatusUpdateTest
     extends IngestUpdateTestCases[IngestStatusUpdate]
     with TableDrivenPropertyChecks {
-  override def createUpdateWith(id: IngestID,
-                                events: Seq[IngestEvent]): IngestStatusUpdate =
+  override def createUpdateWith(
+    id: IngestID,
+    events: Seq[IngestEvent]
+  ): IngestStatusUpdate =
     createIngestStatusUpdateWith(id = id, events = events)
 
   describe("updating the status") {
@@ -108,7 +112,7 @@ class IngestStatusUpdateTest
       (Ingest.Processing, Ingest.Completed),
       (Ingest.Processing, Ingest.Failed),
       (Ingest.Completed, Ingest.Completed),
-      (Ingest.Failed, Ingest.Failed),
+      (Ingest.Failed, Ingest.Failed)
     )
 
     it("updates the status of an ingest") {
@@ -135,7 +139,7 @@ class IngestStatusUpdateTest
       (Ingest.Completed, Ingest.Failed),
       (Ingest.Completed, Ingest.Processing),
       (Ingest.Completed, Ingest.Accepted),
-      (Ingest.Processing, Ingest.Accepted),
+      (Ingest.Processing, Ingest.Accepted)
     )
 
     it("does not allow the status to go backwards") {
@@ -162,7 +166,8 @@ class IngestCallbackStatusUpdateTest
     with TableDrivenPropertyChecks {
   override def createUpdateWith(
     id: IngestID,
-    events: Seq[IngestEvent]): IngestCallbackStatusUpdate =
+    events: Seq[IngestEvent]
+  ): IngestCallbackStatusUpdate =
     createIngestCallbackStatusUpdateWith(id = id, events = events)
 
   describe("updating the callback status") {
@@ -172,20 +177,22 @@ class IngestCallbackStatusUpdateTest
       (Callback.Pending, Callback.Succeeded),
       (Callback.Pending, Callback.Failed),
       (Callback.Succeeded, Callback.Succeeded),
-      (Callback.Failed, Callback.Failed),
+      (Callback.Failed, Callback.Failed)
     )
 
     it("updates the status of a callback") {
       forAll(allowedCallbackStatusUpdates) {
         case (
             initialStatus: Callback.CallbackStatus,
-            updatedStatus: Callback.CallbackStatus) =>
+            updatedStatus: Callback.CallbackStatus
+            ) =>
           val ingest = createIngestWith(
             callback = Some(
               Callback(
                 uri = new URI("https://example.org/callback"),
                 status = initialStatus
-              ))
+              )
+            )
           )
 
           val update = createIngestCallbackStatusUpdateWith(
@@ -204,20 +211,22 @@ class IngestCallbackStatusUpdateTest
       (Callback.Succeeded, Callback.Pending),
       (Callback.Succeeded, Callback.Failed),
       (Callback.Failed, Callback.Pending),
-      (Callback.Failed, Callback.Succeeded),
+      (Callback.Failed, Callback.Succeeded)
     )
 
     it("does not allow the callback status to go backwards") {
       forAll(disallowedCallbackStatusUpdates) {
         case (
             initialStatus: Callback.CallbackStatus,
-            updatedStatus: Callback.CallbackStatus) =>
+            updatedStatus: Callback.CallbackStatus
+            ) =>
           val ingest = createIngestWith(
             callback = Some(
               Callback(
                 uri = new URI("https://example.org/callback"),
                 status = initialStatus
-              ))
+              )
+            )
           )
 
           val update = createIngestCallbackStatusUpdateWith(
@@ -248,8 +257,10 @@ class IngestCallbackStatusUpdateTest
 
 class IngestVersionUpdateTest
     extends IngestUpdateTestCases[IngestVersionUpdate] {
-  override def createUpdateWith(id: IngestID,
-                                events: Seq[IngestEvent]): IngestVersionUpdate =
+  override def createUpdateWith(
+    id: IngestID,
+    events: Seq[IngestEvent]
+  ): IngestVersionUpdate =
     createIngestVersionUpdateWith(id = id, events = events)
 
   override def createInitialIngestWith(events: Seq[IngestEvent]): Ingest =

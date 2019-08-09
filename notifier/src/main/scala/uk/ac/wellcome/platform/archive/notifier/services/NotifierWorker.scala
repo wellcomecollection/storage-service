@@ -28,20 +28,23 @@ class NotifierWorker[Destination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   callbackUrlService: CallbackUrlService,
   messageSender: MessageSender[Destination]
-)(implicit actorSystem: ActorSystem,
+)(
+  implicit actorSystem: ActorSystem,
   ec: ExecutionContext,
   mc: MonitoringClient,
-  sc: AmazonSQSAsync)
-    extends Runnable
+  sc: AmazonSQSAsync
+) extends Runnable
     with Logging {
   private val worker =
     AlpakkaSQSWorker[CallbackNotification, IngestCallbackStatusUpdate](
-      alpakkaSQSWorkerConfig) {
+      alpakkaSQSWorkerConfig
+    ) {
       processMessage
     }
 
-  def processMessage(callbackNotification: CallbackNotification)
-    : Future[Result[IngestCallbackStatusUpdate]] = {
+  def processMessage(
+    callbackNotification: CallbackNotification
+  ): Future[Result[IngestCallbackStatusUpdate]] = {
     val future = for {
       httpResponse <- callbackUrlService.getHttpResponse(
         ingest = callbackNotification.payload,

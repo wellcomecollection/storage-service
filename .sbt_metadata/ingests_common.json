@@ -1,1 +1,7 @@
-{"id" : "ingests_common", "folder" : "ingests_common", "dependencyIds" : ["common"]}
+{
+  "id" : "ingests_common",
+  "folder" : "ingests_common",
+  "dependencyIds" : [
+    "common"
+  ]
+}

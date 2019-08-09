@@ -35,8 +35,8 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
 
   // TODO: Add covariance to StreamStore
   override def withStreamStore[R](
-    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R])
-    : R = {
+    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]
+  ): R = {
     val s3StreamStore = new S3StreamStore()
 
     val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
@@ -48,23 +48,28 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
               is.id,
               new InputStreamWithLength(
                 is.identifiedT,
-                length = is.identifiedT.length))
+                length = is.identifiedT.length
+              )
+            )
           }
 
-      override def put(location: ObjectLocation)(
-        is: InputStreamWithLength): WriteEither =
+      override def put(
+        location: ObjectLocation
+      )(is: InputStreamWithLength): WriteEither =
         s3StreamStore
           .put(location)(
             new InputStreamWithLengthAndMetadata(
               is,
               length = is.length,
-              metadata = Map.empty)
+              metadata = Map.empty
+            )
           )
           .map { is =>
             is.copy(
               identifiedT = new InputStreamWithLength(
                 is.identifiedT,
-                length = is.identifiedT.length)
+                length = is.identifiedT.length
+              )
             )
           }
     }
@@ -95,7 +100,8 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
             ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
           underlyingError.e shouldBe a[Throwable]
           underlyingError.e.getMessage should startWith(
-            "The specified bucket is not valid")
+            "The specified bucket is not valid"
+          )
         }
       }
     }

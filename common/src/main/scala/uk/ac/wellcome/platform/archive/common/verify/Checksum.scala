@@ -98,7 +98,8 @@ case class FailedChecksumCreation(algorithm: HashingAlgorithm, e: Throwable)
     with FailedChecksum
 case class FailedChecksumNoMatch(actual: Checksum, expected: Checksum)
     extends Throwable(
-      s"Checksum values do not match! Expected: $expected, saw: $actual")
+      s"Checksum values do not match! Expected: $expected, saw: $actual"
+    )
     with FailedChecksum
 case class FailedChecksumLocationNotFound[T](location: VerifiableLocation)
     extends Throwable("VerifiableLocation not found!")

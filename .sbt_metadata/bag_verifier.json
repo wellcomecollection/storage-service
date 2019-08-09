@@ -1,1 +1,7 @@
-{"id" : "bag_verifier", "folder" : "bag_verifier", "dependencyIds" : ["common"]}
+{
+  "id" : "bag_verifier",
+  "folder" : "bag_verifier",
+  "dependencyIds" : [
+    "common"
+  ]
+}

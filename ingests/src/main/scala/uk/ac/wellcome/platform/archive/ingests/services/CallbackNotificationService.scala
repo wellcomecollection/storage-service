@@ -14,7 +14,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import scala.util.{Success, Try}
 
 class CallbackNotificationService[Destination](
-  messageSender: MessageSender[Destination]) {
+  messageSender: MessageSender[Destination]
+) {
   def sendNotification(ingest: Ingest): Try[Unit] =
     ingest.callback match {
       case Some(Callback(callbackUri, Pending)) =>

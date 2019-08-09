@@ -20,12 +20,14 @@ trait VersionPickerFixtures {
       testWith(picker)
     }
 
-  def withVersionPicker[R](dao: LockDao[String, UUID])(
-    testWith: TestWith[VersionPicker, R]): R = {
+  def withVersionPicker[R](
+    dao: LockDao[String, UUID]
+  )(testWith: TestWith[VersionPicker, R]): R = {
     val lockingService = new LockingService[
       Either[IngestVersionManagerError, BagVersion],
       Id,
-      LockDao[String, UUID]] {
+      LockDao[String, UUID]
+    ] {
       override implicit val lockDao: LockDao[String, UUID] = dao
 
       override protected def createContextId(): UUID = UUID.randomUUID()

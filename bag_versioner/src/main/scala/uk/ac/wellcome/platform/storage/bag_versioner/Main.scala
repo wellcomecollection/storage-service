@@ -68,7 +68,8 @@ object Main extends WellcomeTypesafeApp {
     val lockingService =
       new DynamoLockingService[
         Either[IngestVersionManagerError, BagVersion],
-        Id]()
+        Id
+      ]()
 
     val ingestVersionManagerDao = new DynamoIngestVersionManagerDao(
       dynamoClient = DynamoBuilder.buildDynamoClient(config),

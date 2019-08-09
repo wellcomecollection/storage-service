@@ -23,10 +23,11 @@ trait IngestsFixtures
     with MonitoringClientFixture
     with IngestTrackerFixtures {
 
-  def withIngestWorker[R](queue: Queue,
-                          ingestTracker: IngestTracker,
-                          messageSender: MemoryMessageSender)(
-    testWith: TestWith[IngestsWorker[String], R]): R =
+  def withIngestWorker[R](
+    queue: Queue,
+    ingestTracker: IngestTracker,
+    messageSender: MemoryMessageSender
+  )(testWith: TestWith[IngestsWorker[String], R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         withMaterializer { implicit materializer =>
@@ -47,8 +48,8 @@ trait IngestsFixtures
     }
 
   def withConfiguredApp[R](initialIngests: Seq[Ingest] = Seq.empty)(
-    testWith: TestWith[(Queue, MemoryMessageSender, MemoryIngestTracker), R])
-    : R = {
+    testWith: TestWith[(Queue, MemoryMessageSender, MemoryIngestTracker), R]
+  ): R = {
     withLocalSqsQueue { queue =>
       val messageSender = new MemoryMessageSender()
       withMemoryIngestTracker(initialIngests) { ingestTracker =>

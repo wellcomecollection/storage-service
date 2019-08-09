@@ -16,7 +16,8 @@ trait BagInfoGenerators
     payloadOxum: PayloadOxum = createPayloadOxum,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     externalDescription: Option[ExternalDescription] = Some(
-      randomExternalDescription)
+      randomExternalDescription
+    )
   ): BagInfo =
     models.BagInfo(
       externalIdentifier = externalIdentifier,

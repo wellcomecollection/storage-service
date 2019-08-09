@@ -44,13 +44,15 @@ class BagVerifierTest
   val expectedFileCount: Int = payloadFileCount + List(
     "manifest-sha256.txt",
     "bagit.txt",
-    "bag-info.txt").size
+    "bag-info.txt"
+  ).size
 
   it("passes a bag with correct checksum values") {
     withLocalS3Bucket { bucket =>
       val (root, bagInfo) = S3BagBuilder.createS3BagWith(
         bucket,
-        payloadFileCount = payloadFileCount)
+        payloadFileCount = payloadFileCount
+      )
 
       println(root)
       println(listKeysInBucket(bucket))
@@ -71,7 +73,8 @@ class BagVerifierTest
 
       verifySuccessCount(
         verification.locations,
-        expectedCount = expectedFileCount)
+        expectedCount = expectedFileCount
+      )
     }
   }
 
@@ -79,7 +82,8 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       val badBuilder = new S3BagBuilderBase {
         override protected def createPayloadManifest(
-          entries: Seq[PayloadEntry]): Option[String] =
+          entries: Seq[PayloadEntry]
+        ): Option[String] =
           super.createPayloadManifest(
             entries.head.copy(contents = randomAlphanumeric) +: entries.tail
           )
@@ -104,7 +108,8 @@ class BagVerifierTest
 
       verifySuccessCount(
         verification.success,
-        expectedCount = expectedFileCount - 1)
+        expectedCount = expectedFileCount - 1
+      )
       verification.failure should have size 1
 
       val location = verification.failure.head
@@ -116,7 +121,8 @@ class BagVerifierTest
       val userFacingMessage =
         result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
       userFacingMessage.get should startWith(
-        "Unable to verify one file in the bag:")
+        "Unable to verify one file in the bag:"
+      )
     }
   }
 
@@ -124,7 +130,8 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       val badBuilder = new S3BagBuilderBase {
         override protected def createTagManifest(
-          entries: Seq[ManifestFile]): Option[String] =
+          entries: Seq[ManifestFile]
+        ): Option[String] =
           super.createTagManifest(
             entries.head.copy(contents = randomAlphanumeric) +: entries.tail
           )
@@ -149,7 +156,8 @@ class BagVerifierTest
 
       verifySuccessCount(
         verification.success,
-        expectedCount = expectedFileCount - 1)
+        expectedCount = expectedFileCount - 1
+      )
       verification.failure should have size 1
 
       val location = verification.failure.head
@@ -164,7 +172,8 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       val badBuilder = new S3BagBuilderBase {
         override protected def createPayloadManifest(
-          entries: Seq[PayloadEntry]): Option[String] =
+          entries: Seq[PayloadEntry]
+        ): Option[String] =
           super.createPayloadManifest(
             entries.map { _.copy(contents = randomAlphanumeric) }
           )
@@ -184,7 +193,8 @@ class BagVerifierTest
       val userFacingMessage =
         result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
       userFacingMessage.get should startWith(
-        s"Unable to verify $payloadFileCount files in the bag:")
+        s"Unable to verify $payloadFileCount files in the bag:"
+      )
     }
   }
 
@@ -192,12 +202,14 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       val badBuilder = new S3BagBuilderBase {
         override protected def createPayloadManifest(
-          entries: Seq[PayloadEntry]): Option[String] =
+          entries: Seq[PayloadEntry]
+        ): Option[String] =
           super.createPayloadManifest(
             entries.tail :+ PayloadEntry(
               bagPath = BagPath(randomAlphanumeric),
               path = randomAlphanumeric,
-              contents = randomAlphanumeric)
+              contents = randomAlphanumeric
+            )
           )
 
         // This ensures that the fetch file won't refer to the entry
@@ -225,7 +237,8 @@ class BagVerifierTest
 
       verifySuccessCount(
         verification.success,
-        expectedCount = expectedFileCount - 1)
+        expectedCount = expectedFileCount - 1
+      )
       verification.failure should have size 1
 
       val location = verification.failure.head
@@ -240,7 +253,8 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       val badBuilder = new S3BagBuilderBase {
         override protected def createPayloadManifest(
-          entries: Seq[PayloadEntry]): Option[String] =
+          entries: Seq[PayloadEntry]
+        ): Option[String] =
           None
       }
 
@@ -273,7 +287,8 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       val badBuilder = new S3BagBuilderBase {
         override protected def createTagManifest(
-          entries: Seq[ManifestFile]): Option[String] =
+          entries: Seq[ManifestFile]
+        ): Option[String] =
           None
       }
 
@@ -312,7 +327,8 @@ class BagVerifierTest
     withLocalS3Bucket { bucket =>
       val (root, _) = S3BagBuilder.createS3BagWith(
         bucket,
-        externalIdentifier = bagInfoExternalIdentifier)
+        externalIdentifier = bagInfoExternalIdentifier
+      )
 
       val ingestStep =
         withVerifier {
@@ -327,7 +343,8 @@ class BagVerifierTest
       val userFacingMessage =
         result.asInstanceOf[IngestFailed[_]].maybeUserFacingMessage
       userFacingMessage.get should startWith(
-        "External identifier in bag-info.txt does not match request")
+        "External identifier in bag-info.txt does not match request"
+      )
     }
   }
 
@@ -335,15 +352,17 @@ class BagVerifierTest
     it("fails if the fetch file refers to a file not in the manifest") {
       withLocalS3Bucket { bucket =>
         val badBuilder = new S3BagBuilderBase {
-          override protected def createFetchFile(entries: Seq[PayloadEntry])(
-            implicit namespace: String): Option[String] =
+          override protected def createFetchFile(
+            entries: Seq[PayloadEntry]
+          )(implicit namespace: String): Option[String] =
             super.createFetchFile(
               entries :+
                 PayloadEntry(
                   bagPath = BagPath("data/doesnotexist"),
                   path = "data/doesnotexist",
                   contents = randomAlphanumeric
-                ))
+                )
+            )
         }
 
         val (root, bagInfo) =
@@ -438,7 +457,8 @@ class BagVerifierTest
       withLocalS3Bucket { bucket =>
         val alwaysWriteAsFetchBuilder = new S3BagBuilderBase {
           override protected def getFetchEntryCount(
-            payloadFileCount: Int): Int =
+            payloadFileCount: Int
+          ): Int =
             payloadFileCount
         }
 
@@ -476,7 +496,8 @@ class BagVerifierTest
     }
 
     it(
-      "passes a bag that includes a manifest/tag manifest for another algorithm") {
+      "passes a bag that includes a manifest/tag manifest for another algorithm"
+    ) {
       withLocalS3Bucket { bucket =>
         val (root, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
@@ -503,7 +524,8 @@ class BagVerifierTest
       withLocalS3Bucket { bucket =>
         val badBuilder = new S3BagBuilderBase {
           override protected def createPayloadOxum(
-            entries: Seq[PayloadEntry]): PayloadOxum = {
+            entries: Seq[PayloadEntry]
+          ): PayloadOxum = {
             val oxum = super.createPayloadOxum(entries)
 
             oxum.copy(numberOfPayloadFiles = oxum.numberOfPayloadFiles - 1)
@@ -512,7 +534,8 @@ class BagVerifierTest
 
         val (root, bagInfo) = badBuilder.createS3BagWith(
           bucket,
-          payloadFileCount = payloadFileCount)
+          payloadFileCount = payloadFileCount
+        )
 
         val ingestStep =
           withVerifier {
@@ -535,7 +558,8 @@ class BagVerifierTest
       withLocalS3Bucket { bucket =>
         val badBuilder = new S3BagBuilderBase {
           override protected def createPayloadOxum(
-            entries: Seq[PayloadEntry]): PayloadOxum = {
+            entries: Seq[PayloadEntry]
+          ): PayloadOxum = {
             val oxum = super.createPayloadOxum(entries)
 
             oxum.copy(payloadBytes = oxum.payloadBytes - 1)
@@ -562,8 +586,10 @@ class BagVerifierTest
     }
   }
 
-  private def verifySuccessCount(successes: List[VerifiedSuccess],
-                                 expectedCount: Int): Assertion =
+  private def verifySuccessCount(
+    successes: List[VerifiedSuccess],
+    expectedCount: Int
+  ): Assertion =
     if (successes.map { _.objectLocation.path }.exists {
           _.endsWith("/fetch.txt")
         }) {

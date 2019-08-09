@@ -33,12 +33,13 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
 
   case class ManifestFile(name: String, contents: String)
 
-  def uploadBagObjects(objects: Seq[BagObject])(
-    implicit typedStore: TypedStore[ObjectLocation, String]): Unit =
+  def uploadBagObjects(
+    objects: Seq[BagObject]
+  )(implicit typedStore: TypedStore[ObjectLocation, String]): Unit =
     objects.foreach { bagObj =>
-      typedStore.put(bagObj.location)(TypedStoreEntry(
-        bagObj.contents,
-        metadata = Map.empty)) shouldBe a[Right[_, _]]
+      typedStore.put(bagObj.location)(
+        TypedStoreEntry(bagObj.contents, metadata = Map.empty)
+      ) shouldBe a[Right[_, _]]
     }
 
   protected def getFetchEntryCount(payloadFileCount: Int): Int =
@@ -146,8 +147,9 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     (manifestObjects ++ payloadObjects, rootLocation, bagInfo)
   }
 
-  protected def createFetchFile(entries: Seq[PayloadEntry])(
-    implicit namespace: String): Option[String] =
+  protected def createFetchFile(
+    entries: Seq[PayloadEntry]
+  )(implicit namespace: String): Option[String] =
     if (entries.isEmpty) {
       None
     } else {
@@ -158,8 +160,9 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
       )
     }
 
-  protected def buildFetchEntryLine(entry: PayloadEntry)(
-    implicit namespace: String): String = {
+  protected def buildFetchEntryLine(
+    entry: PayloadEntry
+  )(implicit namespace: String): String = {
     val displaySize =
       if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
 
@@ -173,7 +176,8 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     )
 
   protected def createPayloadManifest(
-    entries: Seq[PayloadEntry]): Option[String] =
+    entries: Seq[PayloadEntry]
+  ): Option[String] =
     Some(
       createManifest(
         entries.map { entry =>
@@ -202,11 +206,13 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     val internalSenderIdentifierLine =
       optionalLine(
         bagInfo.internalSenderIdentifier,
-        "Internal-Sender-Identifier")
+        "Internal-Sender-Identifier"
+      )
     val internalSenderDescriptionLine =
       optionalLine(
         bagInfo.internalSenderDescription,
-        "Internal-Sender-Description")
+        "Internal-Sender-Description"
+      )
 
     Some(
       s"""External-Identifier: ${bagInfo.externalIdentifier}
@@ -228,7 +234,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
   protected def createBagRoot(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
-    version: BagVersion,
+    version: BagVersion
   ): String =
     // This mimics the structure of bags stored by the replicator
     s"$space/$externalIdentifier/$version"
@@ -274,11 +280,11 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
 object BagBuilder extends BagBuilderBase
 
 trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
-  def createS3BagWith(bucket: Bucket,
-                      externalIdentifier: ExternalIdentifier =
-                        createExternalIdentifier,
-                      payloadFileCount: Int = randomInt(from = 5, to = 50))
-    : (ObjectLocation, BagInfo) = {
+  def createS3BagWith(
+    bucket: Bucket,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    payloadFileCount: Int = randomInt(from = 5, to = 50)
+  ): (ObjectLocation, BagInfo) = {
     implicit val namespace: String = bucket.name
 
     val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
@@ -291,8 +297,9 @@ trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
     (bagRoot, bagInfo)
   }
 
-  override protected def buildFetchEntryLine(entry: PayloadEntry)(
-    implicit namespace: String): String = {
+  override protected def buildFetchEntryLine(
+    entry: PayloadEntry
+  )(implicit namespace: String): String = {
     val displaySize =
       if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
 

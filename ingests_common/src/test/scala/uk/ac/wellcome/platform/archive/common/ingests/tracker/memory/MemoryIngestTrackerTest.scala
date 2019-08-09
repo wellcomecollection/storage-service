@@ -19,19 +19,20 @@ class MemoryIngestTrackerTest
     with IngestTrackerFixtures {
 
   override def withContext[R](
-    testWith: TestWith[MemoryVersionedStore[IngestID, Ingest], R]): R =
+    testWith: TestWith[MemoryVersionedStore[IngestID, Ingest], R]
+  ): R =
     testWith(createMemoryVersionedStore)
 
   override def withIngestTracker[R](initialIngests: Seq[Ingest])(
-    testWith: TestWith[IngestTracker, R])(
-    implicit store: MemoryVersionedStore[IngestID, Ingest]): R =
+    testWith: TestWith[IngestTracker, R]
+  )(implicit store: MemoryVersionedStore[IngestID, Ingest]): R =
     withMemoryIngestTracker(initialIngests) { tracker =>
       testWith(tracker)
     }
 
   override def withBrokenUnderlyingInitTracker[R](
-    testWith: TestWith[IngestTracker, R])(
-    implicit context: MemoryVersionedStore[IngestID, Ingest]): R =
+    testWith: TestWith[IngestTracker, R]
+  )(implicit context: MemoryVersionedStore[IngestID, Ingest]): R =
     testWith(
       new MemoryIngestTracker(
         new MemoryVersionedStore[IngestID, Ingest](createMemoryStore) {
@@ -42,8 +43,8 @@ class MemoryIngestTrackerTest
     )
 
   override def withBrokenUnderlyingGetTracker[R](
-    testWith: TestWith[IngestTracker, R])(
-    implicit context: MemoryVersionedStore[IngestID, Ingest]): R =
+    testWith: TestWith[IngestTracker, R]
+  )(implicit context: MemoryVersionedStore[IngestID, Ingest]): R =
     testWith(
       new MemoryIngestTracker(
         new MemoryVersionedStore[IngestID, Ingest](createMemoryStore) {
@@ -54,8 +55,8 @@ class MemoryIngestTrackerTest
     )
 
   override def withBrokenUnderlyingUpdateTracker[R](
-    testWith: TestWith[IngestTracker, R])(
-    implicit context: MemoryVersionedStore[IngestID, Ingest]): R =
+    testWith: TestWith[IngestTracker, R]
+  )(implicit context: MemoryVersionedStore[IngestID, Ingest]): R =
     testWith(
       new MemoryIngestTracker(
         new MemoryVersionedStore[IngestID, Ingest](createMemoryStore) {

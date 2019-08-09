@@ -20,12 +20,14 @@ trait SizeFinderTestCases[Context]
   def withContext[R](testWith: TestWith[Context, R]): R
 
   def withSizeFinder[R](testWith: TestWith[SizeFinder, R])(
-    implicit context: Context): R
+    implicit context: Context
+  ): R
 
   def createLocation(implicit context: Context): ObjectLocation
 
   def createObjectAtLocation(location: ObjectLocation, contents: String)(
-    implicit context: Context): Unit
+    implicit context: Context
+  ): Unit
 
   describe("it behaves as a size finder") {
     it("finds the sizes of objects in a prefix") {
@@ -60,22 +62,26 @@ class MemorySizeFinderTest
     with ObjectLocationGenerators
     with EitherValues {
   override def withContext[R](
-    testWith: TestWith[MemoryStreamStore[ObjectLocation], R]): R =
+    testWith: TestWith[MemoryStreamStore[ObjectLocation], R]
+  ): R =
     testWith(MemoryStreamStore[ObjectLocation]())
 
-  override def withSizeFinder[R](testWith: TestWith[SizeFinder, R])(
-    implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
+  override def withSizeFinder[R](
+    testWith: TestWith[SizeFinder, R]
+  )(implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
     testWith(
       new MemorySizeFinder(streamStore.memoryStore)
     )
 
   override def createLocation(
-    implicit streamStore: MemoryStreamStore[ObjectLocation]): ObjectLocation =
+    implicit streamStore: MemoryStreamStore[ObjectLocation]
+  ): ObjectLocation =
     createObjectLocation
 
-  override def createObjectAtLocation(location: ObjectLocation,
-                                      contents: String)(
-    implicit streamStore: MemoryStreamStore[ObjectLocation]): Unit = {
+  override def createObjectAtLocation(
+    location: ObjectLocation,
+    contents: String
+  )(implicit streamStore: MemoryStreamStore[ObjectLocation]): Unit = {
     val is = stringCodec.toStream(contents).right.value
     streamStore.put(location)(
       InputStreamWithLengthAndMetadata(is, metadata = Map.empty)
@@ -90,8 +96,9 @@ class S3SizeFinderTest
   override def withContext[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { testWith }
 
-  override def withSizeFinder[R](testWith: TestWith[SizeFinder, R])(
-    implicit bucket: Bucket): R =
+  override def withSizeFinder[R](
+    testWith: TestWith[SizeFinder, R]
+  )(implicit bucket: Bucket): R =
     testWith(
       new S3SizeFinder()
     )
@@ -101,7 +108,8 @@ class S3SizeFinderTest
 
   override def createObjectAtLocation(
     location: ObjectLocation,
-    contents: String)(implicit context: Bucket): Unit =
+    contents: String
+  )(implicit context: Bucket): Unit =
     s3Client.putObject(
       location.namespace,
       location.path,

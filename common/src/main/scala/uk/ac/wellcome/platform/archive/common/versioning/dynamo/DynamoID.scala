@@ -15,8 +15,10 @@ import scala.util.{Failure, Success, Try}
 // which remain readable but don't contain colons.
 
 object DynamoID {
-  def createId(storageSpace: StorageSpace,
-               externalIdentifier: ExternalIdentifier): String =
+  def createId(
+    storageSpace: StorageSpace,
+    externalIdentifier: ExternalIdentifier
+  ): String =
     s"${encode(storageSpace.underlying)}:${encode(externalIdentifier.underlying)}"
 
   def getStorageSpace(id: String): Try[StorageSpace] =
@@ -25,7 +27,8 @@ object DynamoID {
         Success(StorageSpace(decode(storageSpace)))
       case _ =>
         Failure(
-          new IllegalArgumentException(s"Malformed ID for version record: $id"))
+          new IllegalArgumentException(s"Malformed ID for version record: $id")
+        )
     }
 
   def getExternalIdentifier(id: String): Try[ExternalIdentifier] =
@@ -34,7 +37,8 @@ object DynamoID {
         Success(ExternalIdentifier(decode(externalIdentifier)))
       case _ =>
         Failure(
-          new IllegalArgumentException(s"Malformed ID for version record: $id"))
+          new IllegalArgumentException(s"Malformed ID for version record: $id")
+        )
     }
 
   private def encode(s: String): String =

@@ -31,14 +31,16 @@ trait IngestsApiFixture
     with IngestTrackerFixtures {
 
   val contextURL = new URL(
-    "http://api.wellcomecollection.org/storage/v1/context.json")
+    "http://api.wellcomecollection.org/storage/v1/context.json"
+  )
 
   val metricsName = "IngestsApiFixture"
 
-  private def withApp[R](ingestTracker: MemoryIngestTracker,
-                         unpackerMessageSender: MemoryMessageSender,
-                         metrics: Metrics[Future, StandardUnit])(
-    testWith: TestWith[IngestsApi[String], R]): R =
+  private def withApp[R](
+    ingestTracker: MemoryIngestTracker,
+    unpackerMessageSender: MemoryMessageSender,
+    metrics: Metrics[Future, StandardUnit]
+  )(testWith: TestWith[IngestsApi[String], R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
         val httpMetrics = new HttpMetrics(
@@ -64,17 +66,23 @@ trait IngestsApiFixture
     }
 
   def withBrokenApp[R](
-    testWith: TestWith[(MemoryIngestTracker,
-                        MemoryMessageSender,
-                        MemoryMetrics[StandardUnit],
-                        String),
-                       R]): R = {
+    testWith: TestWith[
+      (
+        MemoryIngestTracker,
+        MemoryMessageSender,
+        MemoryMetrics[StandardUnit],
+        String
+      ),
+      R
+    ]
+  ): R = {
     val messageSender = new MemoryMessageSender()
 
     val brokenTracker = new MemoryIngestTracker(
       underlying = new MemoryVersionedStore[IngestID, Ingest](
         new MemoryStore[Version[IngestID, Int], Ingest](
-          initialEntries = Map.empty) with MemoryMaxima[IngestID, Ingest]
+          initialEntries = Map.empty
+        ) with MemoryMaxima[IngestID, Ingest]
       )
     ) {
       override def get(id: IngestID): Result =
@@ -92,16 +100,23 @@ trait IngestsApiFixture
           brokenTracker,
           messageSender,
           metrics,
-          httpServerConfig.externalBaseURL))
+          httpServerConfig.externalBaseURL
+        )
+      )
     }
   }
 
   def withConfiguredApp[R](initialIngests: Seq[Ingest] = Seq.empty)(
-    testWith: TestWith[(MemoryIngestTracker,
-                        MemoryMessageSender,
-                        MemoryMetrics[StandardUnit],
-                        String),
-                       R]): R =
+    testWith: TestWith[
+      (
+        MemoryIngestTracker,
+        MemoryMessageSender,
+        MemoryMetrics[StandardUnit],
+        String
+      ),
+      R
+    ]
+  ): R =
     withMemoryIngestTracker(initialIngests = initialIngests) { ingestTracker =>
       val messageSender = new MemoryMessageSender()
 
@@ -113,7 +128,9 @@ trait IngestsApiFixture
             ingestTracker,
             messageSender,
             metrics,
-            httpServerConfig.externalBaseURL))
+            httpServerConfig.externalBaseURL
+          )
+        )
       }
     }
 }

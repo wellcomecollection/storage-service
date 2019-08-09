@@ -34,8 +34,8 @@ import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
 class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
-  implicit val ec: ExecutionContext)
-    extends Logging {
+  implicit val ec: ExecutionContext
+) extends Logging {
 
   def routes: Route = {
     import akka.http.scaladsl.server.Directives._
@@ -68,7 +68,8 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
                 complete(
                   ResponseDisplayBag(
                     storageManifest = storageManifest,
-                    contextUrl = contextURL)
+                    contextUrl = contextURL
+                  )
                 )
               case Left(_: NoVersionExistsError) =>
                 val errorMessage = maybeVersion match {
@@ -87,7 +88,8 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
               case Left(storageError) =>
                 error(
                   s"Error while trying to look up $bagId v = $maybeVersion",
-                  storageError.e)
+                  storageError.e
+                )
                 complete(
                   InternalServerError -> InternalServerErrorResponse(
                     context = contextURL,
@@ -105,7 +107,8 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
 
         def buildResultsList(
           matchingManifests: Either[ReadError, Seq[StorageManifest]],
-          notFoundMessage: String) =
+          notFoundMessage: String
+        ) =
           matchingManifests match {
             case Right(Nil) =>
               complete(
@@ -172,7 +175,8 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
   private val versionRegex: Regex = new Regex("^v(\\d+)$", "version")
 
   private def parseVersion(
-    queryParam: Option[String]): Try[Option[BagVersion]] =
+    queryParam: Option[String]
+  ): Try[Option[BagVersion]] =
     queryParam match {
       case Some(versionString) =>
         versionRegex.findFirstMatchIn(versionString) match {
@@ -180,10 +184,12 @@ class Router(storageManifestDao: StorageManifestDao, contextURL: URL)(
             Success(
               Some(
                 BagVersion(regexMatch.group("version").toInt)
-              ))
+              )
+            )
           case None =>
             Failure(
-              new Throwable(s"Could not parse version string: $versionString"))
+              new Throwable(s"Could not parse version string: $versionString")
+            )
         }
 
       case None => Success(None)

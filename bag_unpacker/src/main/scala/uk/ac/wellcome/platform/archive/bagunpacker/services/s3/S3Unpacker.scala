@@ -25,11 +25,13 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
   private val s3StreamStore = new S3StreamStore()
 
   override def get(
-    location: ObjectLocation): Either[StorageError, InputStream] =
+    location: ObjectLocation
+  ): Either[StorageError, InputStream] =
     s3StreamStore.get(location).map { _.identifiedT }
 
-  override def put(location: ObjectLocation)(
-    inputStream: InputStreamWithLength): Either[StorageError, Unit] =
+  override def put(
+    location: ObjectLocation
+  )(inputStream: InputStreamWithLength): Either[StorageError, Unit] =
     s3StreamStore
       .put(location)(
         InputStreamWithLengthAndMetadata(inputStream, metadata = Map.empty)
@@ -38,8 +40,10 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
         ()
       }
 
-  override def buildMessageFor(srcLocation: ObjectLocation,
-                               error: UnpackerError): Option[String] =
+  override def buildMessageFor(
+    srcLocation: ObjectLocation,
+    error: UnpackerError
+  ): Option[String] =
     error match {
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("Access Denied") =>

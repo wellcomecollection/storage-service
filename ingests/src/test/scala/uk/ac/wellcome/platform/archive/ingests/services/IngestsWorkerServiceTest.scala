@@ -61,7 +61,8 @@ class IngestsWorkerServiceTest
             )
 
             messageSender.getMessages[CallbackNotification] shouldBe Seq(
-              callbackNotification)
+              callbackNotification
+            )
 
             assertIngestCreated(expectedIngest)
 
@@ -159,8 +160,9 @@ class IngestsWorkerServiceTest
           val exception = new Throwable("BOOM!")
 
           val brokenSender = new MemoryMessageSender() {
-            override def sendT[T](t: T)(
-              implicit encoder: Encoder[T]): Try[Unit] =
+            override def sendT[T](
+              t: T
+            )(implicit encoder: Encoder[T]): Try[Unit] =
               Failure(exception)
           }
 

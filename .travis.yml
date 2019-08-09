@@ -23,7 +23,6 @@ jobs:
     - env: TASK=python_client-test
 
 script:
-  - ./docker_run.py --sbt --root -- wellcome/sbt_wrapper:107 -version
   - ./.travis/run_job.py
 
 cache:

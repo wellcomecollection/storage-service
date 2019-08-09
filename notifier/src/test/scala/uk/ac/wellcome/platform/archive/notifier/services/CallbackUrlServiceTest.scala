@@ -42,7 +42,8 @@ class CallbackUrlServiceTest
           val future = service.getHttpResponse(
             ingest = ingest,
             callbackUri = new URI(
-              s"http://$callbackHost:$callbackPort/callback/${ingest.id}")
+              s"http://$callbackHost:$callbackPort/callback/${ingest.id}"
+            )
           )
 
           whenReady(future) { result =>
@@ -193,7 +194,8 @@ class CallbackUrlServiceTest
       }
 
     def assertIsJsonRequest(request: HttpRequest, uri: URI)(
-      assertJson: String => Assertion): Assertion = {
+      assertJson: String => Assertion
+    ): Assertion = {
       request.method shouldBe HttpMethods.POST
       request.uri.toString() shouldBe uri.toString
 

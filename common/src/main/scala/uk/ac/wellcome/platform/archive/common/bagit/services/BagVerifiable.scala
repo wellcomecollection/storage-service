@@ -19,7 +19,8 @@ class BagVerifiable(root: ObjectLocation)(
   import Locatable._
 
   override def create(
-    bag: Bag): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]] = {
+    bag: Bag
+  ): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]] = {
     debug(s"Attempting to create Seq[VerifiableLocation] for $bag")
 
     BagMatcher.correlateFetchEntries(bag) match {
@@ -41,7 +42,8 @@ class BagVerifiable(root: ObjectLocation)(
   }
 
   private def getVerifiableLocation(
-    matched: MatchedLocation): Either[Throwable, VerifiableLocation] =
+    matched: MatchedLocation
+  ): Either[Throwable, VerifiableLocation] =
     matched match {
       case MatchedLocation(bagFile: BagFile, Some(fetchEntry)) =>
         Right(
@@ -50,7 +52,8 @@ class BagVerifiable(root: ObjectLocation)(
             path = bagFile.path,
             checksum = bagFile.checksum,
             length = fetchEntry.length
-          ))
+          )
+        )
 
       case MatchedLocation(bagFile: BagFile, None) =>
         bagFile.locateWith(root) match {
@@ -62,7 +65,8 @@ class BagVerifiable(root: ObjectLocation)(
                 path = bagFile.path,
                 checksum = bagFile.checksum,
                 length = None
-              ))
+              )
+            )
         }
     }
 

@@ -20,10 +20,11 @@ class BagsApi(
   httpMetrics: HttpMetrics,
   httpServerConfig: HTTPServerConfig,
   contextURL: URL
-)(implicit val actorSystem: ActorSystem,
+)(
+  implicit val actorSystem: ActorSystem,
   materializer: ActorMaterializer,
-  ec: ExecutionContext)
-    extends Runnable {
+  ec: ExecutionContext
+) extends Runnable {
 
   val router = new Router(
     storageManifestDao = storageManifestDao,

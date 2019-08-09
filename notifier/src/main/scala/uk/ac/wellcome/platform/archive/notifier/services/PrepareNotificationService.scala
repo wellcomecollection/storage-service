@@ -15,8 +15,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import scala.util.{Failure, Success, Try}
 
 object PrepareNotificationService extends Logging {
-  def prepare(id: IngestID,
-              httpResponse: Try[HttpResponse]): IngestCallbackStatusUpdate =
+  def prepare(
+    id: IngestID,
+    httpResponse: Try[HttpResponse]
+  ): IngestCallbackStatusUpdate =
     httpResponse match {
       case Success(HttpResponse(status, _, _, _)) =>
         if (status.isSuccess()) {

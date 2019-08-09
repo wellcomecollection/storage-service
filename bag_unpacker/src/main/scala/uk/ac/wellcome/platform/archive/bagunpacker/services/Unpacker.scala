@@ -31,7 +31,8 @@ trait Unpacker extends Logging {
   //
   def get(location: ObjectLocation): Either[StorageError, InputStream]
   def put(location: ObjectLocation)(
-    inputStream: InputStreamWithLength): Either[StorageError, Unit]
+    inputStream: InputStreamWithLength
+  ): Either[StorageError, Unit]
 
   def unpack(
     ingestId: IngestID,
@@ -74,15 +75,18 @@ trait Unpacker extends Logging {
     }
   }
 
-  protected def buildMessageFor(srcLocation: ObjectLocation,
-                                error: UnpackerError): Option[String] =
+  protected def buildMessageFor(
+    srcLocation: ObjectLocation,
+    error: UnpackerError
+  ): Option[String] =
     error match {
       case UnpackerStorageError(_: DoesNotExistError) =>
         Some(s"There is no archive at $srcLocation")
 
       case UnpackerUnarchiverError(_) =>
         Some(
-          s"Error trying to unpack the archive at $srcLocation - is it the correct format?")
+          s"Error trying to unpack the archive at $srcLocation - is it the correct format?"
+        )
 
       case _ => None
     }
@@ -90,7 +94,8 @@ trait Unpacker extends Logging {
   private def unpack(
     unpackSummary: UnpackSummary,
     srcStream: InputStream,
-    dstLocation: ObjectLocationPrefix): Either[UnpackerError, UnpackSummary] =
+    dstLocation: ObjectLocationPrefix
+  ): Either[UnpackerError, UnpackSummary] =
     Unarchiver.open(srcStream) match {
       case Left(unarchiverError) =>
         Left(UnpackerUnarchiverError(unarchiverError))
@@ -144,10 +149,12 @@ trait Unpacker extends Logging {
     }
 
     debug(
-      s"Uploading archive entry ${archiveEntry.getName} to ${uploadLocation}")
+      s"Uploading archive entry ${archiveEntry.getName} to ${uploadLocation}"
+    )
 
     put(uploadLocation)(
-      new InputStreamWithLength(inputStream, length = archiveEntrySize)) match {
+      new InputStreamWithLength(inputStream, length = archiveEntrySize)
+    ) match {
       case Right(_)           => ()
       case Left(storageError) => throw storageError.e
     }
