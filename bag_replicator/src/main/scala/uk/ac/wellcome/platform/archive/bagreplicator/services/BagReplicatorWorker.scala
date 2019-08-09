@@ -15,12 +15,10 @@ import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.ObjectLocationPrefix
-import uk.ac.wellcome.storage.locking.{
-  FailedLockingServiceOp,
-  LockDao,
-  LockingService
-}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
+import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 
 import scala.util.Try
 
@@ -39,7 +37,8 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[EnrichedBagInformationPayload]
+  val wd: Decoder[EnrichedBagInformationPayload],
+  streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) extends IngestStepWorker[EnrichedBagInformationPayload, ReplicationSummary] {
   override val visibilityTimeout = 180
 
