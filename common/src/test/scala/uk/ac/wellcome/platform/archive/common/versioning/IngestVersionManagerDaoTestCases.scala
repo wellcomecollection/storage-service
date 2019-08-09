@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.versioning
 
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest._
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.storage.NoMaximaValueError
@@ -11,6 +11,7 @@ trait IngestVersionManagerDaoTestCases[Context]
     extends FunSpec
     with Matchers
     with EitherValues
+    with TryValues
     with VersionRecordGenerators {
   def withContext[R](testWith: TestWith[Context, R]): R
 
@@ -72,27 +73,37 @@ trait IngestVersionManagerDaoTestCases[Context]
           dao.storeNewVersion(r) shouldBe Success(())
         }
 
-        records.foreach { r =>
-          dao.lookupExistingVersion(ingestId = r.ingestId) shouldBe Success(
-            Some(r)
-          )
+        records.foreach { record =>
+          val storedRecord =
+            dao.lookupExistingVersion(ingestId = record.ingestId)
+              .success
+              .value
+              .get
+
+          assertRecordsEqual(storedRecord, record)
         }
 
-        dao
-          .lookupLatestVersionFor(
-            externalIdentifier = ExternalIdentifier("acorn"),
-            storageSpace = storageSpaceA
-          )
-          .right
-          .value shouldBe recordA3
+        val latestRecordA =
+          dao
+            .lookupLatestVersionFor(
+              externalIdentifier = ExternalIdentifier("acorn"),
+              storageSpace = storageSpaceA
+            )
+            .right
+            .value
 
-        dao
-          .lookupLatestVersionFor(
-            externalIdentifier = ExternalIdentifier("barley"),
-            storageSpace = storageSpaceB
-          )
-          .right
-          .value shouldBe recordB2
+        assertRecordsEqual(latestRecordA, recordA3)
+
+        val latestRecordB =
+          dao
+            .lookupLatestVersionFor(
+              externalIdentifier = ExternalIdentifier("barley"),
+              storageSpace = storageSpaceB
+            )
+            .right
+            .value
+
+        assertRecordsEqual(latestRecordB, recordB2)
 
         dao
           .lookupLatestVersionFor(
@@ -114,17 +125,24 @@ trait IngestVersionManagerDaoTestCases[Context]
       }
 
       withDao(initialRecords = Seq.empty) { dao2 =>
-        dao2.lookupExistingVersion(record.ingestId) shouldBe Success(
-          Some(record)
-        )
+        val storedRecord =
+          dao2.lookupExistingVersion(record.ingestId)
+            .success
+            .value
+            .get
 
-        dao2
-          .lookupLatestVersionFor(
-            externalIdentifier = record.externalIdentifier,
-            storageSpace = record.storageSpace
-          )
-          .right
-          .value shouldBe record
+        assertRecordsEqual(storedRecord, record)
+
+        val latestRecord =
+          dao2
+            .lookupLatestVersionFor(
+              externalIdentifier = record.externalIdentifier,
+              storageSpace = record.storageSpace
+            )
+            .right
+            .value
+
+        assertRecordsEqual(latestRecord, record)
       }
     }
   }
@@ -143,9 +161,12 @@ trait IngestVersionManagerDaoTestCases[Context]
 
       withContext { implicit context =>
         withDao(initialRecords = Seq(record)) { dao =>
-          dao.lookupExistingVersion(record.ingestId) shouldBe Success(
-            Some(record)
-          )
+          val storedRecord =
+            dao.lookupExistingVersion(record.ingestId)
+              .success.value
+              .get
+
+          assertRecordsEqual(storedRecord, record)
         }
       }
     }
@@ -193,10 +214,13 @@ trait IngestVersionManagerDaoTestCases[Context]
 
       withContext { implicit context =>
         withDao(initialRecords) { dao =>
-          dao
-            .lookupLatestVersionFor(externalIdentifier, storageSpace)
-            .right
-            .value shouldBe initialRecords(4)
+          val latestRecord =
+            dao
+              .lookupLatestVersionFor(externalIdentifier, storageSpace)
+              .right
+              .value
+
+          assertRecordsEqual(latestRecord, initialRecords.last)
         }
       }
     }
@@ -214,21 +238,27 @@ trait IngestVersionManagerDaoTestCases[Context]
 
       withContext { implicit context =>
         withDao(initialRecords = Seq(record1, record2)) { dao =>
-          dao
-            .lookupLatestVersionFor(
-              externalIdentifier = externalIdentifier,
-              storageSpace = record1.storageSpace
-            )
-            .right
-            .value shouldBe record1
+          val storedRecord1 =
+            dao
+              .lookupLatestVersionFor(
+                externalIdentifier = externalIdentifier,
+                storageSpace = record1.storageSpace
+              )
+              .right
+              .value
 
-          dao
-            .lookupLatestVersionFor(
-              externalIdentifier = externalIdentifier,
-              storageSpace = record2.storageSpace
-            )
-            .right
-            .value shouldBe record2
+          assertRecordsEqual(record1, storedRecord1)
+
+          val storedRecord2 =
+            dao
+              .lookupLatestVersionFor(
+                externalIdentifier = externalIdentifier,
+                storageSpace = record2.storageSpace
+              )
+              .right
+              .value
+
+          assertRecordsEqual(record2, storedRecord2)
 
           dao
             .lookupLatestVersionFor(
@@ -251,4 +281,7 @@ trait IngestVersionManagerDaoTestCases[Context]
       }
     }
   }
+
+  protected def assertRecordsEqual(r1: VersionRecord, r2: VersionRecord): Assertion =
+    r1 shouldBe r2
 }

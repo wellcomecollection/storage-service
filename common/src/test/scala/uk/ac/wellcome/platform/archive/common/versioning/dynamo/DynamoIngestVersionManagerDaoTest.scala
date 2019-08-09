@@ -1,7 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.versioning.dynamo
 
+import java.time.temporal.ChronoUnit
+
 import com.amazonaws.services.dynamodbv2.model._
-import org.scalatest.EitherValues
+import org.scalatest.{Assertion, EitherValues}
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
 import org.scanamo.{Table => ScanamoTable}
@@ -113,5 +115,19 @@ class DynamoIngestVersionManagerDaoTest
         )
       }
     }
+  }
+
+  override protected def assertRecordsEqual(r1: VersionRecord, r2: VersionRecord): Assertion = {
+    // DynamoDB only serialises an Instant to the nearest second, but
+    // an Instant can have millisecond precision.
+    //
+    // This means the Instant we send in may not be the Instant that
+    // gets stored, e.g. 2001-01-01:01:01:01.000999Z gets returned as
+    //                   2001-01-01:01:01:01.000Z
+    //
+    val adjusted1 = r1.copy(ingestDate = r1.ingestDate.truncatedTo(ChronoUnit.SECONDS))
+    val adjusted2 = r2.copy(ingestDate = r2.ingestDate.truncatedTo(ChronoUnit.SECONDS))
+
+    adjusted1 shouldBe adjusted2
   }
 }
