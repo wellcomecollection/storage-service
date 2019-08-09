@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.bag_register
 
 import java.time.Instant
 
-import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
@@ -16,7 +16,8 @@ class BagRegisterFeatureTest
     with Matchers
     with BagRegisterFixtures
     with PayloadGenerators
-    with Eventually {
+    with Eventually
+    with IntegrationPatience {
 
   it("sends an update if it registers a bag") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
