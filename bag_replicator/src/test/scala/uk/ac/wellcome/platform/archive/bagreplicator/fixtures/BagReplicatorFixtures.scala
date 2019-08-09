@@ -58,7 +58,7 @@ trait BagReplicatorFixtures
   def withBagReplicatorWorker[R](
     queue: Queue =
       Queue(randomAlphanumericWithLength(), randomAlphanumericWithLength()),
-    bucket: Bucket = Bucket(randomAlphanumericWithLength()),
+    bucket: Bucket,
     rootPath: Option[String] = None,
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
