@@ -353,7 +353,10 @@ class BagReplicatorWorkerTest
 
               implicit val badS3Transfer: S3Transfer =
                 new S3Transfer() {
-                  override def transfer(src: ObjectLocation, dst: ObjectLocation): Either[TransferFailure, TransferSuccess] =
+                  override def transfer(
+                    src: ObjectLocation,
+                    dst: ObjectLocation
+                  ): Either[TransferFailure, TransferSuccess] =
                     if (dst.path.endsWith("/tagmanifest-sha256.txt")) {
                       s3Client.putObject(
                         dst.namespace,
@@ -393,7 +396,8 @@ class BagReplicatorWorkerTest
                 val serviceResult = service.processMessage(payload)
                 serviceResult.success.value shouldBe a[IngestFailed[_]]
 
-                val ingestFailed = serviceResult.success.value.asInstanceOf[IngestFailed[_]]
+                val ingestFailed =
+                  serviceResult.success.value.asInstanceOf[IngestFailed[_]]
                 ingestFailed.e.getMessage shouldBe "tagmanifest-sha256.txt in replica source and replica location do not match!"
               }
             }
@@ -424,8 +428,11 @@ class BagReplicatorWorkerTest
 
             serviceResult.success.value shouldBe a[IngestFailed[_]]
 
-            val ingestFailed = serviceResult.success.value.asInstanceOf[IngestFailed[_]]
-            ingestFailed.e.getMessage should startWith("Unable to load tagmanifest-sha256.txt in source and replica to compare:")
+            val ingestFailed =
+              serviceResult.success.value.asInstanceOf[IngestFailed[_]]
+            ingestFailed.e.getMessage should startWith(
+              "Unable to load tagmanifest-sha256.txt in source and replica to compare:"
+            )
           }
         }
       }

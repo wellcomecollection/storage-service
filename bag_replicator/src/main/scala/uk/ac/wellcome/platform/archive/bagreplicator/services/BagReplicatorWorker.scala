@@ -79,11 +79,12 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
     val src = payload.bagRootLocation.asPrefix
 
     for {
-      ingestStep: IngestStepResult[ReplicationSummary] <- bagReplicator.replicate(
-        bagRootLocation = src,
-        destination = destination,
-        storageSpace = payload.storageSpace
-      )
+      ingestStep: IngestStepResult[ReplicationSummary] <- bagReplicator
+        .replicate(
+          bagRootLocation = src,
+          destination = destination,
+          storageSpace = payload.storageSpace
+        )
 
       result <- checkTagManifestsAreTheSame(src, destination) match {
         case Success(_) => Success(ingestStep)
@@ -130,13 +131,16 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
         if (IOUtils.contentEquals(srcStream, dstStream)) {
           ()
         } else {
-          throw new Throwable("tagmanifest-sha256.txt in replica source and replica location do not match!")
+          throw new Throwable(
+            "tagmanifest-sha256.txt in replica source and replica location do not match!"
+          )
         }
       case err =>
-        throw new Throwable(s"Unable to load tagmanifest-sha256.txt in source and replica to compare: $err")
+        throw new Throwable(
+          s"Unable to load tagmanifest-sha256.txt in source and replica to compare: $err"
+        )
     }
   }
-
 
   def lockFailed(
     payload: EnrichedBagInformationPayload,

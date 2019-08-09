@@ -45,10 +45,13 @@ trait BagReplicatorFixtures
 
   def createLockingServiceWith(
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {}
-  ): LockingService[IngestStepResult[ReplicationSummary], Try, LockDao[String, UUID]] =
+  ): LockingService[IngestStepResult[ReplicationSummary], Try, LockDao[
+    String,
+    UUID
+  ]] =
     new LockingService[IngestStepResult[
       ReplicationSummary
-      ], Try, LockDao[String, UUID]] {
+    ], Try, LockDao[String, UUID]] {
       override implicit val lockDao: LockDao[String, UUID] =
         lockServiceDao
 
@@ -56,7 +59,11 @@ trait BagReplicatorFixtures
         UUID.randomUUID()
     }
 
-  def createLockingService: LockingService[IngestStepResult[ReplicationSummary], Try, LockDao[String, UUID]] =
+  def createLockingService
+    : LockingService[IngestStepResult[ReplicationSummary], Try, LockDao[
+      String,
+      UUID
+    ]] =
     createLockingServiceWith()
 
   def withBagReplicatorWorker[R](
@@ -120,7 +127,12 @@ trait BagReplicatorFixtures
     val (root, _) = builder.createS3BagWith(
       bucket = bucket,
       payloadFileCount = objectCount -
-        Seq("bag-info.txt", "bagit.txt", "manifest-sha256.txt", "tagmanifest-sha256.txt").size
+        Seq(
+          "bag-info.txt",
+          "bagit.txt",
+          "manifest-sha256.txt",
+          "tagmanifest-sha256.txt"
+        ).size
     )
 
     testWith(root)
