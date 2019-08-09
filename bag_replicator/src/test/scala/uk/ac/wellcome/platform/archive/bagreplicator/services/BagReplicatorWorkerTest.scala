@@ -18,7 +18,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded
 }
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
-import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global

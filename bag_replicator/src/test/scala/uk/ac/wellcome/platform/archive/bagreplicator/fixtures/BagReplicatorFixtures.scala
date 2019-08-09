@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.bagreplicator.fixtures
 
 import java.util.UUID
 
-import com.amazonaws.services.s3.model.S3ObjectSummary
 import org.scalatest.Assertion
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
@@ -24,6 +23,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.listing.s3.S3ObjectSummaryListing
 import uk.ac.wellcome.storage.locking.memory.{
   MemoryLockDao,
   MemoryLockDaoFixtures
@@ -31,7 +31,6 @@ import uk.ac.wellcome.storage.locking.memory.{
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
-import scala.collection.JavaConverters._
 import scala.util.{Random, Try}
 
 trait BagReplicatorFixtures
@@ -123,29 +122,22 @@ trait BagReplicatorFixtures
     testWith(rootLocation)
   }
 
+  private val listing = new S3ObjectSummaryListing()
+
   def verifyObjectsCopied(
     src: ObjectLocation,
     dst: ObjectLocation
   ): Assertion = {
-    val sourceItems = getObjectSummaries(src)
+    val sourceItems = listing.list(src.asPrefix).right.value
     val sourceKeyEtags = sourceItems.map {
       _.getETag
     }
 
-    val destinationItems = getObjectSummaries(dst)
+    val destinationItems = listing.list(dst.asPrefix).right.value
     val destinationKeyEtags = destinationItems.map {
       _.getETag
     }
 
     destinationKeyEtags should contain theSameElementsAs sourceKeyEtags
   }
-
-  private def getObjectSummaries(
-    objectLocation: ObjectLocation
-  ): List[S3ObjectSummary] =
-    s3Client
-      .listObjects(objectLocation.namespace, objectLocation.path)
-      .getObjectSummaries
-      .asScala
-      .toList
 }
