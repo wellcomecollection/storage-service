@@ -203,43 +203,13 @@ class BagReplicatorWorkerTest
     }
   }
 
-  it("locks around the destination") {
-    val lockServiceDao = new MemoryLockDao[String, UUID] {}
-
-    withLocalS3Bucket { bucket =>
-      withBagReplicatorWorker(bucket = bucket, lockServiceDao = lockServiceDao) {
-        service =>
-          withBagObjects(bucket) { bagRootLocation =>
-            val payload = createEnrichedBagInformationPayloadWith(
-              bagRootLocation = bagRootLocation
-            )
-
-            val result = service.processMessage(payload).success.value
-            result shouldBe a[IngestStepSucceeded[_]]
-
-            val destination = result.summary.destination
-
-            // TODO: Restore these history tests
-            println(destination)
-          // lockServiceDao.history should have size 1
-          // lockServiceDao.history.head.id shouldBe destination.toString
-          }
-      }
-    }
-  }
-
   it("only allows one worker to process a destination") {
-    val lockServiceDao = new MemoryLockDao[String, UUID] {}
-
     withLocalS3Bucket { bucket =>
       // We have to create a large bag to slow down the replicators, or the
       // first process finishes and releases the lock before the later
       // processes have started.
       withBagObjects(bucket, objectCount = 500) { bagRootLocation =>
-        withBagReplicatorWorker(
-          bucket = bucket,
-          lockServiceDao = lockServiceDao
-        ) { worker =>
+        withBagReplicatorWorker(bucket = bucket) { worker =>
           val payload = createEnrichedBagInformationPayloadWith(
             bagRootLocation = bagRootLocation
           )
@@ -262,9 +232,6 @@ class BagReplicatorWorkerTest
           whenReady(futures) { result =>
             result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 1
             result.count { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 4
-
-          // TODO: Restore this test
-          // lockServiceDao.history should have size 1
           }
         }
       }
