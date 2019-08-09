@@ -31,7 +31,7 @@ import uk.ac.wellcome.storage.locking.memory.{
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
-import scala.util.{Random, Try}
+import scala.util.Try
 
 trait BagReplicatorFixtures
     extends Akka
@@ -96,31 +96,6 @@ trait BagReplicatorFixtures
       namespace = bucket.name,
       rootPath = rootPath
     )
-
-  // Note: the replicator doesn't currently make any assumptions about
-  // the bag structure, so we just put a random collection of objects
-  // in the "bag".
-  def withBagObjects[R](bucket: Bucket, objectCount: Int = 50)(
-    testWith: TestWith[ObjectLocation, R]
-  ): R = {
-    val rootLocation = createObjectLocationWith(bucket)
-
-    (1 to objectCount).map { _ =>
-      val parts = (1 to Random.nextInt(5)).map { _ =>
-        randomAlphanumeric
-      }
-
-      val location = rootLocation.join(parts: _*)
-
-      s3Client.putObject(
-        location.namespace,
-        location.path,
-        randomAlphanumeric
-      )
-    }
-
-    testWith(rootLocation)
-  }
 
   private val listing = new S3ObjectSummaryListing()
 

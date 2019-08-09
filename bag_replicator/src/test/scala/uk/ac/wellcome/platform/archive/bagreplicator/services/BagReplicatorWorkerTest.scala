@@ -10,6 +10,10 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  S3BagBuilder,
+  S3BagBuilderBase
+}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -38,44 +42,46 @@ class BagReplicatorWorkerTest
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
+        val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+          bucket = ingestsBucket
+        )
+
+        val payload = createEnrichedBagInformationPayloadWith(
+          bagRootLocation = bagRootLocation
+        )
+
         withBagReplicatorWorker(
           bucket = archiveBucket,
           ingests = ingests,
           outgoing = outgoing,
           stepName = "replicating"
         ) { service =>
-          withBagObjects(ingestsBucket) { srcBagRootLocation =>
-            val payload = createEnrichedBagInformationPayloadWith(
-              bagRootLocation = srcBagRootLocation
+          val serviceResult = service.processMessage(payload)
+          serviceResult.success.value shouldBe a[IngestStepSucceeded[_]]
+
+          val receivedMessages =
+            outgoing.getMessages[EnrichedBagInformationPayload]
+
+          receivedMessages.size shouldBe 1
+
+          val result = receivedMessages.head
+          result.ingestId shouldBe payload.ingestId
+
+          val dstBagRootLocation = result.bagRootLocation
+
+          verifyObjectsCopied(
+            src = bagRootLocation,
+            dst = dstBagRootLocation
+          )
+
+          assertTopicReceivesIngestEvents(
+            payload.ingestId,
+            ingests,
+            expectedDescriptions = Seq(
+              "Replicating started",
+              "Replicating succeeded"
             )
-
-            val serviceResult = service.processMessage(payload)
-            serviceResult.success.value shouldBe a[IngestStepSucceeded[_]]
-
-            val receivedMessages =
-              outgoing.getMessages[EnrichedBagInformationPayload]
-
-            receivedMessages.size shouldBe 1
-
-            val result = receivedMessages.head
-            result.ingestId shouldBe payload.ingestId
-
-            val dstBagRootLocation = result.bagRootLocation
-
-            verifyObjectsCopied(
-              src = srcBagRootLocation,
-              dst = dstBagRootLocation
-            )
-
-            assertTopicReceivesIngestEvents(
-              payload.ingestId,
-              ingests,
-              expectedDescriptions = Seq(
-                "Replicating started",
-                "Replicating succeeded"
-              )
-            )
-          }
+          )
         }
       }
     }
@@ -85,19 +91,23 @@ class BagReplicatorWorkerTest
     it("copies the bag to the configured bucket") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          withBagReplicatorWorker(bucket = archiveBucket) { worker =>
-            withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+          val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+            bucket = ingestsBucket
+          )
 
-              val result = worker.processMessage(payload).success.value
-              result shouldBe a[IngestStepSucceeded[_]]
+          val payload = createEnrichedBagInformationPayloadWith(
+            bagRootLocation = bagRootLocation
+          )
 
-              val destination = result.summary.destination
-              destination.namespace shouldBe archiveBucket.name
+          val result =
+            withBagReplicatorWorker(bucket = archiveBucket) {
+              _.processMessage(payload).success.value
             }
-          }
+
+          result shouldBe a[IngestStepSucceeded[_]]
+
+          val destination = result.summary.destination
+          destination.namespace shouldBe archiveBucket.name
         }
       }
     }
@@ -106,31 +116,36 @@ class BagReplicatorWorkerTest
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
           val rootPath = randomAlphanumericWithLength()
-          withBagReplicatorWorker(
-            bucket = archiveBucket,
-            rootPath = Some(rootPath)
-          ) { worker =>
-            withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
 
-              val result = worker.processMessage(payload).success.value
-              result shouldBe a[IngestStepSucceeded[_]]
+          val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+            bucket = ingestsBucket
+          )
 
-              val destination = result.summary.destination
-              val expectedPath =
-                Paths
-                  .get(
-                    rootPath,
-                    payload.storageSpace.underlying,
-                    payload.externalIdentifier.toString,
-                    payload.version.toString
-                  )
-                  .toString
-              destination.path shouldBe expectedPath
+          val payload = createEnrichedBagInformationPayloadWith(
+            bagRootLocation = bagRootLocation
+          )
+
+          val result =
+            withBagReplicatorWorker(
+              bucket = archiveBucket,
+              rootPath = Some(rootPath)
+            ) {
+              _.processMessage(payload).success.value
             }
-          }
+
+          result shouldBe a[IngestStepSucceeded[_]]
+
+          val destination = result.summary.destination
+          val expectedPath =
+            Paths
+              .get(
+                rootPath,
+                payload.storageSpace.underlying,
+                payload.externalIdentifier.toString,
+                payload.version.toString
+              )
+              .toString
+          destination.path shouldBe expectedPath
         }
       }
     }
@@ -138,22 +153,26 @@ class BagReplicatorWorkerTest
     it("key ends with the external identifier and version of the bag") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          withBagReplicatorWorker(bucket = archiveBucket) { worker =>
-            withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation,
-                version = 3
-              )
+          val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+            bucket = ingestsBucket
+          )
 
-              val result = worker.processMessage(payload).success.value
-              result shouldBe a[IngestStepSucceeded[_]]
+          val payload = createEnrichedBagInformationPayloadWith(
+            bagRootLocation = bagRootLocation,
+            version = 3
+          )
 
-              val destination = result.summary.destination
-              destination.path should endWith(
-                s"/${payload.externalIdentifier.toString}/v3"
-              )
+          val result =
+            withBagReplicatorWorker(bucket = archiveBucket) {
+              _.processMessage(payload).success.value
             }
-          }
+
+          result shouldBe a[IngestStepSucceeded[_]]
+
+          val destination = result.summary.destination
+          destination.path should endWith(
+            s"/${payload.externalIdentifier.toString}/v3"
+          )
         }
       }
     }
@@ -161,19 +180,23 @@ class BagReplicatorWorkerTest
     it("prefixes the key with the storage space if no root path is set") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          withBagReplicatorWorker(bucket = archiveBucket) { worker =>
-            withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+          val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+            bucket = ingestsBucket
+          )
 
-              val result = worker.processMessage(payload).success.value
-              result shouldBe a[IngestStepSucceeded[_]]
+          val payload = createEnrichedBagInformationPayloadWith(
+            bagRootLocation = bagRootLocation
+          )
 
-              val destination = result.summary.destination
-              destination.path should startWith(payload.storageSpace.underlying)
+          val result =
+            withBagReplicatorWorker(bucket = archiveBucket) {
+              _.processMessage(payload).success.value
             }
-          }
+
+          result shouldBe a[IngestStepSucceeded[_]]
+
+          val destination = result.summary.destination
+          destination.path should startWith(payload.storageSpace.underlying)
         }
       }
     }
@@ -181,22 +204,24 @@ class BagReplicatorWorkerTest
     it("prefixes the key with the root path if set") {
       withLocalS3Bucket { ingestsBucket =>
         withLocalS3Bucket { archiveBucket =>
-          withBagReplicatorWorker(
-            bucket = archiveBucket,
-            rootPath = Some("rootprefix")
-          ) { worker =>
-            withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
-              )
+          val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+            bucket = ingestsBucket
+          )
 
-              val result = worker.processMessage(payload).success.value
-              result shouldBe a[IngestStepSucceeded[_]]
+          val payload = createEnrichedBagInformationPayloadWith(
+            bagRootLocation = bagRootLocation
+          )
 
-              val destination = result.summary.destination
-              destination.path should startWith("rootprefix/")
+          val result =
+            withBagReplicatorWorker(
+              bucket = archiveBucket,
+              rootPath = Some("rootprefix")
+            ) {
+              _.processMessage(payload).success.value
             }
-          }
+
+          val destination = result.summary.destination
+          destination.path should startWith("rootprefix/")
         }
       }
     }
@@ -207,31 +232,41 @@ class BagReplicatorWorkerTest
       // We have to create a large bag to slow down the replicators, or the
       // first process finishes and releases the lock before the later
       // processes have started.
-      withBagObjects(bucket, objectCount = 500) { bagRootLocation =>
-        withBagReplicatorWorker(bucket = bucket) { worker =>
-          val payload = createEnrichedBagInformationPayloadWith(
-            bagRootLocation = bagRootLocation
-          )
+      val bagBuilder = new S3BagBuilderBase {
+        override def getFetchEntryCount(payloadFileCount: Int): Int = 0
+      }
 
-          val futures: Future[Seq[IngestStepResult[ReplicationSummary]]] =
-            Future.sequence(
-              (1 to 5).map { i =>
-                Future.successful(i).flatMap { _ =>
-                  // Introduce a tiny bit of fudge to cope with the fact that the memory
-                  // locking service isn't thread-safe.
-                  Thread.sleep(i * 150)
+      val (bagRootLocation, _) = bagBuilder.createS3BagWith(
+        bucket = bucket,
+        payloadFileCount = 500
+      )
 
-                  Future.fromTry {
-                    worker.processMessage(payload)
-                  }
+      val payload = createEnrichedBagInformationPayloadWith(
+        bagRootLocation = bagRootLocation
+      )
+
+      withBagReplicatorWorker(bucket = bucket) { worker =>
+        val futures: Future[Seq[IngestStepResult[ReplicationSummary]]] =
+          Future.sequence(
+            (1 to 5).map { i =>
+              Future.successful(i).flatMap { _ =>
+                // Introduce a tiny bit of fudge to cope with the fact that the memory
+                // locking service isn't thread-safe.
+                Thread.sleep(i * 150)
+
+                // We can't just wrap the Try directly, because Future.fromTry
+                // waits for the Try to finish -- flat-mapping a Future.successful()
+                // allows us to run multiple Try processes at once.
+                Future.fromTry {
+                  worker.processMessage(payload)
                 }
               }
-            )
+            }
+          )
 
-          whenReady(futures) { result =>
-            result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 1
-            result.count { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 4
-          }
+        whenReady(futures) { result =>
+          result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 1
+          result.count { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 4
         }
       }
     }
@@ -246,42 +281,40 @@ class BagReplicatorWorkerTest
     }
 
     withLocalS3Bucket { bucket =>
-      withBagObjects(bucket) { bagRootLocation =>
-        val ingests = new MemoryMessageSender()
-        val outgoing = new MemoryMessageSender()
-        withLocalSqsQueue { queue =>
-          withBagReplicatorWorker(
-            queue = queue,
-            bucket = bucket,
-            ingests = ingests,
-            outgoing = outgoing,
-            lockServiceDao = neverAllowLockDao
-          ) { _ =>
-            val payload = createEnrichedBagInformationPayloadWith(
-              bagRootLocation = bagRootLocation
-            )
+      val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+        bucket = bucket
+      )
 
-            sendNotificationToSQS(queue, payload)
+      val payload = createEnrichedBagInformationPayloadWith(
+        bagRootLocation = bagRootLocation
+      )
 
-            // Give the worker time to pick up the message, discover it
-            // can't lock, and mark the message visibility timeout.
-            Thread.sleep(2000)
+      withLocalSqsQueue { queue =>
+        withBagReplicatorWorker(
+          queue = queue,
+          bucket = bucket,
+          lockServiceDao = neverAllowLockDao
+        ) { _ =>
+          sendNotificationToSQS(queue, payload)
 
-            eventually {
-              val queueAttributes =
-                sqsClient
-                  .getQueueAttributes(
-                    queue.url,
-                    List(
-                      "ApproximateNumberOfMessagesNotVisible",
-                      "ApproximateNumberOfMessages"
-                    ).asJava
-                  )
-                  .getAttributes
+          // Give the worker time to pick up the message, discover it
+          // can't lock, and mark the message visibility timeout.
+          Thread.sleep(2000)
 
-              queueAttributes.get("ApproximateNumberOfMessagesNotVisible") shouldBe "1"
-              queueAttributes.get("ApproximateNumberOfMessages") shouldBe "0"
-            }
+          eventually {
+            val queueAttributes =
+              sqsClient
+                .getQueueAttributes(
+                  queue.url,
+                  List(
+                    "ApproximateNumberOfMessagesNotVisible",
+                    "ApproximateNumberOfMessages"
+                  ).asJava
+                )
+                .getAttributes
+
+            queueAttributes.get("ApproximateNumberOfMessagesNotVisible") shouldBe "1"
+            queueAttributes.get("ApproximateNumberOfMessages") shouldBe "0"
           }
         }
       }
