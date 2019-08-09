@@ -41,6 +41,20 @@ trait BagReplicatorFixtures
     with MemoryLockDaoFixtures
     with S3Fixtures {
 
+  type ReplicatorLockingService =
+    LockingService[IngestStepResult[
+      ReplicationSummary
+      ], Try, LockDao[String, UUID]]
+
+  def createLockingService(lockServiceDao: LockDao[String, UUID]): ReplicatorLockingService =
+    new ReplicatorLockingService {
+      override implicit val lockDao: LockDao[String, UUID] =
+        lockServiceDao
+
+      override protected def createContextId(): lockDao.ContextId =
+        UUID.randomUUID()
+    }
+
   def withBagReplicatorWorker[R](
     queue: Queue =
       Queue(randomAlphanumericWithLength(), randomAlphanumericWithLength()),
@@ -57,15 +71,7 @@ trait BagReplicatorFixtures
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
       withMonitoringClient { implicit monitoringClient =>
-        val lockingService = new LockingService[IngestStepResult[
-          ReplicationSummary
-        ], Try, LockDao[String, UUID]] {
-          override implicit val lockDao: LockDao[String, UUID] =
-            lockServiceDao
-
-          override protected def createContextId(): lockDao.ContextId =
-            UUID.randomUUID()
-        }
+        val lockingService = createLockingService(lockServiceDao)
 
         val replicatorDestinationConfig =
           createReplicatorDestinationConfigWith(bucket, rootPath)
