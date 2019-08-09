@@ -40,6 +40,9 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
         ()
       }
 
+  override def formatLocation(location: ObjectLocation): String =
+    s"s3://$location"
+
   override def buildMessageFor(
     srcLocation: ObjectLocation,
     error: UnpackerError
@@ -47,7 +50,9 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
     error match {
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("Access Denied") =>
-        Some(s"Access denied while trying to read s3://$srcLocation")
+        Some(
+          s"Access denied while trying to read ${formatLocation(srcLocation)}"
+        )
 
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("The specified bucket is not valid") =>
@@ -57,11 +62,8 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
           if exc.getMessage.startsWith("The specified bucket does not exist") =>
         Some(s"There is no S3 bucket ${srcLocation.namespace}")
 
-      case UnpackerStorageError(DoesNotExistError(exc: AmazonS3Exception)) =>
-        Some(s"There is no archive at s3://$srcLocation")
-
       case _ =>
-        println(error)
+        warn(s"Error unpacking bag at $srcLocation: $error")
         super.buildMessageFor(srcLocation, error)
     }
 }

@@ -130,35 +130,33 @@ trait UnpackerTestCases[Namespace]
 
   it("fails if the specified file is not in tar.gz format") {
     withNamespace { srcNamespace =>
-      withNamespace { dstNamespace =>
-        withStreamStore { implicit streamStore =>
-          val srcLocation = createObjectLocationWith(
-            namespace = srcNamespace,
-            path = randomAlphanumeric
+      withStreamStore { implicit streamStore =>
+        val srcLocation = createObjectLocationWith(
+          namespace = srcNamespace,
+          path = randomAlphanumeric
+        )
+
+        streamStore.put(srcLocation)(
+          stringCodec.toStream("hello world").right.value
+        ) shouldBe a[Right[_, _]]
+
+        val result =
+          unpacker.unpack(
+            ingestId = createIngestID,
+            srcLocation = srcLocation,
+            dstLocation = createObjectLocationPrefix
           )
 
-          streamStore.put(srcLocation)(
-            stringCodec.toStream("hello world").right.value
-          ) shouldBe a[Right[_, _]]
+        val ingestResult = result.success.value
+        ingestResult shouldBe a[IngestFailed[_]]
+        ingestResult.summary.fileCount shouldBe 0
+        ingestResult.summary.bytesUnpacked shouldBe 0
 
-          val result =
-            unpacker.unpack(
-              ingestId = createIngestID,
-              srcLocation = srcLocation,
-              dstLocation = createObjectLocationPrefix
-            )
-
-          val ingestResult = result.success.value
-          ingestResult shouldBe a[IngestFailed[_]]
-          ingestResult.summary.fileCount shouldBe 0
-          ingestResult.summary.bytesUnpacked shouldBe 0
-
-          val ingestFailed =
-            ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
-          ingestFailed.maybeUserFacingMessage.get should startWith(
-            s"Error trying to unpack the archive at $srcLocation"
-          )
-        }
+        val ingestFailed =
+          ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
+        ingestFailed.maybeUserFacingMessage.get should startWith(
+          s"Error trying to unpack the archive at"
+        )
       }
     }
   }

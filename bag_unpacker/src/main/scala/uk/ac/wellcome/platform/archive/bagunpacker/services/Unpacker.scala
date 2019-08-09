@@ -34,6 +34,8 @@ trait Unpacker extends Logging {
     inputStream: InputStreamWithLength
   ): Either[StorageError, Unit]
 
+  def formatLocation(location: ObjectLocation): String
+
   def unpack(
     ingestId: IngestID,
     srcLocation: ObjectLocation,
@@ -81,11 +83,11 @@ trait Unpacker extends Logging {
   ): Option[String] =
     error match {
       case UnpackerStorageError(_: DoesNotExistError) =>
-        Some(s"There is no archive at $srcLocation")
+        Some(s"There is no archive at ${formatLocation(srcLocation)}")
 
       case UnpackerUnarchiverError(_) =>
         Some(
-          s"Error trying to unpack the archive at $srcLocation - is it the correct format?"
+          s"Error trying to unpack the archive at ${formatLocation(srcLocation)} - is it the correct format?"
         )
 
       case _ => None
