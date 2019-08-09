@@ -252,17 +252,18 @@ class BagReplicatorWorkerTest
           val futures: Future[Seq[IngestStepResult[ReplicationSummary]]] =
             Future.sequence(
               (1 to 5).map { i =>
-                Future.successful(i).flatMap { _ =>
-                  // Introduce a tiny bit of fudge to cope with the fact that the memory
-                  // locking service isn't thread-safe.
-                  Thread.sleep(i * 150)
+                Future.successful(i).flatMap {
+                  _ =>
+                    // Introduce a tiny bit of fudge to cope with the fact that the memory
+                    // locking service isn't thread-safe.
+                    Thread.sleep(i * 150)
 
-                  // We can't just wrap the Try directly, because Future.fromTry
-                  // waits for the Try to finish -- flat-mapping a Future.successful()
-                  // allows us to run multiple Try processes at once.
-                  Future.fromTry {
-                    worker.processMessage(payload)
-                  }
+                    // We can't just wrap the Try directly, because Future.fromTry
+                    // waits for the Try to finish -- flat-mapping a Future.successful()
+                    // allows us to run multiple Try processes at once.
+                    Future.fromTry {
+                      worker.processMessage(payload)
+                    }
                 }
               }
             )

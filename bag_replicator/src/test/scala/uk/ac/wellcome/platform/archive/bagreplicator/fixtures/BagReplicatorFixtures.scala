@@ -44,9 +44,11 @@ trait BagReplicatorFixtures
   type ReplicatorLockingService =
     LockingService[IngestStepResult[
       ReplicationSummary
-      ], Try, LockDao[String, UUID]]
+    ], Try, LockDao[String, UUID]]
 
-  def createLockingService(lockServiceDao: LockDao[String, UUID]): ReplicatorLockingService =
+  def createLockingService(
+    lockServiceDao: LockDao[String, UUID]
+  ): ReplicatorLockingService =
     new ReplicatorLockingService {
       override implicit val lockDao: LockDao[String, UUID] =
         lockServiceDao
