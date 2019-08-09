@@ -155,7 +155,8 @@ trait UnpackerTestCases[Namespace]
         val ingestFailed =
           ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
         ingestFailed.maybeUserFacingMessage.get should startWith(
-          s"Error trying to unpack the archive at")
+          s"Error trying to unpack the archive at"
+        )
       }
     }
   }

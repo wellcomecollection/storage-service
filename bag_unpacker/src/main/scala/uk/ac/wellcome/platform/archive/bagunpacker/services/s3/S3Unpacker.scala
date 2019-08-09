@@ -50,7 +50,9 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
     error match {
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("Access Denied") =>
-        Some(s"Access denied while trying to read ${formatLocation(srcLocation)}")
+        Some(
+          s"Access denied while trying to read ${formatLocation(srcLocation)}"
+        )
 
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("The specified bucket is not valid") =>

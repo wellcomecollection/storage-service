@@ -87,7 +87,8 @@ trait Unpacker extends Logging {
 
       case UnpackerUnarchiverError(_) =>
         Some(
-          s"Error trying to unpack the archive at ${formatLocation(srcLocation)} - is it the correct format?")
+          s"Error trying to unpack the archive at ${formatLocation(srcLocation)} - is it the correct format?"
+        )
 
       case _ => None
     }
