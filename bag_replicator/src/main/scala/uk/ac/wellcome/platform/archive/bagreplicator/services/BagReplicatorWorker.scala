@@ -7,6 +7,7 @@ import akka.actor.ActorSystem
 import cats.instances.try_._
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
+import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
@@ -15,12 +16,16 @@ import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
-import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
+import uk.ac.wellcome.storage.locking.{
+  FailedLockingServiceOp,
+  LockDao,
+  LockingService
+}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
+import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
@@ -70,21 +75,68 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   def replicate(
     payload: EnrichedBagInformationPayload,
     destination: ObjectLocationPrefix
-  ): Try[IngestStepResult[ReplicationSummary]] =
+  ): Try[IngestStepResult[ReplicationSummary]] = {
+    val src = payload.bagRootLocation.asPrefix
+
     for {
-      replicationSummary <- bagReplicator.replicate(
-        bagRootLocation = payload.bagRootLocation,
+      ingestStep: IngestStepResult[ReplicationSummary] <- bagReplicator.replicate(
+        bagRootLocation = src,
         destination = destination,
         storageSpace = payload.storageSpace
       )
-      _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
+
+      result <- checkTagManifestsAreTheSame(src, destination) match {
+        case Success(_) => Success(ingestStep)
+        case Failure(err) =>
+          Success(
+            IngestFailed(
+              summary = ingestStep.summary,
+              e = err
+            )
+          )
+      }
+
+      _ <- ingestUpdater.send(payload.ingestId, result)
       _ <- outgoingPublisher.sendIfSuccessful(
-        replicationSummary,
+        result,
         payload.copy(
-          bagRootLocation = replicationSummary.summary.destination.asLocation()
+          bagRootLocation = ingestStep.summary.destination.asLocation()
         )
       )
-    } yield replicationSummary
+    } yield result
+  }
+
+  /** This step is here to check the bag created by the replica and the
+    * original bag are the same; the verifier can only check that a
+    * bag is correctly formed.
+    *
+    * Without this check, it would be possible for the replicator to
+    * write an entirely different, valid bag -- and the pipeline would
+    * never notice.
+    *
+    */
+  def checkTagManifestsAreTheSame(
+    src: ObjectLocationPrefix,
+    dst: ObjectLocationPrefix
+  ): Try[Unit] = Try {
+    val manifests =
+      for {
+        srcManifest <- streamStore.get(src.asLocation("tagmanifest-sha256.txt"))
+        dstManifest <- streamStore.get(dst.asLocation("tagmanifest-sha256.txt"))
+      } yield (srcManifest, dstManifest)
+
+    manifests match {
+      case Right((Identified(_, srcStream), Identified(_, dstStream))) =>
+        if (IOUtils.contentEquals(srcStream, dstStream)) {
+          ()
+        } else {
+          throw new Throwable("bag-info.txt in replica source and replica location do not match!")
+        }
+      case err =>
+        throw new Throwable(s"Unable to load bag-info.txt in source and replica to compare: $err")
+    }
+  }
+
 
   def lockFailed(
     payload: EnrichedBagInformationPayload,
@@ -97,7 +149,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
       warn(s"Unable to lock successfully: $failedLockingServiceOp")
       IngestShouldRetry(
         ReplicationSummary(
-          bagRootLocation = payload.bagRootLocation,
+          bagRootLocation = payload.bagRootLocation.asPrefix,
           storageSpace = payload.storageSpace,
           destination = destination,
           startTime = Instant.now

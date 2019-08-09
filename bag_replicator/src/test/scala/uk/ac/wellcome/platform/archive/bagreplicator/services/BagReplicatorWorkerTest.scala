@@ -23,6 +23,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.transfer.s3.{S3PrefixTransfer, S3Transfer}
 import uk.ac.wellcome.storage.transfer.{
   TransferFailure,
@@ -371,6 +372,9 @@ class BagReplicatorWorkerTest
             implicit val prefixTransfer: S3PrefixTransfer =
               new S3PrefixTransfer()
 
+            implicit val streamStore: S3StreamStore =
+              new S3StreamStore()
+
             val service = new BagReplicatorWorker(
               config = createAlpakkaSQSWorkerConfig(queue),
               bagReplicator = new BagReplicator(),
@@ -387,6 +391,9 @@ class BagReplicatorWorkerTest
 
               val serviceResult = service.processMessage(payload)
               serviceResult.success.value shouldBe a[IngestFailed[_]]
+
+              val ingestFailed = serviceResult.success.value.asInstanceOf[IngestFailed[_]]
+              ingestFailed.e.getMessage shouldBe "bag-info.txt in replica source and replica location do not match!"
             }
           }
         }

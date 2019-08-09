@@ -37,6 +37,7 @@ import scala.util.Try
 import uk.ac.wellcome.json.JsonUtil._
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 object Main extends WellcomeTypesafeApp {
@@ -75,6 +76,9 @@ object Main extends WellcomeTypesafeApp {
 
     val lockingService =
       new DynamoLockingService[IngestStepResult[ReplicationSummary], Try]()
+
+    implicit val s3StreamStore: S3StreamStore =
+      new S3StreamStore()
 
     new BagReplicatorWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),

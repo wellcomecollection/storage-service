@@ -18,21 +18,22 @@ import uk.ac.wellcome.platform.archive.bagreplicator.services.{
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
-  OperationFixtures
+  OperationFixtures,
+  S3BagBuilderBase
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.locking.memory.{
   MemoryLockDao,
   MemoryLockDaoFixtures
 }
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 import scala.collection.JavaConverters._
-import scala.util.{Random, Try}
+import scala.util.Try
 
 trait BagReplicatorFixtures
     extends Akka
@@ -40,7 +41,7 @@ trait BagReplicatorFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture
     with MemoryLockDaoFixtures
-    with S3Fixtures {
+    with S3BagBuilderBase {
 
   def createLockingServiceWith(
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {}
@@ -82,6 +83,9 @@ trait BagReplicatorFixtures
         implicit val prefixTransfer: S3PrefixTransfer =
           S3PrefixTransfer()
 
+        implicit val streamStore: S3StreamStore =
+          new S3StreamStore()
+
         val service = new BagReplicatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           bagReplicator = new BagReplicator(),
@@ -106,29 +110,20 @@ trait BagReplicatorFixtures
       rootPath = rootPath
     )
 
-  // Note: the replicator doesn't currently make any assumptions about
-  // the bag structure, so we just put a random collection of objects
-  // in the "bag".
   def withBagObjects[R](bucket: Bucket, objectCount: Int = 50)(
     testWith: TestWith[ObjectLocation, R]
   ): R = {
-    val rootLocation = createObjectLocationWith(bucket)
-
-    (1 to objectCount).map { _ =>
-      val parts = (1 to Random.nextInt(5)).map { _ =>
-        randomAlphanumeric
-      }
-
-      val location = rootLocation.join(parts: _*)
-
-      s3Client.putObject(
-        location.namespace,
-        location.path,
-        randomAlphanumeric
-      )
+    val builder = new S3BagBuilderBase {
+      override protected def getFetchEntryCount(payloadFileCount: Int): Int = 0
     }
 
-    testWith(rootLocation)
+    val (root, _) = builder.createS3BagWith(
+      bucket = bucket,
+      payloadFileCount = objectCount -
+        Seq("bag-info.txt", "bagit.txt", "manifest-sha256.txt", "tagmanifest-sha256.txt").size
+    )
+
+    testWith(root)
   }
 
   def verifyObjectsCopied(

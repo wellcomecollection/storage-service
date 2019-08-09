@@ -4,10 +4,10 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 case class ReplicationSummary(
-  bagRootLocation: ObjectLocation,
+  bagRootLocation: ObjectLocationPrefix,
   storageSpace: StorageSpace,
   destination: ObjectLocationPrefix,
   startTime: Instant,

@@ -21,7 +21,7 @@ class BagReplicator(
 ) extends Logging {
 
   def replicate(
-    bagRootLocation: ObjectLocation,
+    bagRootLocation: ObjectLocationPrefix,
     storageSpace: StorageSpace,
     destination: ObjectLocationPrefix
   ): Try[IngestStepResult[ReplicationSummary]] = {
@@ -35,7 +35,7 @@ class BagReplicator(
     // TODO: Plumb the LocationPrefix type back up through destination
     val copyResult =
       prefixTransfer.transferPrefix(
-        srcPrefix = bagRootLocation.asPrefix,
+        srcPrefix = bagRootLocation,
         dstPrefix = destination
       )
 
