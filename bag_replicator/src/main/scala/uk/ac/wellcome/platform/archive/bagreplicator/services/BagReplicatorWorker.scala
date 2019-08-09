@@ -68,28 +68,27 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
 
     } yield result
 
-  def replicate(
-    payload: EnrichedBagInformationPayload,
-    destination: ObjectLocationPrefix
+  def replicate(payload: EnrichedBagInformationPayload,
+    dstPrefix: ObjectLocationPrefix
   ): Try[IngestStepResult[ReplicationSummary]] =
     for {
       replicationSummary <- bagReplicator.replicate(
-        bagRootLocation = payload.bagRootLocation,
-        destination = destination,
-        storageSpace = payload.storageSpace
+        srcPrefix = payload.bagRootLocation.asPrefix,
+        dstPrefix = dstPrefix,
+        space = payload.storageSpace
       )
       _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         replicationSummary,
         payload.copy(
-          bagRootLocation = replicationSummary.summary.destination.asLocation()
+          bagRootLocation = replicationSummary.summary.dstPrefix.asLocation()
         )
       )
     } yield replicationSummary
 
   def lockFailed(
     payload: EnrichedBagInformationPayload,
-    destination: ObjectLocationPrefix
+    dstPrefix: ObjectLocationPrefix
   ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
     ReplicationSummary
   ]], IngestStepResult[ReplicationSummary]] = {
@@ -98,9 +97,9 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
       warn(s"Unable to lock successfully: $failedLockingServiceOp")
       IngestShouldRetry(
         ReplicationSummary(
-          bagRootLocation = payload.bagRootLocation,
-          storageSpace = payload.storageSpace,
-          destination = destination,
+          srcPrefix = payload.bagRootLocation.asPrefix,
+          dstPrefix = dstPrefix,
+          space = payload.storageSpace,
           startTime = Instant.now
         ),
         new Throwable(

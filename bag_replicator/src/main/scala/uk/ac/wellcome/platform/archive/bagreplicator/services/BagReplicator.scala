@@ -21,22 +21,22 @@ class BagReplicator(
 ) extends Logging {
 
   def replicate(
-    bagRootLocation: ObjectLocation,
-    storageSpace: StorageSpace,
-    destination: ObjectLocationPrefix
+    srcPrefix: ObjectLocationPrefix,
+    space: StorageSpace,
+    dstPrefix: ObjectLocationPrefix
   ): Try[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
-      bagRootLocation = bagRootLocation,
-      storageSpace = storageSpace,
-      destination = destination
+      srcPrefix = srcPrefix,
+      dstPrefix = dstPrefix,
+      space = space
     )
 
     // TODO: Plumb the LocationPrefix type back up through destination
     val copyResult =
       prefixTransfer.transferPrefix(
-        srcPrefix = bagRootLocation.asPrefix,
-        dstPrefix = destination
+        srcPrefix = srcPrefix,
+        dstPrefix = dstPrefix
       )
 
     copyResult match {

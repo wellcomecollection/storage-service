@@ -106,7 +106,7 @@ class BagReplicatorWorkerTest
 
           result shouldBe a[IngestStepSucceeded[_]]
 
-          val destination = result.summary.destination
+          val destination = result.summary.dstPrefix
           destination.namespace shouldBe archiveBucket.name
         }
       }
@@ -135,7 +135,7 @@ class BagReplicatorWorkerTest
 
           result shouldBe a[IngestStepSucceeded[_]]
 
-          val destination = result.summary.destination
+          val destination = result.summary.dstPrefix
           val expectedPath =
             Paths
               .get(
@@ -169,7 +169,7 @@ class BagReplicatorWorkerTest
 
           result shouldBe a[IngestStepSucceeded[_]]
 
-          val destination = result.summary.destination
+          val destination = result.summary.dstPrefix
           destination.path should endWith(
             s"/${payload.externalIdentifier.toString}/v3"
           )
@@ -195,7 +195,7 @@ class BagReplicatorWorkerTest
 
           result shouldBe a[IngestStepSucceeded[_]]
 
-          val destination = result.summary.destination
+          val destination = result.summary.dstPrefix
           destination.path should startWith(payload.storageSpace.underlying)
         }
       }
@@ -220,7 +220,7 @@ class BagReplicatorWorkerTest
               _.processMessage(payload).success.value
             }
 
-          val destination = result.summary.destination
+          val destination = result.summary.dstPrefix
           destination.path should startWith("rootprefix/")
         }
       }
