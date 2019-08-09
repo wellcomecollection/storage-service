@@ -16,8 +16,8 @@ class BagRegisterFeatureTest
     with Matchers
     with BagRegisterFixtures
     with PayloadGenerators
-    with IntegrationPatience
-    with Eventually {
+    with Eventually
+    with IntegrationPatience {
 
   it("sends an update if it registers a bag") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
