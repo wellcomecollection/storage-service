@@ -130,10 +130,10 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
         if (IOUtils.contentEquals(srcStream, dstStream)) {
           ()
         } else {
-          throw new Throwable("bag-info.txt in replica source and replica location do not match!")
+          throw new Throwable("tagmanifest-sha256.txt in replica source and replica location do not match!")
         }
       case err =>
-        throw new Throwable(s"Unable to load bag-info.txt in source and replica to compare: $err")
+        throw new Throwable(s"Unable to load tagmanifest-sha256.txt in source and replica to compare: $err")
     }
   }
 
