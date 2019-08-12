@@ -54,8 +54,6 @@ stages:
   - services
 
 before_install:
-  - if [[ "$SBT_PROJECT" == "bag_versioner" ]]; then rm -rf ~/.sbt; rm -rf ~/.ivy2/cache; rm -rf project/target; rm -rf target; rm -rf bag_versioner/target; fi
-
   - openssl aes-256-cbc -K $encrypted_83630750896a_key -iv $encrypted_83630750896a_iv -in secrets.zip.enc -out secrets.zip -d
   - unzip secrets.zip
   - chmod 600 id_rsa
