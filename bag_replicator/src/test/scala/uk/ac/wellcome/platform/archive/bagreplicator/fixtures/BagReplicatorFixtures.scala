@@ -104,7 +104,9 @@ trait BagReplicatorFixtures
       }
     }
 
-  def createReplicatorDestinationConfigWith(bucket: Bucket): ReplicatorDestinationConfig =
+  def createReplicatorDestinationConfigWith(
+    bucket: Bucket
+  ): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
       namespace = bucket.name
     )
