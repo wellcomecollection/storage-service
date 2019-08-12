@@ -10,6 +10,7 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   S3BagBuilder,
   S3BagBuilderBase
@@ -161,7 +162,7 @@ class BagReplicatorWorkerTest
 
           val payload = createEnrichedBagInformationPayloadWith(
             bagRootLocation = srcBagLocation,
-            version = 3
+            version = BagVersion(3)
           )
 
           val result =

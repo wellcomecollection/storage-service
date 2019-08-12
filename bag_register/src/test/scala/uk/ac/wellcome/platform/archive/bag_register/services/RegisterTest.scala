@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bag_register.services
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagBuilder,
@@ -44,7 +43,7 @@ class RegisterTest
     )
 
     val space = createStorageSpace
-    val version = randomInt(1, 15)
+    val version = createBagVersion
 
     val storageManifestDao = createStorageManifestDao()
 
@@ -57,7 +56,7 @@ class RegisterTest
     val (bagObjects, bagRoot, _) =
       withNamespace { implicit namespace =>
         BagBuilder.createBagContentsWith(
-          version = BagVersion(version)
+          version = version
         )
       }
 
@@ -76,7 +75,7 @@ class RegisterTest
       bagRootLocation = bagRoot.copy(
         namespace = bagRoot.namespace + "_wrong"
       ),
-      version = BagVersion(version),
+      version = version,
       storageSpace = space
     )
 

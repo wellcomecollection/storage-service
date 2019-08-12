@@ -27,7 +27,7 @@ class BagRegisterFeatureTest
       case (_, storageManifestDao, ingests, _, queuePair) =>
         val createdAfterDate = Instant.now()
         val space = createStorageSpace
-        val version = randomInt(1, 15)
+        val version = createBagVersion
         val dataFileCount = randomInt(1, 15)
         val externalIdentifier = createExternalIdentifier
 
