@@ -3,13 +3,11 @@ package uk.ac.wellcome.platform.archive.bagreplicator.models
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 case class ReplicationSummary(
-  bagRootLocation: ObjectLocation,
-  storageSpace: StorageSpace,
-  destination: ObjectLocationPrefix,
+  srcPrefix: ObjectLocationPrefix,
+  dstPrefix: ObjectLocationPrefix,
   startTime: Instant,
   maybeEndTime: Option[Instant] = None
 ) extends Summary {
@@ -19,8 +17,8 @@ case class ReplicationSummary(
     )
 
   override def toString: String =
-    f"""|src=$bagRootLocation
-        |dst=$destination
+    f"""|src=$srcPrefix
+        |dst=$dstPrefix
         |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")

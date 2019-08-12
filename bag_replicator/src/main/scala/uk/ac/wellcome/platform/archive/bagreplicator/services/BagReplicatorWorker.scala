@@ -54,7 +54,9 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
-      destination = destinationBuilder.buildDestination(
+      srcPrefix = payload.bagRootLocation.asPrefix
+
+      dstPrefix = destinationBuilder.buildDestination(
         storageSpace = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier,
         version = payload.version
@@ -62,34 +64,33 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
 
       result <- lockingService
         .withLock(payload.ingestId.toString) {
-          replicate(payload, destination)
+          replicate(payload, dstPrefix)
         }
-        .map(lockFailed(payload, destination).apply(_))
+        .map(lockFailed(srcPrefix, dstPrefix).apply(_))
 
     } yield result
 
   def replicate(
     payload: EnrichedBagInformationPayload,
-    destination: ObjectLocationPrefix
+    dstPrefix: ObjectLocationPrefix
   ): Try[IngestStepResult[ReplicationSummary]] =
     for {
       replicationSummary <- bagReplicator.replicate(
-        bagRootLocation = payload.bagRootLocation,
-        destination = destination,
-        storageSpace = payload.storageSpace
+        srcPrefix = payload.bagRootLocation.asPrefix,
+        dstPrefix = dstPrefix
       )
       _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
       _ <- outgoingPublisher.sendIfSuccessful(
         replicationSummary,
         payload.copy(
-          bagRootLocation = replicationSummary.summary.destination.asLocation()
+          bagRootLocation = replicationSummary.summary.dstPrefix.asLocation()
         )
       )
     } yield replicationSummary
 
   def lockFailed(
-    payload: EnrichedBagInformationPayload,
-    destination: ObjectLocationPrefix
+    srcPrefix: ObjectLocationPrefix,
+    dstPrefix: ObjectLocationPrefix
   ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
     ReplicationSummary
   ]], IngestStepResult[ReplicationSummary]] = {
@@ -98,9 +99,8 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
       warn(s"Unable to lock successfully: $failedLockingServiceOp")
       IngestShouldRetry(
         ReplicationSummary(
-          bagRootLocation = payload.bagRootLocation,
-          storageSpace = payload.storageSpace,
-          destination = destination,
+          srcPrefix = srcPrefix,
+          dstPrefix = dstPrefix,
           startTime = Instant.now
         ),
         new Throwable(

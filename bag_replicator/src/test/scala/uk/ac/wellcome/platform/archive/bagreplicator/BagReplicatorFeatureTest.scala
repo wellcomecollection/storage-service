@@ -8,6 +8,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.fixtures.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 
@@ -20,65 +21,67 @@ class BagReplicatorFeatureTest
     with PayloadGenerators {
 
   it("replicates a bag successfully and updates both topics") {
-    withLocalS3Bucket { ingestsBucket =>
-      withLocalS3Bucket { archiveBucket =>
+    withLocalS3Bucket { srcBucket =>
+      withLocalS3Bucket { dstBucket =>
         val rootPath = randomAlphanumericWithLength()
 
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
+        val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+          bucket = srcBucket
+        )
+
+        val payload = createEnrichedBagInformationPayloadWith(
+          bagRootLocation = srcBagLocation
+        )
+
         withLocalSqsQueue { queue =>
           withBagReplicatorWorker(
             queue,
-            bucket = archiveBucket,
+            bucket = dstBucket,
             rootPath = Some(rootPath),
             ingests,
             outgoing,
             stepName = "replicating"
           ) { _ =>
-            withBagObjects(ingestsBucket) { bagRootLocation =>
-              val payload = createEnrichedBagInformationPayloadWith(
-                bagRootLocation = bagRootLocation
+            sendNotificationToSQS(queue, payload)
+
+            eventually {
+              val expectedDst = createObjectLocationWith(
+                bucket = dstBucket,
+                key = Paths
+                  .get(
+                    rootPath,
+                    payload.storageSpace.toString,
+                    payload.externalIdentifier.toString,
+                    payload.version.toString
+                  )
+                  .toString
               )
 
-              sendNotificationToSQS(queue, payload)
+              val expectedPayload = payload.copy(
+                bagRootLocation = expectedDst
+              )
 
-              eventually {
-                val expectedDst = createObjectLocationWith(
-                  bucket = archiveBucket,
-                  key = Paths
-                    .get(
-                      rootPath,
-                      payload.storageSpace.toString,
-                      payload.externalIdentifier.toString,
-                      payload.version.toString
-                    )
-                    .toString
-                )
+              outgoing
+                .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                expectedPayload
+              )
 
-                val expectedPayload = payload.copy(
-                  bagRootLocation = expectedDst
-                )
+              verifyObjectsCopied(
+                src = srcBagLocation,
+                dst = expectedDst
+              )
 
-                outgoing
-                  .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-                  expectedPayload
+              assertTopicReceivesIngestEvents(
+                payload.ingestId,
+                ingests,
+                expectedDescriptions = Seq(
+                  "Replicating started",
+                  "Replicating succeeded"
                 )
-
-                verifyObjectsCopied(
-                  src = bagRootLocation,
-                  dst = expectedDst
-                )
-
-                assertTopicReceivesIngestEvents(
-                  payload.ingestId,
-                  ingests,
-                  expectedDescriptions = Seq(
-                    "Replicating started",
-                    "Replicating succeeded"
-                  )
-                )
-              }
+              )
             }
           }
         }
