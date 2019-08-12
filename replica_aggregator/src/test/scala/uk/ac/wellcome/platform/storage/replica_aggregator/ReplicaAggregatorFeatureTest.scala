@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggreg
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 class ReplicaAggregatorFeatureTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ReplicaAggregatorFixtures
     with S3Fixtures
@@ -22,19 +22,22 @@ class ReplicaAggregatorFeatureTest
       withLocalS3Bucket { bucket =>
         val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
-        withReplicaAggregatorWorker(queuePair.queue, ingests, outgoing, stepName = "aggregating replicas") {
-          _ =>
+        withReplicaAggregatorWorker(
+          queuePair.queue,
+          ingests,
+          outgoing,
+          stepName = "aggregating replicas"
+        ) { _ =>
+          val payload = createEnrichedBagInformationPayloadWith(
+            context = createPipelineContextWith(
+              externalIdentifier = bagInfo.externalIdentifier
+            ),
+            bagRootLocation = bagRootLocation
+          )
 
-            val payload = createEnrichedBagInformationPayloadWith(
-              context = createPipelineContextWith(
-                externalIdentifier = bagInfo.externalIdentifier
-              ),
-              bagRootLocation = bagRootLocation
-            )
+          sendNotificationToSQS(queuePair.queue, payload)
 
-            sendNotificationToSQS(queuePair.queue, payload)
-
-            true shouldBe false
+          true shouldBe false
         }
       }
     }

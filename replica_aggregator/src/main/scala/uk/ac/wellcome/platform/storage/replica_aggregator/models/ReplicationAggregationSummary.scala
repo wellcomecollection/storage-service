@@ -27,27 +27,25 @@ sealed trait ReplicationAggregationSummary extends Summary {
             |duration=$formatDuration
             |$status
           """.stripMargin
-          .
-            replaceAll("\n", ", ")
+          .replaceAll("\n", ", ")
     }
   }
 }
 
-
 case class ReplicationAggregationComplete(
-                                           replicationSet: ReplicationSet,
-                                           startTime: Instant,
-                                           endTime: Instant
-                                         ) extends ReplicationAggregationSummary
+  replicationSet: ReplicationSet,
+  startTime: Instant,
+  endTime: Instant
+) extends ReplicationAggregationSummary
 
 case class ReplicationAggregationIncomplete(
-                                             replicationSet: ReplicationSet,
-                                             startTime: Instant,
-                                             endTime: Instant
-                                           ) extends ReplicationAggregationSummary
+  replicationSet: ReplicationSet,
+  startTime: Instant,
+  endTime: Instant
+) extends ReplicationAggregationSummary
 
 case class ReplicationAggregationFailed(
-                                             replicationSet: ReplicationSet,
-                                             startTime: Instant,
-                                             endTime: Instant
-                                           ) extends ReplicationAggregationSummary
+  replicationSet: ReplicationSet,
+  startTime: Instant,
+  endTime: Instant
+) extends ReplicationAggregationSummary

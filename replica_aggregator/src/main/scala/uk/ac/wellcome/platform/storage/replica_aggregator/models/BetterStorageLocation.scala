@@ -9,5 +9,11 @@ sealed trait BetterStorageLocation {
   val location: ObjectLocation
 }
 
-case class PrimaryStorageLocation(provider: StorageProvider, location: ObjectLocation) extends BetterStorageLocation
-case class SecondaryStorageLocation(provider: StorageProvider, location: ObjectLocation) extends BetterStorageLocation
+case class PrimaryStorageLocation(
+  provider: StorageProvider,
+  location: ObjectLocation
+) extends BetterStorageLocation
+case class SecondaryStorageLocation(
+  provider: StorageProvider,
+  location: ObjectLocation
+) extends BetterStorageLocation

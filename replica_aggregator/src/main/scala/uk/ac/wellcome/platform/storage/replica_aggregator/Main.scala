@@ -5,10 +5,21 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
-import uk.ac.wellcome.platform.storage.replica_aggregator.services.{ReplicaAggregator, ReplicaAggregatorWorker}
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
+import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
+  ReplicaAggregator,
+  ReplicaAggregatorWorker
+}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
@@ -31,7 +42,7 @@ object Main extends WellcomeTypesafeApp {
     val operationName = OperationNameBuilder.getName(config)
 
     // TODO: Needs a versioned store!
-    val replicaAggregator = new ReplicaAggregator( )
+    val replicaAggregator = new ReplicaAggregator()
 
     new ReplicaAggregatorWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),

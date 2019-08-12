@@ -8,8 +8,16 @@ import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepSucceeded, IngestStepWorker}
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{ReplicaIdentifier, ReplicaResult, ReplicationAggregationSummary}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepSucceeded,
+  IngestStepWorker
+}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  ReplicaIdentifier,
+  ReplicaResult,
+  ReplicationAggregationSummary
+}
 
 import scala.util.Try
 
@@ -23,9 +31,14 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
   val wd: Decoder[EnrichedBagInformationPayload]
-) extends IngestStepWorker[EnrichedBagInformationPayload, ReplicationAggregationSummary] {
+) extends IngestStepWorker[
+      EnrichedBagInformationPayload,
+      ReplicationAggregationSummary
+    ] {
 
-  override def processMessage(payload: EnrichedBagInformationPayload): Try[IngestStepResult[ReplicationAggregationSummary]] = {
+  override def processMessage(
+    payload: EnrichedBagInformationPayload
+  ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
 
     val replicaResult = ReplicaResult(payload)
 
