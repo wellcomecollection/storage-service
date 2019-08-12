@@ -243,16 +243,18 @@ class BagReplicatorWorkerTest
 
   it("only allows one worker to process a destination") {
     withLocalS3Bucket { srcBucket =>
-      // We have to create a large bag to slow down the replicators, or the
-      // first process finishes and releases the lock before the later
-      // processes have started.
+      // We have to create enough files in the bag to keep the first
+      // replicator busy, otherwise it completes and unlocks, and the
+      // last replicator to start runs successfully.
+      //
+      // If this test becomes flaky, try increasing the payloadFileCount.
       val bagBuilder = new S3BagBuilderBase {
         override def getFetchEntryCount(payloadFileCount: Int): Int = 0
       }
 
       val (srcBagLocation, _) = bagBuilder.createS3BagWith(
         bucket = srcBucket,
-        payloadFileCount = 500
+        payloadFileCount = 10
       )
 
       val payload = createEnrichedBagInformationPayloadWith(
@@ -268,7 +270,7 @@ class BagReplicatorWorkerTest
                   _ =>
                     // Introduce a tiny bit of fudge to cope with the fact that the memory
                     // locking service isn't thread-safe.
-                    Thread.sleep(i * 150)
+                    Thread.sleep(i * 25)
 
                     // We can't just wrap the Try directly, because Future.fromTry
                     // waits for the Try to finish -- flat-mapping a Future.successful()
