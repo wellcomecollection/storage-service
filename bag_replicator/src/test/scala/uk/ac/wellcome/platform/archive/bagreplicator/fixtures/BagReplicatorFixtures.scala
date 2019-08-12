@@ -29,6 +29,7 @@ import uk.ac.wellcome.storage.locking.memory.{
   MemoryLockDaoFixtures
 }
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 import scala.util.Try
@@ -46,7 +47,7 @@ trait BagReplicatorFixtures
       ReplicationSummary
     ], Try, LockDao[String, UUID]]
 
-  def createLockingService(
+  def createLockingServiceWith(
     lockServiceDao: LockDao[String, UUID]
   ): ReplicatorLockingService =
     new ReplicatorLockingService {
@@ -56,6 +57,11 @@ trait BagReplicatorFixtures
       override protected def createContextId(): lockDao.ContextId =
         UUID.randomUUID()
     }
+
+  def createLockingService: ReplicatorLockingService =
+    createLockingServiceWith(
+      lockServiceDao = new MemoryLockDao[String, UUID] {}
+    )
 
   def withBagReplicatorWorker[R](
     queue: Queue =
@@ -73,13 +79,16 @@ trait BagReplicatorFixtures
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
       withMonitoringClient { implicit monitoringClient =>
-        val lockingService = createLockingService(lockServiceDao)
+        val lockingService = createLockingServiceWith(lockServiceDao)
 
         val replicatorDestinationConfig =
           createReplicatorDestinationConfigWith(bucket, rootPath)
 
         implicit val prefixTransfer: S3PrefixTransfer =
           S3PrefixTransfer()
+
+        implicit val s3StreamStore: S3StreamStore =
+          new S3StreamStore()
 
         val service = new BagReplicatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
@@ -96,9 +105,9 @@ trait BagReplicatorFixtures
       }
     }
 
-  private def createReplicatorDestinationConfigWith(
+  def createReplicatorDestinationConfigWith(
     bucket: Bucket,
-    rootPath: Option[String]
+    rootPath: Option[String] = None
   ): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
       namespace = bucket.name,
