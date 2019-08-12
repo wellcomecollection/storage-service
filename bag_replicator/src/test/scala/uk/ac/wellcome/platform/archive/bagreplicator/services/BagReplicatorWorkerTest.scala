@@ -339,7 +339,7 @@ class BagReplicatorWorkerTest
     }
   }
 
-  describe("checks the tagmanifest-sha256.txt is correct") {
+  describe("checks the tagmanifest-sha256.txt matches the original bag") {
     it("fails if the tag manifests don't match") {
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
