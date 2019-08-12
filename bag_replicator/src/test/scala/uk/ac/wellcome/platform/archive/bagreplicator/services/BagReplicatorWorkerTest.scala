@@ -427,10 +427,10 @@ class BagReplicatorWorkerTest
             bagRootLocation = srcBagLocation
           )
 
-            s3Client.deleteObject(
-              srcBagLocation.namespace,
-              srcBagLocation.join("tagmanifest-sha256.txt").path
-            )
+          s3Client.deleteObject(
+            srcBagLocation.namespace,
+            srcBagLocation.join("tagmanifest-sha256.txt").path
+          )
 
           val serviceResult =
             withBagReplicatorWorker(queue, dstBucket) {

@@ -125,8 +125,12 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   ): Try[Unit] = Try {
     val manifests =
       for {
-        srcManifest <- streamStore.get(srcPrefix.asLocation("tagmanifest-sha256.txt"))
-        dstManifest <- streamStore.get(dstPrefix.asLocation("tagmanifest-sha256.txt"))
+        srcManifest <- streamStore.get(
+          srcPrefix.asLocation("tagmanifest-sha256.txt")
+        )
+        dstManifest <- streamStore.get(
+          dstPrefix.asLocation("tagmanifest-sha256.txt")
+        )
       } yield (srcManifest, dstManifest)
 
     manifests match {
