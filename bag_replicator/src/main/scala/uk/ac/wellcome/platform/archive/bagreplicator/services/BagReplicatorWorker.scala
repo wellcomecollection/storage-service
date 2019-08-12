@@ -7,6 +7,7 @@ import akka.actor.ActorSystem
 import cats.instances.try_._
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
+import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
@@ -15,14 +16,16 @@ import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.locking.{
   FailedLockingServiceOp,
   LockDao,
   LockingService
 }
+import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
@@ -39,7 +42,8 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[EnrichedBagInformationPayload]
+  val wd: Decoder[EnrichedBagInformationPayload],
+  streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) extends IngestStepWorker[EnrichedBagInformationPayload, ReplicationSummary] {
   override val visibilityTimeout = 180
 
@@ -73,20 +77,73 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   def replicate(
     payload: EnrichedBagInformationPayload,
     dstPrefix: ObjectLocationPrefix
-  ): Try[IngestStepResult[ReplicationSummary]] =
+  ): Try[IngestStepResult[ReplicationSummary]] = {
+    val srcPrefix = payload.bagRootLocation.asPrefix
+
     for {
-      replicationSummary <- bagReplicator.replicate(
-        srcPrefix = payload.bagRootLocation.asPrefix,
-        dstPrefix = dstPrefix
-      )
-      _ <- ingestUpdater.send(payload.ingestId, replicationSummary)
+      ingestStep: IngestStepResult[ReplicationSummary] <- bagReplicator
+        .replicate(
+          srcPrefix = srcPrefix,
+          dstPrefix = dstPrefix
+        )
+
+      result <- checkTagManifestsAreTheSame(srcPrefix, dstPrefix) match {
+        case Success(_) => Success(ingestStep)
+        case Failure(err) =>
+          Success(
+            IngestFailed(
+              summary = ingestStep.summary,
+              e = err
+            )
+          )
+      }
+
+      _ <- ingestUpdater.send(payload.ingestId, result)
+
       _ <- outgoingPublisher.sendIfSuccessful(
-        replicationSummary,
+        result,
         payload.copy(
-          bagRootLocation = replicationSummary.summary.dstPrefix.asLocation()
+          bagRootLocation = result.summary.dstPrefix.asLocation()
         )
       )
-    } yield replicationSummary
+    } yield result
+  }
+
+  /** This step is here to check the bag created by the replica and the
+    * original bag are the same; the verifier can only check that a
+    * bag is correctly formed.
+    *
+    * Without this check, it would be possible for the replicator to
+    * write an entirely different, valid bag -- and because the verifier
+    * doesn't have context for the original bag, it wouldn't flag
+    * it as an error.
+    *
+    */
+  def checkTagManifestsAreTheSame(
+    srcPrefix: ObjectLocationPrefix,
+    dstPrefix: ObjectLocationPrefix
+  ): Try[Unit] = Try {
+    val manifests =
+      for {
+        srcManifest <- streamStore.get(srcPrefix.asLocation("tagmanifest-sha256.txt"))
+        dstManifest <- streamStore.get(dstPrefix.asLocation("tagmanifest-sha256.txt"))
+      } yield (srcManifest, dstManifest)
+
+    manifests match {
+      case Right((Identified(_, srcStream), Identified(_, dstStream))) =>
+        if (IOUtils.contentEquals(srcStream, dstStream)) {
+          ()
+        } else {
+          throw new Throwable(
+            "tagmanifest-sha256.txt in replica source and replica location do not match!"
+          )
+        }
+      case err =>
+        throw new Throwable(
+          s"Unable to load tagmanifest-sha256.txt in source and replica to compare: $err"
+        )
+    }
+  }
 
   def lockFailed(
     srcPrefix: ObjectLocationPrefix,

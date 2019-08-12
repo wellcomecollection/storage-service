@@ -29,6 +29,7 @@ import uk.ac.wellcome.storage.locking.memory.{
   MemoryLockDaoFixtures
 }
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 import scala.util.Try
@@ -85,6 +86,9 @@ trait BagReplicatorFixtures
 
         implicit val prefixTransfer: S3PrefixTransfer =
           S3PrefixTransfer()
+
+        implicit val s3StreamStore: S3StreamStore =
+          new S3StreamStore()
 
         val service = new BagReplicatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),

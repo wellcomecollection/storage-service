@@ -26,6 +26,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.transfer.s3.{S3PrefixTransfer, S3Transfer}
 import uk.ac.wellcome.storage.transfer.{
   TransferFailure,
@@ -380,6 +381,9 @@ class BagReplicatorWorkerTest
 
               implicit val prefixTransfer: S3PrefixTransfer =
                 new S3PrefixTransfer()
+
+              implicit val s3StreamStore: S3StreamStore =
+                new S3StreamStore()
 
               val service = new BagReplicatorWorker(
                 config = createAlpakkaSQSWorkerConfig(queue),
