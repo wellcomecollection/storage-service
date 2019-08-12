@@ -18,6 +18,8 @@ jobs:
     - env: SBT_PROJECT=bag_verifier
     - env: SBT_PROJECT=bag_unpacker
     - env: SBT_PROJECT=bag_versioner
+    - env: SBT_PROJECT=replica_aggregator
+
     - env: SBT_PROJECT=notifier
     - env: TASK=bagger-publish
     - env: TASK=python_client-test
@@ -45,6 +47,7 @@ cache:
     - ingests/target
     - ingests_common/target
     - notifier/target
+    - replica_aggregator/target
 
     - python_client/.tox
 

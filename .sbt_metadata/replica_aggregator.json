@@ -1,0 +1,7 @@
+{
+  "id" : "replica_aggregator",
+  "folder" : "replica_aggregator",
+  "dependencyIds" : [
+    "common"
+  ]
+}
