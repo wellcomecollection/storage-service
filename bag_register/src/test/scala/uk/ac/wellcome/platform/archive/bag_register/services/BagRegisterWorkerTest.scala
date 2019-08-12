@@ -5,7 +5,7 @@ import java.time.Instant
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
   PayloadGenerators
@@ -37,7 +37,7 @@ class BagRegisterWorkerTest
       case (service, storageManifestDao, ingests, _, _) =>
         val createdAfterDate = Instant.now()
         val space = createStorageSpace
-        val version = randomInt(1, 15)
+        val version = createBagVersion
         val dataFileCount = randomInt(1, 15)
         val externalIdentifier = createExternalIdentifier
 
@@ -77,7 +77,7 @@ class BagRegisterWorkerTest
                 StorageLocation(
                   provider = InfrequentAccessStorageProvider,
                   location = bagRootLocation.copy(
-                    path = bagRootLocation.path.stripSuffix(s"/v$version")
+                    path = bagRootLocation.path.stripSuffix(s"/$version")
                   )
                 )
               )
@@ -97,6 +97,9 @@ class BagRegisterWorkerTest
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
+    val version = createBagVersion
+    val nextVersion = version.increment
+
     withBagRegisterWorker {
       case (service, storageManifestDao, _, _, _) =>
         val space = createStorageSpace
@@ -107,14 +110,14 @@ class BagRegisterWorkerTest
           withRegisterBag(
             externalIdentifier,
             space = space,
-            version = 1,
+            version = version,
             dataFileCount
           ) {
             case (location1, bagInfo1) =>
               withRegisterBag(
                 externalIdentifier,
                 space = space,
-                version = 2,
+                version = nextVersion,
                 dataFileCount
               ) {
                 case (location2, _) =>
@@ -123,14 +126,14 @@ class BagRegisterWorkerTest
                       storageSpace = space
                     ),
                     bagRootLocation = location1,
-                    version = 1
+                    version = version
                   )
                   val payload2 = createEnrichedBagInformationPayloadWith(
                     context = createPipelineContextWith(
                       storageSpace = space
                     ),
                     bagRootLocation = location2,
-                    version = 2
+                    version = nextVersion
                   )
 
                   val bagId = BagId(
@@ -145,21 +148,21 @@ class BagRegisterWorkerTest
                   }
 
                   storageManifestDao
-                    .get(bagId, version = BagVersion(1))
+                    .get(bagId, version = version)
                     .right
                     .value
-                    .version shouldBe BagVersion(1)
+                    .version shouldBe version
                   storageManifestDao
-                    .get(bagId, version = BagVersion(2))
+                    .get(bagId, version = nextVersion)
                     .right
                     .value
-                    .version shouldBe BagVersion(2)
+                    .version shouldBe nextVersion
 
                   storageManifestDao
                     .getLatest(bagId)
                     .right
                     .value
-                    .version shouldBe BagVersion(2)
+                    .version shouldBe nextVersion
               }
           }
         }

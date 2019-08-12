@@ -130,7 +130,7 @@ trait BagRegisterFixtures
   def withRegisterBag[R](
     externalIdentifier: ExternalIdentifier,
     space: StorageSpace,
-    version: Int,
+    version: BagVersion,
     dataFileCount: Int
   )(testWith: TestWith[(ObjectLocation, BagInfo), R])(
     implicit
@@ -144,7 +144,7 @@ trait BagRegisterFixtures
       BagBuilder.createBagContentsWith(
         space = space,
         externalIdentifier = externalIdentifier,
-        version = BagVersion(version),
+        version = version,
         payloadFileCount = dataFileCount
       )
 
