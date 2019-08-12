@@ -11,7 +11,6 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   S3BagBuilder,
   S3BagBuilderBase
@@ -129,8 +128,6 @@ class BagReplicatorWorkerTest
     it("constructs the correct key") {
       withLocalS3Bucket { srcBucket =>
         withLocalS3Bucket { dstBucket =>
-          val rootPath = randomAlphanumericWithLength()
-
           val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
             bucket = srcBucket
           )
@@ -140,10 +137,7 @@ class BagReplicatorWorkerTest
           )
 
           val result =
-            withBagReplicatorWorker(
-              bucket = dstBucket,
-              rootPath = Some(rootPath)
-            ) {
+            withBagReplicatorWorker(bucket = dstBucket) {
               _.processMessage(payload).success.value
             }
 
@@ -153,89 +147,12 @@ class BagReplicatorWorkerTest
           val expectedPath =
             Paths
               .get(
-                rootPath,
                 payload.storageSpace.underlying,
                 payload.externalIdentifier.toString,
                 payload.version.toString
               )
               .toString
           dstBagLocation.path shouldBe expectedPath
-        }
-      }
-    }
-
-    it("key ends with the external identifier and version of the bag") {
-      withLocalS3Bucket { srcBucket =>
-        withLocalS3Bucket { dstBucket =>
-          val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
-            bucket = srcBucket
-          )
-
-          val payload = createEnrichedBagInformationPayloadWith(
-            bagRootLocation = srcBagLocation,
-            version = BagVersion(3)
-          )
-
-          val result =
-            withBagReplicatorWorker(bucket = dstBucket) {
-              _.processMessage(payload).success.value
-            }
-
-          result shouldBe a[IngestStepSucceeded[_]]
-
-          val dstBagLocation = result.summary.dstPrefix
-          dstBagLocation.path should endWith(
-            s"/${payload.externalIdentifier.toString}/v3"
-          )
-        }
-      }
-    }
-
-    it("prefixes the key with the storage space if no root path is set") {
-      withLocalS3Bucket { srcBucket =>
-        val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
-          bucket = srcBucket
-        )
-
-        val payload = createEnrichedBagInformationPayloadWith(
-          bagRootLocation = srcBagLocation
-        )
-
-        withLocalS3Bucket { dstBucket =>
-          val result =
-            withBagReplicatorWorker(bucket = dstBucket) {
-              _.processMessage(payload).success.value
-            }
-
-          result shouldBe a[IngestStepSucceeded[_]]
-
-          val dstBagLocation = result.summary.dstPrefix
-          dstBagLocation.path should startWith(payload.storageSpace.underlying)
-        }
-      }
-    }
-
-    it("prefixes the key with the root path if set") {
-      withLocalS3Bucket { srcBucket =>
-        val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
-          bucket = srcBucket
-        )
-
-        val payload = createEnrichedBagInformationPayloadWith(
-          bagRootLocation = srcBagLocation
-        )
-
-        withLocalS3Bucket { dstBucket =>
-          val result =
-            withBagReplicatorWorker(
-              bucket = dstBucket,
-              rootPath = Some("rootprefix")
-            ) {
-              _.processMessage(payload).success.value
-            }
-
-          val dstBagLocation = result.summary.dstPrefix
-          dstBagLocation.path should startWith("rootprefix/")
         }
       }
     }

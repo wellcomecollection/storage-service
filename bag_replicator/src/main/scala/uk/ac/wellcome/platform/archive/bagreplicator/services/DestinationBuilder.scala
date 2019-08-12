@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 
-class DestinationBuilder(namespace: String, rootPath: Option[String]) {
+class DestinationBuilder(namespace: String) {
   def buildDestination(
     storageSpace: StorageSpace,
     externalIdentifier: ExternalIdentifier,
@@ -18,7 +18,6 @@ class DestinationBuilder(namespace: String, rootPath: Option[String]) {
     namespace = namespace,
     path = Paths
       .get(
-        rootPath.getOrElse(""),
         storageSpace.toString,
         externalIdentifier.toString,
         version.toString

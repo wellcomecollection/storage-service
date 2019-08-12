@@ -48,8 +48,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   override val visibilityTimeout = 180
 
   val destinationBuilder = new DestinationBuilder(
-    namespace = replicatorDestinationConfig.namespace,
-    rootPath = replicatorDestinationConfig.rootPath
+    namespace = replicatorDestinationConfig.namespace
   )
 
   override def processMessage(

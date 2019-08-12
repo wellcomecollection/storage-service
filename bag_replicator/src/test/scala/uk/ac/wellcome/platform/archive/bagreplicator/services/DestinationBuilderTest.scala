@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
@@ -20,8 +19,7 @@ class DestinationBuilderTest
     val namespace = createNamespace
 
     val builder = new DestinationBuilder(
-      namespace = namespace,
-      rootPath = None
+      namespace = namespace
     )
 
     val location = builder.buildDestination(
@@ -35,8 +33,7 @@ class DestinationBuilderTest
 
   it("constructs the correct path") {
     val builder = new DestinationBuilder(
-      namespace = createNamespace,
-      rootPath = None
+      namespace = createNamespace
     )
 
     val storageSpace = createStorageSpace
@@ -50,43 +47,5 @@ class DestinationBuilderTest
     )
 
     location.path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/$version"
-  }
-
-  it("uses the root path if provided") {
-    val builder = new DestinationBuilder(
-      namespace = "MyNamespace",
-      rootPath = Some("RootPath")
-    )
-
-    val storageSpace = createStorageSpace
-    val externalIdentifier = createExternalIdentifier
-
-    val location = builder.buildDestination(
-      storageSpace = storageSpace,
-      externalIdentifier = externalIdentifier,
-      version = BagVersion(1)
-    )
-
-    location.namespace shouldBe "MyNamespace"
-    location.path shouldBe s"RootPath/${storageSpace.underlying}/${externalIdentifier.toString}/v1"
-  }
-
-  it("skips the root path if not provided") {
-    val builder = new DestinationBuilder(
-      namespace = "MyNamespace",
-      rootPath = None
-    )
-
-    val storageSpace = createStorageSpace
-    val externalIdentifier = createExternalIdentifier
-
-    val location = builder.buildDestination(
-      storageSpace = storageSpace,
-      externalIdentifier = externalIdentifier,
-      version = BagVersion(2)
-    )
-
-    location.namespace shouldBe "MyNamespace"
-    location.path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/v2"
   }
 }

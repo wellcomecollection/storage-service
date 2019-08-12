@@ -23,8 +23,6 @@ class BagReplicatorFeatureTest
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
-        val rootPath = randomAlphanumericWithLength()
-
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
@@ -40,7 +38,6 @@ class BagReplicatorFeatureTest
           withBagReplicatorWorker(
             queue,
             bucket = dstBucket,
-            rootPath = Some(rootPath),
             ingests,
             outgoing,
             stepName = "replicating"
@@ -52,7 +49,6 @@ class BagReplicatorFeatureTest
                 bucket = dstBucket,
                 key = Paths
                   .get(
-                    rootPath,
                     payload.storageSpace.toString,
                     payload.externalIdentifier.toString,
                     payload.version.toString
