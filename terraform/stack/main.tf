@@ -71,6 +71,8 @@ module "bag_unpacker" {
   max_capacity = "10"
 
   container_image = "${local.bag_unpacker_image}"
+
+  secret_env_vars_length = 0
 }
 
 # bag root finder
@@ -109,6 +111,8 @@ module "bag_root_finder" {
   max_capacity = 10
 
   container_image = "${local.bag_root_finder_image}"
+
+  secret_env_vars_length = 0
 }
 
 # bag_verifier
@@ -147,6 +151,8 @@ module "bag_verifier_pre_replication" {
   max_capacity = "10"
 
   container_image = "${local.bag_verifier_image}"
+
+  secret_env_vars_length = 0
 }
 
 # bag versioner
@@ -191,6 +197,8 @@ module "bag_versioner" {
   max_capacity = 10
 
   container_image = "${local.bag_versioner_image}"
+
+  secret_env_vars_length = 0
 }
 
 # bag_replicator
@@ -233,6 +241,8 @@ module "bag_replicator" {
   max_capacity = "10"
 
   container_image = "${local.bag_replicator_image}"
+
+  secret_env_vars_length = 0
 }
 
 # bag_verifier
@@ -271,6 +281,8 @@ module "bag_verifier_post_replication" {
   max_capacity = "10"
 
   container_image = "${local.bag_verifier_image}"
+
+  secret_env_vars_length = 0
 }
 
 # bag_register
@@ -304,6 +316,8 @@ module "bag_register" {
   max_capacity = "10"
 
   container_image = "${local.bag_register_image}"
+
+  secret_env_vars_length = 0
 }
 
 # notifier
@@ -335,6 +349,8 @@ module "notifier" {
   env_vars_length = 6
 
   container_image = "${local.notifier_image}"
+
+  secret_env_vars_length = 0
 }
 
 # ingests
@@ -366,6 +382,8 @@ module "ingests" {
   max_capacity = "10"
 
   container_image = "${local.ingests_image}"
+
+  secret_env_vars_length = 0
 }
 
 # Storage API
