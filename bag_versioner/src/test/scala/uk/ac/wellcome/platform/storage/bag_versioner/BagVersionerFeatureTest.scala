@@ -46,7 +46,7 @@ class BagVersionerFeatureTest
     val expectedPayload = createEnrichedBagInformationPayloadWith(
       context = payload.context,
       bagRootLocation = bagRootLocation,
-      version = 1
+      version = BagVersion(1)
     )
 
     withLocalSqsQueue { queue =>

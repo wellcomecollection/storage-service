@@ -31,7 +31,7 @@ trait IngestGenerators extends BagIdGenerators {
 
   private def maybeVersion: Option[BagVersion] =
     if (Random.nextBoolean()) {
-      Some(BagVersion(Random.nextInt))
+      Some(createBagVersion)
     } else {
       None
     }
@@ -124,7 +124,7 @@ trait IngestGenerators extends BagIdGenerators {
   def createIngestVersionUpdateWith(
     id: IngestID = createIngestID,
     events: Seq[IngestEvent] = Seq(createIngestEvent),
-    version: BagVersion = BagVersion(Random.nextInt)
+    version: BagVersion = createBagVersion
   ): IngestVersionUpdate =
     IngestVersionUpdate(
       id = id,
