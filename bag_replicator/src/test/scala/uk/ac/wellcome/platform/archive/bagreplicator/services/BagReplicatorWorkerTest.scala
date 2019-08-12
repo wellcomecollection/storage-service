@@ -171,7 +171,7 @@ class BagReplicatorWorkerTest
 
       val (srcBagLocation, _) = bagBuilder.createS3BagWith(
         bucket = srcBucket,
-        payloadFileCount = 10
+        payloadFileCount = 50
       )
 
       val payload = createEnrichedBagInformationPayloadWith(
