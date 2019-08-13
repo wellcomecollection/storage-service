@@ -24,12 +24,11 @@ class ReplicaAggregatorTest
     with StorageRandomThings {
 
   def createReplicaResultWith(
-    storageLocation: BetterStorageLocation =
-      PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        location = createObjectLocation
-      )
-    ): ReplicaResult =
+    storageLocation: BetterStorageLocation = PrimaryStorageLocation(
+      provider = InfrequentAccessStorageProvider,
+      location = createObjectLocation
+    )
+  ): ReplicaResult =
     ReplicaResult(
       ingestId = createIngestID,
       storageLocation = storageLocation,
@@ -41,8 +40,10 @@ class ReplicaAggregatorTest
 
   def withAggregator[R](
     versionedStore: MemoryVersionedStore[String, Set[ReplicaResult]] =
-      MemoryVersionedStore[String, Set[ReplicaResult]](initialEntries = Map.empty))(
-    testWith: TestWith[ReplicaAggregator, R]): R =
+      MemoryVersionedStore[String, Set[ReplicaResult]](
+        initialEntries = Map.empty
+      )
+  )(testWith: TestWith[ReplicaAggregator, R]): R =
     testWith(
       new ReplicaAggregator(versionedStore)
     )
@@ -81,7 +82,9 @@ class ReplicaAggregatorTest
     )
 
     val versionedStore =
-      MemoryVersionedStore[String, Set[ReplicaResult]](initialEntries = Map.empty)
+      MemoryVersionedStore[String, Set[ReplicaResult]](
+        initialEntries = Map.empty
+      )
 
     withAggregator(versionedStore) {
       _.aggregate(replicaResult)
@@ -89,7 +92,9 @@ class ReplicaAggregatorTest
 
     val path = replicaResult.storageLocation.location.path
 
-    versionedStore.getLatest(path).right.value.identifiedT shouldBe Set(replicaResult)
+    versionedStore.getLatest(path).right.value.identifiedT shouldBe Set(
+      replicaResult
+    )
   }
 
   it("errors if asked to aggregate a secondary replica") {
@@ -113,10 +118,13 @@ class ReplicaAggregatorTest
     val throwable = new Throwable("BOOM!")
 
     val brokenStore = new MemoryVersionedStore[String, Set[ReplicaResult]](
-      store = new MemoryStore[Version[String, Int], Set[ReplicaResult]](initialEntries = Map.empty)
-        with MemoryMaxima[String, Set[ReplicaResult]]
+      store = new MemoryStore[Version[String, Int], Set[ReplicaResult]](
+        initialEntries = Map.empty
+      ) with MemoryMaxima[String, Set[ReplicaResult]]
     ) {
-      override def upsert(id: String)(t: Set[ReplicaResult])(f: Set[ReplicaResult] => Set[ReplicaResult]): UpdateEither =
+      override def upsert(id: String)(
+        t: Set[ReplicaResult]
+      )(f: Set[ReplicaResult] => Set[ReplicaResult]): UpdateEither =
         Left(UpdateWriteError(throwable))
     }
 
@@ -146,7 +154,9 @@ class ReplicaAggregatorTest
       val summary = result.success.value
 
       summary shouldBe a[ReplicationAggregationComplete]
-      summary.asInstanceOf[ReplicationAggregationComplete].replicationSet shouldBe
+      summary
+        .asInstanceOf[ReplicationAggregationComplete]
+        .replicationSet shouldBe
         ReplicationSet(
           path = replicaResult.storageLocation.location.path,
           results = Set(replicaResult)
