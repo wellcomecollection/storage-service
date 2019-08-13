@@ -91,7 +91,7 @@ class ReplicaAggregatorTest
       }
 
     val throwable = result.failed.get
-    throwable.getMessage shouldBe s"Cannot aggregate secondary replica result: $replicaResult"
+    throwable.getMessage shouldBe s"Not yet supported! Cannot aggregate secondary replica result: $replicaResult"
   }
 
   // versioned store error => error
