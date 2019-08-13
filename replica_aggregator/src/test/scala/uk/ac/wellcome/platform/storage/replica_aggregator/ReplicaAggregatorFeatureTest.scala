@@ -19,19 +19,19 @@ class ReplicaAggregatorFeatureTest
     with IntegrationPatience {
 
   it("passes through the message ") {
-    withLocalSqsQueueAndDlq { queuePair =>
+    withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
       val payload = createEnrichedBagInformationPayload
 
       withReplicaAggregatorWorker(
-        queuePair.queue,
+        queue,
         ingests,
         outgoing,
         stepName = "aggregating replicas"
       ) { _ =>
-        sendNotificationToSQS(queuePair.queue, payload)
+        sendNotificationToSQS(queue, payload)
 
         eventually {
           assertTopicReceivesIngestEvents(

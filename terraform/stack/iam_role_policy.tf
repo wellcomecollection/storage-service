@@ -187,6 +187,13 @@ data "aws_iam_policy_document" "archivematica_ingests_get" {
   }
 }
 
+# replica aggregator
+
+resource "aws_iam_role_policy" "replica_aggregator_post_repl_metrics" {
+  role   = "${module.replica_aggregator.task_role_name}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+}
+
 # notifier
 
 resource "aws_iam_role_policy" "notifier_metrics" {

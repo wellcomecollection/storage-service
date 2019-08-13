@@ -15,6 +15,7 @@ module "ingests_topic" {
     "${module.ingests.task_role_name}",
     "${module.notifier.task_role_name}",
     "${module.bag_versioner.task_role_name}",
+    "${module.replica_aggregator.task_role_name}",
   ]
 }
 
@@ -317,6 +318,39 @@ module "bag_verifier_post_replicate_output_topic" {
   ]
 }
 
+# replica_aggregator
+
+module "replica_aggregator_input_queue" {
+  source = "../modules/queue"
+
+  name = "${var.namespace}_replica_aggregator_input"
+
+  topic_names = ["${module.bag_verifier_post_replicate_output_topic.name}"]
+
+  role_names = ["${module.replica_aggregator.task_role_name}"]
+
+  queue_high_actions = [
+    "${module.replica_aggregator.scale_up_arn}",
+  ]
+
+  queue_low_actions = [
+    "${module.replica_aggregator.scale_down_arn}",
+  ]
+
+  aws_region    = "${var.aws_region}"
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+}
+
+module "replica_aggregator_output_topic" {
+  source = "../modules/topic"
+
+  name = "${var.namespace}_replica_aggregator_output"
+
+  role_names = [
+    "${module.replica_aggregator.task_role_name}",
+  ]
+}
+
 # bag_register
 
 module "bag_register_input_queue" {
@@ -324,7 +358,7 @@ module "bag_register_input_queue" {
 
   name = "${var.namespace}_bag_register_input"
 
-  topic_names = ["${module.bag_verifier_post_replicate_output_topic.name}"]
+  topic_names = ["${module.replica_aggregator_output_topic.name}"]
 
   role_names = ["${module.bag_register.task_role_name}"]
 

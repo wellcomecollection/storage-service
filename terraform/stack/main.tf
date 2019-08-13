@@ -285,6 +285,36 @@ module "bag_verifier_post_replication" {
   secret_env_vars_length = 0
 }
 
+# replica_aggregator
+
+module "replica_aggregator" {
+  source = "../modules/service/worker"
+
+  cluster_name = "${aws_ecs_cluster.cluster.name}"
+  cluster_id   = "${aws_ecs_cluster.cluster.id}"
+  namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
+  subnets      = "${var.private_subnets}"
+  service_name = "${var.namespace}-replica_aggregator"
+
+  env_vars = {
+    queue_url          = "${module.replica_aggregator_input_queue.url}"
+    outgoing_topic_arn = "${module.replica_aggregator_output_topic.arn}"
+    ingest_topic_arn   = "${module.ingests_topic.arn}"
+    metrics_namespace  = "${local.bag_register_service_name}"
+    operation_name     = "replica_aggregator"
+    logstash_host      = "${local.logstash_host}"
+
+    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.replica_aggregator_service_name}"
+  }
+
+  env_vars_length = 7
+
+  min_capacity = 1
+  max_capacity = 10
+
+  container_image = "${local.replica_aggregator_image}"
+}
+
 # bag_register
 
 module "bag_register" {

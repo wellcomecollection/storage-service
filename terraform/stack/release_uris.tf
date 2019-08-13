@@ -16,5 +16,6 @@ module "images" {
     "bag_root_finder",
     "bag_verifier",
     "bag_unpacker",
+    "replica_aggregator",
   ]
 }
