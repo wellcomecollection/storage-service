@@ -48,6 +48,9 @@ lazy val common = setupProject(
   externalDependencies = StorageDependencies.commonDependencies
 )
 
+lazy val replica_aggregator =
+  setupProject(project, "replica_aggregator", localDependencies = Seq(common))
+
 lazy val bag_versioner =
   setupProject(project, "bag_versioner", localDependencies = Seq(common))
 
