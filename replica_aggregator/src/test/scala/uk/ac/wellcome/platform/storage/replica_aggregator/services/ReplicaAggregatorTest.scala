@@ -12,6 +12,9 @@ import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
+import scala.collection.immutable
+import scala.util.Try
+
 class ReplicaAggregatorTest
     extends FunSpec
     with Matchers
@@ -129,5 +132,34 @@ class ReplicaAggregatorTest
     failure.e shouldBe throwable
   }
 
-  // duplicates ignored
+  it("only stores unique replica results") {
+    val replicaResult = createReplicaResult
+
+    val results: immutable.Seq[Try[ReplicationAggregationSummary]] =
+      withAggregator() { aggregator =>
+        (1 to 3).map { _ =>
+          aggregator.aggregate(replicaResult)
+        }
+      }
+
+    results.foreach { result =>
+      val summary = result.success.value
+
+      summary shouldBe a[ReplicationAggregationComplete]
+      summary.asInstanceOf[ReplicationAggregationComplete].replicationSet shouldBe
+        ReplicationSet(
+          path = replicaResult.storageLocation.location.path,
+          results = Set(replicaResult)
+        )
+    }
+  }
+
+  // TODO (separate patch):
+  //
+  // *  It deduplicates replicas to the same location, even if they have
+  //    different timestamps
+  // *  It returns an "incomplete" summary if we don't have a primary replica
+  //    and/or we don't have enough secondary replicas
+  // *  It errors if it gets multiple primary replicas
+  //
 }
