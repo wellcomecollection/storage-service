@@ -69,3 +69,9 @@ module "ecr_repository_bag_versioner" {
   id        = "bag_versioner"
   namespace = "uk.ac.wellcome"
 }
+
+module "ecr_repository_replica_aggregator" {
+  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
+  id        = "replica_aggregator"
+  namespace = "uk.ac.wellcome"
+}
