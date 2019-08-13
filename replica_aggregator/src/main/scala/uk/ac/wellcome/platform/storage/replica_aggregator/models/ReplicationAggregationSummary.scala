@@ -26,7 +26,7 @@ sealed trait ReplicationAggregationSummary extends Summary {
         """.stripMargin
     }
 
-    f"""|externalIdentifier=${replicationSet.replicaIdentifier.externalIdentifier}
+    f"""|externalIdentifier=${replicationSet.path}
         |durationSeconds=$durationSeconds
         |duration=$formatDuration
         |$status
