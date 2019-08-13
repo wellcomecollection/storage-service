@@ -41,4 +41,14 @@ class ReplicaAggregatorTest
       result.success.value.summary shouldBe a[ReplicationAggregationComplete]
     }
   }
+
+  // single replica if expected count > 1 ==> incomplete
+
+  // adding final replica => complete
+
+  // versioned store error => error
+
+  // duplicates ignored
+
+  // extras == okay
 }
