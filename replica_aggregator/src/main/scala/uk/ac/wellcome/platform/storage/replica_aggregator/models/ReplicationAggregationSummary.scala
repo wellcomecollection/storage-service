@@ -11,24 +11,27 @@ sealed trait ReplicationAggregationSummary extends Summary {
   override val maybeEndTime: Option[Instant] = Some(endTime)
 
   override def toString: String = {
-
     val status = this match {
       case _: ReplicationAggregationComplete =>
-        f"""
-           |status=complete
+        """
+          |status=complete
          """.stripMargin
       case _: ReplicationAggregationIncomplete =>
-        f"""
-           |status=incomplete
+        """
+          |status=incomplete
         """.stripMargin
-
-        f"""|externalIdentifier=${replicationSet.replicaIdentifier.externalIdentifier}
-            |durationSeconds=$durationSeconds
-            |duration=$formatDuration
-            |$status
-          """.stripMargin
-          .replaceAll("\n", ", ")
+      case _: ReplicationAggregationFailed =>
+        """
+          |status=failed
+        """.stripMargin
     }
+
+    f"""|externalIdentifier=${replicationSet.replicaIdentifier.externalIdentifier}
+        |durationSeconds=$durationSeconds
+        |duration=$formatDuration
+        |$status
+      """.stripMargin
+      .replaceAll("\n", ", ")
   }
 }
 

@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
+import java.time.Instant
+
 import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
@@ -13,17 +15,12 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   IngestStepWorker
 }
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
-  ReplicaIdentifier,
-  ReplicaResult,
-  ReplicationAggregationSummary
-}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 
 import scala.util.Try
 
 class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
-  replicaAggregator: ReplicaAggregator,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination]
 )(
@@ -39,7 +36,6 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   override def processMessage(
     payload: EnrichedBagInformationPayload
   ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
-
     val replicaResult = ReplicaResult(payload)
 
     val replicaIdentifier = ReplicaIdentifier(
@@ -48,12 +44,23 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       version = payload.version
     )
 
+    val replicationSet = ReplicationSet(
+      replicaIdentifier = replicaIdentifier,
+      replicaResult = Set(replicaResult)
+    )
+
+    val summary = ReplicationAggregationComplete(
+      replicationSet = replicationSet,
+      startTime = Instant.now,
+      endTime = Instant.now
+    )
+
+    val ingestStep = IngestStepSucceeded(summary)
+
     for {
-      summary <- replicaAggregator
-        .aggregate(replicaIdentifier, replicaResult)
-      _ <- ingestUpdater.send(payload.ingestId, summary)
-      _ <- outgoingPublisher.sendIfSuccessful(summary, payload)
-    } yield summary
+      _ <- ingestUpdater.send(payload.ingestId, ingestStep)
+      _ <- outgoingPublisher.sendIfSuccessful(ingestStep, payload)
+    } yield ingestStep
   }
 
 }

@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator
 
 import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
