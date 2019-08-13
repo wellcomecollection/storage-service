@@ -42,7 +42,9 @@ class ReplicaAggregatorFeatureTest
             )
           )
 
-          outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(payload)
+          outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+            payload
+          )
         }
       }
     }
