@@ -5,6 +5,9 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
+import org.scanamo.auto._
+import org.scanamo.time.JavaTimeFormats._
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   CloudwatchMonitoringClientBuilder,
@@ -28,17 +31,13 @@ import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockDaoConfig,
   DynamoLockingService
 }
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
-import scala.concurrent.ExecutionContextExecutor
-import scala.util.Try
-import uk.ac.wellcome.json.JsonUtil._
-import org.scanamo.auto._
-import org.scanamo.time.JavaTimeFormats._
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -78,7 +77,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val lockingService =
-      new DynamoLockingService[IngestStepResult[ReplicationSummary], Try]()
+      new DynamoLockingService[IngestStepResult[ReplicationSummary], Future]()
 
     new BagReplicatorWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),

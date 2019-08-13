@@ -4,7 +4,7 @@ import java.nio.file.Paths
 import java.util.UUID
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -44,7 +44,6 @@ class BagReplicatorWorkerTest
     with BagReplicatorFixtures
     with IngestUpdateAssertions
     with PayloadGenerators
-    with TryValues
     with ScalaFutures {
 
   it("replicates a bag successfully and updates both topics") {
@@ -61,17 +60,21 @@ class BagReplicatorWorkerTest
       )
 
       withLocalS3Bucket { dstBucket =>
-        val serviceResult =
+        val future =
           withBagReplicatorWorker(
             bucket = dstBucket,
             ingests = ingests,
             outgoing = outgoing,
             stepName = "replicating"
           ) {
-            _.processMessage(payload)
+            _.processPayload(payload)
           }
 
-        serviceResult.success.value shouldBe a[IngestStepSucceeded[_]]
+        val serviceResult = whenReady(future) { result =>
+          result
+        }
+
+        serviceResult shouldBe a[IngestStepSucceeded[_]]
 
         val receivedMessages =
           outgoing.getMessages[EnrichedBagInformationPayload]
@@ -112,15 +115,18 @@ class BagReplicatorWorkerTest
         )
 
         withLocalS3Bucket { dstBucket =>
-          val result =
+          val future =
             withBagReplicatorWorker(bucket = dstBucket) {
-              _.processMessage(payload).success.value
+              _.processPayload(payload)
             }
 
-          result shouldBe a[IngestStepSucceeded[_]]
+          whenReady(future) { serviceResult =>
+            serviceResult shouldBe a[IngestStepSucceeded[_]]
 
-          val destination = result.summary.dstPrefix
-          destination.namespace shouldBe dstBucket.name
+            val destination = serviceResult.summary.dstPrefix
+            destination.namespace shouldBe dstBucket.name
+          }
+
         }
       }
     }
@@ -136,23 +142,25 @@ class BagReplicatorWorkerTest
             bagRootLocation = srcBagLocation
           )
 
-          val result =
+          val future =
             withBagReplicatorWorker(bucket = dstBucket) {
-              _.processMessage(payload).success.value
+              _.processPayload(payload)
             }
 
-          result shouldBe a[IngestStepSucceeded[_]]
+          whenReady(future) { stepResult =>
+            stepResult shouldBe a[IngestStepSucceeded[_]]
 
-          val dstBagLocation = result.summary.dstPrefix
-          val expectedPath =
-            Paths
-              .get(
-                payload.storageSpace.underlying,
-                payload.externalIdentifier.toString,
-                payload.version.toString
-              )
-              .toString
-          dstBagLocation.path shouldBe expectedPath
+            val dstBagLocation = stepResult.summary.dstPrefix
+            val expectedPath =
+              Paths
+                .get(
+                  payload.storageSpace.underlying,
+                  payload.externalIdentifier.toString,
+                  payload.version.toString
+                )
+                .toString
+            dstBagLocation.path shouldBe expectedPath
+          }
         }
       }
     }
@@ -182,20 +190,8 @@ class BagReplicatorWorkerTest
         withBagReplicatorWorker(bucket = dstBucket) { worker =>
           val futures: Future[Seq[IngestStepResult[ReplicationSummary]]] =
             Future.sequence(
-              (1 to 5).map { i =>
-                Future.successful(i).flatMap {
-                  _ =>
-                    // Introduce a tiny bit of fudge to cope with the fact that the memory
-                    // locking service isn't thread-safe.
-                    Thread.sleep(i * 25)
-
-                    // We can't just wrap the Try directly, because Future.fromTry
-                    // waits for the Try to finish -- flat-mapping a Future.successful()
-                    // allows us to run multiple Try processes at once.
-                    Future.fromTry {
-                      worker.processMessage(payload)
-                    }
-                }
+              (1 to 5).map { _ =>
+                worker.processPayload(payload)
               }
             )
 
@@ -267,6 +263,14 @@ class BagReplicatorWorkerTest
       val queue = Queue("any", "any")
 
       withLocalS3Bucket { srcBucket =>
+        val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+          bucket = srcBucket
+        )
+
+        val payload = createEnrichedBagInformationPayloadWith(
+          bagRootLocation = srcBagLocation
+        )
+
         withLocalS3Bucket { dstBucket =>
           withActorSystem { implicit actorSystem =>
             val ingestUpdater = createIngestUpdaterWith(ingests)
@@ -314,20 +318,14 @@ class BagReplicatorWorkerTest
                 replicatorDestinationConfig = replicatorDestinationConfig
               )
 
-              val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
-                bucket = srcBucket
-              )
+              val future = service.processPayload(payload)
 
-              val payload = createEnrichedBagInformationPayloadWith(
-                bagRootLocation = srcBagLocation
-              )
+              whenReady(future) { serviceResult =>
+                serviceResult shouldBe a[IngestFailed[_]]
 
-              val serviceResult = service.processMessage(payload)
-              serviceResult.success.value shouldBe a[IngestFailed[_]]
-
-              val ingestFailed =
-                serviceResult.success.value.asInstanceOf[IngestFailed[_]]
-              ingestFailed.e.getMessage shouldBe "tagmanifest-sha256.txt in replica source and replica location do not match!"
+                val ingestFailed = serviceResult.asInstanceOf[IngestFailed[_]]
+                ingestFailed.e.getMessage shouldBe "tagmanifest-sha256.txt in replica source and replica location do not match!"
+              }
             }
           }
         }
@@ -352,18 +350,19 @@ class BagReplicatorWorkerTest
             srcBagLocation.join("tagmanifest-sha256.txt").path
           )
 
-          val serviceResult =
+          val future =
             withBagReplicatorWorker(queue, dstBucket) {
-              _.processMessage(payload)
+              _.processPayload(payload)
             }
 
-          serviceResult.success.value shouldBe a[IngestFailed[_]]
+          whenReady(future) { serviceResult =>
+            serviceResult shouldBe a[IngestFailed[_]]
 
-          val ingestFailed =
-            serviceResult.success.value.asInstanceOf[IngestFailed[_]]
-          ingestFailed.e.getMessage should startWith(
-            "Unable to load tagmanifest-sha256.txt in source and replica to compare:"
-          )
+            val ingestFailed = serviceResult.asInstanceOf[IngestFailed[_]]
+            ingestFailed.e.getMessage should startWith(
+              "Unable to load tagmanifest-sha256.txt in source and replica to compare:"
+            )
+          }
         }
       }
     }
