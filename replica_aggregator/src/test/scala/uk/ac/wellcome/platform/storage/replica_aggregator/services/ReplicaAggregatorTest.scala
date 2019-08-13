@@ -6,7 +6,7 @@ import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{PrimaryStorageLocation, ReplicaResult, ReplicationAggregationComplete}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{PrimaryStorageLocation, ReplicaResult, ReplicationAggregationComplete, ReplicationSet}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class ReplicaAggregatorTest
@@ -16,39 +16,43 @@ class ReplicaAggregatorTest
     with ObjectLocationGenerators
     with StorageRandomThings {
 
-  def withAggregator[R](
-    expectedReplicaCount: Int = randomInt(from = 1, to = 10)
-  )(testWith: TestWith[ReplicaAggregator, R]): R =
+  def withAggregator[R](testWith: TestWith[ReplicaAggregator, R]): R =
     testWith(
-      new ReplicaAggregator(
-        expectedReplicaCount = expectedReplicaCount
-      )
+      new ReplicaAggregator()
     )
 
-  it("stores a single replica") {
-    withAggregator(expectedReplicaCount = 1) { aggregator =>
-      val result = aggregator.aggregate(
-        ReplicaResult(
-          ingestId = createIngestID,
-          location = PrimaryStorageLocation(
-            provider = InfrequentAccessStorageProvider,
-            location = createObjectLocation
-          ),
-          timestamp = Instant.now
-        )
-      )
+  it("completes after a single primary replica") {
+    val location = createObjectLocation
 
-      result.success.value.summary shouldBe a[ReplicationAggregationComplete]
-    }
+    val replicaResult = ReplicaResult(
+      ingestId = createIngestID,
+      location = PrimaryStorageLocation(
+        provider = InfrequentAccessStorageProvider,
+        location = location
+      ),
+      timestamp = Instant.now
+    )
+
+    val result =
+      withAggregator {
+        _.aggregate(replicaResult)
+      }
+
+    val summary = result.success.value
+
+    summary shouldBe a[ReplicationAggregationComplete]
+    summary.asInstanceOf[ReplicationAggregationComplete].replicationSet shouldBe
+      ReplicationSet(
+        path = location.path,
+        results = Set(replicaResult)
+      )
   }
 
-  // single replica if expected count > 1 ==> incomplete
+  // stores a single primary replica
 
-  // adding final replica => complete
+  // errors on secondary
 
   // versioned store error => error
 
   // duplicates ignored
-
-  // extras == okay
 }
