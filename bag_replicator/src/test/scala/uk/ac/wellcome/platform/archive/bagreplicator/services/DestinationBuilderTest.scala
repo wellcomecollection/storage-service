@@ -51,6 +51,24 @@ class DestinationBuilderTest
     location.path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/$version"
   }
 
+  it("URL encodes slashes in the path") {
+    val builder = new DestinationBuilder(
+      namespace = createNamespace
+    )
+
+    val version = createBagVersion
+
+    val externalIdentifier = createExternalIdentifier
+
+    val location = builder.buildDestination(
+      storageSpace = StorageSpace("a/b"),
+      externalIdentifier = externalIdentifier,
+      version = version
+    )
+
+    location.path shouldBe s"a%2Fb/$externalIdentifier/$version"
+  }
+
   it("encodes slashes in a way that avoids ambiguity") {
     val builder = new DestinationBuilder(
       namespace = createNamespace
