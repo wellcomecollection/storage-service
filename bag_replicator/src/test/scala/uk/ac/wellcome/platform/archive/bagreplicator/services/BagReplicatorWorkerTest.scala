@@ -70,7 +70,9 @@ class BagReplicatorWorkerTest
             _.processPayload(payload)
           }
 
-        val serviceResult = whenReady(future) { result => result }
+        val serviceResult = whenReady(future) { result =>
+          result
+        }
 
         serviceResult shouldBe a[IngestStepSucceeded[_]]
 
@@ -124,7 +126,6 @@ class BagReplicatorWorkerTest
             val destination = serviceResult.summary.dstPrefix
             destination.namespace shouldBe dstBucket.name
           }
-
 
         }
       }

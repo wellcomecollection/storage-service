@@ -54,13 +54,17 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
     namespace = replicatorDestinationConfig.namespace
   )
 
-  override def process(payload: EnrichedBagInformationPayload): Future[Result[ReplicationSummary]] =
+  override def process(
+    payload: EnrichedBagInformationPayload
+  ): Future[Result[ReplicationSummary]] =
     processPayload(payload).map { toResult }
 
   // The base trait assumes that processMessage will always return
   // a Try; in this case we return a Future, so we override process()
   // above and expect that this will never be used.
-  override def processMessage(payload: EnrichedBagInformationPayload): Try[IngestStepResult[ReplicationSummary]] =
+  override def processMessage(
+    payload: EnrichedBagInformationPayload
+  ): Try[IngestStepResult[ReplicationSummary]] =
     Failure(new Throwable("This should never be called!"))
 
   def processPayload(

@@ -50,12 +50,13 @@ class BagReplicator(
             storageError.e
           )
       }
-      .recover { case err =>
-        error("Storage error while replicating", err)
-        IngestFailed(
-          replicationSummary.complete,
-          err
-        )
+      .recover {
+        case err =>
+          error("Storage error while replicating", err)
+          IngestFailed(
+            replicationSummary.complete,
+            err
+          )
       }
   }
 }
