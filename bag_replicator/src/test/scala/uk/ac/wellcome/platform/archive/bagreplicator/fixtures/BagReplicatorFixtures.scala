@@ -67,7 +67,6 @@ trait BagReplicatorFixtures
     queue: Queue =
       Queue(randomAlphanumericWithLength(), randomAlphanumericWithLength()),
     bucket: Bucket,
-    rootPath: Option[String] = None,
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
@@ -82,7 +81,7 @@ trait BagReplicatorFixtures
         val lockingService = createLockingServiceWith(lockServiceDao)
 
         val replicatorDestinationConfig =
-          createReplicatorDestinationConfigWith(bucket, rootPath)
+          createReplicatorDestinationConfigWith(bucket)
 
         implicit val prefixTransfer: S3PrefixTransfer =
           S3PrefixTransfer()
@@ -106,12 +105,10 @@ trait BagReplicatorFixtures
     }
 
   def createReplicatorDestinationConfigWith(
-    bucket: Bucket,
-    rootPath: Option[String] = None
+    bucket: Bucket
   ): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
-      namespace = bucket.name,
-      rootPath = rootPath
+      namespace = bucket.name
     )
 
   private val listing = new S3ObjectSummaryListing()

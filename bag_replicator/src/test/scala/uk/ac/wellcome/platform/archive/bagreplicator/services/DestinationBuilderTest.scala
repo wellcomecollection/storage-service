@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
@@ -13,41 +12,40 @@ class DestinationBuilderTest
     with ExternalIdentifierGenerators
     with StorageSpaceGenerators {
 
-  it("uses the root path if provided") {
-    val builder = new DestinationBuilder(
-      namespace = "MyNamespace",
-      rootPath = Some("RootPath")
-    )
+  def createNamespace: String =
+    randomAlphanumeric
 
-    val storageSpace = createStorageSpace
-    val externalIdentifier = createExternalIdentifier
+  it("uses the given namespace") {
+    val namespace = createNamespace
+
+    val builder = new DestinationBuilder(
+      namespace = namespace
+    )
 
     val location = builder.buildDestination(
-      storageSpace = storageSpace,
-      externalIdentifier = externalIdentifier,
-      version = BagVersion(1)
+      storageSpace = createStorageSpace,
+      externalIdentifier = createExternalIdentifier,
+      version = createBagVersion
     )
 
-    location.namespace shouldBe "MyNamespace"
-    location.path shouldBe s"RootPath/${storageSpace.underlying}/${externalIdentifier.toString}/v1"
+    location.namespace shouldBe namespace
   }
 
-  it("skips the root path if not provided") {
+  it("constructs the correct path") {
     val builder = new DestinationBuilder(
-      namespace = "MyNamespace",
-      rootPath = None
+      namespace = createNamespace
     )
 
     val storageSpace = createStorageSpace
     val externalIdentifier = createExternalIdentifier
+    val version = createBagVersion
 
     val location = builder.buildDestination(
       storageSpace = storageSpace,
       externalIdentifier = externalIdentifier,
-      version = BagVersion(2)
+      version = version
     )
 
-    location.namespace shouldBe "MyNamespace"
-    location.path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/v2"
+    location.path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/$version"
   }
 }
