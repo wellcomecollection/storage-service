@@ -7,8 +7,10 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
+import uk.ac.wellcome.storage.{UpdateWriteError, Version}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
-import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
+import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 class ReplicaAggregatorTest
     extends FunSpec
@@ -90,11 +92,41 @@ class ReplicaAggregatorTest
         _.aggregate(replicaResult)
       }
 
-    val throwable = result.failed.get
-    throwable.getMessage shouldBe s"Not yet supported! Cannot aggregate secondary replica result: $replicaResult"
+    val err = result.failed.get
+    err.getMessage shouldBe s"Not yet supported! Cannot aggregate secondary replica result: $replicaResult"
   }
 
-  // versioned store error => error
+  it("handles an error from the underlying versioned store") {
+    val throwable = new Throwable("BOOM!")
+
+    val brokenStore = new MemoryVersionedStore[String, Set[ReplicaResult]](
+      store = new MemoryStore[Version[String, Int], Set[ReplicaResult]](initialEntries = Map.empty)
+        with MemoryMaxima[String, Set[ReplicaResult]]
+    ) {
+      override def upsert(id: String)(t: Set[ReplicaResult])(f: Set[ReplicaResult] => Set[ReplicaResult]): UpdateEither =
+        Left(UpdateWriteError(throwable))
+    }
+
+    val replicaResult = ReplicaResult(
+      ingestId = createIngestID,
+      storageLocation = PrimaryStorageLocation(
+        provider = InfrequentAccessStorageProvider,
+        location = createObjectLocation
+      ),
+      timestamp = Instant.now
+    )
+
+    val result =
+      withAggregator(brokenStore) {
+        _.aggregate(replicaResult)
+      }
+
+    val summary = result.success.value
+
+    summary shouldBe a[ReplicationAggregationFailed]
+    val failure = summary.asInstanceOf[ReplicationAggregationFailed]
+    failure.e shouldBe throwable
+  }
 
   // duplicates ignored
 }

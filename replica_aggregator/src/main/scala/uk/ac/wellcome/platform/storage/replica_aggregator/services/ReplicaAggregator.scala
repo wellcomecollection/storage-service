@@ -51,7 +51,12 @@ class ReplicaAggregator(
         )
 
       case Left(updateError) =>
-        throw new Throwable("BOOM!")
+        ReplicationAggregationFailed(
+          e = updateError.e,
+          replicaPath = replicaPath,
+          startTime = startTime,
+          endTime = Instant.now()
+        )
     }
   }
 }
