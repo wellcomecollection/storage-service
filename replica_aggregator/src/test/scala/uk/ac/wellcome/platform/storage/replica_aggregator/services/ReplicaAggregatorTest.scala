@@ -6,7 +6,7 @@ import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{PrimaryStorageLocation, ReplicaResult, ReplicationAggregationComplete, ReplicationSet}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class ReplicaAggregatorTest
@@ -48,10 +48,42 @@ class ReplicaAggregatorTest
       )
   }
 
-  // stores a single primary replica
+  it("stores a single primary replica") {
+    val replicaResult = ReplicaResult(
+      ingestId = createIngestID,
+      location = PrimaryStorageLocation(
+        provider = InfrequentAccessStorageProvider,
+        location = createObjectLocation
+      ),
+      timestamp = Instant.now
+    )
 
-  // errors on secondary
+    withAggregator {
+      _.aggregate(replicaResult)
+    }
 
+    // Assert versionedStore has the replica!
+  }
+
+  it("errors if asked to aggregate a secondary replica") {
+    val replicaResult = ReplicaResult(
+      ingestId = createIngestID,
+      location = SecondaryStorageLocation(
+        provider = InfrequentAccessStorageProvider,
+        location = createObjectLocation
+      ),
+      timestamp = Instant.now
+    )
+
+    val result =
+      withAggregator {
+        _.aggregate(replicaResult)
+      }
+
+    val throwable = result.failed.get
+    throwable.getMessage shouldBe s"Cannot aggregate secondary replica result: $replicaResult"
+  }
+  
   // versioned store error => error
 
   // duplicates ignored
