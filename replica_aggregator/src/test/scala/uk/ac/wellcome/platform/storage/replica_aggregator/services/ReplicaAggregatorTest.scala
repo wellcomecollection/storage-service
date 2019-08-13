@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class ReplicaAggregatorTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with TryValues
     with ObjectLocationGenerators
@@ -83,7 +83,7 @@ class ReplicaAggregatorTest
     val throwable = result.failed.get
     throwable.getMessage shouldBe s"Cannot aggregate secondary replica result: $replicaResult"
   }
-  
+
   // versioned store error => error
 
   // duplicates ignored
