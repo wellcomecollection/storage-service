@@ -12,46 +12,50 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.storage.transfer.PrefixTransfer
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
-import scala.util.{Success, Try}
+import scala.concurrent.{ExecutionContext, Future}
 
 class BagReplicator(
   implicit
-  prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation]
+  prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation],
+  ec: ExecutionContext
 ) extends Logging {
 
   def replicate(
     srcPrefix: ObjectLocationPrefix,
     dstPrefix: ObjectLocationPrefix
-  ): Try[IngestStepResult[ReplicationSummary]] = {
+  ): Future[IngestStepResult[ReplicationSummary]] = {
     val replicationSummary = ReplicationSummary(
       startTime = Instant.now(),
       srcPrefix = srcPrefix,
       dstPrefix = dstPrefix
     )
 
-    // TODO: Plumb the LocationPrefix type back up through destination
-    val copyResult =
+    val future =
       prefixTransfer.transferPrefix(
         srcPrefix = srcPrefix,
         dstPrefix = dstPrefix
       )
 
-    copyResult match {
-      case Right(_) =>
-        Success(
+    future
+      .map {
+        case Right(_) =>
           IngestStepSucceeded(
             replicationSummary.complete
           )
-        )
 
-      case Left(storageError) =>
-        error("Unexpected failure while replicating", storageError.e)
-        Success(
+        case Left(storageError) =>
+          error("Storage error while replicating", storageError.e)
           IngestFailed(
             replicationSummary.complete,
             storageError.e
           )
+      }
+      .recover { case err =>
+        error("Storage error while replicating", err)
+        IngestFailed(
+          replicationSummary.complete,
+          err
         )
-    }
+      }
   }
 }
