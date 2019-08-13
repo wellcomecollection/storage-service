@@ -20,6 +20,22 @@ class ReplicaAggregatorTest
     with ObjectLocationGenerators
     with StorageRandomThings {
 
+  def createReplicaResultWith(
+    storageLocation: BetterStorageLocation =
+      PrimaryStorageLocation(
+        provider = InfrequentAccessStorageProvider,
+        location = createObjectLocation
+      )
+    ): ReplicaResult =
+    ReplicaResult(
+      ingestId = createIngestID,
+      storageLocation = storageLocation,
+      timestamp = Instant.now
+    )
+
+  def createReplicaResult: ReplicaResult =
+    createReplicaResultWith()
+
   def withAggregator[R](
     versionedStore: MemoryVersionedStore[String, Set[ReplicaResult]] =
       MemoryVersionedStore[String, Set[ReplicaResult]](initialEntries = Map.empty))(
@@ -31,13 +47,11 @@ class ReplicaAggregatorTest
   it("completes after a single primary replica") {
     val location = createObjectLocation
 
-    val replicaResult = ReplicaResult(
-      ingestId = createIngestID,
+    val replicaResult = createReplicaResultWith(
       storageLocation = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
         location = location
-      ),
-      timestamp = Instant.now
+      )
     )
 
     val result =
@@ -56,13 +70,11 @@ class ReplicaAggregatorTest
   }
 
   it("stores a single primary replica") {
-    val replicaResult = ReplicaResult(
-      ingestId = createIngestID,
+    val replicaResult = createReplicaResultWith(
       storageLocation = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
         location = createObjectLocation
-      ),
-      timestamp = Instant.now
+      )
     )
 
     val versionedStore =
@@ -78,13 +90,11 @@ class ReplicaAggregatorTest
   }
 
   it("errors if asked to aggregate a secondary replica") {
-    val replicaResult = ReplicaResult(
-      ingestId = createIngestID,
+    val replicaResult = createReplicaResultWith(
       storageLocation = SecondaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
         location = createObjectLocation
-      ),
-      timestamp = Instant.now
+      )
     )
 
     val result =
@@ -107,18 +117,9 @@ class ReplicaAggregatorTest
         Left(UpdateWriteError(throwable))
     }
 
-    val replicaResult = ReplicaResult(
-      ingestId = createIngestID,
-      storageLocation = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        location = createObjectLocation
-      ),
-      timestamp = Instant.now
-    )
-
     val result =
       withAggregator(brokenStore) {
-        _.aggregate(replicaResult)
+        _.aggregate(createReplicaResult)
       }
 
     val summary = result.success.value
