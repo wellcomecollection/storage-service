@@ -58,7 +58,9 @@ object Main extends WellcomeTypesafeApp {
       DynamoBuilder.buildDynamoClient(config)
 
     val dynamoVersionedStore =
-      new DynamoSingleVersionStore[ReplicaPath, List[ReplicaResult]](dynamoConfig)
+      new DynamoSingleVersionStore[ReplicaPath, List[ReplicaResult]](
+        dynamoConfig
+      )
 
     val operationName =
       OperationNameBuilder.getName(config)
