@@ -37,7 +37,6 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     payload: EnrichedBagInformationPayload
   ): Try[IngestStepResult[ReplicationAggregationSummary]] =
     for {
-
       aggregation <- replicaAggregator.aggregate(ReplicaResult(payload))
 
       // TODO: Need to distinguish result to determine outgoing message:
@@ -47,7 +46,8 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       ingestStep <- Success(aggregation match {
         case failed: ReplicationAggregationFailed =>
           IngestFailed(failed, failed.e)
-        case default => IngestStepSucceeded(default)
+        case default =>
+          IngestStepSucceeded(default)
       })
 
       _ <- ingestUpdater.send(payload.ingestId, ingestStep)

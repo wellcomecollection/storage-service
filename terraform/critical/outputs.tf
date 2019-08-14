@@ -81,3 +81,11 @@ output "s3_bagger_errors_name" {
 output "s3_bagger_cache_name" {
   value = "${aws_s3_bucket.bagger_cache.id}"
 }
+
+output "replicas_table_arn" {
+  value = "${aws_dynamodb_table.replicas_table.arn}"
+}
+
+output "replicas_table_name" {
+  value = "${aws_dynamodb_table.replicas_table.name}"
+}

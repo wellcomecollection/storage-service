@@ -11,7 +11,7 @@ import scala.util.Try
 
 class ReplicaAggregator(
   versionedStore: VersionedStore[ReplicaPath, Int, List[ReplicaResult]]
-) extends Logging {
+) {
   def aggregate(result: ReplicaResult): Try[ReplicationAggregationSummary] =
     Try {
 

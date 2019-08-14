@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator
 
+import java.time.Instant
+
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{EitherValues, FunSpec, Inside, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
@@ -9,11 +11,7 @@ import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
-  PrimaryStorageLocation,
-  ReplicaPath,
-  ReplicaResult
-}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{PrimaryStorageLocation, ReplicaPath, ReplicaResult}
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
@@ -72,11 +70,12 @@ class ReplicaAggregatorFeatureTest
                   storageProvider,
                   location
                 ),
-                _
+                timestamp
                 ) =>
               ingestId shouldBe payload.ingestId
               storageProvider shouldBe InfrequentAccessStorageProvider
               location shouldBe payload.bagRootLocation
+              timestamp shouldBe a[Instant]
           }
 
           outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(

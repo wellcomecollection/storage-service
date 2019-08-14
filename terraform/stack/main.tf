@@ -297,7 +297,7 @@ module "replica_aggregator" {
   service_name = "${var.namespace}-replica_aggregator"
 
   env_vars = {
-    replicas_table_name = "${local.replicas_table_name}"
+    replicas_table_name = "${var.replicas_table_name}"
     queue_url           = "${module.replica_aggregator_input_queue.url}"
     outgoing_topic_arn  = "${module.replica_aggregator_output_topic.arn}"
     ingest_topic_arn    = "${module.ingests_topic.arn}"
@@ -456,7 +456,7 @@ module "api" {
 
     JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bags_api_service_name}"
   }
-  bags_env_vars_length = 7
+  bags_env_vars_length       = 7
   bags_nginx_container_image = "${var.nginx_image}"
   bags_nginx_container_port  = "9000"
 
@@ -475,7 +475,7 @@ module "api" {
 
     JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
   }
-  ingests_env_vars_length = 8
+  ingests_env_vars_length        = 8
   ingests_nginx_container_image  = "${var.nginx_image}"
   ingests_nginx_container_port   = "9000"
   static_content_bucket_name     = "${var.static_content_bucket_name}"
