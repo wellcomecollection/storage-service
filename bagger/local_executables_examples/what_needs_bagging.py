@@ -23,11 +23,13 @@ B_NUMBER_RE = re.compile(r"[bB](?P<b_number>\d{7}[\dx]?)")
 daiquiri.setup(
     level=logging.INFO,
     outputs=[
-        daiquiri.output.Stream(formatter=daiquiri.formatter.ColorFormatter(
-            fmt="%(asctime)s.%(msecs)03d %(color)s[%(levelname)s] %(message)s%(color_stop)s",
-            datefmt="%H:%M:%S"
-        ))
-    ]
+        daiquiri.output.Stream(
+            formatter=daiquiri.formatter.ColorFormatter(
+                fmt="%(asctime)s.%(msecs)03d %(color)s[%(levelname)s] %(message)s%(color_stop)s",
+                datefmt="%H:%M:%S",
+            )
+        )
+    ],
 )
 
 logger = daiquiri.getLogger(__name__)
@@ -37,7 +39,7 @@ def get_matching_s3_objects(bucket, prefix=""):
     s3 = boto3.client("s3")
     paginator = s3.get_paginator("list_objects_v2")
 
-    kwargs = {'Bucket': bucket}
+    kwargs = {"Bucket": bucket}
 
     if prefix:
         kwargs["Prefix"] = prefix
@@ -52,13 +54,10 @@ def get_matching_s3_objects(bucket, prefix=""):
 
 
 if __name__ == "__main__":
-    entries = collections.defaultdict(
-        lambda: {"bagger_obj": None, "mets_files": []}
-    )
+    entries = collections.defaultdict(lambda: {"bagger_obj": None, "mets_files": []})
 
     for s3_obj in get_matching_s3_objects(
-        bucket="wellcomecollection-assets-workingstorage",
-        prefix="mets_only"
+        bucket="wellcomecollection-assets-workingstorage", prefix="mets_only"
     ):
         key = s3_obj["Key"]
         if key.endswith("/"):
@@ -103,11 +102,10 @@ if __name__ == "__main__":
             logger.warn("Cannot find any source METS files for %s", b_number)
             continue
 
-        logger.info("%s:\n  Last METS update: %s\n  Last bagged:      %s" % (
-            b_number,
-            last_mets_update,
-            last_bagged_date
-        ))
+        logger.info(
+            "%s:\n  Last METS update: %s\n  Last bagged:      %s"
+            % (b_number, last_mets_update, last_bagged_date)
+        )
 
         # We want to flag something for rebagging if:
         #
