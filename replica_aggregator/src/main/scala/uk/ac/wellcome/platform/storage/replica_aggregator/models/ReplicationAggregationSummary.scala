@@ -5,7 +5,7 @@ import java.time.Instant
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 
 sealed trait ReplicationAggregationSummary extends Summary {
-  val replicationSet: ReplicationSet
+  val replicaPath: String
   val endTime: Instant
 
   override val maybeEndTime: Option[Instant] = Some(endTime)
@@ -26,7 +26,7 @@ sealed trait ReplicationAggregationSummary extends Summary {
         """.stripMargin
     }
 
-    f"""|externalIdentifier=${replicationSet.replicaIdentifier.externalIdentifier}
+    f"""|replicaPath=$replicaPath
         |durationSeconds=$durationSeconds
         |duration=$formatDuration
         |$status
@@ -39,16 +39,21 @@ case class ReplicationAggregationComplete(
   replicationSet: ReplicationSet,
   startTime: Instant,
   endTime: Instant
-) extends ReplicationAggregationSummary
+) extends ReplicationAggregationSummary {
+  val replicaPath: String = replicationSet.path
+}
 
 case class ReplicationAggregationIncomplete(
   replicationSet: ReplicationSet,
   startTime: Instant,
   endTime: Instant
-) extends ReplicationAggregationSummary
+) extends ReplicationAggregationSummary {
+  val replicaPath: String = replicationSet.path
+}
 
 case class ReplicationAggregationFailed(
-  replicationSet: ReplicationSet,
+  e: Throwable,
+  replicaPath: String,
   startTime: Instant,
   endTime: Instant
 ) extends ReplicationAggregationSummary

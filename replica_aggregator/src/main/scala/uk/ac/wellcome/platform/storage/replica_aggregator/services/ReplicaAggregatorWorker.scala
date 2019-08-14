@@ -38,15 +38,9 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
     val replicaResult = ReplicaResult(payload)
 
-    val replicaIdentifier = ReplicaIdentifier(
-      storageSpace = payload.context.storageSpace,
-      externalIdentifier = payload.context.externalIdentifier,
-      version = payload.version
-    )
-
     val replicationSet = ReplicationSet(
-      replicaIdentifier = replicaIdentifier,
-      replicaResult = Set(replicaResult)
+      path = payload.bagRootLocation.path,
+      results = Set(replicaResult)
     )
 
     val summary = ReplicationAggregationComplete(

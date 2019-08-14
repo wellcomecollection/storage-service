@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 
 case class ReplicaResult(
   ingestId: IngestID,
-  location: BetterStorageLocation,
+  storageLocation: BetterStorageLocation,
   timestamp: Instant
 )
 
@@ -18,7 +18,7 @@ case object ReplicaResult {
   def apply(payload: EnrichedBagInformationPayload): ReplicaResult =
     ReplicaResult(
       ingestId = payload.ingestId,
-      location = PrimaryStorageLocation(
+      storageLocation = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
         location = payload.bagRootLocation
       ),
