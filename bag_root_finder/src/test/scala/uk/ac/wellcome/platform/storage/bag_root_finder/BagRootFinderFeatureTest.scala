@@ -29,16 +29,15 @@ class BagRootFinderFeatureTest
 
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      val (unpackedBagLocation, _) = S3BagBuilder.createS3BagWith(bucket)
+      val (unpackedBagRoot, _) = S3BagBuilder.createS3BagWith(bucket)
 
-      // TODO: Bag root location should really be a prefix here
       val payload = createUnpackedBagLocationPayloadWith(
-        unpackedBagLocation = unpackedBagLocation.asPrefix
+        unpackedBagLocation = unpackedBagRoot
       )
 
       val expectedPayload = createBagRootLocationPayloadWith(
         context = payload.context,
-        bagRootLocation = unpackedBagLocation
+        bagRootLocation = unpackedBagRoot
       )
 
       withLocalSqsQueue { queue =>

@@ -39,7 +39,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     val replicaResult = ReplicaResult(payload)
 
     val replicationSet = ReplicationSet(
-      path = ReplicaPath(payload.bagRootLocation.path),
+      path = ReplicaPath(payload.bagRoot.path),
       results = Set(replicaResult)
     )
 

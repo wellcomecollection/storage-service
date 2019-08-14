@@ -2,15 +2,9 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import java.io.InputStream
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  Bag,
-  BagFetch,
-  BagInfo,
-  BagManifest,
-  BagPath
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetch, BagInfo, BagManifest, BagPath}
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
@@ -28,7 +22,7 @@ trait BagReader[IS <: InputStreamWithLength] {
 
   type Stream[T] = InputStream => Try[T]
 
-  def get(root: ObjectLocation): Either[BagUnavailable, Bag] =
+  def get(root: ObjectLocationPrefix): Either[BagUnavailable, Bag] =
     for {
       bagInfo <- loadRequired[BagInfo](root)(bagInfo)(BagInfo.create)
 
@@ -45,9 +39,9 @@ trait BagReader[IS <: InputStreamWithLength] {
     } yield Bag(bagInfo, fileManifest, tagManifest, bagFetch)
 
   private def loadOptional[T](
-    root: ObjectLocation
+    root: ObjectLocationPrefix
   )(path: BagPath)(f: Stream[T]): Either[BagUnavailable, Option[T]] = {
-    val location = root.join(path.value)
+    val location = root.asLocation(path.value)
 
     streamStore.get(location) match {
       case Right(stream) =>
@@ -68,7 +62,7 @@ trait BagReader[IS <: InputStreamWithLength] {
   }
 
   private def loadRequired[T](
-    root: ObjectLocation
+    root: ObjectLocationPrefix
   )(path: BagPath)(f: Stream[T]): Either[BagUnavailable, T] =
     loadOptional[T](root)(path)(f) match {
       case Right(Some(result)) => Right(result)

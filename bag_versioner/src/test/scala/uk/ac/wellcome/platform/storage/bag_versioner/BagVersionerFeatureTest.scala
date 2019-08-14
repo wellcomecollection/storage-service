@@ -97,7 +97,7 @@ class BagVersionerFeatureTest
         ingestDate = Instant.ofEpochSecond(1),
         storageSpace = storageSpace
       ),
-      bagRootLocation = bagRootLocation
+      bagRoot = bagRootLocation
     )
 
     val payload2 = payload1.copy(

@@ -26,12 +26,12 @@ class BagReplicatorFeatureTest
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
-        val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+        val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
           bucket = srcBucket
         )
 
         val payload = createEnrichedBagInformationPayloadWith(
-          bagRootLocation = srcBagLocation
+          bagRoot = srcBagRoot
         )
 
         withLocalSqsQueue { queue =>
@@ -57,7 +57,7 @@ class BagReplicatorFeatureTest
               )
 
               val expectedPayload = payload.copy(
-                bagRootLocation = expectedDst
+                bagRoot = expectedDst
               )
 
               outgoing
@@ -66,8 +66,8 @@ class BagReplicatorFeatureTest
               )
 
               verifyObjectsCopied(
-                src = srcBagLocation,
-                dst = expectedDst
+                src = srcBagRoot,
+                dst = expectedDst.asPrefix
               )
 
               assertTopicReceivesIngestEvents(

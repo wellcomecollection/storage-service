@@ -37,7 +37,7 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
     for {
       _ <- ingestUpdater.start(payload.ingestId)
       summary <- verifier.verify(
-        bagRoot = payload.bagRootLocation.asPrefix,
+        bagRoot = payload.bagRoot.asPrefix,
         externalIdentifier = payload.externalIdentifier
       )
       _ <- ingestUpdater.send(payload.ingestId, summary)
