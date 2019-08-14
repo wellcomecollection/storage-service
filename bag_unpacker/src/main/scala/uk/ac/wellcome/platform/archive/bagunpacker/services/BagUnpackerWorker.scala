@@ -49,7 +49,7 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
       stepResult <- unpacker.unpack(
         ingestId = payload.ingestId,
         srcLocation = payload.sourceLocation,
-        dstLocation = unpackedBagLocation
+        dstPrefix = unpackedBagLocation
       )
 
       _ <- ingestUpdater.send(payload.ingestId, stepResult)

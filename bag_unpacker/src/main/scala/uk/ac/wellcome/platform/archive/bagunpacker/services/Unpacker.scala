@@ -39,17 +39,22 @@ trait Unpacker extends Logging {
   def unpack(
     ingestId: IngestID,
     srcLocation: ObjectLocation,
-    dstLocation: ObjectLocationPrefix
+    dstPrefix: ObjectLocationPrefix
   ): Try[IngestStepResult[UnpackSummary]] = {
     val unpackSummary =
-      UnpackSummary(ingestId, srcLocation, dstLocation, startTime = Instant.now)
+      UnpackSummary(
+        id = ingestId,
+        srcLocation = srcLocation,
+        dstPrefix = dstPrefix,
+        startTime = Instant.now
+      )
 
     val result = for {
       srcStream <- get(srcLocation).left.map { storageError =>
         UnpackerStorageError(storageError)
       }
 
-      unpackSummary <- unpack(unpackSummary, srcStream, dstLocation)
+      unpackSummary <- unpack(unpackSummary, srcStream, dstPrefix)
     } yield unpackSummary
 
     result match {
@@ -96,7 +101,7 @@ trait Unpacker extends Logging {
   private def unpack(
     unpackSummary: UnpackSummary,
     srcStream: InputStream,
-    dstLocation: ObjectLocationPrefix
+    dstPrefix: ObjectLocationPrefix
   ): Either[UnpackerError, UnpackSummary] =
     Unarchiver.open(srcStream) match {
       case Left(unarchiverError) =>
@@ -115,7 +120,7 @@ trait Unpacker extends Logging {
                 val uploadedBytes = putObject(
                   inputStream = entryStream,
                   archiveEntry = archiveEntry,
-                  destination = dstLocation
+                  dstPrefix = dstPrefix
                 )
 
                 totalFiles += 1
@@ -138,9 +143,9 @@ trait Unpacker extends Logging {
   private def putObject(
     inputStream: InputStream,
     archiveEntry: ArchiveEntry,
-    destination: ObjectLocationPrefix
+    dstPrefix: ObjectLocationPrefix
   ): Long = {
-    val uploadLocation = destination.asLocation(archiveEntry.getName)
+    val uploadLocation = dstPrefix.asLocation(archiveEntry.getName)
 
     val archiveEntrySize = archiveEntry.getSize
 
@@ -151,7 +156,7 @@ trait Unpacker extends Logging {
     }
 
     debug(
-      s"Uploading archive entry ${archiveEntry.getName} to ${uploadLocation}"
+      s"Uploading archive entry ${archiveEntry.getName} to $uploadLocation"
     )
 
     put(uploadLocation)(

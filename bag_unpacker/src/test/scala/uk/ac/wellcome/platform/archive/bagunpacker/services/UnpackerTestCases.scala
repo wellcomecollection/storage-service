@@ -47,7 +47,7 @@ trait UnpackerTestCases[Namespace]
               .unpack(
                 ingestId = createIngestID,
                 srcLocation = archiveLocation,
-                dstLocation = dstLocation
+                dstPrefix = dstLocation
               )
 
             val unpacked = summaryResult.success.value
@@ -85,7 +85,7 @@ trait UnpackerTestCases[Namespace]
               .unpack(
                 ingestId = createIngestID,
                 srcLocation = archiveLocation,
-                dstLocation = dstLocation
+                dstPrefix = dstLocation
               )
 
             val unpacked = summaryResult.success.value
@@ -113,7 +113,7 @@ trait UnpackerTestCases[Namespace]
         unpacker.unpack(
           ingestId = createIngestID,
           srcLocation = srcLocation,
-          dstLocation = createObjectLocationPrefix
+          dstPrefix = createObjectLocationPrefix
         )
 
       val ingestResult = result.success.value
@@ -144,7 +144,7 @@ trait UnpackerTestCases[Namespace]
           unpacker.unpack(
             ingestId = createIngestID,
             srcLocation = srcLocation,
-            dstLocation = createObjectLocationPrefix
+            dstPrefix = createObjectLocationPrefix
           )
 
         val ingestResult = result.success.value
