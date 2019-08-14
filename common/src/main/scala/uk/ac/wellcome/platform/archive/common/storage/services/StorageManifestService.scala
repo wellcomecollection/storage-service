@@ -34,7 +34,7 @@ class BadFetchLocationException(message: String)
 class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
   def createManifest(
     bag: Bag,
-    replicaRoot: ObjectLocation,
+    replicaRoot: ObjectLocationPrefix,
     space: StorageSpace,
     version: BagVersion
   ): Try[StorageManifest] = {
@@ -98,12 +98,12 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
     *
     */
   private def getBagRoot(
-    replicaRoot: ObjectLocation,
+    replicaRoot: ObjectLocationPrefix,
     version: BagVersion
   ): Try[ObjectLocationPrefix] =
     if (replicaRoot.path.endsWith(s"/$version")) {
       Success(
-        replicaRoot.asPrefix.copy(
+        replicaRoot.copy(
           path = replicaRoot.path.stripSuffix(s"/$version")
         )
       )

@@ -40,7 +40,7 @@ class Register(
     )
 
     val result: Try[IngestStepResult[RegistrationSummary]] = for {
-      bag <- bagReader.get(bagRoot.asLocation()) match {
+      bag <- bagReader.get(bagRoot) match {
         case Right(value) => Success(value)
         case Left(err) =>
           Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
@@ -48,7 +48,7 @@ class Register(
 
       storageManifest <- storageManifestService.createManifest(
         bag = bag,
-        replicaRoot = bagRoot.asLocation(),
+        replicaRoot = bagRoot,
         space = storageSpace,
         version = version
       )

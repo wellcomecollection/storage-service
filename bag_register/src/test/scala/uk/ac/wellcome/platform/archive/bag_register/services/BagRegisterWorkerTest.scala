@@ -53,7 +53,7 @@ class BagRegisterWorkerTest
                 context = createPipelineContextWith(
                   storageSpace = space
                 ),
-                bagRootLocation = bagRoot,
+                bagRoot = bagRoot,
                 version = version
               )
 

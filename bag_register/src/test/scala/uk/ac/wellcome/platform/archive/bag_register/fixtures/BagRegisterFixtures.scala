@@ -7,30 +7,15 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bag_register.services.{
-  BagRegisterWorker,
-  Register
-}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestStatusUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestStatusUpdate}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  MemorySizeFinder,
-  StorageManifestDao,
-  StorageManifestService
-}
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.platform.archive.common.storage.services.{MemorySizeFinder, StorageManifestDao, StorageManifestService}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
@@ -132,7 +117,7 @@ trait BagRegisterFixtures
     space: StorageSpace,
     version: BagVersion,
     dataFileCount: Int
-  )(testWith: TestWith[(ObjectLocation, BagInfo), R])(
+  )(testWith: TestWith[(ObjectLocationPrefix, BagInfo), R])(
     implicit
     namespace: String,
     streamStore: MemoryStreamStore[ObjectLocation]

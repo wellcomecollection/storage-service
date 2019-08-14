@@ -3,28 +3,13 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.net.URI
 
 import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  Bag,
-  BagFetchEntry,
-  BagPath,
-  BagVersion
-}
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagFileGenerators,
-  BagGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, BagPath, BagVersion}
+import uk.ac.wellcome.platform.archive.common.generators.{BagFileGenerators, BagGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageManifest,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
 import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA256}
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 import scala.util.{Failure, Random, Success, Try}
@@ -40,29 +25,31 @@ class StorageManifestServiceTest
     with TryValues {
 
   it("fails if the replica root is not a versioned directory") {
-    val replicaRootLocation = createObjectLocation
+    val replicaRoot = createObjectLocationPrefix
     val version = randomInt(1, 10)
 
-    assertIsError(replicaRoot = replicaRootLocation, version = version) { err =>
+    assertIsError(replicaRoot = replicaRoot, version = version) { err =>
       err shouldBe a[StorageManifestException]
-      err.getMessage shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
+      err.getMessage shouldBe s"Malformed bag root: $replicaRoot (expected suffix /v$version)"
     }
   }
 
   it("fails if the replica root has the wrong version") {
     val version = randomInt(1, 10)
-    val replicaRootLocation = createObjectLocation.join(s"/v${version + 1}")
+    val replicaRoot = createObjectLocation
+      .join(s"/v${version + 1}")
+      .asPrefix
 
-    assertIsError(replicaRoot = replicaRootLocation, version = version) { err =>
+    assertIsError(replicaRoot = replicaRoot, version = version) { err =>
       err shouldBe a[StorageManifestException]
-      err.getMessage shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
+      err.getMessage shouldBe s"Malformed bag root: $replicaRoot (expected suffix /v$version)"
     }
   }
 
   it("identifies the correct root location of a bag") {
     val version = randomInt(1, 10)
     val bagRoot = createObjectLocation
-    val replicaRoot = bagRoot.join(s"/v$version")
+    val replicaRoot = bagRoot.join(s"/v$version").asPrefix
 
     val storageManifest = createManifest(
       replicaRoot = replicaRoot,
@@ -82,7 +69,7 @@ class StorageManifestServiceTest
       "if there are no fetch entries, it puts all the file entries under a versioned path"
     ) {
       val version = randomInt(1, 10)
-      val replicaRoot = createObjectLocation.join(s"/v$version")
+      val replicaRoot = createObjectLocation.join(s"/v$version").asPrefix
 
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
@@ -96,7 +83,7 @@ class StorageManifestServiceTest
         bag = bag,
         replicaRoot = replicaRoot,
         version = version,
-        sizes = files.map { replicaRoot.join(_) -> Random.nextLong().abs }.toMap
+        sizes = files.map { replicaRoot.asLocation(_) -> Random.nextLong().abs }.toMap
       )
 
       val namePathMap =
@@ -113,7 +100,7 @@ class StorageManifestServiceTest
       "if there are no fetch entries, it puts all the tag manifest under a versioned path"
     ) {
       val version = randomInt(1, 10)
-      val replicaRoot = createObjectLocation.join(s"/v$version")
+      val replicaRoot = createObjectLocation.join(s"/v$version").asPrefix
 
       val files =
         Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
@@ -128,7 +115,7 @@ class StorageManifestServiceTest
         bag = bag,
         replicaRoot = replicaRoot,
         version = version,
-        sizes = files.map { replicaRoot.join(_) -> Random.nextLong().abs }.toMap
+        sizes = files.map { replicaRoot.asLocation(_) -> Random.nextLong().abs }.toMap
       )
 
       val namePathMap =
@@ -145,7 +132,7 @@ class StorageManifestServiceTest
       val version = randomInt(1, 10)
       val fetchVersion = version - 1
       val bagRoot = createObjectLocation
-      val replicaRoot = bagRoot.join(s"/v$version")
+      val replicaRoot = bagRoot.join(s"/v$version").asPrefix
 
       val fetchLocation = bagRoot.copy(
         path = s"${bagRoot.path}/v$fetchVersion/data/file1.txt"
@@ -188,7 +175,7 @@ class StorageManifestServiceTest
       val version = randomInt(1, 10)
       val fetchVersion = version - 1
       val bagRoot = createObjectLocation
-      val replicaRoot = bagRoot.join(s"/v$version")
+      val replicaRoot = bagRoot.join(s"/v$version").asPrefix
 
       val fetchLocation = bagRoot.copy(
         path = s"${bagRoot.path}/v$fetchVersion/data/file1.txt"
@@ -248,8 +235,8 @@ class StorageManifestServiceTest
       )
 
       val version = randomInt(from = 1, to = 10)
-      val replicaRoot = createObjectLocation.join(s"v$version")
-      val sizes = paths.map { replicaRoot.join(_) -> Random.nextLong() }.toMap
+      val replicaRoot = createObjectLocation.join(s"v$version").asPrefix
+      val sizes = paths.map { replicaRoot.asLocation(_) -> Random.nextLong() }.toMap
 
       val storageManifest = createManifest(
         bag = bag,
@@ -282,8 +269,8 @@ class StorageManifestServiceTest
       )
 
       val version = randomInt(from = 1, to = 10)
-      val replicaRoot = createObjectLocation.join(s"v$version")
-      val sizes = paths.map { replicaRoot.join(_) -> Random.nextLong() }.toMap
+      val replicaRoot = createObjectLocation.join(s"v$version").asPrefix
+      val sizes = paths.map { replicaRoot.asLocation(_) -> Random.nextLong() }.toMap
 
       val storageManifest = createManifest(
         bag = bag,
@@ -394,7 +381,7 @@ class StorageManifestServiceTest
     it("refers to a file that isn't in a versioned directory") {
       val version = randomInt(1, 10)
       val bagRoot = createObjectLocation
-      val replicaRoot = bagRoot.join(s"/v$version")
+      val replicaRoot = bagRoot.join(s"/v$version").asPrefix
 
       val fetchEntries = Seq(
         BagFetchEntry(
@@ -439,7 +426,7 @@ class StorageManifestServiceTest
     it("sets the correct version") {
       val version = randomInt(1, 10)
       val bagRoot = createObjectLocation
-      val replicaRoot = bagRoot.join(s"/v$version")
+      val replicaRoot = bagRoot.join(s"/v$version").asPrefix
 
       val manifest =
         createManifest(replicaRoot = replicaRoot, version = version)
@@ -457,7 +444,7 @@ class StorageManifestServiceTest
   describe("adds the size to the manifest files") {
     it("fails if it cannot get the size of a file") {
       val version = randomInt(1, 10)
-      val replicaRoot = createObjectLocation.join(s"/v$version")
+      val replicaRoot = createObjectLocation.join(s"/v$version").asPrefix
 
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
@@ -485,7 +472,7 @@ class StorageManifestServiceTest
 
       result.failed.get shouldBe a[StorageManifestException]
       result.failed.get.getMessage should startWith(
-        s"Error getting size of ${replicaRoot.join("data/file1.txt")}"
+        s"Error getting size of ${replicaRoot.asLocation("data/file1.txt")}"
       )
     }
 
@@ -504,9 +491,9 @@ class StorageManifestServiceTest
       )
 
       val version = randomInt(from = 1, to = 10)
-      val replicaRoot = createObjectLocation.join(s"v$version")
+      val replicaRoot = createObjectLocation.join(s"v$version").asPrefix
       val sizes = expectedSizes.map {
-        case (path, size) => replicaRoot.join(path) -> size
+        case (path, expectedSize) => replicaRoot.asLocation(path) -> expectedSize
       }
 
       val storageManifest = createManifest(
@@ -529,7 +516,7 @@ class StorageManifestServiceTest
       val version = randomInt(1, 10)
       val fetchVersion = version - 1
       val bagRoot = createObjectLocation
-      val replicaRoot = bagRoot.join(s"/v$version")
+      val replicaRoot = bagRoot.join(s"/v$version").asPrefix
 
       val fetchLocation = bagRoot.copy(
         path = s"${bagRoot.path}/v$fetchVersion/data/file1.txt"
@@ -589,7 +576,7 @@ class StorageManifestServiceTest
   private def createManifest(
     space: StorageSpace = createStorageSpace,
     bag: Bag = createBag,
-    replicaRoot: ObjectLocation = createObjectLocation.join("/v1"),
+    replicaRoot: ObjectLocationPrefix = createObjectLocation.join("/v1").asPrefix,
     version: Int = 1,
     sizes: Map[ObjectLocation, Long] = Map.empty
   ): StorageManifest = {
@@ -620,7 +607,7 @@ class StorageManifestServiceTest
 
   private def assertIsError(
     bag: Bag = createBag,
-    replicaRoot: ObjectLocation = createObjectLocation.join("/v1"),
+    replicaRoot: ObjectLocationPrefix = createObjectLocation.join("/v1").asPrefix,
     version: Int = 1
   )(assertError: Throwable => Assertion): Assertion = {
     val sizeFinder = new SizeFinder {
