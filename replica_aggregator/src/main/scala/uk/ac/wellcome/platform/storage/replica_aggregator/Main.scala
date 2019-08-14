@@ -8,11 +8,25 @@ import com.typesafe.config.Config
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{ReplicaPath, ReplicaResult}
-import uk.ac.wellcome.platform.storage.replica_aggregator.services.{ReplicaAggregator, ReplicaAggregatorWorker}
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  ReplicaPath,
+  ReplicaResult
+}
+import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
+  ReplicaAggregator,
+  ReplicaAggregatorWorker
+}
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp

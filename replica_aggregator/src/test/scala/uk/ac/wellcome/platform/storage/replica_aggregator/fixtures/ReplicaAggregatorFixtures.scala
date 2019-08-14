@@ -6,11 +6,19 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{ReplicaPath, ReplicaResult}
-import uk.ac.wellcome.platform.storage.replica_aggregator.services.{ReplicaAggregator, ReplicaAggregatorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
+  OperationFixtures
+}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  ReplicaPath,
+  ReplicaResult
+}
+import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
+  ReplicaAggregator,
+  ReplicaAggregatorWorker
+}
 import uk.ac.wellcome.storage.store.VersionedStore
-
 
 trait ReplicaAggregatorFixtures
     extends OperationFixtures
@@ -35,7 +43,6 @@ trait ReplicaAggregatorFixtures
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
       withMonitoringClient { implicit monitoringClient =>
-
         val worker = new ReplicaAggregatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           replicaAggregator = new ReplicaAggregator(versionedStore),

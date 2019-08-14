@@ -46,7 +46,6 @@ class ReplicaAggregator(
               ReplicaResult
             ]]
             ) =>
-
           val replicationSet = ReplicationSet(
             path = replicaPath,
             results = upsertResult.identifiedT

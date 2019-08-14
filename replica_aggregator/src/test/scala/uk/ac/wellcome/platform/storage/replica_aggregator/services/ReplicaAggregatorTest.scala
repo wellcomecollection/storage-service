@@ -117,16 +117,17 @@ class ReplicaAggregatorTest
   it("handles an error from the underlying versioned store") {
     val throwable = new Throwable("BOOM!")
 
-    val brokenStore = new MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](
-      store = new MemoryStore[Version[ReplicaPath, Int], List[ReplicaResult]](
-        initialEntries = Map.empty
-      ) with MemoryMaxima[ReplicaPath, List[ReplicaResult]]
-    ) {
-      override def upsert(id: ReplicaPath)(
-        t: List[ReplicaResult]
-      )(f: List[ReplicaResult] => List[ReplicaResult]): UpdateEither =
-        Left(UpdateWriteError(throwable))
-    }
+    val brokenStore =
+      new MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](
+        store = new MemoryStore[Version[ReplicaPath, Int], List[ReplicaResult]](
+          initialEntries = Map.empty
+        ) with MemoryMaxima[ReplicaPath, List[ReplicaResult]]
+      ) {
+        override def upsert(id: ReplicaPath)(
+          t: List[ReplicaResult]
+        )(f: List[ReplicaResult] => List[ReplicaResult]): UpdateEither =
+          Left(UpdateWriteError(throwable))
+      }
 
     val result =
       withAggregator(brokenStore) {

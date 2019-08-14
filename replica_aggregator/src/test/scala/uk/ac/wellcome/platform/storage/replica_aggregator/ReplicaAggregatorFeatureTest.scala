@@ -9,12 +9,16 @@ import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{PrimaryStorageLocation, ReplicaPath, ReplicaResult}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  PrimaryStorageLocation,
+  ReplicaPath,
+  ReplicaResult
+}
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 class ReplicaAggregatorFeatureTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with ReplicaAggregatorFixtures
     with IngestUpdateAssertions
@@ -30,7 +34,8 @@ class ReplicaAggregatorFeatureTest
       val outgoing = new MemoryMessageSender()
 
       val payload = createEnrichedBagInformationPayload
-      val versionedStore = MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](Map.empty)
+      val versionedStore =
+        MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](Map.empty)
 
       withReplicaAggregatorWorker(
         queue = queue,
@@ -39,7 +44,6 @@ class ReplicaAggregatorFeatureTest
         outgoing = outgoing,
         stepName = "aggregating replicas"
       ) { _ =>
-
         sendNotificationToSQS(queue, payload)
 
         eventually {
@@ -63,12 +67,13 @@ class ReplicaAggregatorFeatureTest
 
           inside(replicaResult) {
             case ReplicaResult(
-              ingestId,
-              PrimaryStorageLocation(
-                storageProvider,
-                location
-              ), _
-            ) =>
+                ingestId,
+                PrimaryStorageLocation(
+                  storageProvider,
+                  location
+                ),
+                _
+                ) =>
               ingestId shouldBe payload.ingestId
               storageProvider shouldBe InfrequentAccessStorageProvider
               location shouldBe payload.bagRootLocation
