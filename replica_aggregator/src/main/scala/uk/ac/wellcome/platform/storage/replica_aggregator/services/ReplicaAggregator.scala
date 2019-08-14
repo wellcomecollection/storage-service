@@ -42,7 +42,9 @@ class ReplicaAggregator(
       } match {
         // Only a single result is enough for now.
         case Right(
-            upsertResult: Identified[Version[ReplicaPath, Int], Set[ReplicaResult]]
+            upsertResult: Identified[Version[ReplicaPath, Int], Set[
+              ReplicaResult
+            ]]
             ) =>
           val replicationSet = ReplicationSet(
             path = replicaPath,
