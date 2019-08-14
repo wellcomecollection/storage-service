@@ -8,29 +8,16 @@ Usage:
 """
 
 import collections
-import json
 import logging
-import os
 import re
 
 import boto3
 import daiquiri
 
 
-# Examples:
-#
-#       mets_only/0/2/3/0/b28270320.xml
-#       mets_only/0/2/2/3/b28123220_0001.xml
-#       mets_only/0/1/1/1/xb19831110.xml
-#
-METS_XML_RE = re.compile(
-    r"^mets_only/(?P<d1>[x\d])/(?P<d2>\d)/(?P<d3>\d)/(?P<d4>\d)/x?(?P<b_number>b\d{4}(?P=d4)(?P=d3)(?P=d2)(?P=d1)).*\.xml$"
-)
-
-
 BAGGER_DROP_RE = re.compile(r"^b(?P<b_number>\d{7}[\dx]).*\.tar\.gz$")
 
-B_NUMBER_RE = re.compile("[bB](?P<b_number>\d{7}[\dx]?)")
+B_NUMBER_RE = re.compile(r"[bB](?P<b_number>\d{7}[\dx]?)")
 
 
 daiquiri.setup(
@@ -44,8 +31,6 @@ daiquiri.setup(
 )
 
 logger = daiquiri.getLogger(__name__)
-
-
 
 
 def get_matching_s3_objects(bucket, prefix=""):
