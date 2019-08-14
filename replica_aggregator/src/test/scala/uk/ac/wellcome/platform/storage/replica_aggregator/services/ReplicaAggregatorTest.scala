@@ -39,8 +39,8 @@ class ReplicaAggregatorTest
     createReplicaResultWith()
 
   def withAggregator[R](
-    versionedStore: MemoryVersionedStore[String, Set[ReplicaResult]] =
-      MemoryVersionedStore[String, Set[ReplicaResult]](
+    versionedStore: MemoryVersionedStore[ReplicaPath, Set[ReplicaResult]] =
+      MemoryVersionedStore[ReplicaPath, Set[ReplicaResult]](
         initialEntries = Map.empty
       )
   )(testWith: TestWith[ReplicaAggregator, R]): R =
@@ -68,7 +68,7 @@ class ReplicaAggregatorTest
     summary shouldBe a[ReplicationAggregationComplete]
     summary.asInstanceOf[ReplicationAggregationComplete].replicationSet shouldBe
       ReplicationSet(
-        path = location.path,
+        path = ReplicaPath(location.path),
         results = Set(replicaResult)
       )
   }
@@ -82,7 +82,7 @@ class ReplicaAggregatorTest
     )
 
     val versionedStore =
-      MemoryVersionedStore[String, Set[ReplicaResult]](
+      MemoryVersionedStore[ReplicaPath, Set[ReplicaResult]](
         initialEntries = Map.empty
       )
 
@@ -90,7 +90,7 @@ class ReplicaAggregatorTest
       _.aggregate(replicaResult)
     }
 
-    val path = replicaResult.storageLocation.location.path
+    val path = ReplicaPath(replicaResult.storageLocation.location.path)
 
     versionedStore.getLatest(path).right.value.identifiedT shouldBe Set(
       replicaResult
@@ -117,12 +117,12 @@ class ReplicaAggregatorTest
   it("handles an error from the underlying versioned store") {
     val throwable = new Throwable("BOOM!")
 
-    val brokenStore = new MemoryVersionedStore[String, Set[ReplicaResult]](
-      store = new MemoryStore[Version[String, Int], Set[ReplicaResult]](
+    val brokenStore = new MemoryVersionedStore[ReplicaPath, Set[ReplicaResult]](
+      store = new MemoryStore[Version[ReplicaPath, Int], Set[ReplicaResult]](
         initialEntries = Map.empty
-      ) with MemoryMaxima[String, Set[ReplicaResult]]
+      ) with MemoryMaxima[ReplicaPath, Set[ReplicaResult]]
     ) {
-      override def upsert(id: String)(
+      override def upsert(id: ReplicaPath)(
         t: Set[ReplicaResult]
       )(f: Set[ReplicaResult] => Set[ReplicaResult]): UpdateEither =
         Left(UpdateWriteError(throwable))
@@ -158,7 +158,7 @@ class ReplicaAggregatorTest
         .asInstanceOf[ReplicationAggregationComplete]
         .replicationSet shouldBe
         ReplicationSet(
-          path = replicaResult.storageLocation.location.path,
+          path = ReplicaPath(replicaResult.storageLocation.location.path),
           results = Set(replicaResult)
         )
     }
