@@ -9,7 +9,7 @@ import uk.ac.wellcome.storage.{Identified, Version}
 import scala.util.Try
 
 class ReplicaAggregator(
-  versionedStore: VersionedStore[String, Int, Set[ReplicaResult]]
+  versionedStore: VersionedStore[ReplicaPath, Int, Set[ReplicaResult]]
 ) {
   def aggregate(result: ReplicaResult): Try[ReplicationAggregationSummary] =
     Try {
@@ -35,14 +35,16 @@ class ReplicaAggregator(
 
       val startTime = Instant.now()
 
-      val replicaPath = result.storageLocation.location.path
+      val replicaPath = ReplicaPath(result.storageLocation.location.path)
 
       versionedStore.upsert(replicaPath)(Set(result)) { existing =>
         existing ++ Set(result)
       } match {
         // Only a single result is enough for now.
         case Right(
-            upsertResult: Identified[Version[String, Int], Set[ReplicaResult]]
+            upsertResult: Identified[Version[ReplicaPath, Int], Set[
+              ReplicaResult
+            ]]
             ) =>
           val replicationSet = ReplicationSet(
             path = replicaPath,
