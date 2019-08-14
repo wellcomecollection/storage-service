@@ -29,8 +29,8 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
             RootFinderSuccessSummary(
               startTime = startTime,
               endTime = Instant.now(),
-              location = unpackLocation,
-              bagRootLocation = rootLocation
+              searchRoot = unpackLocation,
+              bagRoot = rootLocation.asPrefix
             )
           )
 
@@ -39,7 +39,7 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
             RootFinderFailureSummary(
               startTime = startTime,
               endTime = Instant.now(),
-              location = unpackLocation
+              searchRoot = unpackLocation
             ),
             err
           )
