@@ -72,9 +72,9 @@ class RegisterTest
     BagBuilder.uploadBagObjects(badBagObjects)
 
     val result = register.update(
-      bagRootLocation = bagRoot.copy(
+      bagRoot = bagRoot.copy(
         namespace = bagRoot.namespace + "_wrong"
-      ),
+      ).asPrefix,
       version = version,
       storageSpace = space
     )

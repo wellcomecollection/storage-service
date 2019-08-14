@@ -48,12 +48,12 @@ class BagRegisterWorkerTest
             dataFileCount = dataFileCount,
             version = version
           ) {
-            case (bagRootLocation, bagInfo) =>
+            case (bagRoot, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space
                 ),
-                bagRootLocation = bagRootLocation,
+                bagRootLocation = bagRoot,
                 version = version
               )
 
@@ -76,8 +76,8 @@ class BagRegisterWorkerTest
               storageManifest.locations shouldBe List(
                 StorageLocation(
                   provider = InfrequentAccessStorageProvider,
-                  location = bagRootLocation.copy(
-                    path = bagRootLocation.path.stripSuffix(s"/$version")
+                  location = bagRoot.copy(
+                    path = bagRoot.path.stripSuffix(s"/$version")
                   )
                 )
               )
