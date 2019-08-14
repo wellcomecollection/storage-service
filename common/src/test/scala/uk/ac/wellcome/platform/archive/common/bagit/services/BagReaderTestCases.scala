@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 import org.scalatest.{Assertion, EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagBuilder, StorageRandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagBuilder,
+  StorageRandomThings
+}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.{TypedStore, TypedStoreEntry}
 

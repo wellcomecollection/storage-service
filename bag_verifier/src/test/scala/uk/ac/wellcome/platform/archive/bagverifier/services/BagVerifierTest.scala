@@ -56,7 +56,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            bagRoot.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -91,7 +94,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            bagRoot.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -139,7 +145,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            bagRoot.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -181,7 +190,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            bagRoot.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -219,7 +231,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            bagRoot.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -259,7 +274,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            bagRoot.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -293,7 +311,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            bagRoot.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -329,7 +350,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(bagRoot.asPrefix, externalIdentifier = payloadExternalIdentifier)
+          _.verify(
+            bagRoot.asPrefix,
+            externalIdentifier = payloadExternalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -367,7 +391,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              bagRoot.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get
@@ -401,7 +428,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              bagRoot.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get
@@ -433,7 +463,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              bagRoot.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get
@@ -459,7 +492,8 @@ class BagVerifierTest
             payloadFileCount
         }
 
-        val (bagRoot, bagInfo) = alwaysWriteAsFetchBuilder.createS3BagWith(bucket)
+        val (bagRoot, bagInfo) =
+          alwaysWriteAsFetchBuilder.createS3BagWith(bucket)
 
         val bag = new S3BagReader().get(bagRoot).right.value
 
@@ -475,7 +509,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              bagRoot.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get
@@ -484,8 +521,7 @@ class BagVerifierTest
         val ingestFailed = result.asInstanceOf[IngestFailed[_]]
 
         ingestFailed.e.getMessage shouldBe
-          s"Files referred to in the fetch.txt also appear in the bag: ${
-            bagRoot
+          s"Files referred to in the fetch.txt also appear in the bag: ${bagRoot
             .join(badFetchEntry.path.value)}"
 
         ingestFailed.maybeUserFacingMessage.get shouldBe
@@ -509,7 +545,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              bagRoot.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
@@ -537,7 +576,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              bagRoot.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get
@@ -568,7 +610,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(bagRoot.asPrefix, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              bagRoot.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get

@@ -3,11 +3,26 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.net.URI
 
 import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, BagPath, BagVersion}
-import uk.ac.wellcome.platform.archive.common.generators.{BagFileGenerators, BagGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagFetchEntry,
+  BagPath,
+  BagVersion
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagFileGenerators,
+  BagGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, StorageLocation}
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  StorageLocation
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA256}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
@@ -83,7 +98,8 @@ class StorageManifestServiceTest
         bag = bag,
         replicaRoot = replicaRoot,
         version = version,
-        sizes = files.map { replicaRoot.asLocation(_) -> Random.nextLong().abs }.toMap
+        sizes =
+          files.map { replicaRoot.asLocation(_) -> Random.nextLong().abs }.toMap
       )
 
       val namePathMap =
@@ -115,7 +131,8 @@ class StorageManifestServiceTest
         bag = bag,
         replicaRoot = replicaRoot,
         version = version,
-        sizes = files.map { replicaRoot.asLocation(_) -> Random.nextLong().abs }.toMap
+        sizes =
+          files.map { replicaRoot.asLocation(_) -> Random.nextLong().abs }.toMap
       )
 
       val namePathMap =
@@ -493,7 +510,8 @@ class StorageManifestServiceTest
       val version = randomInt(from = 1, to = 10)
       val replicaRoot = createObjectLocation.join(s"v$version").asPrefix
       val sizes = expectedSizes.map {
-        case (path, expectedSize) => replicaRoot.asLocation(path) -> expectedSize
+        case (path, expectedSize) =>
+          replicaRoot.asLocation(path) -> expectedSize
       }
 
       val storageManifest = createManifest(
@@ -576,7 +594,8 @@ class StorageManifestServiceTest
   private def createManifest(
     space: StorageSpace = createStorageSpace,
     bag: Bag = createBag,
-    replicaRoot: ObjectLocationPrefix = createObjectLocation.join("/v1").asPrefix,
+    replicaRoot: ObjectLocationPrefix =
+      createObjectLocation.join("/v1").asPrefix,
     version: Int = 1,
     sizes: Map[ObjectLocation, Long] = Map.empty
   ): StorageManifest = {
@@ -607,7 +626,8 @@ class StorageManifestServiceTest
 
   private def assertIsError(
     bag: Bag = createBag,
-    replicaRoot: ObjectLocationPrefix = createObjectLocation.join("/v1").asPrefix,
+    replicaRoot: ObjectLocationPrefix =
+      createObjectLocation.join("/v1").asPrefix,
     version: Int = 1
   )(assertError: Throwable => Assertion): Assertion = {
     val sizeFinder = new SizeFinder {

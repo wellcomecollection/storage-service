@@ -78,8 +78,10 @@ class BagRootFinderFeatureTest
           externalIdentifier: ExternalIdentifier,
           version: BagVersion
         ): String =
-          Seq(super.createBagRootPath(space, externalIdentifier, version), "subdir")
-            .mkString("/")
+          Seq(
+            super.createBagRootPath(space, externalIdentifier, version),
+            "subdir"
+          ).mkString("/")
       }
 
       val (unpackedBagLocation, _) = builder.createS3BagWith(bucket)
