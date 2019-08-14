@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
 import java.time.Instant
 
+import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.{Identified, Version}
@@ -9,8 +10,8 @@ import uk.ac.wellcome.storage.{Identified, Version}
 import scala.util.Try
 
 class ReplicaAggregator(
-  versionedStore: VersionedStore[ReplicaPath, Int, Set[ReplicaResult]]
-) {
+  versionedStore: VersionedStore[ReplicaPath, Int, List[ReplicaResult]]
+) extends Logging {
   def aggregate(result: ReplicaResult): Try[ReplicationAggregationSummary] =
     Try {
 
@@ -34,18 +35,18 @@ class ReplicaAggregator(
       }
 
       val startTime = Instant.now()
-
       val replicaPath = ReplicaPath(result.storageLocation.location.path)
 
-      versionedStore.upsert(replicaPath)(Set(result)) { existing =>
-        existing ++ Set(result)
+      versionedStore.upsert(replicaPath)(List(result)) { existing =>
+        (existing.toSet ++ Set(result)).toList
       } match {
         // Only a single result is enough for now.
         case Right(
-            upsertResult: Identified[Version[ReplicaPath, Int], Set[
+            upsertResult: Identified[Version[ReplicaPath, Int], List[
               ReplicaResult
             ]]
             ) =>
+
           val replicationSet = ReplicationSet(
             path = replicaPath,
             results = upsertResult.identifiedT

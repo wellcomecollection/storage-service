@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
-class ReplicaPath(val underlying: String) extends AnyVal
+case class ReplicaPath(val underlying: String) extends AnyVal {
+  override def toString: String = underlying
+}
 
 object ReplicaPath {
   def apply(value: String): ReplicaPath =

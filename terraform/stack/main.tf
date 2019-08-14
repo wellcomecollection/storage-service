@@ -297,22 +297,25 @@ module "replica_aggregator" {
   service_name = "${var.namespace}-replica_aggregator"
 
   env_vars = {
-    queue_url          = "${module.replica_aggregator_input_queue.url}"
-    outgoing_topic_arn = "${module.replica_aggregator_output_topic.arn}"
-    ingest_topic_arn   = "${module.ingests_topic.arn}"
-    metrics_namespace  = "${local.bag_register_service_name}"
-    operation_name     = "replica_aggregator"
-    logstash_host      = "${local.logstash_host}"
+    replicas_table_name = "${local.replicas_table_name}"
+    queue_url           = "${module.replica_aggregator_input_queue.url}"
+    outgoing_topic_arn  = "${module.replica_aggregator_output_topic.arn}"
+    ingest_topic_arn    = "${module.ingests_topic.arn}"
+    metrics_namespace   = "${local.bag_register_service_name}"
+    operation_name      = "replica_aggregator"
+    logstash_host       = "${local.logstash_host}"
 
     JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.replica_aggregator_service_name}"
   }
 
-  env_vars_length = 7
+  env_vars_length = 8
 
   min_capacity = 1
   max_capacity = 10
 
   container_image = "${local.replica_aggregator_image}"
+
+  secret_env_vars_length = 0
 }
 
 # bag_register

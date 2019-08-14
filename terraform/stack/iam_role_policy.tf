@@ -194,6 +194,11 @@ resource "aws_iam_role_policy" "replica_aggregator_post_repl_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
+resource "aws_iam_role_policy" "replica_aggregator_replicas_table" {
+  role   = "${module.replica_aggregator.task_role_name}"
+  policy = "${data.aws_iam_policy_document.replicas_table_readwrite.json}"
+}
+
 # notifier
 
 resource "aws_iam_role_policy" "notifier_metrics" {
