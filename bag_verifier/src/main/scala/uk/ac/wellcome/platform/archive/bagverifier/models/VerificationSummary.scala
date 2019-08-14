@@ -9,10 +9,10 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   VerificationResult,
   VerificationSuccess
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 sealed trait VerificationSummary extends Summary {
-  val rootLocation: ObjectLocation
+  val bagRoot: ObjectLocationPrefix
   val verification: Option[VerificationResult]
 
   val endTime: Instant
@@ -24,7 +24,7 @@ sealed trait VerificationSummary extends Summary {
       case Some(VerificationIncomplete(msg)) =>
         f"""
            |status=incomplete
-           |message=${msg}
+           |message=$msg
          """.stripMargin
       case Some(VerificationFailure(failed, succeeded)) =>
         f"""
@@ -44,7 +44,7 @@ sealed trait VerificationSummary extends Summary {
 
     }
 
-    f"""|bag=$rootLocation
+    f"""|bag=$bagRoot
         |durationSeconds=$durationSeconds
         |duration=$formatDuration
         |$status
@@ -55,39 +55,39 @@ sealed trait VerificationSummary extends Summary {
 
 object VerificationSummary {
   def incomplete(
-    root: ObjectLocation,
+    bagRoot: ObjectLocationPrefix,
     e: Throwable,
     t: Instant
   ): VerificationIncompleteSummary =
     VerificationIncompleteSummary(
-      rootLocation = root,
+      bagRoot = bagRoot,
       e = e,
       startTime = t,
       endTime = Instant.now()
     )
 
   def create(
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     v: VerificationResult,
     t: Instant
   ): VerificationSummary = v match {
     case i @ VerificationIncomplete(_) =>
       VerificationIncompleteSummary(
-        rootLocation = root,
+        bagRoot = root,
         e = i,
         startTime = t,
         endTime = Instant.now()
       )
     case f @ VerificationFailure(_, _) =>
       VerificationFailureSummary(
-        rootLocation = root,
+        bagRoot = root,
         verification = Some(f),
         startTime = t,
         endTime = Instant.now()
       )
     case s @ VerificationSuccess(_) =>
       VerificationSuccessSummary(
-        rootLocation = root,
+        bagRoot = root,
         verification = Some(s),
         startTime = t,
         endTime = Instant.now()
@@ -96,7 +96,7 @@ object VerificationSummary {
 }
 
 case class VerificationIncompleteSummary(
-  rootLocation: ObjectLocation,
+  bagRoot: ObjectLocationPrefix,
   e: Throwable,
   startTime: Instant,
   endTime: Instant
@@ -105,14 +105,14 @@ case class VerificationIncompleteSummary(
 }
 
 case class VerificationSuccessSummary(
-  rootLocation: ObjectLocation,
+  bagRoot: ObjectLocationPrefix,
   verification: Some[VerificationSuccess],
   startTime: Instant,
   endTime: Instant
 ) extends VerificationSummary
 
 case class VerificationFailureSummary(
-  rootLocation: ObjectLocation,
+  bagRoot: ObjectLocationPrefix,
   verification: Option[VerificationFailure],
   startTime: Instant,
   endTime: Instant

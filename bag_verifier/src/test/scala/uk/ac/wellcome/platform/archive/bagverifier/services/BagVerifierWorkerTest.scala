@@ -38,13 +38,13 @@ class BagVerifierWorkerTest
     val outgoing = new MemoryMessageSender()
 
     withLocalS3Bucket { bucket =>
-      val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+      val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
       val payload = createEnrichedBagInformationPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRootLocation = bagRootLocation
+        bagRootLocation = bagRoot
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {

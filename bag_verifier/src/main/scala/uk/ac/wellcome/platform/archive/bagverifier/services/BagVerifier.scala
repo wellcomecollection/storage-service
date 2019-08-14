@@ -33,7 +33,7 @@ class BagVerifier()(
   type InternalResult[T] = Either[BagVerifierError, T]
 
   def verify(
-    root: ObjectLocation,
+    bagRoot: ObjectLocationPrefix,
     externalIdentifier: ExternalIdentifier
   ): Try[IngestStepResult[VerificationSummary]] =
     Try {
@@ -41,7 +41,7 @@ class BagVerifier()(
 
       val internalResult =
         for {
-          bag <- getBag(root, startTime = startTime)
+          bag <- getBag(bagRoot, startTime = startTime)
 
           _ <- verifyExternalIdentifier(
             bag = bag,
@@ -51,11 +51,11 @@ class BagVerifier()(
           _ <- verifyPayloadOxumFileCount(bag)
 
           verificationResult <- verifyChecksums(
-            root = root,
+            root = bagRoot,
             bag = bag
           )
 
-          actualLocations <- listing.list(root.asPrefix) match {
+          actualLocations <- listing.list(bagRoot) match {
             case Right(iterable) => Right(iterable.toSeq)
             case Left(listingFailure) =>
               Left(BagVerifierError(listingFailure.e))
@@ -63,13 +63,13 @@ class BagVerifier()(
 
           _ <- verifyNoConcreteFetchEntries(
             bag = bag,
-            root = root,
+            root = bagRoot,
             actualLocations = actualLocations,
             verificationResult = verificationResult
           )
 
           _ <- verifyNoUnreferencedFiles(
-            root = root,
+            root = bagRoot,
             actualLocations = actualLocations,
             verificationResult = verificationResult
           )
@@ -81,14 +81,14 @@ class BagVerifier()(
 
         } yield verificationResult
 
-      buildStepResult(internalResult, root = root, startTime = startTime)
+      buildStepResult(internalResult, bagRoot = bagRoot, startTime = startTime)
     }
 
   private def getBag(
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     startTime: Instant
   ): InternalResult[Bag] =
-    bagReader.get(root) match {
+    bagReader.get(root.asLocation()) match {
       case Left(bagUnavailable) =>
         Left(
           BagVerifierError(
@@ -120,11 +120,11 @@ class BagVerifier()(
     }
 
   private def verifyChecksums(
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     bag: Bag
   ): InternalResult[VerificationResult] = {
     implicit val bagVerifiable: BagVerifiable =
-      new BagVerifiable(root)
+      new BagVerifiable(root.asLocation())
 
     Try { bag.verify } match {
       case Failure(err)    => Left(BagVerifierError(err))
@@ -188,7 +188,7 @@ class BagVerifier()(
   // also have a fetch file entry.
   private def verifyNoConcreteFetchEntries(
     bag: Bag,
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     actualLocations: Seq[ObjectLocation],
     verificationResult: VerificationResult
   ): InternalResult[Unit] =
@@ -199,7 +199,7 @@ class BagVerifier()(
             fetchEntry.files
               .map { _.path }
               .map { path =>
-                root.join(path.value)
+                root.asLocation(path.value)
               }
 
           case None => Seq.empty
@@ -268,7 +268,7 @@ class BagVerifier()(
   // Check that there aren't any files in the bag that aren't referenced in
   // either the file manifest or the tag manifest.
   private def verifyNoUnreferencedFiles(
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     actualLocations: Seq[ObjectLocation],
     verificationResult: VerificationResult
   ): InternalResult[Unit] =
@@ -281,7 +281,7 @@ class BagVerifier()(
         val unreferencedFiles = actualLocations
           .filterNot { expectedLocations.contains(_) }
           .filterNot { location =>
-            excludedFiles.exists { root.join(_) == location }
+            excludedFiles.exists { root.asLocation(_) == location }
           }
 
         if (unreferencedFiles.isEmpty) {
@@ -324,14 +324,14 @@ class BagVerifier()(
 
   private def buildStepResult(
     internalResult: InternalResult[VerificationResult],
-    root: ObjectLocation,
+    bagRoot: ObjectLocationPrefix,
     startTime: Instant
   ): IngestStepResult[VerificationSummary] =
     internalResult match {
       case Left(error) =>
         IngestFailed(
           summary = VerificationSummary.incomplete(
-            root = root,
+            bagRoot = bagRoot,
             e = error.e,
             t = startTime
           ),
@@ -342,7 +342,7 @@ class BagVerifier()(
       case Right(incomplete: VerificationIncomplete) =>
         IngestFailed(
           summary = VerificationIncompleteSummary(
-            rootLocation = root,
+            bagRoot = bagRoot,
             e = incomplete,
             startTime = startTime,
             endTime = Instant.now()
@@ -354,7 +354,7 @@ class BagVerifier()(
       case Right(success: VerificationSuccess) =>
         IngestStepSucceeded(
           VerificationSuccessSummary(
-            rootLocation = root,
+            bagRoot = bagRoot,
             verification = Some(success),
             startTime = startTime,
             endTime = Instant.now()
@@ -369,7 +369,7 @@ class BagVerifier()(
             }
             .mkString("\n")
 
-        warn(s"Errors verifying $root:\n$verificationFailureMessage")
+        warn(s"Errors verifying $bagRoot:\n$verificationFailureMessage")
 
         val errorCount = result.failure.size
         val pathList =
@@ -383,7 +383,7 @@ class BagVerifier()(
 
         IngestFailed(
           summary = VerificationFailureSummary(
-            rootLocation = root,
+            bagRoot = bagRoot,
             verification = Some(result),
             startTime = startTime,
             endTime = Instant.now()
