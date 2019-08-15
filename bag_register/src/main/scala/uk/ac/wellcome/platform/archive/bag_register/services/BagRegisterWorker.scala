@@ -35,7 +35,7 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
       _ <- ingestUpdater.start(payload.ingestId)
 
       registrationSummary <- register.update(
-        bagRootLocation = payload.bagRootLocation,
+        bagRoot = payload.bagRootLocation.asPrefix,
         version = payload.version,
         storageSpace = payload.storageSpace
       )

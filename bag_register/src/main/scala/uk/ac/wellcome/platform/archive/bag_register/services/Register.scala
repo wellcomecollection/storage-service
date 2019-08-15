@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestDao,
   StorageManifestService
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 import scala.util.{Failure, Success, Try}
 
@@ -28,19 +28,19 @@ class Register(
 ) extends Logging {
 
   def update(
-    bagRootLocation: ObjectLocation,
+    bagRoot: ObjectLocationPrefix,
     version: BagVersion,
     storageSpace: StorageSpace
   ): Try[IngestStepResult[RegistrationSummary]] = {
 
     val registration = RegistrationSummary(
       startTime = Instant.now(),
-      bagRootLocation = bagRootLocation,
-      storageSpace = storageSpace
+      bagRoot = bagRoot,
+      space = storageSpace
     )
 
     val result: Try[IngestStepResult[RegistrationSummary]] = for {
-      bag <- bagReader.get(bagRootLocation.asPrefix) match {
+      bag <- bagReader.get(bagRoot) match {
         case Right(value) => Success(value)
         case Left(err) =>
           Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
@@ -48,7 +48,7 @@ class Register(
 
       storageManifest <- storageManifestService.createManifest(
         bag = bag,
-        replicaRoot = bagRootLocation,
+        replicaRoot = bagRoot.asLocation(),
         space = storageSpace,
         version = version
       )
