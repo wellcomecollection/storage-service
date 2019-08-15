@@ -38,13 +38,13 @@ class BagVerifierWorkerTest
     val outgoing = new MemoryMessageSender()
 
     withLocalS3Bucket { bucket =>
-      val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+      val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
       val payload = createEnrichedBagInformationPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRoot = bagRootLocation
+        bagRoot = bagRoot
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -70,13 +70,13 @@ class BagVerifierWorkerTest
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { bucket =>
-        val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+        val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
         val payload = createEnrichedBagInformationPayloadWith(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier
           ),
-          bagRoot = bagRootLocation
+          bagRoot = bagRoot
         )
 
         withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -94,13 +94,13 @@ class BagVerifierWorkerTest
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { bucket =>
-        val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+        val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
         val payload = createBagRootLocationPayloadWith(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier
           ),
-          bagRoot = bagRootLocation
+          bagRoot = bagRoot
         )
 
         withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -126,13 +126,13 @@ class BagVerifierWorkerTest
           )
       }
 
-      val (bagRootLocation, bagInfo) = badBuilder.createS3BagWith(bucket)
+      val (bagRoot, bagInfo) = badBuilder.createS3BagWith(bucket)
 
       val payload = createEnrichedBagInformationPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRoot = bagRootLocation
+        bagRoot = bagRoot
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -164,13 +164,13 @@ class BagVerifierWorkerTest
           None
       }
 
-      val (bagRootLocation, bagInfo) = badBuilder.createS3BagWith(bucket)
+      val (bagRoot, bagInfo) = badBuilder.createS3BagWith(bucket)
 
       val payload = createEnrichedBagInformationPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRoot = bagRootLocation
+        bagRoot = bagRoot
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -201,7 +201,7 @@ class BagVerifierWorkerTest
       ExternalIdentifier(externalIdentifier + "_payload")
 
     withLocalS3Bucket { bucket =>
-      val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+      val (bagRoot, _) = S3BagBuilder.createS3BagWith(
         bucket,
         externalIdentifier = bagInfoExternalIdentifier
       )
@@ -210,7 +210,7 @@ class BagVerifierWorkerTest
         context = createPipelineContextWith(
           externalIdentifier = payloadExternalIdentifier
         ),
-        bagRoot = bagRootLocation
+        bagRoot = bagRoot
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -239,13 +239,13 @@ class BagVerifierWorkerTest
     }
 
     withLocalS3Bucket { bucket =>
-      val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+      val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
       val payload = createEnrichedBagInformationPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRoot = bagRootLocation
+        bagRoot = bagRoot
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {

@@ -33,19 +33,19 @@ class BagVersionerFeatureTest
     with Eventually {
 
   it("assigns a version for a new bag") {
-    val bagRootLocation = createObjectLocation
+    val bagRoot = createObjectLocationPrefix
     val storageSpace = createStorageSpace
 
     val payload = createBagRootLocationPayloadWith(
       context = createPipelineContextWith(
         space = storageSpace
       ),
-      bagRoot = bagRootLocation
+      bagRoot = bagRoot
     )
 
     val expectedPayload = createEnrichedBagInformationPayloadWith(
       context = payload.context,
-      bagRoot = bagRootLocation,
+      bagRoot = bagRoot,
       version = BagVersion(1)
     )
 
@@ -87,7 +87,7 @@ class BagVersionerFeatureTest
   }
 
   it("assigns a version for an updated bag") {
-    val bagRootLocation = createObjectLocation
+    val bagRoot = createObjectLocationPrefix
     val storageSpace = createStorageSpace
 
     val payload1 = BagRootLocationPayload(
@@ -97,7 +97,7 @@ class BagVersionerFeatureTest
         ingestDate = Instant.ofEpochSecond(1),
         space = storageSpace
       ),
-      bagRoot = bagRootLocation
+      bagRoot = bagRoot
     )
 
     val payload2 = payload1.copy(

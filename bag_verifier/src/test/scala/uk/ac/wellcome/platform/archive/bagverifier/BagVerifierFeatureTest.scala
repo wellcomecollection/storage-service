@@ -45,14 +45,14 @@ class BagVerifierFeatureTest
           stepName = "verification"
         ) { _ =>
           withLocalS3Bucket { bucket =>
-            val (bagRootLocation, bagInfo) =
+            val (bagRoot, bagInfo) =
               S3BagBuilder.createS3BagWith(bucket)
 
             val payload = createEnrichedBagInformationPayloadWith(
               context = createPipelineContextWith(
                 externalIdentifier = bagInfo.externalIdentifier
               ),
-              bagRoot = bagRootLocation
+              bagRoot = bagRoot
             )
 
             sendNotificationToSQS[BagRootPayload](queue, payload)
@@ -102,13 +102,13 @@ class BagVerifierFeatureTest
                 }
             }
 
-            val (bagRootLocation, bagInfo) = builder.createS3BagWith(bucket)
+            val (bagRoot, bagInfo) = builder.createS3BagWith(bucket)
 
             val payload = createEnrichedBagInformationPayloadWith(
               context = createPipelineContextWith(
                 externalIdentifier = bagInfo.externalIdentifier
               ),
-              bagRoot = bagRootLocation
+              bagRoot = bagRoot
             )
 
             sendNotificationToSQS[BagRootPayload](queue, payload)
