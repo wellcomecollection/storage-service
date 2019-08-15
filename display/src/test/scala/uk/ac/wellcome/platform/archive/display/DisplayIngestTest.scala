@@ -53,7 +53,7 @@ class DisplayIngestTest
       val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
 
       displayIngest.id shouldBe id.underlying
-      displayIngest.sourceLocation shouldBe DisplayLocation(
+      displayIngest.sourceLocation shouldBe DisplaySourceLocation(
         StandardDisplayProvider,
         bucket = "bukkit",
         path = "key.txt"
@@ -121,7 +121,7 @@ class DisplayIngestTest
       val externalIdentifier = createExternalIdentifier
 
       val ingestCreateRequest = RequestDisplayIngest(
-        sourceLocation = DisplayLocation(displayProvider, bucket, path),
+        sourceLocation = DisplaySourceLocation(displayProvider, bucket, path),
         callback = Some(
           DisplayCallback(
             url = "http://www.wellcomecollection.org/callback/ok",
@@ -140,9 +140,9 @@ class DisplayIngestTest
       val ingest = ingestCreateRequest.toIngest
 
       ingest.id shouldBe a[IngestID]
-      ingest.sourceLocation shouldBe StorageLocation(
-        InfrequentAccessStorageProvider,
-        ObjectLocation(bucket, path)
+      ingest.sourceLocation shouldBe SourceLocation(
+        provider = InfrequentAccessStorageProvider,
+        location = ObjectLocation(bucket, path)
       )
       ingest.callback shouldBe Some(
         Callback(URI.create(ingestCreateRequest.callback.get.url))
@@ -171,7 +171,7 @@ class DisplayIngestTest
   }
 
   def createRequestDisplayIngestWith(
-    sourceLocation: DisplayLocation = DisplayLocation(
+    sourceLocation: DisplaySourceLocation = DisplaySourceLocation(
       provider = InfrequentAccessDisplayProvider,
       bucket = randomAlphanumeric,
       path = randomAlphanumeric

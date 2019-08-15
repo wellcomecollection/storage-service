@@ -219,7 +219,7 @@ class IngestsApiFeatureTest
             whenReady(ingestFuture) { actualIngest =>
               actualIngest.context shouldBe contextUrl
               actualIngest.id shouldBe id
-              actualIngest.sourceLocation shouldBe DisplayLocation(
+              actualIngest.sourceLocation shouldBe DisplaySourceLocation(
                 provider = StandardDisplayProvider,
                 bucket = bucketName,
                 path = s3key

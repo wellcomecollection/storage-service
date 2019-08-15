@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 sealed trait DisplayIngest
 
 case class RequestDisplayIngest(
-  sourceLocation: DisplayLocation,
+  sourceLocation: DisplaySourceLocation,
   callback: Option[DisplayCallback],
   ingestType: DisplayIngestType,
   space: DisplayStorageSpace,
@@ -22,7 +22,7 @@ case class RequestDisplayIngest(
     Ingest(
       id = IngestID.random,
       ingestType = IngestType.create(ingestType.id),
-      sourceLocation = sourceLocation.toStorageLocation,
+      sourceLocation = sourceLocation.toSourceLocation,
       callback = Callback(
         callback.map(displayCallback => URI.create(displayCallback.url))
       ),
@@ -34,18 +34,18 @@ case class RequestDisplayIngest(
 }
 
 case class ResponseDisplayIngest(
-  @JsonKey("@context") context: String,
-  id: UUID,
-  sourceLocation: DisplayLocation,
-  callback: Option[DisplayCallback],
-  ingestType: DisplayIngestType,
-  space: DisplayStorageSpace,
-  status: DisplayStatus,
-  bag: ResponseDisplayBag,
-  events: Seq[DisplayIngestEvent] = Seq.empty,
-  createdDate: String,
-  lastModifiedDate: Option[String],
-  @JsonKey("type") ontologyType: String = "Ingest"
+                                  @JsonKey("@context") context: String,
+                                  id: UUID,
+                                  sourceLocation: DisplaySourceLocation,
+                                  callback: Option[DisplayCallback],
+                                  ingestType: DisplayIngestType,
+                                  space: DisplayStorageSpace,
+                                  status: DisplayStatus,
+                                  bag: ResponseDisplayBag,
+                                  events: Seq[DisplayIngestEvent] = Seq.empty,
+                                  createdDate: String,
+                                  lastModifiedDate: Option[String],
+                                  @JsonKey("type") ontologyType: String = "Ingest"
 ) extends DisplayIngest
 
 object ResponseDisplayIngest {
@@ -53,7 +53,7 @@ object ResponseDisplayIngest {
     ResponseDisplayIngest(
       context = contextUrl.toString,
       id = ingest.id.underlying,
-      sourceLocation = DisplayLocation(ingest.sourceLocation),
+      sourceLocation = DisplaySourceLocation(ingest.sourceLocation),
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),
       ingestType = DisplayIngestType(ingest.ingestType),
