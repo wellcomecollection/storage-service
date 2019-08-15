@@ -56,10 +56,7 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(
-            root.asPrefix,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
+          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
         }
 
       val result = ingestStep.success.get
@@ -94,10 +91,7 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(
-            root.asPrefix,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
+          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
         }
 
       val result = ingestStep.success.get
@@ -145,10 +139,7 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(
-            root.asPrefix,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
+          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
         }
 
       val result = ingestStep.success.get
@@ -190,10 +181,7 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(
-            root.asPrefix,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
+          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
         }
 
       val result = ingestStep.success.get
@@ -231,10 +219,7 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(
-            root.asPrefix,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
+          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
         }
 
       val result = ingestStep.success.get
@@ -274,10 +259,7 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(
-            root.asPrefix,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
+          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
         }
 
       val result = ingestStep.success.get
@@ -311,10 +293,7 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(
-            root.asPrefix,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
+          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
         }
 
       val result = ingestStep.success.get
@@ -350,10 +329,7 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(
-            root.asPrefix,
-            externalIdentifier = payloadExternalIdentifier
-          )
+          _.verify(root, externalIdentifier = payloadExternalIdentifier)
         }
 
       val result = ingestStep.success.get
@@ -391,10 +367,7 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(
-              root.asPrefix,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
           }
 
         val result = ingestStep.success.get
@@ -419,7 +392,7 @@ class BagVerifierTest
       withLocalS3Bucket { bucket =>
         val (root, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
-        val location = root.join("unreferencedfile.txt")
+        val location = root.asLocation("unreferencedfile.txt")
         s3Client.putObject(
           location.namespace,
           location.path,
@@ -428,10 +401,7 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(
-              root.asPrefix,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
           }
 
         val result = ingestStep.success.get
@@ -452,7 +422,7 @@ class BagVerifierTest
         val (root, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
         val locations = (1 to 3).map { i =>
-          val location = root.join(s"unreferencedfile_$i.txt")
+          val location = root.asLocation(s"unreferencedfile_$i.txt")
           s3Client.putObject(
             location.namespace,
             location.path,
@@ -463,10 +433,7 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(
-              root.asPrefix,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
           }
 
         val result = ingestStep.success.get
@@ -494,11 +461,11 @@ class BagVerifierTest
 
         val (root, bagInfo) = alwaysWriteAsFetchBuilder.createS3BagWith(bucket)
 
-        val bag = new S3BagReader().get(root.asPrefix).right.value
+        val bag = new S3BagReader().get(root).right.value
 
         // Write one of the fetch.txt entries as a concrete file
         val badFetchEntry = bag.fetch.get.files.head
-        val badFetchLocation = root.join(badFetchEntry.path.value)
+        val badFetchLocation = root.asLocation(badFetchEntry.path.value)
 
         s3Client.putObject(
           badFetchLocation.namespace,
@@ -508,10 +475,7 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(
-              root.asPrefix,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
           }
 
         val result = ingestStep.success.get
@@ -521,7 +485,7 @@ class BagVerifierTest
 
         ingestFailed.e.getMessage shouldBe
           s"Files referred to in the fetch.txt also appear in the bag: ${root
-            .join(badFetchEntry.path.value)}"
+            .asLocation(badFetchEntry.path.value)}"
 
         ingestFailed.maybeUserFacingMessage.get shouldBe
           s"Files referred to in the fetch.txt also appear in the bag: ${badFetchEntry.path}"
@@ -534,7 +498,7 @@ class BagVerifierTest
       withLocalS3Bucket { bucket =>
         val (root, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
-        val location = root.join("tagmanifest-sha512.txt")
+        val location = root.asLocation("tagmanifest-sha512.txt")
 
         s3Client.putObject(
           location.namespace,
@@ -544,10 +508,7 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(
-              root.asPrefix,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
           }
 
         ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
@@ -575,10 +536,7 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(
-              root.asPrefix,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
           }
 
         val result = ingestStep.success.get
@@ -609,10 +567,7 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(
-              root.asPrefix,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
+            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
           }
 
         val result = ingestStep.success.get
