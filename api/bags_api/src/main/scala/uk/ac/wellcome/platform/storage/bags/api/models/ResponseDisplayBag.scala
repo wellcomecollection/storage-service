@@ -4,10 +4,7 @@ import java.net.URL
 
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.display.{
-  DisplaySourceLocation,
-  DisplayStorageSpace
-}
+import uk.ac.wellcome.platform.archive.display.DisplayStorageSpace
 
 case class ResponseDisplayBag(
   @JsonKey("@context") context: String,
@@ -16,7 +13,7 @@ case class ResponseDisplayBag(
   info: ResponseDisplayBagInfo,
   manifest: DisplayFileManifest,
   tagManifest: DisplayFileManifest,
-  locations: Seq[DisplaySourceLocation],
+  locations: Seq[DisplayStorageLocation],
   createdDate: String,
   version: String,
   @JsonKey("type") ontologyType: String = "Bag"
@@ -34,7 +31,7 @@ object ResponseDisplayBag {
       info = ResponseDisplayBagInfo(storageManifest.info),
       manifest = DisplayFileManifest(storageManifest.manifest),
       tagManifest = DisplayFileManifest(storageManifest.tagManifest),
-      locations = storageManifest.locations.map { DisplaySourceLocation(_) },
+      locations = storageManifest.locations.map { DisplayStorageLocation(_) },
       createdDate = storageManifest.createdDate.toString,
       version = storageManifest.version.toString
     )
