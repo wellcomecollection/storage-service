@@ -76,9 +76,11 @@ class BagRegisterWorkerTest
               storageManifest.locations shouldBe List(
                 StorageLocation(
                   provider = InfrequentAccessStorageProvider,
-                  location = bagRoot.asLocation().copy(
-                    path = bagRoot.path.stripSuffix(s"/$version")
-                  )
+                  location = bagRoot
+                    .asLocation()
+                    .copy(
+                      path = bagRoot.path.stripSuffix(s"/$version")
+                    )
                 )
               )
 
