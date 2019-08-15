@@ -48,7 +48,7 @@ class Register(
 
       storageManifest <- storageManifestService.createManifest(
         bag = bag,
-        replicaRoot = bagRoot.asLocation(),
+        replicaRoot = bagRoot,
         space = storageSpace,
         version = version
       )
