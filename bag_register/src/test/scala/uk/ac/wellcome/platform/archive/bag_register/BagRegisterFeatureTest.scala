@@ -43,12 +43,12 @@ class BagRegisterFeatureTest
             version,
             dataFileCount = dataFileCount
           ) {
-            case (bagRootLocation, bagInfo) =>
+            case (bagRoot, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space
                 ),
-                bagRootLocation = bagRootLocation,
+                bagRootLocation = bagRoot.asLocation(),
                 version = version
               )
 

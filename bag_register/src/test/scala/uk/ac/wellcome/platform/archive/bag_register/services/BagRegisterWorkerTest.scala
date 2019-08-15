@@ -48,12 +48,12 @@ class BagRegisterWorkerTest
             dataFileCount = dataFileCount,
             version = version
           ) {
-            case (bagRootLocation, bagInfo) =>
+            case (bagRoot, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space
                 ),
-                bagRootLocation = bagRootLocation,
+                bagRootLocation = bagRoot.asLocation(),
                 version = version
               )
 
@@ -76,8 +76,8 @@ class BagRegisterWorkerTest
               storageManifest.locations shouldBe List(
                 StorageLocation(
                   provider = InfrequentAccessStorageProvider,
-                  location = bagRootLocation.copy(
-                    path = bagRootLocation.path.stripSuffix(s"/$version")
+                  location = bagRoot.asLocation().copy(
+                    path = bagRoot.path.stripSuffix(s"/$version")
                   )
                 )
               )
@@ -113,26 +113,26 @@ class BagRegisterWorkerTest
             version = version,
             dataFileCount
           ) {
-            case (location1, bagInfo1) =>
+            case (bagRoot1, bagInfo1) =>
               withRegisterBag(
                 externalIdentifier,
                 space = space,
                 version = nextVersion,
                 dataFileCount
               ) {
-                case (location2, _) =>
+                case (bagRoot2, _) =>
                   val payload1 = createEnrichedBagInformationPayloadWith(
                     context = createPipelineContextWith(
                       storageSpace = space
                     ),
-                    bagRootLocation = location1,
+                    bagRootLocation = bagRoot1.asLocation(),
                     version = version
                   )
                   val payload2 = createEnrichedBagInformationPayloadWith(
                     context = createPipelineContextWith(
                       storageSpace = space
                     ),
-                    bagRootLocation = location2,
+                    bagRootLocation = bagRoot2.asLocation(),
                     version = nextVersion
                   )
 

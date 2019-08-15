@@ -30,7 +30,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestDao,
   StorageManifestService
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
@@ -132,7 +132,7 @@ trait BagRegisterFixtures
     space: StorageSpace,
     version: BagVersion,
     dataFileCount: Int
-  )(testWith: TestWith[(ObjectLocation, BagInfo), R])(
+  )(testWith: TestWith[(ObjectLocationPrefix, BagInfo), R])(
     implicit
     namespace: String,
     streamStore: MemoryStreamStore[ObjectLocation]
@@ -150,6 +150,6 @@ trait BagRegisterFixtures
 
     BagBuilder.uploadBagObjects(bagObjects)
 
-    testWith((bagRoot, bagInfo))
+    testWith((bagRoot.asPrefix, bagInfo))
   }
 }
