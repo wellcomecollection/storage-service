@@ -124,7 +124,7 @@ class BagVerifierFeatureTest
                   ingestStart.events.head.description shouldBe "Verification started"
 
                   val ingestFailed =
-                    ingestUpdates.tail.head
+                    ingestUpdates.last
                       .asInstanceOf[IngestStatusUpdate]
                   ingestFailed.status shouldBe Ingest.Failed
                   ingestFailed.events.head.description should startWith(

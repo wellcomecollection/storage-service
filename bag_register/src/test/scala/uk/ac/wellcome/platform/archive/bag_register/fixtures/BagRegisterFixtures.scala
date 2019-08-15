@@ -103,7 +103,7 @@ trait BagRegisterFixtures
       ingestStart.events.head.description shouldBe "Register started"
 
       val ingestCompleted =
-        ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+        ingestUpdates.last.asInstanceOf[IngestStatusUpdate]
       ingestCompleted.status shouldBe Ingest.Completed
       ingestCompleted.events.head.description shouldBe "Register succeeded (completed)"
     }
@@ -119,7 +119,7 @@ trait BagRegisterFixtures
       ingestStart.events.head.description shouldBe "Register started"
 
       val ingestFailed =
-        ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+        ingestUpdates.last.asInstanceOf[IngestStatusUpdate]
       ingestFailed.status shouldBe Ingest.Failed
       ingestFailed.events.head.description shouldBe "Register failed"
     }

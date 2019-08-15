@@ -166,7 +166,7 @@ class BagRootFinderFeatureTest
                 ingestStart.events.head.description shouldBe "Finding bag root started"
 
                 val ingestFailed =
-                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                  ingestUpdates.last.asInstanceOf[IngestStatusUpdate]
                 ingestFailed.status shouldBe Ingest.Failed
                 ingestFailed.events.head.description shouldBe s"Finding bag root failed"
             }
@@ -201,7 +201,7 @@ class BagRootFinderFeatureTest
                 ingestStart.events.head.description shouldBe "Finding bag root started"
 
                 val ingestFailed =
-                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                  ingestUpdates.last.asInstanceOf[IngestStatusUpdate]
                 ingestFailed.status shouldBe Ingest.Failed
                 ingestFailed.events.head.description shouldBe s"Finding bag root failed"
             }

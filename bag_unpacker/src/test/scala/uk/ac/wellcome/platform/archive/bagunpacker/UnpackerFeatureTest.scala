@@ -103,7 +103,7 @@ class UnpackerFeatureTest
               ingestStart.events.head.description shouldBe "Unpacker started"
 
               val ingestFailed =
-                ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+                ingestUpdates.last.asInstanceOf[IngestStatusUpdate]
               ingestFailed.status shouldBe Ingest.Failed
               ingestFailed.events.head.description shouldBe
                 s"Unpacker failed - There is no S3 bucket ${sourceLocation.namespace}"
