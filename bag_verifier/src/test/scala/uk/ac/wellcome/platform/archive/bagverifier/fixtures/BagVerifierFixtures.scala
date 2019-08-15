@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixtures
 
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -24,7 +23,6 @@ import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
-    with SQS
     with Akka
     with OperationFixtures
     with MonitoringClientFixture
@@ -37,25 +35,23 @@ trait BagVerifierFixtures
   )(testWith: TestWith[BagVerifierWorker[String, String], R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
-        withMaterializer(actorSystem) { implicit mat =>
-          withVerifier { verifier =>
-            val ingestUpdater =
-              createIngestUpdaterWith(ingests, stepName = stepName)
+        withVerifier { verifier =>
+          val ingestUpdater =
+            createIngestUpdaterWith(ingests, stepName = stepName)
 
-            val outgoingPublisher =
-              createOutgoingPublisherWith(outgoing)
+          val outgoingPublisher =
+            createOutgoingPublisherWith(outgoing)
 
-            val service = new BagVerifierWorker(
-              config = createAlpakkaSQSWorkerConfig(queue),
-              ingestUpdater = ingestUpdater,
-              outgoingPublisher = outgoingPublisher,
-              verifier = verifier
-            )
+          val service = new BagVerifierWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            ingestUpdater = ingestUpdater,
+            outgoingPublisher = outgoingPublisher,
+            verifier = verifier
+          )
 
-            service.run()
+          service.run()
 
-            testWith(service)
-          }
+          testWith(service)
         }
       }
     }
