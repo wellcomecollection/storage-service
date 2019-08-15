@@ -11,6 +11,7 @@ import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 class BagReplicatorFeatureTest
     extends FunSpec
@@ -26,12 +27,12 @@ class BagReplicatorFeatureTest
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
-        val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+        val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
           bucket = srcBucket
         )
 
         val payload = createEnrichedBagInformationPayloadWith(
-          bagRoot = srcBagLocation
+          bagRoot = srcBagRoot
         )
 
         withLocalSqsQueue { queue =>
@@ -44,29 +45,29 @@ class BagReplicatorFeatureTest
           ) { _ =>
             sendNotificationToSQS(queue, payload)
 
+            val expectedDst = ObjectLocationPrefix(
+              namespace = dstBucket.name,
+              path = Paths
+                .get(
+                  payload.storageSpace.toString,
+                  payload.externalIdentifier.toString,
+                  payload.version.toString
+                )
+                .toString
+            )
+
+            val expectedPayload = payload.copy(
+              bagRoot = expectedDst
+            )
+
             eventually {
-              val expectedDst = createObjectLocationWith(
-                bucket = dstBucket,
-                key = Paths
-                  .get(
-                    payload.storageSpace.toString,
-                    payload.externalIdentifier.toString,
-                    payload.version.toString
-                  )
-                  .toString
-              )
-
-              val expectedPayload = payload.copy(
-                bagRoot = expectedDst
-              )
-
               outgoing
                 .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
                 expectedPayload
               )
 
               verifyObjectsCopied(
-                src = srcBagLocation,
+                src = srcBagRoot,
                 dst = expectedDst
               )
 

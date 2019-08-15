@@ -75,7 +75,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
         ingestUpdater.start(payload.ingestId)
       }
 
-      srcPrefix = payload.bagRoot.asPrefix
+      srcPrefix = payload.bagRoot
 
       dstPrefix = destinationBuilder.buildDestination(
         storageSpace = payload.storageSpace,
@@ -95,7 +95,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
     payload: EnrichedBagInformationPayload,
     dstPrefix: ObjectLocationPrefix
   ): Future[IngestStepResult[ReplicationSummary]] = {
-    val srcPrefix = payload.bagRoot.asPrefix
+    val srcPrefix = payload.bagRoot
 
     for {
       ingestStep: IngestStepResult[ReplicationSummary] <- bagReplicator
@@ -125,7 +125,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
         outgoingPublisher.sendIfSuccessful(
           result,
           payload.copy(
-            bagRoot = result.summary.dstPrefix.asLocation()
+            bagRoot = result.summary.dstPrefix
           )
         )
       }

@@ -51,12 +51,12 @@ class BagReplicatorWorkerTest
     val outgoing = new MemoryMessageSender()
 
     withLocalS3Bucket { srcBucket =>
-      val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+      val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
         bucket = srcBucket
       )
 
       val payload = createEnrichedBagInformationPayloadWith(
-        bagRoot = srcBagLocation
+        bagRoot = srcBagRoot
       )
 
       withLocalS3Bucket { dstBucket =>
@@ -87,7 +87,7 @@ class BagReplicatorWorkerTest
         val dstBagLocation = result.bagRoot
 
         verifyObjectsCopied(
-          src = srcBagLocation,
+          src = srcBagRoot,
           dst = dstBagLocation
         )
 
@@ -106,12 +106,12 @@ class BagReplicatorWorkerTest
   describe("copies to the correct destination") {
     it("copies the bag to the configured bucket") {
       withLocalS3Bucket { srcBucket =>
-        val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+        val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
           bucket = srcBucket
         )
 
         val payload = createEnrichedBagInformationPayloadWith(
-          bagRoot = srcBagLocation
+          bagRoot = srcBagRoot
         )
 
         withLocalS3Bucket { dstBucket =>
@@ -134,12 +134,12 @@ class BagReplicatorWorkerTest
     it("constructs the correct key") {
       withLocalS3Bucket { srcBucket =>
         withLocalS3Bucket { dstBucket =>
-          val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+          val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
             bucket = srcBucket
           )
 
           val payload = createEnrichedBagInformationPayloadWith(
-            bagRoot = srcBagLocation
+            bagRoot = srcBagRoot
           )
 
           val future =
@@ -177,13 +177,13 @@ class BagReplicatorWorkerTest
         override def getFetchEntryCount(payloadFileCount: Int): Int = 0
       }
 
-      val (srcBagLocation, _) = bagBuilder.createS3BagWith(
+      val (srcBagRoot, _) = bagBuilder.createS3BagWith(
         bucket = srcBucket,
         payloadFileCount = 50
       )
 
       val payload = createEnrichedBagInformationPayloadWith(
-        bagRoot = srcBagLocation
+        bagRoot = srcBagRoot
       )
 
       withLocalS3Bucket { dstBucket =>
@@ -213,12 +213,12 @@ class BagReplicatorWorkerTest
     }
 
     withLocalS3Bucket { srcBucket =>
-      val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+      val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
         bucket = srcBucket
       )
 
       val payload = createEnrichedBagInformationPayloadWith(
-        bagRoot = srcBagLocation
+        bagRoot = srcBagRoot
       )
 
       withLocalSqsQueue { queue =>
@@ -263,12 +263,12 @@ class BagReplicatorWorkerTest
       val queue = Queue("any", "any")
 
       withLocalS3Bucket { srcBucket =>
-        val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+        val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
           bucket = srcBucket
         )
 
         val payload = createEnrichedBagInformationPayloadWith(
-          bagRoot = srcBagLocation
+          bagRoot = srcBagRoot
         )
 
         withLocalS3Bucket { dstBucket =>
@@ -337,17 +337,17 @@ class BagReplicatorWorkerTest
 
       withLocalS3Bucket { srcBucket =>
         withLocalS3Bucket { dstBucket =>
-          val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+          val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
             bucket = srcBucket
           )
 
           val payload = createEnrichedBagInformationPayloadWith(
-            bagRoot = srcBagLocation
+            bagRoot = srcBagRoot
           )
 
           s3Client.deleteObject(
-            srcBagLocation.namespace,
-            srcBagLocation.join("tagmanifest-sha256.txt").path
+            srcBagRoot.namespace,
+            srcBagRoot.asLocation("tagmanifest-sha256.txt").path
           )
 
           val future =
