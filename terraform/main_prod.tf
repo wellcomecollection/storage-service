@@ -68,6 +68,9 @@ module "stack_prod" {
   ingests_table_name = "${module.critical.ingests_table_name}"
   ingests_table_arn  = "${module.critical.ingests_table_arn}"
 
+  replicas_table_arn  = "${module.critical.replicas_table_arn}"
+  replicas_table_name = "${module.critical.replicas_table_name}"
+
   bag_id_lookup_table_name = "${module.critical.bag_id_lookup_table_name}"
   bag_id_lookup_table_arn  = "${module.critical.bag_id_lookup_table_arn}"
 

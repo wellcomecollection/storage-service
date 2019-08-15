@@ -71,6 +71,9 @@ module "stack_staging" {
   bag_id_lookup_table_name = "${module.critical-staging.bag_id_lookup_table_name}"
   bag_id_lookup_table_arn  = "${module.critical-staging.bag_id_lookup_table_arn}"
 
+  replicas_table_arn  = "${module.critical-staging.replicas_table_arn}"
+  replicas_table_name = "${module.critical-staging.replicas_table_name}"
+
   ingest_bucket_name = "${module.critical-staging.ingest_drop_bucket_name}"
 
   archive_oauth_details_enc = "${local.archive_oauth_details_enc}"

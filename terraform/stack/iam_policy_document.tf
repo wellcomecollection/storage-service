@@ -26,6 +26,20 @@ data "aws_iam_policy_document" "bag_id_lookup_table_read_write_policy" {
   }
 }
 
+data "aws_iam_policy_document" "replicas_table_readwrite" {
+  statement {
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+    ]
+
+    resources = [
+      "${var.replicas_table_arn}",
+    ]
+  }
+}
+
 # Bagger
 
 data "aws_iam_policy_document" "bagger_ingest_table_readwrite" {

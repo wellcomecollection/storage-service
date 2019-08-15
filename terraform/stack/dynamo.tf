@@ -17,7 +17,12 @@ locals {
   versioner_versions_table_index = "ingestId_index"
 }
 
-# TODO: MOve this into the 'critical' part
+# TODO: Move this into the 'critical' part
+
+# Replicas
+
+# Versions
+
 resource "aws_dynamodb_table" "versioner_versions_table" {
   name      = "${var.namespace}_versioner_versions_table"
   hash_key  = "id"

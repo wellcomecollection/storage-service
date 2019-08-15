@@ -39,8 +39,8 @@ class ReplicaAggregatorTest
     createReplicaResultWith()
 
   def withAggregator[R](
-    versionedStore: MemoryVersionedStore[ReplicaPath, Set[ReplicaResult]] =
-      MemoryVersionedStore[ReplicaPath, Set[ReplicaResult]](
+    versionedStore: MemoryVersionedStore[ReplicaPath, List[ReplicaResult]] =
+      MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](
         initialEntries = Map.empty
       )
   )(testWith: TestWith[ReplicaAggregator, R]): R =
@@ -69,7 +69,7 @@ class ReplicaAggregatorTest
     summary.asInstanceOf[ReplicationAggregationComplete].replicationSet shouldBe
       ReplicationSet(
         path = ReplicaPath(location.path),
-        results = Set(replicaResult)
+        results = List(replicaResult)
       )
   }
 
@@ -82,7 +82,7 @@ class ReplicaAggregatorTest
     )
 
     val versionedStore =
-      MemoryVersionedStore[ReplicaPath, Set[ReplicaResult]](
+      MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](
         initialEntries = Map.empty
       )
 
@@ -92,7 +92,7 @@ class ReplicaAggregatorTest
 
     val path = ReplicaPath(replicaResult.storageLocation.location.path)
 
-    versionedStore.getLatest(path).right.value.identifiedT shouldBe Set(
+    versionedStore.getLatest(path).right.value.identifiedT shouldBe List(
       replicaResult
     )
   }
@@ -117,16 +117,17 @@ class ReplicaAggregatorTest
   it("handles an error from the underlying versioned store") {
     val throwable = new Throwable("BOOM!")
 
-    val brokenStore = new MemoryVersionedStore[ReplicaPath, Set[ReplicaResult]](
-      store = new MemoryStore[Version[ReplicaPath, Int], Set[ReplicaResult]](
-        initialEntries = Map.empty
-      ) with MemoryMaxima[ReplicaPath, Set[ReplicaResult]]
-    ) {
-      override def upsert(id: ReplicaPath)(
-        t: Set[ReplicaResult]
-      )(f: Set[ReplicaResult] => Set[ReplicaResult]): UpdateEither =
-        Left(UpdateWriteError(throwable))
-    }
+    val brokenStore =
+      new MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](
+        store = new MemoryStore[Version[ReplicaPath, Int], List[ReplicaResult]](
+          initialEntries = Map.empty
+        ) with MemoryMaxima[ReplicaPath, List[ReplicaResult]]
+      ) {
+        override def upsert(id: ReplicaPath)(
+          t: List[ReplicaResult]
+        )(f: List[ReplicaResult] => List[ReplicaResult]): UpdateEither =
+          Left(UpdateWriteError(throwable))
+      }
 
     val result =
       withAggregator(brokenStore) {
@@ -159,7 +160,7 @@ class ReplicaAggregatorTest
         .replicationSet shouldBe
         ReplicationSet(
           path = ReplicaPath(replicaResult.storageLocation.location.path),
-          results = Set(replicaResult)
+          results = List(replicaResult)
         )
     }
   }

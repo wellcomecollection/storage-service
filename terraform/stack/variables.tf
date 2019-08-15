@@ -66,6 +66,9 @@ variable "cognito_user_pool_arn" {}
 
 variable "alarm_topic_arn" {}
 
+variable "replicas_table_arn" {}
+variable "replicas_table_name" {}
+
 # trigger_bag_ingest
 
 variable "ingest_bucket_name" {}

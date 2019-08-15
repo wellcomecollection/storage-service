@@ -10,7 +10,15 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
 }
-import uk.ac.wellcome.platform.storage.replica_aggregator.services.ReplicaAggregatorWorker
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  ReplicaPath,
+  ReplicaResult
+}
+import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
+  ReplicaAggregator,
+  ReplicaAggregatorWorker
+}
+import uk.ac.wellcome.storage.store.VersionedStore
 
 trait ReplicaAggregatorFixtures
     extends OperationFixtures
@@ -25,6 +33,7 @@ trait ReplicaAggregatorFixtures
 
   def withReplicaAggregatorWorker[R](
     queue: Queue = defaultQueue,
+    versionedStore: VersionedStore[ReplicaPath, Int, List[ReplicaResult]],
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
     stepName: String = randomAlphanumericWithLength()
@@ -36,6 +45,7 @@ trait ReplicaAggregatorFixtures
       withMonitoringClient { implicit monitoringClient =>
         val worker = new ReplicaAggregatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
+          replicaAggregator = new ReplicaAggregator(versionedStore),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher
         )
