@@ -56,7 +56,7 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       outgoingPayload = UnpackedBagLocationPayload(
         context = payload.context,
-        unpackedBagLocation = unpackedBagLocation
+        unpackedBagRoot = unpackedBagLocation
       )
       _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
     } yield stepResult

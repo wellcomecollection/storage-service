@@ -40,7 +40,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
       summary <- bagRootFinder.getSummary(
-        unpackLocation = payload.unpackedBagLocation
+        unpackLocation = payload.unpackedBagRoot
       )
 
       _ <- ingestUpdater.send(payload.ingestId, summary)
@@ -54,7 +54,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
       case IngestStepSucceeded(summary: RootFinderSuccessSummary, _) =>
         val outgoingPayload: BagRootPayload = BagRootLocationPayload(
           context = payload.context,
-          bagRootLocation = summary.bagRootLocation
+          bagRoot = summary.bagRootLocation
         )
         outgoingPublisher.sendIfSuccessful(step, outgoingPayload)
       case _ => Success(())

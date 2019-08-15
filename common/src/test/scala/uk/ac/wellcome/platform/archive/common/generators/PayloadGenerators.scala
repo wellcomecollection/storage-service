@@ -7,12 +7,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CreateIngestType,
-  IngestID,
-  IngestType,
-  UpdateIngestType
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
@@ -31,13 +26,13 @@ trait PayloadGenerators
     ingestId: IngestID = createIngestID,
     ingestType: IngestType = randomIngestType,
     ingestDate: Instant = randomInstant,
-    storageSpace: StorageSpace = createStorageSpace,
+    space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier
   ): PipelineContext =
     PipelineContext(
       ingestId = ingestId,
       ingestType = ingestType,
-      storageSpace = storageSpace,
+      space = space,
       ingestDate = ingestDate,
       externalIdentifier = externalIdentifier
     )
@@ -51,9 +46,12 @@ trait PayloadGenerators
   ): SourceLocationPayload =
     SourceLocationPayload(
       context = createPipelineContextWith(
-        storageSpace = storageSpace
+        space = storageSpace
       ),
-      sourceLocation = sourceLocation
+      sourceLocation = SourceLocation(
+        provider = StandardStorageProvider,
+        location = sourceLocation
+      )
     )
 
   def createSourceLocationPayload: SourceLocationPayload =
@@ -65,19 +63,19 @@ trait PayloadGenerators
   ): UnpackedBagLocationPayload =
     UnpackedBagLocationPayload(
       context = createPipelineContextWith(
-        storageSpace = storageSpace
+        space = storageSpace
       ),
-      unpackedBagLocation = unpackedBagLocation
+      unpackedBagRoot = unpackedBagLocation
     )
 
   def createEnrichedBagInformationPayloadWith(
     context: PipelineContext = createPipelineContext,
-    bagRootLocation: ObjectLocation = createObjectLocation,
+    bagRoot: ObjectLocationPrefix = createObjectLocationPrefix,
     version: BagVersion = createBagVersion
   ): EnrichedBagInformationPayload =
     EnrichedBagInformationPayload(
       context = context,
-      bagRootLocation = bagRootLocation,
+      bagRoot = bagRoot,
       version = version
     )
 
@@ -86,11 +84,11 @@ trait PayloadGenerators
 
   def createBagRootLocationPayloadWith(
     context: PipelineContext = createPipelineContext,
-    bagRootLocation: ObjectLocation = createObjectLocation
+    bagRoot: ObjectLocationPrefix = createObjectLocationPrefix
   ): BagRootLocationPayload =
     BagRootLocationPayload(
       context = context,
-      bagRootLocation = bagRootLocation
+      bagRoot = bagRoot
     )
 
   def createBagRootLocationPayload: BagRootLocationPayload =

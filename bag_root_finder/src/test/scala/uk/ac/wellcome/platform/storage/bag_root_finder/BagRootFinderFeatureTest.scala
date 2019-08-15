@@ -38,7 +38,7 @@ class BagRootFinderFeatureTest
 
       val expectedPayload = createBagRootLocationPayloadWith(
         context = payload.context,
-        bagRootLocation = unpackedBagLocation
+        bagRoot = unpackedBagLocation
       )
 
       withLocalSqsQueue { queue =>
@@ -74,12 +74,12 @@ class BagRootFinderFeatureTest
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
       val builder = new S3BagBuilderBase {
-        override protected def createBagRoot(
+        override protected def createBagRootPath(
           space: StorageSpace,
           externalIdentifier: ExternalIdentifier,
           version: BagVersion
         ): String =
-          Seq(super.createBagRoot(space, externalIdentifier, version), "subdir")
+          Seq(super.createBagRootPath(space, externalIdentifier, version), "subdir")
             .mkString("/")
       }
 
@@ -99,7 +99,7 @@ class BagRootFinderFeatureTest
 
       val expectedPayload = createBagRootLocationPayloadWith(
         context = payload.context,
-        bagRootLocation = unpackedBagLocation
+        bagRoot = unpackedBagLocation
       )
 
       withLocalSqsQueue { queue =>

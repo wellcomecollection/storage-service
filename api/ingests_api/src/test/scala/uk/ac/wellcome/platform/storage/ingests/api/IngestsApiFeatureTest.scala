@@ -242,9 +242,9 @@ class IngestsApiFeatureTest
               val expectedIngest = Ingest(
                 id = IngestID(id),
                 ingestType = CreateIngestType,
-                sourceLocation = StorageLocation(
-                  StandardStorageProvider,
-                  ObjectLocation(bucketName, s3key)
+                sourceLocation = SourceLocation(
+                  provider = StandardStorageProvider,
+                  location = ObjectLocation(bucketName, s3key)
                 ),
                 space = StorageSpace(spaceName),
                 callback = Some(Callback(testCallbackUri, Callback.Pending)),

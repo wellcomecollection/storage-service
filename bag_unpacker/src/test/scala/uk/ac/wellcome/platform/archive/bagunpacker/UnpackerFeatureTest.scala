@@ -43,7 +43,7 @@ class UnpackerFeatureTest
               eventually {
                 val expectedPayload = UnpackedBagLocationPayload(
                   context = sourceLocationPayload.context,
-                  unpackedBagLocation = ObjectLocationPrefix(
+                  unpackedBagRoot = ObjectLocationPrefix(
                     namespace = dstBucket.name,
                     path = Paths
                       .get(

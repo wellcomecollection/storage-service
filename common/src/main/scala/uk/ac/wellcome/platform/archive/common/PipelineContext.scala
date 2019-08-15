@@ -11,11 +11,11 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 case class PipelineContext(
-  ingestId: IngestID,
-  ingestType: IngestType,
-  storageSpace: StorageSpace,
-  ingestDate: Instant,
-  externalIdentifier: ExternalIdentifier
+                            ingestId: IngestID,
+                            ingestType: IngestType,
+                            space: StorageSpace,
+                            ingestDate: Instant,
+                            externalIdentifier: ExternalIdentifier
 )
 
 case object PipelineContext {
@@ -23,7 +23,7 @@ case object PipelineContext {
     PipelineContext(
       ingestId = ingest.id,
       ingestType = ingest.ingestType,
-      storageSpace = StorageSpace(ingest.space.underlying),
+      space = StorageSpace(ingest.space.underlying),
       ingestDate = ingest.createdDate,
       externalIdentifier = ingest.externalIdentifier
     )

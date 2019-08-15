@@ -46,9 +46,9 @@ class BagRegisterFeatureTest
             case (bagRoot, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
-                  storageSpace = space
+                  space = space
                 ),
-                bagRootLocation = bagRoot.asLocation(),
+                bagRoot = bagRoot.asLocation(),
                 version = version
               )
 

@@ -58,7 +58,7 @@ class ReplicaAggregatorFeatureTest
           )
 
           val expectedReplicaPath =
-            ReplicaPath(payload.bagRootLocation.path)
+            ReplicaPath(payload.bagRoot.path)
 
           val stored =
             versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
@@ -78,7 +78,7 @@ class ReplicaAggregatorFeatureTest
                 ) =>
               ingestId shouldBe payload.ingestId
               storageProvider shouldBe InfrequentAccessStorageProvider
-              location shouldBe payload.bagRootLocation
+              location shouldBe payload.bagRoot
               timestamp shouldBe a[Instant]
           }
 

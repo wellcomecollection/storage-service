@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
@@ -52,9 +52,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     payloadFileCount: Int = randomInt(from = 5, to = 50)
   )(
     implicit namespace: String
-  ): (Seq[BagObject], ObjectLocation, BagInfo) = {
-    val bagRoot = createBagRoot(space, externalIdentifier, version)
-
+  ): (Seq[BagObject], ObjectLocationPrefix, BagInfo) = {
     val fetchEntryCount = getFetchEntryCount(payloadFileCount)
 
     val payloadFiles = createPayloadFiles(
@@ -123,15 +121,17 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
         )
       }
 
-    val rootLocation = ObjectLocation(
+    val bagRootPath = createBagRootPath(space, externalIdentifier, version)
+
+    val bagRoot = ObjectLocationPrefix(
       namespace = namespace,
-      path = bagRoot
+      path = bagRootPath
     )
 
     val manifestObjects =
       (tagManifestFiles ++ tagManifest.toList).map { manifestFile =>
         BagObject(
-          location = rootLocation.join(manifestFile.name),
+          location = bagRoot.asLocation(manifestFile.name),
           contents = manifestFile.contents
         )
       }
@@ -139,12 +139,12 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     val payloadObjects =
       (payloadFiles ++ fetchEntries).map { payloadEntry =>
         BagObject(
-          location = rootLocation.copy(path = payloadEntry.path),
+          location = bagRoot.asLocation().copy(path = payloadEntry.path),
           contents = payloadEntry.contents
         )
       }
 
-    (manifestObjects ++ payloadObjects, rootLocation, bagInfo)
+    (manifestObjects ++ payloadObjects, bagRoot, bagInfo)
   }
 
   protected def createFetchFile(
@@ -231,7 +231,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
       .map { case (name, digest) => s"""$digest  $name""" }
       .mkString("\n")
 
-  protected def createBagRoot(
+  protected def createBagRootPath(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     version: BagVersion
@@ -245,7 +245,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     version: BagVersion,
     payloadFileCount: Int
   ): Seq[PayloadEntry] = {
-    val bagRoot = createBagRoot(space, externalIdentifier, version)
+    val bagRoot = createBagRootPath(space, externalIdentifier, version)
 
     (1 to payloadFileCount).map { _ =>
       val bagPath = BagPath(s"data/$randomPath")
@@ -284,7 +284,7 @@ trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
     bucket: Bucket,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     payloadFileCount: Int = randomInt(from = 5, to = 50)
-  ): (ObjectLocation, BagInfo) = {
+  ): (ObjectLocationPrefix, BagInfo) = {
     implicit val namespace: String = bucket.name
 
     val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(

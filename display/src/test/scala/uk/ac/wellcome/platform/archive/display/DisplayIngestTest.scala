@@ -38,7 +38,7 @@ class DisplayIngestTest
       val ingest: Ingest = Ingest(
         id = id,
         ingestType = CreateIngestType,
-        sourceLocation = StorageLocation(
+        sourceLocation = SourceLocation(
           provider = StandardStorageProvider,
           location = ObjectLocation("bukkit", "key.txt")
         ),
@@ -186,10 +186,8 @@ class DisplayIngestTest
       ingestType = ingestType,
       bag = RequestDisplayBag(
         info = RequestDisplayBagInfo(
-          externalIdentifier = createExternalIdentifier,
-          ontologyType = "BagInfo"
-        ),
-        ontologyType = "Bag"
+          externalIdentifier = createExternalIdentifier
+        )
       ),
       space = space
     )

@@ -52,7 +52,7 @@ class BagVerifierFeatureTest
               context = createPipelineContextWith(
                 externalIdentifier = bagInfo.externalIdentifier
               ),
-              bagRootLocation = bagRootLocation
+              bagRoot = bagRootLocation
             )
 
             sendNotificationToSQS[BagRootPayload](queue, payload)
@@ -108,7 +108,7 @@ class BagVerifierFeatureTest
               context = createPipelineContextWith(
                 externalIdentifier = bagInfo.externalIdentifier
               ),
-              bagRootLocation = bagRootLocation
+              bagRoot = bagRootLocation
             )
 
             sendNotificationToSQS[BagRootPayload](queue, payload)

@@ -53,7 +53,7 @@ class BagUnpackerWorkerTest
 
             val expectedPayload = UnpackedBagLocationPayload(
               context = payload.context,
-              unpackedBagLocation = ObjectLocationPrefix(
+              unpackedBagRoot = ObjectLocationPrefix(
                 namespace = dstBucket.name,
                 path = Paths
                   .get(

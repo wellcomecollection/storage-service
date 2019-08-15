@@ -31,7 +31,7 @@ class BagReplicatorFeatureTest
         )
 
         val payload = createEnrichedBagInformationPayloadWith(
-          bagRootLocation = srcBagLocation
+          bagRoot = srcBagLocation
         )
 
         withLocalSqsQueue { queue =>
@@ -57,7 +57,7 @@ class BagReplicatorFeatureTest
               )
 
               val expectedPayload = payload.copy(
-                bagRootLocation = expectedDst
+                bagRoot = expectedDst
               )
 
               outgoing

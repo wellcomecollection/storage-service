@@ -38,14 +38,14 @@ class BagVersionerFeatureTest
 
     val payload = createBagRootLocationPayloadWith(
       context = createPipelineContextWith(
-        storageSpace = storageSpace
+        space = storageSpace
       ),
-      bagRootLocation = bagRootLocation
+      bagRoot = bagRootLocation
     )
 
     val expectedPayload = createEnrichedBagInformationPayloadWith(
       context = payload.context,
-      bagRootLocation = bagRootLocation,
+      bagRoot = bagRootLocation,
       version = BagVersion(1)
     )
 
@@ -95,9 +95,9 @@ class BagVersionerFeatureTest
         ingestId = createIngestID,
         ingestType = CreateIngestType,
         ingestDate = Instant.ofEpochSecond(1),
-        storageSpace = storageSpace
+        space = storageSpace
       ),
-      bagRootLocation = bagRootLocation
+      bagRoot = bagRootLocation
     )
 
     val payload2 = payload1.copy(

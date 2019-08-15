@@ -28,7 +28,7 @@ class SourceLocationPayloadTest
     val ingest = Ingest(
       id = ingestId,
       ingestType = ingestType,
-      sourceLocation = StorageLocation(
+      sourceLocation = SourceLocation(
         provider = StandardStorageProvider,
         location = sourceLocation
       ),
@@ -43,11 +43,14 @@ class SourceLocationPayloadTest
       context = PipelineContext(
         ingestId = ingestId,
         ingestType = ingestType,
-        storageSpace = space,
+        space = space,
         ingestDate = ingestDate,
         externalIdentifier = externalIdentifier
       ),
-      sourceLocation = sourceLocation
+      sourceLocation = SourceLocation(
+        provider = StandardStorageProvider,
+        location = sourceLocation
+      )
     )
 
     SourceLocationPayload(ingest) shouldBe expectedPayload

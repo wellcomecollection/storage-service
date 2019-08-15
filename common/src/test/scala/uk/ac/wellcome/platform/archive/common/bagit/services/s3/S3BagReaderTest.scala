@@ -1,11 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services.s3
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.services.{
-  BagReader,
-  BagReaderTestCases
-}
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagReaderTestCases}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.TypedStore
@@ -25,12 +22,12 @@ class S3BagReaderTest extends BagReaderTestCases[Unit, Bucket] with S3Fixtures {
       testWith(bucket)
     }
 
-  override def deleteFile(rootLocation: ObjectLocation, path: String)(
+  override def deleteFile(bagRoot: ObjectLocationPrefix, path: String)(
     implicit context: Unit
   ): Unit =
     s3Client.deleteObject(
-      rootLocation.namespace,
-      rootLocation.join(path).path
+      bagRoot.namespace,
+      bagRoot.asLocation(path).path
     )
 
   override def withContext[R](testWith: TestWith[Unit, R]): R = testWith(())
