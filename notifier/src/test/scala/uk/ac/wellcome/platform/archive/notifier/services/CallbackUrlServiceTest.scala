@@ -35,38 +35,34 @@ class CallbackUrlServiceTest
 
   describe("sends the request successfully") {
     it("returns a Success if the request succeeds") {
-      withActorSystem { implicit actorSystem =>
-        withCallbackUrlService { service =>
-          val ingest = createIngest
+      withCallbackUrlService { service =>
+        val ingest = createIngest
 
-          val future = service.getHttpResponse(
-            ingest = ingest,
-            callbackUri = new URI(
-              s"http://$callbackHost:$callbackPort/callback/${ingest.id}"
-            )
+        val future = service.getHttpResponse(
+          ingest = ingest,
+          callbackUri = new URI(
+            s"http://$callbackHost:$callbackPort/callback/${ingest.id}"
           )
+        )
 
-          whenReady(future) { result =>
-            result.isSuccess shouldBe true
-            result.get.status shouldBe StatusCodes.NotFound
-          }
+        whenReady(future) { result =>
+          result.isSuccess shouldBe true
+          result.get.status shouldBe StatusCodes.NotFound
         }
       }
     }
 
     it("returns a failed future if the HTTP request fails") {
-      withActorSystem { implicit actorSystem =>
-        withCallbackUrlService { service =>
-          val ingest = createIngest
+      withCallbackUrlService { service =>
+        val ingest = createIngest
 
-          val future = service.getHttpResponse(
-            ingest = ingest,
-            callbackUri = new URI(s"http://nope.nope/callback/${ingest.id}")
-          )
+        val future = service.getHttpResponse(
+          ingest = ingest,
+          callbackUri = new URI(s"http://nope.nope/callback/${ingest.id}")
+        )
 
-          whenReady(future) { result =>
-            result.isFailure shouldBe true
-          }
+        whenReady(future) { result =>
+          result.isFailure shouldBe true
         }
       }
     }
@@ -184,13 +180,11 @@ class CallbackUrlServiceTest
     }
 
     def buildRequest(ingest: Ingest, callbackUri: URI): HttpRequest =
-      withActorSystem { implicit actorSystem =>
-        withCallbackUrlService { service =>
-          service.buildHttpRequest(
-            ingest = ingest,
-            callbackUri = callbackUri
-          )
-        }
+      withCallbackUrlService {
+        _.buildHttpRequest(
+          ingest = ingest,
+          callbackUri = callbackUri
+        )
       }
 
     def assertIsJsonRequest(request: HttpRequest, uri: URI)(

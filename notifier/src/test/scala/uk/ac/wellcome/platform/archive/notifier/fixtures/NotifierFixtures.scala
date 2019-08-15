@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.notifier.fixtures
 
 import java.net.URL
 
-import akka.actor.ActorSystem
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
@@ -21,32 +20,29 @@ trait NotifierFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture {
 
-  def withCallbackUrlService[R](
-    testWith: TestWith[CallbackUrlService, R]
-  )(implicit actorSystem: ActorSystem): R = {
-    val callbackUrlService = new CallbackUrlService(
-      contextUrl = new URL("http://localhost/context.json")
-    )
-    testWith(callbackUrlService)
-  }
+  def withCallbackUrlService[R](testWith: TestWith[CallbackUrlService, R]): R =
+    withActorSystem { implicit actorSystem =>
+      val callbackUrlService = new CallbackUrlService(
+        contextUrl = new URL("http://localhost/context.json")
+      )
+      testWith(callbackUrlService)
+    }
 
   private def withApp[R](queue: Queue, messageSender: MemoryMessageSender)(
     testWith: TestWith[NotifierWorker[String], R]
   ): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
-        withMaterializer(actorSystem) { implicit materializer =>
-          withCallbackUrlService { callbackUrlService =>
-            val workerService = new NotifierWorker(
-              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-              callbackUrlService = callbackUrlService,
-              messageSender = messageSender
-            )
+        withCallbackUrlService { callbackUrlService =>
+          val workerService = new NotifierWorker(
+            alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+            callbackUrlService = callbackUrlService,
+            messageSender = messageSender
+          )
 
-            workerService.run()
+          workerService.run()
 
-            testWith(workerService)
-          }
+          testWith(workerService)
         }
       }
     }
