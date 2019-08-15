@@ -53,7 +53,7 @@ class BagRegisterWorkerTest
                 context = createPipelineContextWith(
                   space = space
                 ),
-                bagRoot = bagRoot.asLocation(),
+                bagRoot = bagRoot,
                 version = version
               )
 
@@ -125,14 +125,14 @@ class BagRegisterWorkerTest
                     context = createPipelineContextWith(
                       space = space
                     ),
-                    bagRoot = bagRoot1.asLocation(),
+                    bagRoot = bagRoot1,
                     version = version
                   )
                   val payload2 = createEnrichedBagInformationPayloadWith(
                     context = createPipelineContextWith(
                       space = space
                     ),
-                    bagRoot = bagRoot2.asLocation(),
+                    bagRoot = bagRoot2,
                     version = nextVersion
                   )
 

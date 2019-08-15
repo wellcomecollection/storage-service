@@ -75,8 +75,7 @@ class RegisterTest
       bagRoot = bagRoot
         .copy(
           namespace = bagRoot.namespace + "_wrong"
-        )
-        .asPrefix,
+        ),
       version = version,
       storageSpace = space
     )

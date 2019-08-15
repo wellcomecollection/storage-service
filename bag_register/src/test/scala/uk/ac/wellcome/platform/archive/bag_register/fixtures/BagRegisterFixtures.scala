@@ -150,6 +150,6 @@ trait BagRegisterFixtures
 
     BagBuilder.uploadBagObjects(bagObjects)
 
-    testWith((bagRoot.asPrefix, bagInfo))
+    testWith((bagRoot, bagInfo))
   }
 }

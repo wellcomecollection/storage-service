@@ -48,7 +48,7 @@ class BagRegisterFeatureTest
                 context = createPipelineContextWith(
                   space = space
                 ),
-                bagRoot = bagRoot.asLocation(),
+                bagRoot = bagRoot,
                 version = version
               )
 
