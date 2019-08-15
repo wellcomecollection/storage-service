@@ -9,7 +9,7 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 case class UnpackSummary(
   id: IngestID,
   srcLocation: ObjectLocation,
-  dstLocation: ObjectLocationPrefix,
+  dstPrefix: ObjectLocationPrefix,
   fileCount: Int = 0,
   bytesUnpacked: Long = 0L,
   startTime: Instant,
@@ -20,7 +20,7 @@ case class UnpackSummary(
   override def toString: String = {
     f"""|id=$id
         |src=$srcLocation
-        |dst=$dstLocation
+        |dst=$dstPrefix
         |files=$fileCount
         |bytesSize=$bytesUnpacked
         |size=${formatBytes(bytesUnpacked)}

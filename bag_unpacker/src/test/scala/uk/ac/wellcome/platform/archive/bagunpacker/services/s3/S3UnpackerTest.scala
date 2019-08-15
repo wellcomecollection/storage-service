@@ -88,7 +88,7 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
             unpacker.unpack(
               ingestId = createIngestID,
               srcLocation = archiveLocation,
-              dstLocation = dstLocation
+              dstPrefix = dstLocation
             )
 
           val ingestResult = result.success.value
@@ -134,7 +134,7 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
               badUnpacker.unpack(
                 ingestId = createIngestID,
                 srcLocation = archiveLocation,
-                dstLocation = dstLocation
+                dstPrefix = dstLocation
               )
 
             assertIsError(result) { maybeMessage =>
@@ -154,7 +154,7 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
           unpacker.unpack(
             ingestId = createIngestID,
             srcLocation = srcLocation,
-            dstLocation = dstLocation
+            dstPrefix = dstLocation
           )
 
         assertIsError(result) { maybeMessage =>
@@ -174,7 +174,7 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
             unpacker.unpack(
               ingestId = createIngestID,
               srcLocation = srcLocation,
-              dstLocation = dstLocation
+              dstPrefix = dstLocation
             )
 
           assertIsError(result) { maybeMessage =>
@@ -193,7 +193,7 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
           unpacker.unpack(
             ingestId = createIngestID,
             srcLocation = srcLocation,
-            dstLocation = dstLocation
+            dstPrefix = dstLocation
           )
 
         assertIsError(result) { maybeMessage =>

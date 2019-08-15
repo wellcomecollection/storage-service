@@ -40,7 +40,7 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
-      unpackedBagLocation = BagLocationBuilder.build(
+      unpackedBagRoot = BagLocationBuilder.build(
         ingestId = payload.ingestId,
         storageSpace = payload.storageSpace,
         unpackerWorkerConfig = bagUnpackerWorkerConfig
@@ -48,15 +48,15 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       stepResult <- unpacker.unpack(
         ingestId = payload.ingestId,
-        srcLocation = payload.sourceLocation,
-        dstLocation = unpackedBagLocation
+        srcLocation = payload.sourceLocation.location,
+        dstPrefix = unpackedBagRoot
       )
 
       _ <- ingestUpdater.send(payload.ingestId, stepResult)
 
       outgoingPayload = UnpackedBagRootPayload(
         context = payload.context,
-        unpackedBagRoot = unpackedBagLocation
+        unpackedBagRoot = unpackedBagRoot
       )
       _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
     } yield stepResult

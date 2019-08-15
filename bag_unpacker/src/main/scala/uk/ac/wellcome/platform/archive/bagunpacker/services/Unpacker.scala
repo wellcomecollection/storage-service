@@ -39,17 +39,22 @@ trait Unpacker extends Logging {
   def unpack(
     ingestId: IngestID,
     srcLocation: ObjectLocation,
-    dstLocation: ObjectLocationPrefix
+    dstPrefix: ObjectLocationPrefix
   ): Try[IngestStepResult[UnpackSummary]] = {
     val unpackSummary =
-      UnpackSummary(ingestId, srcLocation, dstLocation, startTime = Instant.now)
+      UnpackSummary(
+        id = ingestId,
+        srcLocation = srcLocation,
+        dstPrefix = dstPrefix,
+        startTime = Instant.now
+      )
 
     val result = for {
       srcStream <- get(srcLocation).left.map { storageError =>
         UnpackerStorageError(storageError)
       }
 
-      unpackSummary <- unpack(unpackSummary, srcStream, dstLocation)
+      unpackSummary <- unpack(unpackSummary, srcStream, dstPrefix)
     } yield unpackSummary
 
     result match {
