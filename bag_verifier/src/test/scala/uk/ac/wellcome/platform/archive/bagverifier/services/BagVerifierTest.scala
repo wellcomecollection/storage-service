@@ -54,12 +54,12 @@ class BagVerifierTest
         payloadFileCount = payloadFileCount
       )
 
-      println(root)
-      println(listKeysInBucket(bucket))
-
       val ingestStep =
         withVerifier {
-          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            root.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -94,7 +94,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            root.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -142,7 +145,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            root.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -184,7 +190,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            root.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -222,7 +231,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            root.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -262,7 +274,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            root.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -296,7 +311,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+          _.verify(
+            root.asPrefix,
+            externalIdentifier = bagInfo.externalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -332,7 +350,10 @@ class BagVerifierTest
 
       val ingestStep =
         withVerifier {
-          _.verify(root, externalIdentifier = payloadExternalIdentifier)
+          _.verify(
+            root.asPrefix,
+            externalIdentifier = payloadExternalIdentifier
+          )
         }
 
       val result = ingestStep.success.get
@@ -370,7 +391,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              root.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get
@@ -404,7 +428,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              root.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get
@@ -436,7 +463,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              root.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get
@@ -464,7 +494,7 @@ class BagVerifierTest
 
         val (root, bagInfo) = alwaysWriteAsFetchBuilder.createS3BagWith(bucket)
 
-        val bag = new S3BagReader().get(root).right.value
+        val bag = new S3BagReader().get(root.asPrefix).right.value
 
         // Write one of the fetch.txt entries as a concrete file
         val badFetchEntry = bag.fetch.get.files.head
@@ -478,7 +508,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              root.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get
@@ -511,7 +544,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              root.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
@@ -539,7 +575,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              root.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get
@@ -570,7 +609,10 @@ class BagVerifierTest
 
         val ingestStep =
           withVerifier {
-            _.verify(root, externalIdentifier = bagInfo.externalIdentifier)
+            _.verify(
+              root.asPrefix,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
           }
 
         val result = ingestStep.success.get

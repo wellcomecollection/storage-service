@@ -33,7 +33,7 @@ class BagVerifier()(
   type InternalResult[T] = Either[BagVerifierError, T]
 
   def verify(
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     externalIdentifier: ExternalIdentifier
   ): Try[IngestStepResult[VerificationSummary]] =
     Try {
@@ -55,7 +55,7 @@ class BagVerifier()(
             bag = bag
           )
 
-          actualLocations <- listing.list(root.asPrefix) match {
+          actualLocations <- listing.list(root) match {
             case Right(iterable) => Right(iterable.toSeq)
             case Left(listingFailure) =>
               Left(BagVerifierError(listingFailure.e))
@@ -85,7 +85,7 @@ class BagVerifier()(
     }
 
   private def getBag(
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     startTime: Instant
   ): InternalResult[Bag] =
     bagReader.get(root) match {
@@ -120,11 +120,11 @@ class BagVerifier()(
     }
 
   private def verifyChecksums(
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     bag: Bag
   ): InternalResult[VerificationResult] = {
     implicit val bagVerifiable: BagVerifiable =
-      new BagVerifiable(root)
+      new BagVerifiable(root.asLocation())
 
     Try { bag.verify } match {
       case Failure(err)    => Left(BagVerifierError(err))
@@ -188,7 +188,7 @@ class BagVerifier()(
   // also have a fetch file entry.
   private def verifyNoConcreteFetchEntries(
     bag: Bag,
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     actualLocations: Seq[ObjectLocation],
     verificationResult: VerificationResult
   ): InternalResult[Unit] =
@@ -199,7 +199,7 @@ class BagVerifier()(
             fetchEntry.files
               .map { _.path }
               .map { path =>
-                root.join(path.value)
+                root.asLocation(path.value)
               }
 
           case None => Seq.empty
@@ -268,7 +268,7 @@ class BagVerifier()(
   // Check that there aren't any files in the bag that aren't referenced in
   // either the file manifest or the tag manifest.
   private def verifyNoUnreferencedFiles(
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     actualLocations: Seq[ObjectLocation],
     verificationResult: VerificationResult
   ): InternalResult[Unit] =
@@ -281,7 +281,7 @@ class BagVerifier()(
         val unreferencedFiles = actualLocations
           .filterNot { expectedLocations.contains(_) }
           .filterNot { location =>
-            excludedFiles.exists { root.join(_) == location }
+            excludedFiles.exists { root.asLocation(_) == location }
           }
 
         if (unreferencedFiles.isEmpty) {
@@ -324,7 +324,7 @@ class BagVerifier()(
 
   private def buildStepResult(
     internalResult: InternalResult[VerificationResult],
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     startTime: Instant
   ): IngestStepResult[VerificationSummary] =
     internalResult match {

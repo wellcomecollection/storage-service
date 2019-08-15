@@ -9,10 +9,10 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   VerificationResult,
   VerificationSuccess
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 sealed trait VerificationSummary extends Summary {
-  val rootLocation: ObjectLocation
+  val rootLocation: ObjectLocationPrefix
   val verification: Option[VerificationResult]
 
   val endTime: Instant
@@ -24,7 +24,7 @@ sealed trait VerificationSummary extends Summary {
       case Some(VerificationIncomplete(msg)) =>
         f"""
            |status=incomplete
-           |message=${msg}
+           |message=$msg
          """.stripMargin
       case Some(VerificationFailure(failed, succeeded)) =>
         f"""
@@ -55,7 +55,7 @@ sealed trait VerificationSummary extends Summary {
 
 object VerificationSummary {
   def incomplete(
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     e: Throwable,
     t: Instant
   ): VerificationIncompleteSummary =
@@ -67,7 +67,7 @@ object VerificationSummary {
     )
 
   def create(
-    root: ObjectLocation,
+    root: ObjectLocationPrefix,
     v: VerificationResult,
     t: Instant
   ): VerificationSummary = v match {
@@ -96,7 +96,7 @@ object VerificationSummary {
 }
 
 case class VerificationIncompleteSummary(
-  rootLocation: ObjectLocation,
+  rootLocation: ObjectLocationPrefix,
   e: Throwable,
   startTime: Instant,
   endTime: Instant
@@ -105,14 +105,14 @@ case class VerificationIncompleteSummary(
 }
 
 case class VerificationSuccessSummary(
-  rootLocation: ObjectLocation,
+  rootLocation: ObjectLocationPrefix,
   verification: Some[VerificationSuccess],
   startTime: Instant,
   endTime: Instant
 ) extends VerificationSummary
 
 case class VerificationFailureSummary(
-  rootLocation: ObjectLocation,
+  rootLocation: ObjectLocationPrefix,
   verification: Option[VerificationFailure],
   startTime: Instant,
   endTime: Instant

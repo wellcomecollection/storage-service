@@ -4,11 +4,11 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 case class RegistrationSummary(
-  bagRootLocation: ObjectLocation,
-  storageSpace: StorageSpace,
+  bagRoot: ObjectLocationPrefix,
+  space: StorageSpace,
   startTime: Instant,
   maybeEndTime: Option[Instant] = None
 ) extends Summary {
@@ -18,8 +18,8 @@ case class RegistrationSummary(
     )
 
   override def toString: String =
-    f"""|bag=$bagRootLocation
-        |space=$storageSpace
+    f"""|bag=$bagRoot
+        |space=$space
         |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin
       .replaceAll("\n", ", ")

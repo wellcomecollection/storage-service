@@ -457,7 +457,7 @@ class StorageManifestServiceTest
   describe("adds the size to the manifest files") {
     it("fails if it cannot get the size of a file") {
       val version = randomInt(1, 10)
-      val replicaRoot = createObjectLocation.join(s"/v$version")
+      val bagRoot = createObjectLocation.join(s"/v$version")
 
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
@@ -478,14 +478,14 @@ class StorageManifestServiceTest
 
       val result = service.createManifest(
         bag = bag,
-        replicaRoot = replicaRoot,
+        replicaRoot = bagRoot.asPrefix,
         space = createStorageSpace,
         version = BagVersion(version)
       )
 
       result.failed.get shouldBe a[StorageManifestException]
       result.failed.get.getMessage should startWith(
-        s"Error getting size of ${replicaRoot.join("data/file1.txt")}"
+        s"Error getting size of ${bagRoot.join("data/file1.txt")}"
       )
     }
 
@@ -566,7 +566,7 @@ class StorageManifestServiceTest
       val storageManifest = service
         .createManifest(
           bag = bag,
-          replicaRoot = replicaRoot,
+          replicaRoot = replicaRoot.asPrefix,
           space = createStorageSpace,
           version = BagVersion(version)
         )
@@ -606,7 +606,7 @@ class StorageManifestServiceTest
 
     val result = service.createManifest(
       bag = bag,
-      replicaRoot = replicaRoot,
+      replicaRoot = replicaRoot.asPrefix,
       space = space,
       version = BagVersion(version)
     )
@@ -631,7 +631,7 @@ class StorageManifestServiceTest
 
     val result = service.createManifest(
       bag = bag,
-      replicaRoot = replicaRoot,
+      replicaRoot = replicaRoot.asPrefix,
       space = createStorageSpace,
       version = BagVersion(version)
     )

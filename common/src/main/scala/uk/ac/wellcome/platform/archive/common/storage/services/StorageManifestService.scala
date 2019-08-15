@@ -34,7 +34,7 @@ class BadFetchLocationException(message: String)
 class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
   def createManifest(
     bag: Bag,
-    replicaRoot: ObjectLocation,
+    replicaRoot: ObjectLocationPrefix,
     space: StorageSpace,
     version: BagVersion
   ): Try[StorageManifest] = {
@@ -98,19 +98,20 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
     *
     */
   private def getBagRoot(
-    replicaRoot: ObjectLocation,
+    replicaRoot: ObjectLocationPrefix,
     version: BagVersion
   ): Try[ObjectLocationPrefix] =
     if (replicaRoot.path.endsWith(s"/$version")) {
       Success(
-        replicaRoot.asPrefix.copy(
+        replicaRoot.copy(
           path = replicaRoot.path.stripSuffix(s"/$version")
         )
       )
     } else {
       Failure(
         new StorageManifestException(
-          s"Malformed bag root: $replicaRoot (expected suffix /$version)"
+          // TODO: Move the toString method for ObjectLocationPrefix into scala-storage
+          s"Malformed bag root: ${replicaRoot.namespace}/${replicaRoot.path} (expected suffix /$version)"
         )
       )
     }

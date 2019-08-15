@@ -55,10 +55,10 @@ trait BagReaderTestCases[Context, Namespace]
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
 
-      val (rootLocation, bagInfo) = createBag()
+      val (bagRoot, bagInfo) = createBag()
 
       val bag = withBagReader {
-        _.get(rootLocation).right.value
+        _.get(bagRoot.asPrefix).right.value
       }
 
       bag.info shouldBe bagInfo
@@ -69,11 +69,11 @@ trait BagReaderTestCases[Context, Namespace]
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
 
-      val (rootLocation, _) = createBag()
-      deleteFile(rootLocation, "bag-info.txt")
+      val (bagRoot, _) = createBag()
+      deleteFile(bagRoot, "bag-info.txt")
 
       withBagReader {
-        _.get(rootLocation).left.value.msg should startWith(
+        _.get(bagRoot.asPrefix).left.value.msg should startWith(
           "Error loading bag-info.txt"
         )
       }
@@ -84,11 +84,11 @@ trait BagReaderTestCases[Context, Namespace]
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
 
-      val (rootLocation, _) = createBag()
-      scrambleFile(rootLocation, "bag-info.txt")
+      val (bagRoot, _) = createBag()
+      scrambleFile(bagRoot, "bag-info.txt")
 
       withBagReader {
-        _.get(rootLocation).left.value.msg should startWith(
+        _.get(bagRoot.asPrefix).left.value.msg should startWith(
           "Error loading bag-info.txt"
         )
       }
@@ -99,11 +99,11 @@ trait BagReaderTestCases[Context, Namespace]
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
 
-      val (rootLocation, _) = createBag()
-      deleteFile(rootLocation, "manifest-sha256.txt")
+      val (bagRoot, _) = createBag()
+      deleteFile(bagRoot, "manifest-sha256.txt")
 
       withBagReader {
-        _.get(rootLocation).left.value.msg should startWith(
+        _.get(bagRoot.asPrefix).left.value.msg should startWith(
           "Error loading manifest-sha256.txt"
         )
       }
@@ -114,11 +114,11 @@ trait BagReaderTestCases[Context, Namespace]
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
 
-      val (rootLocation, _) = createBag()
-      scrambleFile(rootLocation, "manifest-sha256.txt")
+      val (bagRoot, _) = createBag()
+      scrambleFile(bagRoot, "manifest-sha256.txt")
 
       withBagReader {
-        _.get(rootLocation).left.value.msg should startWith(
+        _.get(bagRoot.asPrefix).left.value.msg should startWith(
           "Error loading manifest-sha256.txt"
         )
       }
@@ -129,11 +129,11 @@ trait BagReaderTestCases[Context, Namespace]
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
 
-      val (rootLocation, _) = createBag()
-      deleteFile(rootLocation, "tagmanifest-sha256.txt")
+      val (bagRoot, _) = createBag()
+      deleteFile(bagRoot, "tagmanifest-sha256.txt")
 
       withBagReader {
-        _.get(rootLocation).left.value.msg should startWith(
+        _.get(bagRoot.asPrefix).left.value.msg should startWith(
           "Error loading tagmanifest-sha256.txt"
         )
       }
@@ -144,11 +144,11 @@ trait BagReaderTestCases[Context, Namespace]
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
 
-      val (rootLocation, _) = createBag()
-      scrambleFile(rootLocation, "tagmanifest-sha256.txt")
+      val (bagRoot, _) = createBag()
+      scrambleFile(bagRoot, "tagmanifest-sha256.txt")
 
       withBagReader {
-        _.get(rootLocation).left.value.msg should startWith(
+        _.get(bagRoot.asPrefix).left.value.msg should startWith(
           "Error loading tagmanifest-sha256.txt"
         )
       }
@@ -159,11 +159,11 @@ trait BagReaderTestCases[Context, Namespace]
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
 
-      val (rootLocation, _) = createBag()
-      deleteFile(rootLocation, "fetch.txt")
+      val (bagRoot, _) = createBag()
+      deleteFile(bagRoot, "fetch.txt")
 
       withBagReader {
-        _.get(rootLocation).right.value.fetch shouldBe None
+        _.get(bagRoot.asPrefix).right.value.fetch shouldBe None
       }
     }
   }
@@ -172,11 +172,11 @@ trait BagReaderTestCases[Context, Namespace]
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace) = fixtures
 
-      val (rootLocation, _) = createBag()
-      scrambleFile(rootLocation, "fetch.txt")
+      val (bagRoot, _) = createBag()
+      scrambleFile(bagRoot, "fetch.txt")
 
       withBagReader {
-        _.get(rootLocation).left.value.msg should startWith(
+        _.get(bagRoot.asPrefix).left.value.msg should startWith(
           "Error loading fetch.txt"
         )
       }
