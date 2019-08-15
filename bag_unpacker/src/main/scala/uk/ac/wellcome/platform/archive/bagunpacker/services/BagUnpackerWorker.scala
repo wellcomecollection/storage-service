@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.{
   SourceLocationPayload,
-  UnpackedBagLocationPayload
+  UnpackedBagRootPayload
 }
 
 import scala.util.Try
@@ -54,7 +54,7 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       _ <- ingestUpdater.send(payload.ingestId, stepResult)
 
-      outgoingPayload = UnpackedBagLocationPayload(
+      outgoingPayload = UnpackedBagRootPayload(
         context = payload.context,
         unpackedBagRoot = unpackedBagLocation
       )

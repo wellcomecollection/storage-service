@@ -23,16 +23,6 @@ import scala.util.{Failure, Success, Try}
   * This code is deliberately conservative -- it has the potential to lose
   * data from a bag if we infer incorrectly.
   *
-  * If you find yourself adding lots of logic to this class, STOP.  THINK.
-  * If clients are putting bags in odd locations, consider modifying the
-  * ingests API so the clients can *tell us* where they're putting the bag,
-  * not leave us to reverse-engineer their logic.
-  *
-  * The method returns an ObjectLocation for bag-info.txt, or an error
-  * if it can't find it.
-  *
-  * SERIOUSLY, THINK CAREFULLY BEFORE YOU ADD COMPLEXITY HERE.
-  *
   */
 class S3BagLocator(s3Client: AmazonS3) extends Logging {
   def locateBagInfo(prefix: ObjectLocationPrefix): Try[ObjectLocation] = {
@@ -50,9 +40,9 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     }
   }
 
-  def locateBagRoot(prefix: ObjectLocationPrefix): Try[ObjectLocation] =
+  def locateBagRoot(prefix: ObjectLocationPrefix): Try[ObjectLocationPrefix] =
     locateBagInfo(prefix).map { loc =>
-      loc.copy(path = loc.path.stripSuffix("/bag-info.txt"))
+      loc.copy(path = loc.path.stripSuffix("/bag-info.txt")).asPrefix
     }
 
   /** Find a bag directly below a given ObjectLocation. */

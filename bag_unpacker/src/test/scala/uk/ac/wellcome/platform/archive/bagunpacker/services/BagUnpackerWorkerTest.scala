@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   BagUnpackerFixtures,
   CompressFixture
 }
-import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
+import uk.ac.wellcome.platform.archive.common.UnpackedBagRootPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -51,7 +51,7 @@ class BagUnpackerWorkerTest
 
             result.success.value shouldBe a[IngestStepSucceeded[_]]
 
-            val expectedPayload = UnpackedBagLocationPayload(
+            val expectedPayload = UnpackedBagRootPayload(
               context = payload.context,
               unpackedBagRoot = ObjectLocationPrefix(
                 namespace = dstBucket.name,
@@ -64,7 +64,7 @@ class BagUnpackerWorkerTest
               )
             )
 
-            outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
+            outgoing.getMessages[UnpackedBagRootPayload] shouldBe Seq(
               expectedPayload
             )
 

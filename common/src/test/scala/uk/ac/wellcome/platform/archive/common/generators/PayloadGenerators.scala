@@ -57,15 +57,15 @@ trait PayloadGenerators
   def createSourceLocationPayload: SourceLocationPayload =
     createSourceLocationPayloadWith()
 
-  def createUnpackedBagLocationPayloadWith(
-    unpackedBagLocation: ObjectLocationPrefix = createObjectLocationPrefix,
+  def createUnpackedBagRootPayloadWith(
+    unpackedBagRoot: ObjectLocationPrefix = createObjectLocationPrefix,
     storageSpace: StorageSpace = createStorageSpace
-  ): UnpackedBagLocationPayload =
-    UnpackedBagLocationPayload(
+  ): UnpackedBagRootPayload =
+    UnpackedBagRootPayload(
       context = createPipelineContextWith(
         space = storageSpace
       ),
-      unpackedBagRoot = unpackedBagLocation
+      unpackedBagRoot = unpackedBagRoot
     )
 
   def createEnrichedBagInformationPayloadWith(

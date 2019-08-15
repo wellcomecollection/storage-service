@@ -24,13 +24,13 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
       val startTime = Instant.now()
 
       s3BagLocator.locateBagRoot(unpackLocation) match {
-        case Success(rootLocation) =>
+        case Success(bagRoot) =>
           IngestStepSucceeded(
             RootFinderSuccessSummary(
               startTime = startTime,
               endTime = Instant.now(),
               location = unpackLocation,
-              bagRootLocation = rootLocation
+              bagRoot = bagRoot
             )
           )
 

@@ -29,16 +29,15 @@ class BagRootFinderFeatureTest
 
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      val (unpackedBagLocation, _) = S3BagBuilder.createS3BagWith(bucket)
+      val (unpackedBagRoot, _) = S3BagBuilder.createS3BagWith(bucket)
 
-      // TODO: Bag root location should really be a prefix here
-      val payload = createUnpackedBagLocationPayloadWith(
-        unpackedBagLocation = unpackedBagLocation.asPrefix
+      val payload = createUnpackedBagRootPayloadWith(
+        unpackedBagRoot = unpackedBagRoot
       )
 
       val expectedPayload = createBagRootLocationPayloadWith(
         context = payload.context,
-        bagRoot = unpackedBagLocation
+        bagRoot = unpackedBagRoot
       )
 
       withLocalSqsQueue { queue =>
@@ -83,23 +82,23 @@ class BagRootFinderFeatureTest
             .mkString("/")
       }
 
-      val (unpackedBagLocation, _) = builder.createS3BagWith(bucket)
+      val (unpackedBagRoot, _) = builder.createS3BagWith(bucket)
 
-      val (parentDirectory, _) = unpackedBagLocation.path.splitAt(
-        unpackedBagLocation.path.lastIndexOf("/")
+      val (parentDirectory, _) = unpackedBagRoot.path.splitAt(
+        unpackedBagRoot.path.lastIndexOf("/")
       )
 
-      val parentLocation = unpackedBagLocation.copy(
+      val parentLocation = unpackedBagRoot.copy(
         path = parentDirectory
       )
 
-      val payload = createUnpackedBagLocationPayloadWith(
-        unpackedBagLocation = parentLocation.asPrefix
+      val payload = createUnpackedBagRootPayloadWith(
+        unpackedBagRoot = parentLocation
       )
 
       val expectedPayload = createBagRootLocationPayloadWith(
         context = payload.context,
-        bagRoot = unpackedBagLocation
+        bagRoot = unpackedBagRoot
       )
 
       withLocalSqsQueue { queue =>
@@ -135,12 +134,12 @@ class BagRootFinderFeatureTest
 
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
-      val (unpackedBagLocation, _) = S3BagBuilder.createS3BagWith(bucket)
+      val (unpackedBagRoot, _) = S3BagBuilder.createS3BagWith(bucket)
 
-      val bucketRootLocation = unpackedBagLocation.copy(path = "")
+      val bucketRootLocation = unpackedBagRoot.copy(path = "")
 
       val payload =
-        createUnpackedBagLocationPayloadWith(bucketRootLocation.asPrefix)
+        createUnpackedBagRootPayloadWith(bucketRootLocation)
 
       withLocalSqsQueue { queue =>
         val ingests = new MemoryMessageSender()
@@ -177,9 +176,9 @@ class BagRootFinderFeatureTest
   }
 
   it("errors if it cannot find the bag") {
-    val unpackedBagLocation = createObjectLocation
+    val unpackedBagRoot = createObjectLocation
     val payload =
-      createUnpackedBagLocationPayloadWith(unpackedBagLocation.asPrefix)
+      createUnpackedBagRootPayloadWith(unpackedBagRoot.asPrefix)
 
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()

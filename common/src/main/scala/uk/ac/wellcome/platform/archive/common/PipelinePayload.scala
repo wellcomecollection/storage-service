@@ -38,7 +38,7 @@ case object SourceLocationPayload {
     )
 }
 
-case class UnpackedBagLocationPayload(
+case class UnpackedBagRootPayload(
   context: PipelineContext,
   unpackedBagRoot: ObjectLocationPrefix
 ) extends PipelinePayload

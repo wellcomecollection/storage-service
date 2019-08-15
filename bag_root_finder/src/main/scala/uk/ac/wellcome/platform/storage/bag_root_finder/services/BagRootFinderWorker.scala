@@ -30,11 +30,11 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
   val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[UnpackedBagLocationPayload]
-) extends IngestStepWorker[UnpackedBagLocationPayload, RootFinderSummary] {
+  val wd: Decoder[UnpackedBagRootPayload]
+) extends IngestStepWorker[UnpackedBagRootPayload, RootFinderSummary] {
 
   override def processMessage(
-    payload: UnpackedBagLocationPayload
+    payload: UnpackedBagRootPayload
   ): Try[IngestStepResult[RootFinderSummary]] =
     for {
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
@@ -54,7 +54,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
       case IngestStepSucceeded(summary: RootFinderSuccessSummary, _) =>
         val outgoingPayload: BagRootPayload = BagRootLocationPayload(
           context = payload.context,
-          bagRoot = summary.bagRootLocation
+          bagRoot = summary.bagRoot
         )
         outgoingPublisher.sendIfSuccessful(step, outgoingPayload)
       case _ => Success(())

@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.storage.bag_root_finder.models
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 sealed trait RootFinderSummary extends Summary {
   val location: ObjectLocationPrefix
@@ -22,5 +22,5 @@ case class RootFinderSuccessSummary(
   startTime: Instant,
   endTime: Instant,
   location: ObjectLocationPrefix,
-  bagRootLocation: ObjectLocation
+  bagRoot: ObjectLocationPrefix
 ) extends RootFinderSummary
