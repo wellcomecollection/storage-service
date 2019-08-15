@@ -88,7 +88,7 @@ class BagVerifier()(
     root: ObjectLocation,
     startTime: Instant
   ): InternalResult[Bag] =
-    bagReader.get(root) match {
+    bagReader.get(root.asPrefix) match {
       case Left(bagUnavailable) =>
         Left(
           BagVerifierError(

@@ -464,7 +464,7 @@ class BagVerifierTest
 
         val (root, bagInfo) = alwaysWriteAsFetchBuilder.createS3BagWith(bucket)
 
-        val bag = new S3BagReader().get(root).right.value
+        val bag = new S3BagReader().get(root.asPrefix).right.value
 
         // Write one of the fetch.txt entries as a concrete file
         val badFetchEntry = bag.fetch.get.files.head

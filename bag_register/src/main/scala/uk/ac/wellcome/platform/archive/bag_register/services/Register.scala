@@ -40,7 +40,7 @@ class Register(
     )
 
     val result: Try[IngestStepResult[RegistrationSummary]] = for {
-      bag <- bagReader.get(bagRootLocation) match {
+      bag <- bagReader.get(bagRootLocation.asPrefix) match {
         case Right(value) => Success(value)
         case Left(err) =>
           Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
