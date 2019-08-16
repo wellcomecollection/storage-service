@@ -11,8 +11,9 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{BagReplicationSummary, PrimaryBagReplicationRequest, SecondaryBagReplicationRequest}
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{BagReplicationSummary, PrimaryBagReplicationRequest}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
@@ -64,9 +65,9 @@ object Main extends WellcomeTypesafeApp {
 
     val replicator = new S3Replicator()
 
-    val primaryBagReplicator = new BagReplicator[PrimaryBagReplicationRequest](replicator = replicator)
-    val secondaryBagReplicator = new BagReplicator[SecondaryBagReplicationRequest](replicator = replicator)
-
+    // Eventually this will be a config option, and each instance of
+    // the replicator will choose whether it's primary/secondary,
+    // and what sort of bag replicator will be passed in here.
     new BagReplicatorWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
@@ -74,8 +75,9 @@ object Main extends WellcomeTypesafeApp {
       lockingService = lockingService,
       replicatorDestinationConfig = ReplicatorDestinationConfig
         .buildDestinationConfig(config),
-      primaryBagReplicator = primaryBagReplicator,
-      secondaryBagReplicator = secondaryBagReplicator
+      bagReplicator = new BagReplicator[PrimaryBagReplicationRequest](replicator),
+      createBagRequest = (replicationRequest: ReplicationRequest) =>
+        PrimaryBagReplicationRequest(replicationRequest)
     )
   }
 }

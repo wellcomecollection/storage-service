@@ -27,7 +27,7 @@ import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Try}
 
-class BagReplicatorWorker[IngestDestination, OutgoingDestination](
+class BagReplicatorWorker[BagRequest <: BagReplicationRequest, IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
@@ -36,8 +36,8 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
     UUID
   ]],
   replicatorDestinationConfig: ReplicatorDestinationConfig,
-  primaryBagReplicator: BagReplicator[PrimaryBagReplicationRequest],
-  secondaryBagReplicator: BagReplicator[SecondaryBagReplicationRequest]
+  bagReplicator: BagReplicator[BagRequest],
+  createBagRequest: ReplicationRequest => BagRequest
 )(
   implicit
   val mc: MonitoringClient,
@@ -52,6 +52,8 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   val destinationBuilder = new DestinationBuilder(
     namespace = replicatorDestinationConfig.namespace
   )
+
+//  val bagReplicator = new BagReplicator[BagRequest](replicator)
 
   override def process(
     payload: EnrichedBagInformationPayload
@@ -82,7 +84,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
         version = payload.version
       )
 
-      bagRequest = PrimaryBagReplicationRequest(
+      bagRequest = createBagRequest(
         ReplicationRequest(
           srcPrefix = srcPrefix,
           dstPrefix = dstPrefix
@@ -111,16 +113,10 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
 
   def replicate(
     payload: EnrichedBagInformationPayload,
-    bagReplicationRequest: BagReplicationRequest
+    bagReplicationRequest: BagRequest
   ): Future[IngestStepResult[BagReplicationSummary[_]]] = {
     val future: Future[BagReplicationResult[_]] =
-      bagReplicationRequest match {
-        case request: PrimaryBagReplicationRequest =>
-          primaryBagReplicator.replicateBag(request)
-
-        case request: SecondaryBagReplicationRequest =>
-          secondaryBagReplicator.replicateBag(request)
-      }
+      bagReplicator.replicateBag(bagReplicationRequest)
 
     future.map {
       case BagReplicationSucceeded(summary) =>

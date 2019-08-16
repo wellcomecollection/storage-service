@@ -10,8 +10,9 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{BagReplicationSummary, PrimaryBagReplicationRequest, SecondaryBagReplicationRequest}
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{BagReplicationSummary, PrimaryBagReplicationRequest}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
@@ -65,7 +66,7 @@ trait BagReplicatorFixtures
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
     stepName: String = randomAlphanumericWithLength()
   )(
-    testWith: TestWith[BagReplicatorWorker[String, String], R]
+    testWith: TestWith[BagReplicatorWorker[PrimaryBagReplicationRequest, String, String], R]
   ): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
@@ -81,8 +82,7 @@ trait BagReplicatorFixtures
 
         val replicator = new S3Replicator()
 
-        val primaryBagReplicator = new BagReplicator[PrimaryBagReplicationRequest](replicator = replicator)
-        val secondaryBagReplicator = new BagReplicator[SecondaryBagReplicationRequest](replicator = replicator)
+        val bagReplicator = new BagReplicator[PrimaryBagReplicationRequest](replicator)
 
         val service = new BagReplicatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
@@ -90,8 +90,9 @@ trait BagReplicatorFixtures
           outgoingPublisher = outgoingPublisher,
           lockingService = lockingService,
           replicatorDestinationConfig = replicatorDestinationConfig,
-          primaryBagReplicator = primaryBagReplicator,
-          secondaryBagReplicator = secondaryBagReplicator
+          bagReplicator = bagReplicator,
+          createBagRequest = (replicationRequest: ReplicationRequest) =>
+            PrimaryBagReplicationRequest(replicationRequest)
         )
 
         service.run()

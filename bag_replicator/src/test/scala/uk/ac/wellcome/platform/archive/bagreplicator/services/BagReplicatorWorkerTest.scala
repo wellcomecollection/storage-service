@@ -9,8 +9,9 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{BagReplicationSummary, PrimaryBagReplicationRequest, SecondaryBagReplicationRequest}
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{BagReplicationSummary, PrimaryBagReplicationRequest}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.{S3BagBuilder, S3BagBuilderBase}
@@ -304,8 +305,7 @@ class BagReplicatorWorkerTest
               implicit val s3StreamStore: S3StreamStore =
                 new S3StreamStore()
 
-              val primaryBagReplicator = new BagReplicator[PrimaryBagReplicationRequest](replicator = replicator)
-              val secondaryBagReplicator = new BagReplicator[SecondaryBagReplicationRequest](replicator = replicator)
+              val bagReplicator = new BagReplicator[PrimaryBagReplicationRequest](replicator)
 
               val service = new BagReplicatorWorker(
                 config = createAlpakkaSQSWorkerConfig(queue),
@@ -313,8 +313,9 @@ class BagReplicatorWorkerTest
                 outgoingPublisher = outgoingPublisher,
                 lockingService = lockingService,
                 replicatorDestinationConfig = replicatorDestinationConfig,
-                primaryBagReplicator = primaryBagReplicator,
-                secondaryBagReplicator = secondaryBagReplicator
+                bagReplicator = bagReplicator,
+                createBagRequest = (replicationRequest: ReplicationRequest) =>
+                  PrimaryBagReplicationRequest(replicationRequest)
               )
 
               val future = service.processPayload(payload)
