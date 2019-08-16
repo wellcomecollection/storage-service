@@ -2,12 +2,11 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.bagreplicator.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
 import uk.ac.wellcome.storage.transfer.{PrefixTransfer, TransferResult}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 // This is a generic replication from one location to another.
 //
@@ -19,6 +18,7 @@ import scala.concurrent.Future
 
 trait Replicator {
   implicit val prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation]
+  implicit val ec: ExecutionContext
 
   def replicate(replication: ReplicationRequest): Future[ReplicationResult] = {
     val summary = ReplicationSummary(

@@ -89,7 +89,7 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
         )
       )
 
-      result: IngestStep[BagReplicationSummary[_]] <- lockingService
+      result <- lockingService
         .withLock(payload.ingestId.toString) {
           replicate(payload, bagRequest)
         }

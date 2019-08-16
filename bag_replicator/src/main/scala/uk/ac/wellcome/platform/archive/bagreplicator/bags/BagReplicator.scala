@@ -11,12 +11,13 @@ import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class BagReplicator[Request <: BagReplicationRequest](
   replicator: Replicator
 )(
   implicit
+  ec: ExecutionContext,
   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) {
   def replicateBag(

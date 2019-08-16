@@ -10,14 +10,15 @@ import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{BagReplicationSummary, PrimaryBagReplicationRequest, SecondaryBagReplicationRequest}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{BagReplicator, BagReplicatorWorker}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
+import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.locking.dynamo.{DynamoLockDao, DynamoLockDaoConfig, DynamoLockingService}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -41,9 +42,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3StreamStore: S3StreamStore =
       new S3StreamStore()
 
-    implicit val prefixTransfer: S3PrefixTransfer =
-      S3PrefixTransfer()
-
     implicit val monitoringClient: CloudwatchMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
 
@@ -62,16 +60,22 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val lockingService =
-      new DynamoLockingService[IngestStepResult[ReplicationSummary], Future]()
+      new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Future]()
+
+    val replicator = new S3Replicator()
+
+    val primaryBagReplicator = new BagReplicator[PrimaryBagReplicationRequest](replicator = replicator)
+    val secondaryBagReplicator = new BagReplicator[SecondaryBagReplicationRequest](replicator = replicator)
 
     new BagReplicatorWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
-      bagReplicator = new BagReplicator(),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
       lockingService = lockingService,
       replicatorDestinationConfig = ReplicatorDestinationConfig
-        .buildDestinationConfig(config)
+        .buildDestinationConfig(config),
+      primaryBagReplicator = primaryBagReplicator,
+      secondaryBagReplicator = secondaryBagReplicator
     )
   }
 }

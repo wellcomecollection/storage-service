@@ -8,13 +8,15 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{BagReplicationSummary, PrimaryBagReplicationRequest, SecondaryBagReplicationRequest}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.{S3BagBuilder, S3BagBuilderBase}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestShouldRetry, IngestStepResult, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
@@ -176,7 +178,7 @@ class BagReplicatorWorkerTest
 
       withLocalS3Bucket { dstBucket =>
         withBagReplicatorWorker(bucket = dstBucket) { worker =>
-          val futures: Future[Seq[IngestStepResult[ReplicationSummary]]] =
+          val futures: Future[Seq[IngestStepResult[BagReplicationSummary[_]]]] =
             Future.sequence(
               (1 to 5).map { _ =>
                 worker.processPayload(payload)
@@ -291,19 +293,28 @@ class BagReplicatorWorkerTest
               implicit val listing: S3ObjectLocationListing =
                 S3ObjectLocationListing()
 
-              implicit val prefixTransfer: S3PrefixTransfer =
+              implicit val badPrefixTransfer: S3PrefixTransfer =
                 new S3PrefixTransfer()
+
+              implicit val replicator = new S3Replicator() {
+                override val prefixTransfer: S3PrefixTransfer
+                  = badPrefixTransfer
+              }
 
               implicit val s3StreamStore: S3StreamStore =
                 new S3StreamStore()
 
+              val primaryBagReplicator = new BagReplicator[PrimaryBagReplicationRequest](replicator = replicator)
+              val secondaryBagReplicator = new BagReplicator[SecondaryBagReplicationRequest](replicator = replicator)
+
               val service = new BagReplicatorWorker(
                 config = createAlpakkaSQSWorkerConfig(queue),
-                bagReplicator = new BagReplicator(),
                 ingestUpdater = ingestUpdater,
                 outgoingPublisher = outgoingPublisher,
                 lockingService = lockingService,
-                replicatorDestinationConfig = replicatorDestinationConfig
+                replicatorDestinationConfig = replicatorDestinationConfig,
+                primaryBagReplicator = primaryBagReplicator,
+                secondaryBagReplicator = secondaryBagReplicator
               )
 
               val future = service.processPayload(payload)
