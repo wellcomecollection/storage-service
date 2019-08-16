@@ -12,17 +12,13 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
-import uk.ac.wellcome.storage.locking.{
-  FailedLockingServiceOp,
-  LockDao,
-  LockingService
-}
+import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 
