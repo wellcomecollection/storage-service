@@ -6,7 +6,8 @@ import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 import scala.concurrent.ExecutionContext
 
-class S3Replicator(implicit s3Client: AmazonS3, val ec: ExecutionContext) extends Replicator {
+class S3Replicator(implicit s3Client: AmazonS3, val ec: ExecutionContext)
+    extends Replicator {
   implicit val prefixTransfer: S3PrefixTransfer =
     S3PrefixTransfer()
 }

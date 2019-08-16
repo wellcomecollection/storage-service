@@ -5,7 +5,7 @@ sealed trait ReplicationResult {
 }
 
 case class ReplicationSucceeded(summary: ReplicationSummary)
-  extends ReplicationResult
+    extends ReplicationResult
 
 case class ReplicationFailed(summary: ReplicationSummary, e: Throwable)
-  extends ReplicationResult
+    extends ReplicationResult

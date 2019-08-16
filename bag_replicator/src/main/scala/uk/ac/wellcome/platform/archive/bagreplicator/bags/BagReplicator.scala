@@ -5,7 +5,11 @@ import java.time.Instant
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationResult, ReplicationSucceeded}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
+  ReplicationFailed,
+  ReplicationResult,
+  ReplicationSucceeded
+}
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
@@ -21,7 +25,8 @@ class BagReplicator[Request <: BagReplicationRequest](
   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) {
   def replicateBag(
-    bagRequest: Request): Future[BagReplicationResult[Request]] = {
+    bagRequest: Request
+  ): Future[BagReplicationResult[Request]] = {
     val startTime = Instant.now()
     val bagSummary = BagReplicationSummary(
       startTime = startTime,
@@ -36,10 +41,12 @@ class BagReplicator[Request <: BagReplicationRequest](
     // appropriate BagReplicationFailed type.
 
     val result: Future[ReplicationResult] = for {
-      replicationResult: ReplicationResult <- replicator.replicate(bagRequest.request).map {
-        case success: ReplicationSucceeded => success
-        case ReplicationFailed(_, e) => throw e
-      }
+      replicationResult: ReplicationResult <- replicator
+        .replicate(bagRequest.request)
+        .map {
+          case success: ReplicationSucceeded => success
+          case ReplicationFailed(_, e)       => throw e
+        }
 
       _ <- checkTagManifestsAreTheSame(
         srcPrefix = bagRequest.request.srcPrefix,

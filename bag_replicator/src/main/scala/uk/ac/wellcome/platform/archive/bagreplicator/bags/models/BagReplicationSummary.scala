@@ -8,7 +8,8 @@ import uk.ac.wellcome.storage.ObjectLocationPrefix
 case class BagReplicationSummary[Request <: BagReplicationRequest](
   startTime: Instant,
   maybeEndTime: Option[Instant] = None,
-  request: Request) extends Summary {
+  request: Request
+) extends Summary {
 
   def srcPrefix: ObjectLocationPrefix = request.request.srcPrefix
   def dstPrefix: ObjectLocationPrefix = request.request.dstPrefix

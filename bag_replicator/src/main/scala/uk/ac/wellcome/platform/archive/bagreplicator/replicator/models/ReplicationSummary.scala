@@ -8,7 +8,8 @@ import uk.ac.wellcome.storage.ObjectLocationPrefix
 case class ReplicationSummary(
   startTime: Instant,
   maybeEndTime: Option[Instant] = None,
-  request: ReplicationRequest) extends Summary {
+  request: ReplicationRequest
+) extends Summary {
 
   def srcPrefix: ObjectLocationPrefix = request.srcPrefix
   def dstPrefix: ObjectLocationPrefix = request.dstPrefix

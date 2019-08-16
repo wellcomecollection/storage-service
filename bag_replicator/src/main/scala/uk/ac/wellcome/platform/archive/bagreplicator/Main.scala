@@ -8,17 +8,32 @@ import com.typesafe.config.Config
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{BagReplicationSummary, PrimaryBagReplicationRequest}
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+  BagReplicationSummary,
+  PrimaryBagReplicationRequest
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
-import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.locking.dynamo.{DynamoLockDao, DynamoLockDaoConfig, DynamoLockingService}
+import uk.ac.wellcome.storage.locking.dynamo.{
+  DynamoLockDao,
+  DynamoLockDaoConfig,
+  DynamoLockingService
+}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -75,7 +90,8 @@ object Main extends WellcomeTypesafeApp {
       lockingService = lockingService,
       replicatorDestinationConfig = ReplicatorDestinationConfig
         .buildDestinationConfig(config),
-      bagReplicator = new BagReplicator[PrimaryBagReplicationRequest](replicator),
+      bagReplicator =
+        new BagReplicator[PrimaryBagReplicationRequest](replicator),
       createBagRequest = (replicationRequest: ReplicationRequest) =>
         PrimaryBagReplicationRequest(replicationRequest)
     )

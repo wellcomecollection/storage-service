@@ -17,7 +17,10 @@ import scala.concurrent.{ExecutionContext, Future}
 // are the same after replication completes.
 
 trait Replicator {
-  implicit val prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation]
+  implicit val prefixTransfer: PrefixTransfer[
+    ObjectLocationPrefix,
+    ObjectLocation
+  ]
   implicit val ec: ExecutionContext
 
   def replicate(request: ReplicationRequest): Future[ReplicationResult] = {

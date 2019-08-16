@@ -25,7 +25,7 @@ sealed trait BagReplicationRequest {
 }
 
 case class PrimaryBagReplicationRequest(request: ReplicationRequest)
-  extends BagReplicationRequest
+    extends BagReplicationRequest
 
 case class SecondaryBagReplicationRequest(request: ReplicationRequest)
-  extends BagReplicationRequest
+    extends BagReplicationRequest

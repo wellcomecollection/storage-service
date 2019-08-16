@@ -19,7 +19,11 @@ import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
+import uk.ac.wellcome.storage.locking.{
+  FailedLockingServiceOp,
+  LockDao,
+  LockingService
+}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
@@ -27,7 +31,11 @@ import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Try}
 
-class BagReplicatorWorker[BagRequest <: BagReplicationRequest, IngestDestination, OutgoingDestination](
+class BagReplicatorWorker[
+  BagRequest <: BagReplicationRequest,
+  IngestDestination,
+  OutgoingDestination
+](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
@@ -46,7 +54,10 @@ class BagReplicatorWorker[BagRequest <: BagReplicationRequest, IngestDestination
   val wd: Decoder[EnrichedBagInformationPayload],
   ec: ExecutionContext,
   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
-) extends IngestStepWorker[EnrichedBagInformationPayload, BagReplicationSummary[_]] {
+) extends IngestStepWorker[
+      EnrichedBagInformationPayload,
+      BagReplicationSummary[_]
+    ] {
   override val visibilityTimeout = 180
 
   val destinationBuilder = new DestinationBuilder(
