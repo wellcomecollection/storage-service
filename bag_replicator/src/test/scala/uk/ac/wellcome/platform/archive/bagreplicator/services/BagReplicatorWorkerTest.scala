@@ -42,12 +42,12 @@ class BagReplicatorWorkerTest
     val outgoing = new MemoryMessageSender()
 
     withLocalS3Bucket { srcBucket =>
-      val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
+      val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
         bucket = srcBucket
       )
 
       val payload = createEnrichedBagInformationPayloadWith(
-        bagRootLocation = srcBagLocation
+        bagRootLocation = srcBagRoot
       )
 
       withLocalS3Bucket { dstBucket =>
@@ -75,11 +75,11 @@ class BagReplicatorWorkerTest
         val result = receivedMessages.head
         result.ingestId shouldBe payload.ingestId
 
-        val dstBagLocation = result.bagRootLocation
+        val dstBagRoot = result.bagRootLocation
 
         verifyObjectsCopied(
-          src = srcBagLocation,
-          dst = dstBagLocation
+          srcPrefix = srcBagRoot.asPrefix,
+          dstPrefix = dstBagRoot.asPrefix
         )
 
         assertTopicReceivesIngestEvents(

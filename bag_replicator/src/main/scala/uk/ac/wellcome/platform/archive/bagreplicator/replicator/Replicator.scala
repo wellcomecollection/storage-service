@@ -20,15 +20,15 @@ trait Replicator {
   implicit val prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation]
   implicit val ec: ExecutionContext
 
-  def replicate(replication: ReplicationRequest): Future[ReplicationResult] = {
+  def replicate(request: ReplicationRequest): Future[ReplicationResult] = {
     val summary = ReplicationSummary(
       startTime = Instant.now,
-      request = replication
+      request = request
     )
 
     prefixTransfer.transferPrefix(
-      srcPrefix = replication.srcPrefix,
-      dstPrefix = replication.dstPrefix
+      srcPrefix = request.srcPrefix,
+      dstPrefix = request.dstPrefix
     ) map {
       case Right(_) =>
         ReplicationSucceeded(summary.complete)

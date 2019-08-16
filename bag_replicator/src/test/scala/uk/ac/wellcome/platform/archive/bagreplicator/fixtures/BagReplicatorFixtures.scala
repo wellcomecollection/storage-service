@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectSummaryListing
@@ -111,15 +111,15 @@ trait BagReplicatorFixtures
   private val listing = new S3ObjectSummaryListing()
 
   def verifyObjectsCopied(
-    src: ObjectLocation,
-    dst: ObjectLocation
+    srcPrefix: ObjectLocationPrefix,
+    dstPrefix: ObjectLocationPrefix
   ): Assertion = {
-    val sourceItems = listing.list(src.asPrefix).right.value
+    val sourceItems = listing.list(srcPrefix).right.value
     val sourceKeyEtags = sourceItems.map {
       _.getETag
     }
 
-    val destinationItems = listing.list(dst.asPrefix).right.value
+    val destinationItems = listing.list(dstPrefix).right.value
     val destinationKeyEtags = destinationItems.map {
       _.getETag
     }
