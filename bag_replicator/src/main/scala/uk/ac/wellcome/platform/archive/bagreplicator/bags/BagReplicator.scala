@@ -1,36 +1,26 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.bags
 
+import java.time.Instant
+
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationRequest, ReplicationSucceeded}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationResult, ReplicationSucceeded}
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
-
-import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
-
-
-
-//package uk.ac.wellcome.platform.archive.bagreplicator.services
-
-import java.time.Instant
-
-import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagreplicator.models._
-
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationRequest, ReplicationResult}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
-import uk.ac.wellcome.storage.transfer.{PrefixTransfer, TransferResult}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
-sealed trait BagReplicator {
-  val replicator: Replicator
-  implicit val streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
+import scala.concurrent.Future
 
-  protected def runBagReplication(
-    bagRequest: BagReplicationRequest): Future[BagReplicationResult] = {
+class BagReplicator[Request <: BagReplicationRequest](
+  replicator: Replicator
+)(
+  implicit
+  streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
+) {
+  def replicateBag(
+    bagRequest: Request): Future[BagReplicationResult[Request]] = {
     val startTime = Instant.now()
     val bagSummary = BagReplicationSummary(
       startTime = startTime,
@@ -105,64 +95,3 @@ sealed trait BagReplicator {
     }
   }
 }
-
-class PrimaryBagReplicator(
-  val replicator: Replicator
-)(
-  implicit
-  val streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
-) extends BagReplicator {
-
-  def replicateBag(bagRequest: PrimaryBagReplicationRequest): Future[BagReplicationResult] =
-    runBagReplication(bagRequest)
-}
-
-
-
-
-
-//  def replicateBag(
-//                 srcPrefix: ObjectLocationPrefix,
-//                 dstPrefix: ObjectLocationPrefix
-//               ): Future[IngestStepResult[ReplicationSummary]] = {
-//    val replicationSummary = Replication(
-//      startTime = Instant.now(),
-//      srcPrefix = srcPrefix,
-//      dstPrefix = dstPrefix
-//    )
-//
-//    val future =
-//      prefixTransfer.transferPrefix(
-//        srcPrefix = srcPrefix,
-//        dstPrefix = dstPrefix
-//      )
-//
-//    future
-//      .map {
-//        case Right(_) =>
-//          IngestStepSucceeded(
-//            replicationSummary.complete
-//          )
-//
-//        case Left(storageError: TransferResult) =>
-//          error("Storage error while replicating", storageError.e)
-//          IngestFailed(
-//            replicationSummary.complete,
-//            storageError.e
-//          )
-//      }
-//      .recover {
-//        case err: Throwable =>
-//          error("Storage error while replicating", err)
-//          IngestFailed(
-//            replicationSummary.complete,
-//            err
-//          )
-//      }
-//  }
-//}
-//
-//class PrimaryBagReplicator()(implicit val prefixTransfer: PrefixTransfer[ObjectLocationPrefix, ObjectLocation],
-//                             implicit val ec: ExecutionContext) extends BagReplicator {
-//
-//}

@@ -1,11 +1,11 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.bags.models
 
-sealed trait BagReplicationResult {
-  val summary: BagReplicationSummary
+sealed trait BagReplicationResult[Request <: BagReplicationRequest] {
+  val summary: BagReplicationSummary[Request]
 }
 
-case class BagReplicationSucceeded(summary: BagReplicationSummary)
-  extends BagReplicationResult
+case class BagReplicationSucceeded[Request <: BagReplicationRequest](summary: BagReplicationSummary[Request])
+  extends BagReplicationResult[Request]
 
-case class BagReplicationFailed(summary: BagReplicationSummary, e: Throwable)
-  extends BagReplicationResult
+case class BagReplicationFailed[Request <: BagReplicationRequest](summary: BagReplicationSummary[Request], e: Throwable)
+  extends BagReplicationResult[Request]
