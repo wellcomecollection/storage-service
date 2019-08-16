@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.bags
 import java.time.Instant
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{BagReplicationFailed, BagReplicationSucceeded, PrimaryBagReplicationRequest}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationRequest, ReplicationResult, ReplicationSummary}
@@ -65,7 +65,7 @@ class BagReplicatorTest
   }
 
   it("wraps an error from the underlying replicator") {
-    val err = new Throwable("BOOM!")
+    val underlyingErr = new Throwable("BOOM!")
 
     val badReplicator: S3Replicator = new S3Replicator() {
       override def replicate(request: ReplicationRequest): Future[ReplicationResult] =
@@ -76,51 +76,37 @@ class BagReplicatorTest
               maybeEndTime = Option(Instant.now),
               request = request
             ),
-            e = err
+            e = underlyingErr
           )
         )
     }
 
-    val bagReplicator = new BagReplicator[PrimaryBagReplicationRequest](badReplicator)
-
-    val request = createRequest
-
-    val future = bagReplicator.replicateBag(request)
-
-    whenReady(future) { result =>
-      result shouldBe a[BagReplicationFailed[_]]
-      result.summary.request shouldBe request
-
-      result.asInstanceOf[BagReplicationFailed[_]].e shouldBe err
+    assertIsFailure(
+      bagReplicator =
+        new BagReplicator[PrimaryBagReplicationRequest](badReplicator)
+    ) {
+      _.e shouldBe underlyingErr
     }
   }
 
   it("catches an exception from the underlying replicator") {
-    val err = new Throwable("BOOM!")
+    val underlyingErr = new Throwable("BOOM!")
 
     val badReplicator: S3Replicator = new S3Replicator() {
       override def replicate(request: ReplicationRequest): Future[ReplicationResult] =
-        Future.failed(err)
+        Future.failed(underlyingErr)
     }
 
-    val bagReplicator = new BagReplicator[PrimaryBagReplicationRequest](badReplicator)
-
-    val request = createRequest
-
-    val future = bagReplicator.replicateBag(request)
-
-    whenReady(future) { result =>
-      result shouldBe a[BagReplicationFailed[_]]
-      result.summary.request shouldBe request
-
-      result.asInstanceOf[BagReplicationFailed[_]].e shouldBe err
+    assertIsFailure(
+      bagReplicator =
+        new BagReplicator[PrimaryBagReplicationRequest](badReplicator)
+    ) {
+      _.e shouldBe underlyingErr
     }
   }
 
   describe("checks the tag manifests match") {
     it("errors if there is no tag manifest") {
-      val bagReplicator = new BagReplicator[PrimaryBagReplicationRequest](replicator)
-
       withLocalS3Bucket { bucket =>
         val (bagRoot, _) = S3BagBuilder.createS3BagWith(bucket)
 
@@ -129,34 +115,22 @@ class BagReplicatorTest
           bagRoot.join("tagmanifest-sha256.txt").path
         )
 
-        val srcPrefix = bagRoot.asPrefix
-
-        val dstPrefix = ObjectLocationPrefix(
-          namespace = bucket.name,
-          path = "dst/"
-        )
-
-        val request = PrimaryBagReplicationRequest(
-          ReplicationRequest(
-            srcPrefix = srcPrefix,
-            dstPrefix = dstPrefix
-          )
-        )
-
-        val future = bagReplicator.replicateBag(request)
-
-        whenReady(future) { result =>
-          result shouldBe a[BagReplicationFailed[_]]
-          result.summary.request shouldBe request
-
-          result.asInstanceOf[BagReplicationFailed[_]].e.getMessage should startWith(
+        assertIsFailure(
+          srcPrefix = bagRoot.asPrefix,
+          dstPrefix = createObjectLocationPrefixWith(bucket.name)
+        ) { err =>
+          err.e.getMessage should startWith(
             "Unable to load tagmanifest-sha256.txt in source and replica to compare")
         }
       }
     }
 
     it("errors if the tag manifests do not match") {
-      implicit val badTransfer = new S3Transfer() {
+      // Create an instance of the bag replicator that writes nonsense
+      // to the tag manifest in the replica bag, so the file in the
+      // original and the replica.
+
+      implicit val badTransfer: S3Transfer = new S3Transfer() {
         override def transfer(src: ObjectLocation, dst: ObjectLocation): Either[TransferFailure, TransferSuccess] =
           if (dst.path.endsWith("/tagmanifest-sha256.txt")) {
             s3Client.putObject(
@@ -170,7 +144,8 @@ class BagReplicatorTest
           }
       }
 
-      implicit val listing = S3ObjectLocationListing()
+      implicit val listing: S3ObjectLocationListing =
+        S3ObjectLocationListing()
 
       val badPrefixTransfer = new S3PrefixTransfer()
 
@@ -178,8 +153,6 @@ class BagReplicatorTest
         override val prefixTransfer: S3PrefixTransfer =
           badPrefixTransfer
       }
-
-      val bagReplicator = new BagReplicator[PrimaryBagReplicationRequest](badReplicator)
 
       withLocalS3Bucket { bucket =>
         val (bagRoot, _) = S3BagBuilder.createS3BagWith(bucket)
@@ -189,38 +162,40 @@ class BagReplicatorTest
           bagRoot.join("tagmanifest-sha256.txt").path
         )
 
-        val srcPrefix = bagRoot.asPrefix
-
-        val dstPrefix = ObjectLocationPrefix(
-          namespace = bucket.name,
-          path = "dst/"
-        )
-
-        val request = PrimaryBagReplicationRequest(
-          ReplicationRequest(
-            srcPrefix = srcPrefix,
-            dstPrefix = dstPrefix
-          )
-        )
-
-        val future = bagReplicator.replicateBag(request)
-
-        whenReady(future) { result =>
-          result shouldBe a[BagReplicationFailed[_]]
-          result.summary.request shouldBe request
-
-          result.asInstanceOf[BagReplicationFailed[_]].e.getMessage should startWith(
+        assertIsFailure(
+          bagReplicator =
+            new BagReplicator[PrimaryBagReplicationRequest](badReplicator),
+          srcPrefix = bagRoot.asPrefix,
+          dstPrefix = createObjectLocationPrefixWith(bucket.name)
+        ) { err =>
+          err.e.getMessage should startWith(
             "Unable to load tagmanifest-sha256.txt in source and replica to compare")
         }
       }
     }
   }
 
-  def createRequest: PrimaryBagReplicationRequest =
-    PrimaryBagReplicationRequest(
+  def assertIsFailure(
+    bagReplicator: BagReplicator[PrimaryBagReplicationRequest] =
+    new BagReplicator[PrimaryBagReplicationRequest](replicator),
+    srcPrefix: ObjectLocationPrefix = createObjectLocationPrefix,
+    dstPrefix: ObjectLocationPrefix = createObjectLocationPrefix
+  )(assert: BagReplicationFailed[_] => Assertion): Assertion = {
+    val request = PrimaryBagReplicationRequest(
       ReplicationRequest(
-        srcPrefix = createObjectLocationPrefix,
-        dstPrefix = createObjectLocationPrefix
+        srcPrefix = srcPrefix,
+        dstPrefix = dstPrefix
       )
     )
+
+    val future = bagReplicator.replicateBag(request)
+
+    whenReady(future) { result =>
+      result shouldBe a[BagReplicationFailed[_]]
+      result.summary.request shouldBe request
+
+      val failure = result.asInstanceOf[BagReplicationFailed[_]]
+      assert(failure)
+    }
+  }
 }
