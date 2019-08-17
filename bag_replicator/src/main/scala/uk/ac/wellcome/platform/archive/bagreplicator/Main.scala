@@ -14,12 +14,15 @@ import uk.ac.wellcome.messaging.typesafe.{
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+  BagReplicationSummary,
+  PrimaryBagReplicationRequest
 }
+import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
+import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
@@ -32,7 +35,6 @@ import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockingService
 }
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -56,9 +58,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3StreamStore: S3StreamStore =
       new S3StreamStore()
 
-    implicit val prefixTransfer: S3PrefixTransfer =
-      S3PrefixTransfer()
-
     implicit val monitoringClient: CloudwatchMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
 
@@ -77,16 +76,24 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val lockingService =
-      new DynamoLockingService[IngestStepResult[ReplicationSummary], Future]()
+      new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Future]()
 
+    val replicator = new S3Replicator()
+
+    // Eventually this will be a config option, and each instance of
+    // the replicator will choose whether it's primary/secondary,
+    // and what sort of bag replicator will be passed in here.
     new BagReplicatorWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
-      bagReplicator = new BagReplicator(),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
       lockingService = lockingService,
       replicatorDestinationConfig = ReplicatorDestinationConfig
-        .buildDestinationConfig(config)
+        .buildDestinationConfig(config),
+      bagReplicator =
+        new BagReplicator[PrimaryBagReplicationRequest](replicator),
+      createBagRequest = (replicationRequest: ReplicationRequest) =>
+        PrimaryBagReplicationRequest(replicationRequest)
     )
   }
 }

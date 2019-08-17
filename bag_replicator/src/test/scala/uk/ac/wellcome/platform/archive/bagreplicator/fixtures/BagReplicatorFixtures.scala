@@ -9,18 +9,21 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
-import uk.ac.wellcome.platform.archive.bagreplicator.services.{
-  BagReplicator,
-  BagReplicatorWorker
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+  BagReplicationSummary,
+  PrimaryBagReplicationRequest
 }
+import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
+import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectSummaryListing
@@ -30,7 +33,6 @@ import uk.ac.wellcome.storage.locking.memory.{
 }
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -45,7 +47,7 @@ trait BagReplicatorFixtures
 
   type ReplicatorLockingService =
     LockingService[IngestStepResult[
-      ReplicationSummary
+      BagReplicationSummary[_]
     ], Future, LockDao[String, UUID]]
 
   def createLockingServiceWith(
@@ -73,7 +75,10 @@ trait BagReplicatorFixtures
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
     stepName: String = randomAlphanumericWithLength()
   )(
-    testWith: TestWith[BagReplicatorWorker[String, String], R]
+    testWith: TestWith[
+      BagReplicatorWorker[PrimaryBagReplicationRequest, String, String],
+      R
+    ]
   ): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
@@ -84,19 +89,23 @@ trait BagReplicatorFixtures
         val replicatorDestinationConfig =
           createReplicatorDestinationConfigWith(bucket)
 
-        implicit val prefixTransfer: S3PrefixTransfer =
-          S3PrefixTransfer()
-
         implicit val s3StreamStore: S3StreamStore =
           new S3StreamStore()
 
+        val replicator = new S3Replicator()
+
+        val bagReplicator =
+          new BagReplicator[PrimaryBagReplicationRequest](replicator)
+
         val service = new BagReplicatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
-          bagReplicator = new BagReplicator(),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher,
           lockingService = lockingService,
-          replicatorDestinationConfig = replicatorDestinationConfig
+          replicatorDestinationConfig = replicatorDestinationConfig,
+          bagReplicator = bagReplicator,
+          createBagRequest = (replicationRequest: ReplicationRequest) =>
+            PrimaryBagReplicationRequest(replicationRequest)
         )
 
         service.run()
@@ -115,15 +124,15 @@ trait BagReplicatorFixtures
   private val listing = new S3ObjectSummaryListing()
 
   def verifyObjectsCopied(
-    src: ObjectLocation,
-    dst: ObjectLocation
+    srcPrefix: ObjectLocationPrefix,
+    dstPrefix: ObjectLocationPrefix
   ): Assertion = {
-    val sourceItems = listing.list(src.asPrefix).right.value
+    val sourceItems = listing.list(srcPrefix).right.value
     val sourceKeyEtags = sourceItems.map {
       _.getETag
     }
 
-    val destinationItems = listing.list(dst.asPrefix).right.value
+    val destinationItems = listing.list(dstPrefix).right.value
     val destinationKeyEtags = destinationItems.map {
       _.getETag
     }

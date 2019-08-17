@@ -11,13 +11,14 @@ import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.models.ReplicationSummary
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.locking.{
   FailedLockingServiceOp,
   LockDao,
@@ -25,20 +26,26 @@ import uk.ac.wellcome.storage.locking.{
 }
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
+import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
-class BagReplicatorWorker[IngestDestination, OutgoingDestination](
+class BagReplicatorWorker[
+  BagRequest <: BagReplicationRequest,
+  IngestDestination,
+  OutgoingDestination
+](
   val config: AlpakkaSQSWorkerConfig,
-  bagReplicator: BagReplicator,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  lockingService: LockingService[IngestStepResult[ReplicationSummary], Future, LockDao[
+  lockingService: LockingService[IngestStepResult[BagReplicationSummary[_]], Future, LockDao[
     String,
     UUID
   ]],
-  replicatorDestinationConfig: ReplicatorDestinationConfig
+  replicatorDestinationConfig: ReplicatorDestinationConfig,
+  bagReplicator: BagReplicator[BagRequest],
+  createBagRequest: ReplicationRequest => BagRequest
 )(
   implicit
   val mc: MonitoringClient,
@@ -47,16 +54,21 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   val wd: Decoder[EnrichedBagInformationPayload],
   ec: ExecutionContext,
   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
-) extends IngestStepWorker[EnrichedBagInformationPayload, ReplicationSummary] {
+) extends IngestStepWorker[
+      EnrichedBagInformationPayload,
+      BagReplicationSummary[_]
+    ] {
   override val visibilityTimeout = 180
 
   val destinationBuilder = new DestinationBuilder(
     namespace = replicatorDestinationConfig.namespace
   )
 
+//  val bagReplicator = new BagReplicator[BagRequest](replicator)
+
   override def process(
     payload: EnrichedBagInformationPayload
-  ): Future[Result[ReplicationSummary]] =
+  ): Future[Result[BagReplicationSummary[_]]] =
     processPayload(payload).map { toResult }
 
   // The base trait assumes that processMessage will always return
@@ -64,12 +76,12 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   // above and expect that this will never be used.
   override def processMessage(
     payload: EnrichedBagInformationPayload
-  ): Try[IngestStepResult[ReplicationSummary]] =
+  ): Try[IngestStepResult[BagReplicationSummary[_]]] =
     Failure(new Throwable("This should never be called!"))
 
   def processPayload(
     payload: EnrichedBagInformationPayload
-  ): Future[IngestStepResult[ReplicationSummary]] =
+  ): Future[IngestStepResult[BagReplicationSummary[_]]] =
     for {
       _ <- Future.fromTry {
         ingestUpdater.start(payload.ingestId)
@@ -83,39 +95,18 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
         version = payload.version
       )
 
-      result <- lockingService
-        .withLock(payload.ingestId.toString) {
-          replicate(payload, dstPrefix)
-        }
-        .map(lockFailed(srcPrefix, dstPrefix).apply(_))
-
-    } yield result
-
-  def replicate(
-    payload: EnrichedBagInformationPayload,
-    dstPrefix: ObjectLocationPrefix
-  ): Future[IngestStepResult[ReplicationSummary]] = {
-    val srcPrefix = payload.bagRootLocation.asPrefix
-
-    for {
-      ingestStep: IngestStepResult[ReplicationSummary] <- bagReplicator
-        .replicate(
+      bagRequest = createBagRequest(
+        ReplicationRequest(
           srcPrefix = srcPrefix,
           dstPrefix = dstPrefix
         )
+      )
 
-      result <- Future.fromTry {
-        checkTagManifestsAreTheSame(srcPrefix, dstPrefix) match {
-          case Success(_) => Success(ingestStep)
-          case Failure(err) =>
-            Success(
-              IngestFailed(
-                summary = ingestStep.summary,
-                e = err
-              )
-            )
+      result <- lockingService
+        .withLock(payload.ingestId.toString) {
+          replicate(payload, bagRequest)
         }
-      }
+        .map(lockFailed(bagRequest).apply(_))
 
       _ <- Future.fromTry {
         ingestUpdater.send(payload.ingestId, result)
@@ -125,11 +116,26 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
         outgoingPublisher.sendIfSuccessful(
           result,
           payload.copy(
-            bagRootLocation = result.summary.dstPrefix.asLocation()
+            bagRootLocation = dstPrefix.asLocation()
           )
         )
       }
     } yield result
+
+  def replicate(
+    payload: EnrichedBagInformationPayload,
+    bagReplicationRequest: BagRequest
+  ): Future[IngestStepResult[BagReplicationSummary[_]]] = {
+    val future: Future[BagReplicationResult[_]] =
+      bagReplicator.replicateBag(bagReplicationRequest)
+
+    future.map {
+      case BagReplicationSucceeded(summary) =>
+        IngestStepSucceeded(summary)
+
+      case BagReplicationFailed(summary, e) =>
+        IngestFailed(summary, e)
+    }
   }
 
   /** This step is here to check the bag created by the replica and the
@@ -173,19 +179,17 @@ class BagReplicatorWorker[IngestDestination, OutgoingDestination](
   }
 
   def lockFailed(
-    srcPrefix: ObjectLocationPrefix,
-    dstPrefix: ObjectLocationPrefix
+    request: BagReplicationRequest
   ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
-    ReplicationSummary
-  ]], IngestStepResult[ReplicationSummary]] = {
+    BagReplicationSummary[_]
+  ]], IngestStepResult[BagReplicationSummary[_]]] = {
     case Right(result) => result
     case Left(failedLockingServiceOp) =>
       warn(s"Unable to lock successfully: $failedLockingServiceOp")
       IngestShouldRetry(
-        ReplicationSummary(
-          srcPrefix = srcPrefix,
-          dstPrefix = dstPrefix,
-          startTime = Instant.now
+        BagReplicationSummary(
+          startTime = Instant.now,
+          request = request
         ),
         new Throwable(
           s"Unable to lock successfully: $failedLockingServiceOp"
