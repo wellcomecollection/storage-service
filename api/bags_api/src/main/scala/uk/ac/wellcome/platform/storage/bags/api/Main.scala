@@ -7,7 +7,10 @@ import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders._
-import uk.ac.wellcome.platform.archive.common.http.{HttpMetrics, WellcomeHttpApp}
+import uk.ac.wellcome.platform.archive.common.http.{
+  HttpMetrics,
+  WellcomeHttpApp
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -16,7 +19,6 @@ import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
-
     implicit val asMain: ActorSystem =
       AkkaBuilder.buildActorSystem()
 
@@ -42,8 +44,7 @@ object Main extends WellcomeTypesafeApp {
         name = "BagsApi",
         metrics = MetricsBuilder.buildMetricsSender(config)
       ),
-      httpServerConfig =
-        HTTPServerBuilder.buildHTTPServerConfig(config),
+      httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
       contextURL = contextURLMain
     )
   }

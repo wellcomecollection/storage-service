@@ -8,11 +8,25 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  BagVersion,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.storage.bags.api.models.{DisplayResultList, ResponseDisplayBag, ResultListEntry}
+import uk.ac.wellcome.platform.storage.bags.api.models.{
+  DisplayResultList,
+  ResponseDisplayBag,
+  ResultListEntry
+}
 import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
 
 import scala.concurrent.ExecutionContext
@@ -34,7 +48,6 @@ trait Routes extends Logging {
 
   val bags: Route = pathPrefix("bags") {
     path(Segment / Segment) { (space, externalIdentifier) =>
-
       val bagId = BagId(
         space = StorageSpace(space),
         externalIdentifier = ExternalIdentifier(externalIdentifier)
@@ -96,9 +109,9 @@ trait Routes extends Logging {
       )
 
       def buildResultsList(
-                            matchingManifests: Either[ReadError, Seq[StorageManifest]],
-                            notFoundMessage: String
-                          ) =
+        matchingManifests: Either[ReadError, Seq[StorageManifest]],
+        notFoundMessage: String
+      ) =
         matchingManifests match {
           case Right(Nil) =>
             complete(
@@ -166,8 +179,8 @@ trait Routes extends Logging {
   private val versionRegex: Regex = new Regex("^v(\\d+)$", "version")
 
   private def parseVersion(
-                            queryParam: Option[String]
-                          ): Try[Option[BagVersion]] =
+    queryParam: Option[String]
+  ): Try[Option[BagVersion]] =
     queryParam match {
       case Some(versionString) =>
         versionRegex.findFirstMatchIn(versionString) match {

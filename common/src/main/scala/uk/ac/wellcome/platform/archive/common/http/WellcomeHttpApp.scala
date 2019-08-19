@@ -14,7 +14,10 @@ import akka.util.ByteString
 import grizzled.slf4j.Logging
 import io.circe.CursorOp
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,10 +29,11 @@ class WellcomeHttpApp(
   contextURL: URL
 )(
   implicit val
-    as: ActorSystem,
-    mt: ActorMaterializer,
-    ec: ExecutionContext
-) extends Runnable with Logging {
+  as: ActorSystem,
+  mt: ActorMaterializer,
+  ec: ExecutionContext
+) extends Runnable
+    with Logging {
 
   import akka.http.scaladsl.server.Directives._
   import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
