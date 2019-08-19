@@ -69,7 +69,7 @@ class StorageManifestServiceTest
 
     storageManifest.location shouldBe PrimaryStorageLocation(
       provider = InfrequentAccessStorageProvider,
-      location = bagRoot.asPrefix
+      prefix = bagRoot.asPrefix
     )
 
     storageManifest.replicaLocations shouldBe empty
