@@ -1,10 +1,9 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.models
+package uk.ac.wellcome.platform.archive.common.storage.models
 
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
 import uk.ac.wellcome.storage.ObjectLocation
 
-// replaces StorageLocation
-sealed trait BetterStorageLocation {
+sealed trait StorageLocation {
   val provider: StorageProvider
   val location: ObjectLocation
 }
@@ -12,9 +11,9 @@ sealed trait BetterStorageLocation {
 case class PrimaryStorageLocation(
   provider: StorageProvider,
   location: ObjectLocation
-) extends BetterStorageLocation
+) extends StorageLocation
 
 case class SecondaryStorageLocation(
   provider: StorageProvider,
   location: ObjectLocation
-) extends BetterStorageLocation
+) extends StorageLocation

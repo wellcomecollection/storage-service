@@ -7,7 +7,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   BagVersion
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
 import uk.ac.wellcome.platform.archive.common.verify.{
   ChecksumValue,
   HashingAlgorithm
@@ -31,7 +30,8 @@ case class StorageManifest(
   version: BagVersion,
   manifest: FileManifest,
   tagManifest: FileManifest,
-  locations: Seq[StorageLocation],
+  location: StorageLocation,
+  replicaLocations: Seq[StorageLocation],
   createdDate: Instant
 ) {
   val id = BagId(space, info.externalIdentifier)

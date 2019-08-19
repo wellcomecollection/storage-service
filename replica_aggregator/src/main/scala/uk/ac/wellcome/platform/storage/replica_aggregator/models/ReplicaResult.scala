@@ -7,10 +7,14 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   IngestID
 }
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  StorageLocation
+}
 
 case class ReplicaResult(
   ingestId: IngestID,
-  storageLocation: BetterStorageLocation,
+  storageLocation: StorageLocation,
   timestamp: Instant
 )
 

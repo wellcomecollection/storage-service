@@ -31,13 +31,7 @@ class BagsApiFeatureTest
 
   describe("GET /bags/:space/:id") {
     it("finds the latest version of a bag") {
-      val storageManifest = createStorageManifestWith(
-        locations = List(
-          createObjectLocation,
-          createObjectLocation,
-          createObjectLocation
-        )
-      )
+      val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>
@@ -53,8 +47,9 @@ class BagsApiFeatureTest
               |  "info": ${bagInfo(storageManifest.info)},
               |  "manifest": ${manifest(storageManifest.manifest)},
               |  "tagManifest": ${manifest(storageManifest.tagManifest)},
-              |  "locations": [
-              |    ${asList(storageManifest.locations, location)}
+              |  "location": ${location(storageManifest.location)},
+              |  "replicaLocations": [
+              |    ${asList(storageManifest.replicaLocations, location)}
               |  ],
               |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
                  storageManifest.createdDate
@@ -111,8 +106,9 @@ class BagsApiFeatureTest
                 |  "info": ${bagInfo(storageManifest.info)},
                 |  "manifest": ${manifest(storageManifest.manifest)},
                 |  "tagManifest": ${manifest(storageManifest.tagManifest)},
-                |  "locations": [
-                |    ${asList(storageManifest.locations, location)}
+                |  "location": ${location(storageManifest.location)},
+                |  "replicaLocations": [
+                |    ${asList(storageManifest.replicaLocations, location)}
                 |  ],
                 |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
                    storageManifest.createdDate
@@ -291,13 +287,7 @@ class BagsApiFeatureTest
     }
 
     it("finds a single version of a storage manifest") {
-      val storageManifest = createStorageManifestWith(
-        locations = List(
-          createObjectLocation,
-          createObjectLocation,
-          createObjectLocation
-        )
-      )
+      val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>

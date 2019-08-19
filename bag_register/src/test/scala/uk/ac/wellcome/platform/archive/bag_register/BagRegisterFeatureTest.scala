@@ -8,6 +8,8 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
+import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
@@ -43,12 +45,12 @@ class BagRegisterFeatureTest
             version,
             dataFileCount = dataFileCount
           ) {
-            case (bagRootLocation, bagInfo) =>
+            case (bagRoot, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space
                 ),
-                bagRootLocation = bagRootLocation,
+                bagRootLocation = bagRoot,
                 version = version
               )
 
@@ -62,7 +64,14 @@ class BagRegisterFeatureTest
                 storageManifest.info shouldBe bagInfo
                 storageManifest.manifest.files should have size dataFileCount
 
-                storageManifest.locations should have size 1
+                storageManifest.location shouldBe PrimaryStorageLocation(
+                  provider = InfrequentAccessStorageProvider,
+                  location = bagRoot.copy(
+                    path = bagRoot.path.stripSuffix(s"/$version")
+                  )
+                )
+
+                storageManifest.replicaLocations shouldBe empty
 
                 storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 

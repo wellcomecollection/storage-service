@@ -3,18 +3,9 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  StandardStorageProvider,
-  StorageLocation
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  FileManifest,
-  StorageManifest,
-  StorageManifestFile,
-  StorageSpace
-}
-import uk.ac.wellcome.platform.archive.common.verify.SHA256
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.platform.archive.common.ingests.models.StandardStorageProvider
+import uk.ac.wellcome.platform.archive.common.storage.models._
+import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 import scala.util.Random
@@ -25,7 +16,7 @@ trait StorageManifestGenerators
     with StorageSpaceGenerators
     with ObjectLocationGenerators {
 
-  val checksumAlgorithm = SHA256
+  val checksumAlgorithm: HashingAlgorithm = SHA256
 
   private def createStorageManifestFile: StorageManifestFile = {
     val bagFile = createBagFile
@@ -40,8 +31,7 @@ trait StorageManifestGenerators
   def createStorageManifestWith(
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
-    version: BagVersion = BagVersion(Random.nextInt),
-    locations: List[ObjectLocation] = List(createObjectLocation)
+    version: BagVersion = BagVersion(Random.nextInt)
   ): StorageManifest =
     StorageManifest(
       space = space,
@@ -63,7 +53,17 @@ trait StorageManifestGenerators
           createStorageManifestFile
         )
       ),
-      locations = locations.map { StorageLocation(StandardStorageProvider, _) },
+      location = PrimaryStorageLocation(
+        provider = StandardStorageProvider,
+        location = createObjectLocation
+      ),
+      replicaLocations = (1 to randomInt(0, 5))
+        .map { _ =>
+          SecondaryStorageLocation(
+            provider = StandardStorageProvider,
+            location = createObjectLocation
+          )
+        },
       createdDate = Instant.now
     )
 
