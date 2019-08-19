@@ -35,7 +35,6 @@ class ReplicaAggregatorTest
     )
   ): ReplicaResult =
     ReplicaResult(
-      ingestId = createIngestID,
       storageLocation = storageLocation,
       timestamp = Instant.now
     )
