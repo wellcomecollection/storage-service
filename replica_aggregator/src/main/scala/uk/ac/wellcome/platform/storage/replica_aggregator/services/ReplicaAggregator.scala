@@ -5,12 +5,11 @@ import java.time.Instant
 import uk.ac.wellcome.platform.archive.common.storage.models.SecondaryStorageLocation
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.store.VersionedStore
-import uk.ac.wellcome.storage.{Identified, Version}
 
 import scala.util.Try
 
 class ReplicaAggregator(
-  versionedStore: VersionedStore[ReplicaPath, Int, List[ReplicaResult]]
+  versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord]
 ) {
   def aggregate(result: ReplicaResult): Try[ReplicationAggregationSummary] =
     Try {
@@ -35,20 +34,38 @@ class ReplicaAggregator(
       }
 
       val startTime = Instant.now()
-      val replicaPath = ReplicaPath(result.storageLocation.prefix.path)
 
-      versionedStore.upsert(replicaPath)(List(result)) { existing =>
-        (existing.toSet ++ Set(result)).toList
+      val replicaPath =
+        ReplicaPath(result.storageLocation.prefix.path)
+
+      val initialRecord =
+        AggregatorInternalRecord(result.storageLocation)
+
+      versionedStore.upsert(replicaPath)(initialRecord) { existingRecord =>
+        // TODO: This .get is caused by poor handling of error states in the storage library.
+        // See: https://github.com/wellcometrust/platform/issues/3840
+
+        existingRecord.addLocation(result.storageLocation).get
       } match {
         // Only a single result is enough for now.
-        case Right(
-            upsertResult: Identified[Version[ReplicaPath, Int], List[
-              ReplicaResult
-            ]]
-            ) =>
+        case Right(upsertResult) =>
+
+          // TODO: Remove
+          val aggregatorRecord = upsertResult.identifiedT
+          val results =
+            (Seq(aggregatorRecord.location).flatten ++ aggregatorRecord.replicas)
+              .map { loc =>
+                ReplicaResult(
+                  ingestId = result.ingestId,
+                  storageLocation = loc,
+                  timestamp = result.timestamp
+                )
+              }
+              .toList
+
           val replicationSet = ReplicationSet(
             path = replicaPath,
-            results = upsertResult.identifiedT
+            results = results
           )
 
           ReplicationAggregationComplete(

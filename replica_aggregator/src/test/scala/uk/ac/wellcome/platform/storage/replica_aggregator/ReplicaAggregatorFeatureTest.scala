@@ -1,9 +1,7 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator
 
-import java.time.Instant
-
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{EitherValues, FunSpec, Inside, Matchers}
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
@@ -12,10 +10,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
-  ReplicaPath,
-  ReplicaResult
-}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{AggregatorInternalRecord, ReplicaPath}
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
@@ -27,7 +22,6 @@ class ReplicaAggregatorFeatureTest
     with PayloadGenerators
     with Eventually
     with EitherValues
-    with Inside
     with IntegrationPatience {
 
   it("completes after a single primary replica") {
@@ -37,7 +31,7 @@ class ReplicaAggregatorFeatureTest
 
       val payload = createEnrichedBagInformationPayload
       val versionedStore =
-        MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](Map.empty)
+        MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](Map.empty)
 
       withReplicaAggregatorWorker(
         queue = queue,
@@ -63,24 +57,12 @@ class ReplicaAggregatorFeatureTest
           val stored =
             versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
 
-          stored.identifiedT.length shouldBe 1
+          stored.identifiedT.location shouldBe Some(PrimaryStorageLocation(
+            provider = InfrequentAccessStorageProvider,
+            prefix = payload.bagRootLocation.asPrefix
+          ))
 
-          val replicaResult = stored.identifiedT.head
-
-          inside(replicaResult) {
-            case ReplicaResult(
-                ingestId,
-                PrimaryStorageLocation(
-                  storageProvider,
-                  prefix
-                ),
-                timestamp
-                ) =>
-              ingestId shouldBe payload.ingestId
-              storageProvider shouldBe InfrequentAccessStorageProvider
-              prefix shouldBe payload.bagRootLocation.asPrefix
-              timestamp shouldBe a[Instant]
-          }
+          stored.identifiedT.replicas shouldBe empty
 
           outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
             payload

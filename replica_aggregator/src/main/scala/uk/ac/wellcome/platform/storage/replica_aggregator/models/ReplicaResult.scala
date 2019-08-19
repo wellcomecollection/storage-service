@@ -3,14 +3,9 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.models
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  IngestID
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, IngestID}
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageLocation}
+
 
 case class ReplicaResult(
   ingestId: IngestID,
@@ -29,3 +24,11 @@ case object ReplicaResult {
       timestamp = Instant.now()
     )
 }
+
+
+
+// TODO: This needs moving somewhere!
+case class KnownReplicas(
+                          location: PrimaryStorageLocation,
+                          replicas: List[SecondaryStorageLocation]
+                        )
