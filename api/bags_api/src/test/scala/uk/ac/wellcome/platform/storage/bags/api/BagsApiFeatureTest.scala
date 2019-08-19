@@ -31,13 +31,7 @@ class BagsApiFeatureTest
 
   describe("GET /bags/:space/:id") {
     it("finds the latest version of a bag") {
-      val storageManifest = createStorageManifestWith(
-        locations = List(
-          createObjectLocation,
-          createObjectLocation,
-          createObjectLocation
-        )
-      )
+      val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>
@@ -293,13 +287,7 @@ class BagsApiFeatureTest
     }
 
     it("finds a single version of a storage manifest") {
-      val storageManifest = createStorageManifestWith(
-        locations = List(
-          createObjectLocation,
-          createObjectLocation,
-          createObjectLocation
-        )
-      )
+      val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>

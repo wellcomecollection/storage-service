@@ -29,12 +29,10 @@ trait StorageManifestGenerators
     )
   }
 
-  // TODO: Change the interface of this method.
   def createStorageManifestWith(
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
-    version: BagVersion = BagVersion(Random.nextInt),
-    locations: List[ObjectLocation] = List(createObjectLocation)
+    version: BagVersion = BagVersion(Random.nextInt)
   ): StorageManifest =
     StorageManifest(
       space = space,
@@ -58,11 +56,17 @@ trait StorageManifestGenerators
       ),
       location = PrimaryStorageLocation(
         provider = StandardStorageProvider,
-        location = locations.head
+        location = createObjectLocation
       ),
-      replicaLocations = locations.tail.map {
-        SecondaryStorageLocation(StandardStorageProvider, _)
-      },
+      replicaLocations =
+        (1 to randomInt(0, 5))
+          .map { _ =>
+            SecondaryStorageLocation(
+              provider = StandardStorageProvider,
+              location = createObjectLocation
+            )
+          }
+      ,
       createdDate = Instant.now
     )
 
