@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.archive.display.fixtures
 import java.time.format.DateTimeFormatter
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
 import uk.ac.wellcome.platform.archive.common.storage.models.{
+  BetterStorageLocation,
   FileManifest,
   StorageManifestFile
 }
@@ -47,7 +47,7 @@ trait DisplayJsonHelpers {
        |}
      """.stripMargin
 
-  def location(loc: StorageLocation): String =
+  def location(loc: BetterStorageLocation): String =
     s"""
        |{
        |  "provider": {

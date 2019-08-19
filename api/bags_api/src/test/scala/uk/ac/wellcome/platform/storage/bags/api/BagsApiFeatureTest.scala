@@ -53,8 +53,9 @@ class BagsApiFeatureTest
               |  "info": ${bagInfo(storageManifest.info)},
               |  "manifest": ${manifest(storageManifest.manifest)},
               |  "tagManifest": ${manifest(storageManifest.tagManifest)},
-              |  "locations": [
-              |    ${asList(storageManifest.locations, location)}
+              |  "location": ${location(storageManifest.location)},
+              |  "replicaLocations": [
+              |    ${asList(storageManifest.replicaLocations, location)}
               |  ],
               |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
                  storageManifest.createdDate
@@ -111,8 +112,9 @@ class BagsApiFeatureTest
                 |  "info": ${bagInfo(storageManifest.info)},
                 |  "manifest": ${manifest(storageManifest.manifest)},
                 |  "tagManifest": ${manifest(storageManifest.tagManifest)},
-                |  "locations": [
-                |    ${asList(storageManifest.locations, location)}
+                |  "location": ${location(storageManifest.location)},
+                |  "replicaLocations": [
+                |    ${asList(storageManifest.replicaLocations, location)}
                 |  ],
                 |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
                    storageManifest.createdDate
