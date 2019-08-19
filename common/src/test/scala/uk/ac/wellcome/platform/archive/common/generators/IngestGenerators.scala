@@ -3,26 +3,21 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.net.URI
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Status
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 import scala.util.Random
 
-trait IngestGenerators extends BagIdGenerators {
+trait IngestGenerators extends BagIdGenerators with ObjectLocationGenerators {
 
-  val storageLocation = StorageLocation(
-    StandardStorageProvider,
-    ObjectLocation(
-      randomAlphanumericWithLength(),
-      randomAlphanumericWithLength()
+  def createSourceLocation: SourceLocation =
+    SourceLocation(
+      provider = StandardStorageProvider,
+      location = createObjectLocation
     )
-  )
 
   def createIngest: Ingest = createIngestWith()
 
@@ -39,7 +34,7 @@ trait IngestGenerators extends BagIdGenerators {
   def createIngestWith(
     id: IngestID = createIngestID,
     ingestType: IngestType = CreateIngestType,
-    sourceLocation: StorageLocation = storageLocation,
+    sourceLocation: SourceLocation = createSourceLocation,
     callback: Option[Callback] = Some(createCallback()),
     space: StorageSpace = createStorageSpace,
     status: Status = Ingest.Accepted,

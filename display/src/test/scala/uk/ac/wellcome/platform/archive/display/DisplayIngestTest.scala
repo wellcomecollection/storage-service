@@ -38,7 +38,7 @@ class DisplayIngestTest
       val ingest: Ingest = Ingest(
         id = id,
         ingestType = CreateIngestType,
-        sourceLocation = StorageLocation(
+        sourceLocation = SourceLocation(
           provider = StandardStorageProvider,
           location = ObjectLocation("bukkit", "key.txt")
         ),
@@ -140,9 +140,9 @@ class DisplayIngestTest
       val ingest = ingestCreateRequest.toIngest
 
       ingest.id shouldBe a[IngestID]
-      ingest.sourceLocation shouldBe StorageLocation(
-        InfrequentAccessStorageProvider,
-        ObjectLocation(bucket, path)
+      ingest.sourceLocation shouldBe SourceLocation(
+        provider = InfrequentAccessStorageProvider,
+        location = ObjectLocation(bucket, path)
       )
       ingest.callback shouldBe Some(
         Callback(URI.create(ingestCreateRequest.callback.get.url))

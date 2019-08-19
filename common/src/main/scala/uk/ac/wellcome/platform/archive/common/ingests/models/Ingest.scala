@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 case class Ingest(
   id: IngestID,
   ingestType: IngestType,
-  sourceLocation: StorageLocation,
+  sourceLocation: SourceLocation,
   space: StorageSpace,
   callback: Option[Callback],
   status: Ingest.Status,

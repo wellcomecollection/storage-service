@@ -28,7 +28,7 @@ class SourceLocationPayloadTest
     val ingest = Ingest(
       id = ingestId,
       ingestType = ingestType,
-      sourceLocation = StorageLocation(
+      sourceLocation = SourceLocation(
         provider = StandardStorageProvider,
         location = sourceLocation
       ),

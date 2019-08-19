@@ -22,7 +22,7 @@ case class RequestDisplayIngest(
     Ingest(
       id = IngestID.random,
       ingestType = IngestType.create(ingestType.id),
-      sourceLocation = sourceLocation.toStorageLocation,
+      sourceLocation = sourceLocation.toSourceLocation,
       callback = Callback(
         callback.map(displayCallback => URI.create(displayCallback.url))
       ),
