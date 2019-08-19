@@ -4,8 +4,8 @@ import java.time.format.DateTimeFormatter
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageLocation,
   FileManifest,
+  StorageLocation,
   StorageManifestFile
 }
 
