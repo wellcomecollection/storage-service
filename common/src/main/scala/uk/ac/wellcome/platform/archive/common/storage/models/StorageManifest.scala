@@ -30,8 +30,8 @@ case class StorageManifest(
   version: BagVersion,
   manifest: FileManifest,
   tagManifest: FileManifest,
-  location: BetterStorageLocation,
-  replicaLocations: Seq[BetterStorageLocation],
+  location: StorageLocation,
+  replicaLocations: Seq[StorageLocation],
   createdDate: Instant
 ) {
   val id = BagId(space, info.externalIdentifier)

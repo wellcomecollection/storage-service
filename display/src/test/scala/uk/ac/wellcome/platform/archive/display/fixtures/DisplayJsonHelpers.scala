@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.storage.models.{
-  BetterStorageLocation,
+  StorageLocation,
   FileManifest,
   StorageManifestFile
 }
@@ -47,7 +47,7 @@ trait DisplayJsonHelpers {
        |}
      """.stripMargin
 
-  def location(loc: BetterStorageLocation): String =
+  def location(loc: StorageLocation): String =
     s"""
        |{
        |  "provider": {

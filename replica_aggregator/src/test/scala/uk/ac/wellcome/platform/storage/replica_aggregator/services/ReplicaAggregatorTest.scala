@@ -7,7 +7,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
-  BetterStorageLocation,
+  StorageLocation,
   PrimaryStorageLocation,
   SecondaryStorageLocation
 }
@@ -29,7 +29,7 @@ class ReplicaAggregatorTest
     with StorageRandomThings {
 
   def createReplicaResultWith(
-    storageLocation: BetterStorageLocation = PrimaryStorageLocation(
+    storageLocation: StorageLocation = PrimaryStorageLocation(
       provider = InfrequentAccessStorageProvider,
       location = createObjectLocation
     )

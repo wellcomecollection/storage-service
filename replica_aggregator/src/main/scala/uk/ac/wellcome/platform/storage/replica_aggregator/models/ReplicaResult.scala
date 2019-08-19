@@ -8,13 +8,13 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestID
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
-  BetterStorageLocation,
+  StorageLocation,
   PrimaryStorageLocation
 }
 
 case class ReplicaResult(
   ingestId: IngestID,
-  storageLocation: BetterStorageLocation,
+  storageLocation: StorageLocation,
   timestamp: Instant
 )
 
