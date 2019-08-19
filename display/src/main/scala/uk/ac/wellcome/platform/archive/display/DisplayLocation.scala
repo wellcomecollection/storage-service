@@ -29,7 +29,7 @@ object DisplayLocation {
   def apply(location: StorageLocation): DisplayLocation =
     DisplayLocation(
       provider = DisplayProvider(location.provider),
-      bucket = location.location.namespace,
-      path = location.location.path
+      bucket = location.prefix.namespace,
+      path = location.prefix.path
     )
 }

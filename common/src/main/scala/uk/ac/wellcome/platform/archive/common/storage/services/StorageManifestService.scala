@@ -67,7 +67,7 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
         ),
         location = PrimaryStorageLocation(
           provider = InfrequentAccessStorageProvider,
-          location = bagRoot.asLocation()
+          prefix = bagRoot
         ),
         replicaLocations = Seq.empty,
         createdDate = Instant.now

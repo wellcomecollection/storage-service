@@ -35,7 +35,7 @@ class ReplicaAggregator(
       }
 
       val startTime = Instant.now()
-      val replicaPath = ReplicaPath(result.storageLocation.location.path)
+      val replicaPath = ReplicaPath(result.storageLocation.prefix.path)
 
       versionedStore.upsert(replicaPath)(List(result)) { existing =>
         (existing.toSet ++ Set(result)).toList
