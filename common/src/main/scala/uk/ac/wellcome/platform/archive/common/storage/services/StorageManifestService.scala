@@ -11,10 +11,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   MatchedLocation
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 

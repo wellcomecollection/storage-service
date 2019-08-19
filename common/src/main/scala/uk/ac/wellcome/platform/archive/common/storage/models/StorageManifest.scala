@@ -7,7 +7,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   BagVersion
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.StorageLocation
 import uk.ac.wellcome.platform.archive.common.verify.{
   ChecksumValue,
   HashingAlgorithm
@@ -36,15 +35,4 @@ case class StorageManifest(
   createdDate: Instant
 ) {
   val id = BagId(space, info.externalIdentifier)
-
-  // TODO: Remove this converter when we modify the bags API and notifier
-  // to send the correct format.
-  private def toOldLocation(location: BetterStorageLocation): StorageLocation =
-    StorageLocation(
-      provider = location.provider,
-      location = location.location
-    )
-
-  def locations: Seq[StorageLocation] =
-    (Seq(location) ++ replicaLocations).map { toOldLocation }
 }

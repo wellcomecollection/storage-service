@@ -15,11 +15,9 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
   StorageManifest,
   StorageSpace
 }
@@ -69,12 +67,12 @@ class StorageManifestServiceTest
       version = version
     )
 
-    storageManifest.locations shouldBe Seq(
-      StorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        location = bagRoot
-      )
+    storageManifest.location shouldBe PrimaryStorageLocation(
+      provider = InfrequentAccessStorageProvider,
+      location = bagRoot
     )
+
+    storageManifest.replicaLocations shouldBe empty
   }
 
   describe("constructs the paths correctly") {
