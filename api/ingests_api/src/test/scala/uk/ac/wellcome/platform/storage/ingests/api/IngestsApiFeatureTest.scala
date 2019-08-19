@@ -34,7 +34,8 @@ class IngestsApiFeatureTest
     with JsonAssertions
     with StorageRandomThings {
 
-  val contextUrl = "http://api.wellcomecollection.org/storage/v1/context.json"
+  val contextUrlTest =
+    "http://api.wellcomecollection.org/storage/v1/context.json"
   describe("GET /ingests/:id") {
     it("returns a ingest tracker when available") {
       val ingest = createIngestWith(
@@ -217,7 +218,7 @@ class IngestsApiFeatureTest
               }
 
             whenReady(ingestFuture) { actualIngest =>
-              actualIngest.context shouldBe contextUrl
+              actualIngest.context shouldBe contextUrlTest
               actualIngest.id shouldBe id
               actualIngest.sourceLocation shouldBe DisplayLocation(
                 provider = StandardDisplayProvider,

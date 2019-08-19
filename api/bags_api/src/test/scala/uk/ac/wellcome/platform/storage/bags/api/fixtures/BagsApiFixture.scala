@@ -12,18 +12,22 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   StorageManifestVHSFixture,
   StorageRandomThings
 }
-import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
+import uk.ac.wellcome.platform.archive.common.http.{
+  HttpMetrics,
+  WellcomeHttpApp
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   EmptyMetadata,
   StorageManifestDao
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagsApiFixture
@@ -35,14 +39,14 @@ trait BagsApiFixture
 
   val metricsName = "BagsApiFixture"
 
-  val contextURL = new URL(
+  val contextURLTest = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json"
   )
 
   private def withApp[R](
     metrics: MemoryMetrics[Unit],
-    storageManifestDao: StorageManifestDao
-  )(testWith: TestWith[BagsApi, R]): R =
+    storageManifestDaoTest: StorageManifestDao
+  )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
         val httpMetrics = new HttpMetrics(
@@ -50,16 +54,23 @@ trait BagsApiFixture
           metrics = metrics
         )
 
-        val bagsApi = new BagsApi(
-          storageManifestDao = storageManifestDao,
+        val router: BagsApi = new BagsApi {
+          override implicit val ec: ExecutionContext = global
+          override val contextURL: URL = contextURLTest
+          override val storageManifestDao: StorageManifestDao =
+            storageManifestDaoTest
+        }
+
+        val app = new WellcomeHttpApp(
+          routes = router.bags,
           httpMetrics = httpMetrics,
-          httpServerConfig = httpServerConfig,
-          contextURL = contextURL
+          httpServerConfig = httpServerConfigTest,
+          contextURL = contextURLTest
         )
 
-        bagsApi.run()
+        app.run()
 
-        testWith(bagsApi)
+        testWith(app)
       }
     }
 
@@ -75,7 +86,7 @@ trait BagsApiFixture
     val metrics = new MemoryMetrics[Unit]()
 
     withApp(metrics, dao) { _ =>
-      testWith((dao, metrics, httpServerConfig.externalBaseURL))
+      testWith((dao, metrics, httpServerConfigTest.externalBaseURL))
     }
   }
 
@@ -110,7 +121,7 @@ trait BagsApiFixture
     val metrics = new MemoryMetrics[Unit]()
 
     withApp(metrics, brokenDao) { _ =>
-      testWith((metrics, httpServerConfig.externalBaseURL))
+      testWith((metrics, httpServerConfigTest.externalBaseURL))
     }
   }
 }

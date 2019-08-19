@@ -94,7 +94,7 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
       externalBaseURL = "http://localhost:1234"
     )
 
-  val httpServerConfig: HTTPServerConfig = createHTTPServerConfig
+  val httpServerConfigTest: HTTPServerConfig = createHTTPServerConfig
 
   val metricsName: String
 
@@ -106,7 +106,7 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
       s"${metricsName}_HttpResponse_$result"
     )
 
-  val contextURL: URL
+  val contextURLTest: URL
 
   def assertIsUserErrorResponse(
     response: HttpResponse,
@@ -122,7 +122,7 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
 
       whenReady(ingestFuture) { actualError =>
         actualError shouldBe UserErrorResponse(
-          context = contextURL.toString,
+          context = contextURLTest.toString,
           httpStatus = statusCode.intValue,
           description = description,
           label = label
@@ -140,7 +140,7 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
 
       whenReady(ingestFuture) { actualError =>
         actualError shouldBe InternalServerErrorResponse(
-          context = contextURL.toString,
+          context = contextURLTest.toString,
           httpStatus = StatusCodes.InternalServerError.intValue,
           label = StatusCodes.InternalServerError.reason
         )

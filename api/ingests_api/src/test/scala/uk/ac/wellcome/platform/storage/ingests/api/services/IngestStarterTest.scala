@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests.api
+package uk.ac.wellcome.platform.storage.ingests.api.services
 
 import io.circe.Encoder
 import org.scalatest.{FunSpec, Matchers, TryValues}
@@ -10,9 +10,9 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTrackerStoreError
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestStarterFixture
-import uk.ac.wellcome.storage.{StoreWriteError, Version}
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
+import uk.ac.wellcome.storage.{StoreWriteError, Version}
 
 import scala.util.{Failure, Success, Try}
 
