@@ -19,9 +19,9 @@ class WellcomeHttpApp(
   val contextURL: URL
 )(
   implicit
-    val as: ActorSystem,
-    val ec: ExecutionContext,
-    mt: ActorMaterializer
+  val as: ActorSystem,
+  val ec: ExecutionContext,
+  mt: ActorMaterializer
 ) extends Runnable
     with WellcomeExceptionHandler
     with WellcomeRejectionHandler
@@ -49,7 +49,9 @@ class WellcomeHttpApp(
       server <- binding
       _ = info(s"Listening: ${httpServerConfig.host}:${httpServerConfig.port}")
       _ <- server.whenTerminated
-      _ = info(s"Terminating: ${httpServerConfig.host}:${httpServerConfig.port}")
+      _ = info(
+        s"Terminating: ${httpServerConfig.host}:${httpServerConfig.port}"
+      )
     } yield server
   }
 }

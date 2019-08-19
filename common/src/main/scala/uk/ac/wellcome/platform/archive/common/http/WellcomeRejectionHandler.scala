@@ -3,13 +3,26 @@ package uk.ac.wellcome.platform.archive.common.http
 import java.net.URL
 
 import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, MessageEntity, StatusCode}
+import akka.http.scaladsl.model.{
+  ContentTypes,
+  HttpEntity,
+  HttpResponse,
+  MessageEntity,
+  StatusCode
+}
 import akka.http.scaladsl.model.StatusCodes.BadRequest
-import akka.http.scaladsl.server.{MalformedRequestContentRejection, RejectionHandler, StandardRoute}
+import akka.http.scaladsl.server.{
+  MalformedRequestContentRejection,
+  RejectionHandler,
+  StandardRoute
+}
 import akka.stream.scaladsl.Flow
 import akka.util.ByteString
 import io.circe.CursorOp
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
 
 import scala.concurrent.ExecutionContext
 
@@ -36,11 +49,11 @@ trait WellcomeRejectionHandler {
       .seal
       .mapRejectionResponse {
         case res @ HttpResponse(
-        statusCode,
-        _,
-        HttpEntity.Strict(contentType, _),
-        _
-        ) if contentType != ContentTypes.`application/json` =>
+              statusCode,
+              _,
+              HttpEntity.Strict(contentType, _),
+              _
+            ) if contentType != ContentTypes.`application/json` =>
           transformToJsonErrorResponse(statusCode, res)
         case x => x
       }
@@ -50,8 +63,8 @@ trait WellcomeRejectionHandler {
       }
 
   private def handleDecodingFailures(
-                                      causes: DecodingFailures
-                                    ): StandardRoute = {
+    causes: DecodingFailures
+  ): StandardRoute = {
     val message = causes.failures.map { cause =>
       val path = CursorOp.opsToPath(cause.history)
 
@@ -84,9 +97,9 @@ trait WellcomeRejectionHandler {
   }
 
   private def transformToJsonErrorResponse(
-                                            statusCode: StatusCode,
-                                            response: HttpResponse
-                                          ): HttpResponse = {
+    statusCode: StatusCode,
+    response: HttpResponse
+  ): HttpResponse = {
 
     val errorResponseMarshallingFlow = Flow[ByteString]
       .mapAsync(parallelism = 1)(data => {
