@@ -16,11 +16,10 @@ sealed trait StepResult[TraceIdentifier, +T] extends Step[TraceIdentifier] {
 }
 
 case class StepSucceeded[TraceIdentifier, T](
-    id: TraceIdentifier,
-    summary: T,
-    maybeUserFacingMessage: Option[String] = None
-  ) extends StepResult[TraceIdentifier, T]
-
+  id: TraceIdentifier,
+  summary: T,
+  maybeUserFacingMessage: Option[String] = None
+) extends StepResult[TraceIdentifier, T]
 
 case class StepShouldRetry[TraceIdentifier, T](
   id: TraceIdentifier,
@@ -29,18 +28,18 @@ case class StepShouldRetry[TraceIdentifier, T](
   maybeUserFacingMessage: Option[String] = None
 ) extends StepResult[TraceIdentifier, T]
 
-sealed trait StepEndState[TraceIdentifier, T] extends StepResult[TraceIdentifier, T]
+sealed trait StepEndState[TraceIdentifier, T]
+    extends StepResult[TraceIdentifier, T]
 
 case class Completed[TraceIdentifier, T](
-                                          id: TraceIdentifier,
-                                          summary: T
-                                        ) extends StepResult[TraceIdentifier, T] {
+  id: TraceIdentifier,
+  summary: T
+) extends StepResult[TraceIdentifier, T] {
   override val maybeUserFacingMessage: Option[String] = None
 }
 
 case class Failed[T](
-                            summary: T,
-                            e: Throwable,
-                            maybeUserFacingMessage: Option[String] = None
-                          ) extends IngestStepResult[T]
-
+  summary: T,
+  e: Throwable,
+  maybeUserFacingMessage: Option[String] = None
+) extends IngestStepResult[T]

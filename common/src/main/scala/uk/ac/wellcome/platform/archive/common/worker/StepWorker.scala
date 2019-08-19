@@ -7,19 +7,31 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.amazonaws.services.sqs.model.Message
 import grizzled.slf4j.Logging
 import io.circe.Decoder
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
-import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, NonDeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.{
+  DeterministicFailure,
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.PipelinePayload
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed, IngestShouldRetry, IngestStepResult, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  IngestFailed,
+  IngestShouldRetry,
+  IngestStepResult,
+  IngestStepSucceeded
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
 import scala.util.Try
 
-trait StepWorker[Work, Summary]
-  extends Runnable
-    with Logging {
+trait StepWorker[Work, Summary] extends Runnable with Logging {
 
   // TODO: Move visibilityTimeout into SQSConfig
   val config: AlpakkaSQSWorkerConfig
@@ -52,4 +64,3 @@ trait StepWorker[Work, Summary]
       case IngestShouldRetry(s, t, _) => NonDeterministicFailure(t, Some(s))
     }
 }
-
