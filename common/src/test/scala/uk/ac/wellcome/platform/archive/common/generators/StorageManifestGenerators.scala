@@ -6,7 +6,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion}
 import uk.ac.wellcome.platform.archive.common.ingests.models.StandardStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
-import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 import scala.util.Random

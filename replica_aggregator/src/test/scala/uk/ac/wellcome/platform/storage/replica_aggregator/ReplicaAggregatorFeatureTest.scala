@@ -10,6 +10,7 @@ import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
+import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
   ReplicaPath,
