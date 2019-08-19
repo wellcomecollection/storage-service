@@ -7,12 +7,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StandardStorageProvider,
   StorageLocation
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  FileManifest,
-  StorageManifest,
-  StorageManifestFile,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.verify.SHA256
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
@@ -37,6 +32,7 @@ trait StorageManifestGenerators
     )
   }
 
+  // TODO: Change the interface of this method.
   def createStorageManifestWith(
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
@@ -63,7 +59,13 @@ trait StorageManifestGenerators
           createStorageManifestFile
         )
       ),
-      locations = locations.map { StorageLocation(StandardStorageProvider, _) },
+      location = PrimaryStorageLocation(
+        provider = StandardStorageProvider,
+        location = locations.head
+      ),
+      replicaLocations = locations.tail.map {
+        SecondaryStorageLocation(StandardStorageProvider, _)
+      },
       createdDate = Instant.now
     )
 

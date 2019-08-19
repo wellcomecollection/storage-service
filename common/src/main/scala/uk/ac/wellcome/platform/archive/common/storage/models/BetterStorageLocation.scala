@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.models
+package uk.ac.wellcome.platform.archive.common.storage.models
 
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
 import uk.ac.wellcome.storage.ObjectLocation

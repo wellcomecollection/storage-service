@@ -12,7 +12,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
-  PrimaryStorageLocation,
   ReplicaPath,
   ReplicaResult
 }

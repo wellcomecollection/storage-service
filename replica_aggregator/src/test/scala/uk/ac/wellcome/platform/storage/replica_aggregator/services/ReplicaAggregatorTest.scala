@@ -6,6 +6,11 @@ import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  BetterStorageLocation,
+  PrimaryStorageLocation,
+  SecondaryStorageLocation
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.{UpdateWriteError, Version}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators

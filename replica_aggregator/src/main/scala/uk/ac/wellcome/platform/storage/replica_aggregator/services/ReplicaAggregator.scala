@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
 import java.time.Instant
 
+import uk.ac.wellcome.platform.archive.common.storage.models.SecondaryStorageLocation
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.{Identified, Version}

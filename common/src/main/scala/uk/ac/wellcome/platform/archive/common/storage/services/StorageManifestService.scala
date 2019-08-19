@@ -15,12 +15,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  FileManifest,
-  StorageManifest,
-  StorageManifestFile,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
@@ -73,13 +68,11 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
           checksumAlgorithm = bag.tagManifest.checksumAlgorithm,
           files = tagManifestFiles
         ),
-        locations = Seq(
-          // TODO: Support adding more locations!
-          StorageLocation(
-            provider = InfrequentAccessStorageProvider,
-            location = bagRoot.asLocation()
-          )
+        location = PrimaryStorageLocation(
+          provider = InfrequentAccessStorageProvider,
+          location = bagRoot.asLocation()
         ),
+        replicaLocations = Seq.empty,
         createdDate = Instant.now
       )
     } yield storageManifest

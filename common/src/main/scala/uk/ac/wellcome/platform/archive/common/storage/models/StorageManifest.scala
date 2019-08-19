@@ -31,8 +31,20 @@ case class StorageManifest(
   version: BagVersion,
   manifest: FileManifest,
   tagManifest: FileManifest,
-  locations: Seq[StorageLocation],
+  location: BetterStorageLocation,
+  replicaLocations: Seq[BetterStorageLocation],
   createdDate: Instant
 ) {
   val id = BagId(space, info.externalIdentifier)
+
+  // TODO: Remove this converter when we modify the bags API and notifier
+  // to send the correct format.
+  private def toOldLocation(location: BetterStorageLocation): StorageLocation =
+    StorageLocation(
+      provider = location.provider,
+      location = location.location
+    )
+
+  def locations: Seq[StorageLocation] =
+    (Seq(location) ++ replicaLocations).map { toOldLocation }
 }
