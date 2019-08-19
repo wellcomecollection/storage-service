@@ -68,9 +68,8 @@ class BagVerifierFeatureTest
               )
 
               outgoing
-                .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-                payload
-              )
+                .getMessages[EnrichedBagInformationPayload]
+                .toSet shouldBe Set(payload)
 
               assertQueueEmpty(queue)
               assertQueueEmpty(dlq)
