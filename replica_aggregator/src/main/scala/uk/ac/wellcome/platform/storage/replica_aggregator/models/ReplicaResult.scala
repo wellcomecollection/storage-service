@@ -8,8 +8,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestID
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageLocation,
-  PrimaryStorageLocation
+  PrimaryStorageLocation,
+  StorageLocation
 }
 
 case class ReplicaResult(

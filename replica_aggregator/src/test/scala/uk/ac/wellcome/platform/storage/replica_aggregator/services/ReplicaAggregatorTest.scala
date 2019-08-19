@@ -7,9 +7,9 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageLocation,
   PrimaryStorageLocation,
-  SecondaryStorageLocation
+  SecondaryStorageLocation,
+  StorageLocation
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.{UpdateWriteError, Version}

@@ -36,7 +36,9 @@ object ResponseDisplayBag {
       manifest = DisplayFileManifest(storageManifest.manifest),
       tagManifest = DisplayFileManifest(storageManifest.tagManifest),
       location = DisplayLocation(storageManifest.location),
-      replicaLocations = storageManifest.replicaLocations.map { DisplayLocation(_) },
+      replicaLocations = storageManifest.replicaLocations.map {
+        DisplayLocation(_)
+      },
       createdDate = storageManifest.createdDate.toString,
       version = storageManifest.version.toString
     )
