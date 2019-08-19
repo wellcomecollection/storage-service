@@ -71,11 +71,10 @@ class ReplicaAggregatorTest
     val summary = result.success.value
 
     summary shouldBe a[ReplicationAggregationComplete]
-    summary.asInstanceOf[ReplicationAggregationComplete].replicationSet shouldBe
-      ReplicationSet(
-        path = ReplicaPath(prefix.path),
-        results = List(replicaResult)
-      )
+
+    val complete = summary.asInstanceOf[ReplicationAggregationComplete]
+    complete.replicaPath shouldBe ReplicaPath(prefix.path)
+    complete.aggregatorRecord shouldBe AggregatorInternalRecord(replicaResult.storageLocation)
   }
 
   it("stores a single primary replica") {
@@ -163,13 +162,9 @@ class ReplicaAggregatorTest
       val summary = result.success.value
 
       summary shouldBe a[ReplicationAggregationComplete]
-      summary
-        .asInstanceOf[ReplicationAggregationComplete]
-        .replicationSet shouldBe
-        ReplicationSet(
-          path = ReplicaPath(replicaResult.storageLocation.prefix.path),
-          results = List(replicaResult)
-        )
+
+      val complete = summary.asInstanceOf[ReplicationAggregationComplete]
+      complete.aggregatorRecord shouldBe AggregatorInternalRecord(replicaResult.storageLocation)
     }
   }
 

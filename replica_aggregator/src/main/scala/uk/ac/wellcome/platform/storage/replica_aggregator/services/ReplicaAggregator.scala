@@ -4,6 +4,7 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.storage.models.SecondaryStorageLocation
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
+import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.store.VersionedStore
 
 import scala.util.Try
@@ -48,28 +49,10 @@ class ReplicaAggregator(
         existingRecord.addLocation(result.storageLocation).get
       } match {
         // Only a single result is enough for now.
-        case Right(upsertResult) =>
-
-          // TODO: Remove
-          val aggregatorRecord = upsertResult.identifiedT
-          val results =
-            (Seq(aggregatorRecord.location).flatten ++ aggregatorRecord.replicas)
-              .map { loc =>
-                ReplicaResult(
-                  ingestId = result.ingestId,
-                  storageLocation = loc,
-                  timestamp = result.timestamp
-                )
-              }
-              .toList
-
-          val replicationSet = ReplicationSet(
-            path = replicaPath,
-            results = results
-          )
-
+        case Right(Identified(_, aggregatorRecord)) =>
           ReplicationAggregationComplete(
-            replicationSet = replicationSet,
+            replicaPath = replicaPath,
+            aggregatorRecord = aggregatorRecord,
             startTime = startTime,
             endTime = Instant.now()
           )
