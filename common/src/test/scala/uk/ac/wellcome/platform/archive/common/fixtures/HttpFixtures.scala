@@ -94,7 +94,7 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
       externalBaseURL = "http://localhost:1234"
     )
 
-  val httpServerConfig: HTTPServerConfig = createHTTPServerConfig
+  val httpServerConfigTest: HTTPServerConfig = createHTTPServerConfig
 
   val metricsName: String
 

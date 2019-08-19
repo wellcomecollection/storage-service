@@ -31,7 +31,7 @@ object Main extends WellcomeTypesafeApp {
     val contextURLMain: URL =
       HTTPServerBuilder.buildContextURL(config)
 
-    val router: Routes = new Routes {
+    val router: BagsApi = new BagsApi {
       override implicit val ec: ExecutionContext = ecMain
       override val contextURL: URL = contextURLMain
       override val storageManifestDao: StorageManifestDao =

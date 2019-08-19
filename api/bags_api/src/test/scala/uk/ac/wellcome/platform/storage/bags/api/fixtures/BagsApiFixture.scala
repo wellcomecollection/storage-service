@@ -7,22 +7,12 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  HttpFixtures,
-  StorageManifestVHSFixture,
-  StorageRandomThings
-}
-import uk.ac.wellcome.platform.archive.common.http.{
-  HttpMetrics,
-  WellcomeHttpApp
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageManifestVHSFixture, StorageRandomThings}
+import uk.ac.wellcome.platform.archive.common.http.{HttpMetrics, WellcomeHttpApp}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  EmptyMetadata,
-  StorageManifestDao
-}
-import uk.ac.wellcome.platform.storage.bags.api.Routes
+import uk.ac.wellcome.platform.archive.common.storage.services.{EmptyMetadata, StorageManifestDao}
+import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
@@ -54,7 +44,7 @@ trait BagsApiFixture
           metrics = metrics
         )
 
-        val router: Routes = new Routes {
+        val router: BagsApi = new BagsApi {
           override implicit val ec: ExecutionContext = global
           override val contextURL: URL = contextURLTest
           override val storageManifestDao: StorageManifestDao =
@@ -64,7 +54,7 @@ trait BagsApiFixture
         val app = new WellcomeHttpApp(
           routes = router.bags,
           httpMetrics = httpMetrics,
-          httpServerConfig = httpServerConfig,
+          httpServerConfig = httpServerConfigTest,
           contextURL = contextURLTest
         )
 
@@ -86,7 +76,7 @@ trait BagsApiFixture
     val metrics = new MemoryMetrics[Unit]()
 
     withApp(metrics, dao) { _ =>
-      testWith((dao, metrics, httpServerConfig.externalBaseURL))
+      testWith((dao, metrics, httpServerConfigTest.externalBaseURL))
     }
   }
 
@@ -121,7 +111,7 @@ trait BagsApiFixture
     val metrics = new MemoryMetrics[Unit]()
 
     withApp(metrics, brokenDao) { _ =>
-      testWith((metrics, httpServerConfig.externalBaseURL))
+      testWith((metrics, httpServerConfigTest.externalBaseURL))
     }
   }
 }

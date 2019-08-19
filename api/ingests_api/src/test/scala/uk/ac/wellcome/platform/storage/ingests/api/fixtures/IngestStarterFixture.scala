@@ -4,7 +4,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
-import uk.ac.wellcome.platform.storage.ingests.api.IngestStarter
+import uk.ac.wellcome.platform.storage.ingests.api.services.IngestStarter
 
 trait IngestStarterFixture extends IngestTrackerFixtures {
   def withIngestStarter[R](

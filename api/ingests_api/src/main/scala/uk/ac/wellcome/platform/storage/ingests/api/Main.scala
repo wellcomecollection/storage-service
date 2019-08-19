@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.storage.ingests.api
 
+import java.net.URL
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
@@ -8,8 +10,11 @@ import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.HTTPServerBuilder
-import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
+import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
+import uk.ac.wellcome.platform.archive.common.http.{HttpMetrics, WellcomeHttpApp}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.dynamo.DynamoIngestTracker
+import uk.ac.wellcome.platform.storage.ingests.api.services.IngestStarter
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -33,14 +38,14 @@ object Main extends WellcomeTypesafeApp {
     implicit val dynamoClient: AmazonDynamoDB =
       DynamoBuilder.buildDynamoClient(config)
 
-    val ingestTracker = new DynamoIngestTracker(
+    val ingestTrackerMain = new DynamoIngestTracker(
       config = DynamoBuilder.buildDynamoConfig(config),
       bagIdLookupConfig =
         DynamoBuilder.buildDynamoConfig(config, namespace = "bagIdLookup")
     )
 
-    val ingestStarter = new IngestStarter[SNSConfig](
-      ingestTracker = ingestTracker,
+    val ingestStarterMain = new IngestStarter[SNSConfig](
+      ingestTracker = ingestTrackerMain,
       unpackerMessageSender = SNSBuilder.buildSNSMessageSender(
         config,
         namespace = "unpacker",
@@ -48,12 +53,21 @@ object Main extends WellcomeTypesafeApp {
       )
     )
 
-    new IngestsApi(
-      ingestTracker = ingestTracker,
-      ingestStarter = ingestStarter,
+    val httpServerConfigMain = HTTPServerBuilder.buildHTTPServerConfig(config)
+    val contextURLMain = HTTPServerBuilder.buildContextURL(config)
+
+    val router = new IngestsApi {
+      override val ingestTracker: IngestTracker = ingestTrackerMain
+      override val ingestStarter: IngestStarter[_] = ingestStarterMain
+      override val httpServerConfig: HTTPServerConfig = httpServerConfigMain
+      override val contextURL: URL = contextURLMain
+    }
+
+    new WellcomeHttpApp(
+      routes = router.ingests,
       httpMetrics = httpMetrics,
-      httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
-      contextURL = HTTPServerBuilder.buildContextURL(config)
+      httpServerConfig = httpServerConfigMain,
+      contextURL = contextURLMain
     )
   }
 }

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests.api
+package uk.ac.wellcome.platform.storage.ingests.api.services
 
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.MessageSender
