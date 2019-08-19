@@ -75,9 +75,11 @@ class BagRegisterWorkerTest
 
               storageManifest.location shouldBe PrimaryStorageLocation(
                 provider = InfrequentAccessStorageProvider,
-                prefix = bagRoot.copy(
-                  path = bagRoot.path.stripSuffix(s"/$version")
-                ).asPrefix
+                prefix = bagRoot
+                  .copy(
+                    path = bagRoot.path.stripSuffix(s"/$version")
+                  )
+                  .asPrefix
               )
 
               storageManifest.replicaLocations shouldBe empty
