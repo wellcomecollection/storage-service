@@ -14,7 +14,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StorageLocation
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestCompleted
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  PrimaryStorageLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
@@ -48,12 +51,12 @@ class BagRegisterWorkerTest
             dataFileCount = dataFileCount,
             version = version
           ) {
-            case (bagRootLocation, bagInfo) =>
+            case (bagRoot, bagInfo) =>
               val payload = createEnrichedBagInformationPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space
                 ),
-                bagRootLocation = bagRootLocation,
+                bagRootLocation = bagRoot,
                 version = version
               )
 
@@ -73,14 +76,14 @@ class BagRegisterWorkerTest
               storageManifest.info shouldBe bagInfo
               storageManifest.manifest.files should have size dataFileCount
 
-              storageManifest.locations shouldBe List(
-                StorageLocation(
-                  provider = InfrequentAccessStorageProvider,
-                  location = bagRootLocation.copy(
-                    path = bagRootLocation.path.stripSuffix(s"/$version")
-                  )
+              storageManifest.location shouldBe PrimaryStorageLocation(
+                provider = InfrequentAccessStorageProvider,
+                location = bagRoot.copy(
+                  path = bagRoot.path.stripSuffix(s"/$version")
                 )
               )
+
+              storageManifest.replicaLocations shouldBe empty
 
               storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
