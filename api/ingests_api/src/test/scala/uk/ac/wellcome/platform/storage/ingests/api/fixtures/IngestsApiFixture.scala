@@ -30,7 +30,7 @@ trait IngestsApiFixture
     with MetricsSenderFixture
     with IngestTrackerFixtures {
 
-  val contextURL = new URL(
+  val contextURLTest = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json"
   )
 
@@ -55,7 +55,7 @@ trait IngestsApiFixture
               ingestStarter = ingestStarter,
               httpMetrics = httpMetrics,
               httpServerConfig = httpServerConfig,
-              contextURL = contextURL
+              contextURL = contextURLTest
             )
 
             ingestsApi.run()

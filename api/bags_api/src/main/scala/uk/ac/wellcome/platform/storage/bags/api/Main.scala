@@ -1,11 +1,14 @@
 package uk.ac.wellcome.platform.storage.bags.api
 
+import java.net.URL
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders._
-import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
+import uk.ac.wellcome.platform.archive.common.http.{HttpMetrics, WellcomeHttpApp}
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
@@ -13,25 +16,35 @@ import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
+
+    implicit val asMain: ActorSystem =
       AkkaBuilder.buildActorSystem()
-    implicit val executionContext: ExecutionContext =
+
+    implicit val ecMain: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
-    implicit val materializer: ActorMaterializer =
+
+    implicit val amMain: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
-    val register = StorageManifestDaoBuilder.build(config)
+    val contextURLMain: URL =
+      HTTPServerBuilder.buildContextURL(config)
 
-    val httpMetrics = new HttpMetrics(
-      name = "BagsApi",
-      metrics = MetricsBuilder.buildMetricsSender(config)
-    )
+    val router: Routes = new Routes {
+      override implicit val ec: ExecutionContext = ecMain
+      override val contextURL: URL = contextURLMain
+      override val storageManifestDao: StorageManifestDao =
+        StorageManifestDaoBuilder.build(config)
+    }
 
-    new BagsApi(
-      storageManifestDao = register,
-      httpMetrics = httpMetrics,
-      httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
-      contextURL = HTTPServerBuilder.buildContextURL(config)
+    new WellcomeHttpApp(
+      routes = router.bags,
+      httpMetrics = new HttpMetrics(
+        name = "BagsApi",
+        metrics = MetricsBuilder.buildMetricsSender(config)
+      ),
+      httpServerConfig =
+        HTTPServerBuilder.buildHTTPServerConfig(config),
+      contextURL = contextURLMain
     )
   }
 }

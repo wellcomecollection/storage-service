@@ -7,23 +7,17 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  HttpFixtures,
-  StorageManifestVHSFixture,
-  StorageRandomThings
-}
-import uk.ac.wellcome.platform.archive.common.http.HttpMetrics
+import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageManifestVHSFixture, StorageRandomThings}
+import uk.ac.wellcome.platform.archive.common.http.{HttpMetrics, WellcomeHttpApp}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  EmptyMetadata,
-  StorageManifestDao
-}
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.storage.bags.api.BagsApi
+import uk.ac.wellcome.platform.archive.common.storage.services.{EmptyMetadata, StorageManifestDao}
+import uk.ac.wellcome.platform.storage.bags.api.Routes
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagsApiFixture
@@ -35,31 +29,39 @@ trait BagsApiFixture
 
   val metricsName = "BagsApiFixture"
 
-  val contextURL = new URL(
+  val contextURLTest = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json"
   )
 
   private def withApp[R](
     metrics: MemoryMetrics[Unit],
-    storageManifestDao: StorageManifestDao
-  )(testWith: TestWith[BagsApi, R]): R =
+    storageManifestDaoTest: StorageManifestDao
+  )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
+
         val httpMetrics = new HttpMetrics(
           name = metricsName,
           metrics = metrics
         )
 
-        val bagsApi = new BagsApi(
-          storageManifestDao = storageManifestDao,
+        val router: Routes = new Routes {
+          override implicit val ec: ExecutionContext = global
+          override val contextURL: URL = contextURLTest
+          override val storageManifestDao: StorageManifestDao =
+            storageManifestDaoTest
+        }
+
+        val app = new WellcomeHttpApp(
+          routes = router.bags,
           httpMetrics = httpMetrics,
           httpServerConfig = httpServerConfig,
-          contextURL = contextURL
+          contextURL = contextURLTest
         )
 
-        bagsApi.run()
+        app.run()
 
-        testWith(bagsApi)
+        testWith(app)
       }
     }
 

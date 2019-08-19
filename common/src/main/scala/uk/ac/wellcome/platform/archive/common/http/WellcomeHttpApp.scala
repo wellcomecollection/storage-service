@@ -7,19 +7,15 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError}
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Directives.{complete, mapResponse}
 import akka.http.scaladsl.server._
-import akka.stream.Materializer
+import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
 import akka.util.ByteString
-import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport.DecodingFailures
 import grizzled.slf4j.Logging
 import io.circe.CursorOp
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.models.{
-  InternalServerErrorResponse,
-  UserErrorResponse
-}
+import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,10 +25,11 @@ class WellcomeHttpApp(
   httpServerConfig: HTTPServerConfig,
   contextURL: URL
 )(
-  implicit actorSystem: ActorSystem,
-  materializer: Materializer,
-  ec: ExecutionContext
-) extends Logging {
+  implicit val
+    as: ActorSystem,
+    mt: ActorMaterializer,
+    ec: ExecutionContext
+) extends Runnable with Logging {
 
   import akka.http.scaladsl.server.Directives._
   import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
@@ -134,8 +131,9 @@ class WellcomeHttpApp(
 
   private def transformToJsonErrorResponse(
     statusCode: StatusCode,
-    res: HttpResponse
+    response: HttpResponse
   ): HttpResponse = {
+
     val errorResponseMarshallingFlow = Flow[ByteString]
       .mapAsync(parallelism = 1)(data => {
         val description = data.utf8String
@@ -156,7 +154,7 @@ class WellcomeHttpApp(
       })
       .flatMapConcat(_.dataBytes)
 
-    res
+    response
       .transformEntityDataBytes(errorResponseMarshallingFlow)
       .mapEntity(
         entity => entity.withContentType(ContentTypes.`application/json`)
