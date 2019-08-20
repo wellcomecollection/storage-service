@@ -34,6 +34,8 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
     for {
       bagRoot <- getBagRoot(location.prefix, version)
 
+      replicaLocations <- getReplicaLocations(replicas, version)
+
       matchedLocations <- resolveFetchLocations(bag)
 
       entries <- createPathLocationMap(
@@ -70,7 +72,7 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
           provider = location.provider,
           prefix = bagRoot
         ),
-        replicaLocations = Seq.empty,
+        replicaLocations = replicaLocations,
         createdDate = Instant.now
       )
     } yield storageManifest
@@ -244,6 +246,34 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
         path = path,
         size = size
       )
+    }
+  }
+
+  private def getReplicaLocations(
+    replicas: Seq[SecondaryStorageLocation],
+    version: BagVersion): Try[Seq[SecondaryStorageLocation]] = {
+    val rootReplicas =
+      replicas
+        .map { loc =>
+          getBagRoot(replicaRoot = loc.prefix, version = version) match {
+            case Success(prefix) => Success(
+              SecondaryStorageLocation(
+                provider = loc.provider,
+                prefix = prefix
+              )
+            )
+
+            case Failure(err) => Failure(err)
+          }
+        }
+
+    val successes = rootReplicas.collect { case Success(loc) => loc }
+    val failures = rootReplicas.collect { case Failure(err) => err }
+
+    if (failures.isEmpty) {
+      Success(successes)
+    } else {
+      Failure(new Throwable(s"Malformed bag root in the replicas: $failures"))
     }
   }
 }
