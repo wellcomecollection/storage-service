@@ -62,7 +62,7 @@ class StorageManifestServiceTest
     val bagRoot = createObjectLocationPrefix
     val replicaRoot = bagRoot.asLocation(version.toString)
 
-    val sizeFinder: SizeFinder = (location: ObjectLocation) => Success(1L)
+    val sizeFinder: SizeFinder = (_: ObjectLocation) => Success(1L)
 
     val service = new StorageManifestService(sizeFinder)
 

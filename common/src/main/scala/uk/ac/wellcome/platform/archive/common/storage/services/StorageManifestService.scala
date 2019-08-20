@@ -31,21 +31,8 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
     space: StorageSpace,
     version: BagVersion
   ): Try[StorageManifest] =
-    createManifest(
-      bag = bag,
-      replicaRoot = location.prefix,
-      space = space,
-      version = version
-    )
-
-  def createManifest(
-    bag: Bag,
-    replicaRoot: ObjectLocationPrefix,
-    space: StorageSpace,
-    version: BagVersion
-  ): Try[StorageManifest] = {
     for {
-      bagRoot <- getBagRoot(replicaRoot, version)
+      bagRoot <- getBagRoot(location.prefix, version)
 
       matchedLocations <- resolveFetchLocations(bag)
 
@@ -80,14 +67,30 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
           files = tagManifestFiles
         ),
         location = PrimaryStorageLocation(
-          provider = InfrequentAccessStorageProvider,
+          provider = location.provider,
           prefix = bagRoot
         ),
         replicaLocations = Seq.empty,
         createdDate = Instant.now
       )
     } yield storageManifest
-  }
+
+  def createManifest(
+    bag: Bag,
+    replicaRoot: ObjectLocationPrefix,
+    space: StorageSpace,
+    version: BagVersion
+  ): Try[StorageManifest] =
+    createManifest(
+      bag = bag,
+      location = PrimaryStorageLocation(
+        provider = InfrequentAccessStorageProvider,
+        prefix = replicaRoot
+      ),
+      replicas = Seq.empty,
+      space = space,
+      version = version
+    )
 
   /** The replicator writes bags inside a bucket to paths of the form
     *
