@@ -11,8 +11,8 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   OperationFixtures
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
-  ReplicaPath,
-  ReplicaResult
+  AggregatorInternalRecord,
+  ReplicaPath
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
   ReplicaAggregator,
@@ -33,7 +33,7 @@ trait ReplicaAggregatorFixtures
 
   def withReplicaAggregatorWorker[R](
     queue: Queue = defaultQueue,
-    versionedStore: VersionedStore[ReplicaPath, Int, List[ReplicaResult]],
+    versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord],
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
     stepName: String = randomAlphanumericWithLength()

@@ -35,7 +35,6 @@ class ReplicaAggregatorTest
     )
   ): ReplicaResult =
     ReplicaResult(
-      ingestId = createIngestID,
       storageLocation = storageLocation,
       timestamp = Instant.now
     )
@@ -44,10 +43,12 @@ class ReplicaAggregatorTest
     createReplicaResultWith()
 
   def withAggregator[R](
-    versionedStore: MemoryVersionedStore[ReplicaPath, List[ReplicaResult]] =
-      MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](
-        initialEntries = Map.empty
-      )
+    versionedStore: MemoryVersionedStore[
+      ReplicaPath,
+      AggregatorInternalRecord
+    ] = MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
+      initialEntries = Map.empty
+    )
   )(testWith: TestWith[ReplicaAggregator, R]): R =
     testWith(
       new ReplicaAggregator(versionedStore)
@@ -71,23 +72,26 @@ class ReplicaAggregatorTest
     val summary = result.success.value
 
     summary shouldBe a[ReplicationAggregationComplete]
-    summary.asInstanceOf[ReplicationAggregationComplete].replicationSet shouldBe
-      ReplicationSet(
-        path = ReplicaPath(prefix.path),
-        results = List(replicaResult)
-      )
+
+    val complete = summary.asInstanceOf[ReplicationAggregationComplete]
+    complete.replicaPath shouldBe ReplicaPath(prefix.path)
+    complete.aggregatorRecord shouldBe AggregatorInternalRecord(
+      replicaResult.storageLocation
+    )
   }
 
   it("stores a single primary replica") {
+    val storageLocation = PrimaryStorageLocation(
+      provider = InfrequentAccessStorageProvider,
+      prefix = createObjectLocationPrefix
+    )
+
     val replicaResult = createReplicaResultWith(
-      storageLocation = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = createObjectLocationPrefix
-      )
+      storageLocation = storageLocation
     )
 
     val versionedStore =
-      MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](
+      MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
         initialEntries = Map.empty
       )
 
@@ -97,8 +101,13 @@ class ReplicaAggregatorTest
 
     val path = ReplicaPath(replicaResult.storageLocation.prefix.path)
 
-    versionedStore.getLatest(path).right.value.identifiedT shouldBe List(
-      replicaResult
+    versionedStore
+      .getLatest(path)
+      .right
+      .value
+      .identifiedT shouldBe AggregatorInternalRecord(
+      location = Some(storageLocation),
+      replicas = List.empty
     )
   }
 
@@ -123,14 +132,17 @@ class ReplicaAggregatorTest
     val throwable = new Throwable("BOOM!")
 
     val brokenStore =
-      new MemoryVersionedStore[ReplicaPath, List[ReplicaResult]](
-        store = new MemoryStore[Version[ReplicaPath, Int], List[ReplicaResult]](
-          initialEntries = Map.empty
-        ) with MemoryMaxima[ReplicaPath, List[ReplicaResult]]
+      new MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
+        store =
+          new MemoryStore[Version[ReplicaPath, Int], AggregatorInternalRecord](
+            initialEntries = Map.empty
+          ) with MemoryMaxima[ReplicaPath, AggregatorInternalRecord]
       ) {
         override def upsert(id: ReplicaPath)(
-          t: List[ReplicaResult]
-        )(f: List[ReplicaResult] => List[ReplicaResult]): UpdateEither =
+          t: AggregatorInternalRecord
+        )(
+          f: AggregatorInternalRecord => AggregatorInternalRecord
+        ): UpdateEither =
           Left(UpdateWriteError(throwable))
       }
 
@@ -160,13 +172,11 @@ class ReplicaAggregatorTest
       val summary = result.success.value
 
       summary shouldBe a[ReplicationAggregationComplete]
-      summary
-        .asInstanceOf[ReplicationAggregationComplete]
-        .replicationSet shouldBe
-        ReplicationSet(
-          path = ReplicaPath(replicaResult.storageLocation.prefix.path),
-          results = List(replicaResult)
-        )
+
+      val complete = summary.asInstanceOf[ReplicationAggregationComplete]
+      complete.aggregatorRecord shouldBe AggregatorInternalRecord(
+        replicaResult.storageLocation
+      )
     }
   }
 

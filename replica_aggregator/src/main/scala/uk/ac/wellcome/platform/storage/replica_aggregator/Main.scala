@@ -6,7 +6,6 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import org.scanamo.auto._
-import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
@@ -20,8 +19,8 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OutgoingPublisherBuilder
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
-  ReplicaPath,
-  ReplicaResult
+  AggregatorInternalRecord,
+  ReplicaPath
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
   ReplicaAggregator,
@@ -58,7 +57,7 @@ object Main extends WellcomeTypesafeApp {
       DynamoBuilder.buildDynamoClient(config)
 
     val dynamoVersionedStore =
-      new DynamoSingleVersionStore[ReplicaPath, List[ReplicaResult]](
+      new DynamoSingleVersionStore[ReplicaPath, AggregatorInternalRecord](
         dynamoConfig
       )
 

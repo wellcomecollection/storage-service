@@ -36,20 +36,18 @@ sealed trait ReplicationAggregationSummary extends Summary {
 }
 
 case class ReplicationAggregationComplete(
-  replicationSet: ReplicationSet,
+  replicaPath: ReplicaPath,
+  aggregatorRecord: AggregatorInternalRecord,
   startTime: Instant,
   endTime: Instant
-) extends ReplicationAggregationSummary {
-  val replicaPath: ReplicaPath = replicationSet.path
-}
+) extends ReplicationAggregationSummary
 
 case class ReplicationAggregationIncomplete(
-  replicationSet: ReplicationSet,
+  replicaPath: ReplicaPath,
+  aggregatorRecord: AggregatorInternalRecord,
   startTime: Instant,
   endTime: Instant
-) extends ReplicationAggregationSummary {
-  val replicaPath: ReplicaPath = replicationSet.path
-}
+) extends ReplicationAggregationSummary
 
 case class ReplicationAggregationFailed(
   e: Throwable,
