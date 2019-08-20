@@ -7,21 +7,18 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models._
+import uk.ac.wellcome.platform.archive.common.{
+  EnrichedBagInformationPayload,
+  KnownReplicasPayload,
+  PipelineContext
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 
 import scala.util.{Success, Try}
-
-sealed trait ReplicaAggregatorError
-
-case class AggregationFailure(e: Throwable) extends ReplicaAggregatorError
-case class InsufficientReplicas(
-  replicaCounterError: ReplicaCounterError,
-  aggregatorRecord: AggregatorInternalRecord
-) extends ReplicaAggregatorError
 
 class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
@@ -39,19 +36,28 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       ReplicationAggregationSummary
     ] {
 
-  private def getKnownReplicas(payload: EnrichedBagInformationPayload): Either[ReplicaAggregatorError, KnownReplicas] = for {
-    aggregatorRecord <- replicaAggregator
-      .aggregate(ReplicaResult(payload))
-      .toEither
-      .left
-      .map(AggregationFailure)
+  private sealed trait WorkerError
+  private case class AggregationFailure(e: Throwable) extends WorkerError
+  private case class InsufficientReplicas(
+                                   replicaCounterError: ReplicaCounterError,
+                                   aggregatorRecord: AggregatorInternalRecord
+                                 ) extends WorkerError
 
-    sufficientReplicas <- replicaCounter
-      .countReplicas(aggregatorRecord)
-      .left
-      .map(InsufficientReplicas(_, aggregatorRecord))
+  private def getKnownReplicas(payload: EnrichedBagInformationPayload)
+    : Either[WorkerError, KnownReplicas] =
+    for {
+      aggregatorRecord <- replicaAggregator
+        .aggregate(ReplicaResult(payload))
+        .toEither
+        .left
+        .map(AggregationFailure)
 
-  } yield sufficientReplicas
+      sufficientReplicas <- replicaCounter
+        .countReplicas(aggregatorRecord)
+        .left
+        .map(InsufficientReplicas(_, aggregatorRecord))
+
+    } yield sufficientReplicas
 
   override def processMessage(
     payload: EnrichedBagInformationPayload
@@ -94,13 +100,18 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
 
     for {
       _ <- ingestUpdater.send(payload.ingestId, ingestStep)
-      _ <- sendOutgoing(ingestStep, payload)
+      _ <- sendOutgoing(
+        ingestStep = ingestStep,
+        context = payload.context,
+        version = payload.version
+      )
     } yield ingestStep
   }
 
   private def sendOutgoing(
     ingestStep: IngestStepResult[ReplicationAggregationSummary],
-    payload: EnrichedBagInformationPayload
+    context: PipelineContext,
+    version: BagVersion
   ): Try[Unit] =
     ingestStep match {
 
@@ -113,7 +124,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       // TODO: Think about having an IngestStep status that represents
       // success but no outgoing state.
 
-      case IngestStepSucceeded(_: ReplicationAggregationComplete, _) =>
+      case IngestStepSucceeded(complete: ReplicationAggregationComplete, _) =>
+        val payload = KnownReplicasPayload(
+          context = context,
+          version = version,
+          knownReplicas = complete.knownReplicas
+        )
         outgoingPublisher.send(payload)
 
       case _ =>
