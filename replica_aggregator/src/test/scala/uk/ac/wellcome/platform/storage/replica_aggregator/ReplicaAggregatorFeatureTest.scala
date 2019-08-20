@@ -72,13 +72,13 @@ class ReplicaAggregatorFeatureTest
                 ingestId,
                 PrimaryStorageLocation(
                   storageProvider,
-                  location
+                  prefix
                 ),
                 timestamp
                 ) =>
               ingestId shouldBe payload.ingestId
               storageProvider shouldBe InfrequentAccessStorageProvider
-              location shouldBe payload.bagRootLocation
+              prefix shouldBe payload.bagRootLocation.asPrefix
               timestamp shouldBe a[Instant]
           }
 
