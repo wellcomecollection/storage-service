@@ -1,32 +1,16 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  SecondaryStorageLocation
-}
-import uk.ac.wellcome.storage.generators.{
-  ObjectLocationGenerators,
-  RandomThings
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.SecondaryStorageLocation
+import uk.ac.wellcome.platform.storage.replica_aggregator.generators.StorageLocationGenerators
+import uk.ac.wellcome.storage.generators.RandomThings
 
 class AggregatorInternalRecordTest
     extends FunSpec
     with Matchers
     with TryValues
-    with ObjectLocationGenerators
+    with StorageLocationGenerators
     with RandomThings {
-
-  def createPrimaryLocation = PrimaryStorageLocation(
-    provider = InfrequentAccessStorageProvider,
-    prefix = createObjectLocationPrefix
-  )
-
-  def createSecondaryLocation = SecondaryStorageLocation(
-    provider = InfrequentAccessStorageProvider,
-    prefix = createObjectLocationPrefix
-  )
 
   def createReplicas(min: Int = 0): List[SecondaryStorageLocation] =
     (1 to randomInt(min, 10))
