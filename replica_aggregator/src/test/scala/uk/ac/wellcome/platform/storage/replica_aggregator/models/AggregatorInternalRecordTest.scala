@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
+import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.SecondaryStorageLocation
-import uk.ac.wellcome.platform.storage.replica_aggregator.generators.StorageLocationGenerators
 import uk.ac.wellcome.storage.generators.RandomThings
 
 class AggregatorInternalRecordTest

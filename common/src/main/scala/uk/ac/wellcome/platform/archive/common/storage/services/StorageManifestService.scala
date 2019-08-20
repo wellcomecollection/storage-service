@@ -26,12 +26,15 @@ class BadFetchLocationException(message: String)
 class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
   def createManifest(
     bag: Bag,
-    replicaRoot: ObjectLocationPrefix,
+    location: PrimaryStorageLocation,
+    replicas: Seq[SecondaryStorageLocation],
     space: StorageSpace,
     version: BagVersion
-  ): Try[StorageManifest] = {
+  ): Try[StorageManifest] =
     for {
-      bagRoot <- getBagRoot(replicaRoot, version)
+      bagRoot <- getBagRoot(location.prefix, version)
+
+      replicaLocations <- getReplicaLocations(replicas, version)
 
       matchedLocations <- resolveFetchLocations(bag)
 
@@ -66,14 +69,30 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
           files = tagManifestFiles
         ),
         location = PrimaryStorageLocation(
-          provider = InfrequentAccessStorageProvider,
+          provider = location.provider,
           prefix = bagRoot
         ),
-        replicaLocations = Seq.empty,
+        replicaLocations = replicaLocations,
         createdDate = Instant.now
       )
     } yield storageManifest
-  }
+
+  def createManifest(
+    bag: Bag,
+    replicaRoot: ObjectLocationPrefix,
+    space: StorageSpace,
+    version: BagVersion
+  ): Try[StorageManifest] =
+    createManifest(
+      bag = bag,
+      location = PrimaryStorageLocation(
+        provider = InfrequentAccessStorageProvider,
+        prefix = replicaRoot
+      ),
+      replicas = Seq.empty,
+      space = space,
+      version = version
+    )
 
   /** The replicator writes bags inside a bucket to paths of the form
     *
@@ -226,6 +245,40 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
         name = bagFile.path.value,
         path = path,
         size = size
+      )
+    }
+  }
+
+  private def getReplicaLocations(
+    replicas: Seq[SecondaryStorageLocation],
+    version: BagVersion
+  ): Try[Seq[SecondaryStorageLocation]] = {
+    val rootReplicas =
+      replicas
+        .map { loc =>
+          getBagRoot(replicaRoot = loc.prefix, version = version) match {
+            case Success(prefix) =>
+              Success(
+                SecondaryStorageLocation(
+                  provider = loc.provider,
+                  prefix = prefix
+                )
+              )
+
+            case Failure(err) => Failure(err)
+          }
+        }
+
+    val successes = rootReplicas.collect { case Success(loc) => loc }
+    val failures = rootReplicas.collect { case Failure(err)  => err }
+
+    if (failures.isEmpty) {
+      Success(successes)
+    } else {
+      Failure(
+        new StorageManifestException(
+          s"Malformed bag root in the replicas: $failures"
+        )
       )
     }
   }
