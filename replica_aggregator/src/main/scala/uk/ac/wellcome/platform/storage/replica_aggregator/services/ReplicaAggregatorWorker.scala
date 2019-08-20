@@ -68,6 +68,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       } yield summary
 
     val ingestStep = trySummary match {
+
       case Success(replicaSummary) =>
         IngestStepSucceeded(replicaSummary)
 
@@ -94,8 +95,18 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     payload: EnrichedBagInformationPayload
   ): Try[Unit] =
     ingestStep match {
+
+      // We only want to notify the rest of the pipeline
+      // when an aggregation completes with sufficient replicas.
+      //
+      // We do not want to notify the pipeline when:
+      // - IngestStepSucceeded<ReplicationAggregationIncomplete>
+
+      // TODO: Think about having an IngestStep status that represents
+      // success but no outgoing state.
+        
       case IngestStepSucceeded(_: ReplicationAggregationComplete, _) =>
-        outgoingPublisher.sendIfSuccessful(ingestStep, payload)
+        outgoingPublisher.send(payload)
 
       case _ =>
         Success(())
