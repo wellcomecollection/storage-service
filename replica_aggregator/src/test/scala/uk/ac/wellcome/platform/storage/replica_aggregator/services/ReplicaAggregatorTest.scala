@@ -8,24 +8,22 @@ import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   PrimaryStorageLocation,
-  SecondaryStorageLocation,
   StorageLocation
 }
+import uk.ac.wellcome.platform.storage.replica_aggregator.generators.StorageLocationGenerators
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
-import uk.ac.wellcome.storage.{UpdateWriteError, Version}
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
+import uk.ac.wellcome.storage.{UpdateWriteError, Version}
 
-import scala.collection.immutable
-import scala.util.Try
+import scala.util.{Success, Try}
 
 class ReplicaAggregatorTest
     extends FunSpec
     with Matchers
     with EitherValues
     with TryValues
-    with ObjectLocationGenerators
+    with StorageLocationGenerators
     with StorageRandomThings {
 
   def createReplicaResultWith(
@@ -54,40 +52,11 @@ class ReplicaAggregatorTest
       new ReplicaAggregator(versionedStore)
     )
 
-  it("completes after a single primary replica") {
-    val prefix = createObjectLocationPrefix
+  describe("handling a primary replica") {
+    val primaryLocation = createPrimaryLocation
 
     val replicaResult = createReplicaResultWith(
-      storageLocation = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = prefix
-      )
-    )
-
-    val result =
-      withAggregator() {
-        _.aggregate(replicaResult)
-      }
-
-    val summary = result.success.value
-
-    summary shouldBe a[ReplicationAggregationComplete]
-
-    val complete = summary.asInstanceOf[ReplicationAggregationComplete]
-    complete.replicaPath shouldBe ReplicaPath(prefix.path)
-    complete.aggregatorRecord shouldBe AggregatorInternalRecord(
-      replicaResult.storageLocation
-    )
-  }
-
-  it("stores a single primary replica") {
-    val storageLocation = PrimaryStorageLocation(
-      provider = InfrequentAccessStorageProvider,
-      prefix = createObjectLocationPrefix
-    )
-
-    val replicaResult = createReplicaResultWith(
-      storageLocation = storageLocation
+      storageLocation = primaryLocation
     )
 
     val versionedStore =
@@ -95,37 +64,161 @@ class ReplicaAggregatorTest
         initialEntries = Map.empty
       )
 
-    withAggregator(versionedStore) {
-      _.aggregate(replicaResult)
-    }
-
-    val path = ReplicaPath(replicaResult.storageLocation.prefix.path)
-
-    versionedStore
-      .getLatest(path)
-      .right
-      .value
-      .identifiedT shouldBe AggregatorInternalRecord(
-      location = Some(storageLocation),
-      replicas = List.empty
-    )
-  }
-
-  it("errors if asked to aggregate a secondary replica") {
-    val replicaResult = createReplicaResultWith(
-      storageLocation = SecondaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = createObjectLocationPrefix
-      )
-    )
-
     val result =
-      withAggregator() {
+      withAggregator(versionedStore) {
         _.aggregate(replicaResult)
       }
 
-    val err = result.failed.get
-    err.getMessage shouldBe s"Not yet supported! Cannot aggregate secondary replica result: $replicaResult"
+    val expectedRecord =
+      AggregatorInternalRecord(
+        location = Some(primaryLocation),
+        replicas = List.empty
+      )
+
+    it("returns the correct record") {
+      result.success.value shouldBe expectedRecord
+    }
+
+    it("stores the replica in the underlying store") {
+      val path = ReplicaPath(replicaResult.storageLocation.prefix.path)
+
+      versionedStore
+        .getLatest(path)
+        .right
+        .value
+        .identifiedT shouldBe expectedRecord
+    }
+  }
+
+  describe("handling a secondary replica") {
+    val secondaryLocation = createSecondaryLocation
+
+    val replicaResult = createReplicaResultWith(
+      storageLocation = secondaryLocation
+    )
+
+    val versionedStore =
+      MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
+        initialEntries = Map.empty
+      )
+
+    val result =
+      withAggregator(versionedStore) {
+        _.aggregate(replicaResult)
+      }
+
+    val expectedRecord =
+      AggregatorInternalRecord(
+        location = None,
+        replicas = List(secondaryLocation)
+      )
+
+    it("returns the correct record") {
+      result.success.value shouldBe expectedRecord
+    }
+
+    it("stores the replica in the underlying store") {
+      val path = ReplicaPath(replicaResult.storageLocation.prefix.path)
+
+      versionedStore
+        .getLatest(path)
+        .right
+        .value
+        .identifiedT shouldBe expectedRecord
+    }
+  }
+
+  describe("handling multiple updates to the same replica") {
+    val prefix = createObjectLocationPrefix
+
+    val location1 = createSecondaryLocationWith(
+      prefix = prefix.copy(namespace = randomAlphanumeric)
+    )
+    val location2 = createPrimaryLocationWith(
+      prefix = prefix.copy(namespace = randomAlphanumeric)
+    )
+    val location3 = createSecondaryLocationWith(
+      prefix = prefix.copy(namespace = randomAlphanumeric)
+    )
+
+    val locations = Seq(location1, location2, location3)
+
+    val versionedStore =
+      MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
+        initialEntries = Map.empty
+      )
+
+    val results: Seq[AggregatorInternalRecord] =
+      withAggregator(versionedStore) { aggregator =>
+        locations
+          .map { storageLocation =>
+            createReplicaResultWith(storageLocation = storageLocation)
+          }
+          .map { replicaResult =>
+            aggregator.aggregate(replicaResult)
+          }
+          .map { _.success.value }
+      }
+
+    it("returns the correct records") {
+      results shouldBe Seq(
+        AggregatorInternalRecord(
+          location = None,
+          replicas = List(location1)
+        ),
+        AggregatorInternalRecord(
+          location = Some(location2),
+          replicas = List(location1)
+        ),
+        AggregatorInternalRecord(
+          location = Some(location2),
+          replicas = List(location1, location3)
+        )
+      )
+    }
+
+    it("stores the replica in the underlying store") {
+      val path = ReplicaPath(prefix.path)
+
+      val expectedRecord =
+        AggregatorInternalRecord(
+          location = Some(location2),
+          replicas = List(location1, location3)
+        )
+
+      versionedStore
+        .getLatest(path)
+        .right
+        .value
+        .identifiedT shouldBe expectedRecord
+    }
+  }
+
+  it("stores different replicas under different paths") {
+    val primaryLocation1 = createPrimaryLocation
+    val primaryLocation2 = createPrimaryLocation
+
+    val versionedStore =
+      MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
+        initialEntries = Map.empty
+      )
+
+    withAggregator(versionedStore) { aggregator =>
+      Seq(primaryLocation1, primaryLocation2)
+        .map { storageLocation =>
+          createReplicaResultWith(storageLocation = storageLocation)
+        }
+        .foreach { replicaResult =>
+          aggregator.aggregate(replicaResult)
+        }
+    }
+
+    versionedStore.store
+      .asInstanceOf[MemoryStore[
+        Version[ReplicaPath, Int],
+        AggregatorInternalRecord
+      ]]
+      .entries should have size 2
   }
 
   it("handles an error from the underlying versioned store") {
@@ -151,41 +244,72 @@ class ReplicaAggregatorTest
         _.aggregate(createReplicaResult)
       }
 
-    val summary = result.success.value
+    result.failed.get shouldBe throwable
+  }
 
-    summary shouldBe a[ReplicationAggregationFailed]
-    val failure = summary.asInstanceOf[ReplicationAggregationFailed]
-    failure.e shouldBe throwable
+  it("accepts adding the same primary location to a record twice") {
+    val primaryLocation = createPrimaryLocation
+
+    val replicaResult = createReplicaResultWith(
+      storageLocation = primaryLocation
+    )
+
+    val expectedRecord =
+      AggregatorInternalRecord(
+        location = Some(primaryLocation),
+        replicas = List.empty
+      )
+
+    withAggregator() { aggregator =>
+      (1 to 5).map { _ =>
+        aggregator
+          .aggregate(replicaResult)
+          .success
+          .value shouldBe expectedRecord
+      }
+    }
+  }
+
+  it("fails if you add different primary locations for the same replica path") {
+    val prefix = createObjectLocationPrefix
+
+    val primaryLocation1 = createPrimaryLocationWith(
+      prefix = prefix.copy(namespace = randomAlphanumeric)
+    )
+
+    val primaryLocation2 = createPrimaryLocationWith(
+      prefix = prefix.copy(namespace = randomAlphanumeric)
+    )
+
+    val replicaResult1 = createReplicaResultWith(primaryLocation1)
+    val replicaResult2 = createReplicaResultWith(primaryLocation2)
+
+    withAggregator() { aggregator =>
+      aggregator.aggregate(replicaResult1) shouldBe a[Success[_]]
+
+      val err = aggregator.aggregate(replicaResult2).failed.get
+      err.getMessage should startWith(
+        "Record already has a different PrimaryStorageLocation"
+      )
+    }
   }
 
   it("only stores unique replica results") {
     val replicaResult = createReplicaResult
 
-    val results: immutable.Seq[Try[ReplicationAggregationSummary]] =
+    val results: Seq[Try[AggregatorInternalRecord]] =
       withAggregator() { aggregator =>
         (1 to 3).map { _ =>
           aggregator.aggregate(replicaResult)
         }
       }
 
-    results.foreach { result =>
-      val summary = result.success.value
+    val uniqResults = results.map { _.success.value }.toSet
 
-      summary shouldBe a[ReplicationAggregationComplete]
+    uniqResults should have size 1
 
-      val complete = summary.asInstanceOf[ReplicationAggregationComplete]
-      complete.aggregatorRecord shouldBe AggregatorInternalRecord(
-        replicaResult.storageLocation
-      )
-    }
+    uniqResults.head shouldBe AggregatorInternalRecord(
+      replicaResult.storageLocation
+    )
   }
-
-  // TODO (separate patch):
-  //
-  // *  It deduplicates replicas to the same location, even if they have
-  //    different timestamps
-  // *  It returns an "incomplete" summary if we don't have a primary replica
-  //    and/or we don't have enough secondary replicas
-  // *  It errors if it gets multiple primary replicas
-  //
 }

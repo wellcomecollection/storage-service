@@ -6,7 +6,7 @@ import io.circe.Decoder
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -25,17 +25,17 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
   implicit val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[EnrichedBagInformationPayload]
-) extends IngestStepWorker[EnrichedBagInformationPayload, RegistrationSummary] {
+  val wd: Decoder[KnownReplicasPayload]
+) extends IngestStepWorker[KnownReplicasPayload, RegistrationSummary] {
 
   override def processMessage(
-    payload: EnrichedBagInformationPayload
+    payload: KnownReplicasPayload
   ): Try[IngestStepResult[RegistrationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
       registrationSummary <- register.update(
-        bagRoot = payload.bagRootLocation.asPrefix,
+        bagRoot = payload.knownReplicas.location.prefix,
         version = payload.version,
         storageSpace = payload.storageSpace
       )

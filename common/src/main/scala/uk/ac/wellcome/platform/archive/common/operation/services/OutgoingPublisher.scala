@@ -11,6 +11,10 @@ import scala.util.{Success, Try}
 class OutgoingPublisher[Destination](
   messageSender: MessageSender[Destination]
 ) extends Logging {
+
+  def send(outgoing: PipelinePayload): Try[Unit] =
+    messageSender.sendT[PipelinePayload](outgoing)
+
   def sendIfSuccessful[R, O <: PipelinePayload](
     result: IngestStepResult[R],
     outgoing: => O
@@ -23,10 +27,13 @@ class OutgoingPublisher[Destination](
             "Ingest step succeeded/completed: " +
               s"sending an outgoing message $outgoing"
         )
-        messageSender.sendT[PipelinePayload](outgoing)
+
+        send(outgoing)
+
       case IngestFailed(_, _, _) =>
         debug(s"Ingest step failed: not sending a message")
         Success(())
+
       case IngestShouldRetry(_, _, _) =>
         debug(s"Ingest step retrying: not sending a message")
         Success(())

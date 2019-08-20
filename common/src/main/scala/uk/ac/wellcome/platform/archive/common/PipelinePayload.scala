@@ -11,7 +11,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestID,
   IngestType
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  KnownReplicas,
+  StorageSpace
+}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 sealed trait PipelinePayload {
@@ -40,6 +43,12 @@ case object SourceLocationPayload {
 case class UnpackedBagLocationPayload(
   context: PipelineContext,
   unpackedBagLocation: ObjectLocationPrefix
+) extends PipelinePayload
+
+case class KnownReplicasPayload(
+  context: PipelineContext,
+  version: BagVersion,
+  knownReplicas: KnownReplicas
 ) extends PipelinePayload
 
 sealed trait BagRootPayload extends PipelinePayload {
