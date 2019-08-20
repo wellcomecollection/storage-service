@@ -10,15 +10,18 @@ import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  IngestStepWorker
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
+
+sealed trait ReplicaAggregatorError
+
+case class AggregationFailure(e: Throwable) extends ReplicaAggregatorError
+case class InsufficientReplicas(
+  replicaCounterError: ReplicaCounterError,
+  aggregatorRecord: AggregatorInternalRecord
+) extends ReplicaAggregatorError
 
 class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
@@ -36,43 +39,28 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       ReplicationAggregationSummary
     ] {
 
+  private def getKnownReplicas(payload: EnrichedBagInformationPayload): Either[ReplicaAggregatorError, KnownReplicas] = for {
+    aggregatorRecord <- replicaAggregator
+      .aggregate(ReplicaResult(payload))
+      .toEither
+      .left
+      .map(AggregationFailure)
+
+    sufficientReplicas <- replicaCounter
+      .countReplicas(aggregatorRecord)
+      .left
+      .map(InsufficientReplicas(_, aggregatorRecord))
+
+  } yield sufficientReplicas
+
   override def processMessage(
     payload: EnrichedBagInformationPayload
   ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
     val replicaPath = ReplicaPath(payload.bagRootLocation.path)
-
     val startTime = Instant.now()
 
-    val trySummary =
-      for {
-        aggregatorRecord <- replicaAggregator.aggregate(ReplicaResult(payload))
-
-        summary = replicaCounter.countReplicas(aggregatorRecord) match {
-          case Right(knownReplicas) =>
-            ReplicationAggregationComplete(
-              replicaPath = replicaPath,
-              knownReplicas = knownReplicas,
-              startTime = startTime,
-              endTime = Instant.now()
-            )
-
-          case Left(counterError) =>
-            ReplicationAggregationIncomplete(
-              replicaPath = replicaPath,
-              aggregatorRecord = aggregatorRecord,
-              counterError = counterError,
-              startTime = startTime,
-              endTime = Instant.now()
-            )
-        }
-      } yield summary
-
-    val ingestStep = trySummary match {
-
-      case Success(replicaSummary) =>
-        IngestStepSucceeded(replicaSummary)
-
-      case Failure(err) =>
+    val ingestStep = getKnownReplicas(payload) match {
+      case Left(AggregationFailure(err)) =>
         IngestFailed(
           summary = ReplicationAggregationFailed(
             e = err,
@@ -81,6 +69,26 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
             endTime = Instant.now()
           ),
           e = err
+        )
+
+      case Left(InsufficientReplicas(err, aggregatorRecord)) =>
+        IngestStepSucceeded(
+          ReplicationAggregationIncomplete(
+            replicaPath = replicaPath,
+            aggregatorRecord = aggregatorRecord,
+            counterError = err,
+            startTime = startTime,
+            endTime = Instant.now()
+          ))
+
+      case Right(knownReplicas: KnownReplicas) =>
+        IngestStepSucceeded(
+          ReplicationAggregationComplete(
+            replicaPath = replicaPath,
+            knownReplicas = knownReplicas,
+            startTime = startTime,
+            endTime = Instant.now()
+          )
         )
     }
 
@@ -104,7 +112,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
 
       // TODO: Think about having an IngestStep status that represents
       // success but no outgoing state.
-        
+
       case IngestStepSucceeded(_: ReplicationAggregationComplete, _) =>
         outgoingPublisher.send(payload)
 

@@ -1,12 +1,11 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.services
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
-  AggregatorInternalRecord,
-  KnownReplicas
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.KnownReplicas
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.AggregatorInternalRecord
 
 sealed trait ReplicaCounterError
 
-case class NoPrimaryReplica() extends ReplicaCounterError
+case class NoPrimaryReplica()
+  extends ReplicaCounterError
 
 case class NotEnoughReplicas(
   expected: Int,
