@@ -12,6 +12,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagFileGenerators,
   BagGenerators,
+  StorageLocationGenerators,
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
@@ -23,7 +24,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 import scala.util.{Failure, Random, Success, Try}
 
@@ -32,7 +32,7 @@ class StorageManifestServiceTest
     with Matchers
     with BagGenerators
     with BagFileGenerators
-    with ObjectLocationGenerators
+    with StorageLocationGenerators
     with StorageSpaceGenerators
     with TimeTestFixture
     with TryValues {
@@ -54,6 +54,61 @@ class StorageManifestServiceTest
     assertIsError(replicaRoot = replicaRootLocation, version = version) { err =>
       err shouldBe a[StorageManifestException]
       err.getMessage shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
+    }
+  }
+
+  describe("sets the locations and replicaLocations correctly") {
+    val version = createBagVersion
+    val bagRoot = createObjectLocationPrefix
+    val replicaRoot = bagRoot.asLocation(version.toString)
+
+    val sizeFinder: SizeFinder = (location: ObjectLocation) => Success(1L)
+
+    val service = new StorageManifestService(sizeFinder)
+
+    val location = createPrimaryLocationWith(
+      prefix = replicaRoot.asPrefix
+    )
+
+    val replicas = atMost(max = 10) {
+      createSecondaryLocationWith(
+        prefix = createObjectLocationPrefix.asLocation(version.toString).asPrefix
+      )
+    }
+
+    val storageManifest = service.createManifest(
+      bag = createBag,
+      location = location,
+      replicas = replicas,
+      space = createStorageSpace,
+      version = version
+    ).success.value
+
+    it("sets the correct provider on the primary location") {
+      storageManifest.location.provider shouldBe location.provider
+    }
+
+    it("sets the correct prefix on the primary location") {
+      storageManifest.location.prefix shouldBe bagRoot
+    }
+
+    it("uses the correct providers on the replica locations") {
+      val expectedProviders = replicas.map { _.provider }
+      val actualProviders = storageManifest.replicaLocations.map { _.provider }
+
+      actualProviders shouldBe expectedProviders
+    }
+
+    it("uses the correct roots on the replica locations") {
+      val expectedPrefixes = replicas
+        .map { _.prefix }
+        .map { prefix => prefix.copy(
+          path = prefix.path.stripSuffix(s"/$version")
+        )}
+
+      val actualPrefixes = storageManifest.replicaLocations.map { _.prefix }
+
+      actualPrefixes shouldBe expectedPrefixes
     }
   }
 

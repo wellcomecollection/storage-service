@@ -26,6 +26,20 @@ class BadFetchLocationException(message: String)
 class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
   def createManifest(
     bag: Bag,
+    location: PrimaryStorageLocation,
+    replicas: Seq[SecondaryStorageLocation],
+    space: StorageSpace,
+    version: BagVersion
+  ): Try[StorageManifest] =
+    createManifest(
+      bag = bag,
+      replicaRoot = location.prefix,
+      space = space,
+      version = version
+    )
+
+  def createManifest(
+    bag: Bag,
     replicaRoot: ObjectLocationPrefix,
     space: StorageSpace,
     version: BagVersion
