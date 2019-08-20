@@ -43,6 +43,7 @@ class BagReplicatorFeatureTest
             outgoing,
             stepName = "replicating"
           ) { _ =>
+
             sendNotificationToSQS(queue, payload)
 
             eventually {
@@ -61,8 +62,7 @@ class BagReplicatorFeatureTest
                 bagRootLocation = expectedDst.asLocation()
               )
 
-              outgoing
-                .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+              outgoing.getMessages[EnrichedBagInformationPayload].toSet shouldBe Set(
                 expectedPayload
               )
 
