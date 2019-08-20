@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
+  KnownReplicas,
   PrimaryStorageLocation
 }
 import uk.ac.wellcome.storage.ObjectLocation
@@ -49,12 +50,20 @@ class BagRegisterWorkerTest
             version = version
           ) {
             case (bagRoot, bagInfo) =>
-              val payload = createEnrichedBagInformationPayloadWith(
+              val knownReplicas = KnownReplicas(
+                location = PrimaryStorageLocation(
+                  provider = InfrequentAccessStorageProvider,
+                  prefix = bagRoot.asPrefix
+                ),
+                replicas = List.empty
+              )
+
+              val payload = createKnownReplicasPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space
                 ),
-                bagRootLocation = bagRoot,
-                version = version
+                version = version,
+                knownReplicas = knownReplicas
               )
 
               val bagId = BagId(
@@ -99,8 +108,8 @@ class BagRegisterWorkerTest
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
-    val version = createBagVersion
-    val nextVersion = version.increment
+    val version1 = createBagVersion
+    val version2 = version1.increment
 
     withBagRegisterWorker {
       case (service, storageManifestDao, _, _, _) =>
@@ -112,30 +121,47 @@ class BagRegisterWorkerTest
           withRegisterBag(
             externalIdentifier,
             space = space,
-            version = version,
+            version = version1,
             dataFileCount
           ) {
             case (location1, bagInfo1) =>
               withRegisterBag(
                 externalIdentifier,
                 space = space,
-                version = nextVersion,
+                version = version2,
                 dataFileCount
               ) {
                 case (location2, _) =>
-                  val payload1 = createEnrichedBagInformationPayloadWith(
-                    context = createPipelineContextWith(
-                      storageSpace = space
+                  val knownReplicas1 = KnownReplicas(
+                    location = PrimaryStorageLocation(
+                      provider = InfrequentAccessStorageProvider,
+                      prefix = location1.asPrefix
                     ),
-                    bagRootLocation = location1,
-                    version = version
+                    replicas = List.empty
                   )
-                  val payload2 = createEnrichedBagInformationPayloadWith(
+
+                  val payload1 = createKnownReplicasPayloadWith(
                     context = createPipelineContextWith(
                       storageSpace = space
                     ),
-                    bagRootLocation = location2,
-                    version = nextVersion
+                    version = version1,
+                    knownReplicas = knownReplicas1
+                  )
+
+                  val knownReplicas2 = KnownReplicas(
+                    location = PrimaryStorageLocation(
+                      provider = InfrequentAccessStorageProvider,
+                      prefix = location2.asPrefix
+                    ),
+                    replicas = List.empty
+                  )
+
+                  val payload2 = createKnownReplicasPayloadWith(
+                    context = createPipelineContextWith(
+                      storageSpace = space
+                    ),
+                    version = version2,
+                    knownReplicas = knownReplicas2
                   )
 
                   val bagId = BagId(
@@ -150,21 +176,21 @@ class BagRegisterWorkerTest
                   }
 
                   storageManifestDao
-                    .get(bagId, version = version)
+                    .get(bagId, version = version1)
                     .right
                     .value
-                    .version shouldBe version
+                    .version shouldBe version1
                   storageManifestDao
-                    .get(bagId, version = nextVersion)
+                    .get(bagId, version = version2)
                     .right
                     .value
-                    .version shouldBe nextVersion
+                    .version shouldBe version2
 
                   storageManifestDao
                     .getLatest(bagId)
                     .right
                     .value
-                    .version shouldBe nextVersion
+                    .version shouldBe version2
               }
           }
         }
@@ -177,7 +203,7 @@ class BagRegisterWorkerTest
 
     withBagRegisterWorker {
       case (service, _, ingests, _, _) =>
-        val payload = createEnrichedBagInformationPayload
+        val payload = createKnownReplicasPayload
 
         service.processMessage(payload) shouldBe a[Success[_]]
 

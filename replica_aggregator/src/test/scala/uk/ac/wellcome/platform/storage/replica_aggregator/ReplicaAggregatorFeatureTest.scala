@@ -4,11 +4,14 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  KnownReplicas,
+  PrimaryStorageLocation
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
   AggregatorInternalRecord,
@@ -60,17 +63,26 @@ class ReplicaAggregatorFeatureTest
           val stored =
             versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
 
-          stored.identifiedT.location shouldBe Some(
-            PrimaryStorageLocation(
-              provider = InfrequentAccessStorageProvider,
-              prefix = payload.bagRootLocation.asPrefix
-            )
+          val primaryLocation = PrimaryStorageLocation(
+            provider = InfrequentAccessStorageProvider,
+            prefix = payload.bagRootLocation.asPrefix
           )
+
+          stored.identifiedT.location shouldBe Some(primaryLocation)
 
           stored.identifiedT.replicas shouldBe empty
 
-          outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(
-            payload
+          val expectedPayload = KnownReplicasPayload(
+            context = payload.context,
+            version = payload.version,
+            knownReplicas = KnownReplicas(
+              location = primaryLocation,
+              replicas = List.empty
+            )
+          )
+
+          outgoing.getMessages[KnownReplicasPayload] shouldBe Seq(
+            expectedPayload
           )
         }
       }

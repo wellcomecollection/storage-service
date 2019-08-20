@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.{
+  EnrichedBagInformationPayload,
+  KnownReplicasPayload
+}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -13,6 +16,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepSucceeded,
+  KnownReplicas,
   PrimaryStorageLocation
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
@@ -34,6 +38,13 @@ class ReplicaAggregatorWorkerTest
     val outgoing = new MemoryMessageSender()
 
     val payload = createEnrichedBagInformationPayload
+    val expectedKnownReplicas = KnownReplicas(
+      location = PrimaryStorageLocation(
+        provider = InfrequentAccessStorageProvider,
+        prefix = payload.bagRootLocation.asPrefix
+      ),
+      replicas = List.empty
+    )
 
     val result =
       withReplicaAggregatorWorker(
@@ -54,17 +65,17 @@ class ReplicaAggregatorWorkerTest
       completeAggregation.replicaPath shouldBe ReplicaPath(
         payload.bagRootLocation.path
       )
-      completeAggregation.knownReplicas shouldBe KnownReplicas(
-        location = PrimaryStorageLocation(
-          provider = InfrequentAccessStorageProvider,
-          prefix = payload.bagRootLocation.asPrefix
-        ),
-        replicas = List.empty
-      )
+      completeAggregation.knownReplicas shouldBe expectedKnownReplicas
     }
 
     it("sends an outgoing message") {
-      outgoing.getMessages[EnrichedBagInformationPayload] shouldBe Seq(payload)
+      val expectedPayload = KnownReplicasPayload(
+        context = payload.context,
+        version = payload.version,
+        knownReplicas = expectedKnownReplicas
+      )
+
+      outgoing.getMessages[KnownReplicasPayload] shouldBe Seq(expectedPayload)
     }
 
     it("updates the ingests monitor") {

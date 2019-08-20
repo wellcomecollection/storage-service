@@ -1,11 +1,9 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.storage.models.KnownReplicas
 import uk.ac.wellcome.platform.storage.replica_aggregator.generators.StorageLocationGenerators
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
-  AggregatorInternalRecord,
-  KnownReplicas
-}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.AggregatorInternalRecord
 
 class ReplicaCounterTest
     extends FunSpec
