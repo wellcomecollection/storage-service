@@ -78,7 +78,7 @@ object AggregatorInternalRecord {
       case Some(location) if location == primaryLocation => record
       case Some(location) =>
         throw new Exception(
-          s"Record already has a different PrimaryStorageLocation: ${location} (existing) != ${primaryLocation}"
+          s"Record already has a different PrimaryStorageLocation: $location (existing) != $primaryLocation"
         )
     }
   }

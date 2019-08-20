@@ -4,7 +4,7 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.store.VersionedStore
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 class ReplicaAggregator(
   versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord]
@@ -16,17 +16,19 @@ class ReplicaAggregator(
     val initialRecord =
       AggregatorInternalRecord(result.storageLocation)
 
-    versionedStore.upsert(replicaPath)(initialRecord) { existingRecord =>
-      // TODO: This .get is caused by poor handling of error states in the storage library.
-      // See: https://github.com/wellcometrust/platform/issues/3840
+    Try {
+      versionedStore.upsert(replicaPath)(initialRecord) { existingRecord =>
+        // TODO: This .get is caused by poor handling of error states in the storage library.
+        // See: https://github.com/wellcometrust/platform/issues/3840
 
-      existingRecord.addLocation(result.storageLocation).get
-    } match {
-      case Right(Identified(_, aggregatorRecord)) =>
-        Success(aggregatorRecord)
+        existingRecord.addLocation(result.storageLocation).get
+      } match {
+        case Right(Identified(_, aggregatorRecord)) =>
+          aggregatorRecord
 
-      case Left(updateError) =>
-        Failure(updateError.e)
+        case Left(updateError) =>
+          throw updateError.e
+      }
     }
   }
 }
