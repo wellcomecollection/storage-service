@@ -3,17 +3,9 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CreateIngestType,
-  IngestID,
-  IngestType,
-  UpdateIngestType
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, InfrequentAccessStorageProvider, IngestID, IngestType, UpdateIngestType}
+import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, PrimaryStorageLocation, SecondaryStorageLocation, StorageSpace}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -69,6 +61,31 @@ trait PayloadGenerators
       ),
       unpackedBagLocation = unpackedBagLocation
     )
+
+  def createKnownReplicas = KnownReplicas(
+    location = PrimaryStorageLocation(
+      provider = InfrequentAccessStorageProvider,
+      prefix = createObjectLocationPrefix
+    ),
+    replicas = (1 to randomInt(from = 0, to = 5))
+      .map(_ => SecondaryStorageLocation(
+        provider = InfrequentAccessStorageProvider,
+        prefix = createObjectLocationPrefix
+      )).toList
+  )
+
+  def createKnownReplicasPayload =
+    createKnownReplicasPayloadWith()
+
+  def createKnownReplicasPayloadWith(
+                                      context: PipelineContext = createPipelineContext,
+                                      version: BagVersion = createBagVersion,
+                                      knownReplicas: KnownReplicas = createKnownReplicas
+                                    ) = KnownReplicasPayload(
+    context = context,
+    version = version,
+    knownReplicas = knownReplicas
+  )
 
   def createEnrichedBagInformationPayloadWith(
     context: PipelineContext = createPipelineContext,

@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
+import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, PrimaryStorageLocation}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
@@ -46,12 +46,21 @@ class BagRegisterFeatureTest
             dataFileCount = dataFileCount
           ) {
             case (bagRoot, bagInfo) =>
-              val payload = createEnrichedBagInformationPayloadWith(
+
+              val knownReplicas = KnownReplicas(
+                location = PrimaryStorageLocation(
+                  provider = InfrequentAccessStorageProvider,
+                  prefix = bagRoot.asPrefix
+                ),
+                replicas = List.empty
+              )
+
+              val payload = createKnownReplicasPayloadWith(
                 context = createPipelineContextWith(
                   storageSpace = space
                 ),
-                bagRootLocation = bagRoot,
-                version = version
+                version = version,
+                knownReplicas = knownReplicas
               )
 
               sendNotificationToSQS(queuePair.queue, payload)
@@ -95,7 +104,7 @@ class BagRegisterFeatureTest
 
     withBagRegisterWorker {
       case (_, _, ingests, _, queuePair) =>
-        val payload = createEnrichedBagInformationPayload
+        val payload = createKnownReplicasPayload
 
         sendNotificationToSQS(queuePair.queue, payload)
 
