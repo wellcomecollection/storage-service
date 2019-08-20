@@ -6,18 +6,13 @@ import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  SecondaryStorageLocation,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageLocation}
+import uk.ac.wellcome.platform.storage.replica_aggregator.generators.StorageLocationGenerators
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
-import uk.ac.wellcome.storage.{UpdateWriteError, Version}
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
+import uk.ac.wellcome.storage.{UpdateWriteError, Version}
 
-import scala.collection.immutable
 import scala.util.Try
 
 class ReplicaAggregatorTest
@@ -25,7 +20,7 @@ class ReplicaAggregatorTest
     with Matchers
     with EitherValues
     with TryValues
-    with ObjectLocationGenerators
+    with StorageLocationGenerators
     with StorageRandomThings {
 
   def createReplicaResultWith(
@@ -55,28 +50,20 @@ class ReplicaAggregatorTest
     )
 
   it("completes after a single primary replica") {
-    val prefix = createObjectLocationPrefix
+    val primaryLocation = createPrimaryLocation
 
     val replicaResult = createReplicaResultWith(
-      storageLocation = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = prefix
-      )
+      storageLocation = primaryLocation
     )
 
-    val result =
+    val result: Try[AggregatorInternalRecord] =
       withAggregator() {
         _.aggregate(replicaResult)
       }
 
-    val summary = result.success.value
-
-    summary shouldBe a[ReplicationAggregationComplete]
-
-    val complete = summary.asInstanceOf[ReplicationAggregationComplete]
-    complete.replicaPath shouldBe ReplicaPath(prefix.path)
-    complete.aggregatorRecord shouldBe AggregatorInternalRecord(
-      replicaResult.storageLocation
+    result.success.value shouldBe AggregatorInternalRecord(
+      location = Some(primaryLocation),
+      replicas = List.empty
     )
   }
 
@@ -161,23 +148,20 @@ class ReplicaAggregatorTest
   it("only stores unique replica results") {
     val replicaResult = createReplicaResult
 
-    val results: immutable.Seq[Try[ReplicationAggregationSummary]] =
+    val results: Seq[Try[AggregatorInternalRecord]] =
       withAggregator() { aggregator =>
         (1 to 3).map { _ =>
           aggregator.aggregate(replicaResult)
         }
       }
 
-    results.foreach { result =>
-      val summary = result.success.value
+    val uniqResults = results
+      .map { _.success.value }
+      .toSet
 
-      summary shouldBe a[ReplicationAggregationComplete]
+    uniqResults should have size 1
 
-      val complete = summary.asInstanceOf[ReplicationAggregationComplete]
-      complete.aggregatorRecord shouldBe AggregatorInternalRecord(
-        replicaResult.storageLocation
-      )
-    }
+    uniqResults.head shouldBe AggregatorInternalRecord(replicaResult.storageLocation)
   }
 
   // TODO (separate patch):

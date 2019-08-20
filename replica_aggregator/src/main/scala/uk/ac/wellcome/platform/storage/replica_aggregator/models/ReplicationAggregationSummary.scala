@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.models
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
+import uk.ac.wellcome.platform.storage.replica_aggregator.services.ReplicaCounterError
 
 sealed trait ReplicationAggregationSummary extends Summary {
   val replicaPath: ReplicaPath
@@ -37,7 +38,7 @@ sealed trait ReplicationAggregationSummary extends Summary {
 
 case class ReplicationAggregationComplete(
   replicaPath: ReplicaPath,
-  aggregatorRecord: AggregatorInternalRecord,
+  knownReplicas: KnownReplicas,
   startTime: Instant,
   endTime: Instant
 ) extends ReplicationAggregationSummary
@@ -45,6 +46,7 @@ case class ReplicationAggregationComplete(
 case class ReplicationAggregationIncomplete(
   replicaPath: ReplicaPath,
   aggregatorRecord: AggregatorInternalRecord,
+  counterError: ReplicaCounterError,
   startTime: Instant,
   endTime: Instant
 ) extends ReplicationAggregationSummary
