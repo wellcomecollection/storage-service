@@ -31,7 +31,7 @@ class ReplicaAggregatorTest
   def createReplicaResultWith(
     storageLocation: StorageLocation = PrimaryStorageLocation(
       provider = InfrequentAccessStorageProvider,
-      location = createObjectLocation
+      prefix = createObjectLocationPrefix
     )
   ): ReplicaResult =
     ReplicaResult(
@@ -54,12 +54,12 @@ class ReplicaAggregatorTest
     )
 
   it("completes after a single primary replica") {
-    val location = createObjectLocation
+    val prefix = createObjectLocationPrefix
 
     val replicaResult = createReplicaResultWith(
       storageLocation = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
-        location = location
+        prefix = prefix
       )
     )
 
@@ -73,7 +73,7 @@ class ReplicaAggregatorTest
     summary shouldBe a[ReplicationAggregationComplete]
     summary.asInstanceOf[ReplicationAggregationComplete].replicationSet shouldBe
       ReplicationSet(
-        path = ReplicaPath(location.path),
+        path = ReplicaPath(prefix.path),
         results = List(replicaResult)
       )
   }
@@ -82,7 +82,7 @@ class ReplicaAggregatorTest
     val replicaResult = createReplicaResultWith(
       storageLocation = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
-        location = createObjectLocation
+        prefix = createObjectLocationPrefix
       )
     )
 
@@ -95,7 +95,7 @@ class ReplicaAggregatorTest
       _.aggregate(replicaResult)
     }
 
-    val path = ReplicaPath(replicaResult.storageLocation.location.path)
+    val path = ReplicaPath(replicaResult.storageLocation.prefix.path)
 
     versionedStore.getLatest(path).right.value.identifiedT shouldBe List(
       replicaResult
@@ -106,7 +106,7 @@ class ReplicaAggregatorTest
     val replicaResult = createReplicaResultWith(
       storageLocation = SecondaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
-        location = createObjectLocation
+        prefix = createObjectLocationPrefix
       )
     )
 
@@ -164,7 +164,7 @@ class ReplicaAggregatorTest
         .asInstanceOf[ReplicationAggregationComplete]
         .replicationSet shouldBe
         ReplicationSet(
-          path = ReplicaPath(replicaResult.storageLocation.location.path),
+          path = ReplicaPath(replicaResult.storageLocation.prefix.path),
           results = List(replicaResult)
         )
     }

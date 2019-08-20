@@ -54,8 +54,8 @@ trait DisplayJsonHelpers {
        |    "id": "${loc.provider.id}",
        |    "type": "Provider"
        |  },
-       |  "bucket": "${loc.location.namespace}",
-       |  "path": "${loc.location.path}",
+       |  "bucket": "${loc.prefix.namespace}",
+       |  "path": "${loc.prefix.path}",
        |  "type": "Location"
        |}
      """.stripMargin

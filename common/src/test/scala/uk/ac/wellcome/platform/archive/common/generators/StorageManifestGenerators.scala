@@ -55,13 +55,13 @@ trait StorageManifestGenerators
       ),
       location = PrimaryStorageLocation(
         provider = StandardStorageProvider,
-        location = createObjectLocation
+        prefix = createObjectLocationPrefix
       ),
       replicaLocations = (1 to randomInt(0, 5))
         .map { _ =>
           SecondaryStorageLocation(
             provider = StandardStorageProvider,
-            location = createObjectLocation
+            prefix = createObjectLocationPrefix
           )
         },
       createdDate = Instant.now
