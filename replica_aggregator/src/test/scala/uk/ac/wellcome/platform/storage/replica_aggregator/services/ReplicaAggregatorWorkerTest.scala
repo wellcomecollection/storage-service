@@ -6,8 +6,15 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, Ingest}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded, PrimaryStorageLocation}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  Ingest
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepSucceeded,
+  PrimaryStorageLocation
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
@@ -15,7 +22,7 @@ import uk.ac.wellcome.storage.{UpdateWriteError, Version}
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 class ReplicaAggregatorWorkerTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with PayloadGenerators
     with IngestUpdateAssertions
@@ -42,8 +49,11 @@ class ReplicaAggregatorWorkerTest
 
       result.summary shouldBe a[ReplicationAggregationComplete]
 
-      val completeAggregation = result.summary.asInstanceOf[ReplicationAggregationComplete]
-      completeAggregation.replicaPath shouldBe ReplicaPath(payload.bagRootLocation.path)
+      val completeAggregation =
+        result.summary.asInstanceOf[ReplicationAggregationComplete]
+      completeAggregation.replicaPath shouldBe ReplicaPath(
+        payload.bagRootLocation.path
+      )
       completeAggregation.knownReplicas shouldBe KnownReplicas(
         location = PrimaryStorageLocation(
           provider = InfrequentAccessStorageProvider,
@@ -89,8 +99,11 @@ class ReplicaAggregatorWorkerTest
 
       result.summary shouldBe a[ReplicationAggregationIncomplete]
 
-      val incompleteAggregation = result.summary.asInstanceOf[ReplicationAggregationIncomplete]
-      incompleteAggregation.replicaPath shouldBe ReplicaPath(payload.bagRootLocation.path)
+      val incompleteAggregation =
+        result.summary.asInstanceOf[ReplicationAggregationIncomplete]
+      incompleteAggregation.replicaPath shouldBe ReplicaPath(
+        payload.bagRootLocation.path
+      )
       incompleteAggregation.aggregatorRecord shouldBe AggregatorInternalRecord(
         location = Some(
           PrimaryStorageLocation(
@@ -100,7 +113,10 @@ class ReplicaAggregatorWorkerTest
         ),
         replicas = List.empty
       )
-      incompleteAggregation.counterError shouldBe NotEnoughReplicas(expected = 3, actual = 1)
+      incompleteAggregation.counterError shouldBe NotEnoughReplicas(
+        expected = 3,
+        actual = 1
+      )
     }
 
     it("does not send an outgoing message") {

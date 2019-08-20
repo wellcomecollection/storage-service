@@ -1,6 +1,9 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  SecondaryStorageLocation
+}
 
 /** This records a complete set of replicas which can be passed around
   * between services.

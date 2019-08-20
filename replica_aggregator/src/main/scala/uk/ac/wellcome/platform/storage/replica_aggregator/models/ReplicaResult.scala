@@ -24,5 +24,3 @@ case object ReplicaResult {
       timestamp = Instant.now()
     )
 }
-
-

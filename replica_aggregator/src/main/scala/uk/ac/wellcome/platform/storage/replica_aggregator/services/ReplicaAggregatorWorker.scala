@@ -10,7 +10,12 @@ import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, IngestStepWorker}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded,
+  IngestStepWorker
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 
 import scala.util.{Failure, Success, Try}
@@ -68,13 +73,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
 
       case Failure(err) =>
         IngestFailed(
-          summary =
-            ReplicationAggregationFailed(
-              e = err,
-              replicaPath = replicaPath,
-              startTime = startTime,
-              endTime = Instant.now()
-            ),
+          summary = ReplicationAggregationFailed(
+            e = err,
+            replicaPath = replicaPath,
+            startTime = startTime,
+            endTime = Instant.now()
+          ),
           e = err
         )
     }
@@ -87,7 +91,8 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
 
   private def sendOutgoing(
     ingestStep: IngestStepResult[ReplicationAggregationSummary],
-    payload: EnrichedBagInformationPayload): Try[Unit] =
+    payload: EnrichedBagInformationPayload
+  ): Try[Unit] =
     ingestStep match {
       case IngestStepSucceeded(_: ReplicationAggregationComplete, _) =>
         outgoingPublisher.sendIfSuccessful(ingestStep, payload)

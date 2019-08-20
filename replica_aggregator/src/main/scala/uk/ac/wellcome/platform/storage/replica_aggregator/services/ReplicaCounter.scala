@@ -1,5 +1,8 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.services
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{AggregatorInternalRecord, KnownReplicas}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  AggregatorInternalRecord,
+  KnownReplicas
+}
 
 sealed trait ReplicaCounterError
 
@@ -19,7 +22,9 @@ case class NotEnoughReplicas(
   *
   */
 class ReplicaCounter(expectedReplicaCount: Int) {
-  def countReplicas(record: AggregatorInternalRecord): Either[ReplicaCounterError, KnownReplicas] =
+  def countReplicas(
+    record: AggregatorInternalRecord
+  ): Either[ReplicaCounterError, KnownReplicas] =
     record.location match {
       case None => Left(NoPrimaryReplica())
 

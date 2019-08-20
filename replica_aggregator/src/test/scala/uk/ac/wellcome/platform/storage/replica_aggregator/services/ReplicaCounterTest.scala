@@ -2,9 +2,16 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.storage.replica_aggregator.generators.StorageLocationGenerators
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{AggregatorInternalRecord, KnownReplicas}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  AggregatorInternalRecord,
+  KnownReplicas
+}
 
-class ReplicaCounterTest extends FunSpec with Matchers with EitherValues with StorageLocationGenerators {
+class ReplicaCounterTest
+    extends FunSpec
+    with Matchers
+    with EitherValues
+    with StorageLocationGenerators {
   it("rejects a record without a primary location") {
     val counter = new ReplicaCounter(expectedReplicaCount = 1)
 
@@ -16,12 +23,18 @@ class ReplicaCounterTest extends FunSpec with Matchers with EitherValues with St
     counter.countReplicas(record).left.value shouldBe NoPrimaryReplica()
   }
 
-  it("rejects a record without a primary location even if it has enough secondary replicas") {
+  it(
+    "rejects a record without a primary location even if it has enough secondary replicas"
+  ) {
     val counter = new ReplicaCounter(expectedReplicaCount = 3)
 
     val record = AggregatorInternalRecord(
       location = None,
-      replicas = List(createSecondaryLocation, createSecondaryLocation, createSecondaryLocation)
+      replicas = List(
+        createSecondaryLocation,
+        createSecondaryLocation,
+        createSecondaryLocation
+      )
     )
 
     counter.countReplicas(record).left.value shouldBe NoPrimaryReplica()
@@ -81,7 +94,9 @@ class ReplicaCounterTest extends FunSpec with Matchers with EitherValues with St
     val counter = new ReplicaCounter(expectedReplicaCount = 3)
 
     val location = createPrimaryLocation
-    val replicas = (1 to 5).map { _ => createSecondaryLocation }.toList
+    val replicas = (1 to 5).map { _ =>
+      createSecondaryLocation
+    }.toList
 
     val record = AggregatorInternalRecord(
       location = Some(location),

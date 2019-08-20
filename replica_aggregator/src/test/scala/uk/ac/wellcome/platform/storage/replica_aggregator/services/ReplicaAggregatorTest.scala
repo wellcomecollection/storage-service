@@ -6,7 +6,10 @@ import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.generators.StorageLocationGenerators
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
@@ -148,8 +151,12 @@ class ReplicaAggregatorTest
     val results: Seq[AggregatorInternalRecord] =
       withAggregator(versionedStore) { aggregator =>
         locations
-          .map { storageLocation => createReplicaResultWith(storageLocation = storageLocation) }
-          .map { replicaResult => aggregator.aggregate(replicaResult) }
+          .map { storageLocation =>
+            createReplicaResultWith(storageLocation = storageLocation)
+          }
+          .map { replicaResult =>
+            aggregator.aggregate(replicaResult)
+          }
           .map { _.success.value }
       }
 
@@ -166,7 +173,7 @@ class ReplicaAggregatorTest
         AggregatorInternalRecord(
           location = Some(location2),
           replicas = List(location1, location3)
-        ),
+        )
       )
     }
 
@@ -207,7 +214,10 @@ class ReplicaAggregatorTest
     }
 
     versionedStore.store
-      .asInstanceOf[MemoryStore[Version[ReplicaPath, Int], AggregatorInternalRecord]]
+      .asInstanceOf[MemoryStore[
+        Version[ReplicaPath, Int],
+        AggregatorInternalRecord
+      ]]
       .entries should have size 2
   }
 
@@ -252,7 +262,10 @@ class ReplicaAggregatorTest
 
     withAggregator() { aggregator =>
       (1 to 5).map { _ =>
-        aggregator.aggregate(replicaResult).success.value shouldBe expectedRecord
+        aggregator
+          .aggregate(replicaResult)
+          .success
+          .value shouldBe expectedRecord
       }
     }
   }
@@ -275,7 +288,9 @@ class ReplicaAggregatorTest
       aggregator.aggregate(replicaResult1) shouldBe a[Success[_]]
 
       val err = aggregator.aggregate(replicaResult2).failed.get
-      err.getMessage should startWith("Record already has a different PrimaryStorageLocation")
+      err.getMessage should startWith(
+        "Record already has a different PrimaryStorageLocation"
+      )
     }
   }
 
@@ -289,12 +304,12 @@ class ReplicaAggregatorTest
         }
       }
 
-    val uniqResults = results
-      .map { _.success.value }
-      .toSet
+    val uniqResults = results.map { _.success.value }.toSet
 
     uniqResults should have size 1
 
-    uniqResults.head shouldBe AggregatorInternalRecord(replicaResult.storageLocation)
+    uniqResults.head shouldBe AggregatorInternalRecord(
+      replicaResult.storageLocation
+    )
   }
 }
