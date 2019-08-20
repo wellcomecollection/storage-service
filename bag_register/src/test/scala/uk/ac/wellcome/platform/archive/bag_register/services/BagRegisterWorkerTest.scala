@@ -6,9 +6,16 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, PayloadGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  PayloadGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, KnownReplicas, PrimaryStorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  KnownReplicas,
+  PrimaryStorageLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
@@ -43,7 +50,6 @@ class BagRegisterWorkerTest
             version = version
           ) {
             case (bagRoot, bagInfo) =>
-
               val knownReplicas = KnownReplicas(
                 location = PrimaryStorageLocation(
                   provider = InfrequentAccessStorageProvider,
@@ -126,7 +132,6 @@ class BagRegisterWorkerTest
                 dataFileCount
               ) {
                 case (location2, _) =>
-
                   val knownReplicas1 = KnownReplicas(
                     location = PrimaryStorageLocation(
                       provider = InfrequentAccessStorageProvider,
@@ -198,7 +203,6 @@ class BagRegisterWorkerTest
 
     withBagRegisterWorker {
       case (service, _, ingests, _, _) =>
-
         val payload = createKnownReplicasPayload
 
         service.processMessage(payload) shouldBe a[Success[_]]

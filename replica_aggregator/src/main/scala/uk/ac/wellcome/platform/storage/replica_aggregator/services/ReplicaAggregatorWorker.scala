@@ -39,12 +39,13 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   private sealed trait WorkerError
   private case class AggregationFailure(e: Throwable) extends WorkerError
   private case class InsufficientReplicas(
-                                   replicaCounterError: ReplicaCounterError,
-                                   aggregatorRecord: AggregatorInternalRecord
-                                 ) extends WorkerError
+    replicaCounterError: ReplicaCounterError,
+    aggregatorRecord: AggregatorInternalRecord
+  ) extends WorkerError
 
-  private def getKnownReplicas(payload: EnrichedBagInformationPayload)
-    : Either[WorkerError, KnownReplicas] =
+  private def getKnownReplicas(
+    payload: EnrichedBagInformationPayload
+  ): Either[WorkerError, KnownReplicas] =
     for {
       aggregatorRecord <- replicaAggregator
         .aggregate(ReplicaResult(payload))
@@ -85,7 +86,8 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
             counterError = err,
             startTime = startTime,
             endTime = Instant.now()
-          ))
+          )
+        )
 
       case Right(knownReplicas: KnownReplicas) =>
         IngestStepSucceeded(

@@ -9,7 +9,10 @@ import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, PrimaryStorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  KnownReplicas,
+  PrimaryStorageLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
@@ -46,7 +49,6 @@ class BagRegisterFeatureTest
             dataFileCount = dataFileCount
           ) {
             case (bagRoot, bagInfo) =>
-
               val knownReplicas = KnownReplicas(
                 location = PrimaryStorageLocation(
                   provider = InfrequentAccessStorageProvider,

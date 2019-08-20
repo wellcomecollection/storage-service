@@ -3,11 +3,22 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.{EnrichedBagInformationPayload, KnownReplicasPayload}
+import uk.ac.wellcome.platform.archive.common.{
+  EnrichedBagInformationPayload,
+  KnownReplicasPayload
+}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{InfrequentAccessStorageProvider, Ingest}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded, KnownReplicas, PrimaryStorageLocation}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  InfrequentAccessStorageProvider,
+  Ingest
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepSucceeded,
+  KnownReplicas,
+  PrimaryStorageLocation
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima

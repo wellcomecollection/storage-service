@@ -4,8 +4,7 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.models.AggregatorInter
 
 sealed trait ReplicaCounterError
 
-case class NoPrimaryReplica()
-  extends ReplicaCounterError
+case class NoPrimaryReplica() extends ReplicaCounterError
 
 case class NotEnoughReplicas(
   expected: Int,

@@ -8,9 +8,15 @@ import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, PrimaryStorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  KnownReplicas,
+  PrimaryStorageLocation
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{AggregatorInternalRecord, ReplicaPath}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  AggregatorInternalRecord,
+  ReplicaPath
+}
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
@@ -54,8 +60,8 @@ class ReplicaAggregatorFeatureTest
           val expectedReplicaPath =
             ReplicaPath(payload.bagRootLocation.path)
 
-          val stored = versionedStore.get(id = Version(expectedReplicaPath, 0))
-            .right.value
+          val stored =
+            versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
 
           val primaryLocation = PrimaryStorageLocation(
             provider = InfrequentAccessStorageProvider,
@@ -75,7 +81,9 @@ class ReplicaAggregatorFeatureTest
             )
           )
 
-          outgoing.getMessages[KnownReplicasPayload] shouldBe Seq(expectedPayload)
+          outgoing.getMessages[KnownReplicasPayload] shouldBe Seq(
+            expectedPayload
+          )
         }
       }
     }
