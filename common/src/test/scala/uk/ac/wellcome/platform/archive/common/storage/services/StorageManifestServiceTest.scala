@@ -53,9 +53,7 @@ class StorageManifestServiceTest
 
       it("fails if the root has the wrong version") {
         val version = createBagVersion
-        val location = createPrimaryLocationWith(
-          prefix = createObjectLocation.join(version.increment.toString).asPrefix
-        )
+        val location = createPrimaryLocationWith(version = version.increment)
 
         assertIsError2(location = location, version = version) { err =>
           err shouldBe a[StorageManifestException]
@@ -73,23 +71,22 @@ class StorageManifestServiceTest
 
         assertIsError2(replicas = replicas) { err =>
           err shouldBe a[StorageManifestException]
-          err.getMessage should startWith(s"Malformed bag root in the replicas: ${replicas.head.prefix.namespace}/${replicas.head.prefix.path}")
+          err.getMessage should startWith("Malformed bag root in the replicas:")
         }
       }
 
       it("fails if the root has the wrong version") {
+        val location = createPrimaryLocationWith(version = BagVersion(1))
+        val version = BagVersion(1)
+
         val replicas = Seq(
-          createSecondaryLocationWith(
-            prefix = createObjectLocation.join("/v2").asPrefix
-          ),
-          createSecondaryLocationWith(
-            prefix = createObjectLocation.join("/v3").asPrefix
-          )
+          createSecondaryLocationWith(BagVersion(2)),
+          createSecondaryLocationWith(BagVersion(3))
         )
 
-        assertIsError2(replicas = replicas) { err =>
+        assertIsError2(location = location, replicas = replicas, version = version) { err =>
           err shouldBe a[StorageManifestException]
-          err.getMessage should startWith(s"Malformed bag root in the replicas: ${replicas.head.prefix.namespace}/${replicas.head.prefix.path}")
+          err.getMessage should startWith("Malformed bag root in the replicas:")
         }
       }
     }
@@ -97,21 +94,19 @@ class StorageManifestServiceTest
 
   describe("sets the locations and replicaLocations correctly") {
     val version = createBagVersion
-    val bagRoot = createObjectLocationPrefix
-    val replicaRoot = bagRoot.asLocation(version.toString)
+    val bagRoot = createObjectLocation
 
     val sizeFinder: SizeFinder = (_: ObjectLocation) => Success(1L)
 
     val service = new StorageManifestService(sizeFinder)
 
     val location = createPrimaryLocationWith(
-      prefix = replicaRoot.asPrefix
+      bagRoot = bagRoot,
+      version = version
     )
 
     val replicas = atMost(max = 10) {
-      createSecondaryLocationWith(
-        prefix = createObjectLocationPrefix.asLocation(version.toString).asPrefix
-      )
+      createSecondaryLocationWith(version)
     }
 
     val storageManifest = service.createManifest(
@@ -127,7 +122,7 @@ class StorageManifestServiceTest
     }
 
     it("sets the correct prefix on the primary location") {
-      storageManifest.location.prefix shouldBe bagRoot
+      storageManifest.location.prefix shouldBe bagRoot.asPrefix
     }
 
     it("uses the correct providers on the replica locations") {
@@ -691,10 +686,26 @@ class StorageManifestServiceTest
     result.success.value
   }
 
+  def createPrimaryLocationWith(version: BagVersion): PrimaryStorageLocation =
+    createPrimaryLocationWith(
+      bagRoot = createObjectLocation,
+      version = version
+    )
+
+  def createPrimaryLocationWith(
+    bagRoot: ObjectLocation,
+    version: BagVersion): PrimaryStorageLocation =
+    createPrimaryLocationWith(
+      prefix = bagRoot.join(version.toString).asPrefix
+    )
+
+  def createSecondaryLocationWith(version: BagVersion): SecondaryStorageLocation =
+    createSecondaryLocationWith(
+      prefix = createObjectLocation.join(version.toString).asPrefix
+    )
+
   private def assertIsError2(
-    location: PrimaryStorageLocation = createPrimaryLocationWith(
-      prefix = createObjectLocation.join("/v1").asPrefix
-    ),
+    location: PrimaryStorageLocation = createPrimaryLocationWith(version = BagVersion(1)),
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     version: BagVersion = BagVersion(1)
   )(assertError: Throwable => Assertion): Assertion = {
