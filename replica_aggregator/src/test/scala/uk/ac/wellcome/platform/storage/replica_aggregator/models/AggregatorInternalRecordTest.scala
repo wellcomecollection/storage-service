@@ -2,15 +2,21 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation}
-import uk.ac.wellcome.storage.generators.{ObjectLocationGenerators, RandomThings}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  SecondaryStorageLocation
+}
+import uk.ac.wellcome.storage.generators.{
+  ObjectLocationGenerators,
+  RandomThings
+}
 
 class AggregatorInternalRecordTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with TryValues
     with ObjectLocationGenerators
-    with RandomThings{
+    with RandomThings {
 
   def createPrimaryLocation = PrimaryStorageLocation(
     provider = InfrequentAccessStorageProvider,
@@ -22,9 +28,10 @@ class AggregatorInternalRecordTest
     prefix = createObjectLocationPrefix
   )
 
-  def createReplicas(min: Int = 0): List[SecondaryStorageLocation] = (1 to randomInt(min, 10))
-    .map(_ => createSecondaryLocation).toList
-
+  def createReplicas(min: Int = 0): List[SecondaryStorageLocation] =
+    (1 to randomInt(min, 10))
+      .map(_ => createSecondaryLocation)
+      .toList
 
   describe("creates a record from a single storage location") {
 
@@ -80,7 +87,6 @@ class AggregatorInternalRecordTest
         updatedRecord shouldBe record
       }
 
-
       it("the record has a different primary location") {
         val location = createPrimaryLocation
         val differentLocation = createPrimaryLocation
@@ -108,7 +114,7 @@ class AggregatorInternalRecordTest
 
         val updatedRecord = record.addLocation(location).success.value
 
-        updatedRecord.replicas should contain theSameElementsAs(replicas)
+        updatedRecord.replicas should contain theSameElementsAs (replicas)
       }
     }
 
@@ -137,7 +143,7 @@ class AggregatorInternalRecordTest
 
         val updatedRecord = record.addLocation(location).success.value
 
-        updatedRecord.replicas should contain theSameElementsAs(replicas :+ location)
+        updatedRecord.replicas should contain theSameElementsAs (replicas :+ location)
       }
 
       it("the record already has this secondary location") {
@@ -151,7 +157,7 @@ class AggregatorInternalRecordTest
 
         val updatedRecord = record.addLocation(location).success.value
 
-        updatedRecord.replicas should contain theSameElementsAs(record.replicas)
+        updatedRecord.replicas should contain theSameElementsAs (record.replicas)
       }
 
       it("preserves a primary location") {

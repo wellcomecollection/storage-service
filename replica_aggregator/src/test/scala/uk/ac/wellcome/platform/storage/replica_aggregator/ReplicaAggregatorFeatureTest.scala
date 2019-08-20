@@ -10,7 +10,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{AggregatorInternalRecord, ReplicaPath}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  AggregatorInternalRecord,
+  ReplicaPath
+}
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
@@ -57,10 +60,12 @@ class ReplicaAggregatorFeatureTest
           val stored =
             versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
 
-          stored.identifiedT.location shouldBe Some(PrimaryStorageLocation(
-            provider = InfrequentAccessStorageProvider,
-            prefix = payload.bagRootLocation.asPrefix
-          ))
+          stored.identifiedT.location shouldBe Some(
+            PrimaryStorageLocation(
+              provider = InfrequentAccessStorageProvider,
+              prefix = payload.bagRootLocation.asPrefix
+            )
+          )
 
           stored.identifiedT.replicas shouldBe empty
 

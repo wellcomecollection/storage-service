@@ -43,10 +43,12 @@ class ReplicaAggregatorTest
     createReplicaResultWith()
 
   def withAggregator[R](
-    versionedStore: MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord] =
-      MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
-        initialEntries = Map.empty
-      )
+    versionedStore: MemoryVersionedStore[
+      ReplicaPath,
+      AggregatorInternalRecord
+    ] = MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
+      initialEntries = Map.empty
+    )
   )(testWith: TestWith[ReplicaAggregator, R]): R =
     testWith(
       new ReplicaAggregator(versionedStore)
@@ -73,7 +75,9 @@ class ReplicaAggregatorTest
 
     val complete = summary.asInstanceOf[ReplicationAggregationComplete]
     complete.replicaPath shouldBe ReplicaPath(prefix.path)
-    complete.aggregatorRecord shouldBe AggregatorInternalRecord(replicaResult.storageLocation)
+    complete.aggregatorRecord shouldBe AggregatorInternalRecord(
+      replicaResult.storageLocation
+    )
   }
 
   it("stores a single primary replica") {
@@ -97,10 +101,14 @@ class ReplicaAggregatorTest
 
     val path = ReplicaPath(replicaResult.storageLocation.prefix.path)
 
-    versionedStore.getLatest(path).right.value.identifiedT shouldBe AggregatorInternalRecord(
-       location = Some(storageLocation),
-       replicas = List.empty
-     )
+    versionedStore
+      .getLatest(path)
+      .right
+      .value
+      .identifiedT shouldBe AggregatorInternalRecord(
+      location = Some(storageLocation),
+      replicas = List.empty
+    )
   }
 
   it("errors if asked to aggregate a secondary replica") {
@@ -125,13 +133,16 @@ class ReplicaAggregatorTest
 
     val brokenStore =
       new MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
-        store = new MemoryStore[Version[ReplicaPath, Int], AggregatorInternalRecord](
-          initialEntries = Map.empty
-        ) with MemoryMaxima[ReplicaPath, AggregatorInternalRecord]
+        store =
+          new MemoryStore[Version[ReplicaPath, Int], AggregatorInternalRecord](
+            initialEntries = Map.empty
+          ) with MemoryMaxima[ReplicaPath, AggregatorInternalRecord]
       ) {
         override def upsert(id: ReplicaPath)(
           t: AggregatorInternalRecord
-        )(f: AggregatorInternalRecord => AggregatorInternalRecord): UpdateEither =
+        )(
+          f: AggregatorInternalRecord => AggregatorInternalRecord
+        ): UpdateEither =
           Left(UpdateWriteError(throwable))
       }
 
@@ -163,7 +174,9 @@ class ReplicaAggregatorTest
       summary shouldBe a[ReplicationAggregationComplete]
 
       val complete = summary.asInstanceOf[ReplicationAggregationComplete]
-      complete.aggregatorRecord shouldBe AggregatorInternalRecord(replicaResult.storageLocation)
+      complete.aggregatorRecord shouldBe AggregatorInternalRecord(
+        replicaResult.storageLocation
+      )
     }
   }
 

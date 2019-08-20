@@ -6,9 +6,18 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture, OperationFixtures}
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{AggregatorInternalRecord, ReplicaPath}
-import uk.ac.wellcome.platform.storage.replica_aggregator.services.{ReplicaAggregator, ReplicaAggregatorWorker}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  MonitoringClientFixture,
+  OperationFixtures
+}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  AggregatorInternalRecord,
+  ReplicaPath
+}
+import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
+  ReplicaAggregator,
+  ReplicaAggregatorWorker
+}
 import uk.ac.wellcome.storage.store.VersionedStore
 
 trait ReplicaAggregatorFixtures
@@ -23,11 +32,11 @@ trait ReplicaAggregatorFixtures
   )
 
   def withReplicaAggregatorWorker[R](
-                                      queue: Queue = defaultQueue,
-                                      versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord],
-                                      ingests: MemoryMessageSender,
-                                      outgoing: MemoryMessageSender,
-                                      stepName: String = randomAlphanumericWithLength()
+    queue: Queue = defaultQueue,
+    versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord],
+    ingests: MemoryMessageSender,
+    outgoing: MemoryMessageSender,
+    stepName: String = randomAlphanumericWithLength()
   )(testWith: TestWith[ReplicaAggregatorWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
