@@ -5,7 +5,6 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import org.scanamo.auto._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
@@ -13,6 +12,7 @@ import uk.ac.wellcome.messaging.typesafe.{
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
+
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
@@ -28,9 +28,12 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
   ReplicaCounter
 }
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
+import uk.ac.wellcome.storage.store.dynamo.DynamoSingleVersionStore
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import org.scanamo.auto._
+import uk.ac.wellcome.json.JsonUtil._
 
 import scala.concurrent.ExecutionContextExecutor
 

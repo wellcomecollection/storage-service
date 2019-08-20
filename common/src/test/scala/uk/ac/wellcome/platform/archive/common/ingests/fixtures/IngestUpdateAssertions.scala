@@ -48,14 +48,15 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
     ingests: MemoryMessageSender,
     expectedDescriptions: Seq[String]
   ): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
-      val eventDescriptions: Seq[String] =
-        ingestUpdates
-          .flatMap { _.events }
-          .map { _.description }
-          .distinct
+    assertTopicReceivesIngestUpdates(ingestId, ingests) {
+      ingestUpdates: Seq[IngestUpdate] =>
+        val eventDescriptions: Seq[String] =
+          ingestUpdates
+            .flatMap { _.events }
+            .map { _.description }
+            .distinct
 
-      eventDescriptions should contain theSameElementsAs expectedDescriptions.distinct
+        eventDescriptions should contain allElementsOf expectedDescriptions.distinct
     }
 
   def assertTopicReceivesIngestEvent(

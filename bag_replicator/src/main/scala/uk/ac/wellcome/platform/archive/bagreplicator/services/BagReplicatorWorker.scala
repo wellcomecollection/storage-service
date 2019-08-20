@@ -64,8 +64,6 @@ class BagReplicatorWorker[
     namespace = replicatorDestinationConfig.namespace
   )
 
-//  val bagReplicator = new BagReplicator[BagRequest](replicator)
-
   override def process(
     payload: EnrichedBagInformationPayload
   ): Future[Result[BagReplicationSummary[_]]] =

@@ -62,7 +62,8 @@ class BagReplicatorFeatureTest
               )
 
               outgoing
-                .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                .getMessages[EnrichedBagInformationPayload]
+                .toSet shouldBe Set(
                 expectedPayload
               )
 
