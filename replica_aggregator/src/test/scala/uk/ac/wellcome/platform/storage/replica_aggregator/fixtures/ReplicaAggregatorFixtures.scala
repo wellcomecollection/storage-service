@@ -10,6 +10,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{MonitoringClientFixture,
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{AggregatorInternalRecord, ReplicaPath}
 import uk.ac.wellcome.platform.storage.replica_aggregator.services.{ReplicaAggregator, ReplicaAggregatorWorker, ReplicaCounter}
 import uk.ac.wellcome.storage.store.VersionedStore
+import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 trait ReplicaAggregatorFixtures
     extends OperationFixtures
@@ -24,7 +25,10 @@ trait ReplicaAggregatorFixtures
 
   def withReplicaAggregatorWorker[R](
     queue: Queue = defaultQueue,
-    versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord],
+    versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord] =
+      MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
+        initialEntries = Map.empty
+      ),
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
     stepName: String = randomAlphanumericWithLength(),
