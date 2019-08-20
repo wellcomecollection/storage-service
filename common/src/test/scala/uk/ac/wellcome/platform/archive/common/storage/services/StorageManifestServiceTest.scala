@@ -45,7 +45,7 @@ class StorageManifestServiceTest
         )
         val version = createBagVersion
 
-        assertIsError2(location = location, version = version) { err =>
+        assertIsError(location = location, version = version) { err =>
           err shouldBe a[StorageManifestException]
           err.getMessage shouldBe s"Malformed bag root: ${location.prefix.namespace}/${location.prefix.path} (expected suffix /$version)"
         }
@@ -55,7 +55,7 @@ class StorageManifestServiceTest
         val version = createBagVersion
         val location = createPrimaryLocationWith(version = version.increment)
 
-        assertIsError2(location = location, version = version) { err =>
+        assertIsError(location = location, version = version) { err =>
           err shouldBe a[StorageManifestException]
           err.getMessage shouldBe s"Malformed bag root: ${location.prefix.namespace}/${location.prefix.path} (expected suffix /$version)"
         }
@@ -69,7 +69,7 @@ class StorageManifestServiceTest
           createSecondaryLocation
         )
 
-        assertIsError2(replicas = replicas) { err =>
+        assertIsError(replicas = replicas) { err =>
           err shouldBe a[StorageManifestException]
           err.getMessage should startWith("Malformed bag root in the replicas:")
         }
@@ -84,7 +84,7 @@ class StorageManifestServiceTest
           createSecondaryLocationWith(BagVersion(3))
         )
 
-        assertIsError2(location = location, replicas = replicas, version = version) { err =>
+        assertIsError(location = location, replicas = replicas, version = version) { err =>
           err shouldBe a[StorageManifestException]
           err.getMessage should startWith("Malformed bag root in the replicas:")
         }
@@ -460,13 +460,17 @@ class StorageManifestServiceTest
     }
 
     it("refers to a file that isn't in a versioned directory") {
-      val version = randomInt(1, 10)
+      val version = createBagVersion
       val bagRoot = createObjectLocation
-      val replicaRoot = bagRoot.join(s"/v$version")
+
+      val location = createPrimaryLocationWith(
+        bagRoot = bagRoot,
+        version = version
+      )
 
       val fetchEntries = Seq(
         BagFetchEntry(
-          uri = new URI(s"s3://${replicaRoot.namespace}/file1.txt"),
+          uri = new URI(s"s3://${location.prefix.namespace}/file1.txt"),
           length = None,
           path = BagPath("data/file1.txt")
         )
@@ -479,7 +483,7 @@ class StorageManifestServiceTest
         fetchEntries = fetchEntries
       )
 
-      assertIsError(bag = bag, replicaRoot = replicaRoot, version = version) {
+      assertIsError(bag = bag, location = location, version = version) {
         err =>
           err shouldBe a[BadFetchLocationException]
           err.getMessage shouldBe "Fetch entry for data/file1.txt refers to a file in the wrong path: /file1.txt"
@@ -704,7 +708,8 @@ class StorageManifestServiceTest
       prefix = createObjectLocation.join(version.toString).asPrefix
     )
 
-  private def assertIsError2(
+  private def assertIsError(
+    bag: Bag = createBag,
     location: PrimaryStorageLocation = createPrimaryLocationWith(version = BagVersion(1)),
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     version: BagVersion = BagVersion(1)
@@ -716,32 +721,11 @@ class StorageManifestServiceTest
     val service = new StorageManifestService(sizeFinder)
 
     val result = service.createManifest(
-      bag = createBag,
+      bag = bag,
       location = location,
       replicas = replicas,
       space = createStorageSpace,
       version = version
-    )
-
-    assertError(result.failure.exception)
-  }
-
-  private def assertIsError(
-    bag: Bag,
-    replicaRoot: ObjectLocation = createObjectLocation.join("/v1"),
-    version: Int = 1
-  )(assertError: Throwable => Assertion): Assertion = {
-    val sizeFinder = new SizeFinder {
-      override def getSize(location: ObjectLocation): Try[Long] = Success(1)
-    }
-
-    val service = new StorageManifestService(sizeFinder)
-
-    val result = service.createManifest(
-      bag = bag,
-      replicaRoot = replicaRoot.asPrefix,
-      space = createStorageSpace,
-      version = BagVersion(version)
     )
 
     assertError(result.failure.exception)
