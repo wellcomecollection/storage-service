@@ -6,7 +6,11 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 
 import uk.ac.wellcome.platform.archive.common.config.builders.{
@@ -32,7 +36,6 @@ import org.scanamo.auto._
 import uk.ac.wellcome.json.JsonUtil._
 
 import scala.concurrent.ExecutionContextExecutor
-
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
