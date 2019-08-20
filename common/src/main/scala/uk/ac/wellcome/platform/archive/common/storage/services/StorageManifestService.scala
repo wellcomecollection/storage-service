@@ -251,29 +251,35 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
 
   private def getReplicaLocations(
     replicas: Seq[SecondaryStorageLocation],
-    version: BagVersion): Try[Seq[SecondaryStorageLocation]] = {
+    version: BagVersion
+  ): Try[Seq[SecondaryStorageLocation]] = {
     val rootReplicas =
       replicas
         .map { loc =>
           getBagRoot(replicaRoot = loc.prefix, version = version) match {
-            case Success(prefix) => Success(
-              SecondaryStorageLocation(
-                provider = loc.provider,
-                prefix = prefix
+            case Success(prefix) =>
+              Success(
+                SecondaryStorageLocation(
+                  provider = loc.provider,
+                  prefix = prefix
+                )
               )
-            )
 
             case Failure(err) => Failure(err)
           }
         }
 
     val successes = rootReplicas.collect { case Success(loc) => loc }
-    val failures = rootReplicas.collect { case Failure(err) => err }
+    val failures = rootReplicas.collect { case Failure(err)  => err }
 
     if (failures.isEmpty) {
       Success(successes)
     } else {
-      Failure(new StorageManifestException(s"Malformed bag root in the replicas: $failures"))
+      Failure(
+        new StorageManifestException(
+          s"Malformed bag root in the replicas: $failures"
+        )
+      )
     }
   }
 }

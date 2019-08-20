@@ -84,7 +84,11 @@ class StorageManifestServiceTest
           createSecondaryLocationWith(BagVersion(3))
         )
 
-        assertIsError(location = location, replicas = replicas, version = version) { err =>
+        assertIsError(
+          location = location,
+          replicas = replicas,
+          version = version
+        ) { err =>
           err shouldBe a[StorageManifestException]
           err.getMessage should startWith("Malformed bag root in the replicas:")
         }
@@ -129,9 +133,11 @@ class StorageManifestServiceTest
     it("uses the correct roots on the replica locations") {
       val expectedPrefixes = replicas
         .map { _.prefix }
-        .map { prefix => prefix.copy(
-          path = prefix.path.stripSuffix(s"/$version")
-        )}
+        .map { prefix =>
+          prefix.copy(
+            path = prefix.path.stripSuffix(s"/$version")
+          )
+        }
 
       val actualPrefixes = storageManifest.replicaLocations.map { _.prefix }
 
@@ -466,10 +472,9 @@ class StorageManifestServiceTest
         fetchEntries = fetchEntries
       )
 
-      assertIsError(bag = bag, location = location, version = version) {
-        err =>
-          err shouldBe a[BadFetchLocationException]
-          err.getMessage shouldBe "Fetch entry for data/file1.txt refers to a file in the wrong path: /file1.txt"
+      assertIsError(bag = bag, location = location, version = version) { err =>
+        err shouldBe a[BadFetchLocationException]
+        err.getMessage shouldBe "Fetch entry for data/file1.txt refers to a file in the wrong path: /file1.txt"
       }
     }
   }
@@ -657,12 +662,14 @@ class StorageManifestServiceTest
 
   private def createManifest(
     bag: Bag = createBag,
-    location: PrimaryStorageLocation = createPrimaryLocationWith(version = BagVersion(1)),
+    location: PrimaryStorageLocation = createPrimaryLocationWith(
+      version = BagVersion(1)
+    ),
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     space: StorageSpace = createStorageSpace,
     version: BagVersion = BagVersion(1),
-    sizeFinder: SizeFinder =
-      (location: ObjectLocation) => Success(Random.nextLong().abs)
+    sizeFinder: SizeFinder = (location: ObjectLocation) =>
+      Success(Random.nextLong().abs)
   ): StorageManifest = {
     val service = new StorageManifestService(sizeFinder)
 
@@ -689,19 +696,24 @@ class StorageManifestServiceTest
 
   def createPrimaryLocationWith(
     bagRoot: ObjectLocation,
-    version: BagVersion): PrimaryStorageLocation =
+    version: BagVersion
+  ): PrimaryStorageLocation =
     createPrimaryLocationWith(
       prefix = bagRoot.join(version.toString).asPrefix
     )
 
-  def createSecondaryLocationWith(version: BagVersion): SecondaryStorageLocation =
+  def createSecondaryLocationWith(
+    version: BagVersion
+  ): SecondaryStorageLocation =
     createSecondaryLocationWith(
       prefix = createObjectLocation.join(version.toString).asPrefix
     )
 
   private def assertIsError(
     bag: Bag = createBag,
-    location: PrimaryStorageLocation = createPrimaryLocationWith(version = BagVersion(1)),
+    location: PrimaryStorageLocation = createPrimaryLocationWith(
+      version = BagVersion(1)
+    ),
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     version: BagVersion = BagVersion(1)
   )(assertError: Throwable => Assertion): Assertion = {

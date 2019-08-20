@@ -19,7 +19,9 @@ trait StorageRandomThings extends RandomThings {
     Instant.now().plusSeconds(Random.nextInt())
 
   def atMost[T](max: Int)(f: => T): Seq[T] =
-    (1 to randomInt(from = 0, to = max)).map { _ => f }
+    (1 to randomInt(from = 0, to = max)).map { _ =>
+      f
+    }
 
   def randomPaths(maxDepth: Int = 4, dirs: Int = 4): List[String] = {
     (1 to dirs).map { _ =>
