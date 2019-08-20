@@ -16,9 +16,9 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   PrimaryStorageLocation,
+  SecondaryStorageLocation,
   StorageManifest,
   StorageSpace
 }
@@ -37,23 +37,61 @@ class StorageManifestServiceTest
     with TimeTestFixture
     with TryValues {
 
-  it("fails if the replica root is not a versioned directory") {
-    val replicaRootLocation = createObjectLocation
-    val version = randomInt(1, 10)
+  describe("checks the replica root paths") {
+    describe("primary location") {
+      it("fails if the root is not a versioned directory") {
+        val location = createPrimaryLocationWith(
+          prefix = createObjectLocationPrefix
+        )
+        val version = createBagVersion
 
-    assertIsError(replicaRoot = replicaRootLocation, version = version) { err =>
-      err shouldBe a[StorageManifestException]
-      err.getMessage shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
+        assertIsError2(location = location, version = version) { err =>
+          err shouldBe a[StorageManifestException]
+          err.getMessage shouldBe s"Malformed bag root: ${location.prefix.namespace}/${location.prefix.path} (expected suffix /$version)"
+        }
+      }
+
+      it("fails if the root has the wrong version") {
+        val version = createBagVersion
+        val location = createPrimaryLocationWith(
+          prefix = createObjectLocation.join(version.increment.toString).asPrefix
+        )
+
+        assertIsError2(location = location, version = version) { err =>
+          err shouldBe a[StorageManifestException]
+          err.getMessage shouldBe s"Malformed bag root: ${location.prefix.namespace}/${location.prefix.path} (expected suffix /$version)"
+        }
+      }
     }
-  }
 
-  it("fails if the replica root has the wrong version") {
-    val version = randomInt(1, 10)
-    val replicaRootLocation = createObjectLocation.join(s"/v${version + 1}")
+    describe("secondary location") {
+      it("fails if the root is not a versioned directory") {
+        val replicas = Seq(
+          createSecondaryLocation,
+          createSecondaryLocation
+        )
 
-    assertIsError(replicaRoot = replicaRootLocation, version = version) { err =>
-      err shouldBe a[StorageManifestException]
-      err.getMessage shouldBe s"Malformed bag root: $replicaRootLocation (expected suffix /v$version)"
+        assertIsError2(replicas = replicas) { err =>
+          err shouldBe a[StorageManifestException]
+          err.getMessage should startWith(s"Malformed bag root in the replicas: ${replicas.head.prefix.namespace}/${replicas.head.prefix.path}")
+        }
+      }
+
+      it("fails if the root has the wrong version") {
+        val replicas = Seq(
+          createSecondaryLocationWith(
+            prefix = createObjectLocation.join("/v2").asPrefix
+          ),
+          createSecondaryLocationWith(
+            prefix = createObjectLocation.join("/v3").asPrefix
+          )
+        )
+
+        assertIsError2(replicas = replicas) { err =>
+          err shouldBe a[StorageManifestException]
+          err.getMessage should startWith(s"Malformed bag root in the replicas: ${replicas.head.prefix.namespace}/${replicas.head.prefix.path}")
+        }
+      }
     }
   }
 
@@ -110,24 +148,6 @@ class StorageManifestServiceTest
 
       actualPrefixes shouldBe expectedPrefixes
     }
-  }
-
-  it("identifies the correct root location of a bag") {
-    val version = randomInt(1, 10)
-    val bagRoot = createObjectLocation
-    val replicaRoot = bagRoot.join(s"/v$version")
-
-    val storageManifest = createManifest(
-      replicaRoot = replicaRoot,
-      version = version
-    )
-
-    storageManifest.location shouldBe PrimaryStorageLocation(
-      provider = InfrequentAccessStorageProvider,
-      prefix = bagRoot.asPrefix
-    )
-
-    storageManifest.replicaLocations shouldBe empty
   }
 
   describe("constructs the paths correctly") {
@@ -671,8 +691,32 @@ class StorageManifestServiceTest
     result.success.value
   }
 
+  private def assertIsError2(
+    location: PrimaryStorageLocation = createPrimaryLocationWith(
+      prefix = createObjectLocation.join("/v1").asPrefix
+    ),
+    replicas: Seq[SecondaryStorageLocation] = Seq.empty,
+    version: BagVersion = BagVersion(1)
+  )(assertError: Throwable => Assertion): Assertion = {
+    val sizeFinder = new SizeFinder {
+      override def getSize(location: ObjectLocation): Try[Long] = Success(1)
+    }
+
+    val service = new StorageManifestService(sizeFinder)
+
+    val result = service.createManifest(
+      bag = createBag,
+      location = location,
+      replicas = replicas,
+      space = createStorageSpace,
+      version = version
+    )
+
+    assertError(result.failure.exception)
+  }
+
   private def assertIsError(
-    bag: Bag = createBag,
+    bag: Bag,
     replicaRoot: ObjectLocation = createObjectLocation.join("/v1"),
     version: Int = 1
   )(assertError: Throwable => Assertion): Assertion = {

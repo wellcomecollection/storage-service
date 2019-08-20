@@ -273,7 +273,7 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
     if (failures.isEmpty) {
       Success(successes)
     } else {
-      Failure(new Throwable(s"Malformed bag root in the replicas: $failures"))
+      Failure(new StorageManifestException(s"Malformed bag root in the replicas: $failures"))
     }
   }
 }
