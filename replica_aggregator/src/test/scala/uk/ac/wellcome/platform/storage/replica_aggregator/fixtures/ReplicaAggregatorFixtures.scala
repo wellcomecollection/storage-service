@@ -16,9 +16,11 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
   ReplicaAggregator,
-  ReplicaAggregatorWorker
+  ReplicaAggregatorWorker,
+  ReplicaCounter
 }
 import uk.ac.wellcome.storage.store.VersionedStore
+import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 trait ReplicaAggregatorFixtures
     extends OperationFixtures
@@ -33,10 +35,14 @@ trait ReplicaAggregatorFixtures
 
   def withReplicaAggregatorWorker[R](
     queue: Queue = defaultQueue,
-    versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord],
+    versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord] =
+      MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
+        initialEntries = Map.empty
+      ),
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
-    stepName: String = randomAlphanumericWithLength()
+    stepName: String = randomAlphanumericWithLength(),
+    expectedReplicaCount: Int = 1
   )(testWith: TestWith[ReplicaAggregatorWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
@@ -46,6 +52,8 @@ trait ReplicaAggregatorFixtures
         val worker = new ReplicaAggregatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           replicaAggregator = new ReplicaAggregator(versionedStore),
+          replicaCounter =
+            new ReplicaCounter(expectedReplicaCount = expectedReplicaCount),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher
         )

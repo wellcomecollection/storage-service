@@ -24,7 +24,8 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
   ReplicaAggregator,
-  ReplicaAggregatorWorker
+  ReplicaAggregatorWorker,
+  ReplicaCounter
 }
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
@@ -67,6 +68,8 @@ object Main extends WellcomeTypesafeApp {
     new ReplicaAggregatorWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       replicaAggregator = new ReplicaAggregator(dynamoVersionedStore),
+      // TODO: Make this configurable
+      replicaCounter = new ReplicaCounter(expectedReplicaCount = 1),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
     )
