@@ -512,8 +512,10 @@ class StorageManifestServiceTest
 
   describe("adds the size to the manifest files") {
     it("fails if it cannot get the size of a file") {
-      val version = randomInt(1, 10)
-      val bagRoot = createObjectLocation.join(s"/v$version")
+      val version = createBagVersion
+      val location = createPrimaryLocationWith(
+        version = version
+      )
 
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
@@ -534,14 +536,15 @@ class StorageManifestServiceTest
 
       val result = service.createManifest(
         bag = bag,
-        replicaRoot = bagRoot.asPrefix,
+        location = location,
+        replicas = Seq.empty,
         space = createStorageSpace,
-        version = BagVersion(version)
+        version = version
       )
 
       result.failed.get shouldBe a[StorageManifestException]
       result.failed.get.getMessage should startWith(
-        s"Error getting size of ${bagRoot.join("data/file1.txt")}"
+        s"Error getting size of ${location.prefix.asLocation("data/file1.txt")}"
       )
     }
 
@@ -590,13 +593,20 @@ class StorageManifestServiceTest
     }
 
     it("uses the size from the fetch file") {
-      val version = randomInt(1, 10)
-      val fetchVersion = version - 1
+      val version = createBagVersion
       val bagRoot = createObjectLocation
-      val replicaRoot = bagRoot.join(s"/v$version")
+
+      val location = createPrimaryLocationWith(
+        bagRoot = bagRoot,
+        version = version
+      )
+
+      val fetchVersion = version.copy(
+        underlying = version.underlying - 1
+      )
 
       val fetchLocation = bagRoot.copy(
-        path = s"${bagRoot.path}/v$fetchVersion/data/file1.txt"
+        path = s"${bagRoot.path}/$fetchVersion/data/file1.txt"
       )
 
       val bag = createBagWith(
@@ -625,17 +635,12 @@ class StorageManifestServiceTest
           Failure(new Throwable("This should never be called!"))
       }
 
-      val service = new StorageManifestService(brokenSizeFinder)
-
-      val storageManifest = service
-        .createManifest(
-          bag = bag,
-          replicaRoot = replicaRoot.asPrefix,
-          space = createStorageSpace,
-          version = BagVersion(version)
-        )
-        .success
-        .value
+      val storageManifest = createManifest(
+        bag = bag,
+        location = location,
+        version = version,
+        sizeFinder = brokenSizeFinder
+      )
 
       val actualSizes =
         storageManifest.manifest.files
