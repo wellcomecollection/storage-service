@@ -6,7 +6,6 @@ import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   PrimaryStorageLocation,
-  SecondaryStorageLocation,
   StorageLocation
 }
 
@@ -26,8 +25,4 @@ case object ReplicaResult {
     )
 }
 
-// TODO: This needs moving somewhere!
-case class KnownReplicas(
-  location: PrimaryStorageLocation,
-  replicas: List[SecondaryStorageLocation]
-)
+
