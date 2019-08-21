@@ -105,7 +105,7 @@ class StorageManifestServiceTest
       version = version
     )
 
-    val replicas = atMost(max = 10) {
+    val replicas = collectionOf(max = 10) {
       createSecondaryLocationWith(version)
     }
 

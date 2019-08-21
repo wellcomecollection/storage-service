@@ -18,8 +18,10 @@ trait StorageRandomThings extends RandomThings {
   def randomInstant: Instant =
     Instant.now().plusSeconds(Random.nextInt())
 
-  def atMost[T](max: Int)(f: => T): Seq[T] =
-    (1 to randomInt(from = 0, to = max)).map { _ =>
+  private val collectionMax = 10
+
+  def collectionOf[T](min: Int = 0, max: Int = collectionMax)(f: => T): Seq[T] =
+    (1 to randomInt(from = min, to = max)).map { _ =>
       f
     }
 

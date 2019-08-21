@@ -4,7 +4,7 @@ import org.scalatest.Assertion
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
+import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.services.{
@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
+import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
@@ -30,7 +31,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestDao,
   StorageManifestService
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
@@ -42,6 +43,7 @@ trait BagRegisterFixtures
     with StorageManifestVHSFixture
     with MonitoringClientFixture
     with IngestUpdateAssertions
+    with ExternalIdentifierGenerators
     with StringNamespaceFixtures {
 
   type Fixtures = (
@@ -52,14 +54,20 @@ trait BagRegisterFixtures
     QueuePair
   )
 
+  private val defaultQueue = Queue(
+    url = "default_q",
+    arn = "arn::default_q"
+  )
+
   def withBagRegisterWorker[R](
-    testWith: TestWith[Fixtures, R]
+    queue: Queue = defaultQueue,
+    ingests: MemoryMessageSender = new MemoryMessageSender(),
+    storageManifestDao: StorageManifestDao = createStorageManifestDao()
+  )(
+    testWith: TestWith[BagRegisterWorker[String, String], R]
   )(implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
     withActorSystem { implicit actorSystem =>
       withMonitoringClient { implicit monitoringClient =>
-        val storageManifestDao = createStorageManifestDao()
-
-        val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
         val bagReader = new MemoryBagReader()
@@ -68,27 +76,23 @@ trait BagRegisterFixtures
           sizeFinder = new MemorySizeFinder(streamStore.memoryStore)
         )
 
-        withLocalSqsQueueAndDlq { queuePair =>
-          val register = new Register(
-            bagReader = bagReader,
-            storageManifestDao,
-            storageManifestService = storageManifestService
-          )
+        val register = new Register(
+          bagReader = bagReader,
+          storageManifestDao = storageManifestDao,
+          storageManifestService = storageManifestService
+        )
 
-          val service = new BagRegisterWorker(
-            config = createAlpakkaSQSWorkerConfig(queuePair.queue),
-            ingestUpdater =
-              createIngestUpdaterWith(ingests, stepName = "register"),
-            outgoingPublisher = createOutgoingPublisherWith(outgoing),
-            register = register
-          )
+        val service = new BagRegisterWorker(
+          config = createAlpakkaSQSWorkerConfig(queue),
+          ingestUpdater =
+            createIngestUpdaterWith(ingests, stepName = "register"),
+          outgoingPublisher = createOutgoingPublisherWith(outgoing),
+          register = register
+        )
 
-          service.run()
+        service.run()
 
-          testWith(
-            (service, storageManifestDao, ingests, outgoing, queuePair)
-          )
-        }
+        testWith(service)
       }
     }
 
@@ -124,19 +128,16 @@ trait BagRegisterFixtures
       ingestFailed.events.head.description shouldBe "Register failed"
     }
 
-  // The bag register inspects the paths to a bag's entries to
-  // check they are in the correct format post-replicator,
-  // hence the version directory.
-  def withRegisterBag[R](
-    externalIdentifier: ExternalIdentifier,
+  def createRegisterBagWith(
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     space: StorageSpace,
     version: BagVersion,
-    dataFileCount: Int
-  )(testWith: TestWith[(ObjectLocation, BagInfo), R])(
+    dataFileCount: Int = randomInt(1, 15)
+  )(
     implicit
     namespace: String,
     streamStore: MemoryStreamStore[ObjectLocation]
-  ): R = {
+  ): (ObjectLocationPrefix, BagInfo) = {
     implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
       new MemoryTypedStore[ObjectLocation, String]()
 
@@ -150,6 +151,6 @@ trait BagRegisterFixtures
 
     BagBuilder.uploadBagObjects(bagObjects)
 
-    testWith((bagRoot, bagInfo))
+    (bagRoot.asPrefix, bagInfo)
   }
 }
