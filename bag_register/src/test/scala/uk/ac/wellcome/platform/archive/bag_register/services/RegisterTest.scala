@@ -95,14 +95,14 @@ class RegisterTest
       )
 
       manifest.replicaLocations shouldBe
-      replicas.map { secondaryLocation =>
-        val prefix = secondaryLocation.prefix
+        replicas.map { secondaryLocation =>
+          val prefix = secondaryLocation.prefix
 
-        secondaryLocation.copy(
-          prefix = prefix
-            .copy(path = prefix.path.stripSuffix(s"/$version"))
-        )
-      }
+          secondaryLocation.copy(
+            prefix = prefix
+              .copy(path = prefix.path.stripSuffix(s"/$version"))
+          )
+        }
     }
   }
 
@@ -151,12 +151,11 @@ class RegisterTest
     BagBuilder.uploadBagObjects(badBagObjects)
 
     val location = createPrimaryLocationWith(
-      prefix =
-        bagRoot
-          .copy(
-            namespace = bagRoot.namespace + "_wrong"
-          )
-          .asPrefix
+      prefix = bagRoot
+        .copy(
+          namespace = bagRoot.namespace + "_wrong"
+        )
+        .asPrefix
     )
 
     val result = register.update(
