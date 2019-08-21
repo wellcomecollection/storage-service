@@ -7,15 +7,16 @@ module "ingests_topic" {
 
   role_names = [
     "${module.bag_register.task_role_name}",
-    "${module.bag_replicator.task_role_name}",
     "${module.bag_root_finder.task_role_name}",
     "${module.bag_verifier_pre_replication.task_role_name}",
-    "${module.bag_verifier_post_replication.task_role_name}",
     "${module.bag_unpacker.task_role_name}",
     "${module.ingests.task_role_name}",
     "${module.notifier.task_role_name}",
     "${module.bag_versioner.task_role_name}",
     "${module.replica_aggregator.task_role_name}",
+
+    "${module.replicator_verifier_primary.replicator_task_role_name}",
+    "${module.replicator_verifier_primary.verifier_task_role_name}",
   ]
 }
 
@@ -239,85 +240,6 @@ module "bag_versioner_output_topic" {
   ]
 }
 
-# bag_replicator
-
-module "bag_replicator_input_queue" {
-  source = "../modules/queue"
-
-  name = "${var.namespace}_bag_replicator_input"
-
-  topic_names = ["${module.bag_versioner_output_topic.name}"]
-
-  role_names = ["${module.bag_replicator.task_role_name}"]
-
-  # Because these operations take a long time (potentially copying thousands
-  # of S3 objects for a single message), we keep a high visibility timeout to
-  # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = "${60 * 60 * 5}"
-
-  max_receive_count = 1
-
-  queue_high_actions = [
-    "${module.bag_replicator.scale_up_arn}",
-  ]
-
-  queue_low_actions = [
-    "${module.bag_replicator.scale_down_arn}",
-  ]
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
-
-module "bag_replicator_output_topic" {
-  source = "../modules/topic"
-
-  name = "${var.namespace}_bag_replicator_output"
-
-  role_names = [
-    "${module.bag_replicator.task_role_name}",
-  ]
-}
-
-# bag_verifier post-replication
-
-module "bag_verifier_post_replicate_queue" {
-  source = "../modules/queue"
-
-  name = "${var.namespace}_bag_verifier_post_replicate_input"
-
-  topic_names = ["${module.bag_replicator_output_topic.name}"]
-
-  role_names = ["${module.bag_verifier_post_replication.task_role_name}"]
-
-  # We keep a high visibility timeout to
-  # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = "${60 * 60 * 5}"
-
-  max_receive_count = 1
-
-  queue_high_actions = [
-    "${module.bag_verifier_post_replication.scale_up_arn}",
-  ]
-
-  queue_low_actions = [
-    "${module.bag_verifier_post_replication.scale_down_arn}",
-  ]
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
-
-module "bag_verifier_post_replicate_output_topic" {
-  source = "../modules/topic"
-
-  name = "${var.namespace}_bag_verifier_post_replicate_output"
-
-  role_names = [
-    "${module.bag_verifier_post_replication.task_role_name}",
-  ]
-}
-
 # replica_aggregator
 
 module "replica_aggregator_input_queue" {
@@ -325,7 +247,9 @@ module "replica_aggregator_input_queue" {
 
   name = "${var.namespace}_replica_aggregator_input"
 
-  topic_names = ["${module.bag_verifier_post_replicate_output_topic.name}"]
+  topic_names = [
+    "${module.replicator_verifier_primary.verifier_output_topic_name}",
+  ]
 
   role_names = ["${module.replica_aggregator.task_role_name}"]
 

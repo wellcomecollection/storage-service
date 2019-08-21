@@ -182,19 +182,6 @@ data "aws_iam_policy_document" "storage_archive_readwrite" {
   }
 }
 
-data "aws_iam_policy_document" "storage_access_readwrite" {
-  statement {
-    actions = [
-      "s3:PutObject*",
-      "s3:GetObject*",
-    ]
-
-    resources = [
-      "arn:aws:s3:::${var.access_bucket_name}/*",
-    ]
-  }
-}
-
 data "aws_iam_policy_document" "ingests_read" {
   statement {
     actions = [
