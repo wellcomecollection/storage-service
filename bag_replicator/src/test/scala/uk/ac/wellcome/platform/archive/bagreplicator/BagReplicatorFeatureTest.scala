@@ -6,12 +6,12 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.PrimaryBagReplicationRequest
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.ReplicaResultPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 
@@ -26,6 +26,8 @@ class BagReplicatorFeatureTest
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
+        val provider = createProvider
+
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
@@ -43,7 +45,9 @@ class BagReplicatorFeatureTest
             bucket = dstBucket,
             ingests = ingests,
             outgoing = outgoing,
-            stepName = "replicating"
+            stepName = "replicating",
+            provider = provider,
+            requestBuilder = PrimaryBagReplicationRequest.apply
           ) { _ =>
             sendNotificationToSQS(queue, payload)
 
@@ -68,7 +72,7 @@ class BagReplicatorFeatureTest
               receivedPayload.version shouldBe payload.version
 
               receivedPayload.replicaResult.storageLocation shouldBe PrimaryStorageLocation(
-                provider = InfrequentAccessStorageProvider,
+                provider = provider,
                 prefix = expectedDst
               )
 

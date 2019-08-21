@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   InfrequentAccessStorageProvider,
   StandardStorageProvider,
@@ -12,17 +13,14 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
-import scala.util.Random
-
-trait StorageLocationGenerators extends ObjectLocationGenerators {
-  def createProvider: StorageProvider = {
-    val providers = Seq(
-      StandardStorageProvider,
-      InfrequentAccessStorageProvider
+trait StorageLocationGenerators extends ObjectLocationGenerators with StorageRandomThings {
+  def createProvider: StorageProvider =
+    chooseFrom(
+      Seq(
+        StandardStorageProvider,
+        InfrequentAccessStorageProvider
+      )
     )
-
-    providers(Random.nextInt(providers.size))
-  }
 
   def createPrimaryLocation: PrimaryStorageLocation =
     createPrimaryLocationWith()

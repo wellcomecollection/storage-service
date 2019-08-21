@@ -25,6 +25,9 @@ trait StorageRandomThings extends RandomThings {
       f
     }
 
+  def chooseFrom[T](seq: Seq[T]): T =
+    seq(Random.nextInt(seq.size))
+
   def randomPaths(maxDepth: Int = 4, dirs: Int = 4): List[String] = {
     (1 to dirs).map { _ =>
       val depth = Random.nextInt(maxDepth)

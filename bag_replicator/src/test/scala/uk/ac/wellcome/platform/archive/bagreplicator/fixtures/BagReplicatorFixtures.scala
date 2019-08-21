@@ -10,8 +10,14 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.BagReplicationSummary
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+  BagReplicationRequest,
+  BagReplicationSummary,
+  PrimaryBagReplicationRequest,
+  SecondaryBagReplicationRequest
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.{
@@ -73,7 +79,12 @@ trait BagReplicatorFixtures
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
-    stepName: String = randomAlphanumericWithLength()
+    stepName: String = randomAlphanumericWithLength(),
+    requestBuilder: ReplicationRequest => BagReplicationRequest =
+      chooseFrom(Seq(
+        PrimaryBagReplicationRequest.apply,
+        SecondaryBagReplicationRequest.apply
+      ))
   )(
     testWith: TestWith[
       BagReplicatorWorker[String, String],
@@ -89,7 +100,8 @@ trait BagReplicatorFixtures
         val replicatorDestinationConfig =
           createReplicatorDestinationConfigWith(
             bucket = bucket,
-            provider = provider
+            provider = provider,
+            requestBuilder = requestBuilder
           )
 
         implicit val s3StreamStore: S3StreamStore =
@@ -117,11 +129,17 @@ trait BagReplicatorFixtures
 
   def createReplicatorDestinationConfigWith(
     bucket: Bucket,
-    provider: StorageProvider = createProvider
+    provider: StorageProvider = createProvider,
+    requestBuilder: ReplicationRequest => BagReplicationRequest =
+      chooseFrom(Seq(
+        PrimaryBagReplicationRequest.apply,
+        SecondaryBagReplicationRequest.apply
+      ))
   ): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
       namespace = bucket.name,
-      provider = provider
+      provider = provider,
+      requestBuilder = requestBuilder
     )
 
   private val listing = new S3ObjectSummaryListing()

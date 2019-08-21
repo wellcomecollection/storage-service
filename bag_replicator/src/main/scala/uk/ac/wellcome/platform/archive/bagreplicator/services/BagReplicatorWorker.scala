@@ -94,7 +94,7 @@ class BagReplicatorWorker[
         version = payload.version
       )
 
-      replicationRequest = PrimaryBagReplicationRequest(
+      replicationRequest = destinationConfig.requestBuilder(
         ReplicationRequest(
           srcPrefix = srcPrefix,
           dstPrefix = dstPrefix
