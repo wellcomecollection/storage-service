@@ -9,6 +9,7 @@ case object StorageProvider {
     id match {
       case StandardStorageProvider.id         => StandardStorageProvider
       case InfrequentAccessStorageProvider.id => InfrequentAccessStorageProvider
+      case GlacierStorageProvider.id          => GlacierStorageProvider
       case _ =>
         throw new IllegalArgumentException(
           s"Unrecognised storage provider ID: $id"
@@ -19,6 +20,11 @@ case object StorageProvider {
 case object StandardStorageProvider extends StorageProvider {
   override val id: String = "aws-s3-standard"
 }
+
 case object InfrequentAccessStorageProvider extends StorageProvider {
   override val id: String = "aws-s3-ia"
+}
+
+case object GlacierStorageProvider extends StorageProvider {
+  override val id: String = "aws-s3-glacier"
 }

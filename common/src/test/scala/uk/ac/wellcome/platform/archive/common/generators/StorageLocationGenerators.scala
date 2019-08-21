@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.common.generators
 
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  GlacierStorageProvider,
   InfrequentAccessStorageProvider,
   StandardStorageProvider,
   StorageProvider
@@ -20,7 +21,8 @@ trait StorageLocationGenerators
     chooseFrom(
       Seq(
         StandardStorageProvider,
-        InfrequentAccessStorageProvider
+        InfrequentAccessStorageProvider,
+        GlacierStorageProvider
       )
     )
 
