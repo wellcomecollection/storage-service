@@ -5,41 +5,23 @@ import akka.stream.ActorMaterializer
 import cats.Id
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
+import uk.ac.wellcome.json.JsonUtil._
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerError
-import uk.ac.wellcome.platform.archive.common.versioning.dynamo.{
-  DynamoIngestVersionManager,
-  DynamoIngestVersionManagerDao
-}
-import uk.ac.wellcome.platform.storage.bag_versioner.services.{
-  BagVersioner,
-  BagVersionerWorker
-}
+import uk.ac.wellcome.platform.archive.common.versioning.dynamo.{DynamoIngestVersionManager, DynamoIngestVersionManagerDao}
+import uk.ac.wellcome.platform.storage.bag_versioner.services.{BagVersioner, BagVersionerWorker}
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.VersionPicker
-import uk.ac.wellcome.storage.locking.dynamo.{
-  DynamoLockDao,
-  DynamoLockDaoConfig,
-  DynamoLockingService
-}
-import uk.ac.wellcome.storage.typesafe.DynamoBuilder
+import uk.ac.wellcome.storage.locking.dynamo.DynamoLockingService
+import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, DynamoLockDaoBuilder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
 import scala.concurrent.ExecutionContextExecutor
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -55,15 +37,10 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val operationName = OperationNameBuilder.getName(config)
+    implicit val lockDao = DynamoLockDaoBuilder
+      .buildDynamoLockDao(config)
 
-    // TODO: There should be a builder for this
-    implicit val lockDao = new DynamoLockDao(
-      client = DynamoBuilder.buildDynamoClient(config),
-      config = DynamoLockDaoConfig(
-        DynamoBuilder.buildDynamoConfig(config, namespace = "locking")
-      )
-    )
+    val operationName = OperationNameBuilder.getName(config)
 
     val lockingService =
       new DynamoLockingService[
