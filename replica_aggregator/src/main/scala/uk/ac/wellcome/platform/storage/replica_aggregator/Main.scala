@@ -32,6 +32,7 @@ import uk.ac.wellcome.storage.store.dynamo.DynamoSingleVersionStore
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 import org.scanamo.auto._
 import uk.ac.wellcome.json.JsonUtil._
 
@@ -72,7 +73,9 @@ object Main extends WellcomeTypesafeApp {
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       replicaAggregator = new ReplicaAggregator(dynamoVersionedStore),
       // TODO: Make this configurable
-      replicaCounter = new ReplicaCounter(expectedReplicaCount = 1),
+      replicaCounter = new ReplicaCounter(
+        expectedReplicaCount = config.required[Int]("aggregator.expected_replica_count")
+      ),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
     )
