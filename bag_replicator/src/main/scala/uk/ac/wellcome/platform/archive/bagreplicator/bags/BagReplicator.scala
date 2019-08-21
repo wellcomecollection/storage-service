@@ -17,17 +17,19 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class BagReplicator[Request <: BagReplicationRequest](
+class BagReplicator(
   replicator: Replicator
 )(
   implicit
   ec: ExecutionContext,
   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) {
+
   def replicateBag(
-    bagRequest: Request
-  ): Future[BagReplicationResult[Request]] = {
+    bagRequest: BagReplicationRequest
+  ): Future[BagReplicationResult[BagReplicationRequest]] = {
     val startTime = Instant.now()
+
     val bagSummary = BagReplicationSummary(
       startTime = startTime,
       request = bagRequest
@@ -60,6 +62,7 @@ class BagReplicator[Request <: BagReplicationRequest](
 
       case ReplicationFailed(_, e) =>
         BagReplicationFailed(bagSummary.complete, e)
+
     } recover {
       case e: Throwable =>
         BagReplicationFailed(bagSummary.complete, e)

@@ -32,7 +32,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Try}
 
 class BagReplicatorWorker[
-  BagRequest <: BagReplicationRequest,
   IngestDestination,
   OutgoingDestination
 ](
@@ -44,8 +43,7 @@ class BagReplicatorWorker[
     UUID
   ]],
   replicatorDestinationConfig: ReplicatorDestinationConfig,
-  bagReplicator: BagReplicator[BagRequest],
-  createBagRequest: ReplicationRequest => BagRequest
+  bagReplicator: BagReplicator
 )(
   implicit
   val mc: MonitoringClient,
@@ -93,7 +91,7 @@ class BagReplicatorWorker[
         version = payload.version
       )
 
-      bagRequest = createBagRequest(
+      bagRequest = PrimaryBagReplicationRequest(
         ReplicationRequest(
           srcPrefix = srcPrefix,
           dstPrefix = dstPrefix
@@ -102,7 +100,7 @@ class BagReplicatorWorker[
 
       result <- lockingService
         .withLock(payload.ingestId.toString) {
-          replicate(payload, bagRequest)
+          replicate(bagRequest)
         }
         .map(lockFailed(bagRequest).apply(_))
 
@@ -121,8 +119,7 @@ class BagReplicatorWorker[
     } yield result
 
   def replicate(
-    payload: EnrichedBagInformationPayload,
-    bagReplicationRequest: BagRequest
+    bagReplicationRequest: BagReplicationRequest
   ): Future[IngestStepResult[BagReplicationSummary[_]]] = {
     val future: Future[BagReplicationResult[_]] =
       bagReplicator.replicateBag(bagReplicationRequest)
