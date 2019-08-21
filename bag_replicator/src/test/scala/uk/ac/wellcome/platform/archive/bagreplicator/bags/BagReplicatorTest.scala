@@ -45,7 +45,7 @@ class BagReplicatorTest
 
   it("replicates a bag successfully") {
     val bagReplicator =
-      new BagReplicator[PrimaryBagReplicationRequest](replicator)
+      new BagReplicator(replicator)
 
     withLocalS3Bucket { bucket =>
       val (bagRoot, _) = S3BagBuilder.createS3BagWith(bucket)
@@ -99,7 +99,7 @@ class BagReplicatorTest
 
     assertIsFailure(
       bagReplicator =
-        new BagReplicator[PrimaryBagReplicationRequest](badReplicator)
+        new BagReplicator(badReplicator)
     ) {
       _.e shouldBe underlyingErr
     }
@@ -117,7 +117,7 @@ class BagReplicatorTest
 
     assertIsFailure(
       bagReplicator =
-        new BagReplicator[PrimaryBagReplicationRequest](badReplicator)
+        new BagReplicator(badReplicator)
     ) {
       _.e shouldBe underlyingErr
     }
@@ -186,7 +186,7 @@ class BagReplicatorTest
 
         assertIsFailure(
           bagReplicator =
-            new BagReplicator[PrimaryBagReplicationRequest](badReplicator),
+            new BagReplicator(badReplicator),
           srcPrefix = bagRoot.asPrefix,
           dstPrefix = createObjectLocationPrefixWith(bucket.name)
         ) { err =>
@@ -199,8 +199,8 @@ class BagReplicatorTest
   }
 
   def assertIsFailure(
-    bagReplicator: BagReplicator[PrimaryBagReplicationRequest] =
-      new BagReplicator[PrimaryBagReplicationRequest](replicator),
+    bagReplicator: BagReplicator =
+      new BagReplicator(replicator),
     srcPrefix: ObjectLocationPrefix = createObjectLocationPrefix,
     dstPrefix: ObjectLocationPrefix = createObjectLocationPrefix
   )(assert: BagReplicationFailed[_] => Assertion): Assertion = {

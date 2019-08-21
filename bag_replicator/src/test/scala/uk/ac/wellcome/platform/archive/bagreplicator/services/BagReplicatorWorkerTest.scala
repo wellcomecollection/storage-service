@@ -11,10 +11,8 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
   BagReplicationSummary,
-  PrimaryBagReplicationRequest
 }
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.{
@@ -316,7 +314,7 @@ class BagReplicatorWorkerTest
                 new S3StreamStore()
 
               val bagReplicator =
-                new BagReplicator[PrimaryBagReplicationRequest](replicator)
+                new BagReplicator(replicator)
 
               val service = new BagReplicatorWorker(
                 config = createAlpakkaSQSWorkerConfig(queue),
@@ -324,9 +322,7 @@ class BagReplicatorWorkerTest
                 outgoingPublisher = outgoingPublisher,
                 lockingService = lockingService,
                 replicatorDestinationConfig = replicatorDestinationConfig,
-                bagReplicator = bagReplicator,
-                createBagRequest = (replicationRequest: ReplicationRequest) =>
-                  PrimaryBagReplicationRequest(replicationRequest)
+                bagReplicator = bagReplicator
               )
 
               val future = service.processPayload(payload)
