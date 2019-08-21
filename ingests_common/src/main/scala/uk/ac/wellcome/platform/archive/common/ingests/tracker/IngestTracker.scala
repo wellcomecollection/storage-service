@@ -34,19 +34,19 @@ trait IngestTracker extends Logging {
 
   def update(update: IngestUpdate): Result = {
     val updateCallback = (ingest: Ingest) =>
-      IngestStates.applyUpdate(ingest, update)
-        .left.map(UpdateNotApplied)
+      IngestStates.applyUpdate(ingest, update).left.map(UpdateNotApplied)
 
-    underlying.update(update.id)(updateCallback)
-      .left.map { updateError: UpdateError =>
+    underlying.update(update.id)(updateCallback).left.map {
+      updateError: UpdateError =>
         updateError.e match {
           case e: IngestStoreError => e
-          case _ => updateError match {
-            case storageError: UpdateNoSourceError =>
-              UpdateNonExistentIngestError(storageError)
-            case storageError =>
-              IngestStoreUnexpectedError(storageError.e)
-          }
+          case _ =>
+            updateError match {
+              case storageError: UpdateNoSourceError =>
+                UpdateNonExistentIngestError(storageError)
+              case storageError =>
+                IngestStoreUnexpectedError(storageError.e)
+            }
         }
     }
   }

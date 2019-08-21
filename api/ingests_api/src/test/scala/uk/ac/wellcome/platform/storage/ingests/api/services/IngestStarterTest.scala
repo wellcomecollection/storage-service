@@ -74,9 +74,7 @@ class IngestStarterTest
       )
     ) {
       override def init(ingest: Ingest): Result =
-        Left(IngestStoreUnexpectedError(
-          new Throwable("BOOM!"))
-        )
+        Left(IngestStoreUnexpectedError(new Throwable("BOOM!")))
     }
 
     withIngestStarter(brokenTracker, messageSender) { ingestStarter =>

@@ -12,7 +12,11 @@ import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestStoreError, IngestStoreUnexpectedError, IngestTracker}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestStoreError,
+  IngestStoreUnexpectedError,
+  IngestTracker
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.store.VersionedStore

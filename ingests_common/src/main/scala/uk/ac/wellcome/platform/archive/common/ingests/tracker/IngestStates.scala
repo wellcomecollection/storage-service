@@ -25,7 +25,8 @@ object IngestStates {
               case Ingest.Accepted => Ingest.Processing
               case _               => ingest.status
             }
-          ))
+          )
+        )
 
       case update: IngestStatusUpdate =>
         matchIngestStatusUpdate(
@@ -60,7 +61,8 @@ object IngestStates {
         IngestStatusGoingBackwardsError(
           stored = status,
           update = updateStatus
-        ))
+        )
+      )
     } else {
       Right(newIngest.copy(status = updateStatus))
     }
@@ -80,7 +82,8 @@ object IngestStates {
       Right(
         newIngest.copy(
           version = Some(updateVersion)
-        ))
+        )
+      )
   }
 
   private def matchCallbackUpdate(
@@ -103,8 +106,9 @@ object IngestStates {
 
     case Some(callback) =>
       Right(
-        newIngest.copy(
-          callback = Some(callback.copy(status = update.callbackStatus))))
+        newIngest
+          .copy(callback = Some(callback.copy(status = update.callbackStatus)))
+      )
 
     case None => Left(NoCallbackOnIngestError())
   }

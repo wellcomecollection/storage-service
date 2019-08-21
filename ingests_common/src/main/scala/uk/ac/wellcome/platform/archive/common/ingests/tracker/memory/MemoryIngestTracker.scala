@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.archive.common.ingests.tracker.memory
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
-  IngestTracker,
-  IngestStoreError
+  IngestStoreError,
+  IngestTracker
 }
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
