@@ -15,7 +15,11 @@ import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
+import uk.ac.wellcome.platform.archive.common.{
+  EnrichedBagInformationPayload,
+  ReplicaResultPayload
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
@@ -75,6 +79,9 @@ class BagReplicatorWorker[
   ): Try[IngestStepResult[BagReplicationSummary[_]]] =
     Failure(new Throwable("This should never be called!"))
 
+  // TODO: This should be configurable
+  val provider: InfrequentAccessStorageProvider.type = InfrequentAccessStorageProvider
+
   def processPayload(
     payload: EnrichedBagInformationPayload
   ): Future[IngestStepResult[BagReplicationSummary[_]]] =
@@ -91,7 +98,7 @@ class BagReplicatorWorker[
         version = payload.version
       )
 
-      bagRequest = PrimaryBagReplicationRequest(
+      replicationRequest = PrimaryBagReplicationRequest(
         ReplicationRequest(
           srcPrefix = srcPrefix,
           dstPrefix = dstPrefix
@@ -100,9 +107,9 @@ class BagReplicatorWorker[
 
       result <- lockingService
         .withLock(payload.ingestId.toString) {
-          replicate(bagRequest)
+          replicate(replicationRequest)
         }
-        .map(lockFailed(bagRequest).apply(_))
+        .map(lockFailed(replicationRequest).apply(_))
 
       _ <- Future.fromTry {
         ingestUpdater.send(payload.ingestId, result)
@@ -111,8 +118,10 @@ class BagReplicatorWorker[
       _ <- Future.fromTry {
         outgoingPublisher.sendIfSuccessful(
           result,
-          payload.copy(
-            bagRoot = dstPrefix
+          ReplicaResultPayload(
+            context = payload.context,
+            version = payload.version,
+            replicaResult = replicationRequest.toResult(provider)
           )
         )
       }

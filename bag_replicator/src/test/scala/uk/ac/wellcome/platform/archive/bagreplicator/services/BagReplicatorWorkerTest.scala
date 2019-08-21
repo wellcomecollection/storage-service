@@ -9,12 +9,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
-  BagReplicationSummary
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.BagReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.ReplicaResultPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   S3BagBuilder,
   S3BagBuilderBase
@@ -76,14 +74,15 @@ class BagReplicatorWorkerTest
         serviceResult shouldBe a[IngestStepSucceeded[_]]
 
         val receivedMessages =
-          outgoing.getMessages[EnrichedBagInformationPayload]
+          outgoing.getMessages[ReplicaResultPayload]
 
         receivedMessages.size shouldBe 1
 
-        val result = receivedMessages.head
-        result.ingestId shouldBe payload.ingestId
+        val receivedPayload = receivedMessages.head
+        receivedPayload.context shouldBe payload.context
+        receivedPayload.version shouldBe payload.version
 
-        val dstBagRoot = result.bagRoot
+        val dstBagRoot = receivedPayload.replicaResult.storageLocation.prefix
 
         verifyObjectsCopied(
           srcPrefix = srcBagRoot,
