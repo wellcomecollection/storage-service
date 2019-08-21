@@ -18,7 +18,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.{
   BagRootPayload,
-  EnrichedBagInformationPayload
+  VersionedBagRootPayload
 }
 
 class BagVerifierFeatureTest
@@ -48,7 +48,7 @@ class BagVerifierFeatureTest
             val (bagRoot, bagInfo) =
               S3BagBuilder.createS3BagWith(bucket)
 
-            val payload = createEnrichedBagInformationPayloadWith(
+            val payload = createVersionedBagRootPayloadWith(
               context = createPipelineContextWith(
                 externalIdentifier = bagInfo.externalIdentifier
               ),
@@ -68,7 +68,7 @@ class BagVerifierFeatureTest
               )
 
               outgoing
-                .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+                .getMessages[VersionedBagRootPayload] shouldBe Seq(
                 payload
               )
 
@@ -104,7 +104,7 @@ class BagVerifierFeatureTest
 
             val (bagRootLocation, bagInfo) = builder.createS3BagWith(bucket)
 
-            val payload = createEnrichedBagInformationPayloadWith(
+            val payload = createVersionedBagRootPayloadWith(
               context = createPipelineContextWith(
                 externalIdentifier = bagInfo.externalIdentifier
               ),

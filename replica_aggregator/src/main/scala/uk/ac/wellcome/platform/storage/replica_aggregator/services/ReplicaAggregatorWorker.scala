@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.{
-  EnrichedBagInformationPayload,
+  VersionedBagRootPayload,
   KnownReplicasPayload,
   PipelineContext
 }
@@ -31,9 +31,9 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   implicit val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[EnrichedBagInformationPayload]
+  val wd: Decoder[VersionedBagRootPayload]
 ) extends IngestStepWorker[
-      EnrichedBagInformationPayload,
+      VersionedBagRootPayload,
       ReplicationAggregationSummary
     ] {
 
@@ -46,7 +46,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   ) extends WorkerError
 
   private def getKnownReplicas(
-    payload: EnrichedBagInformationPayload
+    payload: VersionedBagRootPayload
   ): Either[WorkerError, KnownReplicas] =
     for {
 
@@ -63,7 +63,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     } yield sufficientReplicas
 
   override def processMessage(
-    payload: EnrichedBagInformationPayload
+    payload: VersionedBagRootPayload
   ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
     val replicaPath = ReplicaPath(payload.bagRoot.path)
     val startTime = Instant.now()

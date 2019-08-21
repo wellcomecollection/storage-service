@@ -52,7 +52,7 @@ class BagReplicatorWorkerTest
         bucket = srcBucket
       )
 
-      val payload = createEnrichedBagInformationPayloadWith(
+      val payload = createVersionedBagRootPayloadWith(
         bagRoot = srcBagRoot
       )
 
@@ -108,7 +108,7 @@ class BagReplicatorWorkerTest
           bucket = srcBucket
         )
 
-        val payload = createEnrichedBagInformationPayloadWith(
+        val payload = createVersionedBagRootPayloadWith(
           bagRoot = srcBagLocation
         )
 
@@ -136,7 +136,7 @@ class BagReplicatorWorkerTest
             bucket = srcBucket
           )
 
-          val payload = createEnrichedBagInformationPayloadWith(
+          val payload = createVersionedBagRootPayloadWith(
             bagRoot = srcBagLocation
           )
 
@@ -180,7 +180,7 @@ class BagReplicatorWorkerTest
         payloadFileCount = 50
       )
 
-      val payload = createEnrichedBagInformationPayloadWith(
+      val payload = createVersionedBagRootPayloadWith(
         bagRoot = srcBagLocation
       )
 
@@ -215,7 +215,7 @@ class BagReplicatorWorkerTest
         bucket = srcBucket
       )
 
-      val payload = createEnrichedBagInformationPayloadWith(
+      val payload = createVersionedBagRootPayloadWith(
         bagRoot = srcBagLocation
       )
 
@@ -265,7 +265,7 @@ class BagReplicatorWorkerTest
           bucket = srcBucket
         )
 
-        val payload = createEnrichedBagInformationPayloadWith(
+        val payload = createVersionedBagRootPayloadWith(
           bagRoot = srcBagLocation
         )
 
@@ -347,7 +347,7 @@ class BagReplicatorWorkerTest
             bucket = srcBucket
           )
 
-          val payload = createEnrichedBagInformationPayloadWith(
+          val payload = createVersionedBagRootPayloadWith(
             bagRoot = srcBagLocation
           )
 

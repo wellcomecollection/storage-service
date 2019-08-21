@@ -33,7 +33,7 @@ class BagReplicatorFeatureTest
           bucket = srcBucket
         )
 
-        val payload = createEnrichedBagInformationPayloadWith(
+        val payload = createVersionedBagRootPayloadWith(
           bagRoot = srcBagRoot
         )
 

@@ -61,7 +61,7 @@ case class BagRootLocationPayload(
   bagRoot: ObjectLocationPrefix
 ) extends BagRootPayload
 
-case class EnrichedBagInformationPayload(
+case class VersionedBagRootPayload(
   context: PipelineContext,
   bagRoot: ObjectLocationPrefix,
   version: BagVersion

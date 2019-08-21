@@ -92,7 +92,7 @@ trait PayloadGenerators
       .toList
   )
 
-  def createKnownReplicasPayload =
+  def createKnownReplicasPayload: KnownReplicasPayload =
     createKnownReplicasPayloadWith()
 
   def createKnownReplicasPayloadWith(
@@ -105,19 +105,19 @@ trait PayloadGenerators
     knownReplicas = knownReplicas
   )
 
-  def createEnrichedBagInformationPayloadWith(
+  def createVersionedBagRootPayloadWith(
     context: PipelineContext = createPipelineContext,
     bagRoot: ObjectLocationPrefix = createObjectLocationPrefix,
     version: BagVersion = createBagVersion
-  ): EnrichedBagInformationPayload =
-    EnrichedBagInformationPayload(
+  ): VersionedBagRootPayload =
+    VersionedBagRootPayload(
       context = context,
       bagRoot = bagRoot,
       version = version
     )
 
-  def createEnrichedBagInformationPayload: EnrichedBagInformationPayload =
-    createEnrichedBagInformationPayloadWith()
+  def createVersionedBagRootPayload: VersionedBagRootPayload =
+    createVersionedBagRootPayloadWith()
 
   def createBagRootLocationPayloadWith(
     context: PipelineContext = createPipelineContext,

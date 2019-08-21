@@ -35,7 +35,7 @@ class ReplicaAggregatorFeatureTest
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
-      val payload = createEnrichedBagInformationPayload
+      val payload = createVersionedBagRootPayload
       val versionedStore =
         MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](Map.empty)
 

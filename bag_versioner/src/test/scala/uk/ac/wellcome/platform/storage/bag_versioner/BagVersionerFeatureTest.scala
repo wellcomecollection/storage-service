@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.VersionedBagRootPayload
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.BagVersionerFixtures
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -40,7 +40,7 @@ class BagVersionerFeatureTest
       bagRoot = bagRoot
     )
 
-    val expectedPayload = createEnrichedBagInformationPayloadWith(
+    val expectedPayload = createVersionedBagRootPayloadWith(
       context = payload.context,
       bagRoot = bagRoot,
       version = BagVersion(1)
@@ -57,7 +57,7 @@ class BagVersionerFeatureTest
             assertQueueEmpty(queue)
 
             outgoing
-              .getMessages[EnrichedBagInformationPayload] shouldBe Seq(
+              .getMessages[VersionedBagRootPayload] shouldBe Seq(
               expectedPayload
             )
 
@@ -116,7 +116,7 @@ class BagVersionerFeatureTest
             assertQueueEmpty(queue)
 
             outgoing
-              .getMessages[EnrichedBagInformationPayload] should have size 1
+              .getMessages[VersionedBagRootPayload] should have size 1
 
             assertTopicReceivesIngestUpdates(payload1.ingestId, ingests) {
               ingestUpdates =>
@@ -144,7 +144,7 @@ class BagVersionerFeatureTest
             assertQueueEmpty(queue)
 
             outgoing
-              .getMessages[EnrichedBagInformationPayload] should have size 2
+              .getMessages[VersionedBagRootPayload] should have size 2
 
             assertTopicReceivesIngestUpdates(payload1.ingestId, ingests) {
               ingestUpdates =>
