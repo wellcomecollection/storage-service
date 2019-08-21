@@ -7,12 +7,12 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTrackerStoreError
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestStoreUnexpectedError
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestStarterFixture
+import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
-import uk.ac.wellcome.storage.{StoreWriteError, Version}
 
 import scala.util.{Failure, Success, Try}
 
@@ -55,7 +55,7 @@ class IngestStarterTest
         val result = ingestStarter.initialise(ingest)
         result.failed shouldBe a[Success[_]]
         result.failed.get.getMessage should startWith(
-          "Error from the ingest tracker: IngestAlreadyExistsError"
+          "Error from the ingest tracker"
         )
 
         messageSender.messages shouldBe empty
@@ -74,7 +74,9 @@ class IngestStarterTest
       )
     ) {
       override def init(ingest: Ingest): Result =
-        Left(IngestTrackerStoreError(StoreWriteError(new Throwable("BOOM!"))))
+        Left(IngestStoreUnexpectedError(
+          new Throwable("BOOM!"))
+        )
     }
 
     withIngestStarter(brokenTracker, messageSender) { ingestStarter =>

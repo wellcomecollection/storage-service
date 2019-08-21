@@ -4,7 +4,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
   IngestTracker,
-  IngestTrackerError
+  IngestStoreError
 }
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
@@ -15,7 +15,7 @@ class MemoryIngestTracker(
 
   override def listByBagId(
     bagId: BagId
-  ): Either[IngestTrackerError, Seq[Ingest]] =
+  ): Either[IngestStoreError, Seq[Ingest]] =
     Right(
       underlying.store
         .asInstanceOf[MemoryStore[Version[IngestID, Int], Ingest]]
