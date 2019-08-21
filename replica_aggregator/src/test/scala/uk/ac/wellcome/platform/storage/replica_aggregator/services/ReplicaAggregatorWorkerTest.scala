@@ -4,8 +4,8 @@ import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.{
-  VersionedBagRootPayload,
-  KnownReplicasPayload
+  KnownReplicasPayload,
+  VersionedBagRootPayload
 }
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions

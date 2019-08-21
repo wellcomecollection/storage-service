@@ -17,8 +17,8 @@ import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinatio
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.{
-  VersionedBagRootPayload,
-  ReplicaResultPayload
+  ReplicaResultPayload,
+  VersionedBagRootPayload
 }
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
@@ -49,13 +49,13 @@ class BagReplicatorWorker[
   replicatorDestinationConfig: ReplicatorDestinationConfig,
   bagReplicator: BagReplicator
 )(
-   implicit
-   val mc: MonitoringClient,
-   val as: ActorSystem,
-   val sc: AmazonSQSAsync,
-   val wd: Decoder[VersionedBagRootPayload],
-   ec: ExecutionContext,
-   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
+  implicit
+  val mc: MonitoringClient,
+  val as: ActorSystem,
+  val sc: AmazonSQSAsync,
+  val wd: Decoder[VersionedBagRootPayload],
+  ec: ExecutionContext,
+  streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) extends IngestStepWorker[
       VersionedBagRootPayload,
       BagReplicationSummary[_]
@@ -80,7 +80,8 @@ class BagReplicatorWorker[
     Failure(new Throwable("This should never be called!"))
 
   // TODO: This should be configurable
-  val provider: InfrequentAccessStorageProvider.type = InfrequentAccessStorageProvider
+  val provider: InfrequentAccessStorageProvider.type =
+    InfrequentAccessStorageProvider
 
   def processPayload(
     payload: VersionedBagRootPayload
