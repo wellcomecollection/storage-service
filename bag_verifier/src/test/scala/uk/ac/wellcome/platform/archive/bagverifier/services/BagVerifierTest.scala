@@ -492,7 +492,8 @@ class BagVerifierTest
             payloadFileCount
         }
 
-        val (bagRoot, bagInfo) = alwaysWriteAsFetchBuilder.createS3BagWith(bucket)
+        val (bagRoot, bagInfo) =
+          alwaysWriteAsFetchBuilder.createS3BagWith(bucket)
 
         val bag = new S3BagReader().get(bagRoot).right.value
 

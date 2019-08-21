@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services.memory
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagReaderTestCases}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{
+  BagReader,
+  BagReaderTestCases
+}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
