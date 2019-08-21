@@ -8,13 +8,27 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
 import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerError
-import uk.ac.wellcome.platform.archive.common.versioning.dynamo.{DynamoIngestVersionManager, DynamoIngestVersionManagerDao}
-import uk.ac.wellcome.platform.storage.bag_versioner.services.{BagVersioner, BagVersionerWorker}
+import uk.ac.wellcome.platform.archive.common.versioning.dynamo.{
+  DynamoIngestVersionManager,
+  DynamoIngestVersionManagerDao
+}
+import uk.ac.wellcome.platform.storage.bag_versioner.services.{
+  BagVersioner,
+  BagVersionerWorker
+}
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.VersionPicker
 import uk.ac.wellcome.storage.locking.dynamo.DynamoLockingService
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, DynamoLockDaoBuilder}
