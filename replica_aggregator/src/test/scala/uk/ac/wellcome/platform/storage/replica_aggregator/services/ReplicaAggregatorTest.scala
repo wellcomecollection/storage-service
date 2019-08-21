@@ -7,12 +7,14 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  StorageLocation
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 import uk.ac.wellcome.storage.{UpdateWriteError, Version}
-
 
 class ReplicaAggregatorTest
     extends FunSpec
@@ -227,7 +229,9 @@ class ReplicaAggregatorTest
             initialEntries = Map.empty
           ) with MemoryMaxima[ReplicaPath, AggregatorInternalRecord]
       ) {
-        override def upsert(id: ReplicaPath)(t: AggregatorInternalRecord)(f: UpdateFunction): UpdateEither = Left(UpdateWriteError(throwable))
+        override def upsert(id: ReplicaPath)(t: AggregatorInternalRecord)(
+          f: UpdateFunction
+        ): UpdateEither = Left(UpdateWriteError(throwable))
       }
 
     val result =

@@ -11,7 +11,11 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.{EnrichedBagInformationPayload, KnownReplicasPayload, PipelineContext}
+import uk.ac.wellcome.platform.archive.common.{
+  EnrichedBagInformationPayload,
+  KnownReplicasPayload,
+  PipelineContext
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.StorageError
 
@@ -34,7 +38,8 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     ] {
 
   private sealed trait WorkerError
-  private case class AggregationFailure[E <: StorageError](e: E) extends WorkerError
+  private case class AggregationFailure[E <: StorageError](e: E)
+      extends WorkerError
   private case class InsufficientReplicas(
     replicaCounterError: ReplicaCounterError,
     aggregatorRecord: AggregatorInternalRecord

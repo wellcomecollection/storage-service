@@ -7,8 +7,9 @@ import uk.ac.wellcome.storage.{UpdateError, UpdateNotApplied}
 class ReplicaAggregator(
   versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord]
 ) {
-  def aggregate(result: ReplicaResult
-               ): Either[UpdateError, AggregatorInternalRecord] = {
+  def aggregate(
+    result: ReplicaResult
+  ): Either[UpdateError, AggregatorInternalRecord] = {
     val replicaPath =
       ReplicaPath(result.storageLocation.prefix.path)
 
@@ -16,8 +17,7 @@ class ReplicaAggregator(
       AggregatorInternalRecord(result.storageLocation)
 
     val upsert = versionedStore.upsert(replicaPath)(initialRecord) {
-      _.addLocation(result.storageLocation)
-        .toEither.left.map(UpdateNotApplied)
+      _.addLocation(result.storageLocation).toEither.left.map(UpdateNotApplied)
     }
 
     upsert.map(_.identifiedT)
