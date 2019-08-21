@@ -51,6 +51,37 @@ data "aws_iam_policy_document" "access_read" {
       ]
     }
   }
+
+  # Created so that Digirati/DDS can read the bucket.
+
+  statement {
+    actions = [
+      "s3:GetObject",
+      "s3:ListBucket",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.access.arn}",
+      "${aws_s3_bucket.access.arn}/*",
+    ]
+
+    condition {
+      test     = "StringLike"
+      variable = "aws:userId"
+
+      values = [
+        "AROAZQI22QHW3LZ4TYY54:*",
+      ]
+    }
+
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        "*",
+      ]
+    }
+  }
 }
 
 data "aws_iam_policy_document" "ingests_drop_read" {
