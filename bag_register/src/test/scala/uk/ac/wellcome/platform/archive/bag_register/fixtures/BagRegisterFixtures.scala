@@ -135,7 +135,7 @@ trait BagRegisterFixtures
     dataFileCount: Int = randomInt(1, 15)
   )(
     implicit
-    namespace: String,
+    namespace: String = randomAlphanumeric,
     streamStore: MemoryStreamStore[ObjectLocation]
   ): (ObjectLocationPrefix, BagInfo) = {
     implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =

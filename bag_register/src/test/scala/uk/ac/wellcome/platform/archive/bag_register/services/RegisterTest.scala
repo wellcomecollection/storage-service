@@ -1,31 +1,109 @@
 package uk.ac.wellcome.platform.archive.bag_register.services
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
+import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  StorageManifestVHSFixture
+import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
+import uk.ac.wellcome.platform.archive.common.generators.{
+  StorageLocationGenerators,
+  StorageSpaceGenerators
 }
-import uk.ac.wellcome.platform.archive.common.generators.StorageSpaceGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  IngestFailed
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   BadFetchLocationException,
   MemorySizeFinder,
   StorageManifestService
 }
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.generators.RandomThings
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 class RegisterTest
     extends FunSpec
     with Matchers
-    with StorageManifestVHSFixture
-    with RandomThings
+    with BagRegisterFixtures
     with StorageSpaceGenerators
+    with StorageLocationGenerators
     with StringNamespaceFixtures
     with TryValues {
+
+  describe("registering a bag with primary and secondary locations") {
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
+    val bagReader = new MemoryBagReader()
+
+    val storageManifestService = new StorageManifestService(
+      sizeFinder = new MemorySizeFinder(streamStore.memoryStore)
+    )
+
+    val storageManifestDao = createStorageManifestDao()
+
+    val register = new Register(
+      bagReader = bagReader,
+      storageManifestDao,
+      storageManifestService = storageManifestService
+    )
+
+    val space = createStorageSpace
+    val version = createBagVersion
+
+    val (bagRoot, bagInfo) = createRegisterBagWith(
+      space = space,
+      version = version
+    )
+
+    val primaryLocation = createPrimaryLocationWith(
+      prefix = bagRoot
+    )
+
+    val replicas = collectionOf(min = 1) {
+      createSecondaryLocationWith(
+        prefix = bagRoot.copy(namespace = randomAlphanumeric)
+      )
+    }
+
+    val result = register.update(
+      bagRoot = bagRoot,
+      version = version,
+      storageSpace = space
+    )
+
+    it("succeeds") {
+      result.success.value shouldBe a[IngestCompleted[_]]
+    }
+
+    it("stores all the locations in the dao") {
+      val bagId = BagId(
+        space = space,
+        externalIdentifier = bagInfo.externalIdentifier
+      )
+
+      val manifest =
+        storageManifestDao.getLatest(id = bagId).right.value
+
+      manifest.location shouldBe primaryLocation.copy(
+        prefix = bagRoot
+          .copy(
+            path = bagRoot.path.stripSuffix(s"/$version")
+          )
+      )
+
+      manifest.replicaLocations shouldBe
+      replicas.map { secondaryLocation =>
+        val prefix = secondaryLocation.prefix
+
+        secondaryLocation.copy(
+          prefix = prefix
+            .copy(path = prefix.path.stripSuffix(s"/$version"))
+        )
+      }
+    }
+  }
 
   it(
     "includes a user-facing message if the fetch.txt refers to the wrong namespace"
