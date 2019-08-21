@@ -9,10 +9,7 @@ import uk.ac.wellcome.platform.archive.common.{
 }
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  Ingest
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepSucceeded,
@@ -37,10 +34,10 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createVersionedBagRootPayload
+    val payload = createReplicaResultPayload
     val expectedKnownReplicas = KnownReplicas(
       location = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
+        provider = payload.replicaResult.storageLocation.provider,
         prefix = payload.bagRoot
       ),
       replicas = List.empty
@@ -93,7 +90,7 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createVersionedBagRootPayload
+    val payload = createReplicaResultPayload
 
     val result =
       withReplicaAggregatorWorker(
@@ -118,7 +115,7 @@ class ReplicaAggregatorWorkerTest
       incompleteAggregation.aggregatorRecord shouldBe AggregatorInternalRecord(
         location = Some(
           PrimaryStorageLocation(
-            provider = InfrequentAccessStorageProvider,
+            provider = payload.replicaResult.storageLocation.provider,
             prefix = payload.bagRoot
           )
         ),
@@ -165,7 +162,7 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createVersionedBagRootPayload
+    val payload = createReplicaResultPayload
 
     val result =
       withReplicaAggregatorWorker(

@@ -7,28 +7,16 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CreateIngestType,
-  InfrequentAccessStorageProvider,
-  IngestID,
-  IngestType,
-  UpdateIngestType
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  KnownReplicas,
-  PrimaryStorageLocation,
-  SecondaryStorageLocation,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models._
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 import scala.util.Random
 
 trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
-    with ObjectLocationGenerators {
+    with StorageLocationGenerators {
 
   def randomIngestType: IngestType =
     Seq(CreateIngestType, UpdateIngestType)(Random.nextInt(1))
@@ -128,6 +116,13 @@ trait PayloadGenerators
       bagRoot = bagRoot
     )
 
-  def createBagRootLocationPayload: BagRootLocationPayload =
-    createBagRootLocationPayloadWith()
+  def createReplicaResultPayload: ReplicaResultPayload =
+    ReplicaResultPayload(
+      context = createPipelineContext,
+      replicaResult = ReplicaResult(
+        storageLocation = createPrimaryLocation,
+        timestamp = Instant.now
+      ),
+      version = createBagVersion
+    )
 }

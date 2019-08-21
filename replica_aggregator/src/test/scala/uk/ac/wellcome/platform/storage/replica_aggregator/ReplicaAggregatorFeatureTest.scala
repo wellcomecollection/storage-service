@@ -7,7 +7,6 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
   PrimaryStorageLocation
@@ -35,7 +34,7 @@ class ReplicaAggregatorFeatureTest
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
-      val payload = createVersionedBagRootPayload
+      val payload = createReplicaResultPayload
       val versionedStore =
         MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](Map.empty)
 
@@ -64,7 +63,7 @@ class ReplicaAggregatorFeatureTest
             versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
 
           val primaryLocation = PrimaryStorageLocation(
-            provider = InfrequentAccessStorageProvider,
+            provider = payload.replicaResult.storageLocation.provider,
             prefix = payload.bagRoot
           )
 
