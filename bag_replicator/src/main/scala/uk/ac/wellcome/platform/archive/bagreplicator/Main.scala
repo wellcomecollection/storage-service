@@ -7,16 +7,27 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import org.scanamo.auto._
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.BagReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
-import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.locking.dynamo.{DynamoLockDao, DynamoLockingService}
+import uk.ac.wellcome.storage.locking.dynamo.{
+  DynamoLockDao,
+  DynamoLockingService
+}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -55,9 +66,7 @@ object Main extends WellcomeTypesafeApp {
       OperationNameBuilder.getName(config)
 
     val lockingService =
-      new DynamoLockingService[
-        IngestStepResult[BagReplicationSummary[_]],
-        Future]()
+      new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Future]()
 
     val replicator = new S3Replicator()
 
@@ -72,7 +81,7 @@ object Main extends WellcomeTypesafeApp {
       lockingService = lockingService,
       replicatorDestinationConfig = ReplicatorDestinationConfig
         .buildDestinationConfig(config),
-      bagReplicator = new BagReplicator(replicator),
+      bagReplicator = new BagReplicator(replicator)
     )
   }
 }

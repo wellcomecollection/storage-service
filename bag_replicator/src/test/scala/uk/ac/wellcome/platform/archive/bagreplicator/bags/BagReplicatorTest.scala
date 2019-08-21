@@ -98,8 +98,7 @@ class BagReplicatorTest
     }
 
     assertIsFailure(
-      bagReplicator =
-        new BagReplicator(badReplicator)
+      bagReplicator = new BagReplicator(badReplicator)
     ) {
       _.e shouldBe underlyingErr
     }
@@ -116,8 +115,7 @@ class BagReplicatorTest
     }
 
     assertIsFailure(
-      bagReplicator =
-        new BagReplicator(badReplicator)
+      bagReplicator = new BagReplicator(badReplicator)
     ) {
       _.e shouldBe underlyingErr
     }
@@ -185,8 +183,7 @@ class BagReplicatorTest
         )
 
         assertIsFailure(
-          bagReplicator =
-            new BagReplicator(badReplicator),
+          bagReplicator = new BagReplicator(badReplicator),
           srcPrefix = bagRoot.asPrefix,
           dstPrefix = createObjectLocationPrefixWith(bucket.name)
         ) { err =>
@@ -199,8 +196,7 @@ class BagReplicatorTest
   }
 
   def assertIsFailure(
-    bagReplicator: BagReplicator =
-      new BagReplicator(replicator),
+    bagReplicator: BagReplicator = new BagReplicator(replicator),
     srcPrefix: ObjectLocationPrefix = createObjectLocationPrefix,
     dstPrefix: ObjectLocationPrefix = createObjectLocationPrefix
   )(assert: BagReplicationFailed[_] => Assertion): Assertion = {

@@ -46,12 +46,12 @@ class BagReplicatorWorker[
   bagReplicator: BagReplicator
 )(
   implicit
-    val mc: MonitoringClient,
-    val as: ActorSystem,
-    val sc: AmazonSQSAsync,
-    val wd: Decoder[EnrichedBagInformationPayload],
-    ec: ExecutionContext,
-    streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
+  val mc: MonitoringClient,
+  val as: ActorSystem,
+  val sc: AmazonSQSAsync,
+  val wd: Decoder[EnrichedBagInformationPayload],
+  ec: ExecutionContext,
+  streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) extends IngestStepWorker[
       EnrichedBagInformationPayload,
       BagReplicationSummary[_]
