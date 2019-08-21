@@ -65,7 +65,7 @@ class ReplicaAggregatorFeatureTest
 
           val primaryLocation = PrimaryStorageLocation(
             provider = InfrequentAccessStorageProvider,
-            prefix = payload.bagRoot.asPrefix
+            prefix = payload.bagRoot
           )
 
           stored.identifiedT.location shouldBe Some(primaryLocation)

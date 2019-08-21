@@ -41,7 +41,7 @@ class ReplicaAggregatorWorkerTest
     val expectedKnownReplicas = KnownReplicas(
       location = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
-        prefix = payload.bagRoot.asPrefix
+        prefix = payload.bagRoot
       ),
       replicas = List.empty
     )
@@ -119,7 +119,7 @@ class ReplicaAggregatorWorkerTest
         location = Some(
           PrimaryStorageLocation(
             provider = InfrequentAccessStorageProvider,
-            prefix = payload.bagRoot.asPrefix
+            prefix = payload.bagRoot
           )
         ),
         replicas = List.empty
