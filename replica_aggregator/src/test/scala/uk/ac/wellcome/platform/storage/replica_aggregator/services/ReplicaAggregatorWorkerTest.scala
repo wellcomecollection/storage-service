@@ -3,21 +3,18 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.common.{
+  KnownReplicasPayload,
+  VersionedBagRootPayload
+}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  InfrequentAccessStorageProvider,
-  Ingest
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepSucceeded,
   KnownReplicas,
   PrimaryStorageLocation
-}
-import uk.ac.wellcome.platform.archive.common.{
-  EnrichedBagInformationPayload,
-  KnownReplicasPayload
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
@@ -37,10 +34,10 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createEnrichedBagInformationPayload
+    val payload = createReplicaResultPayload
     val expectedKnownReplicas = KnownReplicas(
       location = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
+        provider = payload.replicaResult.storageLocation.provider,
         prefix = payload.bagRoot
       ),
       replicas = List.empty
@@ -93,7 +90,7 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createEnrichedBagInformationPayload
+    val payload = createReplicaResultPayload
 
     val result =
       withReplicaAggregatorWorker(
@@ -118,7 +115,7 @@ class ReplicaAggregatorWorkerTest
       incompleteAggregation.aggregatorRecord shouldBe AggregatorInternalRecord(
         location = Some(
           PrimaryStorageLocation(
-            provider = InfrequentAccessStorageProvider,
+            provider = payload.replicaResult.storageLocation.provider,
             prefix = payload.bagRoot
           )
         ),
@@ -131,7 +128,7 @@ class ReplicaAggregatorWorkerTest
     }
 
     it("does not send an outgoing message") {
-      outgoing.getMessages[EnrichedBagInformationPayload] shouldBe empty
+      outgoing.getMessages[VersionedBagRootPayload] shouldBe empty
     }
 
     it("updates the ingests monitor") {
@@ -165,7 +162,7 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createEnrichedBagInformationPayload
+    val payload = createReplicaResultPayload
 
     val result =
       withReplicaAggregatorWorker(
@@ -188,7 +185,7 @@ class ReplicaAggregatorWorkerTest
     }
 
     it("does not send an outgoing message") {
-      outgoing.getMessages[EnrichedBagInformationPayload] shouldBe empty
+      outgoing.getMessages[VersionedBagRootPayload] shouldBe empty
     }
 
     it("sends an IngestFailed to the monitor") {

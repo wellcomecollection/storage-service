@@ -19,7 +19,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
-  EnrichedBagInformationPayload
+  VersionedBagRootPayload
 }
 import uk.ac.wellcome.platform.storage.bag_versioner.models.{
   BagVersionerSuccessSummary,
@@ -87,7 +87,7 @@ class BagVersionerWorker[IngestDestination, OutgoingDestination](
       case IngestStepSucceeded(summary: BagVersionerSuccessSummary, _) =>
         outgoingPublisher.sendIfSuccessful(
           step,
-          EnrichedBagInformationPayload(
+          VersionedBagRootPayload(
             context = payload.context,
             bagRoot = payload.bagRoot,
             version = summary.version

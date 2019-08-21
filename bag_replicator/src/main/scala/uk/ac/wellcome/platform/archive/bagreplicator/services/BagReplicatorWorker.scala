@@ -15,7 +15,11 @@ import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
+import uk.ac.wellcome.platform.archive.common.{
+  ReplicaResultPayload,
+  VersionedBagRootPayload
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
@@ -49,11 +53,11 @@ class BagReplicatorWorker[
   val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[EnrichedBagInformationPayload],
+  val wd: Decoder[VersionedBagRootPayload],
   ec: ExecutionContext,
   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) extends IngestStepWorker[
-      EnrichedBagInformationPayload,
+      VersionedBagRootPayload,
       BagReplicationSummary[_]
     ] {
   override val visibilityTimeout = 180
@@ -63,7 +67,7 @@ class BagReplicatorWorker[
   )
 
   override def process(
-    payload: EnrichedBagInformationPayload
+    payload: VersionedBagRootPayload
   ): Future[Result[BagReplicationSummary[_]]] =
     processPayload(payload).map { toResult }
 
@@ -71,12 +75,16 @@ class BagReplicatorWorker[
   // a Try; in this case we return a Future, so we override process()
   // above and expect that this will never be used.
   override def processMessage(
-    payload: EnrichedBagInformationPayload
+    payload: VersionedBagRootPayload
   ): Try[IngestStepResult[BagReplicationSummary[_]]] =
     Failure(new Throwable("This should never be called!"))
 
+  // TODO: This should be configurable
+  val provider: InfrequentAccessStorageProvider.type =
+    InfrequentAccessStorageProvider
+
   def processPayload(
-    payload: EnrichedBagInformationPayload
+    payload: VersionedBagRootPayload
   ): Future[IngestStepResult[BagReplicationSummary[_]]] =
     for {
       _ <- Future.fromTry {
@@ -91,7 +99,7 @@ class BagReplicatorWorker[
         version = payload.version
       )
 
-      bagRequest = PrimaryBagReplicationRequest(
+      replicationRequest = PrimaryBagReplicationRequest(
         ReplicationRequest(
           srcPrefix = srcPrefix,
           dstPrefix = dstPrefix
@@ -100,9 +108,9 @@ class BagReplicatorWorker[
 
       result <- lockingService
         .withLock(payload.ingestId.toString) {
-          replicate(bagRequest)
+          replicate(replicationRequest)
         }
-        .map(lockFailed(bagRequest).apply(_))
+        .map(lockFailed(replicationRequest).apply(_))
 
       _ <- Future.fromTry {
         ingestUpdater.send(payload.ingestId, result)
@@ -111,8 +119,10 @@ class BagReplicatorWorker[
       _ <- Future.fromTry {
         outgoingPublisher.sendIfSuccessful(
           result,
-          payload.copy(
-            bagRoot = dstPrefix
+          ReplicaResultPayload(
+            context = payload.context,
+            version = payload.version,
+            replicaResult = replicationRequest.toResult(provider)
           )
         )
       }

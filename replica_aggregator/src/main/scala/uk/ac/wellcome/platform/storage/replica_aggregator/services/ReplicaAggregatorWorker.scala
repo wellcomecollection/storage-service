@@ -12,9 +12,9 @@ import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.{
-  EnrichedBagInformationPayload,
   KnownReplicasPayload,
-  PipelineContext
+  PipelineContext,
+  ReplicaResultPayload
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.UpdateError
@@ -31,9 +31,9 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   implicit val mc: MonitoringClient,
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
-  val wd: Decoder[EnrichedBagInformationPayload]
+  val wd: Decoder[ReplicaResultPayload]
 ) extends IngestStepWorker[
-      EnrichedBagInformationPayload,
+      ReplicaResultPayload,
       ReplicationAggregationSummary
     ] {
 
@@ -46,12 +46,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   ) extends WorkerError
 
   private def getKnownReplicas(
-    payload: EnrichedBagInformationPayload
+    replicaResult: ReplicaResult
   ): Either[WorkerError, KnownReplicas] =
     for {
 
       aggregatorRecord <- replicaAggregator
-        .aggregate(ReplicaResult(payload))
+        .aggregate(replicaResult)
         .left
         .map(AggregationFailure)
 
@@ -63,12 +63,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     } yield sufficientReplicas
 
   override def processMessage(
-    payload: EnrichedBagInformationPayload
+    payload: ReplicaResultPayload
   ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
     val replicaPath = ReplicaPath(payload.bagRoot.path)
     val startTime = Instant.now()
 
-    val ingestStep = getKnownReplicas(payload) match {
+    val ingestStep = getKnownReplicas(payload.replicaResult) match {
       case Left(AggregationFailure(err)) =>
         IngestFailed(
           summary = ReplicationAggregationFailed(

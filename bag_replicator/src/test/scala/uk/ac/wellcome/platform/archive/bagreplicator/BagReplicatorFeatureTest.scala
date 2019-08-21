@@ -7,10 +7,12 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
+import uk.ac.wellcome.platform.archive.common.ReplicaResultPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
+import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 class BagReplicatorFeatureTest
@@ -31,7 +33,7 @@ class BagReplicatorFeatureTest
           bucket = srcBucket
         )
 
-        val payload = createEnrichedBagInformationPayloadWith(
+        val payload = createVersionedBagRootPayloadWith(
           bagRoot = srcBagRoot
         )
 
@@ -57,14 +59,17 @@ class BagReplicatorFeatureTest
                   .toString
               )
 
-              val expectedPayload = payload.copy(
-                bagRoot = expectedDst
-              )
+              val receivedPayload =
+                outgoing
+                  .getMessages[ReplicaResultPayload]
+                  .head
 
-              outgoing
-                .getMessages[EnrichedBagInformationPayload]
-                .toSet shouldBe Set(
-                expectedPayload
+              receivedPayload.context shouldBe payload.context
+              receivedPayload.version shouldBe payload.version
+
+              receivedPayload.replicaResult.storageLocation shouldBe PrimaryStorageLocation(
+                provider = InfrequentAccessStorageProvider,
+                prefix = expectedDst
               )
 
               verifyObjectsCopied(
