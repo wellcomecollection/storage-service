@@ -21,8 +21,9 @@ jobs:
     - env: SBT_PROJECT=replica_aggregator
 
     - env: SBT_PROJECT=notifier
-    - env: TASK=bagger-publish
-    - env: TASK=python_client-test
+
+    # - env: TASK=bagger-publish
+    # - env: TASK=python_client-test
 
 script:
   - ./.travis/run_job.py
