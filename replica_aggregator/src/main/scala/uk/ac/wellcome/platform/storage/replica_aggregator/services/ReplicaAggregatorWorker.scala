@@ -11,12 +11,9 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.{
-  EnrichedBagInformationPayload,
-  KnownReplicasPayload,
-  PipelineContext
-}
+import uk.ac.wellcome.platform.archive.common.{EnrichedBagInformationPayload, KnownReplicasPayload, PipelineContext}
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
+import uk.ac.wellcome.storage.StorageError
 
 import scala.util.{Success, Try}
 
@@ -37,7 +34,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     ] {
 
   private sealed trait WorkerError
-  private case class AggregationFailure(e: Throwable) extends WorkerError
+  private case class AggregationFailure[E <: StorageError](e: E) extends WorkerError
   private case class InsufficientReplicas(
     replicaCounterError: ReplicaCounterError,
     aggregatorRecord: AggregatorInternalRecord
@@ -47,16 +44,16 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     payload: EnrichedBagInformationPayload
   ): Either[WorkerError, KnownReplicas] =
     for {
+
       aggregatorRecord <- replicaAggregator
         .aggregate(ReplicaResult(payload))
-        .toEither
         .left
-        .map(AggregationFailure)
+        .map(AggregationFailure(_))
 
       sufficientReplicas <- replicaCounter
-        .countReplicas(aggregatorRecord)
+        .countReplicas(aggregatorRecord.identifiedT)
         .left
-        .map(InsufficientReplicas(_, aggregatorRecord))
+        .map(InsufficientReplicas(_, aggregatorRecord.identifiedT))
 
     } yield sufficientReplicas
 
@@ -70,12 +67,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       case Left(AggregationFailure(err)) =>
         IngestFailed(
           summary = ReplicationAggregationFailed(
-            e = err,
+            e = err.e,
             replicaPath = replicaPath,
             startTime = startTime,
             endTime = Instant.now()
           ),
-          e = err
+          e = err.e
         )
 
       case Left(InsufficientReplicas(err, aggregatorRecord)) =>
