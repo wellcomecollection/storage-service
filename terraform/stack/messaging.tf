@@ -17,6 +17,9 @@ module "ingests_topic" {
 
     "${module.replicator_verifier_primary.replicator_task_role_name}",
     "${module.replicator_verifier_primary.verifier_task_role_name}",
+
+    "${module.replicator_verifier_glacier.replicator_task_role_name}",
+    "${module.replicator_verifier_glacier.verifier_task_role_name}",
   ]
 }
 
@@ -249,6 +252,7 @@ module "replica_aggregator_input_queue" {
 
   topic_names = [
     "${module.replicator_verifier_primary.verifier_output_topic_name}",
+    "${module.replicator_verifier_glacier.verifier_output_topic_name}",
   ]
 
   role_names = ["${module.replica_aggregator.task_role_name}"]

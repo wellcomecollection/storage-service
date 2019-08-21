@@ -10,6 +10,7 @@ module "queue" {
   aws_region  = "${var.aws_region}"
   account_id  = "${data.aws_caller_identity.current.account_id}"
   topic_names = ["${var.topic_names}"]
+  topic_count = "${length(var.topic_names)}"
 
   visibility_timeout_seconds = "${var.visibility_timeout_seconds}"
   max_receive_count          = "${var.max_receive_count}"
