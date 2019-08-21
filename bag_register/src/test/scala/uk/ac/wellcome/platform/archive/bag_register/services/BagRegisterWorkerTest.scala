@@ -9,9 +9,9 @@ import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
-  PayloadGenerators
+  PayloadGenerators,
+  StorageLocationGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed,
@@ -30,13 +30,12 @@ class BagRegisterWorkerTest
     with BagInfoGenerators
     with BagRegisterFixtures
     with PayloadGenerators
+    with StorageLocationGenerators
     with TryValues {
 
   describe("handling a successful registration") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
-
-    implicit val namespace: String = randomAlphanumeric
 
     val createdAfterDate = Instant.now()
     val space = createStorageSpace
@@ -53,11 +52,12 @@ class BagRegisterWorkerTest
       version = version
     )
 
+    val primaryLocation = createPrimaryLocationWith(
+      prefix = bagRoot
+    )
+
     val knownReplicas = KnownReplicas(
-      location = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = bagRoot
-      ),
+      location = primaryLocation,
       replicas = List.empty
     )
 
@@ -67,11 +67,6 @@ class BagRegisterWorkerTest
       ),
       version = version,
       knownReplicas = knownReplicas
-    )
-
-    val bagId = BagId(
-      space = space,
-      externalIdentifier = bagInfo.externalIdentifier
     )
 
     val result =
@@ -88,6 +83,11 @@ class BagRegisterWorkerTest
     }
 
     it("stores the manifest in the dao") {
+      val bagId = BagId(
+        space = space,
+        externalIdentifier = bagInfo.externalIdentifier
+      )
+
       val storageManifest =
         storageManifestDao.getLatest(bagId).right.value
 
@@ -96,7 +96,7 @@ class BagRegisterWorkerTest
       storageManifest.manifest.files should have size dataFileCount
 
       storageManifest.location shouldBe PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
+        provider = primaryLocation.provider,
         prefix = bagRoot
           .copy(
             path = bagRoot.path.stripSuffix(s"/$version")
@@ -125,8 +125,6 @@ class BagRegisterWorkerTest
 
     val storageManifestDao = createStorageManifestDao()
 
-    implicit val namespace: String = randomAlphanumeric
-
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
@@ -143,10 +141,7 @@ class BagRegisterWorkerTest
     )
 
     val knownReplicas1 = KnownReplicas(
-      location = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = bagRoot1
-      ),
+      location = createPrimaryLocationWith(prefix = bagRoot1),
       replicas = List.empty
     )
 
@@ -159,10 +154,7 @@ class BagRegisterWorkerTest
     )
 
     val knownReplicas2 = KnownReplicas(
-      location = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = bagRoot2
-      ),
+      location = createPrimaryLocationWith(prefix = bagRoot2),
       replicas = List.empty
     )
 
@@ -208,6 +200,81 @@ class BagRegisterWorkerTest
         .right
         .value
         .version shouldBe version2
+    }
+  }
+
+  describe("registering a bag with multiple locations") {
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
+    val space = createStorageSpace
+    val version = createBagVersion
+
+    val storageManifestDao = createStorageManifestDao()
+
+    val (bagRoot, bagInfo) = createRegisterBagWith(
+      space = space,
+      version = version
+    )
+
+    val primaryLocation = createPrimaryLocationWith(
+      prefix = bagRoot
+    )
+
+    val replicas = collectionOf(min = 1) {
+      createSecondaryLocationWith(
+        prefix = bagRoot.copy(namespace = randomAlphanumeric)
+      )
+    }
+
+    val knownReplicas = KnownReplicas(
+      location = primaryLocation,
+      replicas = replicas
+    )
+
+    val payload = createKnownReplicasPayloadWith(
+      context = createPipelineContextWith(
+        storageSpace = space
+      ),
+      version = version,
+      knownReplicas = knownReplicas
+    )
+
+    val bagId = BagId(
+      space = space,
+      externalIdentifier = bagInfo.externalIdentifier
+    )
+
+    val result =
+      withBagRegisterWorker(storageManifestDao = storageManifestDao) {
+        _.processMessage(payload)
+      }
+
+    it("returns an IngestCompleted") {
+      result shouldBe a[Success[_]]
+      result.success.value shouldBe a[IngestCompleted[_]]
+    }
+
+    it("stores the manifest in the dao") {
+      val storageManifest =
+        storageManifestDao.getLatest(bagId).right.value
+
+      storageManifest.location shouldBe primaryLocation.copy(
+        prefix = bagRoot
+          .copy(
+            path = bagRoot.path.stripSuffix(s"/$version")
+          )
+      )
+
+      storageManifest.replicaLocations shouldBe
+        replicas.map { secondaryLocation =>
+          val prefix = secondaryLocation.prefix
+
+          secondaryLocation.copy(
+            prefix = prefix
+              .copy(path = prefix.path.stripSuffix(s"/$version"))
+          )
+        }
     }
   }
 

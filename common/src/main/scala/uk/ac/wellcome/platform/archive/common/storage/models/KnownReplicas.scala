@@ -9,5 +9,5 @@ package uk.ac.wellcome.platform.archive.common.storage.models
   */
 case class KnownReplicas(
   location: PrimaryStorageLocation,
-  replicas: List[SecondaryStorageLocation]
+  replicas: Seq[SecondaryStorageLocation]
 )

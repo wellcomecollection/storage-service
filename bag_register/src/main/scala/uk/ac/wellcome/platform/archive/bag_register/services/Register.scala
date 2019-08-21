@@ -6,18 +6,12 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  IngestFailed,
-  IngestStepResult,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   BadFetchLocationException,
   StorageManifestDao,
   StorageManifestService
 }
-import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 import scala.util.{Failure, Success, Try}
 
@@ -28,19 +22,19 @@ class Register(
 ) extends Logging {
 
   def update(
-    bagRoot: ObjectLocationPrefix,
+    location: PrimaryStorageLocation,
+    replicas: Seq[SecondaryStorageLocation],
     version: BagVersion,
-    storageSpace: StorageSpace
+    space: StorageSpace
   ): Try[IngestStepResult[RegistrationSummary]] = {
-
     val registration = RegistrationSummary(
       startTime = Instant.now(),
-      bagRoot = bagRoot,
-      space = storageSpace
+      location = location,
+      space = space
     )
 
     val result: Try[IngestStepResult[RegistrationSummary]] = for {
-      bag <- bagReader.get(bagRoot) match {
+      bag <- bagReader.get(location.prefix) match {
         case Right(value) => Success(value)
         case Left(err) =>
           Failure(new RuntimeException(s"Bag unavailable: ${err.msg}"))
@@ -48,8 +42,9 @@ class Register(
 
       storageManifest <- storageManifestService.createManifest(
         bag = bag,
-        replicaRoot = bagRoot,
-        space = storageSpace,
+        location = location,
+        replicas = replicas,
+        space = space,
         version = version
       )
 
