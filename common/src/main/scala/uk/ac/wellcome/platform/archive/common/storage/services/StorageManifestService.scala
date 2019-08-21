@@ -11,7 +11,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   MatchedLocation
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
@@ -76,23 +75,6 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
         createdDate = Instant.now
       )
     } yield storageManifest
-
-  def createManifest(
-    bag: Bag,
-    replicaRoot: ObjectLocationPrefix,
-    space: StorageSpace,
-    version: BagVersion
-  ): Try[StorageManifest] =
-    createManifest(
-      bag = bag,
-      location = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = replicaRoot
-      ),
-      replicas = Seq.empty,
-      space = space,
-      version = version
-    )
 
   /** The replicator writes bags inside a bucket to paths of the form
     *

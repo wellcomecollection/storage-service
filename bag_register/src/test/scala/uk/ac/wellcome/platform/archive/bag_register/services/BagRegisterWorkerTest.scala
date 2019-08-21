@@ -207,7 +207,7 @@ class BagRegisterWorkerTest
     }
   }
 
-  it("registers a bag with multiple locations") {
+  describe("registering a bag with multiple locations") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 

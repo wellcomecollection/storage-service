@@ -3,11 +3,13 @@ package uk.ac.wellcome.platform.archive.bag_register.models
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  StorageSpace
+}
 
 case class RegistrationSummary(
-  bagRoot: ObjectLocationPrefix,
+  location: PrimaryStorageLocation,
   space: StorageSpace,
   startTime: Instant,
   maybeEndTime: Option[Instant] = None
@@ -18,7 +20,7 @@ case class RegistrationSummary(
     )
 
   override def toString: String =
-    f"""|bag=$bagRoot
+    f"""|bag=$location
         |space=$space
         |durationSeconds=$durationSeconds
         |duration=$formatDuration""".stripMargin

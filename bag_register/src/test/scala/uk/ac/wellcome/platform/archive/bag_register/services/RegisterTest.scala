@@ -68,9 +68,10 @@ class RegisterTest
     }
 
     val result = register.update(
-      bagRoot = bagRoot,
+      location = primaryLocation,
+      replicas = replicas,
       version = version,
-      storageSpace = space
+      space = space
     )
 
     it("succeeds") {
@@ -149,14 +150,20 @@ class RegisterTest
     }
     BagBuilder.uploadBagObjects(badBagObjects)
 
+    val location = createPrimaryLocationWith(
+      prefix =
+        bagRoot
+          .copy(
+            namespace = bagRoot.namespace + "_wrong"
+          )
+          .asPrefix
+    )
+
     val result = register.update(
-      bagRoot = bagRoot
-        .copy(
-          namespace = bagRoot.namespace + "_wrong"
-        )
-        .asPrefix,
+      location = location,
+      replicas = Seq.empty,
       version = version,
-      storageSpace = space
+      space = space
     )
 
     result.success.value shouldBe a[IngestFailed[_]]
