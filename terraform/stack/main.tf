@@ -305,10 +305,12 @@ module "replica_aggregator" {
     operation_name      = "replica_aggregator"
     logstash_host       = "${local.logstash_host}"
 
+    expected_replica_count = 1
+
     JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.replica_aggregator_service_name}"
   }
 
-  env_vars_length = 8
+  env_vars_length = 9
 
   min_capacity = 1
   max_capacity = 10
