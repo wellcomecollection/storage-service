@@ -33,12 +33,12 @@ class BagRootFinderFeatureTest
 
       // TODO: Bag root location should really be a prefix here
       val payload = createUnpackedBagLocationPayloadWith(
-        unpackedBagLocation = unpackedBagLocation.asPrefix
+        unpackedBagLocation = unpackedBagLocation
       )
 
       val expectedPayload = createBagRootLocationPayloadWith(
         context = payload.context,
-        bagRootLocation = unpackedBagLocation
+        bagRoot = unpackedBagLocation
       )
 
       withLocalSqsQueue { queue =>
@@ -94,12 +94,12 @@ class BagRootFinderFeatureTest
       )
 
       val payload = createUnpackedBagLocationPayloadWith(
-        unpackedBagLocation = parentLocation.asPrefix
+        unpackedBagLocation = parentLocation
       )
 
       val expectedPayload = createBagRootLocationPayloadWith(
         context = payload.context,
-        bagRootLocation = unpackedBagLocation
+        bagRoot = unpackedBagLocation
       )
 
       withLocalSqsQueue { queue =>
@@ -140,7 +140,7 @@ class BagRootFinderFeatureTest
       val bucketRootLocation = unpackedBagLocation.copy(path = "")
 
       val payload =
-        createUnpackedBagLocationPayloadWith(bucketRootLocation.asPrefix)
+        createUnpackedBagLocationPayloadWith(bucketRootLocation)
 
       withLocalSqsQueue { queue =>
         val ingests = new MemoryMessageSender()

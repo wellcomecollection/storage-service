@@ -50,9 +50,9 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     }
   }
 
-  def locateBagRoot(prefix: ObjectLocationPrefix): Try[ObjectLocation] =
+  def locateBagRoot(prefix: ObjectLocationPrefix): Try[ObjectLocationPrefix] =
     locateBagInfo(prefix).map { loc =>
-      loc.copy(path = loc.path.stripSuffix("/bag-info.txt"))
+      loc.copy(path = loc.path.stripSuffix("/bag-info.txt")).asPrefix
     }
 
   /** Find a bag directly below a given ObjectLocation. */

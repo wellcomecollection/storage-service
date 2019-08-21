@@ -49,7 +49,7 @@ class BagVerifierTest
 
   it("passes a bag with correct checksum values") {
     withLocalS3Bucket { bucket =>
-      val (root, bagInfo) = S3BagBuilder.createS3BagWith(
+      val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(
         bucket,
         payloadFileCount = payloadFileCount
       )
@@ -57,7 +57,7 @@ class BagVerifierTest
       val ingestStep =
         withVerifier {
           _.verify(
-            root.asPrefix,
+            bagRoot,
             externalIdentifier = bagInfo.externalIdentifier
           )
         }
@@ -89,13 +89,13 @@ class BagVerifierTest
           )
       }
 
-      val (root, bagInfo) =
+      val (bagRoot, bagInfo) =
         badBuilder.createS3BagWith(bucket, payloadFileCount = payloadFileCount)
 
       val ingestStep =
         withVerifier {
           _.verify(
-            root.asPrefix,
+            bagRoot,
             externalIdentifier = bagInfo.externalIdentifier
           )
         }
@@ -140,13 +140,13 @@ class BagVerifierTest
           )
       }
 
-      val (root, bagInfo) =
+      val (bagRoot, bagInfo) =
         badBuilder.createS3BagWith(bucket, payloadFileCount = payloadFileCount)
 
       val ingestStep =
         withVerifier {
           _.verify(
-            root.asPrefix,
+            bagRoot,
             externalIdentifier = bagInfo.externalIdentifier
           )
         }
@@ -185,13 +185,13 @@ class BagVerifierTest
           )
       }
 
-      val (root, bagInfo) =
+      val (bagRoot, bagInfo) =
         badBuilder.createS3BagWith(bucket, payloadFileCount = payloadFileCount)
 
       val ingestStep =
         withVerifier {
           _.verify(
-            root.asPrefix,
+            bagRoot,
             externalIdentifier = bagInfo.externalIdentifier
           )
         }
@@ -226,13 +226,13 @@ class BagVerifierTest
         override protected def getFetchEntryCount(payloadFileCount: Int) = 0
       }
 
-      val (root, bagInfo) =
+      val (bagRoot, bagInfo) =
         badBuilder.createS3BagWith(bucket, payloadFileCount = payloadFileCount)
 
       val ingestStep =
         withVerifier {
           _.verify(
-            root.asPrefix,
+            bagRoot,
             externalIdentifier = bagInfo.externalIdentifier
           )
         }
@@ -270,12 +270,12 @@ class BagVerifierTest
           None
       }
 
-      val (root, bagInfo) = badBuilder.createS3BagWith(bucket)
+      val (bagRoot, bagInfo) = badBuilder.createS3BagWith(bucket)
 
       val ingestStep =
         withVerifier {
           _.verify(
-            root.asPrefix,
+            bagRoot,
             externalIdentifier = bagInfo.externalIdentifier
           )
         }
@@ -307,12 +307,12 @@ class BagVerifierTest
           None
       }
 
-      val (root, bagInfo) = badBuilder.createS3BagWith(bucket)
+      val (bagRoot, bagInfo) = badBuilder.createS3BagWith(bucket)
 
       val ingestStep =
         withVerifier {
           _.verify(
-            root.asPrefix,
+            bagRoot,
             externalIdentifier = bagInfo.externalIdentifier
           )
         }
@@ -343,7 +343,7 @@ class BagVerifierTest
       ExternalIdentifier(externalIdentifier + "_payload")
 
     withLocalS3Bucket { bucket =>
-      val (root, _) = S3BagBuilder.createS3BagWith(
+      val (bagRoot, _) = S3BagBuilder.createS3BagWith(
         bucket,
         externalIdentifier = bagInfoExternalIdentifier
       )
@@ -351,7 +351,7 @@ class BagVerifierTest
       val ingestStep =
         withVerifier {
           _.verify(
-            root.asPrefix,
+            bagRoot,
             externalIdentifier = payloadExternalIdentifier
           )
         }
@@ -386,13 +386,13 @@ class BagVerifierTest
             )
         }
 
-        val (root, bagInfo) =
+        val (bagRoot, bagInfo) =
           badBuilder.createS3BagWith(bucket)
 
         val ingestStep =
           withVerifier {
             _.verify(
-              root.asPrefix,
+              bagRoot,
               externalIdentifier = bagInfo.externalIdentifier
             )
           }
@@ -417,9 +417,9 @@ class BagVerifierTest
   describe("checks for unreferenced files") {
     it("fails if there is one unreferenced file") {
       withLocalS3Bucket { bucket =>
-        val (root, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+        val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
-        val location = root.join("unreferencedfile.txt")
+        val location = bagRoot.asLocation("unreferencedfile.txt")
         s3Client.putObject(
           location.namespace,
           location.path,
@@ -429,7 +429,7 @@ class BagVerifierTest
         val ingestStep =
           withVerifier {
             _.verify(
-              root.asPrefix,
+              bagRoot,
               externalIdentifier = bagInfo.externalIdentifier
             )
           }
@@ -449,10 +449,10 @@ class BagVerifierTest
 
     it("fails if there are multiple unreferenced files") {
       withLocalS3Bucket { bucket =>
-        val (root, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+        val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
         val locations = (1 to 3).map { i =>
-          val location = root.join(s"unreferencedfile_$i.txt")
+          val location = bagRoot.asLocation(s"unreferencedfile_$i.txt")
           s3Client.putObject(
             location.namespace,
             location.path,
@@ -464,7 +464,7 @@ class BagVerifierTest
         val ingestStep =
           withVerifier {
             _.verify(
-              root.asPrefix,
+              bagRoot,
               externalIdentifier = bagInfo.externalIdentifier
             )
           }
@@ -492,13 +492,13 @@ class BagVerifierTest
             payloadFileCount
         }
 
-        val (root, bagInfo) = alwaysWriteAsFetchBuilder.createS3BagWith(bucket)
+        val (bagRoot, bagInfo) = alwaysWriteAsFetchBuilder.createS3BagWith(bucket)
 
-        val bag = new S3BagReader().get(root.asPrefix).right.value
+        val bag = new S3BagReader().get(bagRoot).right.value
 
         // Write one of the fetch.txt entries as a concrete file
         val badFetchEntry = bag.fetch.get.files.head
-        val badFetchLocation = root.join(badFetchEntry.path.value)
+        val badFetchLocation = bagRoot.asLocation(badFetchEntry.path.value)
 
         s3Client.putObject(
           badFetchLocation.namespace,
@@ -509,7 +509,7 @@ class BagVerifierTest
         val ingestStep =
           withVerifier {
             _.verify(
-              root.asPrefix,
+              bagRoot,
               externalIdentifier = bagInfo.externalIdentifier
             )
           }
@@ -520,8 +520,8 @@ class BagVerifierTest
         val ingestFailed = result.asInstanceOf[IngestFailed[_]]
 
         ingestFailed.e.getMessage shouldBe
-          s"Files referred to in the fetch.txt also appear in the bag: ${root
-            .join(badFetchEntry.path.value)}"
+          s"Files referred to in the fetch.txt also appear in the bag: ${bagRoot
+            .asLocation(badFetchEntry.path.value)}"
 
         ingestFailed.maybeUserFacingMessage.get shouldBe
           s"Files referred to in the fetch.txt also appear in the bag: ${badFetchEntry.path}"
@@ -532,9 +532,9 @@ class BagVerifierTest
       "passes a bag that includes a manifest/tag manifest for another algorithm"
     ) {
       withLocalS3Bucket { bucket =>
-        val (root, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+        val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
-        val location = root.join("tagmanifest-sha512.txt")
+        val location = bagRoot.asLocation("tagmanifest-sha512.txt")
 
         s3Client.putObject(
           location.namespace,
@@ -545,7 +545,7 @@ class BagVerifierTest
         val ingestStep =
           withVerifier {
             _.verify(
-              root.asPrefix,
+              bagRoot,
               externalIdentifier = bagInfo.externalIdentifier
             )
           }
@@ -568,7 +568,7 @@ class BagVerifierTest
           }
         }
 
-        val (root, bagInfo) = badBuilder.createS3BagWith(
+        val (bagRoot, bagInfo) = badBuilder.createS3BagWith(
           bucket,
           payloadFileCount = payloadFileCount
         )
@@ -576,7 +576,7 @@ class BagVerifierTest
         val ingestStep =
           withVerifier {
             _.verify(
-              root.asPrefix,
+              bagRoot,
               externalIdentifier = bagInfo.externalIdentifier
             )
           }
@@ -605,12 +605,12 @@ class BagVerifierTest
           }
         }
 
-        val (root, bagInfo) = badBuilder.createS3BagWith(bucket)
+        val (bagRoot, bagInfo) = badBuilder.createS3BagWith(bucket)
 
         val ingestStep =
           withVerifier {
             _.verify(
-              root.asPrefix,
+              bagRoot,
               externalIdentifier = bagInfo.externalIdentifier
             )
           }

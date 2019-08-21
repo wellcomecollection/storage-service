@@ -86,8 +86,8 @@ class BagReplicatorWorkerTest
         val dstBagRoot = result.bagRoot
 
         verifyObjectsCopied(
-          srcPrefix = srcBagRoot.asPrefix,
-          dstPrefix = dstBagRoot.asPrefix
+          srcPrefix = srcBagRoot,
+          dstPrefix = dstBagRoot
         )
 
         assertTopicReceivesIngestEvents(
@@ -354,7 +354,7 @@ class BagReplicatorWorkerTest
 
           s3Client.deleteObject(
             srcBagLocation.namespace,
-            srcBagLocation.join("tagmanifest-sha256.txt").path
+            srcBagLocation.asLocation("tagmanifest-sha256.txt").path
           )
 
           val future =

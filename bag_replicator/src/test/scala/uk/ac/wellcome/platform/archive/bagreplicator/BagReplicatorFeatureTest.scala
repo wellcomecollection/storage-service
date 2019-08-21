@@ -58,7 +58,7 @@ class BagReplicatorFeatureTest
               )
 
               val expectedPayload = payload.copy(
-                bagRoot = expectedDst.asLocation()
+                bagRoot = expectedDst
               )
 
               outgoing
@@ -68,7 +68,7 @@ class BagReplicatorFeatureTest
               )
 
               verifyObjectsCopied(
-                srcPrefix = srcBagRoot.asPrefix,
+                srcPrefix = srcBagRoot,
                 dstPrefix = expectedDst
               )
 

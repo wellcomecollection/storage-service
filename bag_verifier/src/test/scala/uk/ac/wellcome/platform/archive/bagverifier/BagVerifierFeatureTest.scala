@@ -52,7 +52,7 @@ class BagVerifierFeatureTest
               context = createPipelineContextWith(
                 externalIdentifier = bagInfo.externalIdentifier
               ),
-              bagRoot = bagRoot.asPrefix
+              bagRoot = bagRoot
             )
 
             sendNotificationToSQS[BagRootPayload](queue, payload)

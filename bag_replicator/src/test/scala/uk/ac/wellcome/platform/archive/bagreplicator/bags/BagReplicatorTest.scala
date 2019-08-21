@@ -50,7 +50,7 @@ class BagReplicatorTest
     withLocalS3Bucket { bucket =>
       val (bagRoot, _) = S3BagBuilder.createS3BagWith(bucket)
 
-      val srcPrefix = bagRoot.asPrefix
+      val srcPrefix = bagRoot
 
       val dstPrefix = ObjectLocationPrefix(
         namespace = bucket.name,
@@ -128,11 +128,11 @@ class BagReplicatorTest
 
         s3Client.deleteObject(
           bagRoot.namespace,
-          bagRoot.join("tagmanifest-sha256.txt").path
+          bagRoot.asLocation("tagmanifest-sha256.txt").path
         )
 
         assertIsFailure(
-          srcPrefix = bagRoot.asPrefix,
+          srcPrefix = bagRoot,
           dstPrefix = createObjectLocationPrefixWith(bucket.name)
         ) { err =>
           err.e.getMessage should startWith(
@@ -179,12 +179,12 @@ class BagReplicatorTest
 
         s3Client.deleteObject(
           bagRoot.namespace,
-          bagRoot.join("tagmanifest-sha256.txt").path
+          bagRoot.asLocation("tagmanifest-sha256.txt").path
         )
 
         assertIsFailure(
           bagReplicator = new BagReplicator(badReplicator),
-          srcPrefix = bagRoot.asPrefix,
+          srcPrefix = bagRoot,
           dstPrefix = createObjectLocationPrefixWith(bucket.name)
         ) { err =>
           err.e.getMessage should startWith(

@@ -83,7 +83,7 @@ class BagReplicatorWorker[
         ingestUpdater.start(payload.ingestId)
       }
 
-      srcPrefix = payload.bagRoot.asPrefix
+      srcPrefix = payload.bagRoot
 
       dstPrefix = destinationBuilder.buildDestination(
         storageSpace = payload.storageSpace,
@@ -112,7 +112,7 @@ class BagReplicatorWorker[
         outgoingPublisher.sendIfSuccessful(
           result,
           payload.copy(
-            bagRoot = dstPrefix.asLocation()
+            bagRoot = dstPrefix
           )
         )
       }
