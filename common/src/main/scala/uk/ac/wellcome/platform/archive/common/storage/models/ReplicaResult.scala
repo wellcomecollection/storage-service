@@ -1,13 +1,9 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.models
+package uk.ac.wellcome.platform.archive.common.storage.models
 
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  StorageLocation
-}
 
 case class ReplicaResult(
   storageLocation: StorageLocation,

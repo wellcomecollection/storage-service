@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
+  ReplicaResult,
   StorageSpace
 }
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
@@ -65,3 +66,12 @@ case class EnrichedBagInformationPayload(
   bagRoot: ObjectLocationPrefix,
   version: BagVersion
 ) extends BagRootPayload
+
+case class ReplicaResultPayload(
+  context: PipelineContext,
+  replicaResult: ReplicaResult,
+  version: BagVersion
+) extends BagRootPayload {
+  val bagRoot: ObjectLocationPrefix =
+    replicaResult.storageLocation.prefix
+}

@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerato
 import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   PrimaryStorageLocation,
+  ReplicaResult,
   StorageLocation
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
