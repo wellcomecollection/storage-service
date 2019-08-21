@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
@@ -83,7 +84,9 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
     withLocalS3Bucket { srcBucket =>
       withStreamStore { implicit streamStore =>
         withArchive(srcBucket, archiveFile) { archiveLocation =>
-          val dstLocation = createObjectLocationPrefix
+          val dstLocation = createObjectLocationPrefixWith(
+            namespace = createBucketName
+          )
           val result =
             unpacker.unpack(
               ingestId = createIngestID,
@@ -98,9 +101,9 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
 
           val underlyingError =
             ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
-          underlyingError.e shouldBe a[Throwable]
+          underlyingError.e shouldBe a[AmazonS3Exception]
           underlyingError.e.getMessage should startWith(
-            "The specified bucket is not valid"
+            "The specified bucket does not exist"
           )
         }
       }
