@@ -41,7 +41,7 @@ class ReplicaAggregatorWorkerTest
     val expectedKnownReplicas = KnownReplicas(
       location = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
-        prefix = payload.bagRootLocation.asPrefix
+        prefix = payload.bagRoot.asPrefix
       ),
       replicas = List.empty
     )
@@ -63,7 +63,7 @@ class ReplicaAggregatorWorkerTest
       val completeAggregation =
         result.summary.asInstanceOf[ReplicationAggregationComplete]
       completeAggregation.replicaPath shouldBe ReplicaPath(
-        payload.bagRootLocation.path
+        payload.bagRoot.path
       )
       completeAggregation.knownReplicas shouldBe expectedKnownReplicas
     }
@@ -113,13 +113,13 @@ class ReplicaAggregatorWorkerTest
       val incompleteAggregation =
         result.summary.asInstanceOf[ReplicationAggregationIncomplete]
       incompleteAggregation.replicaPath shouldBe ReplicaPath(
-        payload.bagRootLocation.path
+        payload.bagRoot.path
       )
       incompleteAggregation.aggregatorRecord shouldBe AggregatorInternalRecord(
         location = Some(
           PrimaryStorageLocation(
             provider = InfrequentAccessStorageProvider,
-            prefix = payload.bagRootLocation.asPrefix
+            prefix = payload.bagRoot.asPrefix
           )
         ),
         replicas = List.empty
@@ -184,7 +184,7 @@ class ReplicaAggregatorWorkerTest
       result.summary shouldBe a[ReplicationAggregationFailed]
 
       val failure = result.summary.asInstanceOf[ReplicationAggregationFailed]
-      failure.replicaPath shouldBe ReplicaPath(payload.bagRootLocation.path)
+      failure.replicaPath shouldBe ReplicaPath(payload.bagRoot.path)
       failure.e shouldBe throwable
     }
 

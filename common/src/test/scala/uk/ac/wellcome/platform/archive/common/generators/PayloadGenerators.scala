@@ -107,12 +107,12 @@ trait PayloadGenerators
 
   def createEnrichedBagInformationPayloadWith(
     context: PipelineContext = createPipelineContext,
-    bagRootLocation: ObjectLocation = createObjectLocation,
+    bagRoot: ObjectLocationPrefix = createObjectLocationPrefix,
     version: BagVersion = createBagVersion
   ): EnrichedBagInformationPayload =
     EnrichedBagInformationPayload(
       context = context,
-      bagRootLocation = bagRootLocation,
+      bagRoot = bagRoot,
       version = version
     )
 
@@ -121,15 +121,13 @@ trait PayloadGenerators
 
   def createBagRootLocationPayloadWith(
     context: PipelineContext = createPipelineContext,
-    bagRootLocation: ObjectLocation = createObjectLocation
+    bagRoot: ObjectLocationPrefix = createObjectLocationPrefix
   ): BagRootLocationPayload =
     BagRootLocationPayload(
       context = context,
-      bagRootLocation = bagRootLocation
+      bagRoot = bagRoot
     )
 
   def createBagRootLocationPayload: BagRootLocationPayload =
-    createBagRootLocationPayloadWith(
-      context = createPipelineContext
-    )
+    createBagRootLocationPayloadWith()
 }

@@ -58,14 +58,14 @@ class ReplicaAggregatorFeatureTest
           )
 
           val expectedReplicaPath =
-            ReplicaPath(payload.bagRootLocation.path)
+            ReplicaPath(payload.bagRoot.path)
 
           val stored =
             versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
 
           val primaryLocation = PrimaryStorageLocation(
             provider = InfrequentAccessStorageProvider,
-            prefix = payload.bagRootLocation.asPrefix
+            prefix = payload.bagRoot.asPrefix
           )
 
           stored.identifiedT.location shouldBe Some(primaryLocation)

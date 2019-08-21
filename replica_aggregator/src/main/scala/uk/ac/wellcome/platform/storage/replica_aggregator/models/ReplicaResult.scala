@@ -19,7 +19,7 @@ case object ReplicaResult {
     ReplicaResult(
       storageLocation = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
-        prefix = payload.bagRootLocation.asPrefix
+        prefix = payload.bagRoot.asPrefix
       ),
       timestamp = Instant.now()
     )

@@ -55,7 +55,7 @@ class BagReplicatorWorkerTest
       )
 
       val payload = createEnrichedBagInformationPayloadWith(
-        bagRootLocation = srcBagRoot
+        bagRoot = srcBagRoot
       )
 
       withLocalS3Bucket { dstBucket =>
@@ -83,7 +83,7 @@ class BagReplicatorWorkerTest
         val result = receivedMessages.head
         result.ingestId shouldBe payload.ingestId
 
-        val dstBagRoot = result.bagRootLocation
+        val dstBagRoot = result.bagRoot
 
         verifyObjectsCopied(
           srcPrefix = srcBagRoot.asPrefix,
@@ -110,7 +110,7 @@ class BagReplicatorWorkerTest
         )
 
         val payload = createEnrichedBagInformationPayloadWith(
-          bagRootLocation = srcBagLocation
+          bagRoot = srcBagLocation
         )
 
         withLocalS3Bucket { dstBucket =>
@@ -138,7 +138,7 @@ class BagReplicatorWorkerTest
           )
 
           val payload = createEnrichedBagInformationPayloadWith(
-            bagRootLocation = srcBagLocation
+            bagRoot = srcBagLocation
           )
 
           val future =
@@ -182,7 +182,7 @@ class BagReplicatorWorkerTest
       )
 
       val payload = createEnrichedBagInformationPayloadWith(
-        bagRootLocation = srcBagLocation
+        bagRoot = srcBagLocation
       )
 
       withLocalS3Bucket { dstBucket =>
@@ -217,7 +217,7 @@ class BagReplicatorWorkerTest
       )
 
       val payload = createEnrichedBagInformationPayloadWith(
-        bagRootLocation = srcBagLocation
+        bagRoot = srcBagLocation
       )
 
       withLocalSqsQueue { queue =>
@@ -267,7 +267,7 @@ class BagReplicatorWorkerTest
         )
 
         val payload = createEnrichedBagInformationPayloadWith(
-          bagRootLocation = srcBagLocation
+          bagRoot = srcBagLocation
         )
 
         withLocalS3Bucket { dstBucket =>
@@ -349,7 +349,7 @@ class BagReplicatorWorkerTest
           )
 
           val payload = createEnrichedBagInformationPayloadWith(
-            bagRootLocation = srcBagLocation
+            bagRoot = srcBagLocation
           )
 
           s3Client.deleteObject(

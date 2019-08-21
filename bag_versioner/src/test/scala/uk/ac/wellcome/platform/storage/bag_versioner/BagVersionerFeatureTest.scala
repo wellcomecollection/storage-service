@@ -45,7 +45,7 @@ class BagVersionerFeatureTest
 
     val expectedPayload = createEnrichedBagInformationPayloadWith(
       context = payload.context,
-      bagRootLocation = bagRootLocation,
+      bagRoot = bagRootLocation,
       version = BagVersion(1)
     )
 
@@ -97,7 +97,7 @@ class BagVersionerFeatureTest
         ingestDate = Instant.ofEpochSecond(1),
         storageSpace = storageSpace
       ),
-      bagRootLocation = bagRootLocation
+      bagRoot = bagRootLocation
     )
 
     val payload2 = payload1.copy(
