@@ -9,8 +9,10 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
+import uk.ac.wellcome.platform.archive.common.generators.{
+  PayloadGenerators,
+  StorageLocationGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
   PrimaryStorageLocation
@@ -24,6 +26,7 @@ class BagRegisterFeatureTest
     with BagRegisterFixtures
     with PayloadGenerators
     with Eventually
+    with StorageLocationGenerators
     with IntegrationPatience {
 
   it("sends an update if it registers a bag") {
@@ -52,11 +55,12 @@ class BagRegisterFeatureTest
       externalIdentifier = bagInfo.externalIdentifier
     )
 
+    val primaryLocation = createPrimaryLocationWith(
+      prefix = bagRoot
+    )
+
     val knownReplicas = KnownReplicas(
-      location = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = bagRoot
-      ),
+      location = primaryLocation,
       replicas = List.empty
     )
 
@@ -85,7 +89,7 @@ class BagRegisterFeatureTest
           storageManifest.manifest.files should have size dataFileCount
 
           storageManifest.location shouldBe PrimaryStorageLocation(
-            provider = InfrequentAccessStorageProvider,
+            provider = primaryLocation.provider,
             prefix = bagRoot
               .copy(
                 path = bagRoot.path.stripSuffix(s"/$version")

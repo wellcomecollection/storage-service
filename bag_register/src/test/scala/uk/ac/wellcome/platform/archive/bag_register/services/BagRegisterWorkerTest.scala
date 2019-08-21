@@ -12,7 +12,6 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   PayloadGenerators,
   StorageLocationGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed,
@@ -55,11 +54,12 @@ class BagRegisterWorkerTest
       version = version
     )
 
+    val primaryLocation = createPrimaryLocationWith(
+      prefix = bagRoot
+    )
+
     val knownReplicas = KnownReplicas(
-      location = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = bagRoot
-      ),
+      location = primaryLocation,
       replicas = List.empty
     )
 
@@ -69,11 +69,6 @@ class BagRegisterWorkerTest
       ),
       version = version,
       knownReplicas = knownReplicas
-    )
-
-    val bagId = BagId(
-      space = space,
-      externalIdentifier = bagInfo.externalIdentifier
     )
 
     val result =
@@ -90,6 +85,11 @@ class BagRegisterWorkerTest
     }
 
     it("stores the manifest in the dao") {
+      val bagId = BagId(
+        space = space,
+        externalIdentifier = bagInfo.externalIdentifier
+      )
+
       val storageManifest =
         storageManifestDao.getLatest(bagId).right.value
 
@@ -98,7 +98,7 @@ class BagRegisterWorkerTest
       storageManifest.manifest.files should have size dataFileCount
 
       storageManifest.location shouldBe PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
+        provider = primaryLocation.provider,
         prefix = bagRoot
           .copy(
             path = bagRoot.path.stripSuffix(s"/$version")
@@ -145,10 +145,7 @@ class BagRegisterWorkerTest
     )
 
     val knownReplicas1 = KnownReplicas(
-      location = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = bagRoot1
-      ),
+      location = createPrimaryLocationWith(prefix = bagRoot1),
       replicas = List.empty
     )
 
@@ -161,10 +158,7 @@ class BagRegisterWorkerTest
     )
 
     val knownReplicas2 = KnownReplicas(
-      location = PrimaryStorageLocation(
-        provider = InfrequentAccessStorageProvider,
-        prefix = bagRoot2
-      ),
+      location = createPrimaryLocationWith(prefix = bagRoot2),
       replicas = List.empty
     )
 
