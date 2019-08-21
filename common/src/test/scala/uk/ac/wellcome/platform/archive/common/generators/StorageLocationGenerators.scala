@@ -13,7 +13,9 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
-trait StorageLocationGenerators extends ObjectLocationGenerators with StorageRandomThings {
+trait StorageLocationGenerators
+    extends ObjectLocationGenerators
+    with StorageRandomThings {
   def createProvider: StorageProvider =
     chooseFrom(
       Seq(

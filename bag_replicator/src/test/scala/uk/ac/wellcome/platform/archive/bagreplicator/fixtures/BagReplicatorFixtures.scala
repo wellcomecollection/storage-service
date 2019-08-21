@@ -80,11 +80,12 @@ trait BagReplicatorFixtures
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
     stepName: String = randomAlphanumericWithLength(),
-    requestBuilder: ReplicationRequest => BagReplicationRequest =
-      chooseFrom(Seq(
+    requestBuilder: ReplicationRequest => BagReplicationRequest = chooseFrom(
+      Seq(
         PrimaryBagReplicationRequest.apply,
         SecondaryBagReplicationRequest.apply
-      ))
+      )
+    )
   )(
     testWith: TestWith[
       BagReplicatorWorker[String, String],
@@ -130,11 +131,12 @@ trait BagReplicatorFixtures
   def createReplicatorDestinationConfigWith(
     bucket: Bucket,
     provider: StorageProvider = createProvider,
-    requestBuilder: ReplicationRequest => BagReplicationRequest =
-      chooseFrom(Seq(
+    requestBuilder: ReplicationRequest => BagReplicationRequest = chooseFrom(
+      Seq(
         PrimaryBagReplicationRequest.apply,
         SecondaryBagReplicationRequest.apply
-      ))
+      )
+    )
   ): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
       namespace = bucket.name,

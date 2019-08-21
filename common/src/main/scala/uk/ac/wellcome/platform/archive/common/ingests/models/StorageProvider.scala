@@ -7,7 +7,7 @@ sealed trait StorageProvider {
 case object StorageProvider {
   def apply(id: String): StorageProvider =
     id match {
-      case StandardStorageProvider.id => StandardStorageProvider
+      case StandardStorageProvider.id         => StandardStorageProvider
       case InfrequentAccessStorageProvider.id => InfrequentAccessStorageProvider
       case _ =>
         throw new IllegalArgumentException(

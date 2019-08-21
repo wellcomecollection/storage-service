@@ -117,7 +117,8 @@ class BagReplicatorWorker[
           ReplicaResultPayload(
             context = payload.context,
             version = payload.version,
-            replicaResult = replicationRequest.toResult(destinationConfig.provider)
+            replicaResult =
+              replicationRequest.toResult(destinationConfig.provider)
           )
         )
       }

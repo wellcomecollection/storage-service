@@ -24,9 +24,10 @@ case object ReplicatorDestinationConfig {
       replicaType match {
         case "primary"   => PrimaryBagReplicationRequest.apply
         case "secondary" => SecondaryBagReplicationRequest.apply
-        case _ => throw new IllegalArgumentException(
-          s"Unrecognised replica type: $replicaType, expected primary/secondary"
-        )
+        case _ =>
+          throw new IllegalArgumentException(
+            s"Unrecognised replica type: $replicaType, expected primary/secondary"
+          )
       }
 
     ReplicatorDestinationConfig(
