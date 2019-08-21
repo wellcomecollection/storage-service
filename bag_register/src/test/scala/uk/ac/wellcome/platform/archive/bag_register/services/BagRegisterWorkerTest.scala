@@ -42,14 +42,12 @@ class BagRegisterWorkerTest
     val space = createStorageSpace
     val version = createBagVersion
     val dataFileCount = randomInt(1, 15)
-    val externalIdentifier = createExternalIdentifier
 
     val ingests = new MemoryMessageSender()
 
     val storageManifestDao = createStorageManifestDao()
 
     val (bagRoot, bagInfo) = createRegisterBagWith(
-      externalIdentifier,
       space = space,
       dataFileCount = dataFileCount,
       version = version
@@ -131,21 +129,18 @@ class BagRegisterWorkerTest
     implicit val namespace: String = randomAlphanumeric
 
     val space = createStorageSpace
-    val dataFileCount = randomInt(1, 15)
     val externalIdentifier = createExternalIdentifier
 
     val (location1, bagInfo1) = createRegisterBagWith(
-      externalIdentifier,
+      externalIdentifier = externalIdentifier,
       space = space,
-      version = version1,
-      dataFileCount
+      version = version1
     )
 
     val (location2, _) = createRegisterBagWith(
-      externalIdentifier,
+      externalIdentifier = externalIdentifier,
       space = space,
-      version = version2,
-      dataFileCount
+      version = version2
     )
 
     val knownReplicas1 = KnownReplicas(

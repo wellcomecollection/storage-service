@@ -38,20 +38,18 @@ class BagRegisterFeatureTest
     val space = createStorageSpace
     val version = createBagVersion
     val dataFileCount = randomInt(1, 15)
-    val externalIdentifier = createExternalIdentifier
-
-    val bagId = BagId(
-      space = space,
-      externalIdentifier = externalIdentifier
-    )
 
     implicit val namespace: String = randomAlphanumeric
 
     val (bagRoot, bagInfo) = createRegisterBagWith(
-      externalIdentifier = externalIdentifier,
       space = space,
       version = version,
       dataFileCount = dataFileCount
+    )
+
+    val bagId = BagId(
+      space = space,
+      externalIdentifier = bagInfo.externalIdentifier
     )
 
     val knownReplicas = KnownReplicas(

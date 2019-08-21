@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
+import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
@@ -42,6 +43,7 @@ trait BagRegisterFixtures
     with StorageManifestVHSFixture
     with MonitoringClientFixture
     with IngestUpdateAssertions
+    with ExternalIdentifierGenerators
     with StringNamespaceFixtures {
 
   type Fixtures = (
@@ -127,10 +129,10 @@ trait BagRegisterFixtures
     }
 
   def createRegisterBagWith(
-    externalIdentifier: ExternalIdentifier,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     space: StorageSpace,
     version: BagVersion,
-    dataFileCount: Int
+    dataFileCount: Int = randomInt(1, 15)
   )(
     implicit
     namespace: String,
