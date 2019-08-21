@@ -320,7 +320,7 @@ class BagReplicatorWorkerTest
                 ingestUpdater = ingestUpdater,
                 outgoingPublisher = outgoingPublisher,
                 lockingService = lockingService,
-                replicatorDestinationConfig = replicatorDestinationConfig,
+                destinationConfig = replicatorDestinationConfig,
                 bagReplicator = bagReplicator
               )
 
@@ -369,6 +369,42 @@ class BagReplicatorWorkerTest
               "Unable to load tagmanifest-sha256.txt in source and replica to compare:"
             )
           }
+        }
+      }
+    }
+  }
+
+  it("uses the provider configured in the destination config") {
+    val provider = createProvider
+
+    val outgoing = new MemoryMessageSender()
+
+    withLocalS3Bucket { srcBucket =>
+      val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
+        bucket = srcBucket
+      )
+
+      val payload = createVersionedBagRootPayloadWith(
+        bagRoot = srcBagRoot
+      )
+
+      withLocalS3Bucket { dstBucket =>
+        val future =
+          withBagReplicatorWorker(
+            bucket = dstBucket,
+            outgoing = outgoing,
+            provider = provider
+          ) {
+            _.processPayload(payload)
+          }
+
+        whenReady(future) { _ =>
+          outgoing
+            .getMessages[ReplicaResultPayload]
+            .head
+            .replicaResult
+            .storageLocation
+            .provider shouldBe provider
         }
       }
     }

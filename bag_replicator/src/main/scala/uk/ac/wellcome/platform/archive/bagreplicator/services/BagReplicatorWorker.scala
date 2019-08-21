@@ -15,14 +15,13 @@ import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
+import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
+import uk.ac.wellcome.platform.archive.common.operation.services._
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.{
   ReplicaResultPayload,
   VersionedBagRootPayload
 }
-import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.locking.{
   FailedLockingServiceOp,
   LockDao,
@@ -46,7 +45,7 @@ class BagReplicatorWorker[
     String,
     UUID
   ]],
-  replicatorDestinationConfig: ReplicatorDestinationConfig,
+  destinationConfig: ReplicatorDestinationConfig,
   bagReplicator: BagReplicator
 )(
   implicit
@@ -63,7 +62,7 @@ class BagReplicatorWorker[
   override val visibilityTimeout = 180
 
   val destinationBuilder = new DestinationBuilder(
-    namespace = replicatorDestinationConfig.namespace
+    namespace = destinationConfig.namespace
   )
 
   override def process(
@@ -78,10 +77,6 @@ class BagReplicatorWorker[
     payload: VersionedBagRootPayload
   ): Try[IngestStepResult[BagReplicationSummary[_]]] =
     Failure(new Throwable("This should never be called!"))
-
-  // TODO: This should be configurable
-  val provider: InfrequentAccessStorageProvider.type =
-    InfrequentAccessStorageProvider
 
   def processPayload(
     payload: VersionedBagRootPayload
@@ -122,7 +117,7 @@ class BagReplicatorWorker[
           ReplicaResultPayload(
             context = payload.context,
             version = payload.version,
-            replicaResult = replicationRequest.toResult(provider)
+            replicaResult = replicationRequest.toResult(destinationConfig.provider)
           )
         )
       }

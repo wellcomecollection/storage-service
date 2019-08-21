@@ -79,7 +79,7 @@ object Main extends WellcomeTypesafeApp {
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
       lockingService = lockingService,
-      replicatorDestinationConfig = ReplicatorDestinationConfig
+      destinationConfig = ReplicatorDestinationConfig
         .buildDestinationConfig(config),
       bagReplicator = new BagReplicator(replicator)
     )

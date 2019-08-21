@@ -41,8 +41,8 @@ class BagReplicatorFeatureTest
           withBagReplicatorWorker(
             queue,
             bucket = dstBucket,
-            ingests,
-            outgoing,
+            ingests = ingests,
+            outgoing = outgoing,
             stepName = "replicating"
           ) { _ =>
             sendNotificationToSQS(queue, payload)

@@ -10,9 +10,7 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
-  BagReplicationSummary
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.BagReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
@@ -20,6 +18,8 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   MonitoringClientFixture,
   OperationFixtures
 }
+import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -41,6 +41,7 @@ trait BagReplicatorFixtures
     with AlpakkaSQSWorkerFixtures
     with MonitoringClientFixture
     with MemoryLockDaoFixtures
+    with StorageLocationGenerators
     with S3Fixtures {
 
   type ReplicatorLockingService =
@@ -68,6 +69,7 @@ trait BagReplicatorFixtures
     queue: Queue =
       Queue(randomAlphanumericWithLength(), randomAlphanumericWithLength()),
     bucket: Bucket,
+    provider: StorageProvider = createProvider,
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
@@ -85,7 +87,10 @@ trait BagReplicatorFixtures
         val lockingService = createLockingServiceWith(lockServiceDao)
 
         val replicatorDestinationConfig =
-          createReplicatorDestinationConfigWith(bucket)
+          createReplicatorDestinationConfigWith(
+            bucket = bucket,
+            provider = provider
+          )
 
         implicit val s3StreamStore: S3StreamStore =
           new S3StreamStore()
@@ -100,7 +105,7 @@ trait BagReplicatorFixtures
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher,
           lockingService = lockingService,
-          replicatorDestinationConfig = replicatorDestinationConfig,
+          destinationConfig = replicatorDestinationConfig,
           bagReplicator = bagReplicator
         )
 
@@ -111,10 +116,12 @@ trait BagReplicatorFixtures
     }
 
   def createReplicatorDestinationConfigWith(
-    bucket: Bucket
+    bucket: Bucket,
+    provider: StorageProvider = createProvider
   ): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
-      namespace = bucket.name
+      namespace = bucket.name,
+      provider = provider
     )
 
   private val listing = new S3ObjectSummaryListing()
