@@ -75,7 +75,7 @@ object Main extends WellcomeTypesafeApp {
       // TODO: Make this configurable
       replicaCounter = new ReplicaCounter(
         expectedReplicaCount =
-          config.required[Int]("aggregator.expected_replica_count")
+          config.required[String]("aggregator.expected_replica_count").toInt
       ),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
