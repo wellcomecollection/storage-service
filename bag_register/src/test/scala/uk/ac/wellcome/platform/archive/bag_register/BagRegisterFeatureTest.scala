@@ -42,8 +42,6 @@ class BagRegisterFeatureTest
     val version = createBagVersion
     val dataFileCount = randomInt(1, 15)
 
-    implicit val namespace: String = randomAlphanumeric
-
     val (bagRoot, bagInfo) = createRegisterBagWith(
       space = space,
       version = version,

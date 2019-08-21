@@ -37,8 +37,6 @@ class BagRegisterWorkerTest
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
-    implicit val namespace: String = randomAlphanumeric
-
     val createdAfterDate = Instant.now()
     val space = createStorageSpace
     val version = createBagVersion
@@ -127,8 +125,6 @@ class BagRegisterWorkerTest
 
     val storageManifestDao = createStorageManifestDao()
 
-    implicit val namespace: String = randomAlphanumeric
-
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
@@ -210,8 +206,6 @@ class BagRegisterWorkerTest
   describe("registering a bag with multiple locations") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
-
-    implicit val namespace: String = randomAlphanumeric
 
     val space = createStorageSpace
     val version = createBagVersion
