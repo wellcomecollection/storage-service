@@ -42,6 +42,9 @@ b24963215 - A very large archive (6320 images) with access control
 b24990796 - A work with a very large number of volumes (66 manifestations, 10,136 images)  
 [migration](http://wt-havana:88/Dash/Migration/b24990796) | [dash](http://wt-havana:88/Dash/Manifestation/b24990796) | [uat](https://library-uat.wellcomelibrary.org/item/b24990796) | [live](https://wellcomelibrary.org/item/b24990796)
 
+b29236927 - A 6 "volume" audio multiple manifestation (does not work in Library UV)  
+[migration](http://wt-havana:88/Dash/Migration/b29236927) | [dash](http://wt-havana:88/Dash/Manifestation/b29236927) | [uat](https://library-uat.wellcomelibrary.org/item/b29236927) | [live](https://wellcomelibrary.org/item/b29236927)
+
 Note that there are many PDF versions in use in Wellcome content
 
 ## Other unwieldy things
