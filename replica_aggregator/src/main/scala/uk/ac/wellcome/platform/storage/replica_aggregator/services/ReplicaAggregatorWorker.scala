@@ -51,9 +51,9 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
         .map(AggregationFailure(_))
 
       sufficientReplicas <- replicaCounter
-        .countReplicas(aggregatorRecord.identifiedT)
+        .countReplicas(aggregatorRecord)
         .left
-        .map(InsufficientReplicas(_, aggregatorRecord.identifiedT))
+        .map(InsufficientReplicas(_, aggregatorRecord))
 
     } yield sufficientReplicas
 

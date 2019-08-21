@@ -72,7 +72,7 @@ class ReplicaAggregatorTest
       )
 
     it("returns the correct record") {
-      result.right.value.identifiedT shouldBe expectedRecord
+      result.right.value shouldBe expectedRecord
     }
 
     it("stores the replica in the underlying store") {
@@ -110,7 +110,7 @@ class ReplicaAggregatorTest
       )
 
     it("returns the correct record") {
-      result.right.value.identifiedT shouldBe expectedRecord
+      result.right.value shouldBe expectedRecord
     }
 
     it("stores the replica in the underlying store") {
@@ -157,7 +157,7 @@ class ReplicaAggregatorTest
       }
 
     it("returns the correct records") {
-      results.map(_.identifiedT) shouldBe Seq(
+      results shouldBe Seq(
         AggregatorInternalRecord(
           location = None,
           replicas = List(location1)
@@ -254,8 +254,7 @@ class ReplicaAggregatorTest
         aggregator
           .aggregate(replicaResult)
           .right
-          .value
-          .identifiedT shouldBe expectedRecord
+          .value shouldBe expectedRecord
       }
     }
   }
@@ -275,7 +274,7 @@ class ReplicaAggregatorTest
     val replicaResult2 = createReplicaResultWith(primaryLocation2)
 
     withAggregator() { aggregator =>
-      val result = aggregator.aggregate(replicaResult1).right.value.identifiedT
+      val result = aggregator.aggregate(replicaResult1).right.value
 
       result shouldBe AggregatorInternalRecord(
         location = Some(primaryLocation1),
@@ -299,7 +298,7 @@ class ReplicaAggregatorTest
         }
       }
 
-    val uniqResults = results.map { _.right.value.identifiedT }.toSet
+    val uniqResults = results.map { _.right.value }.toSet
 
     uniqResults should have size 1
 
