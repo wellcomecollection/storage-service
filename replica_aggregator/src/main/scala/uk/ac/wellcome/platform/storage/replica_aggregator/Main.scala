@@ -74,7 +74,8 @@ object Main extends WellcomeTypesafeApp {
       replicaAggregator = new ReplicaAggregator(dynamoVersionedStore),
       // TODO: Make this configurable
       replicaCounter = new ReplicaCounter(
-        expectedReplicaCount = config.required[Int]("aggregator.expected_replica_count")
+        expectedReplicaCount =
+          config.required[Int]("aggregator.expected_replica_count")
       ),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
