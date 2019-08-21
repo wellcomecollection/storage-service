@@ -44,7 +44,7 @@ class BagVerifierWorkerTest
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRootLocation = bagRootLocation
+        bagRoot = bagRootLocation
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -76,7 +76,7 @@ class BagVerifierWorkerTest
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier
           ),
-          bagRootLocation = bagRootLocation
+          bagRoot = bagRootLocation
         )
 
         withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -94,13 +94,13 @@ class BagVerifierWorkerTest
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { bucket =>
-        val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
+        val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket)
 
         val payload = createBagRootLocationPayloadWith(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier
           ),
-          bagRootLocation = bagRootLocation
+          bagRoot = bagRoot
         )
 
         withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -132,7 +132,7 @@ class BagVerifierWorkerTest
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRootLocation = bagRootLocation
+        bagRoot = bagRootLocation
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -170,7 +170,7 @@ class BagVerifierWorkerTest
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRootLocation = bagRootLocation
+        bagRoot = bagRootLocation
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -210,7 +210,7 @@ class BagVerifierWorkerTest
         context = createPipelineContextWith(
           externalIdentifier = payloadExternalIdentifier
         ),
-        bagRootLocation = bagRootLocation
+        bagRoot = bagRootLocation
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {
@@ -245,7 +245,7 @@ class BagVerifierWorkerTest
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRootLocation = bagRootLocation
+        bagRoot = bagRootLocation
       )
 
       withBagVerifierWorker(ingests, outgoing, stepName = "verification") {

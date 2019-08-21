@@ -52,16 +52,16 @@ case class KnownReplicasPayload(
 ) extends PipelinePayload
 
 sealed trait BagRootPayload extends PipelinePayload {
-  val bagRootLocation: ObjectLocation
+  val bagRoot: ObjectLocationPrefix
 }
 
 case class BagRootLocationPayload(
   context: PipelineContext,
-  bagRootLocation: ObjectLocation
+  bagRoot: ObjectLocationPrefix
 ) extends BagRootPayload
 
 case class EnrichedBagInformationPayload(
   context: PipelineContext,
-  bagRootLocation: ObjectLocation,
+  bagRoot: ObjectLocationPrefix,
   version: BagVersion
 ) extends BagRootPayload

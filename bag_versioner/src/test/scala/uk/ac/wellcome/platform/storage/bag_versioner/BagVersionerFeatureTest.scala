@@ -15,10 +15,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.{
-  BagRootLocationPayload,
-  EnrichedBagInformationPayload
-}
+import uk.ac.wellcome.platform.archive.common.EnrichedBagInformationPayload
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.BagVersionerFixtures
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -33,19 +30,19 @@ class BagVersionerFeatureTest
     with Eventually {
 
   it("assigns a version for a new bag") {
-    val bagRootLocation = createObjectLocation
+    val bagRoot = createObjectLocationPrefix
     val storageSpace = createStorageSpace
 
     val payload = createBagRootLocationPayloadWith(
       context = createPipelineContextWith(
         storageSpace = storageSpace
       ),
-      bagRootLocation = bagRootLocation
+      bagRoot = bagRoot
     )
 
     val expectedPayload = createEnrichedBagInformationPayloadWith(
       context = payload.context,
-      bagRootLocation = bagRootLocation,
+      bagRoot = bagRoot,
       version = BagVersion(1)
     )
 
@@ -87,17 +84,15 @@ class BagVersionerFeatureTest
   }
 
   it("assigns a version for an updated bag") {
-    val bagRootLocation = createObjectLocation
     val storageSpace = createStorageSpace
 
-    val payload1 = BagRootLocationPayload(
+    val payload1 = createBagRootLocationPayloadWith(
       context = createPipelineContextWith(
         ingestId = createIngestID,
         ingestType = CreateIngestType,
         ingestDate = Instant.ofEpochSecond(1),
         storageSpace = storageSpace
-      ),
-      bagRootLocation = bagRootLocation
+      )
     )
 
     val payload2 = payload1.copy(

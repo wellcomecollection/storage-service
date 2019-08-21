@@ -30,7 +30,7 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
               startTime = startTime,
               endTime = Instant.now(),
               location = unpackLocation,
-              bagRootLocation = rootLocation
+              rootLocation = rootLocation
             )
           )
 

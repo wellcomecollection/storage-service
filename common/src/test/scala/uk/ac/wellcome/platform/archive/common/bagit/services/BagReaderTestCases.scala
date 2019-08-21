@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagBuilder,
   StorageRandomThings
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.{TypedStore, TypedStoreEntry}
 
 trait BagReaderTestCases[Context, Namespace]
@@ -26,14 +26,14 @@ trait BagReaderTestCases[Context, Namespace]
 
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
-  def deleteFile(rootLocation: ObjectLocation, path: String)(
+  def deleteFile(root: ObjectLocationPrefix, path: String)(
     implicit context: Context
   )
 
-  def scrambleFile(rootLocation: ObjectLocation, path: String)(
+  def scrambleFile(root: ObjectLocationPrefix, path: String)(
     implicit typedStore: TypedStore[ObjectLocation, String]
   ): Assertion =
-    typedStore.put(rootLocation.join(path))(
+    typedStore.put(root.asLocation(path))(
       TypedStoreEntry(randomAlphanumeric, metadata = Map.empty)
     ) shouldBe a[Right[_, _]]
 
@@ -58,7 +58,7 @@ trait BagReaderTestCases[Context, Namespace]
       val (bagRoot, bagInfo) = createBag()
 
       val bag = withBagReader {
-        _.get(bagRoot.asPrefix).right.value
+        _.get(bagRoot).right.value
       }
 
       bag.info shouldBe bagInfo
@@ -73,7 +73,7 @@ trait BagReaderTestCases[Context, Namespace]
       deleteFile(bagRoot, "bag-info.txt")
 
       withBagReader {
-        _.get(bagRoot.asPrefix).left.value.msg should startWith(
+        _.get(bagRoot).left.value.msg should startWith(
           "Error loading bag-info.txt"
         )
       }
@@ -88,7 +88,7 @@ trait BagReaderTestCases[Context, Namespace]
       scrambleFile(bagRoot, "bag-info.txt")
 
       withBagReader {
-        _.get(bagRoot.asPrefix).left.value.msg should startWith(
+        _.get(bagRoot).left.value.msg should startWith(
           "Error loading bag-info.txt"
         )
       }
@@ -103,7 +103,7 @@ trait BagReaderTestCases[Context, Namespace]
       deleteFile(bagRoot, "manifest-sha256.txt")
 
       withBagReader {
-        _.get(bagRoot.asPrefix).left.value.msg should startWith(
+        _.get(bagRoot).left.value.msg should startWith(
           "Error loading manifest-sha256.txt"
         )
       }
@@ -118,7 +118,7 @@ trait BagReaderTestCases[Context, Namespace]
       scrambleFile(bagRoot, "manifest-sha256.txt")
 
       withBagReader {
-        _.get(bagRoot.asPrefix).left.value.msg should startWith(
+        _.get(bagRoot).left.value.msg should startWith(
           "Error loading manifest-sha256.txt"
         )
       }
@@ -133,7 +133,7 @@ trait BagReaderTestCases[Context, Namespace]
       deleteFile(bagRoot, "tagmanifest-sha256.txt")
 
       withBagReader {
-        _.get(bagRoot.asPrefix).left.value.msg should startWith(
+        _.get(bagRoot).left.value.msg should startWith(
           "Error loading tagmanifest-sha256.txt"
         )
       }
@@ -148,7 +148,7 @@ trait BagReaderTestCases[Context, Namespace]
       scrambleFile(bagRoot, "tagmanifest-sha256.txt")
 
       withBagReader {
-        _.get(bagRoot.asPrefix).left.value.msg should startWith(
+        _.get(bagRoot).left.value.msg should startWith(
           "Error loading tagmanifest-sha256.txt"
         )
       }
@@ -163,7 +163,7 @@ trait BagReaderTestCases[Context, Namespace]
       deleteFile(bagRoot, "fetch.txt")
 
       withBagReader {
-        _.get(bagRoot.asPrefix).right.value.fetch shouldBe None
+        _.get(bagRoot).right.value.fetch shouldBe None
       }
     }
   }
@@ -176,7 +176,7 @@ trait BagReaderTestCases[Context, Namespace]
       scrambleFile(bagRoot, "fetch.txt")
 
       withBagReader {
-        _.get(bagRoot.asPrefix).left.value.msg should startWith(
+        _.get(bagRoot).left.value.msg should startWith(
           "Error loading fetch.txt"
         )
       }
@@ -189,7 +189,7 @@ trait BagReaderTestCases[Context, Namespace]
     implicit
     ns: Namespace,
     typedStore: TypedStore[ObjectLocation, String]
-  ): (ObjectLocation, BagInfo) = {
+  ): (ObjectLocationPrefix, BagInfo) = {
     implicit val namespace: String = toString(ns)
 
     val (bagObjects, bagRoot, bagInfo) = BagBuilder.createBagContentsWith()

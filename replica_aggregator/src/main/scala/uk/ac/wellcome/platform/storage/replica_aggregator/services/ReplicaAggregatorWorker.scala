@@ -63,7 +63,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   override def processMessage(
     payload: EnrichedBagInformationPayload
   ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
-    val replicaPath = ReplicaPath(payload.bagRootLocation.path)
+    val replicaPath = ReplicaPath(payload.bagRoot.path)
     val startTime = Instant.now()
 
     val ingestStep = getKnownReplicas(payload) match {

@@ -155,7 +155,6 @@ class RegisterTest
         .copy(
           namespace = bagRoot.namespace + "_wrong"
         )
-        .asPrefix
     )
 
     val result = register.update(

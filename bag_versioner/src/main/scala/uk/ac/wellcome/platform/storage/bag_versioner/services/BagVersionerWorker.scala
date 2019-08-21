@@ -89,7 +89,7 @@ class BagVersionerWorker[IngestDestination, OutgoingDestination](
           step,
           EnrichedBagInformationPayload(
             context = payload.context,
-            bagRootLocation = payload.bagRootLocation,
+            bagRoot = payload.bagRoot,
             version = summary.version
           )
         )

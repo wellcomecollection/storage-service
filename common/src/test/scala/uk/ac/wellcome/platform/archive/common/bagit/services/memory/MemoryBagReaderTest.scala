@@ -5,7 +5,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.{
   BagReader,
   BagReaderTestCases
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
@@ -35,10 +35,10 @@ class MemoryBagReaderTest
   override def withNamespace[R](testWith: TestWith[String, R]): R =
     testWith(randomAlphanumeric)
 
-  override def deleteFile(rootLocation: ObjectLocation, path: String)(
+  override def deleteFile(root: ObjectLocationPrefix, path: String)(
     implicit context: MemoryStreamStore[ObjectLocation]
   ): Unit =
     context.memoryStore.entries = context.memoryStore.entries.filter {
-      case (location, _) => location != rootLocation.join(path)
+      case (location, _) => location != root.asLocation(path)
     }
 }

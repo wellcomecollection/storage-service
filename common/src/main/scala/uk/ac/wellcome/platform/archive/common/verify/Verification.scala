@@ -11,7 +11,7 @@ object Verification extends Logging {
   implicit def verification[Container](
     implicit verifiable: Verifiable[Container],
     verifier: Verifier[_]
-  ) =
+  ): Verification[Container] =
     new Verification[Container] {
       override def verify(container: Container): VerificationResult = {
         debug(s"Verification: Attempting to verify $container")
