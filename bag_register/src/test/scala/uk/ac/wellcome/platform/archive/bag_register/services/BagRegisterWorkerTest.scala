@@ -56,7 +56,7 @@ class BagRegisterWorkerTest
     val knownReplicas = KnownReplicas(
       location = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
-        prefix = bagRoot.asPrefix
+        prefix = bagRoot
       ),
       replicas = List.empty
     )
@@ -101,7 +101,6 @@ class BagRegisterWorkerTest
           .copy(
             path = bagRoot.path.stripSuffix(s"/$version")
           )
-          .asPrefix
       )
 
       storageManifest.replicaLocations shouldBe empty
@@ -131,13 +130,13 @@ class BagRegisterWorkerTest
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
-    val (location1, bagInfo1) = createRegisterBagWith(
+    val (bagRoot1, bagInfo1) = createRegisterBagWith(
       externalIdentifier = externalIdentifier,
       space = space,
       version = version1
     )
 
-    val (location2, _) = createRegisterBagWith(
+    val (bagRoot2, _) = createRegisterBagWith(
       externalIdentifier = externalIdentifier,
       space = space,
       version = version2
@@ -146,7 +145,7 @@ class BagRegisterWorkerTest
     val knownReplicas1 = KnownReplicas(
       location = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
-        prefix = location1.asPrefix
+        prefix = bagRoot1
       ),
       replicas = List.empty
     )
@@ -162,7 +161,7 @@ class BagRegisterWorkerTest
     val knownReplicas2 = KnownReplicas(
       location = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
-        prefix = location2.asPrefix
+        prefix = bagRoot2
       ),
       replicas = List.empty
     )

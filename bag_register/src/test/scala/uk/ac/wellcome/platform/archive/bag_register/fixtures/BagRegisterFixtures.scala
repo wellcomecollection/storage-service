@@ -31,7 +31,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestDao,
   StorageManifestService
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
@@ -137,7 +137,7 @@ trait BagRegisterFixtures
     implicit
     namespace: String,
     streamStore: MemoryStreamStore[ObjectLocation]
-  ): (ObjectLocation, BagInfo) = {
+  ): (ObjectLocationPrefix, BagInfo) = {
     implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
       new MemoryTypedStore[ObjectLocation, String]()
 
@@ -151,6 +151,6 @@ trait BagRegisterFixtures
 
     BagBuilder.uploadBagObjects(bagObjects)
 
-    (bagRoot, bagInfo)
+    (bagRoot.asPrefix, bagInfo)
   }
 }

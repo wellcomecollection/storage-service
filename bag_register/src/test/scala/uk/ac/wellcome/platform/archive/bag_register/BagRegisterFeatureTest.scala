@@ -55,7 +55,7 @@ class BagRegisterFeatureTest
     val knownReplicas = KnownReplicas(
       location = PrimaryStorageLocation(
         provider = InfrequentAccessStorageProvider,
-        prefix = bagRoot.asPrefix
+        prefix = bagRoot
       ),
       replicas = List.empty
     )
@@ -89,7 +89,6 @@ class BagRegisterFeatureTest
               .copy(
                 path = bagRoot.path.stripSuffix(s"/$version")
               )
-              .asPrefix
           )
 
           storageManifest.replicaLocations shouldBe empty
