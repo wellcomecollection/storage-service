@@ -28,7 +28,7 @@ class BagRegisterFeatureTest
 
   it("sends an update if it registers a bag") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-    MemoryStreamStore[ObjectLocation]()
+      MemoryStreamStore[ObjectLocation]()
 
     val ingests = new MemoryMessageSender()
 
@@ -72,7 +72,8 @@ class BagRegisterFeatureTest
       withBagRegisterWorker(
         queue = queue,
         ingests = ingests,
-        storageManifestDao = storageManifestDao) { _ =>
+        storageManifestDao = storageManifestDao
+      ) { _ =>
         sendNotificationToSQS(queue, payload)
 
         eventually {
@@ -117,20 +118,21 @@ class BagRegisterFeatureTest
     // in this payload.
     val payload = createKnownReplicasPayload
 
-    withLocalSqsQueueAndDlq { case QueuePair(queue, dlq) =>
-      withBagRegisterWorker(queue = queue, ingests = ingests) { _ =>
-        sendNotificationToSQS(queue, payload)
+    withLocalSqsQueueAndDlq {
+      case QueuePair(queue, dlq) =>
+        withBagRegisterWorker(queue = queue, ingests = ingests) { _ =>
+          sendNotificationToSQS(queue, payload)
 
-        eventually {
-          assertBagRegisterFailed(
-            ingestId = payload.ingestId,
-            ingests = ingests
-          )
+          eventually {
+            assertBagRegisterFailed(
+              ingestId = payload.ingestId,
+              ingests = ingests
+            )
 
-          assertQueueEmpty(queue)
-          assertQueueEmpty(dlq)
+            assertQueueEmpty(queue)
+            assertQueueEmpty(dlq)
+          }
         }
-      }
     }
   }
 }
