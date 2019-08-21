@@ -3,10 +3,6 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.{
-  EnrichedBagInformationPayload,
-  KnownReplicasPayload
-}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -19,10 +15,14 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
   PrimaryStorageLocation
 }
+import uk.ac.wellcome.platform.archive.common.{
+  EnrichedBagInformationPayload,
+  KnownReplicasPayload
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
+import uk.ac.wellcome.storage.{UpdateUnexpectedError, Version}
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
-import uk.ac.wellcome.storage.{UpdateWriteError, Version}
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 class ReplicaAggregatorWorkerTest
@@ -155,12 +155,11 @@ class ReplicaAggregatorWorkerTest
             initialEntries = Map.empty
           ) with MemoryMaxima[ReplicaPath, AggregatorInternalRecord]
       ) {
-        override def upsert(id: ReplicaPath)(
-          t: AggregatorInternalRecord
-        )(
-          f: AggregatorInternalRecord => AggregatorInternalRecord
-        ): UpdateEither =
-          Left(UpdateWriteError(throwable))
+        override def upsert(
+          id: ReplicaPath
+        )(t: AggregatorInternalRecord)(f: UpdateFunction): UpdateEither = {
+          Left(UpdateUnexpectedError(throwable))
+        }
       }
 
     val ingests = new MemoryMessageSender()

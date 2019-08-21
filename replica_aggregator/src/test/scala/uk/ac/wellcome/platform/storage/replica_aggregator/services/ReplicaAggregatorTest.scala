@@ -16,8 +16,6 @@ import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 import uk.ac.wellcome.storage.{UpdateWriteError, Version}
 
-import scala.util.{Success, Try}
-
 class ReplicaAggregatorTest
     extends FunSpec
     with Matchers
@@ -76,7 +74,7 @@ class ReplicaAggregatorTest
       )
 
     it("returns the correct record") {
-      result.success.value shouldBe expectedRecord
+      result.right.value shouldBe expectedRecord
     }
 
     it("stores the replica in the underlying store") {
@@ -114,7 +112,7 @@ class ReplicaAggregatorTest
       )
 
     it("returns the correct record") {
-      result.success.value shouldBe expectedRecord
+      result.right.value shouldBe expectedRecord
     }
 
     it("stores the replica in the underlying store") {
@@ -148,7 +146,7 @@ class ReplicaAggregatorTest
         initialEntries = Map.empty
       )
 
-    val results: Seq[AggregatorInternalRecord] =
+    val results =
       withAggregator(versionedStore) { aggregator =>
         locations
           .map { storageLocation =>
@@ -157,7 +155,7 @@ class ReplicaAggregatorTest
           .map { replicaResult =>
             aggregator.aggregate(replicaResult)
           }
-          .map { _.success.value }
+          .map { _.right.value }
       }
 
     it("returns the correct records") {
@@ -231,20 +229,15 @@ class ReplicaAggregatorTest
             initialEntries = Map.empty
           ) with MemoryMaxima[ReplicaPath, AggregatorInternalRecord]
       ) {
-        override def upsert(id: ReplicaPath)(
-          t: AggregatorInternalRecord
-        )(
-          f: AggregatorInternalRecord => AggregatorInternalRecord
-        ): UpdateEither =
-          Left(UpdateWriteError(throwable))
+        override def upsert(id: ReplicaPath)(t: AggregatorInternalRecord)(
+          f: UpdateFunction
+        ): UpdateEither = Left(UpdateWriteError(throwable))
       }
 
     val result =
-      withAggregator(brokenStore) {
-        _.aggregate(createReplicaResult)
-      }
+      withAggregator(brokenStore)(_.aggregate(createReplicaResult))
 
-    result.failed.get shouldBe throwable
+    result.left.value.e shouldBe throwable
   }
 
   it("accepts adding the same primary location to a record twice") {
@@ -264,7 +257,7 @@ class ReplicaAggregatorTest
       (1 to 5).map { _ =>
         aggregator
           .aggregate(replicaResult)
-          .success
+          .right
           .value shouldBe expectedRecord
       }
     }
@@ -285,10 +278,15 @@ class ReplicaAggregatorTest
     val replicaResult2 = createReplicaResultWith(primaryLocation2)
 
     withAggregator() { aggregator =>
-      aggregator.aggregate(replicaResult1) shouldBe a[Success[_]]
+      val result = aggregator.aggregate(replicaResult1).right.value
 
-      val err = aggregator.aggregate(replicaResult2).failed.get
-      err.getMessage should startWith(
+      result shouldBe AggregatorInternalRecord(
+        location = Some(primaryLocation1),
+        replicas = List()
+      )
+
+      val err = aggregator.aggregate(replicaResult2).left.get
+      err.e.getMessage should startWith(
         "Record already has a different PrimaryStorageLocation"
       )
     }
@@ -297,14 +295,14 @@ class ReplicaAggregatorTest
   it("only stores unique replica results") {
     val replicaResult = createReplicaResult
 
-    val results: Seq[Try[AggregatorInternalRecord]] =
+    val results =
       withAggregator() { aggregator =>
         (1 to 3).map { _ =>
           aggregator.aggregate(replicaResult)
         }
       }
 
-    val uniqResults = results.map { _.success.value }.toSet
+    val uniqResults = results.map { _.right.value }.toSet
 
     uniqResults should have size 1
 

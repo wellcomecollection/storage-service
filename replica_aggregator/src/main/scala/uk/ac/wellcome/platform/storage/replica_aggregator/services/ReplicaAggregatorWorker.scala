@@ -17,6 +17,7 @@ import uk.ac.wellcome.platform.archive.common.{
   PipelineContext
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
+import uk.ac.wellcome.storage.UpdateError
 
 import scala.util.{Success, Try}
 
@@ -37,7 +38,8 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     ] {
 
   private sealed trait WorkerError
-  private case class AggregationFailure(e: Throwable) extends WorkerError
+  private case class AggregationFailure(e: UpdateError) extends WorkerError
+
   private case class InsufficientReplicas(
     replicaCounterError: ReplicaCounterError,
     aggregatorRecord: AggregatorInternalRecord
@@ -47,9 +49,9 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     payload: EnrichedBagInformationPayload
   ): Either[WorkerError, KnownReplicas] =
     for {
+
       aggregatorRecord <- replicaAggregator
         .aggregate(ReplicaResult(payload))
-        .toEither
         .left
         .map(AggregationFailure)
 
@@ -70,12 +72,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       case Left(AggregationFailure(err)) =>
         IngestFailed(
           summary = ReplicationAggregationFailed(
-            e = err,
+            e = err.e,
             replicaPath = replicaPath,
             startTime = startTime,
             endTime = Instant.now()
           ),
-          e = err
+          e = err.e
         )
 
       case Left(InsufficientReplicas(err, aggregatorRecord)) =>

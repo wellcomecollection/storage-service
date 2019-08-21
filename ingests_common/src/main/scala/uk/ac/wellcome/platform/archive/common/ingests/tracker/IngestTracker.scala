@@ -1,64 +1,53 @@
 package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
+import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.ingests.services.{
-  CallbackStatusGoingBackwardsException,
-  IngestStates,
-  IngestStatusGoingBackwardsException,
-  NoCallbackException
-}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
 
-import scala.util.{Failure, Success, Try}
-
-trait IngestTracker {
+trait IngestTracker extends Logging {
   val underlying: VersionedStore[IngestID, Int, Ingest]
 
   type Result =
-    Either[IngestTrackerError, Identified[Version[IngestID, Int], Ingest]]
+    Either[IngestStoreError, Identified[Version[IngestID, Int], Ingest]]
 
   def init(ingest: Ingest): Result =
     underlying.init(ingest.id)(ingest) match {
-      case Right(value) => Right(value)
+      case Right(value) =>
+        Right(value)
       case Left(err: VersionAlreadyExistsError) =>
         Left(IngestAlreadyExistsError(err))
-      case Left(err) => Left(IngestTrackerStoreError(err))
+      case Left(err: StorageError) =>
+        Left(IngestStoreUnexpectedError(err.e))
     }
 
   def get(id: IngestID): Result =
     underlying.getLatest(id) match {
-      case Right(value)             => Right(value)
-      case Left(err: NotFoundError) => Left(IngestDoesNotExistError(err))
-      case Left(err)                => Left(IngestTrackerStoreError(err))
+      case Right(value) =>
+        Right(value)
+      case Left(err: NotFoundError) =>
+        Left(IngestDoesNotExistError(err))
+      case Left(err) =>
+        Left(IngestStoreUnexpectedError(err.e))
     }
 
   def update(update: IngestUpdate): Result = {
-    // We have to do this slightly icky callback because there's no
-    // way to tell VersionedStore.update() to skip the update inside
-    // the callback.
-    val updateCallback =
-      (ingest: Ingest) => IngestStates.applyUpdate(ingest, update).get
+    val updateCallback = (ingest: Ingest) =>
+      IngestStates.applyUpdate(ingest, update).left.map(UpdateNotApplied)
 
-    Try { underlying.update(update.id)(updateCallback) } match {
-      case Success(Right(result)) => Right(result)
-
-      case Success(Left(err: UpdateNoSourceError)) =>
-        Left(UpdateNonExistentIngestError(err))
-
-      case Failure(err: IngestStatusGoingBackwardsException) =>
-        Left(IngestStatusGoingBackwards(err.existing, err.update))
-
-      case Failure(err: CallbackStatusGoingBackwardsException) =>
-        Left(IngestCallbackStatusGoingBackwards(err.existing, err.update))
-
-      case Failure(_: NoCallbackException) =>
-        Left(NoCallbackOnIngest())
-
-      case Success(Left(err)) => Left(IngestTrackerStoreError(err))
-
-      case Failure(err) => Left(IngestTrackerUpdateError(err))
+    underlying.update(update.id)(updateCallback).left.map {
+      updateError: UpdateError =>
+        updateError.e match {
+          case e: IngestStoreError => e
+          case _ =>
+            updateError match {
+              case storageError: UpdateNoSourceError =>
+                UpdateNonExistentIngestError(storageError)
+              case storageError =>
+                IngestStoreUnexpectedError(storageError.e)
+            }
+        }
     }
   }
 
@@ -69,5 +58,5 @@ trait IngestTracker {
     * featured if a use case arises after migration.
     *
     */
-  def listByBagId(bagId: BagId): Either[IngestTrackerError, Seq[Ingest]]
+  def listByBagId(bagId: BagId): Either[IngestStoreError, Seq[Ingest]]
 }

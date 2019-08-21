@@ -79,7 +79,7 @@ trait IngestTrackerTestCases[Context]
           tracker
             .init(createIngest)
             .left
-            .value shouldBe a[IngestTrackerStoreError]
+            .value shouldBe a[IngestStoreError]
         }
       }
     }
@@ -112,7 +112,7 @@ trait IngestTrackerTestCases[Context]
           tracker
             .get(createIngestID)
             .left
-            .value shouldBe a[IngestTrackerStoreError]
+            .value shouldBe a[IngestStoreError]
         }
       }
     }
@@ -338,7 +338,7 @@ trait IngestTrackerTestCases[Context]
               withIngestTrackerFixtures(initialIngests = Seq(ingest)) {
                 tracker =>
                   val result = tracker.update(update)
-                  result.left.value shouldBe a[IngestStatusGoingBackwards]
+                  result.left.value shouldBe a[IngestStatusGoingBackwardsError]
               }
           }
         }
@@ -501,7 +501,7 @@ trait IngestTrackerTestCases[Context]
               withIngestTrackerFixtures(initialIngests = Seq(ingest)) {
                 tracker =>
                   val result = tracker.update(update)
-                  result.left.value shouldBe IngestCallbackStatusGoingBackwards(
+                  result.left.value shouldBe IngestCallbackStatusGoingBackwardsError(
                     initialStatus,
                     updatedStatus
                   )
@@ -519,7 +519,7 @@ trait IngestTrackerTestCases[Context]
 
           withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
             val result = tracker.update(update)
-            result.left.value shouldBe a[NoCallbackOnIngest]
+            result.left.value shouldBe a[NoCallbackOnIngestError]
           }
         }
       }
@@ -541,7 +541,7 @@ trait IngestTrackerTestCases[Context]
 
       withContext { implicit context =>
         withBrokenUnderlyingUpdateTracker { tracker =>
-          tracker.update(update).left.value shouldBe a[IngestTrackerStoreError]
+          tracker.update(update).left.value shouldBe a[IngestStoreError]
         }
       }
     }

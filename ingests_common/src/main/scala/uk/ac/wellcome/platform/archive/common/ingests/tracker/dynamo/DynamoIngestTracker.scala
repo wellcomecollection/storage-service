@@ -13,9 +13,9 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
-  IngestTracker,
-  IngestTrackerError,
-  IngestTrackerStoreError
+  IngestStoreError,
+  IngestStoreUnexpectedError,
+  IngestTracker
 }
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.dynamo._
@@ -84,7 +84,7 @@ class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)
 
   override def listByBagId(
     bagId: BagId
-  ): Either[IngestTrackerError, Seq[Ingest]] = {
+  ): Either[IngestStoreError, Seq[Ingest]] = {
     val query = ScanamoTable[BagIdLookup](bagIdLookupConfig.tableName)
       .limit(30)
       .descending
@@ -100,8 +100,8 @@ class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)
     Either.cond(
       errors.isEmpty,
       right = ingests,
-      left = IngestTrackerStoreError(
-        StoreReadError(new Throwable(s"Errors from DynamoDB: $errors"))
+      left = IngestStoreUnexpectedError(
+        new Throwable(s"Errors from DynamoDB: $errors")
       )
     )
   }

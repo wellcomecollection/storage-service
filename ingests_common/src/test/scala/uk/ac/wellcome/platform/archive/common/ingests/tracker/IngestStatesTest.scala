@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.archive.common.ingests.services
+package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
 import java.net.URI
 
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models._
@@ -12,7 +12,7 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
     extends FunSpec
     with Matchers
     with IngestGenerators
-    with TryValues {
+    with EitherValues {
   def createUpdateWith(id: IngestID, events: Seq[IngestEvent]): UpdateType
 
   def createInitialIngestWith(events: Seq[IngestEvent]): Ingest =
@@ -28,7 +28,7 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
         events = List(event)
       )
 
-      val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+      val updatedIngest = IngestStates.applyUpdate(ingest, update).right.value
       updatedIngest.events shouldBe Seq(event)
     }
 
@@ -42,7 +42,7 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
         events = events
       )
 
-      val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+      val updatedIngest = IngestStates.applyUpdate(ingest, update).right.value
       updatedIngest.events shouldBe events
     }
 
@@ -56,7 +56,7 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
         events = newEvents
       )
 
-      val updatedIngest = IngestStates.applyUpdate(ingest, update).success.value
+      val updatedIngest = IngestStates.applyUpdate(ingest, update).right.value
       updatedIngest.events shouldBe existingEvents ++ newEvents
     }
   }
@@ -87,7 +87,7 @@ class IngestEventUpdateTest
         val update = createIngestEventUpdate
 
         val updatedIngest =
-          IngestStates.applyUpdate(ingest, update).success.value
+          IngestStates.applyUpdate(ingest, update).right.value
         updatedIngest.status shouldBe expectedStatus
     }
   }
@@ -126,7 +126,7 @@ class IngestStatusUpdateTest
           )
 
           val updatedIngest =
-            IngestStates.applyUpdate(ingest, update).success.value
+            IngestStates.applyUpdate(ingest, update).right.value
           updatedIngest.status shouldBe updatedStatus
       }
     }
@@ -154,8 +154,8 @@ class IngestStatusUpdateTest
 
           IngestStates
             .applyUpdate(ingest, update)
-            .failure
-            .exception shouldBe a[IngestStatusGoingBackwardsException]
+            .left
+            .value shouldBe a[IngestStatusGoingBackwardsError]
       }
     }
   }
@@ -201,7 +201,7 @@ class IngestCallbackStatusUpdateTest
           )
 
           val updatedIngest =
-            IngestStates.applyUpdate(ingest, update).success.value
+            IngestStates.applyUpdate(ingest, update).right.value
           updatedIngest.callback.get.status shouldBe updatedStatus
       }
     }
@@ -234,9 +234,9 @@ class IngestCallbackStatusUpdateTest
             callbackStatus = updatedStatus
           )
 
-          val err = IngestStates.applyUpdate(ingest, update).failure.exception
+          val err = IngestStates.applyUpdate(ingest, update).left.value
 
-          err shouldBe a[CallbackStatusGoingBackwardsException]
+          err shouldBe a[IngestCallbackStatusGoingBackwardsError]
       }
     }
 
@@ -248,9 +248,9 @@ class IngestCallbackStatusUpdateTest
         id = ingest.id
       )
 
-      val err = IngestStates.applyUpdate(ingest, update).failure.exception
+      val err = IngestStates.applyUpdate(ingest, update).left.value
 
-      err shouldBe a[NoCallbackException]
+      err shouldBe a[NoCallbackOnIngestError]
     }
   }
 }
@@ -280,7 +280,7 @@ class IngestVersionUpdateTest
       )
 
       val updatedIngest =
-        IngestStates.applyUpdate(ingest, update).success.value
+        IngestStates.applyUpdate(ingest, update).right.value
       updatedIngest.version shouldBe Some(BagVersion(1))
     }
 
@@ -294,7 +294,7 @@ class IngestVersionUpdateTest
       )
 
       val updatedIngest =
-        IngestStates.applyUpdate(ingest, update).success.value
+        IngestStates.applyUpdate(ingest, update).right.value
       updatedIngest.version shouldBe Some(BagVersion(1))
     }
 
@@ -307,8 +307,8 @@ class IngestVersionUpdateTest
         version = BagVersion(2)
       )
 
-      val err = IngestStates.applyUpdate(ingest, update).failure.exception
-      err shouldBe a[MismatchedVersionUpdateException]
+      val err = IngestStates.applyUpdate(ingest, update).left.value
+      err shouldBe a[MismatchedVersionUpdateError]
     }
   }
 }

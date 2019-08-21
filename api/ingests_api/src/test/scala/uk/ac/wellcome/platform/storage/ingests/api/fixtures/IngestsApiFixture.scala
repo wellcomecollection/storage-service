@@ -19,14 +19,14 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
-  IngestTracker,
-  IngestTrackerStoreError
+  IngestStoreUnexpectedError,
+  IngestTracker
 }
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestStarter
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
-import uk.ac.wellcome.storage.{StoreWriteError, Version}
+import uk.ac.wellcome.storage.Version
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -101,10 +101,10 @@ trait IngestsApiFixture
       )
     ) {
       override def get(id: IngestID): Result =
-        Left(IngestTrackerStoreError(StoreWriteError(new Throwable("BOOM!"))))
+        Left(IngestStoreUnexpectedError(new Throwable("BOOM!")))
 
       override def init(ingest: Ingest): Result =
-        Left(IngestTrackerStoreError(StoreWriteError(new Throwable("BOOM!"))))
+        Left(IngestStoreUnexpectedError(new Throwable("BOOM!")))
     }
 
     val metrics = new MemoryMetrics[StandardUnit]()
