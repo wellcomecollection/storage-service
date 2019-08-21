@@ -11,15 +11,15 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
-import scala.util.Random
-
 trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
     with StorageLocationGenerators {
 
   def randomIngestType: IngestType =
-    Seq(CreateIngestType, UpdateIngestType)(Random.nextInt(1))
+    chooseFrom(
+      Seq(CreateIngestType, UpdateIngestType)
+    )
 
   def createPipelineContextWith(
     ingestId: IngestID = createIngestID,

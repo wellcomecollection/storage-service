@@ -229,10 +229,13 @@ module "bag_replicator" {
     locking_table_name  = "${module.replicator_lock_table.table_name}"
     locking_table_index = "${module.replicator_lock_table.index_name}"
 
+    storage_provider = "aws-s3-ia"
+    replica_type     = "primary"
+
     JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
   }
 
-  env_vars_length = 10
+  env_vars_length = 12
 
   cpu    = 1024
   memory = 2048

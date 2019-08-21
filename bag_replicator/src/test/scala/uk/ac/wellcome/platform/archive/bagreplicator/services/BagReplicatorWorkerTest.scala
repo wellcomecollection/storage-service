@@ -9,7 +9,11 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.BagReplicationSummary
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+  BagReplicationSummary,
+  PrimaryBagReplicationRequest,
+  SecondaryBagReplicationRequest
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.ReplicaResultPayload
@@ -320,7 +324,7 @@ class BagReplicatorWorkerTest
                 ingestUpdater = ingestUpdater,
                 outgoingPublisher = outgoingPublisher,
                 lockingService = lockingService,
-                replicatorDestinationConfig = replicatorDestinationConfig,
+                destinationConfig = replicatorDestinationConfig,
                 bagReplicator = bagReplicator
               )
 
@@ -368,6 +372,110 @@ class BagReplicatorWorkerTest
             ingestFailed.e.getMessage should startWith(
               "Unable to load tagmanifest-sha256.txt in source and replica to compare:"
             )
+          }
+        }
+      }
+    }
+  }
+
+  it("uses the provider configured in the destination config") {
+    val provider = createProvider
+
+    val outgoing = new MemoryMessageSender()
+
+    withLocalS3Bucket { srcBucket =>
+      val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
+        bucket = srcBucket
+      )
+
+      val payload = createVersionedBagRootPayloadWith(
+        bagRoot = srcBagRoot
+      )
+
+      withLocalS3Bucket { dstBucket =>
+        val future =
+          withBagReplicatorWorker(
+            bucket = dstBucket,
+            outgoing = outgoing,
+            provider = provider
+          ) {
+            _.processPayload(payload)
+          }
+
+        whenReady(future) { _ =>
+          outgoing
+            .getMessages[ReplicaResultPayload]
+            .head
+            .replicaResult
+            .storageLocation
+            .provider shouldBe provider
+        }
+      }
+    }
+  }
+
+  describe("uses the request builder in the config") {
+    it("primary replicas") {
+      val outgoing = new MemoryMessageSender()
+
+      withLocalS3Bucket { srcBucket =>
+        val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
+          bucket = srcBucket
+        )
+
+        val payload = createVersionedBagRootPayloadWith(
+          bagRoot = srcBagRoot
+        )
+
+        withLocalS3Bucket { dstBucket =>
+          val future =
+            withBagReplicatorWorker(
+              bucket = dstBucket,
+              outgoing = outgoing,
+              requestBuilder = PrimaryBagReplicationRequest.apply
+            ) {
+              _.processPayload(payload)
+            }
+
+          whenReady(future) { _ =>
+            outgoing
+              .getMessages[ReplicaResultPayload]
+              .head
+              .replicaResult
+              .storageLocation shouldBe a[PrimaryStorageLocation]
+          }
+        }
+      }
+    }
+
+    it("secondary replicas") {
+      val outgoing = new MemoryMessageSender()
+
+      withLocalS3Bucket { srcBucket =>
+        val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
+          bucket = srcBucket
+        )
+
+        val payload = createVersionedBagRootPayloadWith(
+          bagRoot = srcBagRoot
+        )
+
+        withLocalS3Bucket { dstBucket =>
+          val future =
+            withBagReplicatorWorker(
+              bucket = dstBucket,
+              outgoing = outgoing,
+              requestBuilder = SecondaryBagReplicationRequest.apply
+            ) {
+              _.processPayload(payload)
+            }
+
+          whenReady(future) { _ =>
+            outgoing
+              .getMessages[ReplicaResultPayload]
+              .head
+              .replicaResult
+              .storageLocation shouldBe a[SecondaryStorageLocation]
           }
         }
       }
