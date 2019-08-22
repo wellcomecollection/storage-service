@@ -26,6 +26,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
+import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.transfer.s3.{S3PrefixTransfer, S3Transfer}
@@ -200,6 +201,48 @@ class BagReplicatorWorkerTest
           whenReady(futures) { result =>
             result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 1
             result.count { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 4
+          }
+        }
+      }
+    }
+  }
+
+  it("allows multiple workers for the same ingest to write to different locations") {
+    withLocalS3Bucket { srcBucket =>
+      // We have to create enough files in the bag to keep the first
+      // replicator busy, otherwise it completes and unlocks, and the
+      // last replicator to start runs successfully.
+      //
+      // If this test becomes flaky, try increasing the payloadFileCount.
+      val bagBuilder = new S3BagBuilderBase {
+        override def getFetchEntryCount(payloadFileCount: Int): Int = 0
+      }
+
+      val (srcBagLocation, _) = bagBuilder.createS3BagWith(
+        bucket = srcBucket,
+        payloadFileCount = 100
+      )
+
+      val payload = createVersionedBagRootPayloadWith(
+        bagRoot = srcBagLocation
+      )
+
+      val lockServiceDao = new MemoryLockDao[String, UUID] {}
+
+      withLocalS3Bucket { dstBucket1 =>
+        withLocalS3Bucket { dstBucket2 =>
+          withBagReplicatorWorker(bucket = dstBucket1, lockServiceDao = lockServiceDao) { worker1 =>
+            withBagReplicatorWorker(bucket = dstBucket2, lockServiceDao = lockServiceDao) { worker2 =>
+              val futures =
+                Future.sequence(Seq(
+                  worker1.processPayload(payload),
+                  worker2.processPayload(payload)
+                ))
+
+              whenReady(futures) { result =>
+                result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 2
+              }
+            }
           }
         }
       }
