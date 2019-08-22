@@ -24,6 +24,9 @@ case class AggregatorInternalRecord(
       record = this,
       storageLocation = storageLocation
     )
+
+  def count: Int =
+    (Seq(location).flatten ++ replicas).size
 }
 
 object AggregatorInternalRecord {

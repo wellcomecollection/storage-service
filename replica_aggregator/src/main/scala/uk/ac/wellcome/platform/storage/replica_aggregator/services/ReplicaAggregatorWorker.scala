@@ -88,6 +88,9 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
             counterError = err,
             startTime = startTime,
             endTime = Instant.now()
+          ),
+          maybeUserFacingMessage = Some(
+            s"${aggregatorRecord.count} of ${replicaCounter.expectedReplicaCount} replicas complete"
           )
         )
 
@@ -98,7 +101,8 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
             knownReplicas = knownReplicas,
             startTime = startTime,
             endTime = Instant.now()
-          )
+          ),
+          maybeUserFacingMessage = Some("all replicas complete")
         )
     }
 

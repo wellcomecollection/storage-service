@@ -52,7 +52,7 @@ class ReplicaAggregatorFeatureTest
             ingestId = payload.ingestId,
             ingests = ingests,
             expectedDescriptions = Seq(
-              "Aggregating replicas succeeded"
+              "Aggregating replicas succeeded - all replicas complete"
             )
           )
 
