@@ -207,7 +207,9 @@ class BagReplicatorWorkerTest
     }
   }
 
-  it("allows multiple workers for the same ingest to write to different locations") {
+  it(
+    "allows multiple workers for the same ingest to write to different locations"
+  ) {
     withLocalS3Bucket { srcBucket =>
       // We have to create enough files in the bag to keep the first
       // replicator busy, otherwise it completes and unlocks, and the
@@ -231,13 +233,21 @@ class BagReplicatorWorkerTest
 
       withLocalS3Bucket { dstBucket1 =>
         withLocalS3Bucket { dstBucket2 =>
-          withBagReplicatorWorker(bucket = dstBucket1, lockServiceDao = lockServiceDao) { worker1 =>
-            withBagReplicatorWorker(bucket = dstBucket2, lockServiceDao = lockServiceDao) { worker2 =>
+          withBagReplicatorWorker(
+            bucket = dstBucket1,
+            lockServiceDao = lockServiceDao
+          ) { worker1 =>
+            withBagReplicatorWorker(
+              bucket = dstBucket2,
+              lockServiceDao = lockServiceDao
+            ) { worker2 =>
               val futures =
-                Future.sequence(Seq(
-                  worker1.processPayload(payload),
-                  worker2.processPayload(payload)
-                ))
+                Future.sequence(
+                  Seq(
+                    worker1.processPayload(payload),
+                    worker2.processPayload(payload)
+                  )
+                )
 
               whenReady(futures) { result =>
                 result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 2
