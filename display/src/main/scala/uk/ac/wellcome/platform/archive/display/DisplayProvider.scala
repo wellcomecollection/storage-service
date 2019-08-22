@@ -8,6 +8,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  GlacierStorageProvider,
   InfrequentAccessStorageProvider,
   StandardStorageProvider
 }
@@ -18,16 +19,23 @@ sealed trait DisplayProvider {
 }
 
 case object StandardDisplayProvider extends DisplayProvider {
-  override val id: String = "aws-s3-standard"
+  override val id: String = StandardStorageProvider.id
 
   override def toStorageProvider: StorageProvider = StandardStorageProvider
 }
 
 case object InfrequentAccessDisplayProvider extends DisplayProvider {
-  override val id: String = "aws-s3-ia"
+  override val id: String = InfrequentAccessStorageProvider.id
 
   override def toStorageProvider: StorageProvider =
     InfrequentAccessStorageProvider
+}
+
+case object GlacierDisplayProvider extends DisplayProvider {
+  override val id: String = GlacierStorageProvider.id
+
+  override def toStorageProvider: StorageProvider =
+    GlacierStorageProvider
 }
 
 object DisplayProvider {
@@ -35,6 +43,7 @@ object DisplayProvider {
     provider match {
       case StandardStorageProvider         => StandardDisplayProvider
       case InfrequentAccessStorageProvider => InfrequentAccessDisplayProvider
+      case GlacierStorageProvider          => GlacierDisplayProvider
     }
 
   implicit val decoder
@@ -46,6 +55,8 @@ object DisplayProvider {
           case StandardDisplayProvider.id => Right(StandardDisplayProvider)
           case InfrequentAccessDisplayProvider.id =>
             Right(InfrequentAccessDisplayProvider)
+          case GlacierDisplayProvider.id =>
+            Right(GlacierDisplayProvider)
           case invalidId =>
             val fields = DownField("id") +: cursor.history
             Left(

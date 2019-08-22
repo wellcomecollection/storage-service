@@ -201,10 +201,26 @@ module "bag_versioner" {
   secret_env_vars_length = 0
 }
 
-# bag_replicator
+module "replicator_verifier_primary" {
+  source = "./replicator_verifier_pair"
 
-module "bag_replicator" {
-  source = "../modules/service/worker"
+  namespace = "${var.namespace}"
+
+  replica_id           = "primary"
+  replica_display_name = "primary location"
+  storage_provider     = "aws-s3-ia"
+  replica_type         = "primary"
+
+  topic_names = [
+    "${module.bag_versioner_output_topic.name}",
+  ]
+
+  bucket_name         = "${var.access_bucket_name}"
+  primary_bucket_name = "${var.access_bucket_name}"
+
+  ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_read.json}"
+  cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  replicator_lock_table_policy_json = "${module.replicator_lock_table.iam_policy}"
 
   security_group_ids = [
     "${aws_security_group.interservice.id}",
@@ -215,43 +231,41 @@ module "bag_replicator" {
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
-  service_name = "${local.bag_replicator_service_name}"
 
-  env_vars = {
-    queue_url               = "${module.bag_replicator_input_queue.url}"
-    destination_bucket_name = "${var.access_bucket_name}"
-    ingest_topic_arn        = "${module.ingests_topic.arn}"
-    outgoing_topic_arn      = "${module.bag_replicator_output_topic.arn}"
-    metrics_namespace       = "${local.bag_replicator_service_name}"
-    operation_name          = "replicating to archive storage"
-    logstash_host           = "${local.logstash_host}"
+  ingests_topic_arn = "${module.ingests_topic.arn}"
+  logstash_host     = "${local.logstash_host}"
 
-    locking_table_name  = "${module.replicator_lock_table.table_name}"
-    locking_table_index = "${module.replicator_lock_table.index_name}"
+  replicator_lock_table_name  = "${module.replicator_lock_table.table_name}"
+  replicator_lock_table_index = "${module.replicator_lock_table.index_name}"
 
-    storage_provider = "aws-s3-ia"
-    replica_type     = "primary"
+  bag_replicator_image = "${local.bag_replicator_image}"
+  bag_verifier_image   = "${local.bag_verifier_image}"
 
-    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
-  }
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
 
-  env_vars_length = 12
-
-  cpu    = 1024
-  memory = 2048
-
-  min_capacity = "1"
-  max_capacity = "10"
-
-  container_image = "${local.bag_replicator_image}"
-
-  secret_env_vars_length = 0
+  aws_region = "${var.aws_region}"
 }
 
-# bag_verifier
+module "replicator_verifier_glacier" {
+  source = "./replicator_verifier_pair"
 
-module "bag_verifier_post_replication" {
-  source = "../modules/service/worker"
+  namespace = "${var.namespace}"
+
+  replica_id           = "glacier"
+  replica_display_name = "Amazon Glacier"
+  storage_provider     = "aws-s3-glacier"
+  replica_type         = "secondary"
+
+  topic_names = [
+    "${module.bag_versioner_output_topic.name}",
+  ]
+
+  bucket_name         = "${var.archive_bucket_name}"
+  primary_bucket_name = "${var.access_bucket_name}"
+
+  ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_read.json}"
+  cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  replicator_lock_table_policy_json = "${module.replicator_lock_table.iam_policy}"
 
   security_group_ids = [
     "${aws_security_group.interservice.id}",
@@ -262,30 +276,19 @@ module "bag_verifier_post_replication" {
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
   namespace_id = "${aws_service_discovery_private_dns_namespace.namespace.id}"
   subnets      = "${var.private_subnets}"
-  service_name = "${local.bag_verifier_post_repl_service_name}"
 
-  env_vars = {
-    queue_url          = "${module.bag_verifier_post_replicate_queue.url}"
-    ingest_topic_arn   = "${module.ingests_topic.arn}"
-    outgoing_topic_arn = "${module.bag_verifier_post_replicate_output_topic.arn}"
-    metrics_namespace  = "${local.bag_verifier_post_repl_service_name}"
-    operation_name     = "verification (inside archive storage)"
-    logstash_host      = "${local.logstash_host}"
+  ingests_topic_arn = "${module.ingests_topic.arn}"
+  logstash_host     = "${local.logstash_host}"
 
-    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_post_repl_service_name}"
-  }
+  replicator_lock_table_name  = "${module.replicator_lock_table.table_name}"
+  replicator_lock_table_index = "${module.replicator_lock_table.index_name}"
 
-  env_vars_length = 7
+  bag_replicator_image = "${local.bag_replicator_image}"
+  bag_verifier_image   = "${local.bag_verifier_image}"
 
-  cpu    = 2048
-  memory = 4096
+  dlq_alarm_arn = "${var.dlq_alarm_arn}"
 
-  min_capacity = "1"
-  max_capacity = "10"
-
-  container_image = "${local.bag_verifier_image}"
-
-  secret_env_vars_length = 0
+  aws_region = "${var.aws_region}"
 }
 
 # replica_aggregator
@@ -305,10 +308,10 @@ module "replica_aggregator" {
     outgoing_topic_arn  = "${module.replica_aggregator_output_topic.arn}"
     ingest_topic_arn    = "${module.ingests_topic.arn}"
     metrics_namespace   = "${local.bag_register_service_name}"
-    operation_name      = "replica_aggregator"
+    operation_name      = "Aggregating replicas"
     logstash_host       = "${local.logstash_host}"
 
-    expected_replica_count = 1
+    expected_replica_count = 2
 
     JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.replica_aggregator_service_name}"
   }

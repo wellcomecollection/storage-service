@@ -114,45 +114,6 @@ resource "aws_iam_role_policy" "bag_verifier_pre_repl_read_replicator_bucket" {
   policy = "${data.aws_iam_policy_document.storage_access_read.json}"
 }
 
-# bag_replicator
-
-resource "aws_iam_role_policy" "bag_replicator_task_read_ingests_s3" {
-  role   = "${module.bag_replicator.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_read.json}"
-}
-
-resource "aws_iam_role_policy" "bag_replicator_task_store_s3" {
-  role   = "${module.bag_replicator.task_role_name}"
-  policy = "${data.aws_iam_policy_document.storage_access_readwrite.json}"
-}
-
-resource "aws_iam_role_policy" "bag_replicator_metrics" {
-  role   = "${module.bag_replicator.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
-}
-
-resource "aws_iam_role_policy" "bag_replicator_locking_table" {
-  role   = "${module.bag_replicator.task_role_name}"
-  policy = "${module.replicator_lock_table.iam_policy}"
-}
-
-# bag_verifier post-replication
-
-resource "aws_iam_role_policy" "bag_verifier_post_repl_read_s3_archive" {
-  role   = "${module.bag_verifier_post_replication.task_role_name}"
-  policy = "${data.aws_iam_policy_document.storage_archive_read.json}"
-}
-
-resource "aws_iam_role_policy" "bag_verifier_post_repl_read_s3_access" {
-  role   = "${module.bag_verifier_post_replication.task_role_name}"
-  policy = "${data.aws_iam_policy_document.storage_access_read.json}"
-}
-
-resource "aws_iam_role_policy" "bag_verifier_post_repl_metrics" {
-  role   = "${module.bag_verifier_post_replication.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
-}
-
 # bag_unpacker
 
 resource "aws_iam_role_policy" "bag_unpacker_task_read_ingests_s3" {
