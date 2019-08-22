@@ -67,10 +67,11 @@ class BagVerifierFeatureTest
                 )
               )
 
+              // This test seems especially flaky -- sometimes the same payload will be
+              // received two or even three times!
               outgoing
-                .getMessages[VersionedBagRootPayload] shouldBe Seq(
-                payload
-              )
+                .getMessages[VersionedBagRootPayload]
+                .toSet shouldBe Set(payload)
 
               assertQueueEmpty(queue)
               assertQueueEmpty(dlq)
