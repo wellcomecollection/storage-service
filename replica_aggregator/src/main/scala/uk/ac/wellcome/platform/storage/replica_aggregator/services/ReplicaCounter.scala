@@ -19,7 +19,7 @@ case class NotEnoughReplicas(
   *   - there are at least `expectedReplicas` overall
   *
   */
-class ReplicaCounter(expectedReplicaCount: Int) {
+class ReplicaCounter(val expectedReplicaCount: Int) {
   def countReplicas(
     record: AggregatorInternalRecord
   ): Either[ReplicaCounterError, KnownReplicas] =

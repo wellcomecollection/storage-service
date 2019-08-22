@@ -65,6 +65,10 @@ class ReplicaAggregatorWorkerTest
       completeAggregation.knownReplicas shouldBe expectedKnownReplicas
     }
 
+    it("includes a user-facing message") {
+      result.maybeUserFacingMessage shouldBe Some("all replicas complete")
+    }
+
     it("sends an outgoing message") {
       val expectedPayload = KnownReplicasPayload(
         context = payload.context,
@@ -80,7 +84,7 @@ class ReplicaAggregatorWorkerTest
         ingestId = payload.ingestId,
         ingests = ingests,
         expectedDescriptions = Seq(
-          "Aggregating replicas succeeded"
+          "Aggregating replicas succeeded - all replicas complete"
         )
       )
     }
@@ -127,6 +131,10 @@ class ReplicaAggregatorWorkerTest
       )
     }
 
+    it("includes a user-facing message") {
+      result.maybeUserFacingMessage shouldBe Some("1 of 3 replicas complete")
+    }
+
     it("does not send an outgoing message") {
       outgoing.getMessages[VersionedBagRootPayload] shouldBe empty
     }
@@ -136,7 +144,7 @@ class ReplicaAggregatorWorkerTest
         ingestId = payload.ingestId,
         ingests = ingests,
         expectedDescriptions = Seq(
-          "Aggregating replicas succeeded"
+          "Aggregating replicas succeeded - 1 of 3 replicas complete"
         )
       )
     }
