@@ -102,7 +102,7 @@ class BagReplicatorWorker[
       )
 
       result <- lockingService
-        .withLock(payload.ingestId.toString) {
+        .withLock(dstPrefix.toString) {
           replicate(replicationRequest)
         }
         .map(lockFailed(replicationRequest).apply(_))
