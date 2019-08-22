@@ -28,7 +28,7 @@ trait IngestTracker extends Logging {
         Right(value)
       case Left(err: NotFoundError) =>
         Left(IngestDoesNotExistError(err))
-      case Left(err) =>
+      case Left(err: StorageError) =>
         Left(IngestStoreUnexpectedError(err.e))
     }
 
@@ -42,10 +42,10 @@ trait IngestTracker extends Logging {
           case e: IngestStoreError => e
           case _ =>
             updateError match {
-              case storageError: UpdateNoSourceError =>
-                UpdateNonExistentIngestError(storageError)
-              case storageError =>
-                IngestStoreUnexpectedError(storageError.e)
+              case err: UpdateNoSourceError =>
+                UpdateNonExistentIngestError(err)
+              case err =>
+                IngestStoreUnexpectedError(err.e)
             }
         }
     }
