@@ -33,11 +33,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val materializer: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
-    val httpMetrics = new HttpMetrics(
-      name = "IngestsApi",
-      metrics = MetricsBuilder.buildMetricsSender(config)
-    )
-
     implicit val dynamoClient: AmazonDynamoDB =
       DynamoBuilder.buildDynamoClient(config)
 
@@ -66,11 +61,19 @@ object Main extends WellcomeTypesafeApp {
       override val contextURL: URL = contextURLMain
     }
 
+    val appName = "IngestsApi"
+
+    val httpMetrics = new HttpMetrics(
+      name = appName,
+      metrics = MetricsBuilder.buildMetricsSender(config)
+    )
+
     new WellcomeHttpApp(
       routes = router.ingests,
       httpMetrics = httpMetrics,
       httpServerConfig = httpServerConfigMain,
-      contextURL = contextURLMain
+      contextURL = contextURLMain,
+      appName = appName
     )
   }
 }

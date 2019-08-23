@@ -38,14 +38,17 @@ object Main extends WellcomeTypesafeApp {
         StorageManifestDaoBuilder.build(config)
     }
 
+    val appName = "BagsApi"
+
     new WellcomeHttpApp(
       routes = router.bags,
       httpMetrics = new HttpMetrics(
-        name = "BagsApi",
+        name = appName,
         metrics = MetricsBuilder.buildMetricsSender(config)
       ),
       httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
-      contextURL = contextURLMain
+      contextURL = contextURLMain,
+      appName = appName
     )
   }
 }

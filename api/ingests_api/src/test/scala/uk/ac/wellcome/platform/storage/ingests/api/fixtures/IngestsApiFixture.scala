@@ -70,7 +70,8 @@ trait IngestsApiFixture
               routes = ingestsApi.ingests,
               httpMetrics = httpMetrics,
               httpServerConfig = httpServerConfigTest,
-              contextURL = contextURLTest
+              contextURL = contextURLTest,
+              appName = metricsName
             )
 
             app.run()

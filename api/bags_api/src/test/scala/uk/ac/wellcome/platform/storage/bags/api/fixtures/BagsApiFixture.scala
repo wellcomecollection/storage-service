@@ -49,6 +49,7 @@ trait BagsApiFixture
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
+
         val httpMetrics = new HttpMetrics(
           name = metricsName,
           metrics = metrics
@@ -65,7 +66,8 @@ trait BagsApiFixture
           routes = router.bags,
           httpMetrics = httpMetrics,
           httpServerConfig = httpServerConfigTest,
-          contextURL = contextURLTest
+          contextURL = contextURLTest,
+          appName = metricsName
         )
 
         app.run()
