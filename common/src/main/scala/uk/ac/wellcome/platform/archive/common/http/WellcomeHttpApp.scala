@@ -52,14 +52,18 @@ class WellcomeHttpApp(
       .bindAndHandle(
         handler = loggedHandler,
         interface = httpServerConfig.host,
-        port = httpServerConfig.port,
+        port = httpServerConfig.port
       )
 
-    info(s"$appTag - Starting: ${httpServerConfig.host}:${httpServerConfig.port}")
+    info(
+      s"$appTag - Starting: ${httpServerConfig.host}:${httpServerConfig.port}"
+    )
 
     for {
       server <- binding
-      _ = info(s"$appTag - Listening: ${httpServerConfig.host}:${httpServerConfig.port}")
+      _ = info(
+        s"$appTag - Listening: ${httpServerConfig.host}:${httpServerConfig.port}"
+      )
       _ <- server.whenTerminated
       _ = info(
         s"$appTag - Terminating: ${httpServerConfig.host}:${httpServerConfig.port}"
