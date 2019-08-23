@@ -42,7 +42,9 @@ class IngestsWorker[CallbackDestination](
       ingest <- ingestTracker.update(ingestUpdate) match {
         case Right(updatedIngest) => Success(updatedIngest.identifiedT)
         case Left(err) =>
-          Failure(new Throwable(s"Error from the ingest tracker: $err"))
+          Failure(
+            new Throwable(s"Error from the ingest tracker: $err")
+          )
       }
       _ <- callbackNotificationService.sendNotification(ingest)
     } yield ingest
