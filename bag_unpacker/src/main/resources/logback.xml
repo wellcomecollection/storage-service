@@ -5,15 +5,15 @@
     </encoder>
   </appender>
 
-  <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashUdpSocketAppender">
-    <layout class="net.logstash.logback.layout.LogstashLayout">
+  <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+    <destination>${logstash_host}:5142</destination>
+
+    <!-- encoder is required -->
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
       <customFields>
         {"introspection": {"namespace":"${NAMESPACE:-unset}","service_id":"${SERVICE_ID:-unset}","task_id": "${TASK_ID:-unset}","image_id": "${IMAGE_ID:-unset}"}}
       </customFields>
-    </layout>
-
-    <host>${logstash_host}</host>
-    <port>514</port>
+    </encoder>
   </appender>
 
   <root level="${log_level:-INFO}">

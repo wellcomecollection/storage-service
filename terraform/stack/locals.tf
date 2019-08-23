@@ -28,6 +28,6 @@ locals {
   replica_aggregator_image = "${module.images.services["replica_aggregator"]}"
 
   logstash_transit_service_name = "${var.namespace}_logstash_transit"
-  logstash_transit_image        = "wellcome/logstash_transit:114"
+  logstash_transit_image        = "wellcome/logstash_transit:edge"
   logstash_host                 = "${local.logstash_transit_service_name}.${var.namespace}"
 }
