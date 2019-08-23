@@ -33,6 +33,7 @@ locals {
   ]
 
   workflow_bucket_name = "wellcomecollection-workflow-export-bagit"
+  workflow_stage_bucket_name = "wellcomecollection-workflow-export-bagit-stage"
 
   bagger_ingest_table     = "storage-migration-status"
   bagger_ingest_table_arn = "arn:aws:dynamodb:eu-west-1:975596993436:table/storage-migration-status"

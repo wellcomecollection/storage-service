@@ -80,7 +80,7 @@ module "stack_staging" {
 
   use_encryption_key_policy = "${module.critical-staging.use_encryption_key_policy}"
 
-  workflow_bucket_name = "${local.workflow_bucket_name}"
+  workflow_bucket_name = "${local.workflow_stage_bucket_name}"
 
   ingest_drop_bucket_name = "${module.critical-staging.ingest_drop_bucket_name}"
 
