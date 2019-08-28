@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.{
   ReplicaResultPayload
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
-import uk.ac.wellcome.storage.UpdateError
+import uk.ac.wellcome.storage.{RetryableError, UpdateError}
 
 import scala.util.{Success, Try}
 
@@ -69,6 +69,17 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     val startTime = Instant.now()
 
     val ingestStep = getKnownReplicas(payload.replicaResult) match {
+      case Left(AggregationFailure(err: RetryableError)) =>
+        IngestShouldRetry(
+          summary = ReplicationAggregationFailed(
+            e = err.e,
+            replicaPath = replicaPath,
+            startTime = startTime,
+            endTime = Instant.now()
+          ),
+          e = err.e
+        )
+
       case Left(AggregationFailure(err)) =>
         IngestFailed(
           summary = ReplicationAggregationFailed(
