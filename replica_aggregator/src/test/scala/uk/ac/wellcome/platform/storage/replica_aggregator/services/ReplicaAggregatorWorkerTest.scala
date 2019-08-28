@@ -10,15 +10,10 @@ import uk.ac.wellcome.platform.archive.common.{
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepSucceeded,
-  KnownReplicas,
-  PrimaryStorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
-import uk.ac.wellcome.storage.{UpdateUnexpectedError, Version}
+import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
@@ -182,9 +177,11 @@ class ReplicaAggregatorWorkerTest
         _.processMessage(payload).success.value
       }
 
-    it("returns a ReplicationAggregationFailed") {
+    it("returns an IngestFailed") {
       result shouldBe a[IngestFailed[_]]
+    }
 
+    it("returns a ReplicationAggregationFailed") {
       result.summary shouldBe a[ReplicationAggregationFailed]
 
       val failure = result.summary.asInstanceOf[ReplicationAggregationFailed]
@@ -193,7 +190,7 @@ class ReplicaAggregatorWorkerTest
     }
 
     it("does not send an outgoing message") {
-      outgoing.getMessages[VersionedBagRootPayload] shouldBe empty
+      outgoing.messages shouldBe empty
     }
 
     it("sends an IngestFailed to the monitor") {
@@ -204,6 +201,66 @@ class ReplicaAggregatorWorkerTest
       ) {
         _.map { _.description } shouldBe Seq("Aggregating replicas failed")
       }
+    }
+  }
+
+  describe("if there's a retryable error in the replica aggregator") {
+    val throwable = new Throwable("Conditional Update failed!")
+
+    val brokenStore =
+      new MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
+        store =
+          new MemoryStore[Version[ReplicaPath, Int], AggregatorInternalRecord](
+            initialEntries = Map.empty
+          ) with MemoryMaxima[ReplicaPath, AggregatorInternalRecord]
+      ) {
+        override def upsert(
+          id: ReplicaPath
+        )(t: AggregatorInternalRecord)(f: UpdateFunction): UpdateEither =
+          Left(
+            new UpdateWriteError(StoreWriteError(throwable)) with RetryableError
+          )
+      }
+
+    val ingests = new MemoryMessageSender()
+    val outgoing = new MemoryMessageSender()
+
+    val payload = createReplicaResultPayload
+
+    val result =
+      withReplicaAggregatorWorker(
+        ingests = ingests,
+        outgoing = outgoing,
+        versionedStore = brokenStore,
+        stepName = "aggregating replicas"
+      ) {
+        _.processMessage(payload).success.value
+      }
+
+    it("returns an IngestShouldRetry") {
+      result shouldBe a[IngestShouldRetry[_]]
+    }
+
+    it("returns a ReplicationAggregationFailed") {
+      result.summary shouldBe a[ReplicationAggregationFailed]
+
+      val failure = result.summary.asInstanceOf[ReplicationAggregationFailed]
+      failure.replicaPath shouldBe ReplicaPath(payload.bagRoot.path)
+      failure.e shouldBe throwable
+    }
+
+    it("does not send an outgoing message") {
+      outgoing.messages shouldBe empty
+    }
+
+    it("sends nothing to the ingests monitor") {
+      assertTopicReceivesIngestEvents(
+        ingestId = payload.ingestId,
+        ingests = ingests,
+        expectedDescriptions = Seq(
+          "Aggregating replicas retrying"
+        )
+      )
     }
   }
 }

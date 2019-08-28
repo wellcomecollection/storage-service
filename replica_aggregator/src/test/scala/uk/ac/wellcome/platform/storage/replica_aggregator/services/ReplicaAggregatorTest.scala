@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
-import uk.ac.wellcome.storage.{UpdateWriteError, Version}
+import uk.ac.wellcome.storage.{StoreWriteError, UpdateWriteError, Version}
 
 class ReplicaAggregatorTest
     extends FunSpec
@@ -221,7 +221,7 @@ class ReplicaAggregatorTest
   }
 
   it("handles an error from the underlying versioned store") {
-    val throwable = new Throwable("BOOM!")
+    val err = StoreWriteError(new Throwable("BOOM!"))
 
     val brokenStore =
       new MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
@@ -232,13 +232,13 @@ class ReplicaAggregatorTest
       ) {
         override def upsert(id: ReplicaPath)(t: AggregatorInternalRecord)(
           f: UpdateFunction
-        ): UpdateEither = Left(UpdateWriteError(throwable))
+        ): UpdateEither = Left(UpdateWriteError(err))
       }
 
     val result =
       withAggregator(brokenStore)(_.aggregate(createReplicaResult))
 
-    result.left.value.e shouldBe throwable
+    result.left.value shouldBe UpdateWriteError(err)
   }
 
   it("accepts adding the same primary location to a record twice") {

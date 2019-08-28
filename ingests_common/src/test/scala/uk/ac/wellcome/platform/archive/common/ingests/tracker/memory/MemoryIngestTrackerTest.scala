@@ -61,7 +61,7 @@ class MemoryIngestTrackerTest
       new MemoryIngestTracker(
         new MemoryVersionedStore[IngestID, Ingest](createMemoryStore) {
           override def update(id: IngestID)(f: UpdateFunction): UpdateEither =
-            Left(UpdateWriteError(new Throwable("BOOM!")))
+            Left(UpdateWriteError(StoreWriteError(new Throwable("BOOM!"))))
         }
       )
     )
