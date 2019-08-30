@@ -5,14 +5,23 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerTestCases}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  Unpacker,
+  UnpackerTestCases
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepResult
+}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ClientFactory
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, InputStreamWithLengthAndMetadata}
+import uk.ac.wellcome.storage.streaming.{
+  InputStreamWithLength,
+  InputStreamWithLengthAndMetadata
+}
 import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 
 import scala.util.Try
@@ -160,8 +169,7 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
 //    }
 //  }
 
-
-    describe("includes users-facing messages if reading the archive fails") {
+  describe("includes users-facing messages if reading the archive fails") {
     it("if it gets a permissions error") {
       val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
       val dstLocation = createObjectLocationPrefix

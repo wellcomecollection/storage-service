@@ -4,19 +4,32 @@ import java.io.{ByteArrayInputStream, InputStream, SequenceInputStream}
 import java.util
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{AmazonS3Exception, GetObjectRequest, ObjectMetadata}
+import com.amazonaws.services.s3.model.{
+  AmazonS3Exception,
+  GetObjectRequest,
+  ObjectMetadata
+}
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerError, UnpackerStorageError}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  Unpacker,
+  UnpackerError,
+  UnpackerStorageError
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, InputStreamWithLengthAndMetadata}
+import uk.ac.wellcome.storage.streaming.{
+  InputStreamWithLength,
+  InputStreamWithLengthAndMetadata
+}
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
-trait S3StreamReader extends Readable[ObjectLocation, InputStreamWithLengthAndMetadata] with Logging {
+trait S3StreamReader
+    extends Readable[ObjectLocation, InputStreamWithLengthAndMetadata]
+    with Logging {
   implicit val s3Client: AmazonS3
 
   // If you hold open an S3ObjectInputStream for a long time, eventually the
@@ -41,7 +54,11 @@ trait S3StreamReader extends Readable[ObjectLocation, InputStreamWithLengthAndMe
   // 128 MB = 128 MB * 1024 = 128 * 1024 * 1024
   protected val bufferSize: Long = 128 * 1024 * 1024
 
-  private class S3StreamEnumeration(location: ObjectLocation, contentLength: Long, bufferSize: Long) extends util.Enumeration[InputStream] {
+  private class S3StreamEnumeration(
+    location: ObjectLocation,
+    contentLength: Long,
+    bufferSize: Long
+  ) extends util.Enumeration[InputStream] {
     var currentPosition = 0L
     val totalLength: Long = contentLength
 
@@ -57,55 +74,63 @@ trait S3StreamReader extends Readable[ObjectLocation, InputStreamWithLengthAndMe
       // For example, if you read (start=0, end=5), you get bytes [0, 1, 2, 3, 4, 5].
       // We never want to read more than bufferSize bytes at a time.
       val requestWithRange =
-      if (currentPosition + bufferSize >= totalLength) {
-        debug(s"Reading $location: $currentPosition-[end] / $contentLength")
-        getRequest.withRange(currentPosition)
-      } else {
-        debug(s"Reading $location: $currentPosition-${currentPosition + bufferSize - 1} / $contentLength")
-        getRequest.withRange(currentPosition, currentPosition + bufferSize - 1)
-      }
+        if (currentPosition + bufferSize >= totalLength) {
+          debug(s"Reading $location: $currentPosition-[end] / $contentLength")
+          getRequest.withRange(currentPosition)
+        } else {
+          debug(
+            s"Reading $location: $currentPosition-${currentPosition + bufferSize - 1} / $contentLength"
+          )
+          getRequest.withRange(
+            currentPosition,
+            currentPosition + bufferSize - 1
+          )
+        }
 
       currentPosition += bufferSize
 
-      val byteArray = IOUtils.toByteArray(s3Client.getObject(requestWithRange).getObjectContent)
+      val byteArray = IOUtils.toByteArray(
+        s3Client.getObject(requestWithRange).getObjectContent
+      )
 
       new ByteArrayInputStream(byteArray)
     }
   }
 
-  override def get(location: ObjectLocation): ReadEither = Try {
-    val metadata = s3Client.getObject(location.namespace, location.path).getObjectMetadata
-    val contentLength = metadata.getContentLength
+  override def get(location: ObjectLocation): ReadEither =
+    Try {
+      val metadata =
+        s3Client.getObject(location.namespace, location.path).getObjectMetadata
+      val contentLength = metadata.getContentLength
 
-    val streams = new S3StreamEnumeration(
-      location,
-      contentLength = contentLength,
-      bufferSize = bufferSize
-    )
+      val streams = new S3StreamEnumeration(
+        location,
+        contentLength = contentLength,
+        bufferSize = bufferSize
+      )
 
-    new InputStreamWithLengthAndMetadata(
-      new SequenceInputStream(streams),
-      length = contentLength,
-      metadata = prepareMetadata(metadata)
-    )
-  } match {
-    case Success(inputStream) => Right(Identified(location, inputStream))
-    case Failure(err)         => Left(buildGetError(err))
-  }
+      new InputStreamWithLengthAndMetadata(
+        new SequenceInputStream(streams),
+        length = contentLength,
+        metadata = prepareMetadata(metadata)
+      )
+    } match {
+      case Success(inputStream) => Right(Identified(location, inputStream))
+      case Failure(err)         => Left(buildGetError(err))
+    }
 
   private def buildGetError(throwable: Throwable): ReadError =
     throwable match {
-      case exc: AmazonS3Exception
-        if exc.getMessage.startsWith("Not Found") =>
+      case exc: AmazonS3Exception if exc.getMessage.startsWith("Not Found") =>
         DoesNotExistError(exc)
       case exc: AmazonS3Exception
-        if exc.getMessage.startsWith("The specified key does not exist") =>
+          if exc.getMessage.startsWith("The specified key does not exist") =>
         DoesNotExistError(exc)
       case exc: AmazonS3Exception
-        if exc.getMessage.startsWith("The specified bucket does not exist") =>
+          if exc.getMessage.startsWith("The specified bucket does not exist") =>
         DoesNotExistError(exc)
       case exc: AmazonS3Exception
-        if exc.getMessage.startsWith("The specified bucket is not valid") =>
+          if exc.getMessage.startsWith("The specified bucket is not valid") =>
         StoreReadError(exc)
       case _ => StoreReadError(throwable)
     }
