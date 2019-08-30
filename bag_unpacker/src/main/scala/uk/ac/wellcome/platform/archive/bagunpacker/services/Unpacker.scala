@@ -144,6 +144,8 @@ trait Unpacker extends Logging {
 
     val archiveEntrySize = archiveEntry.getSize
 
+    info(s"@@AWLC archiveEntrySize = $archiveEntrySize")
+
     if (archiveEntrySize == ArchiveEntry.SIZE_UNKNOWN) {
       throw new RuntimeException(
         s"Unknown entry size for ${archiveEntry.getName}!"
@@ -151,7 +153,7 @@ trait Unpacker extends Logging {
     }
 
     debug(
-      s"Uploading archive entry ${archiveEntry.getName} to ${uploadLocation}"
+      s"Uploading archive entry ${archiveEntry.getName} to $uploadLocation"
     )
 
     put(uploadLocation)(

@@ -5,24 +5,15 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  Unpacker,
-  UnpackerTestCases
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult
-}
-import uk.ac.wellcome.storage.{Identified, ObjectLocation}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerTestCases}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ClientFactory
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{
-  InputStreamWithLength,
-  InputStreamWithLengthAndMetadata
-}
+import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, InputStreamWithLengthAndMetadata}
+import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 
 import scala.util.Try
 
@@ -110,7 +101,67 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
     }
   }
 
-  describe("includes users-facing messages if reading the archive fails") {
+//  it("fails") {
+//    withLocalS3Bucket { bucket =>
+//      val length = 100000
+//      val content = Random.alphanumeric take length mkString
+//
+//      s3Client.putObject(
+//        bucket.name,
+//        "example.txt",
+//        content
+//      )
+//
+////      s3Client
+//
+//      val readerClient = s3Client
+//      val reader = new S3StreamReader {
+//        override implicit val s3Client: AmazonS3 = readerClient
+//      }
+//
+//      val stream = reader.get(ObjectLocation(bucket.name, "example.txt")).right.value.identifiedT
+//
+//      println(stream.read())
+//
+//      import sys.process._
+//      "docker restart 374c10f7e100" !
+//
+//      Thread.sleep(5000)
+//
+//      println(Codec.bytesCodec.fromStream(
+//        new InputStreamWithLength(stream, length - 1)
+//      ))
+//    }
+//  }
+//
+//  it("works") {
+//    val (archiveFile, _, _) = createTgzArchiveWithRandomFiles(
+//      fileCount = 1000
+//    )
+//
+//    withLocalS3Bucket { srcBucket =>
+//      withLocalS3Bucket { dstBucket =>
+//        withStreamStore { implicit streamStore =>
+//          withArchive(srcBucket, archiveFile) { archiveLocation =>
+//            val unpacker: S3Unpacker =
+//              new S3Unpacker()
+//
+//            val result =
+//              unpacker.unpack(
+//                ingestId = createIngestID,
+//                srcLocation = archiveLocation,
+//                dstLocation = createObjectLocationPrefixWith(dstBucket.name)
+//              )
+//
+//            println(result)
+//          }
+//        }
+//      }
+//    }
+//  }
+
+
+    describe("includes users-facing messages if reading the archive fails") {
     it("if it gets a permissions error") {
       val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
       val dstLocation = createObjectLocationPrefix

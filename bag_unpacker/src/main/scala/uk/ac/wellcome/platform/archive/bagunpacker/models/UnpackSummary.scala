@@ -10,7 +10,7 @@ case class UnpackSummary(
   id: IngestID,
   srcLocation: ObjectLocation,
   dstLocation: ObjectLocationPrefix,
-  fileCount: Int = 0,
+  fileCount: Long = 0L,
   bytesUnpacked: Long = 0L,
   startTime: Instant,
   maybeEndTime: Option[Instant] = None
