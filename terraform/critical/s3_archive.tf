@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "archive" {
-  bucket = "wellcomecollection-${var.namespace}-archive"
+  bucket = "wellcomecollection-${var.namespace}-replica-ireland"
   acl    = "private"
 
   lifecycle_rule {
@@ -7,7 +7,7 @@ resource "aws_s3_bucket" "archive" {
 
     transition {
       days          = 90
-      storage_class = "GLACIER"
+      storage_class = "DEEP_ARCHIVE"
     }
   }
 }
