@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.operation.models
 
-import org.apache.commons.io.FileUtils
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 
 trait Summary extends Timed {
@@ -19,7 +18,4 @@ trait Summary extends Timed {
 
   private def formatDuration: String =
     duration.getOrElse("<not-completed>").toString
-
-  def formatBytes(bytes: Long): String =
-    FileUtils.byteCountToDisplaySize(bytes)
 }
