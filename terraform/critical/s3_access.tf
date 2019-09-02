@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "access" {
-  bucket = "wellcomecollection-${var.namespace}-access"
+  bucket = "wellcomecollection-${var.namespace}"
   acl    = "private"
 }
 
