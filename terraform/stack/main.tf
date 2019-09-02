@@ -38,7 +38,7 @@ module "logstash_transit" {
 
 locals {
   java_opts_metrics_base = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region}"
-  java_opts_heap_size = "-J-Xss6M -J-Xms2G -J-Xmx3G"
+  java_opts_heap_size = "-Xss6M -Xms2G -Xmx3G"
 }
 
 module "bag_unpacker" {
