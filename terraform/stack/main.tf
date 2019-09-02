@@ -1,3 +1,8 @@
+locals {
+  java_opts_metrics_base = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region}"
+  java_opts_heap_size = "-Xss6M -Xms2G -Xmx3G"
+}
+
 # logstash_transit
 
 module "logstash_transit" {
@@ -36,11 +41,6 @@ module "logstash_transit" {
 
 # bag_unpacker
 
-locals {
-  java_opts_metrics_base = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region}"
-  java_opts_heap_size = "-Xss6M -Xms2G -Xmx3G"
-}
-
 module "bag_unpacker" {
   source = "../modules/service/worker"
 
@@ -64,7 +64,6 @@ module "bag_unpacker" {
     metrics_namespace       = "${local.bag_unpacker_service_name}"
     operation_name          = "unpacking"
     logstash_host           = "${local.logstash_host}"
-//    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_unpacker_service_name}"
     JAVA_OPTS               = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_unpacker_service_name}"
   }
 
@@ -145,7 +144,7 @@ module "bag_verifier_pre_replication" {
     operation_name     = "verification (pre-replicating to archive storage)"
     logstash_host      = "${local.logstash_host}"
 
-    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_pre_repl_service_name}"
+    JAVA_OPTS = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_verifier_pre_repl_service_name}"
   }
 
   env_vars_length = 7
@@ -319,7 +318,7 @@ module "replica_aggregator" {
 
     expected_replica_count = 2
 
-    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.replica_aggregator_service_name}"
+    JAVA_OPTS = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.replica_aggregator_service_name}"
   }
 
   env_vars_length = 9
@@ -354,7 +353,7 @@ module "bag_register" {
     operation_name    = "register"
     logstash_host     = "${local.logstash_host}"
 
-    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_register_service_name}"
+    JAVA_OPTS = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_register_service_name}"
   }
 
   env_vars_length = 10

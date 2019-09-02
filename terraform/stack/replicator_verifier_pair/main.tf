@@ -1,3 +1,8 @@
+locals {
+  java_opts_metrics_base = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region}"
+  java_opts_heap_size = "-Xss6M -Xms2G -Xmx3G"
+}
+
 # bag_replicator
 
 module "bag_replicator" {
@@ -28,7 +33,7 @@ module "bag_replicator" {
     storage_provider = "${var.storage_provider}"
     replica_type     = "${var.replica_type}"
 
-    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_replicator_service_name}"
+    JAVA_OPTS = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_replicator_service_name}"
   }
 
   env_vars_length = 12
@@ -67,7 +72,7 @@ module "bag_verifier" {
     operation_name     = "verification (${var.replica_display_name})"
     logstash_host      = "${var.logstash_host}"
 
-    JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_verifier_service_name}"
+    JAVA_OPTS = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_verifier_service_name}"
   }
 
   env_vars_length = 7
