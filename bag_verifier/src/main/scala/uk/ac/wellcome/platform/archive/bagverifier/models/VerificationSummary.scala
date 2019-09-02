@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 
 import java.time.Instant
 
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 import uk.ac.wellcome.platform.archive.common.verify.{
   VerificationFailure,
@@ -18,48 +19,46 @@ sealed trait VerificationSummary extends Summary {
   val endTime: Instant
   override val maybeEndTime: Option[Instant] = Some(endTime)
 
-  override def toString: String = {
+  override val fieldsToLog: Seq[(String, Any)] = {
+    val baseFields = Seq(("root", rootLocation))
 
-    val status = verification match {
-      case Some(VerificationIncomplete(msg)) =>
-        f"""
-           |status=incomplete
-           |message=$msg
-         """.stripMargin
+    verification match {
+      case Some(VerificationIncomplete(message)) =>
+        baseFields ++ Seq(
+          ("status", "incomplete"),
+          ("message", message)
+        )
+
       case Some(VerificationFailure(failed, succeeded)) =>
-        f"""
-           |status=failure
-           |verified=${succeeded.size}
-           |failed=${failed.size}
-         """.stripMargin
+        baseFields ++ Seq(
+          ("status", "failure"),
+          ("verified", succeeded.size),
+          ("failed", failed.size)
+        )
+
       case Some(VerificationSuccess(succeeded)) =>
-        f"""
-           |status=success
-           |verified=${succeeded.size}
-         """.stripMargin
-      case None =>
-        f"""
-           |status=incomplete
-        """.stripMargin
+        baseFields ++ Seq(
+          ("status", "success"),
+          ("verified", succeeded.size)
+        )
 
+      case _ =>
+        baseFields ++ Seq(
+          ("status", "incomplete")
+        )
     }
-
-    f"""|bag=$rootLocation
-        |durationSeconds=$durationSeconds
-        |duration=$formatDuration
-        |$status
-        """.stripMargin
-      .replaceAll("\n", ", ")
   }
 }
 
 object VerificationSummary {
   def incomplete(
+    ingestId: IngestID,
     root: ObjectLocationPrefix,
     e: Throwable,
     t: Instant
   ): VerificationIncompleteSummary =
     VerificationIncompleteSummary(
+      ingestId = ingestId,
       rootLocation = root,
       e = e,
       startTime = t,
@@ -67,12 +66,14 @@ object VerificationSummary {
     )
 
   def create(
+    ingestId: IngestID,
     root: ObjectLocationPrefix,
     v: VerificationResult,
     t: Instant
   ): VerificationSummary = v match {
     case i @ VerificationIncomplete(_) =>
       VerificationIncompleteSummary(
+        ingestId = ingestId,
         rootLocation = root,
         e = i,
         startTime = t,
@@ -80,6 +81,7 @@ object VerificationSummary {
       )
     case f @ VerificationFailure(_, _) =>
       VerificationFailureSummary(
+        ingestId = ingestId,
         rootLocation = root,
         verification = Some(f),
         startTime = t,
@@ -87,6 +89,7 @@ object VerificationSummary {
       )
     case s @ VerificationSuccess(_) =>
       VerificationSuccessSummary(
+        ingestId = ingestId,
         rootLocation = root,
         verification = Some(s),
         startTime = t,
@@ -96,15 +99,17 @@ object VerificationSummary {
 }
 
 case class VerificationIncompleteSummary(
+  ingestId: IngestID,
   rootLocation: ObjectLocationPrefix,
   e: Throwable,
   startTime: Instant,
   endTime: Instant
 ) extends VerificationSummary {
-  val verification: None.type = None
+  val verification: Option[VerificationResult] = None
 }
 
 case class VerificationSuccessSummary(
+  ingestId: IngestID,
   rootLocation: ObjectLocationPrefix,
   verification: Some[VerificationSuccess],
   startTime: Instant,
@@ -112,6 +117,7 @@ case class VerificationSuccessSummary(
 ) extends VerificationSummary
 
 case class VerificationFailureSummary(
+  ingestId: IngestID,
   rootLocation: ObjectLocationPrefix,
   verification: Option[VerificationFailure],
   startTime: Instant,
