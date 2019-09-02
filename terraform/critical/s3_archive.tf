@@ -7,7 +7,7 @@ resource "aws_s3_bucket" "archive" {
 
     transition {
       days          = 90
-      storage_class = "DEEP_ARCHIVE"
+      storage_class = "GLACIER"
     }
   }
 }
