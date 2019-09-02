@@ -7,10 +7,11 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationRequest,
   ReplicationSucceeded
 }
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
-class S3ReplicatorTest extends FunSpec with Matchers with S3Fixtures {
+class S3ReplicatorTest extends FunSpec with Matchers with S3Fixtures with StorageRandomThings {
   it("replicates all the objects under a prefix") {
     withLocalS3Bucket { bucket =>
       val locations = (1 to 5).map { _ =>
@@ -39,7 +40,8 @@ class S3ReplicatorTest extends FunSpec with Matchers with S3Fixtures {
       )
 
       val result = new S3Replicator().replicate(
-        ReplicationRequest(
+        ingestId = createIngestID,
+        request = ReplicationRequest(
           srcPrefix = srcPrefix,
           dstPrefix = dstPrefix
         )
@@ -52,7 +54,8 @@ class S3ReplicatorTest extends FunSpec with Matchers with S3Fixtures {
 
   it("fails if the underlying replication has an error") {
     val result = new S3Replicator().replicate(
-      ReplicationRequest(
+      ingestId = createIngestID,
+      request = ReplicationRequest(
         srcPrefix = ObjectLocationPrefix(
           namespace = createBucketName,
           path = randomAlphanumeric
