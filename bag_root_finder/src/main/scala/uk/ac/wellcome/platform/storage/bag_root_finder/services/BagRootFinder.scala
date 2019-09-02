@@ -20,7 +20,10 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
 
   type IngestStep = Try[IngestStepResult[RootFinderSummary]]
 
-  def getSummary(ingestId: IngestID, unpackLocation: ObjectLocationPrefix): IngestStep =
+  def getSummary(
+    ingestId: IngestID,
+    unpackLocation: ObjectLocationPrefix
+  ): IngestStep =
     Try {
       val startTime = Instant.now()
 

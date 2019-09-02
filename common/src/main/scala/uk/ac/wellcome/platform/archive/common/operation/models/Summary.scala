@@ -12,8 +12,7 @@ trait Summary extends Timed {
       ("ingestId", ingestId),
       ("duration", formatDuration),
       ("durationSeconds", durationSeconds)
-    ))
-      .map { case (key, value) => s"$key=$value" }
+    )).map { case (key, value) => s"$key=$value" }
       .mkString(", ")
 
   private def formatDuration: String =

@@ -83,7 +83,8 @@ class RegisterTest
     }
 
     it("uses the ingest ID in the summary") {
-      val summary = result.success.value.asInstanceOf[IngestCompleted[_]].summary
+      val summary =
+        result.success.value.asInstanceOf[IngestCompleted[_]].summary
       summary.asInstanceOf[RegistrationSummary].ingestId shouldBe ingestId
     }
 
