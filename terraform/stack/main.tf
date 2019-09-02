@@ -38,7 +38,7 @@ module "logstash_transit" {
 
 locals {
   java_opts_metrics_base = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region}"
-  java_opts_heap_size = "-J-Xss6M,-J-Xms2G,-J-Xmx3G"
+  java_opts_heap_size = "-J-Xss6M -J-Xms2G -J-Xmx3G"
 }
 
 module "bag_unpacker" {
@@ -65,7 +65,7 @@ module "bag_unpacker" {
     operation_name          = "unpacking"
     logstash_host           = "${local.logstash_host}"
 //    JAVA_OPTS               = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_unpacker_service_name}"
-    JAVA_OPTS               = "${local.java_opts_heap_size},${local.java_opts_metrics_base},metricNameSpace=${local.bag_unpacker_service_name}"
+    JAVA_OPTS               = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_unpacker_service_name}"
   }
 
   env_vars_length = 9
