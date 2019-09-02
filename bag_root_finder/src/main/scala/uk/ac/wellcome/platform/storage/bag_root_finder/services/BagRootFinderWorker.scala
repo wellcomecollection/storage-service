@@ -40,6 +40,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
       _ <- ingestUpdater.start(ingestId = payload.ingestId)
 
       summary <- bagRootFinder.getSummary(
+        ingestId = payload.ingestId,
         unpackLocation = payload.unpackedBagLocation
       )
 
