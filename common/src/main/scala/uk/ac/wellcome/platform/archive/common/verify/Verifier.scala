@@ -54,7 +54,7 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
       case Left(e) => VerifiedFailure(verifiableLocation, e = e)
 
       case Right((inputStream, objectLocation)) =>
-        verifiableLocation.length match {
+        val verifiedLocation = verifiableLocation.length match {
           case Some(expectedLength) =>
             debug(
               "Location specifies an expected length, checking it's correct"
@@ -86,6 +86,10 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
               algorithm = algorithm
             )
         }
+
+        inputStream.close()
+
+        verifiedLocation
     }
 
     debug(s"Got: $result")
