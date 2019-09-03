@@ -89,9 +89,14 @@ trait S3StreamReader
 
       currentPosition += bufferSize
 
-      val byteArray = IOUtils.toByteArray(
-        s3Client.getObject(requestWithRange).getObjectContent
-      )
+      // Remember to close the input stream afterwards, or we get errors like
+      //
+      //    com.amazonaws.SdkClientException: Unable to execute HTTP request:
+      //    Timeout waiting for connection from pool
+      //
+      val s3InputStream = s3Client.getObject(requestWithRange).getObjectContent
+      val byteArray = IOUtils.toByteArray(s3InputStream)
+      s3InputStream.close()
 
       new ByteArrayInputStream(byteArray)
     }
