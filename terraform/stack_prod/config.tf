@@ -58,6 +58,4 @@ locals {
   bagger_dds_asset_prefix = "${data.aws_ssm_parameter.bagger_dds_asset_prefix.value}"
 
   archive_oauth_details_enc = "${data.aws_ssm_parameter.archive_oauth_details_enc.value}"
-
-  key_name = "wellcomedigitalstorage"
 }

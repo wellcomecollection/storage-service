@@ -5,7 +5,7 @@ resource "aws_api_gateway_base_path_mapping" "mapping_prod" {
 }
 
 module "stack_prod" {
-  source = "stack"
+  source = "../stack"
 
   namespace = "${local.namespace}-prod"
 
@@ -22,7 +22,7 @@ module "stack_prod" {
   private_subnets = "${local.private_subnets}"
 
   ssh_key_name = "${local.key_name}"
-  infra_bucket = "${aws_s3_bucket.infra.id}"
+  infra_bucket = "${local.infra_bucket}"
 
   lambda_error_alarm_arn = "${local.lambda_error_alarm_arn}"
   dlq_alarm_arn          = "${local.dlq_alarm_arn}"
