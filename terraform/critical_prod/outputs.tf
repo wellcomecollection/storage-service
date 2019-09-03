@@ -89,3 +89,15 @@ output "manifests_full_access_policy" {
 output "s3_bagger_cache_name" {
   value = "${module.critical.s3_bagger_cache_name}"
 }
+
+output "versions_table_arn" {
+  value = "${module.critical.versions_table_arn}"
+}
+
+output "versions_table_name" {
+  value = "${module.critical.versions_table_name}"
+}
+
+output "versions_table_index" {
+  value = "${module.critical.versions_table_index}"
+}

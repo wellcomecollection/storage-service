@@ -51,6 +51,10 @@ module "stack_prod" {
   bagger_ingest_table                = "${local.bagger_ingest_table}"
   bagger_ingest_table_arn            = "${local.bagger_ingest_table_arn}"
 
+  versioner_versions_table_arn   = "${data.terraform_remote_state.critical_prod.versions_table_arn}"
+  versioner_versions_table_name  = "${data.terraform_remote_state.critical_prod.versions_table_name}"
+  versioner_versions_table_index = "${data.terraform_remote_state.critical_prod.versions_table_index}"
+
   s3_bagger_drop_arn           = "${data.terraform_remote_state.critical_prod.s3_bagger_drop_arn}"
   s3_bagger_errors_arn         = "${data.terraform_remote_state.critical_prod.s3_bagger_errors_arn}"
   s3_bagger_drop_mets_only_arn = "${data.terraform_remote_state.critical_prod.s3_bagger_drop_mets_only_arn}"

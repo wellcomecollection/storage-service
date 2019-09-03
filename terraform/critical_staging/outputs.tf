@@ -85,3 +85,15 @@ output "manifests_read_policy" {
 output "manifests_full_access_policy" {
   value = "${module.critical.manifests_full_access_policy}"
 }
+
+output "versions_table_arn" {
+  value = "${module.critical.versions_table_arn}"
+}
+
+output "versions_table_name" {
+  value = "${module.critical.versions_table_name}"
+}
+
+output "versions_table_index" {
+  value = "${module.critical.versions_table_index}"
+}

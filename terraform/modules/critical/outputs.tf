@@ -89,3 +89,15 @@ output "replicas_table_arn" {
 output "replicas_table_name" {
   value = "${aws_dynamodb_table.replicas_table.name}"
 }
+
+output "versions_table_arn" {
+  value = "${aws_dynamodb_table.versioner_versions_table.arn}"
+}
+
+output "versions_table_name" {
+  value = "${aws_dynamodb_table.versioner_versions_table.name}"
+}
+
+output "versions_table_index" {
+  value = "${local.versioner_versions_table_index}"
+}

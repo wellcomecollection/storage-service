@@ -1,5 +1,5 @@
 module "critical" {
-  source = "../critical"
+  source = "../modules/critical"
 
   namespace  = "${local.namespace}-staging"
   account_id = "${local.account_id}"

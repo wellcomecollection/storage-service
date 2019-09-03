@@ -61,5 +61,3 @@ resource "aws_dynamodb_table" "replicas_table" {
     type = "S"
   }
 }
-
-

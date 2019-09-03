@@ -71,7 +71,7 @@ module "bag_unpacker" {
     #     com.amazonaws.SdkClientException: Unable to execute HTTP request:
     #     Timeout waiting for connection from pool
     #
-    queue_parallelism = 3
+    queue_parallelism = 1
   }
 
   env_vars_length = 9
@@ -194,8 +194,8 @@ module "bag_versioner" {
     locking_table_name  = "${module.versioner_lock_table.table_name}"
     locking_table_index = "${module.versioner_lock_table.index_name}"
 
-    versions_table_name  = "${local.versioner_versions_table_name}"
-    versions_table_index = "${local.versioner_versions_table_index}"
+    versions_table_name  = "${var.versioner_versions_table_name}"
+    versions_table_index = "${var.versioner_versions_table_index}"
 
     JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_versioner_service_name}"
   }

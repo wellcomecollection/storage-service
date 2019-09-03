@@ -97,6 +97,12 @@ variable "s3_bagger_drop_mets_only_name" {}
 variable "s3_bagger_errors_name" {}
 variable "s3_bagger_cache_name" {}
 
+# versioner table
+
+variable "versioner_versions_table_arn" {}
+variable "versioner_versions_table_name" {}
+variable "versioner_versions_table_index" {}
+
 # Task counts
 
 variable "desired_bagger_count" {

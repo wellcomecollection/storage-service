@@ -51,7 +51,9 @@ module "stack_staging" {
   bagger_ingest_table                = "${local.bagger_ingest_table_stage}"
   bagger_ingest_table_arn            = "${local.bagger_ingest_table_stage_arn}"
 
-
+  versioner_versions_table_arn   = "${data.terraform_remote_state.critical_staging.versions_table_arn}"
+  versioner_versions_table_name  = "${data.terraform_remote_state.critical_staging.versions_table_name}"
+  versioner_versions_table_index = "${data.terraform_remote_state.critical_staging.versions_table_index}"
 
   s3_bagger_drop_arn           = "${data.terraform_remote_state.critical_staging.s3_bagger_drop_arn}"
   s3_bagger_errors_arn         = "${data.terraform_remote_state.critical_staging.s3_bagger_errors_arn}"
