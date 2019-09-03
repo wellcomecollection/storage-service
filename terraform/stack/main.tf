@@ -63,6 +63,7 @@ module "bag_unpacker" {
     metrics_namespace       = "${local.bag_unpacker_service_name}"
     operation_name          = "unpacking"
     logstash_host           = "${local.logstash_host}"
+    log_level               = "debug"
     JAVA_OPTS               = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_unpacker_service_name}"
 
     # If you run the unpacker with too much parallelism, it gets overwhelmed
@@ -74,7 +75,7 @@ module "bag_unpacker" {
     queue_parallelism = 1
   }
 
-  env_vars_length = 9
+  env_vars_length = 10
 
   cpu    = 2048
   memory = 4096
