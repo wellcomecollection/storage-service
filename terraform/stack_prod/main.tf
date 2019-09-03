@@ -5,7 +5,7 @@ resource "aws_api_gateway_base_path_mapping" "mapping_prod" {
 }
 
 module "stack_prod" {
-  source = "../stack"
+  source = "../modules/stack"
 
   namespace = "${local.namespace}-prod"
 
