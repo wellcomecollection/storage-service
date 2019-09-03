@@ -1,7 +1,3 @@
-data "aws_ssm_parameter" "admin_cidr_ingress" {
-  name = "/storage/config/prod/admin_cidr_ingress"
-}
-
 data "aws_ssm_parameter" "bagger_mets_bucket_name" {
   name = "/storage/config/prod/bagger_mets_bucket_name"
 }
@@ -43,8 +39,6 @@ data "aws_ssm_parameter" "archive_oauth_details_enc" {
 }
 
 locals {
-  admin_cidr_ingress = "${data.aws_ssm_parameter.admin_cidr_ingress.value}"
-
   bagger_mets_bucket_name            = "${data.aws_ssm_parameter.bagger_mets_bucket_name.value}"
   bagger_read_mets_from_fileshare    = "${data.aws_ssm_parameter.bagger_read_mets_from_fileshare.value == "true" ? true : false}"
   bagger_working_directory           = "${data.aws_ssm_parameter.bagger_working_directory.value}"

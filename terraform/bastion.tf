@@ -1,16 +1,3 @@
-resource "aws_s3_bucket" "infra" {
-  bucket = "wellcomecollection-storage-infra"
-  acl    = "private"
-
-  lifecycle {
-    prevent_destroy = true
-  }
-
-  versioning {
-    enabled = true
-  }
-}
-
 module "bastion" {
   source = "git::https://github.com/wellcometrust/terraform.git//ec2/prebuilt/bastion?ref=v17.1.0"
 
