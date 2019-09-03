@@ -1,4 +1,4 @@
-module "critical-staging" {
+module "critical" {
   source = "../critical"
 
   namespace  = "${local.namespace}-staging"
