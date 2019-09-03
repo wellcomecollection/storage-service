@@ -33,11 +33,11 @@ module "stack_staging" {
   release_label = "stage"
   nginx_image   = "${local.nginx_image}"
 
-  archive_bucket_name              = "${module.critical-staging.archive_bucket_name}"
-  access_bucket_name               = "${module.critical-staging.access_bucket_name}"
-  static_content_bucket_name       = "${module.critical-staging.static_content_bucket_name}"
-  vhs_archive_manifest_table_name  = "${module.critical-staging.manifests_table_name}"
-  vhs_archive_manifest_bucket_name = "${module.critical-staging.manifests_bucket_name}"
+  archive_bucket_name              = "${data.terraform_remote_state.critical_staging.archive_bucket_name}"
+  access_bucket_name               = "${data.terraform_remote_state.critical_staging.access_bucket_name}"
+  static_content_bucket_name       = "${data.terraform_remote_state.critical_staging.static_content_bucket_name}"
+  vhs_archive_manifest_table_name  = "${data.terraform_remote_state.critical_staging.manifests_table_name}"
+  vhs_archive_manifest_bucket_name = "${data.terraform_remote_state.critical_staging.manifests_bucket_name}"
 
   bagger_dlcs_space                  = "${local.bagger_dlcs_space}"
   bagger_working_directory           = "${local.bagger_working_directory}"
@@ -51,38 +51,40 @@ module "stack_staging" {
   bagger_ingest_table                = "${local.bagger_ingest_table_stage}"
   bagger_ingest_table_arn            = "${local.bagger_ingest_table_stage_arn}"
 
-  s3_bagger_drop_arn           = "${module.critical-staging.s3_bagger_drop_arn}"
-  s3_bagger_errors_arn         = "${module.critical-staging.s3_bagger_errors_arn}"
-  s3_bagger_drop_mets_only_arn = "${module.critical-staging.s3_bagger_drop_mets_only_arn}"
 
-  s3_bagger_drop_name           = "${module.critical-staging.s3_bagger_drop_name}"
-  s3_bagger_errors_name         = "${module.critical-staging.s3_bagger_errors_name}"
-  s3_bagger_drop_mets_only_name = "${module.critical-staging.s3_bagger_drop_mets_only_name}"
+
+  s3_bagger_drop_arn           = "${data.terraform_remote_state.critical_staging.s3_bagger_drop_arn}"
+  s3_bagger_errors_arn         = "${data.terraform_remote_state.critical_staging.s3_bagger_errors_arn}"
+  s3_bagger_drop_mets_only_arn = "${data.terraform_remote_state.critical_staging.s3_bagger_drop_mets_only_arn}"
+
+  s3_bagger_drop_name           = "${data.terraform_remote_state.critical_staging.s3_bagger_drop_name}"
+  s3_bagger_errors_name         = "${data.terraform_remote_state.critical_staging.s3_bagger_errors_name}"
+  s3_bagger_drop_mets_only_name = "${data.terraform_remote_state.critical_staging.s3_bagger_drop_mets_only_name}"
   s3_bagger_cache_name          = "${module.critical.s3_bagger_cache_name}"
 
-  vhs_archive_manifest_full_access_policy_json = "${module.critical-staging.manifests_full_access_policy}"
-  vhs_archive_manifest_read_policy_json        = "${module.critical-staging.manifests_read_policy}"
+  vhs_archive_manifest_full_access_policy_json = "${data.terraform_remote_state.critical_staging.manifests_full_access_policy}"
+  vhs_archive_manifest_read_policy_json        = "${data.terraform_remote_state.critical_staging.manifests_read_policy}"
 
   alarm_topic_arn = "${local.gateway_server_error_alarm_arn}"
 
-  ingests_table_name = "${module.critical-staging.ingests_table_name}"
-  ingests_table_arn  = "${module.critical-staging.ingests_table_arn}"
+  ingests_table_name = "${data.terraform_remote_state.critical_staging.ingests_table_name}"
+  ingests_table_arn  = "${data.terraform_remote_state.critical_staging.ingests_table_arn}"
 
-  bag_id_lookup_table_name = "${module.critical-staging.bag_id_lookup_table_name}"
-  bag_id_lookup_table_arn  = "${module.critical-staging.bag_id_lookup_table_arn}"
+  bag_id_lookup_table_name = "${data.terraform_remote_state.critical_staging.bag_id_lookup_table_name}"
+  bag_id_lookup_table_arn  = "${data.terraform_remote_state.critical_staging.bag_id_lookup_table_arn}"
 
-  replicas_table_arn  = "${module.critical-staging.replicas_table_arn}"
-  replicas_table_name = "${module.critical-staging.replicas_table_name}"
+  replicas_table_arn  = "${data.terraform_remote_state.critical_staging.replicas_table_arn}"
+  replicas_table_name = "${data.terraform_remote_state.critical_staging.replicas_table_name}"
 
-  ingest_bucket_name = "${module.critical-staging.ingest_drop_bucket_name}"
+  ingest_bucket_name = "${data.terraform_remote_state.critical_staging.ingest_drop_bucket_name}"
 
   archive_oauth_details_enc = "${local.archive_oauth_details_enc}"
 
-  use_encryption_key_policy = "${module.critical-staging.use_encryption_key_policy}"
+  use_encryption_key_policy = "${data.terraform_remote_state.critical_staging.use_encryption_key_policy}"
 
   workflow_bucket_name = "${local.workflow_stage_bucket_name}"
 
-  ingest_drop_bucket_name = "${module.critical-staging.ingest_drop_bucket_name}"
+  ingest_drop_bucket_name = "${data.terraform_remote_state.critical_staging.ingest_drop_bucket_name}"
 
   archivematica_ingests_bucket = "${local.archivematica_ingests_bucket}"
 }
