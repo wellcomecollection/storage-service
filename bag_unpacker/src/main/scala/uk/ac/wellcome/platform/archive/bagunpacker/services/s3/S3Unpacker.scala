@@ -178,8 +178,7 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
 
   override def put(
     location: ObjectLocation
-  )(inputStream: InputStreamWithLength): Either[StorageError, Unit] = {
-    debug(s"@@AWLC length = ${inputStream.length}")
+  )(inputStream: InputStreamWithLength): Either[StorageError, Unit] =
     s3StreamStore
       .put(location)(
         InputStreamWithLengthAndMetadata(inputStream, metadata = Map.empty)
@@ -187,7 +186,6 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
       .map { _ =>
         ()
       }
-  }
 
   override def formatLocation(location: ObjectLocation): String =
     s"s3://$location"
