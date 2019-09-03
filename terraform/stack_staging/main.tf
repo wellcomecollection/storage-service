@@ -1,11 +1,11 @@
-resource "aws_api_gateway_base_path_mapping" "mapping-staging" {
+resource "aws_api_gateway_base_path_mapping" "mapping_staging" {
   api_id      = "${module.stack_staging.api_gateway_id}"
   domain_name = "${local.staging_domain_name}"
   base_path   = "storage"
 }
 
 module "stack_staging" {
-  source = "stack"
+  source = "../stack"
 
   namespace = "${local.namespace}-staging"
 
@@ -22,7 +22,7 @@ module "stack_staging" {
   private_subnets = "${local.private_subnets}"
 
   ssh_key_name = "${local.key_name}"
-  infra_bucket = "${aws_s3_bucket.infra.id}"
+  infra_bucket = "${local.infra_bucket}"
 
   lambda_error_alarm_arn = "${local.lambda_error_alarm_arn}"
   dlq_alarm_arn          = "${local.dlq_alarm_arn}"
@@ -84,7 +84,7 @@ module "stack_staging" {
 
   use_encryption_key_policy = "${data.terraform_remote_state.critical_staging.use_encryption_key_policy}"
 
-  workflow_bucket_name = "${local.workflow_stage_bucket_name}"
+  workflow_bucket_name = "${local.workflow_staging_bucket_name}"
 
   ingest_drop_bucket_name = "${data.terraform_remote_state.critical_staging.ingest_drop_bucket_name}"
 
