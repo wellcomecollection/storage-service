@@ -85,3 +85,7 @@ output "manifests_read_policy" {
 output "manifests_full_access_policy" {
   value = "${module.critical.manifests_full_access_policy}"
 }
+
+output "s3_bagger_cache_name" {
+  value = "${module.critical.s3_bagger_cache_name}"
+}

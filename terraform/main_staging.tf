@@ -60,7 +60,7 @@ module "stack_staging" {
   s3_bagger_drop_name           = "${data.terraform_remote_state.critical_staging.s3_bagger_drop_name}"
   s3_bagger_errors_name         = "${data.terraform_remote_state.critical_staging.s3_bagger_errors_name}"
   s3_bagger_drop_mets_only_name = "${data.terraform_remote_state.critical_staging.s3_bagger_drop_mets_only_name}"
-  s3_bagger_cache_name          = "${module.critical.s3_bagger_cache_name}"
+  s3_bagger_cache_name          = "${data.terraform_remote_state.critical_prod.s3_bagger_cache_name}"
 
   vhs_archive_manifest_full_access_policy_json = "${data.terraform_remote_state.critical_staging.manifests_full_access_policy}"
   vhs_archive_manifest_read_policy_json        = "${data.terraform_remote_state.critical_staging.manifests_read_policy}"
