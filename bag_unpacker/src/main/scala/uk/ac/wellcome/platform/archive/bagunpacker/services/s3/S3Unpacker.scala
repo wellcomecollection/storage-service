@@ -104,9 +104,16 @@ trait S3StreamReader
 
   override def get(location: ObjectLocation): ReadEither =
     Try {
-      val metadata =
-        s3Client.getObject(location.namespace, location.path).getObjectMetadata
+      // We use getObject here rather than getObjectMetadata so we get more
+      // detailed errors from S3 about why a GetObject fails, if necessary.
+      //
+      // e.g. GetObject will return "The bucket name was invalid" rather than
+      // "Bad Request".
+      //
+      val s3Object = s3Client.getObject(location.namespace, location.path)
+      val metadata = s3Object.getObjectMetadata
       val contentLength = metadata.getContentLength
+      s3Object.getObjectContent.close()
 
       val streams = new S3StreamEnumeration(
         location,
