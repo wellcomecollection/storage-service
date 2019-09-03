@@ -57,7 +57,6 @@ module "bag_unpacker" {
 
   env_vars = {
     queue_url               = "${module.bag_unpacker_queue.url}"
-    queue_parallelism       = "10"
     destination_bucket_name = "${var.ingest_bucket_name}"
     ingest_topic_arn        = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bag_unpacker_output_topic.arn}"
@@ -65,6 +64,14 @@ module "bag_unpacker" {
     operation_name          = "unpacking"
     logstash_host           = "${local.logstash_host}"
     JAVA_OPTS               = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_unpacker_service_name}"
+
+    # If you run the unpacker with too much parallelism, it gets overwhelmed
+    # and tries to open too many HTTP connections.  You get this error:
+    #
+    #     com.amazonaws.SdkClientException: Unable to execute HTTP request:
+    #     Timeout waiting for connection from pool
+    #
+    queue_parallelism = 5
   }
 
   env_vars_length = 9
