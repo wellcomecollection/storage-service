@@ -36,6 +36,13 @@ module "ingests_input_queue" {
 
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
+
+  # Updates sent to the ingests monitor can fail with a ConditionalUpdate error
+  # if multiple updates arrive at the same time, and eventually land on the DLQ.
+  #
+  # We should fix this properly, but for now we just retry this queue more
+  # times until they eventually go through.
+  max_receive_count = 10
 }
 
 module "ingests_output_topic" {
