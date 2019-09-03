@@ -71,7 +71,7 @@ module "bag_unpacker" {
     #     com.amazonaws.SdkClientException: Unable to execute HTTP request:
     #     Timeout waiting for connection from pool
     #
-    queue_parallelism = 5
+    queue_parallelism = 3
   }
 
   env_vars_length = 9
