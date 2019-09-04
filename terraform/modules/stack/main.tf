@@ -80,8 +80,8 @@ module "bag_unpacker" {
   cpu    = 2048
   memory = 4096
 
-  min_capacity = "1"
-  max_capacity = "10"
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   container_image = "${local.bag_unpacker_image}"
 
@@ -120,8 +120,8 @@ module "bag_root_finder" {
   cpu    = 512
   memory = 1024
 
-  min_capacity = 1
-  max_capacity = 10
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   container_image = "${local.bag_root_finder_image}"
 
@@ -160,8 +160,8 @@ module "bag_verifier_pre_replication" {
   cpu    = 2048
   memory = 4096
 
-  min_capacity = "1"
-  max_capacity = "10"
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   container_image = "${local.bag_verifier_image}"
 
@@ -206,8 +206,8 @@ module "bag_versioner" {
   cpu    = 512
   memory = 1024
 
-  min_capacity = 1
-  max_capacity = 10
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   container_image = "${local.bag_versioner_image}"
 
@@ -331,8 +331,8 @@ module "replica_aggregator" {
 
   env_vars_length = 9
 
-  min_capacity = 1
-  max_capacity = 10
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   container_image = "${local.replica_aggregator_image}"
 
@@ -366,8 +366,8 @@ module "bag_register" {
 
   env_vars_length = 10
 
-  min_capacity = "1"
-  max_capacity = "10"
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   container_image = "${local.bag_register_image}"
 
@@ -432,8 +432,8 @@ module "ingests" {
 
   env_vars_length = 7
 
-  min_capacity = "1"
-  max_capacity = "10"
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   container_image = "${local.ingests_image}"
 

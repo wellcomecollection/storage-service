@@ -16,6 +16,9 @@ module "stack_prod" {
   desired_bagger_count  = 3
   desired_ec2_instances = 1
 
+  min_capacity = 1
+  max_capacity = 10
+
   vpc_id   = "${local.vpc_id}"
   vpc_cidr = "${local.vpc_cidr}"
 
