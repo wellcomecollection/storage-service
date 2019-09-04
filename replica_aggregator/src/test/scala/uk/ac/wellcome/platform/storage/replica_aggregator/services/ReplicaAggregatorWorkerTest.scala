@@ -348,18 +348,19 @@ class ReplicaAggregatorWorkerTest
           )
         }
 
-      whenReady(future) { result: Seq[IngestStepResult[ReplicationAggregationSummary]] =>
-        // Exact numbers will vary between different runs; we just want to
-        // check that:
-        //
-        //  - At least one aggregation succeeded
-        //  - At least one payload was retried
-        //  - None of the payloads were failed
-        //
-        result.find { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 'defined
-        result.find { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 'defined
+      whenReady(future) {
+        result: Seq[IngestStepResult[ReplicationAggregationSummary]] =>
+          // Exact numbers will vary between different runs; we just want to
+          // check that:
+          //
+          //  - At least one aggregation succeeded
+          //  - At least one payload was retried
+          //  - None of the payloads were failed
+          //
+          result.find { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 'defined
+          result.find { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 'defined
 
-        result.find { _.isInstanceOf[IngestFailed[_]] } shouldBe None
+          result.find { _.isInstanceOf[IngestFailed[_]] } shouldBe None
       }
     }
   }
