@@ -41,8 +41,8 @@ module "bag_replicator" {
   cpu    = 1024
   memory = 2048
 
-  min_capacity = 1
-  max_capacity = 10
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   container_image = "${var.bag_replicator_image}"
 
@@ -80,8 +80,8 @@ module "bag_verifier" {
   cpu    = 1024
   memory = 2048
 
-  min_capacity = 1
-  max_capacity = 10
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   container_image = "${var.bag_verifier_image}"
 

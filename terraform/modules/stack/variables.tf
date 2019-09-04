@@ -126,5 +126,4 @@ variable "desired_ingests_api_count" {
 variable "archivematica_ingests_bucket" {}
 
 variable "min_capacity" {}
-
 variable "max_capacity" {}

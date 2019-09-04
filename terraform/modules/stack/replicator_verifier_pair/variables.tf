@@ -47,3 +47,6 @@ variable "bag_verifier_image" {}
 # Messaging
 
 variable "dlq_alarm_arn" {}
+
+variable "min_capacity" {}
+variable "max_capacity" {}

@@ -254,6 +254,9 @@ module "replicator_verifier_primary" {
   bag_replicator_image = "${local.bag_replicator_image}"
   bag_verifier_image   = "${local.bag_verifier_image}"
 
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
+
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 
   aws_region = "${var.aws_region}"
@@ -298,6 +301,9 @@ module "replicator_verifier_glacier" {
 
   bag_replicator_image = "${local.bag_replicator_image}"
   bag_verifier_image   = "${local.bag_verifier_image}"
+
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 
@@ -401,6 +407,9 @@ module "notifier" {
   }
 
   env_vars_length = 6
+
+  min_capacity = "${var.min_capacity}"
+  max_capacity = "${var.max_capacity}"
 
   container_image = "${local.notifier_image}"
 
