@@ -349,8 +349,17 @@ class ReplicaAggregatorWorkerTest
         }
 
       whenReady(future) { result: Seq[IngestStepResult[ReplicationAggregationSummary]] =>
-        result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 1
-        result.count { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 2
+        // Exact numbers will vary between different runs; we just want to
+        // check that:
+        //
+        //  - At least one aggregation succeeded
+        //  - At least one payload was retried
+        //  - None of the payloads were failed
+        //
+        result.find { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 'defined
+        result.find { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 'defined
+
+        result.find { _.isInstanceOf[IngestFailed[_]] } shouldBe None
       }
     }
   }
