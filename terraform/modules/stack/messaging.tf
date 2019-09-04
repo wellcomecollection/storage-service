@@ -274,6 +274,10 @@ module "replica_aggregator_input_queue" {
 
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
+
+  # The aggregator may have to retry messages if two replicas complete
+  # at the same time, so we need to be able to receive messages more than once.
+  max_receive_count = 3
 }
 
 module "replica_aggregator_output_topic" {

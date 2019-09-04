@@ -1,10 +1,16 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
+import java.time.Instant
+
+import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scanamo.auto._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.{
   KnownReplicasPayload,
+  ReplicaResultPayload,
   VersionedBagRootPayload
 }
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
@@ -14,8 +20,13 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
+import uk.ac.wellcome.storage.store.dynamo.DynamoSingleVersionStore
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class ReplicaAggregatorWorkerTest
     extends FunSpec
@@ -23,6 +34,8 @@ class ReplicaAggregatorWorkerTest
     with PayloadGenerators
     with IngestUpdateAssertions
     with ReplicaAggregatorFixtures
+    with DynamoFixtures
+    with ScalaFutures
     with TryValues {
 
   describe("if there are enough replicas") {
@@ -218,7 +231,7 @@ class ReplicaAggregatorWorkerTest
           id: ReplicaPath
         )(t: AggregatorInternalRecord)(f: UpdateFunction): UpdateEither =
           Left(
-            new UpdateWriteError(StoreWriteError(throwable)) with RetryableError
+            UpdateWriteError(new StoreWriteError(throwable) with RetryableError)
           )
       }
 
@@ -261,6 +274,94 @@ class ReplicaAggregatorWorkerTest
           "Aggregating replicas retrying"
         )
       )
+    }
+  }
+
+  override def createTable(table: DynamoFixtures.Table): DynamoFixtures.Table =
+    createTableWithHashRangeKey(
+      table,
+      hashKeyName = "id",
+      hashKeyType = ScalarAttributeType.S,
+      rangeKeyName = "version",
+      rangeKeyType = ScalarAttributeType.N
+    )
+
+  it("handles ConditionalUpdate errors from DynamoDB") {
+    val ingests = new MemoryMessageSender()
+    val outgoing = new MemoryMessageSender()
+
+    val version = createBagVersion
+    val path = randomAlphanumeric
+    val locations = Seq(
+      createPrimaryLocationWith(
+        prefix = ObjectLocationPrefix(
+          namespace = randomAlphanumeric,
+          path = path
+        )
+      ),
+      createSecondaryLocationWith(
+        prefix = ObjectLocationPrefix(
+          namespace = randomAlphanumeric,
+          path = path
+        )
+      ),
+      createSecondaryLocationWith(
+        prefix = ObjectLocationPrefix(
+          namespace = randomAlphanumeric,
+          path = path
+        )
+      )
+    )
+
+    val context = createPipelineContext
+
+    val payloads = locations.map { storageLocation =>
+      ReplicaResultPayload(
+        context = context,
+        replicaResult = ReplicaResult(
+          storageLocation = storageLocation,
+          timestamp = Instant.now
+        ),
+        version = version
+      )
+    }
+
+    withLocalDynamoDbTable { table =>
+      val versionedStore =
+        new DynamoSingleVersionStore[ReplicaPath, AggregatorInternalRecord](
+          createDynamoConfigWith(table)
+        )
+
+      val future: Future[Seq[IngestStepResult[ReplicationAggregationSummary]]] =
+        withReplicaAggregatorWorker(
+          versionedStore = versionedStore,
+          ingests = ingests,
+          outgoing = outgoing,
+          expectedReplicaCount = 3
+        ) { service =>
+          Future.sequence(
+            payloads.map { payload =>
+              Future.successful(()).flatMap { _ =>
+                Future.fromTry(service.processMessage(payload))
+              }
+            }
+          )
+        }
+
+      whenReady(future) {
+        result: Seq[IngestStepResult[ReplicationAggregationSummary]] =>
+          // Exact numbers will vary between different runs; we just want to
+          // check that:
+          //
+          //  - At least one aggregation succeeded
+          //  - At least one payload was retried
+          //  - None of the payloads were failed
+          //
+          result.find { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 'defined
+          result.find { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 'defined
+
+          result.find { _.isInstanceOf[IngestFailed[_]] } shouldBe None
+      }
     }
   }
 }

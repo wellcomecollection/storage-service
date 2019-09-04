@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.{
   ReplicaResultPayload
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
-import uk.ac.wellcome.storage.{RetryableError, UpdateError}
+import uk.ac.wellcome.storage.{RetryableError, UpdateError, UpdateWriteError}
 
 import scala.util.{Success, Try}
 
@@ -69,7 +69,10 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     val startTime = Instant.now()
 
     val ingestStep = getKnownReplicas(payload.replicaResult) match {
-      case Left(AggregationFailure(err: RetryableError)) =>
+      // If we get a retryable error when trying to store the replica
+      // (for example, a DynamoDB ConditionalUpdate error), we want to retry
+      // it rather than failing the entire ingest.
+      case Left(AggregationFailure(UpdateWriteError(err: RetryableError))) =>
         IngestShouldRetry(
           summary = ReplicationAggregationFailed(
             e = err.e,
