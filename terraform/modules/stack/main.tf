@@ -42,7 +42,7 @@ module "logstash_transit" {
 # bag_unpacker
 
 module "bag_unpacker" {
-  source = "../modules/service/worker"
+  source = "../service/worker"
 
   security_group_ids = [
     "${aws_security_group.interservice.id}",
@@ -72,7 +72,7 @@ module "bag_unpacker" {
     #     com.amazonaws.SdkClientException: Unable to execute HTTP request:
     #     Timeout waiting for connection from pool
     #
-    queue_parallelism = 1
+    queue_parallelism = 2
   }
 
   env_vars_length = 10
@@ -91,7 +91,7 @@ module "bag_unpacker" {
 # bag root finder
 
 module "bag_root_finder" {
-  source = "../modules/service/worker"
+  source = "../service/worker"
 
   security_group_ids = [
     "${aws_security_group.interservice.id}",
@@ -131,7 +131,7 @@ module "bag_root_finder" {
 # bag_verifier
 
 module "bag_verifier_pre_replication" {
-  source = "../modules/service/worker"
+  source = "../service/worker"
 
   security_group_ids = [
     "${aws_security_group.interservice.id}",
@@ -171,7 +171,7 @@ module "bag_verifier_pre_replication" {
 # bag versioner
 
 module "bag_versioner" {
-  source = "../modules/service/worker"
+  source = "../service/worker"
 
   security_group_ids = [
     "${aws_security_group.interservice.id}",
@@ -307,7 +307,7 @@ module "replicator_verifier_glacier" {
 # replica_aggregator
 
 module "replica_aggregator" {
-  source = "../modules/service/worker"
+  source = "../service/worker"
 
   cluster_name = "${aws_ecs_cluster.cluster.name}"
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
@@ -342,7 +342,7 @@ module "replica_aggregator" {
 # bag_register
 
 module "bag_register" {
-  source = "../modules/service/worker"
+  source = "../service/worker"
 
   cluster_name = "${aws_ecs_cluster.cluster.name}"
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
@@ -377,7 +377,7 @@ module "bag_register" {
 # notifier
 
 module "notifier" {
-  source = "../modules/service/worker"
+  source = "../service/worker"
 
   security_group_ids = [
     "${aws_security_group.interservice.id}",
@@ -410,7 +410,7 @@ module "notifier" {
 # ingests
 
 module "ingests" {
-  source = "../modules/service/worker"
+  source = "../service/worker"
 
   cluster_name = "${aws_ecs_cluster.cluster.name}"
   cluster_id   = "${aws_ecs_cluster.cluster.id}"
@@ -510,7 +510,7 @@ module "api" {
 # Migration services
 
 module "bagger" {
-  source = "../modules/service/worker+nvm"
+  source = "../service/worker+nvm"
 
   service_egress_security_group_id = "${aws_security_group.service_egress.id}"
   cluster_name                     = "${aws_ecs_cluster.cluster.name}"

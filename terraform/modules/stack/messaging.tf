@@ -1,7 +1,7 @@
 # ingests
 
 module "ingests_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name = "${var.namespace}_ingests"
 
@@ -24,7 +24,7 @@ module "ingests_topic" {
 }
 
 module "ingests_input_queue" {
-  source = "../modules/queue"
+  source = "../queue"
 
   name = "${var.namespace}_ingests_input"
 
@@ -46,7 +46,7 @@ module "ingests_input_queue" {
 }
 
 module "ingests_output_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name       = "${var.namespace}_ingests_output"
   role_names = ["${module.ingests.task_role_name}"]
@@ -55,7 +55,7 @@ module "ingests_output_topic" {
 # notifier
 
 module "notifier_input_queue" {
-  source = "../modules/queue"
+  source = "../queue"
 
   name = "${var.namespace}_notifier"
 
@@ -70,14 +70,14 @@ module "notifier_input_queue" {
 # bagger
 
 module "bagger_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name       = "${var.namespace}_bagger"
   role_names = []
 }
 
 module "bagger_queue" {
-  source = "../modules/queue"
+  source = "../queue"
 
   name = "${var.namespace}_bagger"
 
@@ -90,7 +90,7 @@ module "bagger_queue" {
 }
 
 module "bagging_complete_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name       = "${var.namespace}_bagging_complete"
   role_names = ["${module.bagger.task_role_name}"]
@@ -99,7 +99,7 @@ module "bagging_complete_topic" {
 # bag_unpacker
 
 module "bag_unpacker_input_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name = "${var.namespace}_bag_unpacker_input"
 
@@ -109,7 +109,7 @@ module "bag_unpacker_input_topic" {
 }
 
 module "bag_unpacker_queue" {
-  source = "../modules/queue"
+  source = "../queue"
 
   name = "${var.namespace}_bag_unpacker_input"
 
@@ -136,7 +136,7 @@ module "bag_unpacker_queue" {
 }
 
 module "bag_unpacker_output_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name = "${var.namespace}_bag_unpacker_output"
 
@@ -148,7 +148,7 @@ module "bag_unpacker_output_topic" {
 # bag root finder
 
 module "bag_root_finder_queue" {
-  source = "../modules/queue"
+  source = "../queue"
 
   name = "${var.namespace}_bag_root_finder_input"
 
@@ -169,7 +169,7 @@ module "bag_root_finder_queue" {
 }
 
 module "bag_root_finder_output_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name = "${var.namespace}_bag_root_finder_output"
 
@@ -181,7 +181,7 @@ module "bag_root_finder_output_topic" {
 # bag_verifier pre-replication
 
 module "bag_verifier_pre_replicate_queue" {
-  source = "../modules/queue"
+  source = "../queue"
 
   name = "${var.namespace}_bag_verifier_pre_replicate_input"
 
@@ -208,7 +208,7 @@ module "bag_verifier_pre_replicate_queue" {
 }
 
 module "bag_verifier_pre_replicate_output_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name = "${var.namespace}_bag_verifier_pre_replicate_output"
 
@@ -220,7 +220,7 @@ module "bag_verifier_pre_replicate_output_topic" {
 # bag versioner
 
 module "bag_versioner_queue" {
-  source = "../modules/queue"
+  source = "../queue"
 
   name = "${var.namespace}_bag_versioner_input"
 
@@ -241,7 +241,7 @@ module "bag_versioner_queue" {
 }
 
 module "bag_versioner_output_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name = "${var.namespace}_bag_versioner_output"
 
@@ -253,7 +253,7 @@ module "bag_versioner_output_topic" {
 # replica_aggregator
 
 module "replica_aggregator_input_queue" {
-  source = "../modules/queue"
+  source = "../queue"
 
   name = "${var.namespace}_replica_aggregator_input"
 
@@ -277,7 +277,7 @@ module "replica_aggregator_input_queue" {
 }
 
 module "replica_aggregator_output_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name = "${var.namespace}_replica_aggregator_output"
 
@@ -289,7 +289,7 @@ module "replica_aggregator_output_topic" {
 # bag_register
 
 module "bag_register_input_queue" {
-  source = "../modules/queue"
+  source = "../queue"
 
   name = "${var.namespace}_bag_register_input"
 
@@ -310,7 +310,7 @@ module "bag_register_input_queue" {
 }
 
 module "bag_register_output_topic" {
-  source = "../modules/topic"
+  source = "../topic"
 
   name = "${var.namespace}_bag_register_output"
 
@@ -320,7 +320,7 @@ module "bag_register_output_topic" {
 }
 
 module "bag_register_output_queue" {
-  source = "../modules/queue"
+  source = "../queue"
 
   name = "${var.namespace}_bag_register_output"
 

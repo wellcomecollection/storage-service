@@ -1,12 +1,12 @@
 module "versioner_lock_table" {
-  source = "../modules/lock_table"
+  source = "../lock_table"
 
   namespace = "${var.namespace}"
   owner     = "versioner"
 }
 
 module "replicator_lock_table" {
-  source = "../modules/lock_table"
+  source = "../lock_table"
 
   namespace = "${var.namespace}"
   owner     = "replicator"

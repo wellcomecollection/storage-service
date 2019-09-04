@@ -1,5 +1,5 @@
 module "ingests" {
-  source = "../../../modules/service/api"
+  source = "../../../service/api"
 
   namespace = "${var.namespace}-ingests-api"
 

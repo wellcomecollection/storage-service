@@ -1,7 +1,7 @@
 # bag_replicator
 
 module "bag_replicator_input_queue" {
-  source = "../../modules/queue"
+  source = "../../queue"
 
   name = "${var.namespace}_bag_replicator_${var.replica_id}_input"
 
@@ -31,7 +31,7 @@ module "bag_replicator_input_queue" {
 }
 
 module "bag_replicator_output_topic" {
-  source = "../../modules/topic"
+  source = "../../topic"
 
   name = "${var.namespace}_bag_replicator_${var.replica_id}_output"
 
@@ -43,7 +43,7 @@ module "bag_replicator_output_topic" {
 # bag_verifier
 
 module "bag_verifier_queue" {
-  source = "../../modules/queue"
+  source = "../../queue"
 
   name = "${var.namespace}_bag_verifier_${var.replica_id}_input"
 
@@ -70,7 +70,7 @@ module "bag_verifier_queue" {
 }
 
 module "bag_verifier_output_topic" {
-  source = "../../modules/topic"
+  source = "../../topic"
 
   name = "${var.namespace}_bag_verifier_${var.replica_id}_output"
 

@@ -1,5 +1,5 @@
 module "bags" {
-  source = "../../../modules/service/api"
+  source = "../../../service/api"
 
   namespace = "${var.namespace}-bags-api"
 

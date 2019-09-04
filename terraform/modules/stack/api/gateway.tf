@@ -67,7 +67,7 @@ module "v1" {
 # Resources
 
 module "bags" {
-  source = "../../modules/resource"
+  source = "../../resource"
 
   api_id    = "${aws_api_gateway_rest_api.api.id}"
   path_part = "bags"
@@ -83,7 +83,7 @@ module "bags" {
 }
 
 module "ingests" {
-  source = "../../modules/resource"
+  source = "../../resource"
 
   api_id    = "${aws_api_gateway_rest_api.api.id}"
   path_part = "ingests"
