@@ -110,65 +110,6 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
     }
   }
 
-//  it("fails") {
-//    withLocalS3Bucket { bucket =>
-//      val length = 100000
-//      val content = Random.alphanumeric take length mkString
-//
-//      s3Client.putObject(
-//        bucket.name,
-//        "example.txt",
-//        content
-//      )
-//
-////      s3Client
-//
-//      val readerClient = s3Client
-//      val reader = new S3StreamReader {
-//        override implicit val s3Client: AmazonS3 = readerClient
-//      }
-//
-//      val stream = reader.get(ObjectLocation(bucket.name, "example.txt")).right.value.identifiedT
-//
-//      println(stream.read())
-//
-//      import sys.process._
-//      "docker restart 374c10f7e100" !
-//
-//      Thread.sleep(5000)
-//
-//      println(Codec.bytesCodec.fromStream(
-//        new InputStreamWithLength(stream, length - 1)
-//      ))
-//    }
-//  }
-//
-//  it("works") {
-//    val (archiveFile, _, _) = createTgzArchiveWithRandomFiles(
-//      fileCount = 1000
-//    )
-//
-//    withLocalS3Bucket { srcBucket =>
-//      withLocalS3Bucket { dstBucket =>
-//        withStreamStore { implicit streamStore =>
-//          withArchive(srcBucket, archiveFile) { archiveLocation =>
-//            val unpacker: S3Unpacker =
-//              new S3Unpacker()
-//
-//            val result =
-//              unpacker.unpack(
-//                ingestId = createIngestID,
-//                srcLocation = archiveLocation,
-//                dstLocation = createObjectLocationPrefixWith(dstBucket.name)
-//              )
-//
-//            println(result)
-//          }
-//        }
-//      }
-//    }
-//  }
-
   describe("includes users-facing messages if reading the archive fails") {
     it("if it gets a permissions error") {
       val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
