@@ -18,11 +18,13 @@ def get_logger(name):
     daiquiri.setup(
         level=level,
         outputs=[
-            daiquiri.output.Stream(formatter=daiquiri.formatter.ColorFormatter(
-                fmt="%(color)s[%(levelname)s] %(message)s%(color_stop)s",
-                datefmt="%H:%M:%S"
-            ))
-        ]
+            daiquiri.output.Stream(
+                formatter=daiquiri.formatter.ColorFormatter(
+                    fmt="%(color)s[%(levelname)s] %(message)s%(color_stop)s",
+                    datefmt="%H:%M:%S",
+                )
+            )
+        ],
     )
 
     return daiquiri.getLogger(name)

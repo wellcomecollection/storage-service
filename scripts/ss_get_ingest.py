@@ -25,10 +25,7 @@ logger = get_logger(__name__)
 def lookup_ingest(ingest_id):
     logger.debug("Looking up ingest ID %s", ingest_id)
 
-    api_variants = {
-        "stage": "api-stage",
-        "prod": "api",
-    }
+    api_variants = {"stage": "api-stage", "prod": "api"}
 
     for name, host in api_variants.items():
         logger.debug("Checking %s API", name)
@@ -76,10 +73,10 @@ if __name__ == "__main__":
     api_variant = "prod" if "api." in ingest["@context"] else "staging"
     print("api:\t\t%s" % api_variant)
 
-    print("source:\t\ts3://%s/%s" % (
-        ingest["sourceLocation"]["bucket"],
-        ingest["sourceLocation"]["path"],
-    ))
+    print(
+        "source:\t\ts3://%s/%s"
+        % (ingest["sourceLocation"]["bucket"], ingest["sourceLocation"]["path"])
+    )
     print("space:\t\t%s" % ingest["space"]["id"])
     print("external ID:\t%s" % ingest["bag"]["info"]["externalIdentifier"])
 
@@ -94,8 +91,10 @@ if __name__ == "__main__":
 
     for event in ingest["events"]:
         if "--timestamps" in sys.argv:
-            print("\t\t%s (%s)" % (
-                event["description"], pprint_date(event["createdDate"])))
+            print(
+                "\t\t%s (%s)"
+                % (event["description"], pprint_date(event["createdDate"]))
+            )
         else:
             print("\t\t%s" % event["description"])
 
@@ -106,8 +105,7 @@ if __name__ == "__main__":
         last_event_date = ingest["createdDate"]
 
     delta = dt.datetime.utcnow() - dt.datetime.strptime(
-        last_event_date,
-        "%Y-%m-%dT%H:%M:%S.%fZ"
+        last_event_date, "%Y-%m-%dT%H:%M:%S.%fZ"
     )
 
     print("started at:\t%s" % pprint_date(ingest["createdDate"]))
@@ -119,8 +117,10 @@ if __name__ == "__main__":
         elif 60 <= delta.seconds < 120:
             print("last event:\t%s (1 minute ago)" % last_event_date)
         elif delta.seconds < 60 * 60:
-            print("last event:\t%s (%d minutes ago)" % (
-                last_event_date, int(delta.seconds / 60)))
+            print(
+                "last event:\t%s (%d minutes ago)"
+                % (last_event_date, int(delta.seconds / 60))
+            )
         else:
             print("last event:\t%s" % last_event_date)
 
@@ -142,15 +142,18 @@ if __name__ == "__main__":
         print("")
 
         try:
-            print("    python3 ss_get_bag.py %s %s %s" % (
-                ingest["space"]["id"],
-                ingest["bag"]["info"]["externalIdentifier"],
-                ingest["bag"]["info"]["version"]
-            ))
+            print(
+                "    python3 ss_get_bag.py %s %s %s"
+                % (
+                    ingest["space"]["id"],
+                    ingest["bag"]["info"]["externalIdentifier"],
+                    ingest["bag"]["info"]["version"],
+                )
+            )
         except KeyError:
-            print("    python3 ss_get_bag.py %s %s" % (
-                ingest["space"]["id"],
-                ingest["bag"]["info"]["externalIdentifier"]
-            ))
+            print(
+                "    python3 ss_get_bag.py %s %s"
+                % (ingest["space"]["id"], ingest["bag"]["info"]["externalIdentifier"])
+            )
 
     sys.exit(0)

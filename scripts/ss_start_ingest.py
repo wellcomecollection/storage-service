@@ -45,8 +45,7 @@ def get_s3_resource(role_arn):
     # Call the assume_role method of the STSConnection object and pass the role
     # ARN and a role session name.
     assumed_role_object = sts_client.assume_role(
-        RoleArn=role_arn,
-        RoleSessionName="AssumeRoleSession1"
+        RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
     )
 
     # From the response that contains the assumed role, get the temporary
@@ -71,9 +70,7 @@ if __name__ == "__main__":
 
     logger.debug("Creating ingest for file %s", filename)
 
-    s3 = get_s3_resource(
-        role_arn="arn:aws:iam::975596993436:role/storage-read_only"
-    )
+    s3 = get_s3_resource(role_arn="arn:aws:iam::975596993436:role/storage-read_only")
 
     buckets = {
         "prod": "wellcomecollection-storage-bagger-drop",
@@ -84,7 +81,10 @@ if __name__ == "__main__":
         try:
             s3.Object(bucket_name, filename).load()
         except ClientError as err:
-            if str(err) == "An error occurred (404) when calling the HeadObject operation: Not Found":
+            if (
+                str(err)
+                == "An error occurred (404) when calling the HeadObject operation: Not Found"
+            ):
                 logger.debug("Didn't find object in bucket %s", bucket_name)
                 continue
             else:
@@ -98,8 +98,7 @@ if __name__ == "__main__":
         logger.info("Detected bucket as %s", buckets[api])
     except NameError:
         logger.error(
-            "Could not find object in buckets! %s",
-            ", ".join(buckets.values())
+            "Could not find object in buckets! %s", ", ".join(buckets.values())
         )
         sys.exit(1)
 
@@ -131,12 +130,12 @@ if __name__ == "__main__":
         space_id=space_id,
         s3_bucket=buckets[api],
         s3_key=filename,
-        external_identifier=external_identifier
+        external_identifier=external_identifier,
     )
 
     logger.debug("Ingest created at URL %s", location)
     logger.info("Ingest has ID %s", location.split("/")[-1])
     logger.info(
         "To look up the ingest:\n\n\tpython3 ss_get_ingest.py %s",
-        location.split("/")[-1]
+        location.split("/")[-1],
     )
