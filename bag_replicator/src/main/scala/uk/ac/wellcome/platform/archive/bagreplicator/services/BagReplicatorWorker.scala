@@ -105,7 +105,8 @@ class BagReplicatorWorker[
   def replicate(
     bagReplicationRequest: BagReplicationRequest
   ): Try[IngestStepResult[BagReplicationSummary[BagReplicationRequest]]] =
-    bagReplicator.replicateBag(bagReplicationRequest)
+    bagReplicator
+      .replicateBag(bagReplicationRequest)
       .map {
         case BagReplicationSucceeded(summary) =>
           IngestStepSucceeded(summary)

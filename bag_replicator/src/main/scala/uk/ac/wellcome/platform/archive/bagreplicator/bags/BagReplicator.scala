@@ -41,11 +41,12 @@ class BagReplicator(
     // appropriate BagReplicationFailed type.
 
     val result: Try[ReplicationResult] = for {
-      replicationResult: ReplicationResult <-
-        replicator.replicate(bagRequest.request) match {
-          case success: ReplicationSucceeded => Success(success)
-          case ReplicationFailed(_, e)       => Failure(e)
-        }
+      replicationResult: ReplicationResult <- replicator.replicate(
+        bagRequest.request
+      ) match {
+        case success: ReplicationSucceeded => Success(success)
+        case ReplicationFailed(_, e)       => Failure(e)
+      }
 
       _ <- checkTagManifestsAreTheSame(
         srcPrefix = bagRequest.request.srcPrefix,
