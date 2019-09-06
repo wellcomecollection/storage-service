@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import org.scanamo.auto._
+import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
@@ -32,9 +33,9 @@ import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-import scala.concurrent.{ExecutionContextExecutor, Future}
 
-import org.scanamo.time.JavaTimeFormats._
+import scala.concurrent.ExecutionContextExecutor
+import scala.util.Try
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -66,7 +67,7 @@ object Main extends WellcomeTypesafeApp {
       OperationNameBuilder.getName(config)
 
     val lockingService =
-      new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Future]()
+      new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Try]()
 
     val replicator = new S3Replicator()
 

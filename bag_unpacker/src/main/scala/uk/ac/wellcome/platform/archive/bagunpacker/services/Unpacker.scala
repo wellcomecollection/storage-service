@@ -151,7 +151,7 @@ trait Unpacker extends Logging {
     }
 
     debug(
-      s"Uploading archive entry ${archiveEntry.getName} to ${uploadLocation}"
+      s"Uploading archive entry ${archiveEntry.getName} to $uploadLocation"
     )
 
     put(uploadLocation)(

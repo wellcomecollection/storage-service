@@ -10,24 +10,22 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationResult,
   ReplicationSucceeded
 }
-import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 class BagReplicator(
   replicator: Replicator
 )(
   implicit
-  ec: ExecutionContext,
   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) {
 
   def replicateBag(
     bagRequest: BagReplicationRequest
-  ): Future[BagReplicationResult[BagReplicationRequest]] = {
+  ): Try[BagReplicationResult[BagReplicationRequest]] = {
     val startTime = Instant.now()
 
     val bagSummary = BagReplicationSummary(
@@ -42,13 +40,13 @@ class BagReplicator(
     // We catch the throwable at the bottom and wrap it back into the
     // appropriate BagReplicationFailed type.
 
-    val result: Future[ReplicationResult] = for {
-      replicationResult: ReplicationResult <- replicator
-        .replicate(bagRequest.request)
-        .map {
-          case success: ReplicationSucceeded => success
-          case ReplicationFailed(_, e)       => throw e
-        }
+    val result: Try[ReplicationResult] = for {
+      replicationResult: ReplicationResult <- replicator.replicate(
+        bagRequest.request
+      ) match {
+        case success: ReplicationSucceeded => Success(success)
+        case ReplicationFailed(_, e)       => Failure(e)
+      }
 
       _ <- checkTagManifestsAreTheSame(
         srcPrefix = bagRequest.request.srcPrefix,
@@ -82,7 +80,7 @@ class BagReplicator(
   private def checkTagManifestsAreTheSame(
     srcPrefix: ObjectLocationPrefix,
     dstPrefix: ObjectLocationPrefix
-  ): Future[Unit] = Future {
+  ): Try[Unit] = Try {
     val manifests =
       for {
         srcManifest <- streamStore.get(

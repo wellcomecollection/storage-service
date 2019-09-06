@@ -2,8 +2,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.bags
 
 import java.time.Instant
 
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{Assertion, FunSpec, Matchers}
+import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
   BagReplicationFailed,
   BagReplicationSucceeded,
@@ -18,27 +17,23 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
 }
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagBuilder
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.transfer.s3.{S3PrefixTransfer, S3Transfer}
 import uk.ac.wellcome.storage.transfer.{
   TransferFailure,
   TransferPerformed,
   TransferSuccess
 }
-import uk.ac.wellcome.storage.transfer.s3.{S3PrefixTransfer, S3Transfer}
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 class BagReplicatorTest
     extends FunSpec
     with Matchers
     with S3Fixtures
     with BagReplicatorFixtures
-    with ScalaFutures
-    with IntegrationPatience {
+    with TryValues {
   val replicator: S3Replicator = new S3Replicator()
 
   implicit val streamStore: S3StreamStore = new S3StreamStore()
@@ -64,17 +59,15 @@ class BagReplicatorTest
         )
       )
 
-      val future = bagReplicator.replicateBag(request)
+      val result = bagReplicator.replicateBag(request).success.value
 
-      whenReady(future) { result =>
-        result shouldBe a[BagReplicationSucceeded[_]]
-        result.summary.request shouldBe request
+      result shouldBe a[BagReplicationSucceeded[_]]
+      result.summary.request shouldBe request
 
-        verifyObjectsCopied(
-          srcPrefix = srcPrefix,
-          dstPrefix = dstPrefix
-        )
-      }
+      verifyObjectsCopied(
+        srcPrefix = srcPrefix,
+        dstPrefix = dstPrefix
+      )
     }
   }
 
@@ -84,34 +77,15 @@ class BagReplicatorTest
     val badReplicator: S3Replicator = new S3Replicator() {
       override def replicate(
         request: ReplicationRequest
-      ): Future[ReplicationResult] =
-        Future.successful(
-          ReplicationFailed(
-            ReplicationSummary(
-              startTime = Instant.now,
-              maybeEndTime = Option(Instant.now),
-              request = request
-            ),
-            e = underlyingErr
-          )
+      ): ReplicationResult =
+        ReplicationFailed(
+          ReplicationSummary(
+            startTime = Instant.now,
+            maybeEndTime = Option(Instant.now),
+            request = request
+          ),
+          e = underlyingErr
         )
-    }
-
-    assertIsFailure(
-      bagReplicator = new BagReplicator(badReplicator)
-    ) {
-      _.e shouldBe underlyingErr
-    }
-  }
-
-  it("catches an exception from the underlying replicator") {
-    val underlyingErr = new Throwable("BOOM!")
-
-    val badReplicator: S3Replicator = new S3Replicator() {
-      override def replicate(
-        request: ReplicationRequest
-      ): Future[ReplicationResult] =
-        Future.failed(underlyingErr)
     }
 
     assertIsFailure(
@@ -207,14 +181,12 @@ class BagReplicatorTest
       )
     )
 
-    val future = bagReplicator.replicateBag(request)
+    val result = bagReplicator.replicateBag(request).success.value
 
-    whenReady(future) { result =>
-      result shouldBe a[BagReplicationFailed[_]]
-      result.summary.request shouldBe request
+    result shouldBe a[BagReplicationFailed[_]]
+    result.summary.request shouldBe request
 
-      val failure = result.asInstanceOf[BagReplicationFailed[_]]
-      assert(failure)
-    }
+    val failure = result.asInstanceOf[BagReplicationFailed[_]]
+    assert(failure)
   }
 }
