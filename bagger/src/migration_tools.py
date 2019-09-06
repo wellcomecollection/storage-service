@@ -1,14 +1,17 @@
-import fire
-import aws
-import time
-import uuid
 import datetime
 import dateutil
-import settings
-import requests
 import json
-import storage_api
+import requests
+import sys
+import time
+import uuid
+
+import fire
+import aws
+
+import settings
 import dds
+import storage_api
 import status_table
 import migration_report
 from mets_filesource import bnumber_generator
@@ -255,8 +258,29 @@ def call_dds(delay, filter, total, after):
     for bnumber in bnumber_source:
         print("[")
         url = settings.DDS_GOOBI_NOTIFICATION.format(bnumber)
-        r = requests.get(url)
-        j = r.json()
+
+        try:
+            response = requests.get(url)
+
+            if(response.status_code != 200):
+                message = (
+                    f"Got non-200 response from {url}!\n"
+                    f"Status code: {response.status_code}\n"
+                    f"Raw response:\n\n[START]{response.text}[END]\n\n"
+                )
+
+                raise Exception(message)
+
+            j = response.json()
+
+        except ValueError:
+            raise Exception(f"Decoding JSON from  {url} failed for:\n {response.text}\n")
+
+        except:
+
+            print("Unexpected error:", sys.exc_info()[0])
+            raise 
+
         print(json.dumps(j, indent=4))
         print(",")
 
