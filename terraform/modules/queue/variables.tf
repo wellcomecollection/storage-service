@@ -16,7 +16,7 @@ variable "visibility_timeout_seconds" {
 }
 
 variable "max_receive_count" {
-  default = "3"
+  default = 3
 }
 
 variable "queue_high_actions" {
