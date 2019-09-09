@@ -103,10 +103,9 @@ case class VerificationIncompleteSummary(
   rootLocation: ObjectLocationPrefix,
   e: Throwable,
   startTime: Instant,
-  endTime: Instant
-) extends VerificationSummary {
-  val verification: Option[VerificationResult] = None
-}
+  endTime: Instant,
+  verification: Option[VerificationResult] = None
+) extends VerificationSummary
 
 case class VerificationSuccessSummary(
   ingestId: IngestID,
