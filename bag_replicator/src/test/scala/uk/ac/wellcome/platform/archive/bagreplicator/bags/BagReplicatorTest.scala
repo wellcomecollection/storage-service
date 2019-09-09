@@ -17,6 +17,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
 }
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.fixtures.S3BagBuilder
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
@@ -59,7 +60,13 @@ class BagReplicatorTest
         )
       )
 
-      val result = bagReplicator.replicateBag(request).success.value
+      val result = bagReplicator
+        .replicateBag(
+          ingestId = createIngestID,
+          bagRequest = request
+        )
+        .success
+        .value
 
       result shouldBe a[BagReplicationSucceeded[_]]
       result.summary.request shouldBe request
@@ -76,10 +83,12 @@ class BagReplicatorTest
 
     val badReplicator: S3Replicator = new S3Replicator() {
       override def replicate(
+        ingestId: IngestID,
         request: ReplicationRequest
       ): ReplicationResult =
         ReplicationFailed(
           ReplicationSummary(
+            ingestId = ingestId,
             startTime = Instant.now,
             maybeEndTime = Option(Instant.now),
             request = request
@@ -181,7 +190,10 @@ class BagReplicatorTest
       )
     )
 
-    val result = bagReplicator.replicateBag(request).success.value
+    val result = bagReplicator
+      .replicateBag(ingestId = createIngestID, bagRequest = request)
+      .success
+      .value
 
     result shouldBe a[BagReplicationFailed[_]]
     result.summary.request shouldBe request

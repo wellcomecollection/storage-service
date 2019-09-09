@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
+import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
@@ -67,7 +68,10 @@ class RegisterTest
       )
     }
 
+    val ingestId = createIngestID
+
     val result = register.update(
+      ingestId = ingestId,
       location = primaryLocation,
       replicas = replicas,
       version = version,
@@ -76,6 +80,12 @@ class RegisterTest
 
     it("succeeds") {
       result.success.value shouldBe a[IngestCompleted[_]]
+    }
+
+    it("uses the ingest ID in the summary") {
+      val summary =
+        result.success.value.asInstanceOf[IngestCompleted[_]].summary
+      summary.asInstanceOf[RegistrationSummary].ingestId shouldBe ingestId
     }
 
     it("stores all the locations in the dao") {
@@ -158,6 +168,7 @@ class RegisterTest
     )
 
     val result = register.update(
+      ingestId = createIngestID,
       location = location,
       replicas = Seq.empty,
       version = version,

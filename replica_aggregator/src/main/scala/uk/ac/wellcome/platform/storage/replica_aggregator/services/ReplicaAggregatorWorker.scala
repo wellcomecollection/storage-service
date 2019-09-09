@@ -75,6 +75,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       case Left(AggregationFailure(UpdateWriteError(err: RetryableError))) =>
         IngestShouldRetry(
           summary = ReplicationAggregationFailed(
+            ingestId = payload.ingestId,
             e = err.e,
             replicaPath = replicaPath,
             startTime = startTime,
@@ -86,6 +87,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       case Left(AggregationFailure(err)) =>
         IngestFailed(
           summary = ReplicationAggregationFailed(
+            ingestId = payload.ingestId,
             e = err.e,
             replicaPath = replicaPath,
             startTime = startTime,
@@ -97,6 +99,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       case Left(InsufficientReplicas(err, aggregatorRecord)) =>
         IngestStepSucceeded(
           ReplicationAggregationIncomplete(
+            ingestId = payload.ingestId,
             replicaPath = replicaPath,
             aggregatorRecord = aggregatorRecord,
             counterError = err,
@@ -111,6 +114,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       case Right(knownReplicas: KnownReplicas) =>
         IngestStepSucceeded(
           ReplicationAggregationComplete(
+            ingestId = payload.ingestId,
             replicaPath = replicaPath,
             knownReplicas = knownReplicas,
             startTime = startTime,

@@ -48,6 +48,7 @@ class BagVersioner(versionPicker: VersionPicker) {
         case Right(version) =>
           IngestStepSucceeded(
             BagVersionerSuccessSummary(
+              ingestId = ingestId,
               startTime = startTime,
               endTime = Instant.now(),
               version = version
@@ -58,6 +59,7 @@ class BagVersioner(versionPicker: VersionPicker) {
         case Left(auditError) =>
           IngestFailed(
             BagVersionerFailureSummary(
+              ingestId = ingestId,
               startTime = startTime,
               endTime = Instant.now()
             ),
