@@ -21,7 +21,10 @@ trait Replicator {
     ObjectLocation
   ]
 
-  def replicate(ingestId: IngestID, request: ReplicationRequest): ReplicationResult = {
+  def replicate(
+    ingestId: IngestID,
+    request: ReplicationRequest
+  ): ReplicationResult = {
     val summary = ReplicationSummary(
       ingestId = ingestId,
       startTime = Instant.now,

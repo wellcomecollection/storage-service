@@ -60,10 +60,13 @@ class BagReplicatorTest
         )
       )
 
-      val result = bagReplicator.replicateBag(
-        ingestId = createIngestID,
-        bagRequest = request
-      ).success.value
+      val result = bagReplicator
+        .replicateBag(
+          ingestId = createIngestID,
+          bagRequest = request
+        )
+        .success
+        .value
 
       result shouldBe a[BagReplicationSucceeded[_]]
       result.summary.request shouldBe request
@@ -187,9 +190,10 @@ class BagReplicatorTest
       )
     )
 
-    val result = bagReplicator.replicateBag(
-      ingestId = createIngestID,
-      bagRequest = request).success.value
+    val result = bagReplicator
+      .replicateBag(ingestId = createIngestID, bagRequest = request)
+      .success
+      .value
 
     result shouldBe a[BagReplicationFailed[_]]
     result.summary.request shouldBe request

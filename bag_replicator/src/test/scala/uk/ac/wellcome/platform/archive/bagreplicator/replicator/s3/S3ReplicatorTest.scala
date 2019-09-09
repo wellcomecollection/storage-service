@@ -11,7 +11,11 @@ import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
-class S3ReplicatorTest extends FunSpec with Matchers with S3Fixtures with StorageRandomThings {
+class S3ReplicatorTest
+    extends FunSpec
+    with Matchers
+    with S3Fixtures
+    with StorageRandomThings {
   it("replicates all the objects under a prefix") {
     withLocalS3Bucket { bucket =>
       val locations = (1 to 5).map { _ =>

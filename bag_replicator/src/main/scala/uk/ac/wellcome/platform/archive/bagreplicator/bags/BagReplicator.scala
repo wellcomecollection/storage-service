@@ -46,7 +46,8 @@ class BagReplicator(
 
     val result: Try[ReplicationResult] = for {
       replicationResult: ReplicationResult <- replicator.replicate(
-        ingestId = ingestId, request = bagRequest.request
+        ingestId = ingestId,
+        request = bagRequest.request
       ) match {
         case success: ReplicationSucceeded => Success(success)
         case ReplicationFailed(_, e)       => Failure(e)
