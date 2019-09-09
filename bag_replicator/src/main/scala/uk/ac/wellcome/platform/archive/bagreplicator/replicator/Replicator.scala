@@ -6,8 +6,6 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
 import uk.ac.wellcome.storage.transfer.{PrefixTransfer, TransferResult}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
-import scala.concurrent.{ExecutionContext, Future}
-
 // This is a generic replication from one location to another.
 //
 // You can extend from this trait to add context specific checks
@@ -21,9 +19,8 @@ trait Replicator {
     ObjectLocationPrefix,
     ObjectLocation
   ]
-  implicit val ec: ExecutionContext
 
-  def replicate(request: ReplicationRequest): Future[ReplicationResult] = {
+  def replicate(request: ReplicationRequest): ReplicationResult = {
     val summary = ReplicationSummary(
       startTime = Instant.now,
       request = request
@@ -32,16 +29,12 @@ trait Replicator {
     prefixTransfer.transferPrefix(
       srcPrefix = request.srcPrefix,
       dstPrefix = request.dstPrefix
-    ) map {
+    ) match {
       case Right(_) =>
         ReplicationSucceeded(summary.complete)
 
       case Left(err: TransferResult) =>
         ReplicationFailed(summary.complete, err.e)
-
-    } recover {
-      case err =>
-        ReplicationFailed(summary.complete, err)
     }
   }
 }

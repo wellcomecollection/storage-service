@@ -4,12 +4,11 @@ import java.time.Instant
 import java.util.UUID
 
 import akka.actor.ActorSystem
-import cats.instances.future._
+import cats.instances.try_._
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
@@ -31,8 +30,7 @@ import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Try}
+import scala.util.Try
 
 class BagReplicatorWorker[
   IngestDestination,
@@ -41,7 +39,7 @@ class BagReplicatorWorker[
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  lockingService: LockingService[IngestStepResult[BagReplicationSummary[_]], Future, LockDao[
+  lockingService: LockingService[IngestStepResult[BagReplicationSummary[_]], Try, LockDao[
     String,
     UUID
   ]],
@@ -53,7 +51,6 @@ class BagReplicatorWorker[
   val as: ActorSystem,
   val sc: AmazonSQSAsync,
   val wd: Decoder[VersionedBagRootPayload],
-  ec: ExecutionContext,
   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) extends IngestStepWorker[
       VersionedBagRootPayload,
@@ -65,26 +62,11 @@ class BagReplicatorWorker[
     namespace = destinationConfig.namespace
   )
 
-  override def process(
-    payload: VersionedBagRootPayload
-  ): Future[Result[BagReplicationSummary[_]]] =
-    processPayload(payload).map { toResult }
-
-  // The base trait assumes that processMessage will always return
-  // a Try; in this case we return a Future, so we override process()
-  // above and expect that this will never be used.
-  override def processMessage(
+  def processMessage(
     payload: VersionedBagRootPayload
   ): Try[IngestStepResult[BagReplicationSummary[_]]] =
-    Failure(new Throwable("This should never be called!"))
-
-  def processPayload(
-    payload: VersionedBagRootPayload
-  ): Future[IngestStepResult[BagReplicationSummary[_]]] =
     for {
-      _ <- Future.fromTry {
-        ingestUpdater.start(payload.ingestId)
-      }
+      _ <- ingestUpdater.start(payload.ingestId)
 
       srcPrefix = payload.bagRoot
 
@@ -107,37 +89,31 @@ class BagReplicatorWorker[
         }
         .map(lockFailed(replicationRequest).apply(_))
 
-      _ <- Future.fromTry {
-        ingestUpdater.send(payload.ingestId, result)
-      }
+      _ <- ingestUpdater.send(payload.ingestId, result)
 
-      _ <- Future.fromTry {
-        outgoingPublisher.sendIfSuccessful(
-          result,
-          ReplicaResultPayload(
-            context = payload.context,
-            version = payload.version,
-            replicaResult =
-              replicationRequest.toResult(destinationConfig.provider)
-          )
+      _ <- outgoingPublisher.sendIfSuccessful(
+        result,
+        ReplicaResultPayload(
+          context = payload.context,
+          version = payload.version,
+          replicaResult =
+            replicationRequest.toResult(destinationConfig.provider)
         )
-      }
+      )
     } yield result
 
   def replicate(
     bagReplicationRequest: BagReplicationRequest
-  ): Future[IngestStepResult[BagReplicationSummary[_]]] = {
-    val future: Future[BagReplicationResult[_]] =
-      bagReplicator.replicateBag(bagReplicationRequest)
+  ): Try[IngestStepResult[BagReplicationSummary[BagReplicationRequest]]] =
+    bagReplicator
+      .replicateBag(bagReplicationRequest)
+      .map {
+        case BagReplicationSucceeded(summary) =>
+          IngestStepSucceeded(summary)
 
-    future.map {
-      case BagReplicationSucceeded(summary) =>
-        IngestStepSucceeded(summary)
-
-      case BagReplicationFailed(summary, e) =>
-        IngestFailed(summary, e)
-    }
-  }
+        case BagReplicationFailed(summary, e) =>
+          IngestFailed(summary, e)
+      }
 
   /** This step is here to check the bag created by the replica and the
     * original bag are the same; the verifier can only check that a

@@ -16,8 +16,6 @@ module "bag_replicator_input_queue" {
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = "${60 * 60 * 5}"
 
-  max_receive_count = 1
-
   queue_high_actions = [
     "${module.bag_replicator.scale_up_arn}",
   ]
@@ -54,8 +52,6 @@ module "bag_verifier_queue" {
   # We keep a high visibility timeout to
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = "${60 * 60 * 5}"
-
-  max_receive_count = 1
 
   queue_high_actions = [
     "${module.bag_verifier.scale_up_arn}",

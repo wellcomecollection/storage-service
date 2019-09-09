@@ -3,14 +3,13 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import java.nio.file.Paths
 import java.util.UUID
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
-  BagReplicationSummary,
   PrimaryBagReplicationRequest,
   SecondaryBagReplicationRequest
 }
@@ -46,9 +45,11 @@ class BagReplicatorWorkerTest
     with BagReplicatorFixtures
     with IngestUpdateAssertions
     with PayloadGenerators
-    with ScalaFutures {
+    with ScalaFutures
+    with IntegrationPatience
+    with TryValues {
 
-  it("replicates a bag successfully and updates both topics") {
+  it("replicating a bag successfully") {
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
@@ -62,21 +63,17 @@ class BagReplicatorWorkerTest
       )
 
       withLocalS3Bucket { dstBucket =>
-        val future =
+        val result =
           withBagReplicatorWorker(
             bucket = dstBucket,
             ingests = ingests,
             outgoing = outgoing,
             stepName = "replicating"
           ) {
-            _.processPayload(payload)
-          }
+            _.processMessage(payload)
+          }.success.value
 
-        val serviceResult = whenReady(future) { result =>
-          result
-        }
-
-        serviceResult shouldBe a[IngestStepSucceeded[_]]
+        result shouldBe a[IngestStepSucceeded[_]]
 
         val receivedMessages =
           outgoing.getMessages[ReplicaResultPayload]
@@ -118,18 +115,15 @@ class BagReplicatorWorkerTest
         )
 
         withLocalS3Bucket { dstBucket =>
-          val future =
+          val result =
             withBagReplicatorWorker(bucket = dstBucket) {
-              _.processPayload(payload)
-            }
+              _.processMessage(payload)
+            }.success.value
 
-          whenReady(future) { serviceResult =>
-            serviceResult shouldBe a[IngestStepSucceeded[_]]
+          result shouldBe a[IngestStepSucceeded[_]]
 
-            val destination = serviceResult.summary.dstPrefix
-            destination.namespace shouldBe dstBucket.name
-          }
-
+          val destination = result.summary.dstPrefix
+          destination.namespace shouldBe dstBucket.name
         }
       }
     }
@@ -145,25 +139,23 @@ class BagReplicatorWorkerTest
             bagRoot = srcBagLocation
           )
 
-          val future =
+          val result =
             withBagReplicatorWorker(bucket = dstBucket) {
-              _.processPayload(payload)
-            }
+              _.processMessage(payload)
+            }.success.value
 
-          whenReady(future) { stepResult =>
-            stepResult shouldBe a[IngestStepSucceeded[_]]
+          result shouldBe a[IngestStepSucceeded[_]]
 
-            val dstBagLocation = stepResult.summary.dstPrefix
-            val expectedPath =
-              Paths
-                .get(
-                  payload.storageSpace.underlying,
-                  payload.externalIdentifier.toString,
-                  payload.version.toString
-                )
-                .toString
-            dstBagLocation.path shouldBe expectedPath
-          }
+          val dstBagLocation = result.summary.dstPrefix
+          val expectedPath =
+            Paths
+              .get(
+                payload.storageSpace.underlying,
+                payload.externalIdentifier.toString,
+                payload.version.toString
+              )
+              .toString
+          dstBagLocation.path shouldBe expectedPath
         }
       }
     }
@@ -191,14 +183,16 @@ class BagReplicatorWorkerTest
 
       withLocalS3Bucket { dstBucket =>
         withBagReplicatorWorker(bucket = dstBucket) { worker =>
-          val futures: Future[Seq[IngestStepResult[BagReplicationSummary[_]]]] =
-            Future.sequence(
-              (1 to 5).map { _ =>
-                worker.processPayload(payload)
+          val futures = (1 to 5).map { _ =>
+            Future.successful(()).flatMap { _ =>
+              Future.fromTry {
+                worker.processMessage(payload)
               }
-            )
+            }
+          }
 
-          whenReady(futures) { result =>
+          whenReady(Future.sequence(futures)) { result =>
+            println(result)
             result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 1
             result.count { _.isInstanceOf[IngestShouldRetry[_]] } shouldBe 4
           }
@@ -241,15 +235,21 @@ class BagReplicatorWorkerTest
               bucket = dstBucket2,
               lockServiceDao = lockServiceDao
             ) { worker2 =>
-              val futures =
-                Future.sequence(
-                  Seq(
-                    worker1.processPayload(payload),
-                    worker2.processPayload(payload)
-                  )
-                )
+              val futures = Seq(
+                Future.successful(()).flatMap { _ =>
+                  Future.fromTry {
+                    worker1.processMessage(payload)
+                  }
+                },
+                Future.successful(()).flatMap { _ =>
+                  Future.fromTry {
+                    worker2.processMessage(payload)
+                  }
+                }
+              )
 
-              whenReady(futures) { result =>
+              whenReady(Future.sequence(futures)) { result =>
+                println(result)
                 result.count { _.isInstanceOf[IngestStepSucceeded[_]] } shouldBe 2
               }
             }
@@ -381,14 +381,12 @@ class BagReplicatorWorkerTest
                 bagReplicator = bagReplicator
               )
 
-              val future = service.processPayload(payload)
+              val result = service.processMessage(payload).success.value
 
-              whenReady(future) { serviceResult =>
-                serviceResult shouldBe a[IngestFailed[_]]
+              result shouldBe a[IngestFailed[_]]
 
-                val ingestFailed = serviceResult.asInstanceOf[IngestFailed[_]]
-                ingestFailed.e.getMessage shouldBe "tagmanifest-sha256.txt in replica source and replica location do not match!"
-              }
+              val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+              ingestFailed.e.getMessage shouldBe "tagmanifest-sha256.txt in replica source and replica location do not match!"
             }
           }
         }
@@ -413,19 +411,17 @@ class BagReplicatorWorkerTest
             srcBagLocation.asLocation("tagmanifest-sha256.txt").path
           )
 
-          val future =
+          val result =
             withBagReplicatorWorker(queue, dstBucket) {
-              _.processPayload(payload)
-            }
+              _.processMessage(payload)
+            }.success.value
 
-          whenReady(future) { serviceResult =>
-            serviceResult shouldBe a[IngestFailed[_]]
+          result shouldBe a[IngestFailed[_]]
 
-            val ingestFailed = serviceResult.asInstanceOf[IngestFailed[_]]
-            ingestFailed.e.getMessage should startWith(
-              "Unable to load tagmanifest-sha256.txt in source and replica to compare:"
-            )
-          }
+          val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+          ingestFailed.e.getMessage should startWith(
+            "Unable to load tagmanifest-sha256.txt in source and replica to compare:"
+          )
         }
       }
     }
@@ -446,23 +442,20 @@ class BagReplicatorWorkerTest
       )
 
       withLocalS3Bucket { dstBucket =>
-        val future =
-          withBagReplicatorWorker(
-            bucket = dstBucket,
-            outgoing = outgoing,
-            provider = provider
-          ) {
-            _.processPayload(payload)
-          }
+        withBagReplicatorWorker(
+          bucket = dstBucket,
+          outgoing = outgoing,
+          provider = provider
+        ) {
+          _.processMessage(payload)
+        }.success.value
 
-        whenReady(future) { _ =>
-          outgoing
-            .getMessages[ReplicaResultPayload]
-            .head
-            .replicaResult
-            .storageLocation
-            .provider shouldBe provider
-        }
+        outgoing
+          .getMessages[ReplicaResultPayload]
+          .head
+          .replicaResult
+          .storageLocation
+          .provider shouldBe provider
       }
     }
   }
@@ -481,22 +474,19 @@ class BagReplicatorWorkerTest
         )
 
         withLocalS3Bucket { dstBucket =>
-          val future =
-            withBagReplicatorWorker(
-              bucket = dstBucket,
-              outgoing = outgoing,
-              requestBuilder = PrimaryBagReplicationRequest.apply
-            ) {
-              _.processPayload(payload)
-            }
+          withBagReplicatorWorker(
+            bucket = dstBucket,
+            outgoing = outgoing,
+            requestBuilder = PrimaryBagReplicationRequest.apply
+          ) {
+            _.processMessage(payload)
+          }.success.value
 
-          whenReady(future) { _ =>
-            outgoing
-              .getMessages[ReplicaResultPayload]
-              .head
-              .replicaResult
-              .storageLocation shouldBe a[PrimaryStorageLocation]
-          }
+          outgoing
+            .getMessages[ReplicaResultPayload]
+            .head
+            .replicaResult
+            .storageLocation shouldBe a[PrimaryStorageLocation]
         }
       }
     }
@@ -514,22 +504,19 @@ class BagReplicatorWorkerTest
         )
 
         withLocalS3Bucket { dstBucket =>
-          val future =
-            withBagReplicatorWorker(
-              bucket = dstBucket,
-              outgoing = outgoing,
-              requestBuilder = SecondaryBagReplicationRequest.apply
-            ) {
-              _.processPayload(payload)
-            }
+          withBagReplicatorWorker(
+            bucket = dstBucket,
+            outgoing = outgoing,
+            requestBuilder = SecondaryBagReplicationRequest.apply
+          ) {
+            _.processMessage(payload)
+          }.success.value
 
-          whenReady(future) { _ =>
-            outgoing
-              .getMessages[ReplicaResultPayload]
-              .head
-              .replicaResult
-              .storageLocation shouldBe a[SecondaryStorageLocation]
-          }
+          outgoing
+            .getMessages[ReplicaResultPayload]
+            .head
+            .replicaResult
+            .storageLocation shouldBe a[SecondaryStorageLocation]
         }
       }
     }

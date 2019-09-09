@@ -38,8 +38,7 @@ import uk.ac.wellcome.storage.locking.memory.{
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.util.Try
 
 trait BagReplicatorFixtures
     extends Akka
@@ -53,7 +52,7 @@ trait BagReplicatorFixtures
   type ReplicatorLockingService =
     LockingService[IngestStepResult[
       BagReplicationSummary[_]
-    ], Future, LockDao[String, UUID]]
+    ], Try, LockDao[String, UUID]]
 
   def createLockingServiceWith(
     lockServiceDao: LockDao[String, UUID]

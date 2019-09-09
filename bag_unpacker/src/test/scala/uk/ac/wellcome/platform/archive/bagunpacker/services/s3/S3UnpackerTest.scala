@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult
 }
-import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ClientFactory
@@ -23,6 +22,7 @@ import uk.ac.wellcome.storage.streaming.{
   InputStreamWithLength,
   InputStreamWithLengthAndMetadata
 }
+import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 
 import scala.util.Try
 
