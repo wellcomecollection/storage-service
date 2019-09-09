@@ -11,30 +11,25 @@ case class VerifiedSuccess(
 ) extends VerifiedLocation
 
 case class VerifiedFailure(
-  verifiableLocation: VerifiableLocation,
   objectLocation: Option[ObjectLocation],
-  e: Throwable
+  verificationError: VerificationError
 ) extends VerifiedLocation
 
 case object VerifiedFailure {
   def apply(
-    verifiableLocation: VerifiableLocation,
-    e: Throwable
+    verificationError: VerificationError
   ): VerifiedFailure =
     VerifiedFailure(
-      verifiableLocation = verifiableLocation,
       objectLocation = None,
-      e = e
+      verificationError= verificationError
     )
 
   def apply(
-    verifiableLocation: VerifiableLocation,
     objectLocation: ObjectLocation,
-    e: Throwable
+    verificationError: VerificationError
   ): VerifiedFailure =
     VerifiedFailure(
-      verifiableLocation = verifiableLocation,
       objectLocation = Some(objectLocation),
-      e = e
+      verificationError = verificationError
     )
 }

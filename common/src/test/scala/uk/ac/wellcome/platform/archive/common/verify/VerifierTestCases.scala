@@ -3,8 +3,7 @@ package uk.ac.wellcome.platform.archive.common.verify
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.VerifyFixtures
-import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{NotFoundError, ObjectLocation}
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 
 trait VerifierTestCases[Namespace, Context]
@@ -79,11 +78,9 @@ trait VerifierTestCases[Namespace, Context]
 
         val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-        verifiedFailure.verifiableLocation shouldBe verifiableLocation
-        verifiedFailure.e shouldBe a[LocationNotFound[_]]
-        verifiedFailure.e.getMessage should include(
-          "Location not available!"
-        )
+        verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
+        verifiedFailure.verificationError shouldBe a[VerificationReadError]
+        verifiedFailure.verificationError.asInstanceOf[VerificationReadError].error shouldBe a[NotFoundError]
       }
     }
   }
@@ -110,11 +107,9 @@ trait VerifierTestCases[Namespace, Context]
 
         val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-        verifiedFailure.verifiableLocation shouldBe verifiableLocation
-        verifiedFailure.e shouldBe a[FailedChecksumNoMatch]
-        verifiedFailure.e.getMessage should startWith(
-          s"Checksum values do not match! Expected: $checksum"
-        )
+        verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
+        verifiedFailure.verificationError shouldBe a[VerificationChecksumError]
+        verifiedFailure.verificationError.asInstanceOf[VerificationChecksumError].checksumFailure shouldBe a[FailedChecksumNoMatch]
       }
     }
   }
@@ -149,11 +144,8 @@ trait VerifierTestCases[Namespace, Context]
 
         val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-        verifiedFailure.verifiableLocation shouldBe verifiableLocation
-        verifiedFailure.e shouldBe a[Throwable]
-        verifiedFailure.e.getMessage should startWith(
-          "Lengths do not match:"
-        )
+        verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
+        verifiedFailure.verificationError shouldBe a[VerificationLengthsDoNotMatch]
       }
     }
   }

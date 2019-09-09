@@ -4,17 +4,37 @@ import java.io.InputStream
 import java.net.URI
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.{
-  LocateFailure,
-  LocationError,
-  LocationNotFound,
-  LocationParsingError
-}
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
+import uk.ac.wellcome.platform.archive.common.storage.LocateFailure
+import uk.ac.wellcome.storage.{ObjectLocation, ReadError}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.HasLength
 
 import scala.util.{Failure, Success}
+
+sealed trait VerificationError {
+  val verifiableLocation: VerifiableLocation
+}
+
+case class VerificationChecksumError(
+  verifiableLocation: VerifiableLocation,
+  checksumFailure: FailedChecksum
+) extends VerificationError
+
+case class VerificationLocationError[T](
+  verifiableLocation: VerifiableLocation,
+  locateFailure: LocateFailure[T]
+) extends VerificationError
+
+case class VerificationReadError(
+  verifiableLocation: VerifiableLocation,
+  error: ReadError
+) extends VerificationError
+
+case class VerificationLengthsDoNotMatch(
+  verifiableLocation: VerifiableLocation,
+  expectedLength: Long,
+  actualLength: Long
+) extends VerificationError
 
 trait Verifier[IS <: InputStream with HasLength] extends Logging {
   protected val streamStore: StreamStore[ObjectLocation, IS]
@@ -29,29 +49,21 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
     val eitherInputStream = for {
       objectLocation <- locate(verifiableLocation.uri) match {
         case Right(l) => Right(l)
-        case Left(e) =>
-          Left(
-            LocationParsingError(verifiableLocation, e.msg)
-          )
+        case Left(locateError) => Left(
+          VerificationLocationError(verifiableLocation, locateError)
+        )
       }
 
       inputStream <- streamStore.get(objectLocation) match {
         case Right(stream) => Right(stream.identifiedT)
-
-        case Left(_: DoesNotExistError) =>
-          Left(
-            LocationNotFound(verifiableLocation, "Location not available!")
-          )
-
-        case Left(storageError) =>
-          Left(
-            LocationError(verifiableLocation, storageError.e.getMessage)
-          )
+        case Left(readError: ReadError) => Left(
+          VerificationReadError(verifiableLocation, readError))
       }
+
     } yield (inputStream, objectLocation)
 
     val result = eitherInputStream match {
-      case Left(e) => VerifiedFailure(verifiableLocation, e = e)
+      case Left(verificationError) => VerifiedFailure(verificationError)
 
       case Right((inputStream, objectLocation)) =>
         val verifiedLocation = verifiableLocation.length match {
@@ -69,11 +81,11 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
               )
             } else {
               VerifiedFailure(
-                verifiableLocation,
                 objectLocation,
-                new Throwable(
-                  "" +
-                    s"Lengths do not match: $expectedLength != ${inputStream.available()}"
+                VerificationLengthsDoNotMatch(
+                  verifiableLocation = verifiableLocation,
+                  expectedLength = expectedLength,
+                  actualLength = inputStream.available()
                 )
               )
             }
@@ -106,20 +118,24 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
       // Failure to create a checksum (parsing/algorithm)
       case Failure(e) =>
         VerifiedFailure(
-          verifiableLocation,
           objectLocation,
-          FailedChecksumCreation(algorithm, e)
+          VerificationChecksumError(
+            verifiableLocation,
+            FailedChecksumCreation(algorithm, e)
+          )
         )
 
       // Checksum does not match that provided
       case Success(checksum) =>
         if (checksum != verifiableLocation.checksum)
           VerifiedFailure(
-            verifiableLocation,
             objectLocation,
-            FailedChecksumNoMatch(
-              actual = checksum,
-              expected = verifiableLocation.checksum
+            VerificationChecksumError(
+              verifiableLocation,
+              FailedChecksumNoMatch(
+                actual = checksum,
+                expected = verifiableLocation.checksum
+              )
             )
           )
         else

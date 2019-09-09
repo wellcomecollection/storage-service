@@ -3,13 +3,9 @@ package uk.ac.wellcome.platform.archive.common.verify.s3
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.storage.{
-  LocationError,
-  LocationNotFound
-}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{NotFoundError, ObjectLocation, StoreReadError}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.BucketNamespaceFixtures
 
@@ -61,11 +57,9 @@ class S3ObjectVerifierTest
 
     val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-    verifiedFailure.verifiableLocation shouldBe verifiableLocation
-    verifiedFailure.e shouldBe a[LocationNotFound[_]]
-    verifiedFailure.e.getMessage should include(
-      "Location not available!"
-    )
+    verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
+    verifiedFailure.verificationError shouldBe a[VerificationReadError]
+    verifiedFailure.verificationError.asInstanceOf[VerificationReadError].error shouldBe a[NotFoundError]
   }
 
   it("fails if the bucket name is invalid") {
@@ -87,9 +81,12 @@ class S3ObjectVerifierTest
 
     val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-    verifiedFailure.verifiableLocation shouldBe verifiableLocation
-    verifiedFailure.e shouldBe a[LocationError[_]]
-    verifiedFailure.e.getMessage should include(
+    verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
+    verifiedFailure.verificationError shouldBe a[VerificationReadError]
+
+    verifiedFailure.verificationError.asInstanceOf[VerificationReadError].error shouldBe a[StoreReadError]
+    verifiedFailure.verificationError.asInstanceOf[VerificationReadError]
+      .error.asInstanceOf[StoreReadError].e.getMessage should include(
       "The specified bucket is not valid"
     )
   }
@@ -114,11 +111,9 @@ class S3ObjectVerifierTest
 
       val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
-      verifiedFailure.verifiableLocation shouldBe verifiableLocation
-      verifiedFailure.e shouldBe a[LocationNotFound[_]]
-      verifiedFailure.e.getMessage should include(
-        "Location not available!"
-      )
+      verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
+      verifiedFailure.verificationError shouldBe a[VerificationReadError]
+      verifiedFailure.verificationError.asInstanceOf[VerificationReadError].error shouldBe a[NotFoundError]
     }
   }
 }
