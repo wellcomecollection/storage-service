@@ -263,7 +263,7 @@ def call_dds(delay, filter, total, after):
         try:
             response = requests.get(url)
 
-            if(response.status_code != 200):
+            if response.status_code != 200:
                 message = (
                     f"Got non-200 response from {url}!\n"
                     f"Status code: {response.status_code}\n"
@@ -275,7 +275,9 @@ def call_dds(delay, filter, total, after):
             j = response.json()
 
         except ValueError:
-            raise Exception(f"Decoding JSON from  {url} failed for:\n {response.text}\n")
+            raise Exception(
+                f"Decoding JSON from  {url} failed for:\n {response.text}\n"
+            )
 
         except Exception:
             print("Unexpected error:", sys.exc_info()[0])
