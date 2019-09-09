@@ -1,19 +1,20 @@
 import datetime
 import dateutil
 import json
-import requests
 import sys
 import time
 import uuid
 
 import fire
-import aws
+import requests
 
-import settings
+import aws
 import dds
-import storage_api
+import settings
 import status_table
+import storage_api
 import migration_report
+
 from mets_filesource import bnumber_generator
 
 
@@ -276,10 +277,9 @@ def call_dds(delay, filter, total, after):
         except ValueError:
             raise Exception(f"Decoding JSON from  {url} failed for:\n {response.text}\n")
 
-        except:
-
+        except Exception:
             print("Unexpected error:", sys.exc_info()[0])
-            raise 
+            raise
 
         print(json.dumps(j, indent=4))
         print(",")

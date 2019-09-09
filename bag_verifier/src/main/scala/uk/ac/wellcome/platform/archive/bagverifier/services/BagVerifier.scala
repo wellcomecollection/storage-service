@@ -127,7 +127,7 @@ class BagVerifier()(
       new BagVerifiable(root.asLocation())
 
     Try { bag.verify } match {
-      case Failure(err)    => Left(BagVerifierError(err))
+      case Failure(err: Throwable)    => Left(BagVerifierError(err))
       case Success(result) => Right(result)
     }
   }
