@@ -11,31 +11,6 @@ import uk.ac.wellcome.storage.streaming.HasLength
 
 import scala.util.{Failure, Success}
 
-sealed trait VerificationError {
-  val verifiableLocation: VerifiableLocation
-}
-
-case class VerificationChecksumError(
-  verifiableLocation: VerifiableLocation,
-  checksumFailure: FailedChecksum
-) extends VerificationError
-
-case class VerificationLocationError[T](
-  verifiableLocation: VerifiableLocation,
-  locateFailure: LocateFailure[T]
-) extends VerificationError
-
-case class VerificationReadError(
-  verifiableLocation: VerifiableLocation,
-  error: ReadError
-) extends VerificationError
-
-case class VerificationLengthsDoNotMatch(
-  verifiableLocation: VerifiableLocation,
-  expectedLength: Long,
-  actualLength: Long
-) extends VerificationError
-
 trait Verifier[IS <: InputStream with HasLength] extends Logging {
   protected val streamStore: StreamStore[ObjectLocation, IS]
 
