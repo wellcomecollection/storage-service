@@ -3,11 +3,26 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.net.URI
 
 import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetchEntry, BagPath, BagVersion}
-import uk.ac.wellcome.platform.archive.common.generators.{BagFileGenerators, BagGenerators, StorageLocationGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagFetchEntry,
+  BagPath,
+  BagVersion
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagFileGenerators,
+  BagGenerators,
+  StorageLocationGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  SecondaryStorageLocation,
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 

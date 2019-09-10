@@ -3,7 +3,13 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.time.Instant
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagManifest, BagPath, BagVersion, MatchedLocation}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagManifest,
+  BagPath,
+  BagVersion,
+  MatchedLocation
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
