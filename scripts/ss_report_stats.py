@@ -25,16 +25,16 @@ def draw_chart(data, colors=None):
         bar_chunks, remainder = divmod(int(count * 8 / increment), 8)
 
         # First draw the full width chunks
-        bar = '█' * bar_chunks
+        bar = "█" * bar_chunks
 
         # Then add the fractional part.  The Unicode code points for
         # block elements are (8/8), (7/8), (6/8), ... , so we need to
         # work backwards.
         if remainder > 0:
-            bar += chr(ord('█') + (8 - remainder))
+            bar += chr(ord("█") + (8 - remainder))
 
         # If the bar is empty, add a left one-eighth block
-        bar = bar or '▏'
+        bar = bar or "▏"
 
         if count == 0:
             color = "grey"
@@ -46,20 +46,12 @@ def draw_chart(data, colors=None):
 
         print(
             termcolor.colored(
-                f'{label.ljust(longest_label_length).lower()}  {count:#5d} {bar}',
-                color
+                f"{label.ljust(longest_label_length).lower()}  {count:#5d} {bar}", color
             )
         )
 
 
-
-
-data = {
-    "Accepted": 0,
-    "Failed": 0,
-    "Completed": 0,
-    "Processing": 0,
-}
+data = {"Accepted": 0, "Failed": 0, "Completed": 0, "Processing": 0}
 
 dynamodb = get_read_only_aws_resource("dynamodb").meta.client
 paginator = dynamodb.get_paginator("scan")
@@ -75,8 +67,7 @@ for page in paginator.paginate(TableName="storage-ingests"):
 
         try:
             last_event = max(
-                event["createdDate"]
-                for event in item["payload"]["events"]
+                event["createdDate"] for event in item["payload"]["events"]
             )
         except KeyError:
             last_event = item["payload"]["createdDate"]
@@ -131,10 +122,10 @@ else:
             (label, data[label])
             for label in ["Accepted", "Processing", "Completed", "Failed"]
         ],
-        colors = {
+        colors={
             "Accepted": "yellow",
             "Failed": "red",
             "Completed": "green",
             "Processing": "blue",
-        }
+        },
     )
