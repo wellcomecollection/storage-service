@@ -16,50 +16,13 @@ import os
 import re
 import sys
 
-import boto3
 from botocore.exceptions import ClientError
 import click
 
-from common import get_logger, get_storage_client
+from common import get_read_only_aws_resource, get_logger, get_storage_client
 
 
 logger = get_logger(__name__)
-
-
-def get_s3_resource(role_arn):
-    # Taken from https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-api.html
-
-    # The calls to AWS STS AssumeRole must be signed with the access key ID
-    # and secret access key of an existing IAM user or by using existing temporary
-    # credentials such as those from another role. (You cannot call AssumeRole
-    # with the access key for the root account.) The credentials can be in
-    # environment variables or in a configuration file and will be discovered
-    # automatically by the boto3.client() function. For more information, see the
-    # Python SDK documentation:
-    # http://boto3.readthedocs.io/en/latest/reference/services/sts.html#client
-
-    # create an STS client object that represents a live connection to the
-    # STS service
-    sts_client = boto3.client("sts")
-
-    # Call the assume_role method of the STSConnection object and pass the role
-    # ARN and a role session name.
-    assumed_role_object = sts_client.assume_role(
-        RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
-    )
-
-    # From the response that contains the assumed role, get the temporary
-    # credentials that can be used to make subsequent API calls
-    credentials = assumed_role_object["Credentials"]
-
-    # Use the temporary credentials that AssumeRole returns to make a
-    # connection to Amazon S3
-    return boto3.resource(
-        "s3",
-        aws_access_key_id=credentials["AccessKeyId"],
-        aws_secret_access_key=credentials["SecretAccessKey"],
-        aws_session_token=credentials["SessionToken"],
-    )
 
 
 if __name__ == "__main__":
@@ -70,7 +33,7 @@ if __name__ == "__main__":
 
     logger.debug("Creating ingest for file %s", filename)
 
-    s3 = get_s3_resource(role_arn="arn:aws:iam::975596993436:role/storage-read_only")
+    s3 = get_read_only_aws_resource("s3")
 
     buckets = {
         "prod": "wellcomecollection-storage-bagger-drop",
