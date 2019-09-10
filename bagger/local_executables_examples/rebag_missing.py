@@ -22,12 +22,14 @@ def sqs_messages(unbagged_b_numbers):
     batch_id = str(uuid.uuid4())
     for batch in chunked_iterable(unbagged_b_numbers, size=10):
         messages = [
-            json.dumps({
-                "identifier": b_number,
-                "bagger_batch_id": batch_id,
-                "bagger_filter": "unbagged",
-                "do_not_bag": False,
-            })
+            json.dumps(
+                {
+                    "identifier": b_number,
+                    "bagger_batch_id": batch_id,
+                    "bagger_filter": "unbagged",
+                    "do_not_bag": False,
+                }
+            )
             for b_number in batch
         ]
         yield messages
@@ -52,10 +54,6 @@ if __name__ == "__main__":
         sqs.send_message_batch(
             QueueUrl="https://sqs.eu-west-1.amazonaws.com/975596993436/storage_prod_bagger",
             Entries=[
-                {
-                    "Id": str(uuid.uuid4()),
-                    "MessageBody": body
-                }
-                for body in message_batch
-            ]
+                {"Id": str(uuid.uuid4()), "MessageBody": body} for body in message_batch
+            ],
         )
