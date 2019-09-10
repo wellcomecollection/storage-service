@@ -2,15 +2,9 @@ package uk.ac.wellcome.platform.archive.common.storage.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagId,
-  BagInfo,
-  BagVersion
-}
-import uk.ac.wellcome.platform.archive.common.verify.{
-  ChecksumValue,
-  HashingAlgorithm
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagInfo, BagVersion}
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, HashingAlgorithm}
 
 case class StorageManifestFile(
   checksum: ChecksumValue,
@@ -32,7 +26,8 @@ case class StorageManifest(
   tagManifest: FileManifest,
   location: StorageLocation,
   replicaLocations: Seq[StorageLocation],
-  createdDate: Instant
+  createdDate: Instant,
+  ingestId: IngestID
 ) {
   val id = BagId(space, info.externalIdentifier)
 }

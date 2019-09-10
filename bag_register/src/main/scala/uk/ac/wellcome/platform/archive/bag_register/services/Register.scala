@@ -29,6 +29,7 @@ class Register(
     version: BagVersion,
     space: StorageSpace
   ): Try[IngestStepResult[RegistrationSummary]] = {
+
     val registration = RegistrationSummary(
       ingestId = ingestId,
       startTime = Instant.now(),
@@ -44,6 +45,7 @@ class Register(
       }
 
       storageManifest <- storageManifestService.createManifest(
+        ingestId = ingestId,
         bag = bag,
         location = location,
         replicas = replicas,
