@@ -69,7 +69,7 @@ for page in paginator.paginate(TableName="storage-ingests"):
             last_event = max(
                 event["createdDate"] for event in item["payload"]["events"]
             )
-        except KeyError:
+        except (KeyError, TypeError):
             last_event = item["payload"]["createdDate"]
 
         last_event = NOW - dt.datetime.fromtimestamp(int(last_event) / 1000)

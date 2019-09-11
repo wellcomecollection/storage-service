@@ -16,6 +16,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   PrimaryStorageLocation,
   SecondaryStorageLocation,
@@ -540,6 +541,7 @@ class StorageManifestServiceTest
       val service = new StorageManifestService(brokenSizeFinder)
 
       val result = service.createManifest(
+        ingestId = createIngestID,
         bag = bag,
         location = location,
         replicas = Seq.empty,
@@ -661,6 +663,7 @@ class StorageManifestServiceTest
   }
 
   private def createManifest(
+    ingestId: IngestID = createIngestID,
     bag: Bag = createBag,
     location: PrimaryStorageLocation = createPrimaryLocationWith(
       version = BagVersion(1)
@@ -674,6 +677,7 @@ class StorageManifestServiceTest
     val service = new StorageManifestService(sizeFinder)
 
     val result = service.createManifest(
+      ingestId = ingestId,
       bag = bag,
       location = location,
       replicas = replicas,
@@ -710,6 +714,7 @@ class StorageManifestServiceTest
     )
 
   private def assertIsError(
+    ingestId: IngestID = createIngestID,
     bag: Bag = createBag,
     location: PrimaryStorageLocation = createPrimaryLocationWith(
       version = BagVersion(1)
@@ -724,6 +729,7 @@ class StorageManifestServiceTest
     val service = new StorageManifestService(sizeFinder)
 
     val result = service.createManifest(
+      ingestId = ingestId,
       bag = bag,
       location = location,
       replicas = replicas,

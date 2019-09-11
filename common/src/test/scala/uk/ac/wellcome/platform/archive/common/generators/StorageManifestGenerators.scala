@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion}
-import uk.ac.wellcome.platform.archive.common.ingests.models.StandardStorageProvider
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestID,
+  StandardStorageProvider
+}
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
@@ -29,6 +32,7 @@ trait StorageManifestGenerators
   }
 
   def createStorageManifestWith(
+    ingestId: IngestID = createIngestID,
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
     version: BagVersion = BagVersion(Random.nextInt)
@@ -64,7 +68,8 @@ trait StorageManifestGenerators
             prefix = createObjectLocationPrefix
           )
         },
-      createdDate = Instant.now
+      createdDate = Instant.now,
+      ingestId = ingestId
     )
 
   def createStorageManifest: StorageManifest =
