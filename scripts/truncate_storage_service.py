@@ -13,10 +13,7 @@ def empty_dynamodb_table(name):
 
     table = dynamodb.Table(name)
 
-    key_names = [
-        attribute["AttributeName"]
-        for attribute in table.key_schema
-    ]
+    key_names = [attribute["AttributeName"] for attribute in table.key_schema]
 
     while True:
         next_batch = table.scan()
@@ -56,7 +53,9 @@ def purge_sqs_queues(namespace):
 if __name__ == "__main__":
     service = click.prompt(
         "Which storage service would you like to truncate?",
-        confirmation_prompt=True, type=click.Choice(["stage", "prod"]), show_choices=True
+        confirmation_prompt=True,
+        type=click.Choice(["stage", "prod"]),
+        show_choices=True,
     )
 
     click.confirm("This will delete ALL ingests and ALL manifests. Are you sure?")

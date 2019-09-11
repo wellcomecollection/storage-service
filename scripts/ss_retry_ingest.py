@@ -35,9 +35,12 @@ if __name__ == "__main__":
         space_id=ingest["space"]["id"],
         s3_bucket=ingest["sourceLocation"]["bucket"],
         s3_key=ingest["sourceLocation"]["path"],
-        external_identifier=ingest["bag"]["info"]["externalIdentifier"]
+        external_identifier=ingest["bag"]["info"]["externalIdentifier"],
     )
 
     logger.info("Ingest created at URL %s", location)
     logger.info("Ingest has ID %s", location.split("/")[-1])
-    logger.info("To look up the ingest:\n\n\tpython ss_get_ingest.py %s", location.split("/")[-1])
+    logger.info(
+        "To look up the ingest:\n\n\tpython ss_get_ingest.py %s",
+        location.split("/")[-1],
+    )
