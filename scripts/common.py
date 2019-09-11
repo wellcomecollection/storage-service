@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import itertools
 import json
 import logging
 import os
@@ -85,3 +86,12 @@ def get_read_only_aws_resource(resource):
     return get_aws_resource(
         resource, role_arn="arn:aws:iam::975596993436:role/storage-read_only"
     )
+
+
+def chunked_iterable(iterable, size):
+    it = iter(iterable)
+    while True:
+        chunk = tuple(itertools.islice(it, size))
+        if not chunk:
+            break
+        yield chunk
