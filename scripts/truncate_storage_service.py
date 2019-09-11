@@ -63,7 +63,6 @@ if __name__ == "__main__":
     click.confirm("Really really sure?")
 
     print("Okay, you're sure.")
-    service = "stage"
 
     if service == "stage":
         namespace = "storage-staging"
@@ -71,6 +70,7 @@ if __name__ == "__main__":
     elif service == "prod":
         namespace = "storage"
         queue_namespace = "storage_prod"
+        non_critical_namespace = "storage-prod"
     else:
         assert 0
 
@@ -78,14 +78,21 @@ if __name__ == "__main__":
     for table_name in [
         "%s-bag_id_lookup",
         "%s-ingests",
-        "%s_replicator_lock_table",
-        "%s_versioner_lock_table",
         "%s_replicas_table",
         "%s_versioner_versions_table",
         "vhs-%s-manifests",
     ]:
         print("    - %s" % (table_name % namespace))
         empty_dynamodb_table(table_name % namespace)
+
+    for table_name in [
+        "%s_replicator_lock_table",
+        "%s_versioner_lock_table",
+    ]:
+        print("    - %s" % (table_name % non_critical_namespace))
+        empty_dynamodb_table(table_name % non_critical_namespace)
+
+
 
     print("*** Emptying S3 buckets:")
     for bucket_name in [
