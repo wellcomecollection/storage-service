@@ -24,11 +24,11 @@ sys.modules["recursive_diff.recursive_diff"]._str_trunc = str
 def slugify(u):
     # https://leancrew.com/all-this/2014/10/asciifying/
     "Convert Unicode string into blog slug."
-    u = re.sub(u'[–—/:;,.]', '-', u)  # replace separating punctuation
-    a = unidecode(u).lower()          # best ASCII substitutions, lowercased
-    a = re.sub(r'[^a-z0-9 -]', '', a) # delete any other characters
-    a = a.replace(' ', '-')           # spaces to hyphens
-    a = re.sub(r'-+', '-', a)         # condense repeated hyphens
+    u = re.sub("[–—/:;,.]", "-", u)  # replace separating punctuation
+    a = unidecode(u).lower()  # best ASCII substitutions, lowercased
+    a = re.sub(r"[^a-z0-9 -]", "", a)  # delete any other characters
+    a = a.replace(" ", "-")  # spaces to hyphens
+    a = re.sub(r"-+", "-", a)  # condense repeated hyphens
     return a
 
 
@@ -128,18 +128,21 @@ def are_these_urls_the_same_image(url1, url2):
     return diff <= 2
 
 
-@pytest.mark.parametrize('diff, expected_result', [
-    (
-        "[@id]: https://library-uat.wellcomelibrary.org/iiif/b30145004/manifest != https://wellcomelibrary.org/iiif/b30145004/manifest",
-        False
-    ),
-    ("[aB]: https://example.org/1 != https://example./org/2", False),
-    ("[ab]: https://example/1_2 != https://example/1_1", False),
-    ("[ab]: https://example/1!2 != https://example/1!1", False),
-    ("[ab]: https://example/1,2 != https://example/1,1", False),
-    ("[ab]: https://example/A != https://example/B", False),
-    ("[ab]: https://example/?a=1 != https://example/?a=2", False),
-])
+@pytest.mark.parametrize(
+    "diff, expected_result",
+    [
+        (
+            "[@id]: https://library-uat.wellcomelibrary.org/iiif/b30145004/manifest != https://wellcomelibrary.org/iiif/b30145004/manifest",
+            False,
+        ),
+        ("[aB]: https://example.org/1 != https://example./org/2", False),
+        ("[ab]: https://example/1_2 != https://example/1_1", False),
+        ("[ab]: https://example/1!2 != https://example/1!1", False),
+        ("[ab]: https://example/1,2 != https://example/1,1", False),
+        ("[ab]: https://example/A != https://example/B", False),
+        ("[ab]: https://example/?a=1 != https://example/?a=2", False),
+    ],
+)
 def test_is_different_modulo_images(diff, expected_result):
     assert is_different_modulo_images(diff) == expected_result
 
@@ -153,7 +156,7 @@ def is_different_modulo_images(diff):
     # from the list.
     m = re.search(
         r"^[\[a-zA-Z0-9@\]@]+: (?P<url1>[a-zA-Z0-9:/\-\._!,?=]+) != (?P<url2>[a-zA-Z0-9:/\-\._!,?=]+)",
-        diff
+        diff,
     )
 
     if m is None:
@@ -179,23 +182,20 @@ def is_different_modulo_images(diff):
         h_url2 = hyperlink.URL.from_text(url1)
 
         return (
-            (h_url1.scheme != h_url2.scheme) or
-            (h_url1.path != h_url2.path) or
-            (h_url1.query != h_url2.query) or
-            (h_url1.fragment != h_url2.fragment)
+            (h_url1.scheme != h_url2.scheme)
+            or (h_url1.path != h_url2.path)
+            or (h_url1.query != h_url2.query)
+            or (h_url1.fragment != h_url2.fragment)
         )
 
     if url1.startswith("https://dlcs.io") and url2.startswith("https://dlcs.io"):
         return not are_these_urls_the_same_image(
-            hyperlink.URL.from_text(url1),
-            hyperlink.URL.from_text(url2)
+            hyperlink.URL.from_text(url1), hyperlink.URL.from_text(url2)
         )
 
     print("I DON'T KNOW HOW TO COMPARE THESE URLS:")
     print(diff)
     assert 0
-
-
 
 
 def compare_uat_and_library_manifests(b_number):
