@@ -63,7 +63,6 @@ if __name__ == "__main__":
     click.confirm("Really really sure?")
 
     print("Okay, you're sure.")
-    service = "stage"
 
     if service == "stage":
         namespace = "storage-staging"
