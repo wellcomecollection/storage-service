@@ -85,14 +85,9 @@ if __name__ == "__main__":
         print("    - %s" % (table_name % namespace))
         empty_dynamodb_table(table_name % namespace)
 
-    for table_name in [
-        "%s_replicator_lock_table",
-        "%s_versioner_lock_table",
-    ]:
+    for table_name in ["%s_replicator_lock_table", "%s_versioner_lock_table"]:
         print("    - %s" % (table_name % non_critical_namespace))
         empty_dynamodb_table(table_name % non_critical_namespace)
-
-
 
     print("*** Emptying S3 buckets:")
     for bucket_name in [
