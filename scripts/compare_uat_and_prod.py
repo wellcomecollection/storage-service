@@ -47,6 +47,24 @@ def download_image(url, out_path):
     os.rename(tmp_path, out_path)
 
 
+try:
+    cached_urls = json.load(open("cached_urls.json"))
+except FileNotFoundError:
+    cached_urls = {}
+
+
+def _canonical(url):
+    # Get the canonical form of a URL, after redirects etc.
+    try:
+        cached_urls[str(url)]
+    except KeyError:
+        cached_urls[str(url)] = requests.get(url).url
+        with open("cached_urls.json", "w") as f:
+            f.write(json.dumps(cached_urls))
+
+    return str(cached_urls[str(url)])
+
+
 def are_these_urls_the_same_image(url1, url2):
     # If we have URLs to two resources in DLCS, e.g.
     #
@@ -84,11 +102,14 @@ def are_these_urls_the_same_image(url1, url2):
         if blob1 == blob2:
             return True
 
-        return (
-            blob1.pop("@id") == url1 and
-            blob2.pop("@id") == url2 and
-            blob1 == blob2
-        )
+        # TODO: Checking the "@id" refer to equivalent objects is proving tricky,
+        # so we're just assuming they're correct for now.
+        #
+        # Might be worth extra logic here.
+        del blob1["@id"]
+        del blob2["@id"]
+
+        return blob1 == blob2
 
     except ValueError:
         pass
@@ -100,7 +121,11 @@ def are_these_urls_the_same_image(url1, url2):
         print(err)
         return False
 
-    return imagehash.average_hash(im1) == imagehash.average_hash(im2)
+    # TODO: This threshhold is a bit arbitrary and might need tweaking.
+    diff = imagehash.average_hash(im1) - imagehash.average_hash(im2)
+    if diff > 5:
+        print("image diff is %d" % diff)
+    return diff <= 2
 
 
 @pytest.mark.parametrize('diff, expected_result', [
