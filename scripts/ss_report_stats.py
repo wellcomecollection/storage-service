@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import collections
 import datetime as dt
 
 import termcolor
@@ -95,14 +96,29 @@ def to_s(last_event):
 
 
 if failed:
+    for ingest_id, ingest_data in failed.items():
+        if ingest_data["description"].startswith("Unpacking failed - There is no archive at"):
+            ingest_data["description"] = "Unpacking failed - There is no archive at <src>"
+        if ingest_data["description"].startswith((
+            "Verification (Amazon Glacier) failed -",
+        )):
+            ingest_data["description"] = ingest_data["description"].split("-")[0].strip()
+
+    failed_by_reason = collections.defaultdict(list)
+
+    for (ingest_id, ingest_data) in sorted(failed.items(), key=lambda t: t[1]["date"]):
+        failed_by_reason[ingest_data["description"]].insert(0, ingest_id)
+
     print("== failed ==")
 
-    lines = [
-        "%s ~> %s" % (ingest_id, data["description"])
-        for (ingest_id, data) in sorted(failed.items(), key=lambda t: t[1]["date"])
-    ]
+    lines = []
+    for reason, ingest_ids in failed_by_reason.items():
+        lines.append("%s:" % reason)
+        for i_id in ingest_ids:
+            lines.append("  %s" % i_id)
+        lines.append("")
 
-    print(termcolor.colored("\n".join(lines), "red"))
+    print(termcolor.colored("\n".join(lines).strip(), "red"))
     print("== failed ==\n")
 
 if processing:
