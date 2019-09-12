@@ -80,7 +80,7 @@ for page in paginator.paginate(TableName="storage-ingests"):
         if status == "Failed":
             failed[ingest_id] = {
                 "date": last_event,
-                "description": item["payload"]["events"][-1]["description"]
+                "description": item["payload"]["events"][-1]["description"],
             }
         if status == "Processing":
             processing[ingest_id] = last_event
@@ -97,12 +97,18 @@ def to_s(last_event):
 
 if failed:
     for ingest_id, ingest_data in failed.items():
-        if ingest_data["description"].startswith("Unpacking failed - There is no archive at"):
-            ingest_data["description"] = "Unpacking failed - There is no archive at <src>"
-        if ingest_data["description"].startswith((
-            "Verification (Amazon Glacier) failed -",
-        )):
-            ingest_data["description"] = ingest_data["description"].split("-")[0].strip()
+        if ingest_data["description"].startswith(
+            "Unpacking failed - There is no archive at"
+        ):
+            ingest_data[
+                "description"
+            ] = "Unpacking failed - There is no archive at <src>"
+        if ingest_data["description"].startswith(
+            ("Verification (Amazon Glacier) failed -",)
+        ):
+            ingest_data["description"] = (
+                ingest_data["description"].split("-")[0].strip()
+            )
 
     failed_by_reason = collections.defaultdict(list)
 
