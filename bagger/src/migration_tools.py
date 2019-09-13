@@ -232,19 +232,26 @@ def do_ingest(delay, filter):
     batch_id = str(uuid.uuid4())
     print("[")
     for bnumber in bnumber_generator(filter):
-        ingest = storage_api.ingest(bnumber)
-        status_table.record_data(
-            bnumber,
-            {
-                "ingest_start": status_table.activity_timestamp(),
-                "ingest_batch_id": batch_id,
-                "ingest_filter": filter,
-            },
-        )
-        print(json.dumps(ingest, default=json_default, indent=4))
-        print(",")
-        if delay > 0:
-            time.sleep(delay)
+
+        ingest_response = storage_api.get_ingest_for_identifier(bnumber)
+        already_ingested = bool(ingest_response)
+
+        if(not already_ingested):
+            ingest = storage_api.ingest(bnumber)
+            status_table.record_data(
+                bnumber,
+                {
+                    "ingest_start": status_table.activity_timestamp(),
+                    "ingest_batch_id": batch_id,
+                    "ingest_filter": filter,
+                },
+            )
+            print(json.dumps(ingest, default=json_default, indent=4))
+            print(",")
+            if delay > 0:
+                time.sleep(delay)
+        else:
+            print(json.dumps(ingest_response, default=json_default, indent=4))
     print('"end"')
     print("]")
 

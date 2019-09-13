@@ -78,7 +78,7 @@ if __name__ == "__main__":
     )
     oauth_creds = json.load(open(creds_path))
 
-    space_id = "-".join([getpass.getuser(), "testing"])
+    space_id = "digitised"
     space_id = click.prompt("Storage space?", default=space_id)
     logger.info("Using storage space %s", space_id)
 
