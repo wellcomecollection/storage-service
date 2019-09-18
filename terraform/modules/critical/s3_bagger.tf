@@ -4,7 +4,7 @@ resource "aws_s3_bucket" "bagger_drop" {
 
   lifecycle_rule {
     expiration {
-      days = "30"
+      days = 90
     }
 
     enabled = true
@@ -17,7 +17,7 @@ resource "aws_s3_bucket" "bagger_drop_mets_only" {
 
   lifecycle_rule {
     expiration {
-      days = "30"
+      days = 90
     }
 
     enabled = true
