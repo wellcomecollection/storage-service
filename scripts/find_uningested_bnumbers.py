@@ -31,8 +31,9 @@ if __name__ == "__main__":
     ingested_bnumbers = set(get_ingested_bnumbers(ingests_json))
     mets_bnumbers = set(get_mets_bnumbers(bnumbers_txt))
 
-    assert not ingested_bnumbers - mets_bnumbers, \
-        f"We've ingested b numbers the bagger doesn't recognise: {ingested_bnumbers - mets_bnumbers}"
+    assert (
+        not ingested_bnumbers - mets_bnumbers
+    ), f"We've ingested b numbers the bagger doesn't recognise: {ingested_bnumbers - mets_bnumbers}"
 
     for b_number in sorted(mets_bnumbers - ingested_bnumbers):
         print(b_number)

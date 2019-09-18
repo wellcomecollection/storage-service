@@ -19,7 +19,7 @@ if __name__ == "__main__":
     dynamodb = get_read_only_aws_resource("dynamodb").meta.client
     paginator = dynamodb.get_paginator("scan")
 
-    date_slug = dt.datetime.now().strftime('%Y-%m-%d_%H-%m')
+    date_slug = dt.datetime.now().strftime("%Y-%m-%d_%H-%m")
     out_path = f"ingests__{date_slug}.json"
 
     with open(out_path, "w") as outfile:
