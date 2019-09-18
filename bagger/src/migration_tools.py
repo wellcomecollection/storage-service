@@ -240,7 +240,7 @@ def do_ingest(delay, filter):
         ingest_response = storage_api.get_ingest_for_identifier(bnumber)
         already_ingested = bool(ingest_response)
 
-        if(not already_ingested):
+        if not already_ingested:
             ingest = storage_api.ingest(bnumber)
             status_table.record_data(
                 bnumber,
