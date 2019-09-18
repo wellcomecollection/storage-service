@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import collections
 import datetime as dt
+import json
+import sys
 
 import termcolor
-
-from common import get_read_only_aws_resource
 
 
 def draw_chart(data, colors=None):
@@ -46,23 +47,44 @@ def draw_chart(data, colors=None):
 
         print(
             termcolor.colored(
-                f"{label.ljust(longest_label_length).lower()}  {count:#5d} {bar}", color
+                f"{label.ljust(longest_label_length).lower()}  {count:#6d} {bar}", color
             )
         )
 
 
-data = {"Accepted": 0, "Failed": 0, "Completed": 0, "Processing": 0}
+def to_s(last_event):
+    if last_event.days > 0 and last_event.seconds > 3600:
+        return "%dd %dh" % (last_event.days, last_event.seconds // 3600)
+    elif last_event.days > 0:
+        return "%dd %ds" % (last_event.days, last_event.seconds)
+    else:
+        return "%ds" % (last_event.seconds)
 
-dynamodb = get_read_only_aws_resource("dynamodb").meta.client
-paginator = dynamodb.get_paginator("scan")
 
-failed = {}
-processing = {}
+if __name__ == "__main__":
+    try:
+        ingests_dump = sys.argv[1]
+    except IndexError:
+        sys.exit(f"Usage: {__file__} <INGESTS_JSON_DUMP>")
 
-NOW = dt.datetime.now()
+    KNOWN_FAILURES = {line.strip() for line in open("known_failures.txt")}
 
-for page in paginator.paginate(TableName="storage-ingests"):
-    for item in page["Items"]:
+    def all_ingests():
+        with open(ingests_dump) as f:
+            for line in f:
+                ingest = json.loads(line)
+                if ingest["id"] in KNOWN_FAILURES:
+                    continue
+                yield ingest
+
+    data = {"Accepted": 0, "Failed": 0, "Completed": 0, "Processing": 0}
+
+    failed = {}
+    processing = {}
+
+    NOW = dt.datetime.now()
+
+    for item in all_ingests():
         status = item["payload"]["status"]
 
         try:
@@ -77,55 +99,72 @@ for page in paginator.paginate(TableName="storage-ingests"):
         ingest_id = item["id"]
 
         if status == "Failed":
-            failed[ingest_id] = last_event
+            failed[ingest_id] = {
+                "date": last_event,
+                "description": item["payload"]["events"][-1]["description"],
+            }
         if status == "Processing":
             processing[ingest_id] = last_event
 
         data[status] += 1
 
+    if failed:
+        for ingest_id, ingest_data in failed.items():
+            if ingest_data["description"].startswith(
+                "Unpacking failed - There is no archive at"
+            ):
+                ingest_data[
+                    "description"
+                ] = "Unpacking failed - There is no archive at <src>"
+            if ingest_data["description"].startswith(
+                ("Verification (Amazon Glacier) failed -",)
+            ):
+                ingest_data["description"] = (
+                    ingest_data["description"].split("-")[0].strip()
+                )
 
-def to_s(last_event):
-    if last_event.days > 0:
-        return "%dd %ds" % (last_event.days, last_event.seconds)
+        failed_by_reason = collections.defaultdict(list)
+
+        for (ingest_id, ingest_data) in sorted(
+            failed.items(), key=lambda t: t[1]["date"]
+        ):
+            failed_by_reason[ingest_data["description"]].insert(0, ingest_id)
+
+        print("== failed ==")
+
+        lines = []
+        for reason, ingest_ids in failed_by_reason.items():
+            lines.append("%s:" % reason)
+            for i_id in ingest_ids:
+                lines.append("  %s" % i_id)
+            lines.append("")
+
+        print(termcolor.colored("\n".join(lines), "red"))
+        print("== failed ==\n")
+
+    if processing:
+        print("== processing ==")
+
+        lines = [
+            "%s ~> %s" % (ingest_id, to_s(date))
+            for (ingest_id, date) in sorted(processing.items(), key=lambda t: t[1])
+        ]
+
+        print(termcolor.colored("\n".join(lines[-5:]), "blue"))
+        print("== processing ==\n")
+
+    if all(v == 0 for v in data.values()):
+        print("No ingests!")
     else:
-        return "%ds" % (last_event.seconds)
-
-
-if failed:
-    print("== failed ==")
-
-    lines = [
-        "%s ~> %s" % (ingest_id, to_s(date))
-        for (ingest_id, date) in sorted(failed.items(), key=lambda t: t[1])
-    ]
-
-    print(termcolor.colored("\n".join(lines[-5:]), "red"))
-    print("== failed ==\n")
-
-if processing:
-    print("== processing ==")
-
-    lines = [
-        "%s ~> %s" % (ingest_id, to_s(date))
-        for (ingest_id, date) in sorted(processing.items(), key=lambda t: t[1])
-    ]
-
-    print(termcolor.colored("\n".join(lines[-5:]), "blue"))
-    print("== processing ==\n")
-
-
-if all(v == 0 for v in data.values()):
-    print("No ingests!")
-else:
-    draw_chart(
-        [
-            (label, data[label])
-            for label in ["Accepted", "Processing", "Completed", "Failed"]
-        ],
-        colors={
-            "Accepted": "yellow",
-            "Failed": "red",
-            "Completed": "green",
-            "Processing": "blue",
-        },
-    )
+        draw_chart(
+            [
+                (label, data[label])
+                for label in ["Accepted", "Processing", "Completed", "Failed"]
+            ],
+            colors={
+                "Accepted": "yellow",
+                "Failed": "red",
+                "Completed": "green",
+                "Processing": "blue",
+            },
+        )

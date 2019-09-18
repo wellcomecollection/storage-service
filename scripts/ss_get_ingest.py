@@ -114,6 +114,8 @@ if __name__ == "__main__":
         last_event_date = pprint_date(last_event_date)
         if delta.seconds < 5:
             print("last event:\t%s (just now)" % last_event_date)
+        elif delta.seconds < 60:
+            print("last event:\t%s (%d seconds ago)" % (delta.seconds, last_event_date))
         elif 60 <= delta.seconds < 120:
             print("last event:\t%s (1 minute ago)" % last_event_date)
         elif delta.seconds < 60 * 60:
