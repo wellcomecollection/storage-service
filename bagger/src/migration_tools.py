@@ -42,6 +42,10 @@ class MigrationTool(object):
     def make_report(self):
         make_migration_report()
 
+    def get_all_bnumbers(self, filter=""):
+        for bnumber in bnumber_generator(filter):
+            print(bnumber)
+
 
 def make_migration_report():
     migration_report.make_report()
