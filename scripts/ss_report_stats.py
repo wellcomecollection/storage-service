@@ -93,7 +93,10 @@ if __name__ == "__main__":
         ingest_id = item["id"]
 
         if status == "Failed":
-            failed[ingest_id] = last_event
+            failed[ingest_id] = {
+                "date": last_event,
+                "description": item["payload"]["events"][-1]["description"]
+            }
         if status == "Processing":
             processing[ingest_id] = last_event
 
@@ -103,11 +106,11 @@ if __name__ == "__main__":
         print("== failed ==")
 
         lines = [
-            "%s ~> %s" % (ingest_id, to_s(date))
-            for (ingest_id, date) in sorted(failed.items(), key=lambda t: t[1])
+            "%s ~> %s" % (ingest_id, data["description"])
+            for (ingest_id, data) in sorted(failed.items(), key=lambda t: t[1]["date"])
         ]
 
-        print(termcolor.colored("\n".join(lines[-5:]), "red"))
+        print(termcolor.colored("\n".join(lines), "red"))
         print("== failed ==\n")
 
     if processing:
