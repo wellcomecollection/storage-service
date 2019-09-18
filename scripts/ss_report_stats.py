@@ -52,7 +52,9 @@ def draw_chart(data, colors=None):
 
 
 def to_s(last_event):
-    if last_event.days > 0:
+    if last_event.days > 0 and last_event.seconds > 3600:
+        return "%dd %dh" % (last_event.days, last_event.seconds // 3600)
+    elif last_event.days > 0:
         return "%dd %ds" % (last_event.days, last_event.seconds)
     else:
         return "%ds" % (last_event.seconds)
