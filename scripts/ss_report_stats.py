@@ -67,10 +67,15 @@ if __name__ == "__main__":
     except IndexError:
         sys.exit(f"Usage: {__file__} <INGESTS_JSON_DUMP>")
 
+    KNOWN_FAILURES = {line.strip() for line in open("known_failures.txt")}
+
     def all_ingests():
         with open(ingests_dump) as f:
             for line in f:
-                yield json.loads(line)
+                ingest = json.loads(line)
+                if ingest["id"] in KNOWN_FAILURES:
+                    continue
+                yield ingest
 
     data = {"Accepted": 0, "Failed": 0, "Completed": 0, "Processing": 0}
 
