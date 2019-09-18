@@ -10,7 +10,6 @@ and automatically send it to the correct API.
 
 """
 
-import getpass
 import json
 import os
 import re
