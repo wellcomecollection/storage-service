@@ -5,14 +5,17 @@ Given a dump of the DynamoDB ingests table and all the b numbers known by the
 bagger, print a list of b numbers which haven't been ingested at all.
 """
 
-import json
 import sys
+
+from dynamodb import cached_scan_iterator
 
 
 def get_ingested_bnumbers(ingests_json):
-    for line in open(ingests_json):
-        ingest = json.loads(line)
-        if ingest["payload"]["space"] == "digitised":
+    for ingest in cached_scan_iterator(ingests_json):
+        if (
+            ingest["payload"]["space"] == "digitised" and
+            ingest["payload"]["status"] == "Completed"
+        ):
             yield ingest["payload"]["externalIdentifier"]
 
 
