@@ -1,5 +1,14 @@
 c3aada9c-51a3-40b6-a57b-0cfb7e61fb0f // read-after-write consistency error, verifier complained of non-existent file
 37c9d001-976b-439c-b4f8-b86adce9cbde // read-after-write consistency error, verifier complained of non-existent file
+
+217c5ea0-3932-4141-9dac-03d2c8caa9a3 // read-after-write consistency error, verifier complained of non-existent file that now exists
+7a397dc0-65fa-4e9e-bc43-23cfb627f611 // read-after-write consistency error, verifier complained of non-existent file that now exists
+054b92a0-6ec1-49f4-b0dc-b76815512602 // read-after-write consistency error, verifier complained of non-existent file that now exists
+9c042d72-b2db-4118-9b8e-1e269ea29720 // read-after-write consistency error, verifier complained of non-existent file that now exists
+09d38326-e39e-4f0c-af42-09454f728d2d // read-after-write consistency error, verifier complained of non-existent file that now exists
+
+367cf95a-5968-4e9e-9abf-a39e09c73ac9 // ingested at the same time as 6c9a7aa4-773f-4bff-ad81-2c954eae0316, versioner had a conflict
+
 6aa4458a-2792-4c8f-b75e-31df0d960a1d // unpacker complained of missing src; now exists
 552d63e1-132d-4f9d-8ee9-18e0cff6538a // unpacker complained of missing src; now exists
 19a20a51-b8d5-4be8-8389-e4a53df23869 // unpacker complained of missing src; now exists
