@@ -46,17 +46,12 @@ def scan_dynamodb_table(table_name, max_workers=5, segment_count=1000):
         for segment in range(segment_count):
             out_path = os.path.join(out_dir, f"segment_{segment}.json")
             fut = executor.submit(
-                scan_segment,
-                table_name,
-                out_path,
-                segment,
-                segment_count
+                scan_segment, table_name, out_path, segment, segment_count
             )
             futures.append(fut)
 
         for fut in tqdm.tqdm(
-            concurrent.futures.as_completed(futures),
-            total=len(futures)
+            concurrent.futures.as_completed(futures), total=len(futures)
         ):
             fut.result()
 

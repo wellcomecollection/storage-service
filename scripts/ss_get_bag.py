@@ -24,10 +24,7 @@ logger = get_logger(__name__)
 def lookup_bag(space, external_identifier, version):
     logger.debug("Looking up bag %s/%s", space, external_identifier)
 
-    api_variants = {
-        "stage": "api-stage",
-        "prod": "api",
-    }
+    api_variants = {"stage": "api-stage", "prod": "api"}
 
     for name, host in api_variants.items():
         logging.debug("Checking %s API", name)
