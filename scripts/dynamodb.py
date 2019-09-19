@@ -35,7 +35,7 @@ def scan_segment(table_name, out_path, segment, total_segments):
                 outfile.write(json.dumps(item, cls=DecimalEncoder) + "\n")
 
 
-def scan_dynamodb_table(table_name, max_workers=5, segment_count=1000):
+def scan_dynamodb_table(table_name, max_workers=10, segment_count=1000):
     scan_id = dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     out_dir = f"dynamodb/{table_name}_{scan_id}"
     os.makedirs(out_dir, exist_ok=True)

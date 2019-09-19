@@ -29,18 +29,19 @@ def delete_s3_object(bucket, key):
 
 
 def delete_s3_prefix(bucket, prefix, known_keys):
-    # Clean up all the keys we known about
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        futures = [
-            executor.submit(delete_s3_object, bucket, key)
-            for key in known_keys
-        ]
+    if known_keys:
+        # Clean up all the keys we known about
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [
+                executor.submit(delete_s3_object, bucket, key)
+                for key in known_keys
+            ]
 
-        for fut in tqdm.tqdm(
-            concurrent.futures.as_completed(futures),
-            total=len(futures)
-        ):
-            fut.result()
+            for fut in tqdm.tqdm(
+                concurrent.futures.as_completed(futures),
+                total=len(futures)
+            ):
+                fut.result()
 
     # Now clean up any left-over keys.
     for key in get_matching_s3_keys(bucket, prefix):
@@ -136,21 +137,28 @@ def purge_ingest(ingest_id):
             }
         )
 
-        item = resp["Item"]
+        try:
+            item = resp["Item"]
 
-        s3_data = s3.get_object(
-            Bucket=item["payload"]["typedStoreId"]["namespace"],
-            Key=item["payload"]["typedStoreId"]["path"]
-        )["Body"]
+            s3_data = s3.get_object(
+                Bucket=item["payload"]["typedStoreId"]["namespace"],
+                Key=item["payload"]["typedStoreId"]["path"]
+            )["Body"]
 
-        storage_manifest = json.load(s3_data)
-        logger.info("Retrieved storage manifest")
+            storage_manifest = json.load(s3_data)
+            logger.info("Retrieved storage manifest")
 
-        paths = [
-            f["path"] for f in storage_manifest["manifest"]["files"]
-        ] + [
-            f["path"] for f in storage_manifest["tagManifest"]["files"]
-        ]
+            paths = [
+                f["path"] for f in storage_manifest["manifest"]["files"]
+            ] + [
+                f["path"] for f in storage_manifest["tagManifest"]["files"]
+            ]
+        except KeyError:
+            logger.info("No storage manifest")
+
+            paths = []
+
+
 
         # We don't want to delete keys in another prefix!
         assert all(p.startswith(version + "/") for p in paths)
@@ -181,19 +189,22 @@ def purge_ingest(ingest_id):
             key={"id": "digitised/%s/%s" % (external_identifier, version)}
         )
 
-        logger.warn("Deleting bag register entry")
-        delete_s3_object(
-            bucket=item["payload"]["typedStoreId"]["namespace"],
-            key=item["payload"]["typedStoreId"]["path"]
-        )
+        try:
+            logger.warn("Deleting bag register entry")
+            delete_s3_object(
+                bucket=item["payload"]["typedStoreId"]["namespace"],
+                key=item["payload"]["typedStoreId"]["path"]
+            )
 
-        delete_dynamodb_row(
-            table="vhs-storage-manifests",
-            key={
-                "id": f"digitised:{external_identifier}",
-                "version": int(version.replace("v", ""))
-            }
-        )
+            delete_dynamodb_row(
+                table="vhs-storage-manifests",
+                key={
+                    "id": f"digitised:{external_identifier}",
+                    "version": int(version.replace("v", ""))
+                }
+            )
+        except NameError:
+            pass
 
         logger.warn("Deleting bag versioner entry")
         delete_dynamodb_row(
@@ -204,17 +215,13 @@ def purge_ingest(ingest_id):
             }
         )
 
-        logger.warn("Deleting ingest records")
-        delete_dynamodb_row(
-            table="storage-ingests",
-            key={"id": ingest_id}
-        )
+    logger.warn("Deleting ingest records")
+    delete_dynamodb_row(
+        table="storage-ingests",
+        key={"id": ingest_id}
+    )
 
 
 if __name__ == "__main__":
-    try:
-        ingest_id = sys.argv[1]
-    except IndexError:
-        sys.exit(f"Usage: {__file__} <INGEST_ID>")
-
-    purge_ingest(ingest_id)
+    for ingest_id in sys.argv[1:]:
+        purge_ingest(ingest_id)

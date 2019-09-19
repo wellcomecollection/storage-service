@@ -126,19 +126,13 @@ if __name__ == "__main__":
         data[status] += 1
 
     if failed:
-        for ingest_id, ingest_data in failed.items():
+        for ingest_id, ingest_data in sorted(failed.items()):
             if ingest_data["description"].startswith(
                 "Unpacking failed - There is no archive at"
             ):
                 ingest_data[
                     "description"
                 ] = "Unpacking failed - There is no archive at <src>"
-            if ingest_data["description"].startswith(
-                ("Verification (Amazon Glacier) failed -",)
-            ):
-                ingest_data["description"] = (
-                    ingest_data["description"].split("-")[0].strip()
-                )
 
         failed_by_reason = collections.defaultdict(list)
 
@@ -150,7 +144,7 @@ if __name__ == "__main__":
         print("== failed ==")
 
         lines = []
-        for reason, ingest_ids in failed_by_reason.items():
+        for reason, ingest_ids in sorted(failed_by_reason.items(), key=lambda t: -len(t[1])):
             lines.append("%s:" % reason)
             for i_id in ingest_ids:
                 lines.append("  %s" % i_id)
