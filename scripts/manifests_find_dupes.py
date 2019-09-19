@@ -52,17 +52,17 @@ if __name__ == "__main__":
                 assert normalised_manifest[key] == earliest_manifest[key]
 
             print(
-                "%s - %s / %s" % (
+                "%s - %s / %s"
+                % (
                     normalised_manifest["ingestId"],
                     normalised_manifest["info"]["externalIdentifier"],
-                    normalised_manifest["version"]
+                    normalised_manifest["version"],
                 )
             )
 
             assert 0
 
         print(s3_json)
-
 
         print(bnumber)
         print(manifests)
