@@ -11,7 +11,6 @@ The script will check both APIs for the ingest ID.
 
 import json
 import logging
-import pprint
 import sys
 
 from wellcome_storage_service import BagNotFound
