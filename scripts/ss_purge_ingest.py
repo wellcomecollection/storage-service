@@ -107,7 +107,7 @@ def purge_ingest(ingest_id):
         ingest = lookup_ingest(ingest_id)
     except IngestNotFound:
         logger.error("Could not find ingest %s", ingest_id)
-        sys.exit(1)
+        return
     else:
         logger.info("Successfully retrieved ingest info!")
 
