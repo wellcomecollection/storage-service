@@ -52,10 +52,11 @@ if __name__ == "__main__":
                 assert normalised_manifest[key] == earliest_manifest[key]
 
             print(
-                "%s - %s / v%s is a dupe of %s" % (
+                "%s - %s / v%s is a dupe of %s"
+                % (
                     normalised_manifest["ingestId"],
                     normalised_manifest["info"]["externalIdentifier"],
                     normalised_manifest["version"],
-                    earliest_version.decode("utf8")
+                    earliest_version.decode("utf8"),
                 )
             )
