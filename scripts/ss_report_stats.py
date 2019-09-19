@@ -62,6 +62,24 @@ def to_s(last_event):
         return "%ds" % (last_event.seconds)
 
 
+def get_failure_description(events):
+    descriptions = [ev["description"] for ev in events]
+
+    if len(descriptions) == 1:
+        return descriptions[0]
+
+    failures = [
+        desc
+        for desc in descriptions
+        if "failed -" in desc or desc == "Register failed"
+    ]
+
+    if len(failures) == 1:
+        return failures[0]
+
+    return descriptions[-1]
+
+
 if __name__ == "__main__":
     try:
         ingests_dump = sys.argv[1]
@@ -100,7 +118,7 @@ if __name__ == "__main__":
         if status == "Failed":
             failed[ingest_id] = {
                 "date": last_event,
-                "description": item["payload"]["events"][-1]["description"],
+                "description": get_failure_description(item["payload"]["events"]),
             }
         if status == "Processing":
             processing[ingest_id] = last_event
