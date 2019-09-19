@@ -21,11 +21,7 @@ def get_s3_object(bucket, key):
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
-    s3.download_file(
-        Bucket=bucket,
-        Key=key,
-        Filename=path
-    )
+    s3.download_file(Bucket=bucket, Key=key, Filename=path)
 
     return get_s3_object(bucket, key)
 
