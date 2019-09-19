@@ -3,6 +3,7 @@
 
 import collections
 import json
+import os
 import sys
 
 from common import get_read_only_client
@@ -10,6 +11,23 @@ from dynamodb import cached_scan_iterator
 
 
 s3 = get_read_only_client("s3")
+
+
+def get_s3_object(bucket, key):
+    path = os.path.join("s3", bucket, key)
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return f.read()
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    s3.download_file(
+        Bucket=bucket,
+        Key=key,
+        Filename=path
+    )
+
+    return get_s3_object(bucket, key)
 
 
 if __name__ == "__main__":
@@ -31,7 +49,7 @@ if __name__ == "__main__":
         s3_locations = [m["payload"]["typedStoreId"] for m in manifests]
 
         s3_json = [
-            s3.get_object(Bucket=loc["namespace"], Key=loc["path"])["Body"].read()
+            get_s3_object(bucket=loc["namespace"], key=loc["path"])
             for loc in s3_locations
         ]
 
