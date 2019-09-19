@@ -69,9 +69,7 @@ def get_failure_description(events):
         return descriptions[0]
 
     failures = [
-        desc
-        for desc in descriptions
-        if "failed -" in desc or desc == "Register failed"
+        desc for desc in descriptions if "failed -" in desc or desc == "Register failed"
     ]
 
     if len(failures) == 1:
@@ -144,7 +142,9 @@ if __name__ == "__main__":
         print("== failed ==")
 
         lines = []
-        for reason, ingest_ids in sorted(failed_by_reason.items(), key=lambda t: -len(t[1])):
+        for reason, ingest_ids in sorted(
+            failed_by_reason.items(), key=lambda t: -len(t[1])
+        ):
             lines.append("%s:" % reason)
             for i_id in ingest_ids:
                 lines.append("  %s" % i_id)
