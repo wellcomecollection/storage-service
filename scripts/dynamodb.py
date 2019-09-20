@@ -4,6 +4,7 @@
 import concurrent.futures
 import datetime as dt
 import decimal
+import glob
 import json
 import os
 
@@ -58,7 +59,8 @@ def scan_dynamodb_table(table_name, max_workers=10, segment_count=1000):
     return out_dir
 
 
-def cached_scan_iterator(out_dir):
+def cached_scan_iterator(table_name):
+    out_dir = max(glob.glob(f"dynamodb/{table_name}*"))
     for f in os.listdir(out_dir):
         if f.endswith(".json"):
             path = os.path.join(out_dir, f)

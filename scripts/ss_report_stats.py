@@ -3,7 +3,6 @@
 
 import collections
 import datetime as dt
-import sys
 
 import termcolor
 
@@ -79,15 +78,10 @@ def get_failure_description(events):
 
 
 if __name__ == "__main__":
-    try:
-        ingests_dump = sys.argv[1]
-    except IndexError:
-        sys.exit(f"Usage: {__file__} <INGESTS_TABLE_DUMP>")
-
     KNOWN_FAILURES = {line.strip() for line in open("known_failures.txt")}
 
     def all_ingests():
-        for ingest in cached_scan_iterator(ingests_dump):
+        for ingest in cached_scan_iterator("storage-ingests"):
             if ingest["id"] in KNOWN_FAILURES:
                 continue
             yield ingest
