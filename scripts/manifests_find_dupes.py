@@ -59,11 +59,13 @@ if __name__ == "__main__":
             normalised_manifest = json.loads(normalised_json_block)
 
             try:
-              assert normalised_manifest.keys() == earliest_manifest.keys()
-              for key, value in normalised_manifest.items():
-                if key in {"version", "createdDate", "ingestId"}:
-                    continue
-                assert normalised_manifest[key] == earliest_manifest[key], normalised_manifest[key]
+                assert normalised_manifest.keys() == earliest_manifest.keys()
+                for key, value in normalised_manifest.items():
+                    if key in {"version", "createdDate", "ingestId"}:
+                        continue
+                    assert (
+                        normalised_manifest[key] == earliest_manifest[key]
+                    ), normalised_manifest[key]
             except AssertionError:
                 continue
 
