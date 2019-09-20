@@ -27,10 +27,8 @@ def get_s3_object(bucket, key):
 
 
 if __name__ == "__main__":
-    try:
-        manifests_dir = sys.argv[1]
-    except IndexError:
-        sys.exit(f"Usage: {__file__} <MANIFESTS_DIR>")
+    import glob
+    manifests_dir = max(glob.glob("dynamodb/vhs-storage-manifests*"))
 
     manifests_by_bnumber = collections.defaultdict(list)
 
