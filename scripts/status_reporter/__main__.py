@@ -8,15 +8,16 @@ import dds_client
 import status_store
 
 
-def update_from_store(store, seen = 0):
+def update_from_store(store, seen=0):
     return {
-        'unknown': store.count_status('unknown'),
-        'finished': store.count_status('finished'),
-        'waiting': store.count_status('waiting'),
-        'not_found': store.count_status('not_found'),
-        'total': store.count(),
-        'seen': seen
+        "unknown": store.count_status("unknown"),
+        "finished": store.count_status("finished"),
+        "waiting": store.count_status("waiting"),
+        "not_found": store.count_status("not_found"),
+        "total": store.count(),
+        "seen": seen,
     }
+
 
 def ingest(dds, store, bnumber, assert_updated=True):
     status = None
@@ -25,13 +26,13 @@ def ingest(dds, store, bnumber, assert_updated=True):
 
     status = dds.status(bnumber)
 
-    if(status['status'] is 'not_found'):
+    if status["status"] is "not_found":
         requested = dds.ingest(bnumber)
 
-        if(requested is 'requested'):
+        if requested is "requested":
             updated_status = dds.status(bnumber)
-            if(assert_updated):
-                assert(updated_status['status'] is 'waiting')
+            if assert_updated:
+                assert updated_status["status"] is "waiting"
 
             return True
         else:
@@ -39,7 +40,15 @@ def ingest(dds, store, bnumber, assert_updated=True):
     else:
         return False
 
-def update_store_from_dds(thread_pool, dds_client, status_store, should_request_ingests=False, retry_finished=False, verify_ingests=True):
+
+def update_store_from_dds(
+    thread_pool,
+    dds_client,
+    status_store,
+    should_request_ingests=False,
+    retry_finished=False,
+    verify_ingests=True,
+):
     def _ingest(bnumber):
         return ingest(dds, store, bnumber, verify_ingests)
 
@@ -74,25 +83,27 @@ def update_store_from_dds(thread_pool, dds_client, status_store, should_request_
 
         start_time = time.time()
 
-        bnumbers = [record['bnumber'] for record in next_batch if (
-            record['status'] != 'finished' or retry_finished
-        )]
+        bnumbers = [
+            record["bnumber"]
+            for record in next_batch
+            if (record["status"] != "finished" or retry_finished)
+        ]
 
         # These requests can proceed in parallel
         results = thread_pool.map(dds_client.status, bnumbers)
 
         not_found_bnumbers = [
-            record['bnumber'] for record in results if record['status'] is 'not_found'
+            record["bnumber"] for record in results if record["status"] is "not_found"
         ]
 
         waiting_bnumbers = [
-            record['bnumber'] for record in results if record['status'] is 'waiting'
+            record["bnumber"] for record in results if record["status"] is "waiting"
         ]
 
         last_batch_waiting = len(waiting_bnumbers)
         last_batch_not_found = len(not_found_bnumbers)
 
-        if(len(not_found_bnumbers) > 0 and should_request_ingests):
+        if len(not_found_bnumbers) > 0 and should_request_ingests:
             ingest_results = thread_pool.map(_ingest, not_found_bnumbers)
 
             ingested_count = len([result for result in ingest_results if result])
@@ -111,60 +122,62 @@ def update_store_from_dds(thread_pool, dds_client, status_store, should_request_
 
     print("Finished.")
 
+
 def reset(s3_client, store):
-        print("Resetting local data.")
+    print("Resetting local data.")
 
-        bib_number_generator = bnumbers.BibNumberGenerator(s3_client)
-        numbers = list(bib_number_generator.bnumbers())
+    bib_number_generator = bnumbers.BibNumberGenerator(s3_client)
+    numbers = list(bib_number_generator.bnumbers())
 
-        print(f"Found {len(numbers)} bib numbers, storing.")
+    print(f"Found {len(numbers)} bib numbers, storing.")
 
-        store.reset(numbers)
-        print("Done.")
+    store.reset(numbers)
+    print("Done.")
+
 
 def main():
-    parser = argparse.ArgumentParser(description='Check status of jobs')
+    parser = argparse.ArgumentParser(description="Check status of jobs")
 
     parser.add_argument(
-        '--database_location',
-        default='status_reporter.db',
-        help='Location of sqllite database'
+        "--database_location",
+        default="status_reporter.db",
+        help="Location of sqllite database",
     )
 
     parser.add_argument(
-        '--library_goobi_url',
-        default='https://library-uat.wellcomelibrary.org/goobipdf/{0}',
-        help='URL pattern for starting ingests'
+        "--library_goobi_url",
+        default="https://library-uat.wellcomelibrary.org/goobipdf/{0}",
+        help="URL pattern for starting ingests",
     )
 
     parser.add_argument(
-        '--goobi_call_url',
-        default='http://wt-havana:88/Dash/GoobiCall/{0}?json',
-        help='URL pattern for requesting ingest status'
+        "--goobi_call_url",
+        default="http://wt-havana:88/Dash/GoobiCall/{0}?json",
+        help="URL pattern for requesting ingest status",
     )
 
     parser.add_argument(
-        '--reset',
-        action='store_true',
-        help='Location of file containing bnumbers to reset status'
+        "--reset",
+        action="store_true",
+        help="Location of file containing bnumbers to reset status",
     )
 
     parser.add_argument(
-        '--should_request_ingests',
-        action='store_true',
-        help='When uningested bnumbers are identified, request them'
+        "--should_request_ingests",
+        action="store_true",
+        help="When uningested bnumbers are identified, request them",
     )
 
     parser.add_argument(
-        '--retry_finished',
-        action='store_true',
-        help='Recheck whether ingests marked finished have changed'
+        "--retry_finished",
+        action="store_true",
+        help="Recheck whether ingests marked finished have changed",
     )
 
     parser.add_argument(
-        '--verify_ingests',
-        action='store_false',
-        help='Verify ingest requests update status'
+        "--verify_ingests",
+        action="store_false",
+        help="Verify ingest requests update status",
     )
 
     parser.add_argument(
@@ -181,18 +194,13 @@ def main():
 
     pool = ThreadPool(20)
 
-    store = status_store.StatusStore(
-        status_store_location
-    )
+    store = status_store.StatusStore(status_store_location)
 
-    client = dds_client.DDSClient(
-        dds_start_ingest_url,
-        dds_item_query_url
-    )
+    client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)
 
     aws = aws_client.AwsClient()
 
-    if(args.reset):
+    if args.reset:
         s3_client = aws.s3_client()
         reset(s3_client, store)
 
@@ -218,8 +226,9 @@ def main():
         status_store=store,
         should_request_ingests=should_request_ingests,
         retry_finished=retry_finished,
-        verify_ingests=verify_ingests
+        verify_ingests=verify_ingests,
     )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
