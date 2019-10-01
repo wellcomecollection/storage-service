@@ -5,123 +5,15 @@ import time
 import aws_client
 import bnumbers
 import dds_client
+import dds_call_sync
 import status_store
+import library_iiif
+import iiif_diff
+import manifest_sync
 
+import urllib3
 
-def update_from_store(store, seen=0):
-    return {
-        "unknown": store.count_status("unknown"),
-        "finished": store.count_status("finished"),
-        "waiting": store.count_status("waiting"),
-        "not_found": store.count_status("not_found"),
-        "total": store.count(),
-        "seen": seen,
-    }
-
-
-def ingest(dds, store, bnumber, assert_updated=True):
-    status = None
-    requested = None
-    updated_status = None
-
-    status = dds.status(bnumber)
-
-    if status["status"] is "not_found":
-        requested = dds.ingest(bnumber)
-
-        if requested is "requested":
-            updated_status = dds.status(bnumber)
-            if assert_updated:
-                assert updated_status["status"] is "waiting"
-
-            return True
-        else:
-            return False
-    else:
-        return False
-
-
-def update_store_from_dds(
-    thread_pool,
-    dds_client,
-    status_store,
-    should_request_ingests=False,
-    retry_finished=False,
-    verify_ingests=True,
-):
-    def _ingest(bnumber):
-        return ingest(dds, store, bnumber, verify_ingests)
-
-    total_time = 0
-    time_to_run = 0
-    average_time = 0
-    batches_seen = 0
-
-    total_ingested = 0
-    last_batch_not_found = 0
-    last_batch_waiting = 0
-
-    seen = 0
-    batch_size = 1000
-
-    for next_batch in status_store.get_all(batch_size):
-        latest = update_from_store(status_store, seen)
-
-        print("---------------------")
-        print(f"seen: {seen}")
-        print(f"ingested: {total_ingested}")
-        print(f"last_batch_not_found: {last_batch_not_found}")
-        print(f"last_batch_waiting: {last_batch_waiting}")
-        print("")
-        print(f"unknown: {latest['unknown']}")
-        print(f"not_found: {latest['not_found']}")
-        print(f"waiting: {latest['waiting']}")
-        print(f"finished: {latest['finished']}")
-        print(f"total: {latest['total']}")
-        print(f"last: {time_to_run}, total: {total_time}, mean: {average_time}")
-        print("")
-
-        start_time = time.time()
-
-        bnumbers = [
-            record["bnumber"]
-            for record in next_batch
-            if (record["status"] != "finished" or retry_finished)
-        ]
-
-        # These requests can proceed in parallel
-        results = thread_pool.map(dds_client.status, bnumbers)
-
-        not_found_bnumbers = [
-            record["bnumber"] for record in results if record["status"] is "not_found"
-        ]
-
-        waiting_bnumbers = [
-            record["bnumber"] for record in results if record["status"] is "waiting"
-        ]
-
-        last_batch_waiting = len(waiting_bnumbers)
-        last_batch_not_found = len(not_found_bnumbers)
-
-        if len(not_found_bnumbers) > 0 and should_request_ingests:
-            ingest_results = thread_pool.map(_ingest, not_found_bnumbers)
-
-            ingested_count = len([result for result in ingest_results if result])
-
-            total_ingested = total_ingested + ingested_count
-
-        # Database updates can be done in batches as parallel access is dangerous
-        status_store.batch_update(results)
-
-        seen = seen + len(next_batch)
-        batches_seen = batches_seen + 1
-
-        time_to_run = time.time() - start_time
-        total_time = total_time + time_to_run
-        average_time = total_time / batches_seen
-
-    print("Finished.")
-
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def reset(s3_client, store):
     print("Resetting local data.")
@@ -186,6 +78,18 @@ def main():
         help='Print all finished ingest bnumbers'
     )
 
+    parser.add_argument(
+        '--dds_call_sync',
+        action='store_true',
+        help='Sync call status with DDS'
+    )
+
+    parser.add_argument(
+        '--compare_manifests',
+        action='store_true',
+        help='Compare UAT manifest with production'
+    )
+
     args = parser.parse_args()
 
     status_store_location = args.database_location
@@ -195,12 +99,16 @@ def main():
     pool = ThreadPool(20)
 
     store = status_store.StatusStore(status_store_location)
-
     client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)
+    call_sync = dds_call_sync.DDSCallSync(client, store, pool)
+    iiif = library_iiif.LibraryIIIF()
+    diff = iiif_diff.IIIFDiff(iiif)
+    iiif_sync = manifest_sync.ManifestSync(store, diff)
 
     aws = aws_client.AwsClient()
 
     if args.reset:
+        s3_client = aws.s3_client()
         s3_client = aws.s3_client()
         reset(s3_client, store)
 
@@ -215,19 +123,25 @@ def main():
 
         return
 
+    if(args.dds_call_sync):
+        should_request_ingests = args.should_request_ingests
+        retry_finished = args.retry_finished
+        verify_ingests = args.verify_ingests
 
-    should_request_ingests = args.should_request_ingests
-    retry_finished = args.retry_finished
-    verify_ingests = args.verify_ingests
+        call_sync.update_store_from_dds(
+            should_request_ingests=should_request_ingests,
+            retry_finished=retry_finished,
+            verify_ingests=verify_ingests,
+        )
 
-    update_store_from_dds(
-        thread_pool=pool,
-        dds_client=client,
-        status_store=store,
-        should_request_ingests=should_request_ingests,
-        retry_finished=retry_finished,
-        verify_ingests=verify_ingests,
-    )
+        return
+
+    if(args.compare_manifests):
+        print("Getting finished DDS ingests.")
+
+        iiif_sync.get_manifests()
+
+        return
 
 
 if __name__ == "__main__":
