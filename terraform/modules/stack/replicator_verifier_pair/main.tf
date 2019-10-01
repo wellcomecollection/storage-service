@@ -77,8 +77,8 @@ module "bag_verifier" {
 
   env_vars_length = 7
 
-  cpu    = 1024
-  memory = 2048
+  cpu    = 2048
+  memory = 4096
 
   min_capacity = "${var.min_capacity}"
   max_capacity = "${var.max_capacity}"
