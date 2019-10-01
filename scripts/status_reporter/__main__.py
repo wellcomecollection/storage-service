@@ -167,6 +167,12 @@ def main():
         help='Verify ingest requests update status'
     )
 
+    parser.add_argument(
+        '--dump_finished',
+        action='store_true',
+        help='Print all finished ingest bnumbers'
+    )
+
     args = parser.parse_args()
 
     status_store_location = args.database_location
@@ -191,6 +197,16 @@ def main():
         reset(s3_client, store)
 
         return
+
+    if(args.dump_finished):
+        finished = store.get_status('finished')
+
+        for finished_bnumbers_batch in finished:
+            for bnumber in finished_bnumbers_batch:
+                print(bnumber['bnumber'])
+
+        return
+
 
     should_request_ingests = args.should_request_ingests
     retry_finished = args.retry_finished
