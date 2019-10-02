@@ -76,12 +76,18 @@ class IIIFDiff:
 
         return summary
 
+    def _check_response(self, response, name):
+        status_ok = response['status'] == 'ok'
+
+        if(not status_ok):
+            raise Exception(f"Got status {response['status']} for {name}")
+
     def diff(self, bnum):
         bnum_stage = self.library_iif.stage(bnum)
         bnum_prod = self.library_iif.prod(bnum)
 
-        assert bnum_stage['status'] == 'ok', f"Stage not ok for {bnum}"
-        assert bnum_prod['status'] == 'ok', f"Prod not ok for {bnum}"
+        self._check_response(bnum_stage, 'stage')
+        self._check_response(bnum_prod, 'prod')
 
         bnum_stage_converted = self._update_value(bnum_stage['body'], self._match, self._convert)
         bnum_prod_converted = self._update_value(bnum_prod['body'], self._match, self._convert)
