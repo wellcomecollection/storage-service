@@ -1,14 +1,26 @@
+# -*- encoding: utf-8
+
 from deepdiff import DeepDiff
 import hyperlink
 
 
 class IIIFDiff:
-    def __init__(self, library_iif, id_mapper):
-        self.library_iif = library_iif
+    def __init__(self, library_iiif, id_mapper):
+        self.library_iiif = library_iiif
         self.id_mapper = id_mapper
+
+    def _check_preservica_id_matches(self, old_id, new_id):
+        return self.id_mapper.id_matches(old_id, new_id)
 
     @staticmethod
     def _diff_modulo_hostname(deep_diff):
+        """
+        Compare URLs such as
+
+            https://library-uat.wellcomelibrary.org/iiif/b18180000/manifest
+            https://wellcomelibrary.org/iiif/b18180000/manifest
+
+        """
         for label, diff in list(deep_diff.get("values_changed", {}).items()):
             old_value = diff["old_value"]
             new_value = diff["new_value"]
@@ -19,10 +31,14 @@ class IIIFDiff:
             ):
                 del deep_diff["values_changed"][label]
 
-    def _check_preservica_id_matches(self, old_id, new_id):
-        return self.id_mapper.id_matches(old_id, new_id)
-
     def _diff_modulo_imageanno(self, deep_diff):
+        """
+        Compare URLs such as
+
+            https://library-uat.wellcomelibrary.org/iiif/b18180000/imageanno/b18180000_pp_cri_j_1_5_18_1_0251.jp2
+            https://wellcomelibrary.org/iiif/b18180000/imageanno/008c8d8a-a576-4487-809f-6dce77c395ad
+
+        """
         for label, diff in list(deep_diff.get("values_changed", {}).items()):
             old_value = diff["old_value"]
             new_value = diff["new_value"]
@@ -43,10 +59,14 @@ class IIIFDiff:
             if paths_match and ids_match:
                 del deep_diff["values_changed"][label]
 
-    # 'new_value': 'https://dlcs.io/iiif-img/wellcome/5/b18180000_pp_cri_j_1_5_18_1_0001.jp2/full/!1024,1024/0/default.jpg'
-    # 'old_value': 'https://dlcs.io/iiif-img/wellcome/1/12131081-5006-4ccf-a2b4-243718b19e26/full/!1024,1024/0/default.jpg'
-
     def _diff_modulo_dlcs(self, deep_diff):
+        """
+        Compare URLs of the form
+
+            https://dlcs.io/iiif-img/wellcome/5/b1234_0001.jp2/full/!1024,1024/0/default.jpg
+            https://dlcs.io/thumbs/wellcome/5/b1234_0001.jp2/full/64,/0/default.jpg
+
+        """
         for label, diff in list(deep_diff.get("values_changed", {}).items()):
             old_value = diff["old_value"]
             new_value = diff["new_value"]
@@ -83,11 +103,8 @@ class IIIFDiff:
             ):
                 del deep_diff["values_changed"][label]
 
-    def diff(self, bnum):
-        manifest_new = self.library_iif.stage(bnum)
-        manifest_old = self.library_iif.prod(bnum)
-
-        deep_diff = DeepDiff(manifest_old, manifest_new)
+    def diff_manifests(self, old_manifest, new_manifest):
+        deep_diff = DeepDiff(old_manifest, new_manifest)
 
         self._diff_modulo_hostname(deep_diff)
         self._diff_modulo_imageanno(deep_diff)
@@ -97,3 +114,32 @@ class IIIFDiff:
             del deep_diff["values_changed"]
 
         return deep_diff
+
+    def fetch_and_diff(self, bnum):
+        new_manifest = self.library_iiif.stage(bnum)
+        old_manifest = self.library_iiif.prod(bnum)
+
+        return self.diff_manifests(
+            old_manifest=old_manifest,
+            new_manifest=new_manifest
+        )
+
+
+if __name__ == "__main__":
+    import sys
+    from pprint import pprint
+
+    from id_mapper import IDMapper
+    from library_iiif import LibraryIIIF
+
+    try:
+        b_number = sys.argv[1]
+    except IndexError:
+        sys.exit(f"Usage: {__file__} <B_NUMBER>")
+
+    diff = IIIFDiff(
+        library_iiif=LibraryIIIF(),
+        id_mapper=IDMapper()
+    )
+
+    pprint(diff.fetch_and_diff(b_number))
