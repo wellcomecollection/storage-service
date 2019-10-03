@@ -10,8 +10,8 @@ class IDMapper:
     def id_matches(self, old_id, new_id):
         try:
             return (
-                self.new_to_old_map[new_id] == old_id and
-                self.old_to_new_map[old_id] == new_id
+                self.new_to_old_map[new_id] == old_id
+                and self.old_to_new_map[old_id] == new_id
             )
         except KeyError:
             assert new_id not in self.new_to_old_map
