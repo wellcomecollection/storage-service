@@ -14,17 +14,16 @@ def get_preservica_cursor():
         driver="{ODBC Driver 17 for SQL Server}",
         server="wt-dhaka",
         database="WELLCOME_SDB4",
-        trusted_connection="yes"
+        trusted_connection="yes",
     )
 
     return cnxn.cursor()
 
 
 def get_preservica_asset(guid):
-    result = (
-        _get_preservica_assets_from_s3(guid) or
-        _get_preservica_assets_from_euston_road(guid)
-    )
+    result = _get_preservica_assets_from_s3(
+        guid
+    ) or _get_preservica_assets_from_euston_road(guid)
 
     if result is None:
         raise RuntimeError(
@@ -37,20 +36,23 @@ def get_preservica_asset(guid):
 def _get_preservica_assets_from_euston_road(guid):
     cursor = get_preservica_cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT File_Path AS FilePath, ManifestationRef FROM File_Location
         INNER JOIN ManifestationFile ON File_Ref=FileRef WHERE File_Ref=?
-    """, guid)
+    """,
+        guid,
+    )
 
     filepath, manifestation_ref = cursor.fetchone()
 
     return (
-        pathlib.Path("/Volumes/LIB_WDL_SDB_STORE001") /
-        manifestation_ref[:2] /
-        manifestation_ref[2:4] /
-        manifestation_ref[4:6] /
-        manifestation_ref /
-        filepath.replace("\\", "/")
+        pathlib.Path("/Volumes/LIB_WDL_SDB_STORE001")
+        / manifestation_ref[:2]
+        / manifestation_ref[2:4]
+        / manifestation_ref[4:6]
+        / manifestation_ref
+        / filepath.replace("\\", "/")
     )
 
 
@@ -62,11 +64,7 @@ def _get_preservica_assets_from_s3(guid):
     _, path = tempfile.mkstemp()
 
     try:
-        s3_client.download_file(
-            Bucket="wdl-preservica",
-            Key=guid,
-            Filename=path
-        )
+        s3_client.download_file(Bucket="wdl-preservica", Key=guid, Filename=path)
     except ClientError as err:
         if err.args[0].startswith("An error occurred (404)"):
             return None
