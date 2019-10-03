@@ -14,7 +14,7 @@ import iiif_diff
 import manifest_sync
 import storage_client
 
-
+from defaults import *
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -31,19 +31,19 @@ def main():
 
     parser.add_argument(
         "--database_location",
-        default="status_reporter.db",
+        default=defaults['database_location'],
         help="Location of sqllite database",
     )
 
     parser.add_argument(
         "--library_goobi_url",
-        default="https://library-uat.wellcomelibrary.org/goobipdf/{0}",
+        default=defaults['libray_goobi_url'],
         help="URL pattern for starting ingests",
     )
 
     parser.add_argument(
         "--goobi_call_url",
-        default="http://wt-havana:88/Dash/GoobiCall/{0}?json",
+        default=defaults['goobi_call_url'],
         help="URL pattern for requesting ingest status",
     )
 
@@ -85,7 +85,7 @@ def main():
 
     parser.add_argument(
         "--verify_ingests",
-        action="store_false",
+        action="store_true",
         help="Verify ingest requests update status",
     )
 
@@ -115,7 +115,7 @@ def main():
 
     pool = ThreadPool(20)
 
-    aws = aws_client.AwsClient()
+    aws = aws_client.AwsClient(defaults['role_arn'])
 
     store = status_store.StatusStore(status_store_location)
     client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)

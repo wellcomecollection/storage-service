@@ -4,7 +4,7 @@ import boto3
 
 
 class AwsClient:
-    def __init__(self, role_arn="arn:aws:iam::975596993436:role/storage-developer"):
+    def __init__(self, role_arn):
         self.role_arn = role_arn
 
     def _assumed_role_session(self):

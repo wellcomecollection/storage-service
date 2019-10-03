@@ -42,7 +42,7 @@ class DDSCallSync:
         self,
         should_request_ingests=False,
         retry_finished=False,
-        verify_ingests=True,
+        verify_ingests=False,
     ):
         def _ingest(bnumber):
             return self._ingest(bnumber, verify_ingests)

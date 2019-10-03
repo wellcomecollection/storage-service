@@ -24,10 +24,12 @@ class ManifestSync:
         def _last_segment(path):
             return path.split('/')[-1]
 
-        def _files_from_storge_service(storage_client, bnumber):
+        def _files_from_storage_service(storage_client, bnumber):
             ss_manifest = self.storage_client.get_bag(self.space_id, bnumber)
             files = ss_manifest['manifest']['files']
 
+            # TODO: Need to got size from manifest to compare to stored old & new
+            
             return {
                 _last_segment(f['path']): f['path'] for f in files if f['name'].startswith('data/objects/')
             }
@@ -44,11 +46,12 @@ class ManifestSync:
             return found
 
         keyed = { i['new']:i['old'] for i in image_summary }
-        ss_files = _files_from_storge_service(self.storage_client, bnumber)
+        ss_files = _files_from_storage_service(self.storage_client, bnumber)
+                
         matched = { path:_find_key(i, keyed) for i,path in ss_files.items() if _find_key(i, keyed) }
 
         assert len(image_summary) == len(matched), "File list length mismatch"
-
+        
         return matched
 
     def _get_images_summary(self, differences):
@@ -71,6 +74,7 @@ class ManifestSync:
         return images_summary
 
     def _compare_asset_length(self, images_summary, bnumber):
+        
         storage_space_id = 'digitised'
         storage_bucket = 'wellcomecollection-storage'
         preservica_bucket = 'wdl-preservica'
@@ -92,10 +96,23 @@ class ManifestSync:
             return get_content_length(preservica_bucket, preservica_uuid)
 
         for new_id, old_id in images_summary.items():
-            new_cl = get_storage_service_object_content_length(bnumber, new_id)
-            old_cl = get_preservica_object_content_length(old_id)
-
-            size_match = old_cl == new_cl
+            
+            def _get_storage_service_object_content_length(ident):
+                return get_storage_service_object_content_length(bnumber, ident)
+            
+            def _get_preservica_object_content_length(ident):
+                return get_preservica_object_content_length(ident)
+            
+            def _try(f, ident):
+                try:
+                    return f(ident)
+                except Exception as e:
+                    raise Exception(f"ERROR: {e} looking up {bnumber}:{ident}")
+            
+            new_content_length = _try(_get_storage_service_object_content_length, new_id)
+            old_content_length = _try(_get_preservica_object_content_length, old_id)
+                
+            size_match = old_content_length == new_content_length
 
             if(not size_match):
                 differences.append({
@@ -112,6 +129,9 @@ class ManifestSync:
         return differences
 
     def diff_summary(self, bnumber):
+        matched_images = None
+        values_differences = None
+        
         try:
             differences = self.iiif_diff.diff(bnumber)
 
@@ -129,7 +149,11 @@ class ManifestSync:
         except Exception as e:
 
             return {
-                'failed': str(e)
+                'failed': {
+                    'error': str(e),
+                    'values_mismatch': values_differences,
+                    'matched_images': matched_images
+                }
             }
 
     def _generate_summaries(self, bnumber_batch):
@@ -214,4 +238,3 @@ class ManifestSync:
             print(f"Ingested {ingested_count} ({total_ingested}/{finished_count})")
 
             print(f"Seen: {total_seen}")
-            

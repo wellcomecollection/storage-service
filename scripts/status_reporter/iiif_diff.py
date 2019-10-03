@@ -1,97 +1,102 @@
 from deepdiff import DeepDiff
+import hyperlink
+
 
 class IIIFDiff:
-    def __init__(self, library_iif):
+    def __init__(self, library_iif, id_mapper):
         self.library_iif = library_iif
+        self.id_mapper = id_mapper
 
-    def _update_value(self, obj, is_key, convert):
-        if isinstance(obj, (int, float)):
-            return obj
-        if isinstance(obj, (str)):
-            return convert(obj)
-        if isinstance(obj, dict):
-            new = obj.__class__()
+    @staticmethod
+    def _diff_modulo_hostname(deep_diff):
+        for label, diff in list(deep_diff.get('values_changed', {}).items()):
+            old_value = diff['old_value']
+            new_value = diff['new_value']
 
-            for k, v in obj.items():
-                if(is_key(k)):
-                    new[k] = convert(v)
-                else:
-                    new[k] = self._update_value(v, is_key, convert)
+            if new_value == old_value.replace(
+                'https://wellcomelibrary.org/',
+                'https://library-uat.wellcomelibrary.org/'
+            ):
+                del deep_diff['values_changed'][label]
 
-        elif isinstance(obj, (list, set, tuple)):
-            new = obj.__class__(self._update_value(v, is_key, convert) for v in obj)
-        else:
-            return obj
-        return new
+    def _check_preservica_id_matches(self, old_id, new_id):
+        return self.id_mapper.id_matches(old_id, new_id)
 
-    def _match(self, value):
-        is_id = value == '@id'
-        is_on = value == 'on'
+    def _diff_modulo_imageanno(self, deep_diff):
+        for label, diff in list(deep_diff.get('values_changed', {}).items()):
+            old_value = diff['old_value']
+            new_value = diff['new_value']
 
-        return is_id or is_on
+            if '/imageanno/' not in old_value:
+                continue
 
-    def _convert(self, value):
-        return value.replace('library-uat.', '')
+            old_path, old_id = old_value.rsplit('/', 1)
+            new_path, new_id = new_value.rsplit('/', 1)
 
-    def _diff_summary(self, difference):
-        diff_types = [k for k,v in difference.items()]
+            paths_match = (new_path == old_path.replace(
+                'https://wellcomelibrary.org/',
+                'https://library-uat.wellcomelibrary.org/'
+            ))
 
-        summary = {
-            'images': [],
-            'values': [],
-            'types': []
+            ids_match = self._check_preservica_id_matches(old_id, new_id)
 
-        }
+            if paths_match and ids_match:
+                del deep_diff['values_changed'][label]
 
-        if(len(diff_types) == 0):
-            return summary
+    # 'new_value': 'https://dlcs.io/iiif-img/wellcome/5/b18180000_pp_cri_j_1_5_18_1_0001.jp2/full/!1024,1024/0/default.jpg'
+    # 'old_value': 'https://dlcs.io/iiif-img/wellcome/1/12131081-5006-4ccf-a2b4-243718b19e26/full/!1024,1024/0/default.jpg'
 
-        type_changes = 'type_changes' in diff_types
-        values_changed = 'values_changed' in diff_types
+    def _diff_modulo_dlcs(self, deep_diff):
+        for label, diff in list(deep_diff.get('values_changed', {}).items()):
+            old_value = diff['old_value']
+            new_value = diff['new_value']
 
-        expected_diff_types = type_changes or values_changed
+            dlcs_prefixes = (
+                'https://dlcs.io/iiif-img/',
+                'https://dlcs.io/thumbs/'
+            )
 
-        assert expected_diff_types, f"Found insertions/deletions! {diff_types}"
+            if not old_value.startswith(dlcs_prefixes):
+                continue
 
-        if(values_changed):
-            for key,diff in difference['values_changed'].items():
-                if(key.endswith("['@id']")):
-                    summary_key = 'images'
-                else:
-                    summary_key = 'values'
+            old_url = hyperlink.URL.from_text(old_value)
+            new_url = hyperlink.URL.from_text(new_value)
 
-                summary[summary_key].append({
-                    'key': key,
-                    'old_value': diff['old_value'],
-                    'new_value': diff['new_value'],
-                })
+            old_path = old_url.path
+            new_path = new_url.path
 
-        if(type_changes):
-            for key,diff in difference['type_changes'].items():
-                summary['types'].append({
-                    'key': key,
-                    'old_value': diff['old_value'],
-                    'new_value': diff['new_value'],
-                })
+            suffix_matches = (old_path[4:] == new_path[4:])
+            prefix_matches = (old_path[:2] == new_path[:2])
 
-        return summary
+            scheme_matches = (old_url.scheme == new_url.scheme)
 
-    def _check_response(self, response, name):
-        status_ok = response['status'] == 'ok'
+            host_matches = (old_url.host == new_url.host)
 
-        if(not status_ok):
-            raise Exception(f"Got status {response['status']} for {name}")
+            old_id = old_path[3]
+            new_id = new_path[3]
+
+            ids_match = self._check_preservica_id_matches(old_id, new_id)
+
+            if (
+                suffix_matches and
+                prefix_matches and
+                scheme_matches and
+                host_matches and
+                ids_match
+            ):
+                del deep_diff['values_changed'][label]
 
     def diff(self, bnum):
-        bnum_stage = self.library_iif.stage(bnum)
-        bnum_prod = self.library_iif.prod(bnum)
+        manifest_new = self.library_iif.stage(bnum)
+        manifest_old = self.library_iif.prod(bnum)
 
-        self._check_response(bnum_stage, 'stage')
-        self._check_response(bnum_prod, 'prod')
+        deep_diff = DeepDiff(manifest_old, manifest_new)
 
-        bnum_stage_converted = self._update_value(bnum_stage['body'], self._match, self._convert)
-        bnum_prod_converted = self._update_value(bnum_prod['body'], self._match, self._convert)
+        self._diff_modulo_hostname(deep_diff)
+        self._diff_modulo_imageanno(deep_diff)
+        self._diff_modulo_dlcs(deep_diff)
 
-        deep_diff = DeepDiff(bnum_stage_converted, bnum_prod_converted)
+        if not deep_diff.get('values_changed', True):
+            del deep_diff['values_changed']
 
-        return self._diff_summary(deep_diff)
+        return deep_diff
