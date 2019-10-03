@@ -119,10 +119,7 @@ class IIIFDiff:
         new_manifest = self.library_iiif.stage(bnum)
         old_manifest = self.library_iiif.prod(bnum)
 
-        return self.diff_manifests(
-            old_manifest=old_manifest,
-            new_manifest=new_manifest
-        )
+        return self.diff_manifests(old_manifest=old_manifest, new_manifest=new_manifest)
 
 
 if __name__ == "__main__":
@@ -137,9 +134,6 @@ if __name__ == "__main__":
     except IndexError:
         sys.exit(f"Usage: {__file__} <B_NUMBER>")
 
-    diff = IIIFDiff(
-        library_iiif=LibraryIIIF(),
-        id_mapper=IDMapper()
-    )
+    diff = IIIFDiff(library_iiif=LibraryIIIF(), id_mapper=IDMapper())
 
     pprint(diff.fetch_and_diff(b_number))
