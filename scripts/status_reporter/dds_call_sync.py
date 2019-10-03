@@ -1,5 +1,6 @@
 import time
 
+
 class DDSCallSync:
     def __init__(self, dds_client, status_store, thread_pool):
         self.dds_client = dds_client
@@ -39,10 +40,7 @@ class DDSCallSync:
             return False
 
     def update_store_from_dds(
-        self,
-        should_request_ingests=False,
-        retry_finished=False,
-        verify_ingests=False,
+        self, should_request_ingests=False, retry_finished=False, verify_ingests=False
     ):
         def _ingest(bnumber):
             return self._ingest(bnumber, verify_ingests)
@@ -88,7 +86,9 @@ class DDSCallSync:
             results = self.thread_pool.map(self.dds_client.status, bnumbers)
 
             not_found_bnumbers = [
-                record["bnumber"] for record in results if record["status"] is "not_found"
+                record["bnumber"]
+                for record in results
+                if record["status"] is "not_found"
             ]
 
             waiting_bnumbers = [

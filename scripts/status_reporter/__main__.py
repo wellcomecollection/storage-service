@@ -18,6 +18,7 @@ from defaults import *
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
 def reset(s3_client, store):
     bib_number_generator = bnumbers.BibNumberGenerator(s3_client)
     numbers = list(bib_number_generator.bnumbers())
@@ -26,42 +27,39 @@ def reset(s3_client, store):
 
     store.reset(numbers)
 
+
 def main():
     parser = argparse.ArgumentParser(description="Check status of jobs")
 
     parser.add_argument(
         "--database_location",
-        default=defaults['database_location'],
+        default=defaults["database_location"],
         help="Location of sqllite database",
     )
 
     parser.add_argument(
         "--library_goobi_url",
-        default=defaults['libray_goobi_url'],
+        default=defaults["libray_goobi_url"],
         help="URL pattern for starting ingests",
     )
 
     parser.add_argument(
         "--goobi_call_url",
-        default=defaults['goobi_call_url'],
+        default=defaults["goobi_call_url"],
         help="URL pattern for requesting ingest status",
     )
 
     parser.add_argument(
-        "--ingest_bnumber",
-        default=None,
-        help="Location of sqllite database",
+        "--ingest_bnumber", default=None, help="Location of sqllite database"
     )
 
     parser.add_argument(
-        "--compare_manifest",
-        default=None,
-        help="Location of sqllite database",
+        "--compare_manifest", default=None, help="Location of sqllite database"
     )
 
     parser.add_argument(
         "--compare_manifests",
-        action='store_true',
+        action="store_true",
         help="Compare all finished manifests",
     )
 
@@ -90,21 +88,19 @@ def main():
     )
 
     parser.add_argument(
-        '--dump_finished',
-        action='store_true',
-        help='Print all finished ingest bnumbers'
+        "--dump_finished",
+        action="store_true",
+        help="Print all finished ingest bnumbers",
     )
 
     parser.add_argument(
-        '--dds_call_sync',
-        action='store_true',
-        help='Sync call status with DDS'
+        "--dds_call_sync", action="store_true", help="Sync call status with DDS"
     )
 
     parser.add_argument(
-        '--retry_mismatched_manifests',
-        action='store_true',
-        help='Reingest mismatched manifests'
+        "--retry_mismatched_manifests",
+        action="store_true",
+        help="Reingest mismatched manifests",
     )
 
     args = parser.parse_args()
@@ -115,7 +111,7 @@ def main():
 
     pool = ThreadPool(20)
 
-    aws = aws_client.AwsClient(defaults['role_arn'])
+    aws = aws_client.AwsClient(defaults["role_arn"])
 
     store = status_store.StatusStore(status_store_location)
     client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)
@@ -124,8 +120,9 @@ def main():
     diff = iiif_diff.IIIFDiff(iiif)
     ss_client = storage_client.StorageClient().get()
 
-    iiif_sync = manifest_sync.ManifestSync(store, diff, ss_client, client, aws.s3_client(), pool)
-
+    iiif_sync = manifest_sync.ManifestSync(
+        store, diff, ss_client, client, aws.s3_client(), pool
+    )
 
     if args.ingest_bnumber:
         bnumber = args.ingest_bnumber
@@ -142,14 +139,14 @@ def main():
         s3_client = aws.s3_client()
         reset(s3_client, store)
 
-    elif(args.dump_finished):
-        finished = store.get_status('finished')
+    elif args.dump_finished:
+        finished = store.get_status("finished")
 
         for finished_bnumbers_batch in finished:
             for bnumber in finished_bnumbers_batch:
-                print(bnumber['bnumber'])
+                print(bnumber["bnumber"])
 
-    elif(args.dds_call_sync):
+    elif args.dds_call_sync:
         print("Attempting to sync status with DDS.")
 
         should_request_ingests = args.should_request_ingests
@@ -162,22 +159,21 @@ def main():
             verify_ingests=verify_ingests,
         )
 
-    elif(args.compare_manifest):
+    elif args.compare_manifest:
         bnumber = args.compare_manifest
 
         print(f"Comparing Production and UAT manifests for {bnumber}")
-
 
         diff_summary = iiif_sync.diff_summary(bnumber)
 
         pprint(diff_summary)
 
-    elif(args.compare_manifests):
+    elif args.compare_manifests:
         print(f"Comparing Production and UAT manifests for all finished.")
 
         iiif_sync.diff_summary_all_finished()
 
-    elif(args.retry_mismatched_manifests):
+    elif args.retry_mismatched_manifests:
         print("Getting finished DDS ingests.")
 
         iiif_sync.retry_mismatched_manifests()
