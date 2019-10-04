@@ -1,3 +1,5 @@
+from boto3.dynamodb.types import TypeDeserializer
+
 import datetime as dt
 
 
