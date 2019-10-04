@@ -48,6 +48,10 @@ data "aws_iam_policy_document" "access_read" {
 
       values = [
         "AROAZQI22QHW3LZ4TYY54:*",
+
+        # For the auxiliary ingest engine
+        # See https://wellcome.slack.com/archives/CBT40CMKQ/p1569923258424800
+        "AROAZQI22QHWUG2I4CBRN:*",
       ]
     }
 
