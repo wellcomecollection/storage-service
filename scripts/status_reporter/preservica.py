@@ -64,10 +64,7 @@ def _get_preservica_assets_from_s3(guid):
     _, path = tempfile.mkstemp()
 
     try:
-        s3_client.download_file(
-            Bucket="wdl-preservica",
-            Key=guid,
-            Filename=path)
+        s3_client.download_file(Bucket="wdl-preservica", Key=guid, Filename=path)
     except ClientError as err:
         if err.args[0].startswith("An error occurred (404)"):
             return None

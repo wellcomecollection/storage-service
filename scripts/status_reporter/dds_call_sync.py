@@ -40,10 +40,8 @@ class DDSCallSync:
             return False
 
     def update_store_from_dds(
-            self,
-            should_request_ingests=False,
-            retry_finished=False,
-            verify_ingests=False):
+        self, should_request_ingests=False, retry_finished=False, verify_ingests=False
+    ):
         def _ingest(bnumber):
             return self._ingest(bnumber, verify_ingests)
 
@@ -73,8 +71,7 @@ class DDSCallSync:
             print(f"waiting: {latest['waiting']}")
             print(f"finished: {latest['finished']}")
             print(f"total: {latest['total']}")
-            print(
-                f"last: {time_to_run}, total: {total_time}, mean: {average_time}")
+            print(f"last: {time_to_run}, total: {total_time}, mean: {average_time}")
             print("")
 
             start_time = time.time()
@@ -94,18 +91,17 @@ class DDSCallSync:
                 if record["status"] is "not_found"
             ]
 
-            waiting_bnumbers = [record["bnumber"]
-                                for record in results if record["status"] is "waiting"]
+            waiting_bnumbers = [
+                record["bnumber"] for record in results if record["status"] is "waiting"
+            ]
 
             last_batch_waiting = len(waiting_bnumbers)
             last_batch_not_found = len(not_found_bnumbers)
 
             if len(not_found_bnumbers) > 0 and should_request_ingests:
-                ingest_results = self.thread_pool.map(
-                    _ingest, not_found_bnumbers)
+                ingest_results = self.thread_pool.map(_ingest, not_found_bnumbers)
 
-                ingested_count = len(
-                    [result for result in ingest_results if result])
+                ingested_count = len([result for result in ingest_results if result])
 
                 total_ingested = total_ingested + ingested_count
 

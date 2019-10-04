@@ -39,19 +39,16 @@ class BibNumberGenerator:
                 break
 
     def _get_matching_s3_keys(self, client, bucket, prefix="", suffix=""):
-        for obj in self._get_matching_s3_objects(
-                client, bucket, prefix, suffix):
+        for obj in self._get_matching_s3_objects(client, bucket, prefix, suffix):
             yield obj["Key"]
 
     def bnumbers(self):
         bucket = self.bucket
         prefix = self.prefix
 
-        bnumber_pattern = re.compile(
-            r"\A" + prefix + r"[0-9ax/]*/(b[0-9ax]{8}).xml\Z")
+        bnumber_pattern = re.compile(r"\A" + prefix + r"[0-9ax/]*/(b[0-9ax]{8}).xml\Z")
 
-        for key in self._get_matching_s3_keys(
-                self.s3_client, self.bucket, self.prefix):
+        for key in self._get_matching_s3_keys(self.s3_client, self.bucket, self.prefix):
             match = bnumber_pattern.match(key)
             if bnumber_pattern.match(key):
                 yield match.group(1)

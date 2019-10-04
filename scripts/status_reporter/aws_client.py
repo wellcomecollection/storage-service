@@ -41,6 +41,4 @@ read_only_client = AwsClient(
     role_arn="arn:aws:iam::975596993436:role/storage-read_only"
 )
 
-dev_client = AwsClient(
-    role_arn="arn:aws:iam::975596993436:role/storage-developer"
-)
+dev_client = AwsClient(role_arn="arn:aws:iam::975596993436:role/storage-developer")
