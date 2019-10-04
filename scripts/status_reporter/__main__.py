@@ -99,6 +99,12 @@ def main():
     )
 
     parser.add_argument(
+        "--dump_waiting",
+        action="store_true",
+        help="Print all finished ingest bnumbers",
+    )
+
+    parser.add_argument(
         "--dds_call_sync",
         action="store_true",
         help="Sync call status with DDS"
@@ -141,6 +147,13 @@ def main():
 
     elif args.dump_finished:
         finished = _status_store.get_status("finished")
+
+        for finished_bnumbers_batch in finished:
+            for bnumber in finished_bnumbers_batch:
+                print(bnumber["bnumber"])
+
+    elif args.dump_waiting:
+        finished = _status_store.get_status("waiting")
 
         for finished_bnumbers_batch in finished:
             for bnumber in finished_bnumbers_batch:
