@@ -8,11 +8,12 @@ import aws_client
 import bnumbers
 import dds_client
 import dds_call_sync
-import status_store
-import library_iiif
+import helpers
 import iiif_diff
-import manifest_sync
-import storage_client
+import id_mapper
+import library_iiif
+import status_store
+import matcher
 
 from defaults import *
 
@@ -50,17 +51,21 @@ def main():
     )
 
     parser.add_argument(
-        "--ingest_bnumber", default=None, help="Location of sqllite database"
+        "--ingest_bnumber",
+        default=None,
+        help="Location of sqllite database"
     )
 
     parser.add_argument(
-        "--compare_manifest", default=None, help="Location of sqllite database"
+        "--compare_manifest",
+        default=None,
+        help="Compare library manifests for bnumber"
     )
 
     parser.add_argument(
-        "--compare_manifests",
-        action="store_true",
-        help="Compare all finished manifests",
+        "--match_manifest_files",
+        default=None,
+        help="Compare manifest files for bnumber"
     )
 
     parser.add_argument(
@@ -94,13 +99,9 @@ def main():
     )
 
     parser.add_argument(
-        "--dds_call_sync", action="store_true", help="Sync call status with DDS"
-    )
-
-    parser.add_argument(
-        "--retry_mismatched_manifests",
+        "--dds_call_sync",
         action="store_true",
-        help="Reingest mismatched manifests",
+        help="Sync call status with DDS"
     )
 
     args = parser.parse_args()
@@ -109,38 +110,37 @@ def main():
     dds_start_ingest_url = args.library_goobi_url
     dds_item_query_url = args.goobi_call_url
 
-    pool = ThreadPool(20)
+    storage_api_url = defaults['storage_api_url']
+    role_arn = defaults['role_arn']
 
-    aws = aws_client.AwsClient(defaults["role_arn"])
-
-    store = status_store.StatusStore(status_store_location)
-    client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)
-    call_sync = dds_call_sync.DDSCallSync(client, store, pool)
-    iiif = library_iiif.LibraryIIIF()
-    diff = iiif_diff.IIIFDiff(iiif)
-    ss_client = storage_client.StorageClient().get()
-
-    iiif_sync = manifest_sync.ManifestSync(
-        store, diff, ss_client, client, aws.s3_client(), pool
-    )
+    _thread_pool = ThreadPool(20)
+    _aws_client = aws_client.AwsClient(role_arn)
+    _s3_client = _aws_client.s3_client()
+    _status_store = status_store.StatusStore(status_store_location)
+    _dds_client = dds_client.DDSClient(
+        dds_start_ingest_url, dds_item_query_url)
+    _call_sync = dds_call_sync.DDSCallSync(
+        _dds_client, _status_store, _thread_pool)
+    _library_iiif = library_iiif.LibraryIIIF()
+    _id_mapper = id_mapper.IDMapper()
+    _iiif_diff = iiif_diff.IIIFDiff(_library_iiif, _id_mapper)
+    _storage_client = helpers.create_storage_client(storage_api_url)
+    _matcher = matcher.Matcher(_iiif_diff, _storage_client)
 
     if args.ingest_bnumber:
         bnumber = args.ingest_bnumber
 
         print(f"Calling DDS GoobiSync endpoint for {bnumber}")
 
-        ingest_status = client.ingest(bnumber)
+        ingest_status = _dds_client.ingest(bnumber)
         print(ingest_status)
 
     elif args.reset:
         print("Resetting local data.")
-
-        s3_client = aws.s3_client()
-        s3_client = aws.s3_client()
-        reset(s3_client, store)
+        reset(_s3_client, _status_store)
 
     elif args.dump_finished:
-        finished = store.get_status("finished")
+        finished = _status_store.get_status("finished")
 
         for finished_bnumbers_batch in finished:
             for bnumber in finished_bnumbers_batch:
@@ -153,7 +153,7 @@ def main():
         retry_finished = args.retry_finished
         verify_ingests = args.verify_ingests
 
-        call_sync.update_store_from_dds(
+        _call_sync.update_store_from_dds(
             should_request_ingests=should_request_ingests,
             retry_finished=retry_finished,
             verify_ingests=verify_ingests,
@@ -164,19 +164,18 @@ def main():
 
         print(f"Comparing Production and UAT manifests for {bnumber}")
 
-        diff_summary = iiif_sync.diff_summary(bnumber)
+        diff_summary = _iiif_diff.fetch_and_diff(bnumber)
 
         pprint(diff_summary)
 
-    elif args.compare_manifests:
-        print(f"Comparing Production and UAT manifests for all finished.")
+    elif args.match_manifest_files:
+        bnumber = args.match_manifest_files
 
-        iiif_sync.diff_summary_all_finished()
+        print(f"Comparing manifest files for {bnumber}")
 
-    elif args.retry_mismatched_manifests:
-        print("Getting finished DDS ingests.")
+        _match_summary = _matcher.match(bnumber)
 
-        iiif_sync.retry_mismatched_manifests()
+        pprint(_match_summary)
 
     print("Done.")
 

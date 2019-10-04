@@ -47,9 +47,8 @@ def draw_chart(data, colors=None):
 
         print(
             termcolor.colored(
-                f"{label.ljust(longest_label_length).lower()}  {count:#6d} {bar}", color
-            )
-        )
+                f"{label.ljust(longest_label_length).lower()}  {count:#6d} {bar}",
+                color))
 
 
 def to_s(last_event):
@@ -146,9 +145,13 @@ if __name__ == "__main__":
         print("== processing ==")
 
         lines = [
-            "%s ~> %s" % (ingest_id, to_s(date))
-            for (ingest_id, date) in sorted(processing.items(), key=lambda t: t[1])
-        ]
+            "%s ~> %s" %
+            (ingest_id,
+             to_s(date)) for (
+                ingest_id,
+                date) in sorted(
+                processing.items(),
+                key=lambda t: t[1])]
 
         print(termcolor.colored("\n".join(lines[-5:]), "blue"))
         print("== processing ==\n")

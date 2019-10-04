@@ -4,7 +4,7 @@ import sqlite3
 class StatusStore:
     def _chunks(self, data, rows=10000):
         for i in range(0, len(data), rows):
-            yield data[i : i + rows]
+            yield data[i: i + rows]
 
     def _batch_select(self, sql, batch_size, f):
         results = list(self.connection.execute(sql))
@@ -19,7 +19,7 @@ class StatusStore:
 
         try:
             result = [list(self.connection.execute(sql)) for sql in statements]
-        except:
+        except BaseException:
             self.connection.rollback()
             raise
         else:
@@ -48,7 +48,8 @@ class StatusStore:
         self.db_location = db_location
         self.table_name = table_name
 
-        self.connection = sqlite3.connect(self.db_location, check_same_thread=False)
+        self.connection = sqlite3.connect(
+            self.db_location, check_same_thread=False)
 
         self._bnumber_count = 0
 
@@ -86,8 +87,8 @@ class StatusStore:
 
             for bnumber in chunk:
                 sql = (
-                    f"INSERT INTO {self.table_name} " f"(bnumber) VALUES ('{bnumber}')"
-                )
+                    f"INSERT INTO {self.table_name} "
+                    f"(bnumber) VALUES ('{bnumber}')")
 
                 statements.append(sql)
 

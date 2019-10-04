@@ -71,7 +71,9 @@ class IIIFDiff:
             old_value = diff["old_value"]
             new_value = diff["new_value"]
 
-            dlcs_prefixes = ("https://dlcs.io/iiif-img/", "https://dlcs.io/thumbs/")
+            dlcs_prefixes = (
+                "https://dlcs.io/iiif-img/",
+                "https://dlcs.io/thumbs/")
 
             if not old_value.startswith(dlcs_prefixes):
                 continue
@@ -119,7 +121,9 @@ class IIIFDiff:
         new_manifest = self.library_iiif.stage(bnum)
         old_manifest = self.library_iiif.prod(bnum)
 
-        return self.diff_manifests(old_manifest=old_manifest, new_manifest=new_manifest)
+        return self.diff_manifests(
+            old_manifest=old_manifest,
+            new_manifest=new_manifest)
 
 
 if __name__ == "__main__":

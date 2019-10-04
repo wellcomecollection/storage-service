@@ -47,7 +47,8 @@ def get_storage_client(api_url):
 
 
 def get_aws_resource(resource, role_arn):
-    # Taken from https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-api.html
+    # Taken from
+    # https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-api.html
 
     # The calls to AWS STS AssumeRole must be signed with the access key ID
     # and secret access key of an existing IAM user or by using existing temporary
