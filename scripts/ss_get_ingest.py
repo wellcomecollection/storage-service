@@ -74,9 +74,9 @@ if __name__ == "__main__":
     print("api:\t\t%s" % api_variant)
 
     print(
-        "source:\t\ts3://%s/%s" %
-        (ingest["sourceLocation"]["bucket"],
-         ingest["sourceLocation"]["path"]))
+        "source:\t\ts3://%s/%s"
+        % (ingest["sourceLocation"]["bucket"], ingest["sourceLocation"]["path"])
+    )
     print("space:\t\t%s" % ingest["space"]["id"])
     print("external ID:\t%s" % ingest["bag"]["info"]["externalIdentifier"])
 
@@ -115,9 +115,7 @@ if __name__ == "__main__":
         if delta.seconds < 5:
             print("last event:\t%s (just now)" % last_event_date)
         elif delta.seconds < 60:
-            print(
-                "last event:\t%s (%d seconds ago)" %
-                (delta.seconds, last_event_date))
+            print("last event:\t%s (%d seconds ago)" % (delta.seconds, last_event_date))
         elif 60 <= delta.seconds < 120:
             print("last event:\t%s (1 minute ago)" % last_event_date)
         elif delta.seconds < 60 * 60:
@@ -156,8 +154,8 @@ if __name__ == "__main__":
             )
         except KeyError:
             print(
-                "    python3 ss_get_bag.py %s %s" %
-                (ingest["space"]["id"],
-                 ingest["bag"]["info"]["externalIdentifier"]))
+                "    python3 ss_get_bag.py %s %s"
+                % (ingest["space"]["id"], ingest["bag"]["info"]["externalIdentifier"])
+            )
 
     sys.exit(0)

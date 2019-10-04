@@ -3,11 +3,7 @@ import requests
 
 
 class DDSClient:
-    def __init__(
-            self,
-            start_ingest_url,
-            item_query_url,
-            connection_pool_size=1):
+    def __init__(self, start_ingest_url, item_query_url, connection_pool_size=1):
         self.start_ingest_url = start_ingest_url
         self.item_query_url = item_query_url
 

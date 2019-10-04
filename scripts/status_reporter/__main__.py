@@ -51,21 +51,17 @@ def main():
     )
 
     parser.add_argument(
-        "--ingest_bnumber",
-        default=None,
-        help="Location of sqllite database"
+        "--ingest_bnumber", default=None, help="Location of sqllite database"
     )
 
     parser.add_argument(
-        "--compare_manifest",
-        default=None,
-        help="Compare library manifests for bnumber"
+        "--compare_manifest", default=None, help="Compare library manifests for bnumber"
     )
 
     parser.add_argument(
         "--match_manifest_files",
         default=None,
-        help="Compare manifest files for bnumber"
+        help="Compare manifest files for bnumber",
     )
 
     parser.add_argument(
@@ -99,15 +95,11 @@ def main():
     )
 
     parser.add_argument(
-        "--dump_waiting",
-        action="store_true",
-        help="Print all finished ingest bnumbers",
+        "--dump_waiting", action="store_true", help="Print all finished ingest bnumbers"
     )
 
     parser.add_argument(
-        "--dds_call_sync",
-        action="store_true",
-        help="Sync call status with DDS"
+        "--dds_call_sync", action="store_true", help="Sync call status with DDS"
     )
 
     args = parser.parse_args()
@@ -116,17 +108,15 @@ def main():
     dds_start_ingest_url = args.library_goobi_url
     dds_item_query_url = args.goobi_call_url
 
-    storage_api_url = defaults['storage_api_url']
-    role_arn = defaults['role_arn']
+    storage_api_url = defaults["storage_api_url"]
+    role_arn = defaults["role_arn"]
 
     _thread_pool = ThreadPool(20)
     _aws_client = aws_client.AwsClient(role_arn)
     _s3_client = _aws_client.s3_client()
     _status_store = status_store.StatusStore(status_store_location)
-    _dds_client = dds_client.DDSClient(
-        dds_start_ingest_url, dds_item_query_url)
-    _call_sync = dds_call_sync.DDSCallSync(
-        _dds_client, _status_store, _thread_pool)
+    _dds_client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)
+    _call_sync = dds_call_sync.DDSCallSync(_dds_client, _status_store, _thread_pool)
     _library_iiif = library_iiif.LibraryIIIF()
     _id_mapper = id_mapper.IDMapper()
     _iiif_diff = iiif_diff.IIIFDiff(_library_iiif, _id_mapper)

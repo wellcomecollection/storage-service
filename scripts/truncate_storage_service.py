@@ -45,8 +45,7 @@ def purge_sqs_queues(namespace):
 
     sqs_client = sqs.meta.client
 
-    for queue_url in sqs_client.list_queues(
-            QueueNamePrefix=namespace)["QueueUrls"]:
+    for queue_url in sqs_client.list_queues(QueueNamePrefix=namespace)["QueueUrls"]:
         print("    - %s" % queue_url.split("/")[-1])
         sqs_client.purge_queue(QueueUrl=queue_url)
 
@@ -59,8 +58,7 @@ if __name__ == "__main__":
         show_choices=True,
     )
 
-    click.confirm(
-        "This will delete ALL ingests and ALL manifests. Are you sure?")
+    click.confirm("This will delete ALL ingests and ALL manifests. Are you sure?")
     click.confirm("Really sure?")
     click.confirm("Really really sure?")
 
