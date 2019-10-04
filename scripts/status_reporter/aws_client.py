@@ -28,3 +28,8 @@ class AwsClient:
     def s3_client(self):
         session = self._assumed_role_session()
         return session.client("s3")
+
+
+read_only_client = AwsClient(
+    role_arn="arn:aws:iam::975596993436:role/storage-read_only"
+)
