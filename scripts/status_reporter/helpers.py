@@ -4,7 +4,7 @@ import os
 from wellcome_storage_service import StorageServiceClient
 
 
-def create_storage_client(api_url='https://api.wellcomecollection.org/storage/v1'):
+def create_storage_client(api_url="https://api.wellcomecollection.org/storage/v1"):
     creds_path = os.path.join(
         os.environ["HOME"], ".wellcome-storage", "oauth-credentials.json"
     )
