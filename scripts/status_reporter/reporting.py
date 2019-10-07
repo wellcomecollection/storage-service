@@ -1,6 +1,10 @@
 # -*- encoding: utf-8
 
+import collections
+
 import termcolor
+
+import dynamo_status_manager
 
 
 def has_succeeded_previously(row, name):
@@ -61,7 +65,7 @@ def pprint_report(report):
     data = [
         ("success", report["success"]),
         ("failure", report["failure"]),
-        ("not checked", report["not started"]),
+        ("not checked", report["not checked"]),
         ("unknown", unknown)
     ]
 
@@ -77,3 +81,15 @@ def pprint_report(report):
             colors[label] = "grey"
 
     _draw_ascii_bar_chart(data, colors)
+
+
+def build_report(name):
+    reader = dynamo_status_manager.DynamoStatusReader()
+
+    report = collections.Counter()
+
+    for row in reader.get_all_statuses():
+        status = get_named_status(row, name=name)
+        report[status] += 1
+
+    pprint_report(report)

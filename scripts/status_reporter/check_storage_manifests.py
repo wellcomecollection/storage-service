@@ -65,12 +65,4 @@ def run(first_bnumber=None):
 
 
 def report():
-    reader = dynamo_status_manager.DynamoStatusReader()
-
-    report = collections.Counter()
-
-    for row in reader.get_all_statuses():
-        status = reporting.get_named_status(row, name=STATUS_NAME)
-        report[status] += 1
-
-    reporting.pprint_report(report)
+    return reporting.build_report(name=STATUS_NAME)
