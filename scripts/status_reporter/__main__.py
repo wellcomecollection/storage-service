@@ -63,6 +63,18 @@ def main():
         "report_iiif_manifest_contents", help="Report how many b numbers have matching IIIF manifest contents"
     )
 
+    # check_iiif_manifest_file_sizes
+    check_iiif_manifest_file_sizes = subparsers.add_parser(
+        "check_iiif_manifest_file_sizes", help="Check for matching IIIF manifest contents for each b number"
+    )
+    check_iiif_manifest_file_sizes.add_argument(
+        "--first_bnumber", help="Start checking from this b number"
+    )
+
+    report_iiif_manifest_file_sizes = subparsers.add_parser(
+        "report_iiif_manifest_file_sizes", help="Report how many b numbers have matching IIIF manifest contents"
+    )
+
     parser.add_argument("--get_status", default=None, help="Get status from dynamo")
 
     parser.add_argument(
@@ -172,6 +184,18 @@ def main():
         import check_iiif_manifest_contents
 
         check_iiif_manifest_contents.report()
+        return
+
+    if args.subcommand_name == "check_iiif_manifest_file_sizes":
+        import check_iiif_manifest_file_sizes
+
+        check_iiif_manifest_file_sizes.run(first_bnumber=args.first_bnumber)
+        return
+
+    if args.subcommand_name == "report_iiif_manifest_file_sizes":
+        import check_iiif_manifest_file_sizes
+
+        check_iiif_manifest_file_sizes.report()
         return
 
     print("Done.")
