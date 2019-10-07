@@ -39,26 +39,27 @@ def _draw_ascii_bar_chart(data, colors=None):
         bar_chunks, remainder = divmod(int(count * 8 / increment), 8)
 
         # First draw the full width chunks
-        bar = '█' * bar_chunks
+        bar = "█" * bar_chunks
 
         # Then add the fractional part.  The Unicode code points for
         # block elements are (8/8), (7/8), (6/8), ... , so we need to
         # work backwards.
         if remainder > 0:
-            bar += chr(ord('█') + (8 - remainder))
+            bar += chr(ord("█") + (8 - remainder))
 
         # If the bar is empty, add a left one-eighth block
-        bar = bar or  '▏'
+        bar = bar or "▏"
 
-        print(termcolor.colored(
-            f"{label.rjust(longest_label_length)} ▏ {count:#6d} {bar}",
-            colors.get(label)
-        ))
-
+        print(
+            termcolor.colored(
+                f"{label.rjust(longest_label_length)} ▏ {count:#6d} {bar}",
+                colors.get(label),
+            )
+        )
 
 
 def pprint_report(report):
-    TOTAL_BNUMBERS = 268605
+    TOTAL_BNUMBERS = 268_605
 
     unknown = TOTAL_BNUMBERS - sum(report.values())
 
@@ -66,14 +67,14 @@ def pprint_report(report):
         ("success", report["success"]),
         ("failure", report["failure"]),
         ("not checked", report["not checked"]),
-        ("unknown", unknown)
+        ("unknown", unknown),
     ]
 
     colors = {
         "success": "green",
         "failure": "red",
         "not checked": "blue",
-        "unknown": "yellow"
+        "unknown": "yellow",
     }
 
     for (label, count) in data:

@@ -27,9 +27,7 @@ class DynamoStatusReader:
                 yield self._deserialize_row(row)
 
     def get_all_statuses(self, first_bnumber=None):
-        kwargs = {
-            "TableName": self.table_name,
-        }
+        kwargs = {"TableName": self.table_name}
 
         if first_bnumber:
             kwargs["ExclusiveStartKey"] = {"bnumber": {"S": first_bnumber}}
