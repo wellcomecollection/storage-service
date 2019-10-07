@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
-import concurrent.futures
 import pathlib
 import sys
 
@@ -23,6 +22,12 @@ def needs_check(row):
         return False
 
     return True
+
+
+def get_statuses_for_updating(first_bnumber):
+    for row in dynamo_status_manager.get_all_statuses(first_bnumber=first_bnumber):
+        if needs_check(row):
+            yield row
 
 
 def run_check(status_updater, storage_client, row):
@@ -48,12 +53,6 @@ def run_check(status_updater, storage_client, row):
         outfile.write(f"Recorded storage manifest creation for {bnumber}\n")
 
 
-def get_statuses_for_updating(first_bnumber):
-    for row in dynamo_status_manager.get_all_statuses(first_bnumber=first_bnumber):
-        if needs_check(row):
-            yield row
-
-
 if __name__ == "__main__":
     try:
         first_bnumber = sys.argv[1]
@@ -64,14 +63,6 @@ if __name__ == "__main__":
 
     futures = []
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-            for row in get_statuses_for_updating(first_bnumber=first_bnumber):
-                futures.append(
-                    executor.submit(run_check, status_updater, storage_client, row)
-                )
-
-            for fut in tqdm.tqdm(
-                concurrent.futures.as_completed(futures), total=len(futures)
-            ):
-                fut.result()
+    with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
+        for row in get_statuses_for_updating(first_bnumber=first_bnumber):
+            run_check(status_updater, storage_client, row)
