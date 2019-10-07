@@ -1,5 +1,7 @@
 # -*- encoding: utf-8
 
+import re
+
 import logging
 import aws
 import shutil
@@ -310,7 +312,14 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
     # and each unique collection of bytes in Preservica should have
     # its own GUID.
     #
-    preservica_uuid = web_url.strip("/").split("/")[0]
+    m = re.match(
+        r'^https://wellcomelibrary\.org/service/asset/(?P<guid>[0-9a-f\-]+)$',
+        web_url)
+    if m is not None:
+        preservica_uuid = m.group("guid")
+    else:
+        raise ValueError("Don't know how to get Preservica GUID from {web_url}")
+
     try:
         logging.debug(
             "Looking for cached asset at s3://%s/%s",
