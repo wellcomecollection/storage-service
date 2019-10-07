@@ -22,9 +22,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def main():
     parser = argparse.ArgumentParser(description="Check status of jobs")
 
-    parser.add_argument(
-        "--get_status", default=None, help="Get status from dynamo"
-    )
+    parser.add_argument("--get_status", default=None, help="Get status from dynamo")
 
     parser.add_argument(
         "--dds_ingest_bnumber", default=None, help="Call DDS Client Ingest for bnumber"
