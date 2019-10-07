@@ -63,11 +63,18 @@ def run_check(status_updater, status_summary):
         storage_manifest_size = f["storage_manifest_entry"]["size"]
 
         if preservica_size != storage_manifest_size:
-            differences.append(f["preservica_guid"])
+            differences.append(
+                {
+                    "guid": f["preservica_guid"],
+                    "preservica": preservica_size,
+                    "storage_service": storage_manifest_size
+                }
+            )
 
     if differences:
         print(f"Not all file sizes match for {bnumber}: {differences}")
         status_updater.update(
+        status_updater.update_status(
             bnumber,
             status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
             success=False,
