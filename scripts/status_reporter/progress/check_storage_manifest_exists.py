@@ -44,23 +44,29 @@ def run_check(status_updater, storage_client, row):
         last_modified=manifest_date,
     )
 
-    # print(f"Recorded storage manifest creation for {bnumber}")
+    with open("storage_manifest.log", "a") as outfile:
+        outfile.write(f"Recorded storage manifest creation for {bnumber}\n")
 
 
-def get_statuses_for_updating():
-    for row in dynamo_status_manager.get_all_statuses(first_bnumber="b28476979"):
+def get_statuses_for_updating(first_bnumber):
+    for row in dynamo_status_manager.get_all_statuses(first_bnumber=first_bnumber):
         if needs_check(row):
             yield row
 
 
 if __name__ == "__main__":
+    try:
+        first_bnumber = sys.argv[1]
+    except IndexError:
+        first_bnumber = None
+
     storage_client = helpers.create_storage_client()
 
     futures = []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-            for row in get_statuses_for_updating():
+            for row in get_statuses_for_updating(first_bnumber=first_bnumber):
                 futures.append(
                     executor.submit(run_check, status_updater, storage_client, row)
                 )
