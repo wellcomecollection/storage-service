@@ -15,6 +15,20 @@ class DynamoStatusManager:
 
         return {k: deserializer.deserialize(v) for k, v in row.items()}
 
+    def _get_raw_row(self, bnumber):
+        resp = self.dynamo_table.get_item(Key={"bnumber": bnumber})
+        return resp["Item"]
+
+    def get_row_status(self, bnumber):
+         row = self._get_raw_row(bnumber)
+
+         statuses = { k:v for k,v in row.items() if k.startswith('status-') }
+
+         if statuses == {}:
+            statuses = None
+
+         return statuses
+
     def get_all_table_rows(self):
         paginator = self.dynamo_client.get_paginator("scan")
         all_pages = paginator.paginate(TableName=self.table_name)
@@ -24,8 +38,7 @@ class DynamoStatusManager:
                 yield self._deserialize_row(row)
 
     def update_status(self, bnumber, *, status_name, success, last_modified=None):
-        resp = self.dynamo_table.get_item(Key={"bnumber": bnumber})
-        item = resp["Item"]
+        item = self._get_raw_row(bnumber)
 
         item[f"status-{status_name}"] = {
             "success": success,
