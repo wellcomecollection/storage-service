@@ -313,8 +313,8 @@ def fetch_from_wlorg(web_url, destination, retry_attempts):
     # its own GUID.
     #
     m = re.match(
-        r'^https://wellcomelibrary\.org/service/asset/(?P<guid>[0-9a-f\-]+)$',
-        web_url)
+        r"^https://wellcomelibrary\.org/service/asset/(?P<guid>[0-9a-f\-]+)$", web_url
+    )
     if m is not None:
         preservica_uuid = m.group("guid")
     else:
