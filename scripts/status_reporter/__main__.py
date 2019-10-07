@@ -26,7 +26,9 @@ def main():
     )
 
     parser.add_argument(
-        "--dds_job_status", default=None, help="Inspect status in DDS Client for bnumber"
+        "--dds_job_status",
+        default=None,
+        help="Inspect status in DDS Client for bnumber",
     )
 
     parser.add_argument(
@@ -34,7 +36,7 @@ def main():
     )
 
     parser.add_argument(
-        "--match_files", default=None, help="Compare manifest files for bnumber",
+        "--match_files", default=None, help="Compare manifest files for bnumber"
     )
 
     args = parser.parse_args()
