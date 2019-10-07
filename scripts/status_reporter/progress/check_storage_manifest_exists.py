@@ -41,7 +41,7 @@ def run_check(status_updater, storage_client, row):
         bnumber,
         status_name="storage_manifest_created",
         success=True,
-        last_modified=manifest_date
+        last_modified=manifest_date,
     )
 
     # print(f"Recorded storage manifest creation for {bnumber}")
@@ -62,9 +62,7 @@ if __name__ == "__main__":
         with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
             for row in get_statuses_for_updating():
                 futures.append(
-                    executor.submit(
-                        run_check, status_updater, storage_client, row
-                    )
+                    executor.submit(run_check, status_updater, storage_client, row)
                 )
 
             for fut in tqdm.tqdm(

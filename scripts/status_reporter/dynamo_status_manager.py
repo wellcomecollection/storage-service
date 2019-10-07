@@ -11,9 +11,7 @@ def get_all_statuses(table_name="storage-migration-status", first_bnumber=None):
 
     dynamo_client = read_only_client.dynamo_client()
 
-    pagination_kwargs = {
-        "TableName": table_name
-    }
+    pagination_kwargs = {"TableName": table_name}
 
     if first_bnumber:
         pagination_kwargs["ExclusiveStartKey"] = {"bnumber": {"S": first_bnumber}}
@@ -23,15 +21,13 @@ def get_all_statuses(table_name="storage-migration-status", first_bnumber=None):
 
     for page in all_pages:
         for row in page["Items"]:
-            yield {
-                key: deserializer.deserialize(value)
-                for key, value in row.items()
-            }
+            yield {key: deserializer.deserialize(value) for key, value in row.items()}
 
 
 class DynamoStatusUpdater:
     def __enter__(self, table_name="storage-migration-status"):
         from aws_client import dev_client
+
         self.dynamo_table = dev_client.dynamo_table(table_name)
 
         self._put_cache = []
