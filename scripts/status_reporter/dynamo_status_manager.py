@@ -1,4 +1,5 @@
 from boto3.dynamodb.types import TypeDeserializer
+from boto3.dynamodb.conditions import Attr
 
 import datetime as dt
 
@@ -6,36 +7,51 @@ import datetime as dt
 class DynamoStatusManager:
     def __init__(self, dev_client, table_name="storage-migration-status"):
         self.table_name = table_name
+
         self.dynamo_client = dev_client.dynamo_client()
         self.dynamo_table = dev_client.dynamo_table(self.table_name)
 
     @staticmethod
     def _deserialize_row(row):
         deserializer = TypeDeserializer()
-
         return {k: deserializer.deserialize(v) for k, v in row.items()}
+
+    def _row_scan_generator(self, *args,**kwargs):
+        paginator = self.dynamo_client.get_paginator("scan")
+        all_pages = paginator.paginate(*args,**kwargs)
+
+        for page in all_pages:
+            for row in page["Items"]:
+                yield self._deserialize_row(row)
 
     def _get_raw_row(self, bnumber):
         resp = self.dynamo_table.get_item(Key={"bnumber": bnumber})
         return resp["Item"]
 
     def get_row_status(self, bnumber):
-         row = self._get_raw_row(bnumber)
-
-         statuses = { k:v for k,v in row.items() if k.startswith('status-') }
-
-         if statuses == {}:
-            statuses = None
-
-         return statuses
+        row = self._get_raw_row(bnumber)
+        return { k:v for k,v in row.items() if k.startswith('status-') }
 
     def get_all_table_rows(self):
-        paginator = self.dynamo_client.get_paginator("scan")
-        all_pages = paginator.paginate(TableName=self.table_name)
+        return self._row_scan_generator(TableName=self.table_name)
 
-        for page in all_pages:
-            for row in page["Items"]:
-                yield self._deserialize_row(row)
+    def get_all_with_status(self, status_name):
+        return self._row_scan_generator(
+            TableName=self.table_name,
+            ExpressionAttributeNames={
+                "#statusname":status_name
+            },
+            FilterExpression=f"attribute_exists(#statusname)"
+        )
+
+    def get_all_without_status(self, status_name):
+        return self._row_scan_generator(
+            TableName=self.table_name,
+            ExpressionAttributeNames={
+                "#statusname":status_name
+            },
+            FilterExpression=f"attribute_not_exists(#statusname)"
+        )
 
     def update_status(self, bnumber, *, status_name, success, last_modified=None):
         item = self._get_raw_row(bnumber)
