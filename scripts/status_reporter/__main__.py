@@ -26,6 +26,7 @@ def main():
 
     subparsers = parser.add_subparsers(dest="subcommand_name", help="subcommand help")
 
+    # check_storage_manifests
     check_storage_manifests = subparsers.add_parser(
         "check_storage_manifests", help="Check for a storage manifest for each b number"
     )
@@ -38,6 +39,7 @@ def main():
         help="Report how many b numbers have storage manifests",
     )
 
+    # check_dds_sync
     check_dds_sync = subparsers.add_parser(
         "check_dds_sync", help="Check for a successful DDS sync for each b number"
     )
@@ -47,6 +49,18 @@ def main():
 
     report_dds_sync = subparsers.add_parser(
         "report_dds_sync", help="Report how many b numbers have a successful DDS sync"
+    )
+
+    # check_iiif_manifest_contents
+    check_iiif_manifest_contents = subparsers.add_parser(
+        "check_iiif_manifest_contents", help="Check for matching IIIF manifest contents for each b number"
+    )
+    check_iiif_manifest_contents.add_argument(
+        "--first_bnumber", help="Start checking from this b number"
+    )
+
+    report_iiif_manifest_contents = subparsers.add_parser(
+        "report_iiif_manifest_contents", help="Report how many b numbers have matching IIIF manifest contents"
     )
 
     parser.add_argument("--get_status", default=None, help="Get status from dynamo")
@@ -146,6 +160,18 @@ def main():
         import check_dds_sync
 
         check_dds_sync.report()
+        return
+
+    if args.subcommand_name == "check_iiif_manifest_contents":
+        import check_iiif_manifest_contents
+
+        check_iiif_manifest_contents.run(first_bnumber=args.first_bnumber)
+        return
+
+    if args.subcommand_name == "report_iiif_manifest_contents":
+        import check_iiif_manifest_contents
+
+        check_iiif_manifest_contents.report()
         return
 
     print("Done.")
