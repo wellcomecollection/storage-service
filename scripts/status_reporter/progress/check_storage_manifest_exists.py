@@ -14,10 +14,14 @@ import dynamo_status_manager
 import helpers
 
 
+def _has_succeeded_previously(row, name):
+    return row.get(f"status-{name}", {}).get("success")
+
+
 def needs_check(row):
     bnumber = row["bnumber"]
 
-    if row.get("status-storage_manifest_created", {}).get("success"):
+    if _has_succeeded_previously(row, "storage_manifest_created"):
         print(f"Already recorded storage manifest for {bnumber}")
         return False
 
@@ -49,8 +53,7 @@ def run_check(status_updater, storage_client, row):
         last_modified=manifest_date,
     )
 
-    with open("storage_manifest.log", "a") as outfile:
-        outfile.write(f"Recorded storage manifest creation for {bnumber}\n")
+    print(f"Recorded storage manifest creation for {bnumber}\n")
 
 
 if __name__ == "__main__":
