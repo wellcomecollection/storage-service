@@ -38,20 +38,14 @@ class DynamoStatusManager:
     def get_all_with_status(self, status_name):
         return self._row_scan_generator(
             TableName=self.table_name,
-            ScanFilter={
-                status_name: {
-                    'ComparisonOperator': 'NOT_NULL'
-                }
-            })
+            ScanFilter={status_name: {"ComparisonOperator": "NOT_NULL"}},
+        )
 
     def get_all_without_status(self, status_name):
         return self._row_scan_generator(
             TableName=self.table_name,
-            ScanFilter={
-                status_name: {
-                    'ComparisonOperator': 'NULL'
-                }
-            })
+            ScanFilter={status_name: {"ComparisonOperator": "NULL"}},
+        )
 
     def update_status(self, bnumber, *, status_name, success, last_modified=None):
         item = self._get_raw_row(bnumber)
