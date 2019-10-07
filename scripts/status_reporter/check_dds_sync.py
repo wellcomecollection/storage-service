@@ -6,6 +6,7 @@ import sys
 
 from wellcome_storage_service import BagNotFound
 
+import check_names
 import dds_client
 from defaults import defaults
 import dynamo_status_manager
@@ -13,17 +14,14 @@ import helpers
 import reporting
 
 
-STATUS_NAME = "dds_sync_complete"
-
-
 def needs_check(row):
     bnumber = row["bnumber"]
 
-    if not reporting.has_succeeded_previously(row, "storage_manifest_created"):
+    if not reporting.has_succeeded_previously(row, check_names.STORAGE_MANIFESTS):
         print(f"No storage manifest for {bnumber}")
         return False
 
-    if reporting.has_succeeded_previously(row, STATUS_NAME):
+    if reporting.has_succeeded_previously(row, check_names.DDS_SYNC):
         print(f"Already recorded successful DDS sync for {bnumber}")
         return False
 
@@ -52,7 +50,7 @@ def run_check(status_updater, row):
     if result == "finished":
         status_updater.update_status(
             bnumber,
-            status_name=STATUS_NAME,
+            status_name=check_names.DDS_SYNC,
             success=True,
             last_modified=dt.datetime.now().isoformat(),
         )
@@ -72,4 +70,4 @@ def run(first_bnumber=None):
 
 
 def report():
-    return reporting.build_report(name=STATUS_NAME)
+    return reporting.build_report(name=check_names.DDS_SYNC)

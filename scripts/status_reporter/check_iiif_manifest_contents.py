@@ -1,37 +1,30 @@
 # -*- encoding: utf-8
 
-# import collections
-# import datetime as dt
-# import sys
-#
-# from wellcome_storage_service import BagNotFound
-#
-# import dds_client
-from defaults import defaults
-# import helpers
-# import reporting
+import datetime as dt
+import json
 
+import aws_client
+import check_names
+from defaults import defaults
 import dynamo_status_manager
 import helpers
 from id_mapper import IDMapper
 from iiif_diff import IIIFDiff
 from library_iiif import LibraryIIIF
 from matcher import Matcher
-
-
-STATUS_NAME = "iiif_manifest_contents_match"
+import reporting
 
 
 def needs_check(row):
     bnumber = row["bnumber"]
 
-#     if not reporting.has_succeeded_previously(row, "storage_manifest_created"):
-#         print(f"No storage manifest for {bnumber}")
-#         return False
-#
-#     if reporting.has_succeeded_previously(row, STATUS_NAME):
-#         print(f"Already recorded successful DDS sync for {bnumber}")
-#         return False
+    if not reporting.has_succeeded_previously(row, check_names.DDS_SYNC):
+        print(f"No successful DDS sync for {bnumber}")
+        return False
+
+    if reporting.has_succeeded_previously(row, check_names.IIIF_MANIFESTS_CONTENTS):
+        print(f"Already checked IIIF manifest contents for {bnumber}")
+        return False
 
     return True
 
@@ -59,31 +52,34 @@ def run_check(status_updater, row):
     storage_client = helpers.create_storage_client(storage_api_url)
 
     iiif_matcher = Matcher(iiif_diff, storage_client)
-    matched = iiif_matcher.match(bnumber)
+    match_result = iiif_matcher.match(bnumber)
 
-    print(matched)
+    s3_client = aws_client.dev_client.s3_client()
 
-    assert 0
+    s3_client.put_object(
+        Bucket="wellcomecollection-storage-infra",
+        Key=f"tmp/manifest_diffs/{bnumber}.json",
+        Body=json.dumps(match_result)
+    )
 
-#     dds_start_ingest_url = defaults["libray_goobi_url"]
-#     dds_item_query_url = defaults["goobi_call_url"]
-#     storage_api_url = defaults["storage_api_url"]
-#
-#     client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)
-#
-#     result = client.status(bnumber)["status"]
-#
-#     if result == "finished":
-#         status_updater.update_status(
-#             bnumber,
-#             status_name=STATUS_NAME,
-#             success=True,
-#             last_modified=dt.datetime.now().isoformat(),
-#         )
-#
-#         print(f"Recorded DDS sync complete for {bnumber}")
-#     else:
-#         print(f"DDS sync status for {bnumber} is {result}; not finished yet")
+    if match_result["diff"] == {}:
+        print(f"IIIF manifests match for {bnumber}!")
+        status_updater.update_status(
+            bnumber,
+            status_name=check_names.IIIF_MANIFESTS_CONTENTS,
+            success=True,
+            last_modified=dt.datetime.now().isoformat(),
+        )
+    else:
+        print(f"IIIF manifests vary for {bnumber}!")
+        from pprint import pprint
+        pprint(match_result["diff"])
+        status_updater.update_status(
+            bnumber,
+            status_name=check_names.IIIF_MANIFESTS_CONTENTS,
+            success=False,
+            last_modified=dt.datetime.now().isoformat(),
+        )
 
 
 def run(first_bnumber=None):
@@ -94,7 +90,7 @@ def run(first_bnumber=None):
             except Exception as err:
                 print(err)
 
-            break
+            # break
 
 def report():
-    return reporting.build_report(name=STATUS_NAME)
+    return reporting.build_report(name=check_names.IIIF_MANIFESTS_CONTENTS)

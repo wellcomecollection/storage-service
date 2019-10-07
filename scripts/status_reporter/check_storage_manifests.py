@@ -5,19 +5,17 @@ import sys
 
 from wellcome_storage_service import BagNotFound
 
+import check_names
 import dynamo_status_manager
 import helpers
 import reporting
 
 
-STATUS_NAME = "storage_manifest_created"
-
-
 def needs_check(row):
     bnumber = row["bnumber"]
 
-    if reporting.has_succeeded_previously(row, STATUS_NAME):
-        print(f"Already recorded storage manifest for {bnumber}")
+    if reporting.has_succeeded_previously(row, check_names.STORAGE_MANIFESTS):
+        #print(f"Already recorded storage manifest for {bnumber}")
         return False
 
     return True
@@ -45,7 +43,7 @@ def run_check(status_updater, storage_client, row):
 
     status_updater.update_status(
         bnumber,
-        status_name="storage_manifest_created",
+        status_name=check_names.STORAGE_MANIFESTS,
         success=True,
         last_modified=manifest_date,
     )
@@ -65,4 +63,4 @@ def run(first_bnumber=None):
 
 
 def report():
-    return reporting.build_report(name=STATUS_NAME)
+    return reporting.build_report(name=check_names.STORAGE_MANIFESTS)

@@ -1,4 +1,7 @@
+# -*- encoding: utf-8
+
 import os
+import re
 
 
 class Matcher:
@@ -8,13 +11,15 @@ class Matcher:
         self.space = space
 
     def match(self, bnumber):
-        self.iiif_diff.fetch_and_diff(bnumber)
+        diff_result = self.iiif_diff.fetch_and_diff(bnumber)
 
         storage_manifest = self.storage_client.get_bag(self.space, bnumber)
 
         results = self.match_preservica_and_storage_service_files(
             self.iiif_diff.id_mapper, storage_manifest
         )
+
+        results["diff"] = diff_result
 
         return results
 
@@ -39,6 +44,14 @@ class Matcher:
             if entry["name"] == f"data/{bnumber}.xml":
                 continue
 
+            # e.g. data/alto/b30181197_0001.xml
+            is_alto_file = re.search(
+                f"^data/alto/{bnumber}" + r"_\d{4}\.xml$",
+                entry["name"]
+            )
+            if is_alto_file:
+                continue
+
             filename = os.path.basename(entry["name"])
 
             matching = {
@@ -48,7 +61,7 @@ class Matcher:
             }
 
             if len(matching) != 1:
-                raise ValueError(f"No exact match for {bnumber}/{filename}: {matching}")
+                raise ValueError(f"No exact match for {bnumber}:{filename}: {matching}")
 
             results["files"].append(
                 {
