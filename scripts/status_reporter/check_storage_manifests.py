@@ -1,17 +1,16 @@
-#!/usr/bin/env python
 # -*- encoding: utf-8
 
-import pathlib
+import collections
 import sys
 
-import tqdm
 from wellcome_storage_service import BagNotFound
 
-sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
-
-from aws_client import dev_client
 import dynamo_status_manager
 import helpers
+import reporting
+
+
+STATUS_NAME = "storage_manifest_created"
 
 
 def _has_succeeded_previously(row, name):
@@ -21,7 +20,7 @@ def _has_succeeded_previously(row, name):
 def needs_check(row):
     bnumber = row["bnumber"]
 
-    if _has_succeeded_previously(row, "storage_manifest_created"):
+    if _has_succeeded_previously(row, STATUS_NAME):
         print(f"Already recorded storage manifest for {bnumber}")
         return False
 
@@ -58,15 +57,8 @@ def run_check(status_updater, storage_client, row):
     print(f"Recorded storage manifest creation for {bnumber}\n")
 
 
-if __name__ == "__main__":
-    try:
-        first_bnumber = sys.argv[1]
-    except IndexError:
-        first_bnumber = None
-
+def run(first_bnumber=None):
     storage_client = helpers.create_storage_client()
-
-    futures = []
 
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         for row in get_statuses_for_updating(first_bnumber=first_bnumber):
@@ -74,3 +66,15 @@ if __name__ == "__main__":
                 run_check(status_updater, storage_client, row)
             except Exception as err:
                 print(err)
+
+
+def report():
+    reader = dynamo_status_manager.DynamoStatusReader()
+
+    report = collections.Counter()
+
+    for row in reader.get_all_statuses():
+        status = reporting.get_named_status(row, name=STATUS_NAME)
+        report[status] += 1
+
+    reporting.pprint_report(report)

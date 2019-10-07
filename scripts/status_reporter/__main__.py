@@ -24,6 +24,24 @@ def _print_as_json(obj):
 def main():
     parser = argparse.ArgumentParser(description="Check status of jobs")
 
+    subparsers = parser.add_subparsers(
+        dest="subcommand_name",
+        help="subcommand help")
+
+    check_storage_manifests = subparsers.add_parser(
+        "check_storage_manifests",
+        help="Check for a storage manifest for each b number"
+    )
+    check_storage_manifests.add_argument(
+        "--first_bnumber",
+        help="Start checking from this b number"
+    )
+
+    report_check_manifests = subparsers.add_parser(
+        "report_storage_manifests",
+        help="Report how many b numbers have storage manifests"
+    )
+
     parser.add_argument("--get_status", default=None, help="Get status from dynamo")
 
     parser.add_argument(
@@ -98,6 +116,18 @@ def main():
         _match_summary = _matcher.match(bnumber)
 
         _print_as_json(_match_summary)
+
+    if args.subcommand_name == "check_storage_manifests":
+        import check_storage_manifests
+        check_storage_manifests.run(first_bnumber=args.first_bnumber)
+        return
+
+    if args.subcommand_name == "report_storage_manifests":
+        import check_storage_manifests
+        check_storage_manifests.report()
+        return
+
+
 
     print("Done.")
 
