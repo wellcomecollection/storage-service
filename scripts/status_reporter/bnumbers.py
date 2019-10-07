@@ -1,6 +1,6 @@
-import re
+# -*- encoding: utf-8
 
-import boto3
+import re
 
 
 class BibNumberGenerator:
@@ -43,7 +43,6 @@ class BibNumberGenerator:
             yield obj["Key"]
 
     def bnumbers(self):
-        bucket = self.bucket
         prefix = self.prefix
 
         bnumber_pattern = re.compile(r"\A" + prefix + r"[0-9ax/]*/(b[0-9ax]{8}).xml\Z")

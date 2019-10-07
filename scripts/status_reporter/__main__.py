@@ -1,11 +1,9 @@
+# -*- encoding: utf-8
+
 import argparse
-from multiprocessing.dummy import Pool as ThreadPool
-from pprint import pprint
-import time
+import json
 import urllib3
 
-import aws_client
-import bnumbers
 import dds_client
 import helpers
 import iiif_diff
@@ -14,9 +12,13 @@ import library_iiif
 import matcher
 import dynamo_status_manager
 
-from defaults import *
+from defaults import defaults
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+
+def _print_as_json(obj):
+    print(json.dumps(obj, indent=2, sort_keys=True))
 
 
 def main():
@@ -47,11 +49,7 @@ def main():
     dds_start_ingest_url = defaults["libray_goobi_url"]
     dds_item_query_url = defaults["goobi_call_url"]
     storage_api_url = defaults["storage_api_url"]
-    role_arn = defaults["role_arn"]
 
-    _thread_pool = ThreadPool(20)
-    _aws_client = aws_client.AwsClient(role_arn)
-    _s3_client = _aws_client.s3_client()
     _dds_client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)
     _library_iiif = library_iiif.LibraryIIIF()
     _id_mapper = id_mapper.IDMapper()
@@ -59,15 +57,13 @@ def main():
     _storage_client = helpers.create_storage_client(storage_api_url)
     _matcher = matcher.Matcher(_iiif_diff, _storage_client)
 
-    _dynamo_status_manager = dynamo_status_manager.DynamoStatusManager(
-        aws_client.dev_client
-    )
-
     if args.get_status:
         bnumber = args.get_status
 
-        o = _dynamo_status_manager.get_row_status(bnumber)
-        pprint(o)
+        reader = dynamo_status_manager.DynamoStatusReader()
+        status = reader.get_status(bnumber=bnumber)
+
+        _print_as_json(status)
 
     if args.dds_ingest_bnumber:
         bnumber = args.dds_ingest_bnumber
@@ -75,7 +71,7 @@ def main():
         print(f"Calling DDS Client for ingest of {bnumber}")
 
         dds_job_status = _dds_client.ingest(bnumber)
-        pprint(dds_job_status)
+        _print_as_json(dds_job_status)
 
     elif args.dds_job_status:
         bnumber = args.dds_job_status
@@ -83,7 +79,7 @@ def main():
         print(f"Calling DDS Client for status of {bnumber}")
 
         dds_job_status = _dds_client.status(bnumber)
-        pprint(dds_job_status)
+        _print_as_json(dds_job_status)
 
     elif args.compare_manifest:
         bnumber = args.compare_manifest
@@ -92,7 +88,7 @@ def main():
 
         diff_summary = _iiif_diff.fetch_and_diff(bnumber)
 
-        pprint(diff_summary)
+        _print_as_json(diff_summary)
 
     elif args.match_files:
         bnumber = args.match_files
@@ -101,7 +97,7 @@ def main():
 
         _match_summary = _matcher.match(bnumber)
 
-        pprint(_match_summary)
+        _print_as_json(_match_summary)
 
     print("Done.")
 

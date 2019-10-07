@@ -29,7 +29,9 @@ def needs_check(row):
 
 
 def get_statuses_for_updating(first_bnumber):
-    for row in dynamo_status_manager.get_all_statuses(first_bnumber=first_bnumber):
+    reader = dynamo_status_manager.DynamoStatusReader()
+
+    for row in reader.get_all_statuses(first_bnumber=first_bnumber):
         if needs_check(row):
             yield row
 
@@ -68,4 +70,7 @@ if __name__ == "__main__":
 
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         for row in get_statuses_for_updating(first_bnumber=first_bnumber):
-            run_check(status_updater, storage_client, row)
+            try:
+                run_check(status_updater, storage_client, row)
+            except Exception as err:
+                print(err)

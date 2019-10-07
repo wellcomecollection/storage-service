@@ -51,7 +51,7 @@ class DDSClient:
         url = self.start_ingest_url.format(bnumber)
         ingest_result = self._request_json(url)
 
-        if ingest_result["status"] is "ok":
+        if ingest_result["status"] == "ok":
             return "requested"
         else:
             print(ingest_result)
@@ -63,7 +63,7 @@ class DDSClient:
 
         result = None
 
-        if status_result["status"] is "ok":
+        if status_result["status"] == "ok":
             waiting = status_result["body"]["Waiting"]
             finished = status_result["body"]["Finished"]
 
@@ -78,7 +78,7 @@ class DDSClient:
             else:
                 result = "unknown"
 
-        elif status_result["status"] is "not_found":
+        elif status_result["status"] == "not_found":
             result = "not_found"
         else:
             result = "unknown"
