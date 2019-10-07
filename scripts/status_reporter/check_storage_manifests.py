@@ -54,7 +54,7 @@ def run_check(status_updater, storage_client, row):
         last_modified=manifest_date,
     )
 
-    print(f"Recorded storage manifest creation for {bnumber}\n")
+    print(f"Recorded storage manifest creation for {bnumber}")
 
 
 def run(first_bnumber=None):
