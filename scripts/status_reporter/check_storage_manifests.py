@@ -13,14 +13,10 @@ import reporting
 STATUS_NAME = "storage_manifest_created"
 
 
-def _has_succeeded_previously(row, name):
-    return row.get(f"status-{name}", {}).get("success")
-
-
 def needs_check(row):
     bnumber = row["bnumber"]
 
-    if _has_succeeded_previously(row, STATUS_NAME):
+    if reporting.has_succeeded_previously(row, STATUS_NAME):
         print(f"Already recorded storage manifest for {bnumber}")
         return False
 
