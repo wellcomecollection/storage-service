@@ -15,7 +15,7 @@ def needs_check(row):
     bnumber = row["bnumber"]
 
     if reporting.has_succeeded_previously(row, check_names.STORAGE_MANIFESTS):
-        #print(f"Already recorded storage manifest for {bnumber}")
+        # print(f"Already recorded storage manifest for {bnumber}")
         return False
 
     return True

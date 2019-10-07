@@ -46,8 +46,7 @@ class Matcher:
 
             # e.g. data/alto/b30181197_0001.xml
             is_alto_file = re.search(
-                f"^data/alto/{bnumber}" + r"_\d{4}\.xml$",
-                entry["name"]
+                f"^data/alto/{bnumber}" + r"_\d{4}\.xml$", entry["name"]
             )
             if is_alto_file:
                 continue

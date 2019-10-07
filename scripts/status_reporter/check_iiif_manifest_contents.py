@@ -44,10 +44,7 @@ def run_check(status_updater, row):
 
     id_mapper = IDMapper()
 
-    iiif_diff = IIIFDiff(
-        library_iiif=LibraryIIIF(),
-        id_mapper=id_mapper
-    )
+    iiif_diff = IIIFDiff(library_iiif=LibraryIIIF(), id_mapper=id_mapper)
 
     storage_client = helpers.create_storage_client(storage_api_url)
 
@@ -59,7 +56,7 @@ def run_check(status_updater, row):
     s3_client.put_object(
         Bucket="wellcomecollection-storage-infra",
         Key=f"tmp/manifest_diffs/{bnumber}.json",
-        Body=json.dumps(match_result)
+        Body=json.dumps(match_result),
     )
 
     if match_result["diff"] == {}:
@@ -73,6 +70,7 @@ def run_check(status_updater, row):
     else:
         print(f"IIIF manifests vary for {bnumber}!")
         from pprint import pprint
+
         pprint(match_result["diff"])
         status_updater.update_status(
             bnumber,
@@ -91,6 +89,7 @@ def run(first_bnumber=None):
                 print(err)
 
             # break
+
 
 def report():
     return reporting.build_report(name=check_names.IIIF_MANIFESTS_CONTENTS)

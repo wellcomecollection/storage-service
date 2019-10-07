@@ -45,7 +45,7 @@ def run_check(status_updater, row):
 
     s3_body = s3_client.get_object(
         Bucket="wellcomecollection-storage-infra",
-        Key=f"tmp/manifest_diffs/{bnumber}.json"
+        Key=f"tmp/manifest_diffs/{bnumber}.json",
     )["Body"]
 
     matcher_result = json.load(s3_body)
