@@ -16,17 +16,21 @@ import dynamo_status_manager
 
 from defaults import defaults
 
+
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, decimal.Decimal):
             return float(o)
         return super(DecimalEncoder, self).default(o)
 
+
 def _print_as_json(obj):
     print(json.dumps(obj, indent=2, sort_keys=True, cls=DecimalEncoder))
 
+
 def _split_on_comma(string):
-    return [i.strip() for i in string.split(',') if i]
+    return [i.strip() for i in string.split(",") if i]
+
 
 def main():
     parser = argparse.ArgumentParser(description="Check status of jobs")
@@ -85,8 +89,12 @@ def main():
         help="Report how many b numbers have matching IIIF manifest contents",
     )
 
-    parser.add_argument("--get_status", default=None, help="Get status from dynamo for b number")
-    parser.add_argument("--reset_status", default=None, help="Reset status in dynamo for b number")
+    parser.add_argument(
+        "--get_status", default=None, help="Get status from dynamo for b number"
+    )
+    parser.add_argument(
+        "--reset_status", default=None, help="Reset status in dynamo for b number"
+    )
 
     parser.add_argument(
         "--dds_ingest_bnumber", default=None, help="Call DDS Client Ingest for bnumber"
@@ -219,6 +227,7 @@ def main():
 
         check_iiif_manifest_file_sizes.report()
         return
+
 
 if __name__ == "__main__":
     main()

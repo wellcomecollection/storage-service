@@ -18,7 +18,7 @@ class DynamoStatusReader:
     @staticmethod
     def _chunks(data, rows=100):
         for i in range(0, len(data), rows):
-            yield data[i:i+rows]
+            yield data[i : i + rows]
 
     @staticmethod
     def _deserialize_row(row):
@@ -28,14 +28,14 @@ class DynamoStatusReader:
     @staticmethod
     def _extract_statuses(row):
         status = {}
-        status['bnumber'] = row['bnumber']
+        status["bnumber"] = row["bnumber"]
 
         known_statuses = {k: v for k, v in row.items() if k.startswith("status-")}
 
         for status_name in ALL_CHECK_NAMES:
             if f"status-{status_name}" in known_statuses:
-                success = known_statuses[f"status-{status_name}"]['success']
-                last_modified = known_statuses[f"status-{status_name}"]['last_modified']
+                success = known_statuses[f"status-{status_name}"]["success"]
+                last_modified = known_statuses[f"status-{status_name}"]["last_modified"]
 
                 status[status_name] = known_statuses[f"status-{status_name}"]
             else:
@@ -62,10 +62,10 @@ class DynamoStatusReader:
 
     def get_statuses(self, bnumbers):
         for bnumbers_chunk in self._chunks(bnumbers):
-            keys = [{"bnumber": { "S": bnumber }} for bnumber in bnumbers_chunk]
+            keys = [{"bnumber": {"S": bnumber}} for bnumber in bnumbers_chunk]
 
             response = self.dynamo_client.batch_get_item(
-                RequestItems={ self.table_name: { 'Keys': keys } }
+                RequestItems={self.table_name: {"Keys": keys}}
             )
 
             rows = response["Responses"]["storage-migration-status"]
@@ -132,7 +132,9 @@ class DynamoStatusUpdater:
 
     def update_status(self, bnumber, *, status_name, success, last_modified=None):
         if not status_name in ALL_CHECK_NAMES:
-            raise Exception(f"{status_name} is not valid (should be one of {ALL_CHECK_NAMES}).")
+            raise Exception(
+                f"{status_name} is not valid (should be one of {ALL_CHECK_NAMES})."
+            )
 
         item = self.dynamo_table.get_item(Key={"bnumber": bnumber})["Item"]
 
