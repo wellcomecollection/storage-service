@@ -88,6 +88,10 @@ def get_read_only_aws_resource(resource):
     )
 
 
+def get_read_only_client(resource):
+    return get_read_only_aws_resource(resource).meta.client
+
+
 def chunked_iterable(iterable, size):
     it = iter(iterable)
     while True:

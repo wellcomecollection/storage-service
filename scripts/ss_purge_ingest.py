@@ -15,12 +15,12 @@ logger = get_logger(__name__)
 
 
 s3 = get_aws_resource(
-    "s3",
-    role_arn="arn:aws:iam::975596993436:role/storage-developer").meta.client
+    "s3", role_arn="arn:aws:iam::975596993436:role/storage-developer"
+).meta.client
 
 dynamodb = get_aws_resource(
-    "dynamodb",
-    role_arn="arn:aws:iam::975596993436:role/storage-developer").meta.client
+    "dynamodb", role_arn="arn:aws:iam::975596993436:role/storage-developer"
+).meta.client
 
 
 def delete_s3_object(bucket, key):
@@ -33,13 +33,11 @@ def delete_s3_prefix(bucket, prefix, known_keys):
         # Clean up all the keys we known about
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             futures = [
-                executor.submit(delete_s3_object, bucket, key)
-                for key in known_keys
+                executor.submit(delete_s3_object, bucket, key) for key in known_keys
             ]
 
             for fut in tqdm.tqdm(
-                concurrent.futures.as_completed(futures),
-                total=len(futures)
+                concurrent.futures.as_completed(futures), total=len(futures)
             ):
                 fut.result()
 
@@ -65,12 +63,12 @@ def get_matching_s3_objects(bucket, prefix="", suffix=""):
     """
     paginator = s3.get_paginator("list_objects_v2")
 
-    kwargs = {'Bucket': bucket}
+    kwargs = {"Bucket": bucket}
 
     # We can pass the prefix directly to the S3 API.  If the user has passed
     # a tuple or list of prefixes, we go through them one by one.
     if isinstance(prefix, str):
-        prefixes = (prefix, )
+        prefixes = (prefix,)
     else:
         prefixes = prefix
 
@@ -109,7 +107,7 @@ def purge_ingest(ingest_id):
         ingest = lookup_ingest(ingest_id)
     except IngestNotFound:
         logger.error("Could not find ingest %s", ingest_id)
-        sys.exit(1)
+        return
     else:
         logger.info("Successfully retrieved ingest info!")
 
@@ -133,8 +131,8 @@ def purge_ingest(ingest_id):
             TableName="vhs-storage-manifests",
             Key={
                 "id": f"digitised:{external_identifier}",
-                "version": int(version.replace("v", ""))
-            }
+                "version": int(version.replace("v", "")),
+            },
         )
 
         try:
@@ -142,23 +140,19 @@ def purge_ingest(ingest_id):
 
             s3_data = s3.get_object(
                 Bucket=item["payload"]["typedStoreId"]["namespace"],
-                Key=item["payload"]["typedStoreId"]["path"]
+                Key=item["payload"]["typedStoreId"]["path"],
             )["Body"]
 
             storage_manifest = json.load(s3_data)
             logger.info("Retrieved storage manifest")
 
-            paths = [
-                f["path"] for f in storage_manifest["manifest"]["files"]
-            ] + [
+            paths = [f["path"] for f in storage_manifest["manifest"]["files"]] + [
                 f["path"] for f in storage_manifest["tagManifest"]["files"]
             ]
         except KeyError:
             logger.info("No storage manifest")
 
             paths = []
-
-
 
         # We don't want to delete keys in another prefix!
         assert all(p.startswith(version + "/") for p in paths)
@@ -167,41 +161,35 @@ def purge_ingest(ingest_id):
         delete_s3_prefix(
             bucket="wellcomecollection-storage",
             prefix="digitised/%s/%s" % (external_identifier, version),
-            known_keys=[
-                "digitised/%s/%s" % (external_identifier, p)
-                for p in paths
-            ]
+            known_keys=["digitised/%s/%s" % (external_identifier, p) for p in paths],
         )
 
         logger.warn("Deleting Glacier replica files")
         delete_s3_prefix(
             bucket="wellcomecollection-storage-replica-ireland",
             prefix="digitised/%s/%s" % (external_identifier, version),
-            known_keys=[
-                "digitised/%s/%s" % (external_identifier, p)
-                for p in paths
-            ]
+            known_keys=["digitised/%s/%s" % (external_identifier, p) for p in paths],
         )
 
         logger.warn("Deleting replica records")
         delete_dynamodb_row(
             table="storage_replicas_table",
-            key={"id": "digitised/%s/%s" % (external_identifier, version)}
+            key={"id": "digitised/%s/%s" % (external_identifier, version)},
         )
 
         try:
             logger.warn("Deleting bag register entry")
             delete_s3_object(
                 bucket=item["payload"]["typedStoreId"]["namespace"],
-                key=item["payload"]["typedStoreId"]["path"]
+                key=item["payload"]["typedStoreId"]["path"],
             )
 
             delete_dynamodb_row(
                 table="vhs-storage-manifests",
                 key={
                     "id": f"digitised:{external_identifier}",
-                    "version": int(version.replace("v", ""))
-                }
+                    "version": int(version.replace("v", "")),
+                },
             )
         except NameError:
             pass
@@ -211,15 +199,12 @@ def purge_ingest(ingest_id):
             table="storage_versioner_versions_table",
             key={
                 "id": f"digitised:{external_identifier}",
-                "version": int(version.replace("v", ""))
-            }
+                "version": int(version.replace("v", "")),
+            },
         )
 
     logger.warn("Deleting ingest records")
-    delete_dynamodb_row(
-        table="storage-ingests",
-        key={"id": ingest_id}
-    )
+    delete_dynamodb_row(table="storage-ingests", key={"id": ingest_id})
 
 
 if __name__ == "__main__":

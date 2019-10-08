@@ -2,3 +2,4 @@ ingests*.json
 bnumbers.txt
 img_cache
 dynamodb
+s3

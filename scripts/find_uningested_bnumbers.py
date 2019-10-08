@@ -13,8 +13,8 @@ from dynamodb import cached_scan_iterator
 def get_ingested_bnumbers(ingests_json):
     for ingest in cached_scan_iterator(ingests_json):
         if (
-            ingest["payload"]["space"] == "digitised" and
-            ingest["payload"]["status"] == "Completed"
+            ingest["payload"]["space"] == "digitised"
+            and ingest["payload"]["status"] == "Completed"
         ):
             yield ingest["payload"]["externalIdentifier"]
 
