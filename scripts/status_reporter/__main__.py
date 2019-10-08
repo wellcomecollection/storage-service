@@ -1,8 +1,10 @@
 # -*- encoding: utf-8
 
 import argparse
+import decimal
 import json
 import urllib3
+import warnings
 
 import dds_client
 import helpers
@@ -14,16 +16,20 @@ import dynamo_status_manager
 
 from defaults import defaults
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            return float(o)
+        return super(DecimalEncoder, self).default(o)
 
 def _print_as_json(obj):
-    print(json.dumps(obj, indent=2, sort_keys=True))
+    print(json.dumps(obj, indent=2, sort_keys=True, cls=DecimalEncoder))
 
+def _split_on_comma(string):
+    return [i.strip() for i in string.split(',') if i]
 
 def main():
     parser = argparse.ArgumentParser(description="Check status of jobs")
-
     subparsers = parser.add_subparsers(dest="subcommand_name", help="subcommand help")
 
     # check_storage_manifests
@@ -79,7 +85,8 @@ def main():
         help="Report how many b numbers have matching IIIF manifest contents",
     )
 
-    parser.add_argument("--get_status", default=None, help="Get status from dynamo")
+    parser.add_argument("--get_status", default=None, help="Get status from dynamo for b number")
+    parser.add_argument("--reset_status", default=None, help="Reset status in dynamo for b number")
 
     parser.add_argument(
         "--dds_ingest_bnumber", default=None, help="Call DDS Client Ingest for bnumber"
@@ -113,12 +120,23 @@ def main():
     _matcher = matcher.Matcher(_iiif_diff, _storage_client)
 
     if args.get_status:
-        bnumber = args.get_status
+        bnumbers = args.get_status
+        bnumbers = _split_on_comma(bnumbers)
 
         reader = dynamo_status_manager.DynamoStatusReader()
-        status = reader.get_status(bnumber=bnumber)
+        statuses = list(reader.get_statuses(bnumbers))
 
-        _print_as_json(status)
+        _print_as_json(statuses)
+
+    if args.reset_status:
+        bnumbers = args.reset_status
+
+        with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
+            bnumbers = _split_on_comma(bnumbers)
+
+            for bnumber in bnumbers:
+                status_updater.reset_all_status(bnumber=bnumber)
+                print(f"Reset all status checks for {bnumber!r}")
 
     if args.dds_ingest_bnumber:
         bnumber = args.dds_ingest_bnumber
@@ -201,9 +219,6 @@ def main():
 
         check_iiif_manifest_file_sizes.report()
         return
-
-    print("Done.")
-
 
 if __name__ == "__main__":
     main()
