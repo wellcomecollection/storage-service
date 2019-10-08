@@ -94,11 +94,23 @@ def main():
     # Not check or reporting
 
     parser.add_argument("--get_status", default=None, help="Get status for b numbers")
-    parser.add_argument("--reset_status", default=None, help="Reset status for b numbers")
-    parser.add_argument("--dds_ingest_bnumber", default=None, help="Call DDS ingest for b numbers")
-    parser.add_argument("--dds_job_status",default=None,help="Inspect status from DDS for b numbers")
-    parser.add_argument("--compare_manifest", default=None, help="Compare library manifests for b numbers")
-    parser.add_argument("--match_files", default=None, help="Compare manifest files for b numbers")
+    parser.add_argument(
+        "--reset_status", default=None, help="Reset status for b numbers"
+    )
+    parser.add_argument(
+        "--dds_ingest_bnumber", default=None, help="Call DDS ingest for b numbers"
+    )
+    parser.add_argument(
+        "--dds_job_status", default=None, help="Inspect status from DDS for b numbers"
+    )
+    parser.add_argument(
+        "--compare_manifest",
+        default=None,
+        help="Compare library manifests for b numbers",
+    )
+    parser.add_argument(
+        "--match_files", default=None, help="Compare manifest files for b numbers"
+    )
 
     args = parser.parse_args()
 
@@ -112,7 +124,7 @@ def main():
     _iiif_diff = iiif_diff.IIIFDiff(_library_iiif, _id_mapper)
     _storage_client = helpers.create_storage_client(storage_api_url)
     _matcher = matcher.Matcher(_iiif_diff, _storage_client)
-    _dynamo_status_reader= dynamo_status_manager.DynamoStatusReader()
+    _dynamo_status_reader = dynamo_status_manager.DynamoStatusReader()
 
     if args.get_status:
         bnumbers = args.get_status

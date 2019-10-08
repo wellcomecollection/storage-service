@@ -23,8 +23,8 @@ def needs_check(row):
         return False
 
     if reporting.has_succeeded_previously(row, check_names.DDS_SYNC):
-        dds_sync_date = row[check_names.DDS_SYNC]['last_modified']
-        storage_manifest_date = row[check_names.STORAGE_MANIFESTS]['last_modified']
+        dds_sync_date = row[check_names.DDS_SYNC]["last_modified"]
+        storage_manifest_date = row[check_names.STORAGE_MANIFESTS]["last_modified"]
 
         delta = dp.parse(f"{dds_sync_date}Z") - dp.parse(storage_manifest_date)
 
@@ -57,11 +57,11 @@ def run_check(status_updater, row):
 
     result = client.status(bnumber)
 
-    if not 'finished' in result:
+    if not "finished" in result:
         raise Exception(f"No attribute 'finished' in {result}")
 
-    if result['finished']:
-        last_modified=result['created']
+    if result["finished"]:
+        last_modified = result["created"]
 
         status_updater.update(
             bnumber,
