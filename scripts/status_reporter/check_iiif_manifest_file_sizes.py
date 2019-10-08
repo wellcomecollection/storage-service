@@ -33,7 +33,7 @@ def needs_check(row):
 def get_statuses_for_updating(first_bnumber):
     reader = dynamo_status_manager.DynamoStatusReader()
 
-    for row in reader.get_all_statuses(first_bnumber=first_bnumber):
+    for row in reader.all(first_bnumber=first_bnumber):
         if needs_check(row):
             yield row
 
@@ -63,7 +63,7 @@ def run_check(status_updater, row):
 
     if differences:
         print(f"Not all file sizes match for {bnumber}: {differences}")
-        status_updater.update_status(
+        status_updater.update(
             bnumber,
             status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
             success=False,
@@ -71,7 +71,7 @@ def run_check(status_updater, row):
         )
     else:
         print(f"File sizes in IIIF and storage service manifests match for {bnumber}!")
-        status_updater.update_status(
+        status_updater.update(
             bnumber,
             status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
             success=True,

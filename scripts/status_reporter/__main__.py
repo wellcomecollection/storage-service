@@ -16,6 +16,8 @@ import dynamo_status_manager
 
 from defaults import defaults
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
@@ -89,30 +91,14 @@ def main():
         help="Report how many b numbers have matching IIIF manifest contents",
     )
 
-    parser.add_argument(
-        "--get_status", default=None, help="Get status from dynamo for b number"
-    )
-    parser.add_argument(
-        "--reset_status", default=None, help="Reset status in dynamo for b number"
-    )
+    # Not check or reporting
 
-    parser.add_argument(
-        "--dds_ingest_bnumber", default=None, help="Call DDS Client Ingest for bnumber"
-    )
-
-    parser.add_argument(
-        "--dds_job_status",
-        default=None,
-        help="Inspect status in DDS Client for bnumber",
-    )
-
-    parser.add_argument(
-        "--compare_manifest", default=None, help="Compare library manifests for bnumber"
-    )
-
-    parser.add_argument(
-        "--match_files", default=None, help="Compare manifest files for bnumber"
-    )
+    parser.add_argument("--get_status", default=None, help="Get status for b numbers")
+    parser.add_argument("--reset_status", default=None, help="Reset status for b numbers")
+    parser.add_argument("--dds_ingest_bnumber", default=None, help="Call DDS ingest for b numbers")
+    parser.add_argument("--dds_job_status",default=None,help="Inspect status from DDS for b numbers")
+    parser.add_argument("--compare_manifest", default=None, help="Compare library manifests for b numbers")
+    parser.add_argument("--match_files", default=None, help="Compare manifest files for b numbers")
 
     args = parser.parse_args()
 
@@ -126,15 +112,15 @@ def main():
     _iiif_diff = iiif_diff.IIIFDiff(_library_iiif, _id_mapper)
     _storage_client = helpers.create_storage_client(storage_api_url)
     _matcher = matcher.Matcher(_iiif_diff, _storage_client)
+    _dynamo_status_reader= dynamo_status_manager.DynamoStatusReader()
 
     if args.get_status:
         bnumbers = args.get_status
         bnumbers = _split_on_comma(bnumbers)
 
-        reader = dynamo_status_manager.DynamoStatusReader()
-        statuses = list(reader.get_statuses(bnumbers))
+        results = list(_dynamo_status_reader.get(bnumbers))
 
-        _print_as_json(statuses)
+        _print_as_json(results)
 
     if args.reset_status:
         bnumbers = args.reset_status
@@ -143,42 +129,48 @@ def main():
             bnumbers = _split_on_comma(bnumbers)
 
             for bnumber in bnumbers:
-                status_updater.reset_all_status(bnumber=bnumber)
+                status_updater.reset(bnumber=bnumber)
                 print(f"Reset all status checks for {bnumber!r}")
 
     if args.dds_ingest_bnumber:
-        bnumber = args.dds_ingest_bnumber
+        bnumbers = args.dds_ingest_bnumber
+        bnumbers = _split_on_comma(bnumbers)
 
         print(f"Calling DDS Client for ingest of {bnumber}")
 
-        dds_job_status = _dds_client.ingest(bnumber)
-        _print_as_json(dds_job_status)
+        results = [_dds_client.ingest(bnumber) for bnumber in bnumbers]
+        _print_as_json(results)
 
     elif args.dds_job_status:
-        bnumber = args.dds_job_status
+        bnumbers = args.dds_job_status
+        bnumbers = _split_on_comma(bnumbers)
 
         print(f"Calling DDS Client for status of {bnumber}")
 
-        dds_job_status = _dds_client.status(bnumber)
-        _print_as_json(dds_job_status)
+        results = [_dds_client.status(bnumber) for bnumber in bnumbers]
+        _print_as_json(results)
 
     elif args.compare_manifest:
-        bnumber = args.compare_manifest
+        bnumbers = args.compare_manifest
+        bnumbers = _split_on_comma(bnumbers)
 
         print(f"Comparing Production and UAT manifests for {bnumber}")
 
-        diff_summary = _iiif_diff.fetch_and_diff(bnumber)
-
-        _print_as_json(diff_summary)
+        results = [_iiif_diff.fetch_and_diff(bnumber) for bnumber in bnumbers]
+        _print_as_json(results)
 
     elif args.match_files:
-        bnumber = args.match_files
+        bnumbers = args.match_files
+        bnumbers = _split_on_comma(bnumbers)
 
         print(f"Comparing files for {bnumber}")
 
-        _match_summary = _matcher.match(bnumber)
+        results = [_matcher.match(bnumber) for bnumber in bnumbers]
+        _print_as_json(results)
 
-        _print_as_json(_match_summary)
+    # Subcommands for check/reporting start here
+
+    # storage_manifests
 
     if args.subcommand_name == "check_storage_manifests":
         import check_storage_manifests
@@ -192,6 +184,8 @@ def main():
         check_storage_manifests.report()
         return
 
+    # dds_sync
+
     if args.subcommand_name == "check_dds_sync":
         import check_dds_sync
 
@@ -204,6 +198,8 @@ def main():
         check_dds_sync.report()
         return
 
+    # iiif_manifest_contents
+
     if args.subcommand_name == "check_iiif_manifest_contents":
         import check_iiif_manifest_contents
 
@@ -215,6 +211,8 @@ def main():
 
         check_iiif_manifest_contents.report()
         return
+
+    # iiif_manifest_file_sizes
 
     if args.subcommand_name == "check_iiif_manifest_file_sizes":
         import check_iiif_manifest_file_sizes

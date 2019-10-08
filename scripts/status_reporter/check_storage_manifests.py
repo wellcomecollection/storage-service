@@ -15,7 +15,7 @@ def needs_check(row):
     bnumber = row["bnumber"]
 
     if reporting.has_succeeded_previously(row, check_names.STORAGE_MANIFESTS):
-        # print(f"Already recorded storage manifest for {bnumber}")
+        print(f"Already recorded storage manifest for {bnumber}")
         return False
 
     return True
@@ -24,7 +24,7 @@ def needs_check(row):
 def get_statuses_for_updating(first_bnumber):
     reader = dynamo_status_manager.DynamoStatusReader()
 
-    for row in reader.get_all_statuses(first_bnumber=first_bnumber):
+    for row in reader.all(first_bnumber=first_bnumber):
         if needs_check(row):
             yield row
 
@@ -41,7 +41,7 @@ def run_check(status_updater, storage_client, row):
 
     manifest_date = response["createdDate"]
 
-    status_updater.update_status(
+    status_updater.update(
         bnumber,
         status_name=check_names.STORAGE_MANIFESTS,
         success=True,

@@ -51,7 +51,7 @@ class DynamoStatusReader:
             for row in page["Items"]:
                 yield self._deserialize_row(row)
 
-    def get_all_statuses(self, first_bnumber=None):
+    def all(self, first_bnumber=None):
         kwargs = {"TableName": self.table_name}
 
         if first_bnumber:
@@ -60,7 +60,7 @@ class DynamoStatusReader:
         for row in self._generate_rows(**kwargs):
             yield self._extract_statuses(row)
 
-    def get_statuses(self, bnumbers):
+    def get(self, bnumbers):
         for bnumbers_chunk in self._chunks(bnumbers):
             keys = [{"bnumber": {"S": bnumber}} for bnumber in bnumbers_chunk]
 
@@ -74,12 +74,6 @@ class DynamoStatusReader:
 
             for row in status_rows:
                 yield row
-
-    def get_status(self, bnumber):
-        resp = self.dynamo_table.get_item(Key={"bnumber": bnumber})
-        row = resp["Item"]
-
-        return self._extract_statuses(row)
 
 
 class DynamoStatusUpdater:
@@ -113,7 +107,7 @@ class DynamoStatusUpdater:
 
         self._put_cache = []
 
-    def reset_all_status(self, bnumber):
+    def reset(self, bnumber):
         response = self.dynamo_table.get_item(Key={"bnumber": bnumber})
 
         if "Item" in response:
@@ -130,7 +124,7 @@ class DynamoStatusUpdater:
         else:
             print(f"No Item in response: {response}!")
 
-    def update_status(self, bnumber, *, status_name, success, last_modified=None):
+    def update(self, bnumber, *, status_name, success, last_modified=None):
         if not status_name in ALL_CHECK_NAMES:
             raise Exception(
                 f"{status_name} is not valid (should be one of {ALL_CHECK_NAMES})."

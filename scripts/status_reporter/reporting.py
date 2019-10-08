@@ -8,11 +8,11 @@ import dynamo_status_manager
 
 
 def has_succeeded_previously(row, name):
-    return row.get(f"status-{name}", {}).get("success")
+    return row.get(name, {}).get("success")
 
 
 def get_named_status(row, name):
-    stored_result = row.get(f"status-{name}", {}).get("success")
+    stored_result = row.get(name, {}).get("success")
 
     if stored_result is None:
         return "not checked"
@@ -89,7 +89,7 @@ def build_report(name):
 
     report = collections.Counter()
 
-    for row in reader.get_all_statuses():
+    for row in reader.all():
         status = get_named_status(row, name=name)
         report[status] += 1
 
