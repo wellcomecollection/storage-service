@@ -117,7 +117,7 @@ def purge_ingest(ingest_id):
     try:
         version = ingest["bag"]["info"]["version"]
     except KeyError:
-        logger.warn("Could not detect ingest version")
+        logger.warning("Could not detect ingest version")
         version = None
     else:
         logger.info("Detected ingest version as %s", version)
@@ -157,28 +157,28 @@ def purge_ingest(ingest_id):
         # We don't want to delete keys in another prefix!
         assert all(p.startswith(version + "/") for p in paths)
 
-        logger.warn("Deleting primary replica files")
+        logger.warning("Deleting primary replica files")
         delete_s3_prefix(
             bucket="wellcomecollection-storage",
             prefix="digitised/%s/%s" % (external_identifier, version),
             known_keys=["digitised/%s/%s" % (external_identifier, p) for p in paths],
         )
 
-        logger.warn("Deleting Glacier replica files")
+        logger.warning("Deleting Glacier replica files")
         delete_s3_prefix(
             bucket="wellcomecollection-storage-replica-ireland",
             prefix="digitised/%s/%s" % (external_identifier, version),
             known_keys=["digitised/%s/%s" % (external_identifier, p) for p in paths],
         )
 
-        logger.warn("Deleting replica records")
+        logger.warning("Deleting replica records")
         delete_dynamodb_row(
             table="storage_replicas_table",
             key={"id": "digitised/%s/%s" % (external_identifier, version)},
         )
 
         try:
-            logger.warn("Deleting bag register entry")
+            logger.warning("Deleting bag register entry")
             delete_s3_object(
                 bucket=item["payload"]["typedStoreId"]["namespace"],
                 key=item["payload"]["typedStoreId"]["path"],
@@ -194,7 +194,7 @@ def purge_ingest(ingest_id):
         except NameError:
             pass
 
-        logger.warn("Deleting bag versioner entry")
+        logger.warning("Deleting bag versioner entry")
         delete_dynamodb_row(
             table="storage_versioner_versions_table",
             key={
@@ -203,7 +203,7 @@ def purge_ingest(ingest_id):
             },
         )
 
-    logger.warn("Deleting ingest records")
+    logger.warning("Deleting ingest records")
     delete_dynamodb_row(table="storage-ingests", key={"id": ingest_id})
 
 
