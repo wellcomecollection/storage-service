@@ -33,7 +33,7 @@ def run_check(status_updater, bnumber_generator, row):
         last_modified=mets_record["last_modified"],
     )
 
-    print(f"Recorded storage manifest creation for {bnumber}")
+    print(f"Recorded METS for {bnumber}")
 
 
 def run(first_bnumber=None):
