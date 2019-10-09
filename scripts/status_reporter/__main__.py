@@ -124,13 +124,14 @@ def main():
     _iiif_diff = iiif_diff.IIIFDiff(_library_iiif, _id_mapper)
     _storage_client = helpers.create_storage_client(storage_api_url)
     _matcher = matcher.Matcher(_iiif_diff, _storage_client)
-    _dynamo_status_reader = dynamo_status_manager.DynamoStatusReader()
 
     if args.get_status:
+        reader = dynamo_status_manager.DynamoStatusReader()
+
         bnumbers = args.get_status
         bnumbers = _split_on_comma(bnumbers)
 
-        results = list(_dynamo_status_reader.get(bnumbers))
+        results = list(reader.get(bnumbers))
 
         _print_as_json(results)
 
