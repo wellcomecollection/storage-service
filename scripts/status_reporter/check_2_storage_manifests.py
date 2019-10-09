@@ -13,13 +13,12 @@ import reporting
 
 
 def needs_check(row):
-    bnumber = row["bnumber"]
-
-    if reporting.has_succeeded_previously(row, check_names.STORAGE_MANIFESTS):
-        print(f"Already recorded storage manifest for {bnumber}")
-        return False
-
-    return True
+    return helpers.needs_check(
+        status_summary,
+        previous_check=check_names.METS_EXISTS,
+        current_check=check_names.STORAGE_MANIFESTS,
+        step_name="Storage manifest"
+    )
 
 
 def get_statuses_for_updating(first_bnumber, db_shard, total_db_shards):

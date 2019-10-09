@@ -8,16 +8,6 @@ import reporting
 from wellcome_storage_service import StorageServiceClient
 
 
-def dds_sync_is_older_than_storage_manifest(dds_sync_last_modified, status_summary):
-    storage_manifest_date = status_summary[check_names.STORAGE_MANIFESTS][
-        "last_modified"
-    ]
-
-    delta = dp.parse(f"{dds_sync_last_modified}Z") - dp.parse(storage_manifest_date)
-
-    return delta.total_seconds() < 60 * 60
-
-
 def needs_check(status_summary, *, previous_check, current_check, step_name):
     bnumber = status_summary["bnumber"]
 
@@ -31,7 +21,7 @@ def needs_check(status_summary, *, previous_check, current_check, step_name):
             status_summary[current_check]["last_modified"]
         ):
             print(f"{step_name} / {bnumber}: previous step is newer than current step")
-            return Trye
+            return True
         else:
             print(f"{step_name} / {bnumber}: already recorded success")
             return False
