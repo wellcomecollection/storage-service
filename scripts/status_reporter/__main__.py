@@ -42,6 +42,10 @@ def _add_check_mets(subparsers):
         "check_mets", help="Check the METS for all b numbers"
     )
 
+    check_mets.add_argument(
+        "--check_one", help="Check only the bnumber"
+    )
+
     report_mets = subparsers.add_parser(
         "report_mets", help="Report how many b numbers in the METS"
     )
@@ -53,6 +57,10 @@ def _add_check_storage_manifests(subparsers):
     )
     check_storage_manifests.add_argument(
         "--first_bnumber", help="Start checking from this b number"
+    )
+
+    check_storage_manifests.add_argument(
+        "--check_one", help="Check only the bnumber"
     )
 
     report_storage_manifests = subparsers.add_parser(
@@ -67,6 +75,9 @@ def _add_check_dds_sync(subparsers):
     )
     check_dds_sync.add_argument(
         "--first_bnumber", help="Start checking from this b number"
+    )
+    check_dds_sync.add_argument(
+        "--check_one", help="Check only the bnumber"
     )
 
     report_dds_sync = subparsers.add_parser(
@@ -83,6 +94,10 @@ def _add_check_iiif_manifest_contents(subparsers):
         "--first_bnumber", help="Start checking from this b number"
     )
 
+    check_iiif_manifest_contents.add_argument(
+        "--check_one", help="Check only the bnumber"
+    )
+
     report_iiif_manifest_contents = subparsers.add_parser(
         "report_iiif_manifest_contents",
         help="Report how many b numbers have matching IIIF manifest contents",
@@ -96,6 +111,10 @@ def _add_check_iiif_manifest_file_sizes(subparsers):
     )
     check_iiif_manifest_file_sizes.add_argument(
         "--first_bnumber", help="Start checking from this b number"
+    )
+
+    check_iiif_manifest_file_sizes.add_argument(
+        "--check_one", help="Check only the bnumber"
     )
 
     report_iiif_manifest_file_sizes = subparsers.add_parser(
@@ -231,7 +250,11 @@ def main():
     if args.subcommand_name == "check_mets":
         import check_mets
 
-        check_mets.run()
+        if args.check_one:
+            check_mets.run_one(args.check_one)
+        else:
+            check_mets.run()
+
         return
 
     if args.subcommand_name == "report_mets":
@@ -245,7 +268,11 @@ def main():
     if args.subcommand_name == "check_storage_manifests":
         import check_storage_manifests
 
-        check_storage_manifests.run(first_bnumber=args.first_bnumber)
+        if args.check_one:
+            check_storage_manifests.run_one(args.check_one)
+        else:
+            check_storage_manifests.run(first_bnumber=args.first_bnumber)
+
         return
 
     if args.subcommand_name == "report_storage_manifests":
@@ -259,7 +286,11 @@ def main():
     if args.subcommand_name == "check_dds_sync":
         import check_dds_sync
 
-        check_dds_sync.run(first_bnumber=args.first_bnumber)
+        if args.check_one:
+            check_dds_sync.run_one(args.check_one)
+        else:
+            check_dds_sync.run(first_bnumber=args.first_bnumber)
+
         return
 
     if args.subcommand_name == "report_dds_sync":
@@ -273,13 +304,21 @@ def main():
     if args.subcommand_name == "check_iiif_manifest_contents":
         import check_iiif_manifest_contents
 
-        check_iiif_manifest_contents.run(first_bnumber=args.first_bnumber)
+        if args.check_one:
+            check_iiif_manifest_contents.run_one(args.check_one)
+        else:
+            check_iiif_manifest_contents.run(first_bnumber=args.first_bnumber)
+
         return
 
     if args.subcommand_name == "report_iiif_manifest_contents":
         import check_iiif_manifest_contents
 
-        check_iiif_manifest_contents.report()
+        if args.check_one:
+            check_iiif_manifest_contents.run_one(args.check_one)
+        else:
+            check_iiif_manifest_contents.report()
+
         return
 
     # iiif_manifest_file_sizes
@@ -287,7 +326,11 @@ def main():
     if args.subcommand_name == "check_iiif_manifest_file_sizes":
         import check_iiif_manifest_file_sizes
 
-        check_iiif_manifest_file_sizes.run(first_bnumber=args.first_bnumber)
+        if args.check_one:
+            check_iiif_manifest_file_sizes.run_one(args.check_one)
+        else:
+            check_iiif_manifest_file_sizes.run(first_bnumber=args.first_bnumber)
+
         return
 
     if args.subcommand_name == "report_iiif_manifest_file_sizes":

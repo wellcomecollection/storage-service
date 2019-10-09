@@ -32,6 +32,18 @@ def record_check(status_updater, bnumber_generator, bnumber, last_modified):
     print(f"Recorded METS for {bnumber}")
 
 
+def run_one(bnumber):
+    reader = dynamo_status_manager.DynamoStatusReader()
+    status_summary = reader.get_one(bnumber)
+    if needs_check(status_summary):
+        mets_record = bnumber_generator.get(bnumber)
+        record_check(
+            status_updater,
+            bnumber_generator,
+            bnumber,
+            mets_record["last_modified"],
+        )
+
 def run(first_bnumber=None):
     s3_client = aws_client.read_only_client.s3_client()
     bnumber_generator = bnumbers.BibNumberGenerator(s3_client)
@@ -40,10 +52,10 @@ def run(first_bnumber=None):
 
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         for bnumber in bnumber_generator.bnumbers():
-            status_summary = list(reader.get(bnumber))
+            status_summary = reader.get_one(bnumber)
 
             if status_summary:
-                if needs_check(status_summary[0]):
+                if needs_check(status_summary):
                     mets_record = bnumber_generator.get(bnumber)
                     record_check(
                         status_updater,

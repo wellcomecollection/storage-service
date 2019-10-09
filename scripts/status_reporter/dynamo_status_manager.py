@@ -59,8 +59,12 @@ class DynamoStatusReader:
         for row in self._generate_rows(**kwargs):
             yield self._extract_statuses(row)
 
+    def get_one(self, bnumber):
+        return next(self.get([bnumber]))
+
     def get(self, bnumbers):
         if isinstance(bnumbers, str):
+            print("Calling 'get' with a single b number is deprecated, please use get_one")
             bnumbers = [bnumbers]
 
         for bnumbers_chunk in self._chunks(bnumbers):

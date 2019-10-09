@@ -14,6 +14,14 @@ import dynamo_status_manager
 import helpers
 import reporting
 
+def dds_sync_is_older_than_storage_manifest(dds_sync_last_modified, status_summary):
+    storage_manifest_date = status_summary[check_names.STORAGE_MANIFESTS][
+        "last_modified"
+    ]
+
+    delta = dp.parse(f"{dds_sync_last_modified}Z") - dp.parse(storage_manifest_date)
+
+    return delta.total_seconds() < 60 * 60
 
 def needs_check(status_summary):
     bnumber = status_summary["bnumber"]
@@ -25,14 +33,9 @@ def needs_check(status_summary):
         return False
 
     if reporting.has_succeeded_previously(status_summary, check_names.DDS_SYNC):
-        dds_sync_date = status_summary[check_names.DDS_SYNC]["last_modified"]
-        storage_manifest_date = status_summary[check_names.STORAGE_MANIFESTS][
-            "last_modified"
-        ]
+        dds_sync_last_modified = status_summary[check_names.DDS_SYNC]["last_modified"]
 
-        delta = dp.parse(f"{dds_sync_date}Z") - dp.parse(storage_manifest_date)
-
-        if delta.total_seconds() < 60 * 60:
+        if dds_sync_is_older_than_storage_manifest(dds_sync_last_modified, status_summary):
             print(f"There is a newer storage manifest for {bnumber}")
             return True
         else:
@@ -65,19 +68,33 @@ def run_check(status_updater, status_summary):
         raise Exception(f"No attribute 'finished' in {result}")
 
     if result["finished"]:
-        last_modified = result["created"]
+        dds_sync_last_modified = result["created"]
+
+        # If the dds last_modified time is older than the storage manifest
+        # it needs re-ingesting
+
+        success = dds_sync_is_older_than_storage_manifest(
+            dds_sync_last_modified,
+            status_summary
+        )
 
         status_updater.update(
             bnumber,
             status_name=check_names.DDS_SYNC,
-            success=True,
-            last_modified=last_modified,
+            success=success,
+            last_modified=dds_sync_last_modified,
         )
 
-        print(f"Recorded DDS sync complete for {bnumber}")
+        print(f"Recorded DDS sync success: {success} for {bnumber}")
     else:
         print(f"DDS status for {bnumber} is not finished")
 
+def run_one(bnumber):
+    with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
+        reader = dynamo_status_manager.DynamoStatusReader()
+        status_summary = reader.get_one(bnumber)
+        if needs_check(status_summary):
+            run_check(status_updater, status_summary)
 
 def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:

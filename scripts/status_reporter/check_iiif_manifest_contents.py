@@ -82,6 +82,13 @@ def run_check(status_updater, status_summary):
         )
 
 
+def run_one(bnumber):
+    with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
+        reader = dynamo_status_manager.DynamoStatusReader()
+        status_summary = reader.get_one(bnumber)
+        if needs_check(status_summary):
+            run_check(status_updater, status_summary)
+
 def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         for status_summary in get_statuses_for_updating(first_bnumber=first_bnumber):
