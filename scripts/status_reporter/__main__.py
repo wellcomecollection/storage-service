@@ -118,8 +118,7 @@ def _add_manual_skip(subparsers):
 
 def _add_report_all(subparsers):
     report_all = subparsers.add_parser(
-        "report_all",
-        help="Report stats for the entire migration"
+        "report_all", help="Report stats for the entire migration"
     )
 
 
@@ -321,6 +320,7 @@ def main():
 
     if args.subcommand_name == "report_all":
         import report_all
+
         report_all.run()
 
 
