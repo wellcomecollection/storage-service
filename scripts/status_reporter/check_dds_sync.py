@@ -64,7 +64,7 @@ def run_check(status_updater, row):
         last_modified = result["created"]
 
         status_updater.update(
-            bnumber,
+            row,
             status_name=check_names.DDS_SYNC,
             success=True,
             last_modified=last_modified,

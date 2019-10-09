@@ -42,7 +42,7 @@ def run_check(status_updater, storage_client, row):
     manifest_date = response["createdDate"]
 
     status_updater.update(
-        bnumber,
+        row,
         status_name=check_names.STORAGE_MANIFESTS,
         success=True,
         last_modified=manifest_date,

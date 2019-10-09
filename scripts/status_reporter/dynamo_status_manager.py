@@ -124,13 +124,11 @@ class DynamoStatusUpdater:
         else:
             print(f"No Item in response: {response}!")
 
-    def update(self, bnumber, *, status_name, success, last_modified=None):
+    def update(self, item, *, status_name, success, last_modified=None):
         if not status_name in ALL_CHECK_NAMES:
             raise Exception(
                 f"{status_name} is not valid (should be one of {ALL_CHECK_NAMES})."
             )
-
-        item = self.dynamo_table.get_item(Key={"bnumber": bnumber})["Item"]
 
         item[f"status-{status_name}"] = {
             "success": success,

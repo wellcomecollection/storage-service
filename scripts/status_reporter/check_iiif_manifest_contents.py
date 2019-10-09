@@ -62,7 +62,7 @@ def run_check(status_updater, row):
     if match_result["diff"] == {}:
         print(f"IIIF manifests match for {bnumber}!")
         status_updater.update(
-            bnumber,
+            row,
             status_name=check_names.IIIF_MANIFESTS_CONTENTS,
             success=True,
             last_modified=dt.datetime.now().isoformat(),
@@ -73,7 +73,7 @@ def run_check(status_updater, row):
 
         pprint(match_result["diff"])
         status_updater.update(
-            bnumber,
+            row,
             status_name=check_names.IIIF_MANIFESTS_CONTENTS,
             success=False,
             last_modified=dt.datetime.now().isoformat(),

@@ -64,7 +64,7 @@ def run_check(status_updater, row):
     if differences:
         print(f"Not all file sizes match for {bnumber}: {differences}")
         status_updater.update(
-            bnumber,
+            row,
             status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
             success=False,
             last_modified=dt.datetime.now().isoformat(),
@@ -72,7 +72,7 @@ def run_check(status_updater, row):
     else:
         print(f"File sizes in IIIF and storage service manifests match for {bnumber}!")
         status_updater.update(
-            bnumber,
+            row,
             status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
             success=True,
             last_modified=dt.datetime.now().isoformat(),
