@@ -42,10 +42,15 @@ def run(first_bnumber=None):
         for bnumber in bnumber_generator.bnumbers():
             status_summary = list(reader.get(bnumber))
 
-            if(status_summary):
+            if status_summary:
                 if needs_check(status_summary[0]):
                     mets_record = bnumber_generator.get(bnumber)
-                    record_check(status_updater, bnumber_generator, bnumber, mets_record['last_modified'])
+                    record_check(
+                        status_updater,
+                        bnumber_generator,
+                        bnumber,
+                        mets_record["last_modified"],
+                    )
             else:
                 print(f"{bnumber} not found in database, adding.")
                 mets_record = bnumber_generator.get(bnumber)
@@ -53,10 +58,10 @@ def run(first_bnumber=None):
                     bnumber=bnumber,
                     status_summaries={
                         check_names.METS_EXISTS: {
-                            'success': True,
-                            'last_modified': mets_record['last_modified']
+                            "success": True,
+                            "last_modified": mets_record["last_modified"],
                         }
-                    }
+                    },
                 )
 
 

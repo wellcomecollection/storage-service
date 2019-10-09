@@ -22,7 +22,9 @@ def needs_check(status_summary):
         print(f"No successful DDS sync for {bnumber}")
         return False
 
-    if reporting.has_succeeded_previously(status_summary, check_names.IIIF_MANIFESTS_CONTENTS):
+    if reporting.has_succeeded_previously(
+        status_summary, check_names.IIIF_MANIFESTS_CONTENTS
+    ):
         print(f"Already checked IIIF manifest contents for {bnumber}")
         return False
 

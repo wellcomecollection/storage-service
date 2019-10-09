@@ -18,13 +18,17 @@ import reporting
 def needs_check(status_summary):
     bnumber = status_summary["bnumber"]
 
-    if not reporting.has_succeeded_previously(status_summary, check_names.STORAGE_MANIFESTS):
+    if not reporting.has_succeeded_previously(
+        status_summary, check_names.STORAGE_MANIFESTS
+    ):
         print(f"No storage manifest for {bnumber}")
         return False
 
     if reporting.has_succeeded_previously(status_summary, check_names.DDS_SYNC):
         dds_sync_date = status_summary[check_names.DDS_SYNC]["last_modified"]
-        storage_manifest_date = status_summary[check_names.STORAGE_MANIFESTS]["last_modified"]
+        storage_manifest_date = status_summary[check_names.STORAGE_MANIFESTS][
+            "last_modified"
+        ]
 
         delta = dp.parse(f"{dds_sync_date}Z") - dp.parse(storage_manifest_date)
 

@@ -19,11 +19,15 @@ import reporting
 def needs_check(status_summary):
     bnumber = status_summary["bnumber"]
 
-    if not reporting.has_succeeded_previously(status_summary, check_names.IIIF_MANIFESTS_CONTENTS):
+    if not reporting.has_succeeded_previously(
+        status_summary, check_names.IIIF_MANIFESTS_CONTENTS
+    ):
         print(f"No successful IIIF manifest contents check for {bnumber}")
         return False
 
-    if reporting.has_succeeded_previously(status_summary, check_names.IIIF_MANIFESTS_FILE_SIZES):
+    if reporting.has_succeeded_previously(
+        status_summary, check_names.IIIF_MANIFESTS_FILE_SIZES
+    ):
         print(f"Already checked IIIF manifest file sizes for {bnumber}")
         return False
 

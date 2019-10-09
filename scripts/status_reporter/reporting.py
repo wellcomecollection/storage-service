@@ -20,9 +20,9 @@ def get_named_status(status_summary, name):
 
     if stored_result is None:
         return "not checked"
-    elif not stored_result['has_run']:
+    elif not stored_result["has_run"]:
         return "not checked"
-    elif stored_result['success']:
+    elif stored_result["success"]:
         return "success"
     else:
         return "failure"

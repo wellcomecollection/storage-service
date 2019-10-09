@@ -40,9 +40,13 @@ def needs_check(status_summary):
         print(f"No successful DDS sync for {bnumber}")
         return False
 
-    if reporting.has_succeeded_previously(status_summary, check_names.DLCS_ORIGIN_MATCH):
+    if reporting.has_succeeded_previously(
+        status_summary, check_names.DLCS_ORIGIN_MATCH
+    ):
         dds_sync_date = status_summary[check_names.DDS_SYNC]["last_modified"]
-        dlcs_origin_date = status_summary[check_names.DLCS_ORIGIN_MATCH]["last_modified"]
+        dlcs_origin_date = status_summary[check_names.DLCS_ORIGIN_MATCH][
+            "last_modified"
+        ]
 
         delta = dp.parse(dlcs_origin_date) - dp.parse(dds_sync_date)
 

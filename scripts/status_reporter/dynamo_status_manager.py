@@ -115,13 +115,13 @@ class DynamoStatusUpdater:
 
             if status_name in status_summaries:
                 has_run = True
-                success = status_summaries[status_name]['success']
-                last_modified = status_summaries[status_name]['last_modified']
+                success = status_summaries[status_name]["success"]
+                last_modified = status_summaries[status_name]["last_modified"]
 
             item[status_name] = {
                 "has_run": has_run,
                 "success": success,
-                "last_modified": last_modified
+                "last_modified": last_modified,
             }
 
         self._put_item(item=item)
@@ -129,15 +129,17 @@ class DynamoStatusUpdater:
     def reset(self, bnumber):
         self.insert(bnumber)
 
-    def update(self, bnumber, *, status_name, success, has_run=True, last_modified=None):
+    def update(
+        self, bnumber, *, status_name, success, has_run=True, last_modified=None
+    ):
         if status_name not in ALL_CHECK_NAMES:
             raise Exception(
                 f"{status_name} is not valid (should be one of {ALL_CHECK_NAMES})."
             )
 
-        response = self.dynamo_table.get_item(Key={'bnumber': bnumber})
+        response = self.dynamo_table.get_item(Key={"bnumber": bnumber})
 
-        item = response['Item']
+        item = response["Item"]
 
         item[status_name] = {
             "has_run": has_run,
