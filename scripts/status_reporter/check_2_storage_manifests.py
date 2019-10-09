@@ -12,7 +12,7 @@ import helpers
 import reporting
 
 
-def needs_check(row):
+def needs_check(status_summary):
     return helpers.needs_check(
         status_summary,
         previous_check=check_names.METS_EXISTS,
