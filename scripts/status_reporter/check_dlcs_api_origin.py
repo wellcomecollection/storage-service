@@ -13,6 +13,7 @@ from id_mapper import IDMapper
 from iiif_diff import IIIFDiff
 from library_iiif import LibraryIIIF
 from matcher import Matcher
+
 # import preservica
 import reporting
 
@@ -20,6 +21,7 @@ import reporting
 # We're using functools.lru_cache() as a sort of lazy evaluation here.
 # We don't want to fetch the key simply by importing this file, but we also
 # don't want to fetch it repeatedly.
+
 
 @functools.lru_cache()
 def dlcs_api_key():
