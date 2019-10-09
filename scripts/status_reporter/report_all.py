@@ -44,8 +44,8 @@ def _is_failed(record):
 
 class Statuses:
     inconsistent = "? Inconsistent"
-    skipped      = "• Skipped"
-    failed       = "! Failed"
+    skipped      = " ⃠ Skipped"
+    failed       = "✗ Failed"
     succeeded    = "✓ Succeeded"
     processing   = "▶ Processing"
     waiting      = "▷ Waiting"
