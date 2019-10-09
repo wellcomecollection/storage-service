@@ -75,7 +75,7 @@ def run_check(status_updater, status_summary):
 
         pprint(match_result["diff"])
         status_updater.update(
-            status_summary,
+            bnumber,
             status_name=check_names.IIIF_MANIFESTS_CONTENTS,
             success=False,
             last_modified=dt.datetime.now().isoformat(),
@@ -92,7 +92,10 @@ def run_one(bnumber):
 def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         for status_summary in get_statuses_for_updating(first_bnumber=first_bnumber):
-            run_check(status_updater, status_summary)
+            try:
+                run_check(status_updater, status_summary)
+            except Exception as err:
+                print(err)
 
 
 def report():

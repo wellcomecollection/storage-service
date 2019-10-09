@@ -1,6 +1,7 @@
 # -*- encoding: utf-8
 
 from contextlib import closing
+import random
 
 import requests
 
@@ -20,7 +21,7 @@ class LibraryIIIF:
         self.stage_url = stage_url
         self.prod_url = prod_url
 
-        self.path_mask = "iiif/{0}/manifest"
+        self.path_mask = "iiif/{0}/manifest?cachebust=" + str(random.randint(0, 1000))
 
         self.session = requests.Session()
         self.http_adapter = requests.adapters.HTTPAdapter(

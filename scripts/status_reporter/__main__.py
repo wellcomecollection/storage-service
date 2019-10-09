@@ -251,7 +251,7 @@ def main():
     # check_mets
 
     if args.subcommand_name == "check_mets":
-        import check_mets
+        import check_1_mets as check_mets
 
         if args.check_one:
             check_mets.run_one(args.check_one)
@@ -263,7 +263,7 @@ def main():
         return
 
     if args.subcommand_name == "report_mets":
-        import check_mets
+        import check_1_mets as check_mets
 
         check_mets.report()
         return
