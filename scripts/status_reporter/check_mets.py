@@ -44,14 +44,16 @@ def run_one(bnumber):
             mets_record["last_modified"],
         )
 
-def run(bnumber):
+def run():
     s3_client = aws_client.read_only_client.s3_client()
     bnumber_generator = bnumbers.BibNumberGenerator(s3_client)
 
     reader = dynamo_status_manager.DynamoStatusReader()
 
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-        for bnumber in bnumber_generator.bnumbers():
+        for bnumber_obj in bnumber_generator.bnumber_objects():
+            bnumber = bnumber_obj["bnumber"]
+
             try:
                 status_summary = reader.get_one(bnumber)
             except dynamo_status_manager.NoSuchRecord:
@@ -68,12 +70,11 @@ def run(bnumber):
                 )
             else:
                 if needs_check(status_summary):
-                    mets_record = bnumber_generator.get(bnumber)
                     record_check(
                         status_updater,
                         bnumber_generator,
                         bnumber,
-                        mets_record["last_modified"],
+                        last_modified=bnumber_obj["last_modified"],
                     )
 
 

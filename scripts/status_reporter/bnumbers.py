@@ -16,8 +16,14 @@ class BibNumberGenerator:
         self.prefix = mets_only_root_prefix
 
         self.bnumber_pattern = re.compile(
-            r"\A" + self.prefix + r"[0-9ax/]*/(b[0-9ax]{8}).xml\Z"
+            r"\A" + self.prefix + r"[0-9ax/]*/(?P<bnumber>b[0-9ax]{8}).xml\Z"
         )
+
+    def get_bnumber(self, s):
+        try:
+            return self.bnumber_pattern.match(s).group("bnumber")
+        except AttributeError:
+            raise ValueError(f"Cannot find b number in {s!r}")
 
     def _get_matching_s3_objects(self, bucket, prefix="", suffix=""):
         kwargs = {"Bucket": bucket}
@@ -63,9 +69,23 @@ class BibNumberGenerator:
             "content_length": int(headers["content-length"]),
         }
 
+    def bnumber_objects(self):
+        for obj in self._get_matching_s3_objects(self.bucket, self.prefix):
+            try:
+                bnumber = self.get_bnumber(obj["Key"])
+            except ValueError:
+                pass
+            else:
+                yield {
+                    "bnumber": bnumber,
+                    "key": obj["Key"],
+                    "last_modified": obj["LastModified"].isoformat(),
+                    "content_length": obj["Size"],
+                }
+
     def bnumbers(self):
         for key in self._get_matching_s3_keys(self.bucket, self.prefix):
-            match = self.bnumber_pattern.match(key)
-
-            if match:
-                yield match.group(1)
+            try:
+                yield self.get_bnumber(obj["Key"])
+            except ValueError:
+                pass
