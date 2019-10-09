@@ -48,22 +48,19 @@ class BibNumberGenerator:
             yield obj["Key"]
 
     def get(self, bnumber):
-        shard_path = '/'.join(list(bnumber[-4:][::-1]))
+        shard_path = "/".join(list(bnumber[-4:][::-1]))
         key = f"{self.prefix}{shard_path}/{bnumber}.xml"
 
-        response = self.s3_client.head_object(
-            Bucket=self.bucket,
-            Key=key
-        )
+        response = self.s3_client.head_object(Bucket=self.bucket, Key=key)
 
-        headers = response['ResponseMetadata']['HTTPHeaders']
+        headers = response["ResponseMetadata"]["HTTPHeaders"]
 
         return {
-            'bnumber': bnumber,
-            'key': key,
-            'last_modified': dp.parse(headers['last-modified']).isoformat(),
-            'content_type': headers['content-type'],
-            'content_length': int(headers['content-length'])
+            "bnumber": bnumber,
+            "key": key,
+            "last_modified": dp.parse(headers["last-modified"]).isoformat(),
+            "content_type": headers["content-type"],
+            "content_length": int(headers["content-length"]),
         }
 
     def bnumbers(self):

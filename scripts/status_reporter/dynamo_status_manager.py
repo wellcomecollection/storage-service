@@ -111,7 +111,7 @@ class DynamoStatusUpdater:
         self._put_cache = []
 
     def insert(self, bnumber, set_status_check=[]):
-        item = { "bnumber": bnumber }
+        item = {"bnumber": bnumber}
 
         for status_name in ALL_CHECK_NAMES:
             success = status_name in set_status_check

@@ -30,7 +30,7 @@ def run_check(status_updater, bnumber_generator, row):
         row,
         status_name=check_names.METS_EXISTS,
         success=True,
-        last_modified=mets_record['last_modified'],
+        last_modified=mets_record["last_modified"],
     )
 
     print(f"Recorded storage manifest creation for {bnumber}")
@@ -48,15 +48,12 @@ def run(first_bnumber=None):
             row = rows[0] if rows else None
 
             if row is not None:
-                if True: #needs_check(row):
-                    run_check(
-                        status_updater,
-                        bnumber_generator,
-                        row
-                    )
+                if True:  # needs_check(row):
+                    run_check(status_updater, bnumber_generator, row)
             else:
                 print(f"{bnumber} not found in database, adding.")
                 status_updater.insert(bnumber, [check_names.METS_EXISTS])
+
 
 def report():
     return reporting.build_report(name=check_names.METS_EXISTS)

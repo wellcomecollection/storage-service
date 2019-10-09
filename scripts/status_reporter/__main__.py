@@ -43,9 +43,9 @@ def _add_check_mets(subparsers):
     )
 
     report_mets = subparsers.add_parser(
-        "report_mets",
-        help="Report how many b numbers in the METS",
+        "report_mets", help="Report how many b numbers in the METS"
     )
+
 
 def _add_check_storage_manifests(subparsers):
     check_storage_manifests = subparsers.add_parser(
