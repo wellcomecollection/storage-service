@@ -97,12 +97,10 @@ def _add_check_iiif_manifest_file_sizes(subparsers):
 def _add_manual_skip(subparsers):
     manually_skip = subparsers.add_parser(
         "manually_skip_bnumber",
-        help="Mark a b number as manually skipped for the migration"
+        help="Mark a b number as manually skipped for the migration",
     )
 
-    manually_skip.add_argument(
-        "--bnumber", help="b number to skip", required=True
-    )
+    manually_skip.add_argument("--bnumber", help="b number to skip", required=True)
     manually_skip.add_argument(
         "--reason", help="Why is this b number being skipped?", required=True
     )
@@ -277,14 +275,13 @@ def main():
         # TODO: What if this item doesn't exist yet?
         item = resp["Item"]
 
-
         with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
             status_updater.update(
                 item,
                 status_name=check_names.MANUAL_SKIP,
                 success=True,
                 reason=reason,
-                user=getpass.getuser()
+                user=getpass.getuser(),
             )
 
         print(f"Marked {bnumber} as manually skipped")
