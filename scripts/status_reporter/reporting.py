@@ -4,19 +4,25 @@ import collections
 
 import termcolor
 
+from check_names import ALL_CHECK_NAMES
 import dynamo_status_manager
 
 
-def has_succeeded_previously(row, name):
-    return row.get(name, {}).get("success")
+def has_succeeded_previously(status_summary, name):
+    return status_summary.get(name, {}).get("success")
 
 
-def get_named_status(row, name):
-    stored_result = row.get(name, {}).get("success")
+def get_named_status(status_summary, name):
+    if name not in ALL_CHECK_NAMES:
+        raise Exception(f"{name} is invalid, must be one of {ALL_CHECK_NAMES}")
+
+    stored_result = status_summary.get(name, None)
 
     if stored_result is None:
         return "not checked"
-    elif stored_result:
+    elif not stored_result['has_run']:
+        return "not checked"
+    elif stored_result['success']:
         return "success"
     else:
         return "failure"
@@ -89,8 +95,8 @@ def build_report(name):
 
     report = collections.Counter()
 
-    for row in reader.all():
-        status = get_named_status(row, name=name)
+    for status_summary in reader.all():
+        status = get_named_status(status_summary, name=name)
         report[status] += 1
 
     pprint_report(report)

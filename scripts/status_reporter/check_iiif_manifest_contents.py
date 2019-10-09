@@ -15,14 +15,14 @@ from matcher import Matcher
 import reporting
 
 
-def needs_check(row):
-    bnumber = row["bnumber"]
+def needs_check(status_summary):
+    bnumber = status_summary["bnumber"]
 
-    if not reporting.has_succeeded_previously(row, check_names.DDS_SYNC):
+    if not reporting.has_succeeded_previously(status_summary, check_names.DDS_SYNC):
         print(f"No successful DDS sync for {bnumber}")
         return False
 
-    if reporting.has_succeeded_previously(row, check_names.IIIF_MANIFESTS_CONTENTS):
+    if reporting.has_succeeded_previously(status_summary, check_names.IIIF_MANIFESTS_CONTENTS):
         print(f"Already checked IIIF manifest contents for {bnumber}")
         return False
 
@@ -32,13 +32,13 @@ def needs_check(row):
 def get_statuses_for_updating(first_bnumber):
     reader = dynamo_status_manager.DynamoStatusReader()
 
-    for row in reader.all(first_bnumber=first_bnumber):
-        if needs_check(row):
-            yield row
+    for status_summary in reader.all(first_bnumber=first_bnumber):
+        if needs_check(status_summary):
+            yield status_summary
 
 
-def run_check(status_updater, row):
-    bnumber = row["bnumber"]
+def run_check(status_updater, status_summary):
+    bnumber = status_summary["bnumber"]
 
     storage_api_url = defaults["storage_api_url"]
 
@@ -62,7 +62,7 @@ def run_check(status_updater, row):
     if match_result["diff"] == {}:
         print(f"IIIF manifests match for {bnumber}!")
         status_updater.update(
-            row,
+            bnumber,
             status_name=check_names.IIIF_MANIFESTS_CONTENTS,
             success=True,
             last_modified=dt.datetime.now().isoformat(),
@@ -73,7 +73,7 @@ def run_check(status_updater, row):
 
         pprint(match_result["diff"])
         status_updater.update(
-            row,
+            status_summary,
             status_name=check_names.IIIF_MANIFESTS_CONTENTS,
             success=False,
             last_modified=dt.datetime.now().isoformat(),
@@ -82,8 +82,8 @@ def run_check(status_updater, row):
 
 def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-        for row in get_statuses_for_updating(first_bnumber=first_bnumber):
-            run_check(status_updater, row)
+        for status_summary in get_statuses_for_updating(first_bnumber=first_bnumber):
+            run_check(status_updater, status_summary)
 
 
 def report():

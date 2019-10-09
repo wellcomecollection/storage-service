@@ -11,26 +11,22 @@ import bnumbers
 import reporting
 
 
-def needs_check(row):
-    bnumber = row["bnumber"]
+def needs_check(status_summary):
+    bnumber = status_summary["bnumber"]
 
-    if reporting.has_succeeded_previously(row, check_names.METS_EXISTS):
+    if reporting.has_succeeded_previously(status_summary, check_names.METS_EXISTS):
         print(f"Already recorded METS exists for {bnumber}")
         return False
 
     return True
 
 
-def run_check(status_updater, bnumber_generator, row):
-    bnumber = row["bnumber"]
-
-    mets_record = bnumber_generator.get(bnumber)
-
+def record_check(status_updater, bnumber_generator, bnumber, last_modified):
     status_updater.update(
-        row,
+        bnumber,
         status_name=check_names.METS_EXISTS,
         success=True,
-        last_modified=mets_record["last_modified"],
+        last_modified=last_modified,
     )
 
     print(f"Recorded METS for {bnumber}")
@@ -44,15 +40,24 @@ def run(first_bnumber=None):
 
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         for bnumber in bnumber_generator.bnumbers():
-            rows = list(reader.get(bnumber))
-            row = rows[0] if rows else None
+            status_summary = list(reader.get(bnumber))
 
-            if row is not None:
-                if True:  # needs_check(row):
-                    run_check(status_updater, bnumber_generator, row)
+            if(status_summary):
+                if needs_check(status_summary[0]):
+                    mets_record = bnumber_generator.get(bnumber)
+                    record_check(status_updater, bnumber_generator, bnumber, mets_record['last_modified'])
             else:
                 print(f"{bnumber} not found in database, adding.")
-                status_updater.insert(bnumber, [check_names.METS_EXISTS])
+                mets_record = bnumber_generator.get(bnumber)
+                status_updater.insert(
+                    bnumber=bnumber,
+                    status_summaries={
+                        check_names.METS_EXISTS: {
+                            'success': True,
+                            'last_modified': mets_record['last_modified']
+                        }
+                    }
+                )
 
 
 def report():

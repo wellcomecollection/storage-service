@@ -16,14 +16,14 @@ import preservica
 import reporting
 
 
-def needs_check(row):
-    bnumber = row["bnumber"]
+def needs_check(status_summary):
+    bnumber = status_summary["bnumber"]
 
-    if not reporting.has_succeeded_previously(row, check_names.IIIF_MANIFESTS_CONTENTS):
+    if not reporting.has_succeeded_previously(status_summary, check_names.IIIF_MANIFESTS_CONTENTS):
         print(f"No successful IIIF manifest contents check for {bnumber}")
         return False
 
-    if reporting.has_succeeded_previously(row, check_names.IIIF_MANIFESTS_FILE_SIZES):
+    if reporting.has_succeeded_previously(status_summary, check_names.IIIF_MANIFESTS_FILE_SIZES):
         print(f"Already checked IIIF manifest file sizes for {bnumber}")
         return False
 
@@ -33,13 +33,13 @@ def needs_check(row):
 def get_statuses_for_updating(first_bnumber):
     reader = dynamo_status_manager.DynamoStatusReader()
 
-    for row in reader.all(first_bnumber=first_bnumber):
-        if needs_check(row):
-            yield row
+    for status_summary in reader.all(first_bnumber=first_bnumber):
+        if needs_check(status_summary):
+            yield status_summary
 
 
-def run_check(status_updater, row):
-    bnumber = row["bnumber"]
+def run_check(status_updater, status_summary):
+    bnumber = status_summary["bnumber"]
 
     s3_client = aws_client.dev_client.s3_client()
 
@@ -64,7 +64,7 @@ def run_check(status_updater, row):
     if differences:
         print(f"Not all file sizes match for {bnumber}: {differences}")
         status_updater.update(
-            row,
+            bnumber,
             status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
             success=False,
             last_modified=dt.datetime.now().isoformat(),
@@ -72,7 +72,7 @@ def run_check(status_updater, row):
     else:
         print(f"File sizes in IIIF and storage service manifests match for {bnumber}!")
         status_updater.update(
-            row,
+            bnumber,
             status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
             success=True,
             last_modified=dt.datetime.now().isoformat(),
@@ -81,8 +81,8 @@ def run_check(status_updater, row):
 
 def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-        for row in get_statuses_for_updating(first_bnumber=first_bnumber):
-            run_check(status_updater, row)
+        for status_summary in get_statuses_for_updating(first_bnumber=first_bnumber):
+            run_check(status_updater, status_summary)
 
 
 def report():

@@ -8,7 +8,7 @@ from check_names import ALL_CHECK_NAMES
 
 
 class DynamoStatusReader:
-    def __init__(self, table_name="storage-migration-status"):
+    def __init__(self, table_name="status_reporter"):
         from aws_client import read_only_client
 
         self.dynamo_client = read_only_client.dynamo_client()
@@ -30,14 +30,9 @@ class DynamoStatusReader:
         status = {}
         status["bnumber"] = row["bnumber"]
 
-        known_statuses = {k: v for k, v in row.items() if k.startswith("status-")}
-
         for status_name in ALL_CHECK_NAMES:
-            if f"status-{status_name}" in known_statuses:
-                success = known_statuses[f"status-{status_name}"]["success"]
-                last_modified = known_statuses[f"status-{status_name}"]["last_modified"]
-
-                status[status_name] = known_statuses[f"status-{status_name}"]
+            if status_name in row:
+                status[status_name] = row[status_name]
             else:
                 status[status_name] = {}
 
@@ -71,7 +66,7 @@ class DynamoStatusReader:
                 RequestItems={self.table_name: {"Keys": keys}}
             )
 
-            rows = response["Responses"]["storage-migration-status"]
+            rows = response["Responses"][self.table_name]
             deserialized_rows = [self._deserialize_row(row) for row in rows]
             status_rows = [self._extract_statuses(row) for row in deserialized_rows]
 
@@ -80,7 +75,7 @@ class DynamoStatusReader:
 
 
 class DynamoStatusUpdater:
-    def __enter__(self, table_name="storage-migration-status"):
+    def __enter__(self, table_name="status_reporter"):
         from aws_client import dev_client
 
         self.dynamo_table = dev_client.dynamo_table(table_name)
@@ -110,47 +105,44 @@ class DynamoStatusUpdater:
 
         self._put_cache = []
 
-    def insert(self, bnumber, set_status_check=[]):
+    def insert(self, bnumber, status_summaries={}):
         item = {"bnumber": bnumber}
 
         for status_name in ALL_CHECK_NAMES:
-            success = status_name in set_status_check
+            has_run = False
+            success = False
+            last_modified = dt.datetime.now().isoformat()
 
-            item[f"status-{status_name}"] = {
+            if status_name in status_summaries:
+                has_run = True
+                success = status_summaries[status_name]['success']
+                last_modified = status_summaries[status_name]['last_modified']
+
+            item[status_name] = {
+                "has_run": has_run,
                 "success": success,
-                "last_modified": dt.datetime.now().isoformat(),
+                "last_modified": last_modified
             }
 
         self._put_item(item=item)
 
     def reset(self, bnumber):
-        response = self.dynamo_table.get_item(Key={"bnumber": bnumber})
+        self.insert(bnumber)
 
-        if "Item" in response:
-            item = response["Item"]
-
-            for status_name in ALL_CHECK_NAMES:
-
-                item[f"status-{status_name}"] = {
-                    "success": False,
-                    "last_modified": dt.datetime.now().isoformat(),
-                }
-
-            self._put_item(item=item)
-        else:
-            print(f"No Item in response: {response}!")
-
-    def update(self, item, *, status_name, success, last_modified=None, **kwargs):
+    def update(self, bnumber, *, status_name, success, has_run=True, last_modified=None):
         if status_name not in ALL_CHECK_NAMES:
             raise Exception(
                 f"{status_name} is not valid (should be one of {ALL_CHECK_NAMES})."
             )
 
-        item[f"status-{status_name}"] = {
+        response = self.dynamo_table.get_item(Key={'bnumber': bnumber})
+
+        item = response['Item']
+
+        item[status_name] = {
+            "has_run": has_run,
             "success": success,
             "last_modified": last_modified or dt.datetime.now().isoformat(),
         }
-
-        item[f"status-{status_name}"].update(kwargs)
 
         self._put_item(item=item)
