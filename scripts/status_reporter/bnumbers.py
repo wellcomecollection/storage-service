@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import dateutil.parser as dp
 import re
 
 
@@ -14,14 +15,18 @@ class BibNumberGenerator:
         self.bucket = mets_bucket_name
         self.prefix = mets_only_root_prefix
 
-    def _get_matching_s3_objects(self, client, bucket, prefix="", suffix=""):
+        self.bnumber_pattern = re.compile(
+            r"\A" + self.prefix + r"[0-9ax/]*/(b[0-9ax]{8}).xml\Z"
+        )
+
+    def _get_matching_s3_objects(self, bucket, prefix="", suffix=""):
         kwargs = {"Bucket": bucket}
 
         if isinstance(prefix, str):
             kwargs["Prefix"] = prefix
 
         while True:
-            resp = client.list_objects_v2(**kwargs)
+            resp = self.s3_client.list_objects_v2(**kwargs)
 
             try:
                 contents = resp["Contents"]
@@ -38,16 +43,32 @@ class BibNumberGenerator:
             except KeyError:
                 break
 
-    def _get_matching_s3_keys(self, client, bucket, prefix="", suffix=""):
-        for obj in self._get_matching_s3_objects(client, bucket, prefix, suffix):
+    def _get_matching_s3_keys(self, bucket, prefix="", suffix=""):
+        for obj in self._get_matching_s3_objects(bucket, prefix, suffix):
             yield obj["Key"]
 
+    def get(self, bnumber):
+        shard_path = '/'.join(list(bnumber[-4:][::-1]))
+        key = f"{self.prefix}{shard_path}/{bnumber}.xml"
+
+        response = self.s3_client.head_object(
+            Bucket=self.bucket,
+            Key=key
+        )
+
+        headers = response['ResponseMetadata']['HTTPHeaders']
+
+        return {
+            'bnumber': bnumber,
+            'key': key,
+            'last_modified': dp.parse(headers['last-modified']).isoformat(),
+            'content_type': headers['content-type'],
+            'content_length': int(headers['content-length'])
+        }
+
     def bnumbers(self):
-        prefix = self.prefix
+        for key in self._get_matching_s3_keys(self.bucket, self.prefix):
+            match = self.bnumber_pattern.match(key)
 
-        bnumber_pattern = re.compile(r"\A" + prefix + r"[0-9ax/]*/(b[0-9ax]{8}).xml\Z")
-
-        for key in self._get_matching_s3_keys(self.s3_client, self.bucket, self.prefix):
-            match = bnumber_pattern.match(key)
-            if bnumber_pattern.match(key):
+            if match:
                 yield match.group(1)

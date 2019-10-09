@@ -61,6 +61,9 @@ class DynamoStatusReader:
             yield self._extract_statuses(row)
 
     def get(self, bnumbers):
+        if isinstance(bnumbers, str):
+            bnumbers = [bnumbers]
+
         for bnumbers_chunk in self._chunks(bnumbers):
             keys = [{"bnumber": {"S": bnumber}} for bnumber in bnumbers_chunk]
 
@@ -106,6 +109,19 @@ class DynamoStatusUpdater:
                 batch.put_item(Item=item)
 
         self._put_cache = []
+
+    def insert(self, bnumber, set_status_check=[]):
+        item = { "bnumber": bnumber }
+
+        for status_name in ALL_CHECK_NAMES:
+            success = status_name in set_status_check
+
+            item[f"status-{status_name}"] = {
+                "success": success,
+                "last_modified": dt.datetime.now().isoformat(),
+            }
+
+        self._put_item(item=item)
 
     def reset(self, bnumber):
         response = self.dynamo_table.get_item(Key={"bnumber": bnumber})

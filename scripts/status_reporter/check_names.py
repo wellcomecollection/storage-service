@@ -12,6 +12,8 @@ IIIF_MANIFESTS_FILE_SIZES = "iiif_manifest_file_sizes_match"
 
 MANUAL_SKIP = "manual_skip"
 
+METS_EXISTS = "s3_mets_exists"
+
 ALL_CHECK_NAMES = [
     STORAGE_MANIFESTS,
     DDS_SYNC,
@@ -19,4 +21,5 @@ ALL_CHECK_NAMES = [
     IIIF_MANIFESTS_FILE_SIZES,
     DLCS_ORIGIN_MATCH,
     MANUAL_SKIP,
+    METS_EXISTS,
 ]

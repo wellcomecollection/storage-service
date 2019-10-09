@@ -37,6 +37,16 @@ def _split_on_comma(string):
     return [i.strip() for i in string.split(",") if i]
 
 
+def _add_check_mets(subparsers):
+    check_mets = subparsers.add_parser(
+        "check_mets", help="Check the METS for all b numbers"
+    )
+
+    report_mets = subparsers.add_parser(
+        "report_mets",
+        help="Report how many b numbers in the METS",
+    )
+
 def _add_check_storage_manifests(subparsers):
     check_storage_manifests = subparsers.add_parser(
         "check_storage_manifests", help="Check for a storage manifest for each b number"
@@ -110,6 +120,7 @@ def main():
     parser = argparse.ArgumentParser(description="Check status of jobs")
     subparsers = parser.add_subparsers(dest="subcommand_name", help="subcommand help")
 
+    _add_check_mets(subparsers)
     _add_check_storage_manifests(subparsers)
     _add_check_dds_sync(subparsers)
     _add_check_iiif_manifest_contents(subparsers)
@@ -207,6 +218,20 @@ def main():
         _print_as_json(results)
 
     # Subcommands for check/reporting start here
+
+    # check_mets
+
+    if args.subcommand_name == "check_mets":
+        import check_mets
+
+        check_mets.run()
+        return
+
+    if args.subcommand_name == "report_mets":
+        import check_mets
+
+        check_mets.report()
+        return
 
     # storage_manifests
 

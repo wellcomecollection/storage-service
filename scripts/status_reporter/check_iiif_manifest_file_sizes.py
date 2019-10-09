@@ -82,10 +82,7 @@ def run_check(status_updater, row):
 def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         for row in get_statuses_for_updating(first_bnumber=first_bnumber):
-            try:
-                run_check(status_updater, row)
-            except Exception as err:
-                print(err)
+            run_check(status_updater, row)
 
 
 def report():
