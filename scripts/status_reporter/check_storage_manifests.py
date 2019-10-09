@@ -1,6 +1,7 @@
 # -*- encoding: utf-8
 
 import collections
+import concurrent.futures
 import sys
 
 from wellcome_storage_service import BagNotFound
@@ -21,10 +22,14 @@ def needs_check(row):
     return True
 
 
-def get_statuses_for_updating(first_bnumber):
+def get_statuses_for_updating(first_bnumber, db_shard, total_db_shards):
     reader = dynamo_status_manager.DynamoStatusReader()
 
-    for row in reader.all(first_bnumber=first_bnumber):
+    for row in reader.all(
+        first_bnumber=first_bnumber,
+        db_shard=db_shard,
+        total_db_shards=total_db_shards
+    ):
         if needs_check(row):
             yield row
 
@@ -52,11 +57,25 @@ def run_check(status_updater, storage_client, row):
 
 
 def run(first_bnumber=None):
+    futures = []
     storage_client = helpers.create_storage_client()
 
+    WORKERS = 5
+
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-        for row in get_statuses_for_updating(first_bnumber=first_bnumber):
-            run_check(status_updater, storage_client, row)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=WORKERS) as executor:
+            for i in range(WORKERS):
+                for status_summary in get_statuses_for_updating(
+                    first_bnumber=first_bnumber,
+                    db_shard=i,
+                    total_db_shards=WORKERS
+                ):
+                    future = executor.submit(
+                        run_check, status_updater, storage_client, status_summary
+                    )
+
+            for fut in concurrent.futures.as_completed(futures):
+                fut.result()
 
 
 def report():

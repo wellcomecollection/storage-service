@@ -46,11 +46,15 @@ class DynamoStatusReader:
             for row in page["Items"]:
                 yield self._deserialize_row(row)
 
-    def all(self, first_bnumber=None):
+    def all(self, first_bnumber=None, db_shard=None, total_db_shards=None):
         kwargs = {"TableName": self.table_name}
 
         if first_bnumber:
             kwargs["ExclusiveStartKey"] = {"bnumber": {"S": first_bnumber}}
+
+        if db_shard is not None and total_db_shards is not None:
+            kwargs["Segment"] = db_shard
+            kwargs["TotalSegments"] = total_db_shards
 
         for row in self._generate_rows(**kwargs):
             yield self._extract_statuses(row)
