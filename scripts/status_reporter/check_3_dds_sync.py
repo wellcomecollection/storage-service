@@ -23,26 +23,14 @@ def dds_sync_is_older_than_storage_manifest(dds_sync_last_modified, status_summa
 
     return delta.total_seconds() < 60 * 60
 
+
 def needs_check(status_summary):
-    bnumber = status_summary["bnumber"]
-
-    if not reporting.has_succeeded_previously(
-        status_summary, check_names.STORAGE_MANIFESTS
-    ):
-        print(f"No storage manifest for {bnumber}")
-        return False
-
-    if reporting.has_succeeded_previously(status_summary, check_names.DDS_SYNC):
-        dds_sync_last_modified = status_summary[check_names.DDS_SYNC]["last_modified"]
-
-        if dds_sync_is_older_than_storage_manifest(dds_sync_last_modified, status_summary):
-            print(f"There is a newer storage manifest for {bnumber}")
-            return True
-        else:
-            print(f"Already recorded successful DDS sync for {bnumber}")
-            return False
-
-    return True
+    return helpers.needs_check(
+        status_summary,
+        previous_check=check_names.STORAGE_MANIFESTS,
+        current_check=check_names.DDS_SYNC,
+        step_name="DDS sync"
+    )
 
 
 def get_statuses_for_updating(first_bnumber):

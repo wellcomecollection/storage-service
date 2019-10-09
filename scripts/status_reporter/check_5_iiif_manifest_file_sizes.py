@@ -17,21 +17,12 @@ import reporting
 
 
 def needs_check(status_summary):
-    bnumber = status_summary["bnumber"]
-
-    if not reporting.has_succeeded_previously(
-        status_summary, check_names.IIIF_MANIFESTS_CONTENTS
-    ):
-        print(f"No successful IIIF manifest contents check for {bnumber}")
-        return False
-
-    if reporting.has_succeeded_previously(
-        status_summary, check_names.IIIF_MANIFESTS_FILE_SIZES
-    ):
-        print(f"Already checked IIIF manifest file sizes for {bnumber}")
-        return False
-
-    return True
+    return helpers.needs_check(
+        status_summary,
+        previous_check=check_names.IIIF_MANIFESTS_CONTENTS,
+        current_check=check_names.IIIF_MANIFESTS_FILE_SIZES,
+        step_name="IIIF manifests sizes"
+    )
 
 
 def get_statuses_for_updating(first_bnumber):

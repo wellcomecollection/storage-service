@@ -16,19 +16,12 @@ import reporting
 
 
 def needs_check(status_summary):
-    bnumber = status_summary["bnumber"]
-
-    if not reporting.has_succeeded_previously(status_summary, check_names.DDS_SYNC):
-        print(f"No successful DDS sync for {bnumber}")
-        return False
-
-    if reporting.has_succeeded_previously(
-        status_summary, check_names.IIIF_MANIFESTS_CONTENTS
-    ):
-        print(f"Already checked IIIF manifest contents for {bnumber}")
-        return False
-
-    return True
+    return helpers.needs_check(
+        status_summary,
+        previous_check=check_names.DDS_SYNC,
+        current_check=check_names.IIIF_MANIFESTS_CONTENTS,
+        step_name="IIIF manifests contents"
+    )
 
 
 def get_statuses_for_updating(first_bnumber):
