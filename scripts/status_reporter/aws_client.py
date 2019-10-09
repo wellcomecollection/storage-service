@@ -36,6 +36,10 @@ class AwsClient:
     def dynamo_table(self, table_name):
         return self.dynamo_resource().Table(table_name)
 
+    def secrets_manager_value(self, secret_name):
+        client = self.session.client("secretsmanager")
+        return client.get_secret_value(SecretId=secret_name)["SecretString"]
+
 
 read_only_client = AwsClient(
     role_arn="arn:aws:iam::975596993436:role/storage-read_only"
