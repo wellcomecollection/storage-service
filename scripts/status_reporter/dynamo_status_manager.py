@@ -7,6 +7,10 @@ from boto3.dynamodb.types import TypeDeserializer
 from check_names import ALL_CHECK_NAMES
 
 
+class NoSuchRecord(Exception):
+    pass
+
+
 class DynamoStatusReader:
     def __init__(self, table_name="status_reporter"):
         from aws_client import read_only_client
@@ -60,7 +64,10 @@ class DynamoStatusReader:
             yield self._extract_statuses(row)
 
     def get_one(self, bnumber):
-        return next(self.get([bnumber]))
+        try:
+            return next(self.get([bnumber]))
+        except StopIteration:
+            raise NoSuchRecord(bnumber)
 
     def get(self, bnumbers):
         if isinstance(bnumbers, str):
