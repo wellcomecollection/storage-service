@@ -26,7 +26,7 @@ def _is_processing(record):
     expected_checks = [
         name
         for name in check_names.ALL_CHECK_NAMES
-        if name != check_names.MANUAL_SKIP
+        if name != check_names.MANUAL_SKIP and name != check_names.METS_EXISTS
     ]
 
     return any(record.get(name, {}).get("has_run") for name in expected_checks)
