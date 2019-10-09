@@ -44,14 +44,14 @@ def run_one(bnumber):
             mets_record["last_modified"],
         )
 
-def run():
+def run(first_bnumber):
     s3_client = aws_client.read_only_client.s3_client()
     bnumber_generator = bnumbers.BibNumberGenerator(s3_client)
 
     reader = dynamo_status_manager.DynamoStatusReader()
 
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-        for bnumber_obj in bnumber_generator.bnumber_objects():
+        for bnumber_obj in bnumber_generator.bnumber_objects(first_bnumber):
             bnumber = bnumber_obj["bnumber"]
 
             try:

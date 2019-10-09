@@ -45,6 +45,9 @@ def _add_check_mets(subparsers):
     check_mets.add_argument(
         "--check_one", help="Check only the bnumber"
     )
+    check_mets.add_argument(
+        "--first_bnumber", help="Start checking from this b number"
+    )
 
     report_mets = subparsers.add_parser(
         "report_mets", help="Report how many b numbers in the METS"
@@ -252,6 +255,8 @@ def main():
 
         if args.check_one:
             check_mets.run_one(args.check_one)
+        elif args.first_bnumber:
+            check_mets.run(first_bnumber=args.first_bnumber)
         else:
             check_mets.run()
 

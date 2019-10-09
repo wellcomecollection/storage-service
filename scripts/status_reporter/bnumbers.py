@@ -25,11 +25,14 @@ class BibNumberGenerator:
         except AttributeError:
             raise ValueError(f"Cannot find b number in {s!r}")
 
-    def _get_matching_s3_objects(self, bucket, prefix="", suffix=""):
+    def _get_matching_s3_objects(self, bucket, prefix="", start_after=None):
         kwargs = {"Bucket": bucket}
 
         if isinstance(prefix, str):
             kwargs["Prefix"] = prefix
+
+        if start_after is not None:
+            kwargs["StartAfter"] = start_after
 
         while True:
             resp = self.s3_client.list_objects_v2(**kwargs)
@@ -41,7 +44,7 @@ class BibNumberGenerator:
 
             for obj in contents:
                 key = obj["Key"]
-                if key.startswith(prefix) and key.endswith(suffix):
+                if key.startswith(prefix):
                     yield obj
 
             try:
@@ -49,8 +52,8 @@ class BibNumberGenerator:
             except KeyError:
                 break
 
-    def _get_matching_s3_keys(self, bucket, prefix="", suffix=""):
-        for obj in self._get_matching_s3_objects(bucket, prefix, suffix):
+    def _get_matching_s3_keys(self, bucket, prefix=""):
+        for obj in self._get_matching_s3_objects(bucket, prefix):
             yield obj["Key"]
 
     def get(self, bnumber):
@@ -69,8 +72,15 @@ class BibNumberGenerator:
             "content_length": int(headers["content-length"]),
         }
 
-    def bnumber_objects(self):
-        for obj in self._get_matching_s3_objects(self.bucket, self.prefix):
+    def bnumber_objects(self, first_bnumber):
+        shard_path = "/".join(list(first_bnumber[-4:][::-1]))
+        key = f"{self.prefix}{shard_path}/{first_bnumber}.xml"
+
+        for obj in self._get_matching_s3_objects(
+            bucket=self.bucket,
+            prefix=self.prefix,
+            start_after=key
+        ):
             try:
                 bnumber = self.get_bnumber(obj["Key"])
             except ValueError:
