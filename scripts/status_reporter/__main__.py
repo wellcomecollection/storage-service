@@ -271,7 +271,7 @@ def main():
     # storage_manifests
 
     if args.subcommand_name == "check_storage_manifests":
-        import check_storage_manifests
+        import check_2_storage_manifests as check_storage_manifests
 
         if args.check_one:
             check_storage_manifests.run_one(args.check_one)
@@ -281,7 +281,7 @@ def main():
         return
 
     if args.subcommand_name == "report_storage_manifests":
-        import check_storage_manifests
+        import check_2_storage_manifests as check_storage_manifests
 
         check_storage_manifests.report()
         return
@@ -307,7 +307,7 @@ def main():
     # iiif_manifest_contents
 
     if args.subcommand_name == "check_iiif_manifest_contents":
-        import check_iiif_manifest_contents
+        import check_3_iiif_manifest_contents as check_iiif_manifest_contents
 
         if args.check_one:
             check_iiif_manifest_contents.run_one(args.check_one)
@@ -317,7 +317,7 @@ def main():
         return
 
     if args.subcommand_name == "report_iiif_manifest_contents":
-        import check_iiif_manifest_contents
+        import check_3_iiif_manifest_contents as check_iiif_manifest_contents
 
         if args.check_one:
             check_iiif_manifest_contents.run_one(args.check_one)
@@ -329,7 +329,7 @@ def main():
     # iiif_manifest_file_sizes
 
     if args.subcommand_name == "check_iiif_manifest_file_sizes":
-        import check_iiif_manifest_file_sizes
+        import check_4_iiif_manifest_file_sizes as check_iiif_manifest_file_sizes
 
         if args.check_one:
             check_iiif_manifest_file_sizes.run_one(args.check_one)
@@ -339,7 +339,7 @@ def main():
         return
 
     if args.subcommand_name == "report_iiif_manifest_file_sizes":
-        import check_iiif_manifest_file_sizes
+        import check_4_iiif_manifest_file_sizes as check_iiif_manifest_file_sizes
 
         check_iiif_manifest_file_sizes.report()
         return
