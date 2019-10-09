@@ -116,6 +116,13 @@ def _add_manual_skip(subparsers):
     )
 
 
+def _add_report_all(subparsers):
+    report_all = subparsers.add_parser(
+        "report_all",
+        help="Report stats for the entire migration"
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description="Check status of jobs")
     subparsers = parser.add_subparsers(dest="subcommand_name", help="subcommand help")
@@ -126,6 +133,7 @@ def main():
     _add_check_iiif_manifest_contents(subparsers)
     _add_check_iiif_manifest_file_sizes(subparsers)
     _add_manual_skip(subparsers)
+    _add_report_all(subparsers)
 
     # Not check or reporting
 
@@ -310,6 +318,10 @@ def main():
             )
 
         print(f"Marked {bnumber} as manually skipped")
+
+    if args.subcommand_name == "report_all":
+        import report_all
+        report_all.run()
 
 
 if __name__ == "__main__":

@@ -52,7 +52,7 @@ def _draw_ascii_bar_chart(data, colors=None):
 
         print(
             termcolor.colored(
-                f"{label.rjust(longest_label_length)} ▏ {count:#6d} {bar}",
+                f"{label.ljust(longest_label_length)} ▏ {count:#6d} {bar}",
                 colors.get(label),
             )
         )
