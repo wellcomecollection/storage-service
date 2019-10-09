@@ -64,11 +64,11 @@ def run_check(status_updater, status_summary):
 
     result = _dds_client.status(bnumber)
 
-    if not "finished" in result:
-        raise Exception(f"No attribute 'finished' in {result}")
+    if not "Finished" in result:
+        raise Exception(f"No attribute 'Finished' in {result}")
 
-    if result["finished"]:
-        dds_sync_last_modified = result["created"]
+    if result["Finished"]:
+        dds_sync_last_modified = result["Created"]
 
         # If the dds last_modified time is older than the storage manifest
         # it needs re-ingesting
@@ -100,7 +100,6 @@ def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         for status_summary in get_statuses_for_updating(first_bnumber=first_bnumber):
             run_check(status_updater, status_summary)
-
 
 def report():
     return reporting.build_report(name=check_names.DDS_SYNC)

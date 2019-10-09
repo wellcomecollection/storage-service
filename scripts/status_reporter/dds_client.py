@@ -9,7 +9,7 @@ class DDSClient:
         self.session = requests.Session()
 
     def status(self, bnumber):
-        url = self.start_ingest_url.format(bnumber)
+        url = self.item_query_url.format(bnumber)
         r = self.session.get(url, verify=False)
         r.raise_for_status()
 
