@@ -2,10 +2,13 @@
 
 import argparse
 import decimal
+import getpass
 import json
 import urllib3
 import warnings
 
+from aws_client import read_only_client
+import check_names
 import dds_client
 import helpers
 import iiif_diff
@@ -34,11 +37,7 @@ def _split_on_comma(string):
     return [i.strip() for i in string.split(",") if i]
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Check status of jobs")
-    subparsers = parser.add_subparsers(dest="subcommand_name", help="subcommand help")
-
-    # check_storage_manifests
+def _add_check_storage_manifests(subparsers):
     check_storage_manifests = subparsers.add_parser(
         "check_storage_manifests", help="Check for a storage manifest for each b number"
     )
@@ -51,7 +50,8 @@ def main():
         help="Report how many b numbers have storage manifests",
     )
 
-    # check_dds_sync
+
+def _add_check_dds_sync(subparsers):
     check_dds_sync = subparsers.add_parser(
         "check_dds_sync", help="Check for a successful DDS sync for each b number"
     )
@@ -63,7 +63,8 @@ def main():
         "report_dds_sync", help="Report how many b numbers have a successful DDS sync"
     )
 
-    # check_iiif_manifest_contents
+
+def _add_check_iiif_manifest_contents(subparsers):
     check_iiif_manifest_contents = subparsers.add_parser(
         "check_iiif_manifest_contents",
         help="Check for matching IIIF manifest contents for each b number",
@@ -77,10 +78,11 @@ def main():
         help="Report how many b numbers have matching IIIF manifest contents",
     )
 
-    # check_iiif_manifest_file_sizes
+
+def _add_check_iiif_manifest_file_sizes(subparsers):
     check_iiif_manifest_file_sizes = subparsers.add_parser(
         "check_iiif_manifest_file_sizes",
-        help="Check for matching IIIF manifest contents for each b number",
+        help="Check the size of entries in the IIIF manifests for each b number",
     )
     check_iiif_manifest_file_sizes.add_argument(
         "--first_bnumber", help="Start checking from this b number"
@@ -88,8 +90,33 @@ def main():
 
     report_iiif_manifest_file_sizes = subparsers.add_parser(
         "report_iiif_manifest_file_sizes",
-        help="Report how many b numbers have matching IIIF manifest contents",
+        help="Report how many b numbers have correct sizes for IIIF manifest entries",
     )
+
+
+def _add_manual_skip(subparsers):
+    manually_skip = subparsers.add_parser(
+        "manually_skip_bnumber",
+        help="Mark a b number as manually skipped for the migration"
+    )
+
+    manually_skip.add_argument(
+        "--bnumber", help="b number to skip", required=True
+    )
+    manually_skip.add_argument(
+        "--reason", help="Why is this b number being skipped?", required=True
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Check status of jobs")
+    subparsers = parser.add_subparsers(dest="subcommand_name", help="subcommand help")
+
+    _add_check_storage_manifests(subparsers)
+    _add_check_dds_sync(subparsers)
+    _add_check_iiif_manifest_contents(subparsers)
+    _add_check_iiif_manifest_file_sizes(subparsers)
+    _add_manual_skip(subparsers)
 
     # Not check or reporting
 
@@ -238,6 +265,29 @@ def main():
 
         check_iiif_manifest_file_sizes.report()
         return
+
+    if args.subcommand_name == "manually_skip_bnumber":
+        dynamo_table = read_only_client.dynamo_table("storage-migration-status")
+
+        bnumber = args.bnumber
+        reason = args.reason
+
+        resp = dynamo_table.get_item(Key={"bnumber": bnumber})
+
+        # TODO: What if this item doesn't exist yet?
+        item = resp["Item"]
+
+
+        with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
+            status_updater.update(
+                item,
+                status_name=check_names.MANUAL_SKIP,
+                success=True,
+                reason=reason,
+                user=getpass.getuser()
+            )
+
+        print(f"Marked {bnumber} as manually skipped")
 
 
 if __name__ == "__main__":

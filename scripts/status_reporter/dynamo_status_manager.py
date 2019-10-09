@@ -124,8 +124,8 @@ class DynamoStatusUpdater:
         else:
             print(f"No Item in response: {response}!")
 
-    def update(self, item, *, status_name, success, last_modified=None):
-        if not status_name in ALL_CHECK_NAMES:
+    def update(self, item, *, status_name, success, last_modified=None, **kwargs):
+        if status_name not in ALL_CHECK_NAMES:
             raise Exception(
                 f"{status_name} is not valid (should be one of {ALL_CHECK_NAMES})."
             )
@@ -134,5 +134,7 @@ class DynamoStatusUpdater:
             "success": success,
             "last_modified": last_modified or dt.datetime.now().isoformat(),
         }
+
+        item[f"status-{status_name}"].update(kwargs)
 
         self._put_item(item=item)
