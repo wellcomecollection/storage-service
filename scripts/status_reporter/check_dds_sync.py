@@ -84,11 +84,11 @@ def run_check(status_updater, status_summary):
         status_updater.update(
             bnumber,
             status_name=check_names.DDS_SYNC,
-            success=success,
+            success=result,
             last_modified=dds_sync_last_modified,
         )
 
-        print(f"Recorded DDS sync success: {success} for {bnumber}")
+        print(f"Recorded DDS sync success: {result} for {bnumber}")
     else:
         print(f"DDS status for {bnumber} is not finished")
 
