@@ -31,6 +31,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # Get a list of .py files that are checks
 SRC_DIR = pathlib.Path(__file__).resolve().parent
 
+
 def _register_module(f):
     name = os.path.splitext(f)[0]
     importlib.import_module(name)
@@ -38,15 +39,16 @@ def _register_module(f):
     module = sys.modules[name]
 
     valid_module = (
-        hasattr(module, 'run') and
-        hasattr(module, 'run_one') and
-        hasattr(module, 'report')
+        hasattr(module, "run")
+        and hasattr(module, "run_one")
+        and hasattr(module, "report")
     )
 
     if not valid_module:
         raise Exception("Invalid module, missing required method!")
 
     return name
+
 
 CHECK_MODULES = sorted(
     [
@@ -115,15 +117,9 @@ def main():
     # Not check or reporting
 
     run_all = subparsers.add_parser("run_all", help="Run all checks for b numbers")
-    run_all.add_argument(
-     "--first_bnumber", help="Start checking from this b number"
-    )
-    run_all.add_argument(
-     "--skip_checks", default=[], help="Skip these checks"
-    )
-    run_all.add_argument(
-     "--check_one", help="check only this bnumber"
-    )
+    run_all.add_argument("--first_bnumber", help="Start checking from this b number")
+    run_all.add_argument("--skip_checks", default=[], help="Skip these checks")
+    run_all.add_argument("--check_one", help="check only this bnumber")
 
     parser.add_argument("--get_status", default=None, help="Get status for b numbers")
     parser.add_argument(
@@ -157,7 +153,7 @@ def main():
     _storage_client = helpers.create_storage_client(storage_api_url)
     _matcher = matcher.Matcher(_iiif_diff, _storage_client)
 
-    if args.subcommand_name == 'run_all':
+    if args.subcommand_name == "run_all":
         modules = sorted([name for name in CHECK_MODULES])
 
         checks_to_skip = []
@@ -167,7 +163,9 @@ def main():
             checks_to_skip = _split_on_comma(args.skip_checks)
             for check_skip_name in checks_to_skip:
                 if check_skip_name not in CHECK_MODULES:
-                    raise Exception(f"Cannot skip check {check_skip_name}! Must be one of {CHECK_MODULES}.")
+                    raise Exception(
+                        f"Cannot skip check {check_skip_name}! Must be one of {CHECK_MODULES}."
+                    )
 
         if args.first_bnumber:
             first_bnumber = args.first_bnumber
@@ -186,9 +184,9 @@ def main():
             for status_summary in reader.all(first_bnumber):
                 for module_name in modules:
                     module = sys.modules[module_name]
-                    module.run_one(status_summary['bnumber'])
+                    module.run_one(status_summary["bnumber"])
 
-                print('')
+                print("")
 
         return
 
