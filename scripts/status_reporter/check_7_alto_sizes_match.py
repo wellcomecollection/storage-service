@@ -122,5 +122,5 @@ def run(first_bnumber=None):
             run_check(status_updater, storage_client, status_summary)
 
 
-def report():
-    return reporting.build_report(name=check_names.DLCS_ORIGIN_MATCH)
+def report(report = None):
+    return reporting.build_report(name=check_names.DLCS_ORIGIN_MATCH, report=report)

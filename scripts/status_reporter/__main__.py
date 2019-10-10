@@ -1,6 +1,7 @@
 # -*- encoding: utf-8
 
 import argparse
+import datetime as dt
 import decimal
 import getpass
 import importlib
@@ -22,6 +23,7 @@ import id_mapper
 import library_iiif
 import matcher
 import dynamo_status_manager
+import reporting
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -87,7 +89,9 @@ def _add_manual_skip(subparsers):
 
 
 def _add_report_all(subparsers):
-    subparsers.add_parser("report_all", help="Report stats for the entire migration")
+    report_all = subparsers.add_parser("report_all", help="Report stats for the entire migration")
+    report_all.add_argument("--check_detail", action='store_true', help="Break out details of checks")
+    report_all.add_argument("--load_report", help="Load json report from file")
 
 
 def _add_check_commands(subparsers):
@@ -196,9 +200,10 @@ def main():
         bnumbers = args.get_status
         bnumbers = _split_on_comma(bnumbers)
 
-        results = list(reader.get(bnumbers))
+        for status_summary in reader.get(bnumbers):
+            reporting.pprint_status_summary(status_summary)
 
-        _print_as_json(results)
+        sys.exit(0)
 
     if args.reset_status:
         bnumbers = args.reset_status
@@ -210,6 +215,8 @@ def main():
                 status_updater.reset(bnumber=bnumber)
                 print(f"Reset all status checks for {bnumber!r}")
 
+        sys.exit(0)
+
     if args.dds_ingest_bnumber:
         bnumbers = args.dds_ingest_bnumber
         bnumbers = _split_on_comma(bnumbers)
@@ -217,7 +224,10 @@ def main():
         print(f"Calling DDS Client for ingest of {bnumber}")
 
         results = [_dds_client.ingest(bnum) for bnum in bnumbers]
+
         _print_as_json(results)
+
+        sys.exit(0)
 
     elif args.dds_job_status:
         bnumbers = args.dds_job_status
@@ -226,7 +236,10 @@ def main():
         print(f"Calling DDS Client for status of {bnumber}")
 
         results = [_dds_client.status(bnumber) for bnumber in bnumbers]
+
         _print_as_json(results)
+
+        sys.exit(0)
 
     elif args.compare_manifest:
         bnumbers = args.compare_manifest
@@ -235,7 +248,10 @@ def main():
         print(f"Comparing Production and UAT manifests for {bnumber}")
 
         results = [_iiif_diff.fetch_and_diff(bnumber) for bnumber in bnumbers]
+
         _print_as_json(results)
+
+        sys.exit(0)
 
     elif args.match_files:
         bnumbers = args.match_files
@@ -244,7 +260,11 @@ def main():
         print(f"Comparing files for {bnumber}")
 
         results = [_matcher.match(bnumber) for bnumber in bnumbers]
+
         _print_as_json(results)
+
+        sys.exit(0)
+
 
     # Subcommands for check/reporting start here
 
@@ -276,6 +296,7 @@ def main():
 
         module = sys.modules[module_name]
         module.report()
+
         sys.exit(0)
 
     if args.subcommand_name == "manually_skip_bnumber":
@@ -300,10 +321,37 @@ def main():
 
         print(f"Marked {bnumber} as manually skipped")
 
+        sys.exit(0)
+
+
     if args.subcommand_name == "report_all":
         import report_all
 
-        report_all.run()
+        if args.load_report:
+            file_name = args.load_report
+            
+            with open(file_name, "r") as f:
+                full_report = json.load(f)
+
+                for module_name in CHECK_MODULES:
+                    module = sys.modules[module_name]
+                    module.report(report=full_report)
+
+        elif args.check_detail:
+            full_report = reporting.generate_full_report()
+
+            out_path = f"full_report-{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
+            with open(out_path, "w") as f:
+                f.write(json.dumps(full_report, indent=2, sort_keys=True))
+
+            for module_name in CHECK_MODULES:
+                module = sys.modules[module_name]
+                module.report(report=full_report)
+
+        else:
+            report_all.run()
+
+        sys.exit(0)
 
 
 if __name__ == "__main__":

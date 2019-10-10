@@ -63,8 +63,27 @@ def _draw_ascii_bar_chart(data, colors=None):
             )
         )
 
+def pprint_status_summary(status_summary):
+    title = f"Reporting on: {status_summary['bnumber']}"
+    print(termcolor.colored(title, 'white', attrs=['bold']))
 
-def pprint_report(report):
+    for name in ALL_CHECK_NAMES:
+        success = status_summary[name].get('success', False)
+        has_run = status_summary[name].get('has_run', False)
+
+        if(success and has_run):
+            status_check = termcolor.colored("✓ Succeeded", 'green')
+        elif(not success and has_run):
+            status_check = termcolor.colored("✗ Failed", 'red')
+        elif(not success and not has_run):
+            status_check = termcolor.colored("✌︎ Not checked", 'blue')
+        else:
+            status_check = termcolor.colored("?︎ Inconsistent", 'yellow')
+
+        print(f"{name.ljust(40)}{status_check}")
+
+
+def pprint_report(report, title):
     TOTAL_BNUMBERS = 268_605
 
     unknown = TOTAL_BNUMBERS - sum(report.values())
@@ -87,16 +106,25 @@ def pprint_report(report):
         if count == 0:
             colors[label] = "grey"
 
+    print('')
+    print(termcolor.colored(title, 'white', attrs=['bold']))
     _draw_ascii_bar_chart(data, colors)
 
-
-def build_report(name):
+def _get_reader():
     reader = dynamo_status_manager.DynamoStatusReader()
+    return reader.all()
 
-    report = collections.Counter()
+def generate_full_report():
+    return list(_get_reader())
 
-    for status_summary in reader.all():
+def build_report(name, report=None):
+    if report is None:
+        report = _get_reader()
+
+    report_count = collections.Counter()
+
+    for status_summary in report:
         status = get_named_status(status_summary, name=name)
-        report[status] += 1
+        report_count[status] += 1
 
-    pprint_report(report)
+    pprint_report(report_count, name)

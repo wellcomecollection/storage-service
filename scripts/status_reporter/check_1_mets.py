@@ -76,5 +76,5 @@ def run(first_bnumber):
                     )
 
 
-def report():
-    return reporting.build_report(name=check_names.METS_EXISTS)
+def report(report = None):
+    return reporting.build_report(name=check_names.METS_EXISTS, report=report)

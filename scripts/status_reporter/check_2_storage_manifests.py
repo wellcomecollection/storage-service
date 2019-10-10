@@ -82,5 +82,5 @@ def run(first_bnumber=None):
                 fut.result()
 
 
-def report():
-    return reporting.build_report(name=check_names.STORAGE_MANIFESTS)
+def report(report = None):
+    return reporting.build_report(name=check_names.STORAGE_MANIFESTS, report=report)

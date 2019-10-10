@@ -96,5 +96,5 @@ def run(first_bnumber=None):
                 executor.submit(run_check, status_updater, status_summary)
 
 
-def report():
-    return reporting.build_report(name=check_names.IIIF_MANIFESTS_CONTENTS)
+def report(report = None):
+    return reporting.build_report(name=check_names.IIIF_MANIFESTS_CONTENTS, report=report)
