@@ -14,6 +14,7 @@ import dynamo_status_manager
 import helpers
 import reporting
 
+
 def dds_sync_is_older_than_storage_manifest(dds_sync_last_modified, status_summary):
     storage_manifest_date = status_summary[check_names.STORAGE_MANIFESTS][
         "last_modified"
@@ -29,7 +30,7 @@ def needs_check(status_summary):
         status_summary,
         previous_check=check_names.STORAGE_MANIFESTS,
         current_check=check_names.DDS_SYNC,
-        step_name="DDS sync"
+        step_name="DDS sync",
     )
 
 
@@ -62,8 +63,7 @@ def run_check(status_updater, status_summary):
         # it needs re-ingesting
 
         if dds_sync_is_older_than_storage_manifest(
-            dds_sync_last_modified,
-            status_summary
+            dds_sync_last_modified, status_summary
         ):
             result = False
         else:
@@ -80,12 +80,14 @@ def run_check(status_updater, status_summary):
     else:
         print(f"DDS status for {bnumber} is not finished")
 
+
 def run_one(bnumber):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         reader = dynamo_status_manager.DynamoStatusReader()
         status_summary = reader.get_one(bnumber)
         if needs_check(status_summary):
             run_check(status_updater, status_summary)
+
 
 def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
@@ -94,6 +96,7 @@ def run(first_bnumber=None):
                 run_check(status_updater, status_summary)
             except Exception as err:
                 print(err)
+
 
 def report():
     return reporting.build_report(name=check_names.DDS_SYNC)

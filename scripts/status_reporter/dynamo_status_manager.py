@@ -71,7 +71,9 @@ class DynamoStatusReader:
 
     def get(self, bnumbers):
         if isinstance(bnumbers, str):
-            print("Calling 'get' with a single b number is deprecated, please use get_one")
+            print(
+                "Calling 'get' with a single b number is deprecated, please use get_one"
+            )
             bnumbers = [bnumbers]
 
         for bnumbers_chunk in self._chunks(bnumbers):

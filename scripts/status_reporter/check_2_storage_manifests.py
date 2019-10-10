@@ -17,7 +17,7 @@ def needs_check(status_summary):
         status_summary,
         previous_check=check_names.METS_EXISTS,
         current_check=check_names.STORAGE_MANIFESTS,
-        step_name="Storage manifest"
+        step_name="Storage manifest",
     )
 
 
@@ -25,9 +25,7 @@ def get_statuses_for_updating(first_bnumber, db_shard, total_db_shards):
     reader = dynamo_status_manager.DynamoStatusReader()
 
     for row in reader.all(
-        first_bnumber=first_bnumber,
-        db_shard=db_shard,
-        total_db_shards=total_db_shards
+        first_bnumber=first_bnumber, db_shard=db_shard, total_db_shards=total_db_shards
     ):
         if needs_check(row):
             yield row
@@ -65,9 +63,7 @@ def run(first_bnumber=None):
         with concurrent.futures.ThreadPoolExecutor(max_workers=WORKERS) as executor:
             for i in range(WORKERS):
                 for status_summary in get_statuses_for_updating(
-                    first_bnumber=first_bnumber,
-                    db_shard=i,
-                    total_db_shards=WORKERS
+                    first_bnumber=first_bnumber, db_shard=i, total_db_shards=WORKERS
                 ):
                     future = executor.submit(
                         run_check, status_updater, storage_client, status_summary

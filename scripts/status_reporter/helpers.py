@@ -17,8 +17,8 @@ def needs_check(status_summary, *, previous_check, current_check, step_name):
 
     if reporting.has_succeeded_previously(status_summary, current_check):
         if (
-            status_summary[previous_check]["last_modified"] >
-            status_summary[current_check]["last_modified"]
+            status_summary[previous_check]["last_modified"]
+            > status_summary[current_check]["last_modified"]
         ):
             print(f"{step_name} / {bnumber}: previous step is newer than current step")
             return True
@@ -28,7 +28,6 @@ def needs_check(status_summary, *, previous_check, current_check, step_name):
 
     print(f"{step_name} / {bnumber}: no previous result")
     return True
-
 
 
 def create_storage_client(api_url="https://api.wellcomecollection.org/storage/v1"):

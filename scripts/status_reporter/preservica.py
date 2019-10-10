@@ -11,10 +11,9 @@ from aws_client import read_only_client
 
 
 def get_preservica_asset_path(guid):
-    result = (
-        _get_preservica_asset_path_from_s3(guid) or
-        _get_preservica_asset_path_from_euston_road(guid)
-    )
+    result = _get_preservica_asset_path_from_s3(
+        guid
+    ) or _get_preservica_asset_path_from_euston_road(guid)
 
     if result is None:
         raise RuntimeError(

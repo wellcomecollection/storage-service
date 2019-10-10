@@ -21,7 +21,7 @@ def needs_check(status_summary):
         status_summary,
         previous_check=check_names.IIIF_MANIFESTS_CONTENTS,
         current_check=check_names.IIIF_MANIFESTS_FILE_SIZES,
-        step_name="IIIF manifests sizes"
+        step_name="IIIF manifests sizes",
     )
 
 
@@ -58,7 +58,7 @@ def run_check(status_updater, status_summary):
                 {
                     "guid": f["preservica_guid"],
                     "preservica": preservica_size,
-                    "storage_service": storage_manifest_size
+                    "storage_service": storage_manifest_size,
                 }
             )
 
@@ -79,12 +79,14 @@ def run_check(status_updater, status_summary):
             last_modified=dt.datetime.now().isoformat(),
         )
 
+
 def run_one(bnumber):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         reader = dynamo_status_manager.DynamoStatusReader()
         status_summary = reader.get_one(bnumber)
         if needs_check(status_summary):
             run_check(status_updater, status_summary)
+
 
 def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:

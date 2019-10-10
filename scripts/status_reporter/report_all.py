@@ -14,9 +14,7 @@ def _is_manually_skipped(record):
 
 def _is_success(record):
     expected_checks = [
-        name
-        for name in check_names.ALL_CHECK_NAMES
-        if name != check_names.MANUAL_SKIP
+        name for name in check_names.ALL_CHECK_NAMES if name != check_names.MANUAL_SKIP
     ]
 
     return all(record.get(name, {}).get("success") for name in expected_checks)
@@ -35,8 +33,8 @@ def _is_processing(record):
 def _is_failed(record):
     return any(
         (
-            record.get(name, {}).get("has_run") and
-            record.get(name, {}).get("success") is False
+            record.get(name, {}).get("has_run")
+            and record.get(name, {}).get("success") is False
         )
         for name in check_names.ALL_CHECK_NAMES
     )
@@ -44,11 +42,11 @@ def _is_failed(record):
 
 class Statuses:
     inconsistent = "? Inconsistent"
-    skipped      = " ⃠ Skipped"
-    failed       = "✗ Failed"
-    succeeded    = "✓ Succeeded"
-    processing   = "▶ Processing"
-    waiting      = "▷ Waiting"
+    skipped = " ⃠ Skipped"
+    failed = "✗ Failed"
+    succeeded = "✓ Succeeded"
+    processing = "▶ Processing"
+    waiting = "▷ Waiting"
 
 
 STATUSES = Statuses()
@@ -56,9 +54,7 @@ STATUSES = Statuses()
 
 def get_overall_status(status_record):
     expected_checks = [
-        name
-        for name in check_names.ALL_CHECK_NAMES
-        if name != check_names.MANUAL_SKIP
+        name for name in check_names.ALL_CHECK_NAMES if name != check_names.MANUAL_SKIP
     ]
 
     if _is_manually_skipped(status_record):
@@ -78,7 +74,6 @@ def get_overall_status(status_record):
             return STATUSES.processing
         else:
             return STATUSES.waiting
-
 
 
 def run():

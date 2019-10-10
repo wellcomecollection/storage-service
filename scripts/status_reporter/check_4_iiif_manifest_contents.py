@@ -20,7 +20,7 @@ def needs_check(status_summary):
         status_summary,
         previous_check=check_names.DDS_SYNC,
         current_check=check_names.IIIF_MANIFESTS_CONTENTS,
-        step_name="IIIF manifests contents"
+        step_name="IIIF manifests contents",
     )
 
 
@@ -81,6 +81,7 @@ def run_one(bnumber):
         status_summary = reader.get_one(bnumber)
         if needs_check(status_summary):
             run_check(status_updater, status_summary)
+
 
 def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:

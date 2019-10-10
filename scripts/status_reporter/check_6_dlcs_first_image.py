@@ -18,6 +18,7 @@ import reporting
 # We don't want to fetch the key simply by importing this file, but we also
 # don't want to fetch it repeatedly.
 
+
 @functools.lru_cache()
 def dlcs_api_key():
     return aws_client.dev_client.secrets_manager_value("storage/bagger_dlcs_api_key")
@@ -33,7 +34,7 @@ def needs_check(status_summary):
         status_summary,
         previous_check=check_names.IIIF_MANIFESTS_FILE_SIZES,
         current_check=check_names.DLCS_ORIGIN_MATCH,
-        step_name="DLCS origins match"
+        step_name="DLCS origins match",
     )
 
 
@@ -67,17 +68,19 @@ def run_check(status_updater, storage_client, row):
     )
 
     preservica_guid = first_file["preservica_guid"]
-    storage_service_filename = os.path.basename(first_file["storage_manifest_entry"]["name"])
+    storage_service_filename = os.path.basename(
+        first_file["storage_manifest_entry"]["name"]
+    )
 
     # Now look up the DLCS API entry for this file
     storage_service_resp = requests.get(
         f"https://api.dlcs.io/customers/2/spaces/5/images/{storage_service_filename}",
-        auth=(dlcs_api_key(), dlcs_api_secret())
+        auth=(dlcs_api_key(), dlcs_api_secret()),
     )
 
     preservica_resp = requests.get(
         f"https://api.dlcs.io/customers/2/spaces/1/images/{preservica_guid}",
-        auth=(dlcs_api_key(), dlcs_api_secret())
+        auth=(dlcs_api_key(), dlcs_api_secret()),
     )
 
     # Now compare the metadata in both images.  If it's wrong, we should record
@@ -86,8 +89,18 @@ def run_check(status_updater, storage_client, row):
     has_differences = False
 
     for key in (
-        "duration", "family", "height", "maxUnauthorised", "mediaType",
-        "number1", "number2", "number3", "string1", "string2", "string3", "width"
+        "duration",
+        "family",
+        "height",
+        "maxUnauthorised",
+        "mediaType",
+        "number1",
+        "number2",
+        "number3",
+        "string1",
+        "string2",
+        "string3",
+        "width",
     ):
         storage_value = storage_service_resp.json()[key]
         preservica_value = preservica_resp.json()[key]
@@ -122,16 +135,12 @@ def run_check(status_updater, storage_client, row):
     if has_differences:
         print(f"{bnumber}: differences between DLCS API origin and storage manifest")
         status_updater.update(
-            bnumber,
-            status_name=check_names.DLCS_ORIGIN_MATCH,
-            success=False
+            bnumber, status_name=check_names.DLCS_ORIGIN_MATCH, success=False
         )
     else:
         print(f"{bnumber}: DLCS API origin is correct")
         status_updater.update(
-            bnumber,
-            status_name=check_names.DLCS_ORIGIN_MATCH,
-            success=True
+            bnumber, status_name=check_names.DLCS_ORIGIN_MATCH, success=True
         )
 
 

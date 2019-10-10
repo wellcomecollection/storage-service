@@ -54,9 +54,7 @@ def _add_manual_skip(subparsers):
 
 
 def _add_report_all(subparsers):
-    subparsers.add_parser(
-        "report_all", help="Report stats for the entire migration"
-    )
+    subparsers.add_parser("report_all", help="Report stats for the entire migration")
 
 
 def _add_check_commands(subparsers):
@@ -65,25 +63,26 @@ def _add_check_commands(subparsers):
     srcdir = thisfile.parent
 
     # [check_1_mets, check_2_storage_manifests, ...]
-    check_modules = sorted([
-        os.path.splitext(f)[0]
-        for f in os.listdir(srcdir)
-        if re.match(r'^check_\d+_[a-z_]+\.py$', f)
-    ])
+    check_modules = sorted(
+        [
+            os.path.splitext(f)[0]
+            for f in os.listdir(srcdir)
+            if re.match(r"^check_\d+_[a-z_]+\.py$", f)
+        ]
+    )
 
     for name in check_modules:
         report_name = name.replace("check_", "report_")
 
-        check_parser = subparsers.add_parser(name, help=f"Run {name}",)
+        check_parser = subparsers.add_parser(name, help=f"Run {name}")
 
         check_parser.add_argument(
-            "--first_bnumber", help="Start checking from this b number")
-        check_parser.add_argument(
-            "--check_one", help="Check only this b number")
+            "--first_bnumber", help="Start checking from this b number"
+        )
+        check_parser.add_argument("--check_one", help="Check only this b number")
 
         subparsers.add_parser(
-            report_name,
-            help=f"Report how many b numbers have passed {name}",
+            report_name, help=f"Report how many b numbers have passed {name}"
         )
 
 
@@ -189,7 +188,7 @@ def main():
 
     # check_mets
 
-    subcommand_match = re.match(r'^check_\d+_[a-z_]+$', args.subcommand_name)
+    subcommand_match = re.match(r"^check_\d+_[a-z_]+$", args.subcommand_name)
     if subcommand_match is not None:
         name = subcommand_match.group(0)
         importlib.import_module(name)
@@ -205,7 +204,7 @@ def main():
 
         sys.exit(0)
 
-    report_match = re.match(r'^report_(?P<name>\d+_[a-z_]+)$', args.subcommand_name)
+    report_match = re.match(r"^report_(?P<name>\d+_[a-z_]+)$", args.subcommand_name)
     if report_match is not None:
         name = report_match.group("name")
         module_name = f"check_{name}"

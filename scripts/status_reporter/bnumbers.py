@@ -77,9 +77,7 @@ class BibNumberGenerator:
         key = f"{self.prefix}{shard_path}/{first_bnumber}.xml"
 
         for obj in self._get_matching_s3_objects(
-            bucket=self.bucket,
-            prefix=self.prefix,
-            start_after=key
+            bucket=self.bucket, prefix=self.prefix, start_after=key
         ):
             try:
                 bnumber = self.get_bnumber(obj["Key"])
