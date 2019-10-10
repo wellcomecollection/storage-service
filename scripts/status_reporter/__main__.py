@@ -133,11 +133,16 @@ def main():
 
     if args.run_all:
         reader = dynamo_status_manager.DynamoStatusReader()
-
         bnumbers = args.run_all
         bnumbers = _split_on_comma(bnumbers)
 
-        print(bnumbers)
+        modules = sorted([name for name in CHECK_MODULES])
+
+        for bnum in bnumbers:
+            for module_name in modules:
+                importlib.import_module(module_name)
+                module = sys.modules[module_name]
+                module.run_one(bnum)
 
         return
 
@@ -201,14 +206,15 @@ def main():
 
     if(args.subcommand_name):
         report_match = re.match(r"^report_(?P<name>\d+_[a-z_]+)$", args.subcommand_name)
+        check_match = re.match(r"^check_(?P<name>\d+_[a-z_]+)$", args.subcommand_name)
     else:
         parser.print_help()
         sys.exit(2)
 
     # check_mets
 
-    if subcommand_match is not None:
-        name = subcommand_match.group(0)
+    if check_match is not None:
+        name = check_match.group(0)
         importlib.import_module(name)
 
         module = sys.modules[name]

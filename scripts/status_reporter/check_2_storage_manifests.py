@@ -31,7 +31,7 @@ def get_statuses_for_updating(first_bnumber, db_shard, total_db_shards):
             yield row
 
 
-def run_check(status_updater, storage_client, row):
+def run_check(status_updater, storage_client, status_summary):
     bnumber = row["bnumber"]
 
     try:
@@ -52,6 +52,15 @@ def run_check(status_updater, storage_client, row):
 
     print(f"Recorded storage manifest creation for {bnumber}")
 
+def run_one(bnumber):
+    reader = dynamo_status_manager.DynamoStatusReader()
+    status_summary = reader.get_one(bnumber)
+    storage_client = helpers.create_storage_client()
+
+    if needs_check(status_summary):
+        run_check(
+            status_updater, storage_client, status_summary
+        )
 
 def run(first_bnumber=None):
     futures = []
