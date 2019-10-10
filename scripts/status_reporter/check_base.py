@@ -20,7 +20,7 @@ class MigrationCheck(abc.ABC):
             status_summary,
             previous_check=self.previous_check,
             current_check=self.current_check,
-            step_name=self.check_name
+            step_name=self.check_name,
         )
 
     def get_statuses_for_updating(self, first_bnumber):
@@ -40,8 +40,7 @@ class MigrationCheck(abc.ABC):
         with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
             for status_summary in all_statuses:
                 self.run_check(
-                    status_updater=status_updater,
-                    status_summary=status_summary
+                    status_updater=status_updater, status_summary=status_summary
                 )
 
     def run_one(self, bnumber):
@@ -51,8 +50,7 @@ class MigrationCheck(abc.ABC):
         if self.needs_check(status_summary):
             with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
                 self.run_check(
-                    status_updater=status_updater,
-                    status_summary=status_summary
+                    status_updater=status_updater, status_summary=status_summary
                 )
 
     def report(self):
