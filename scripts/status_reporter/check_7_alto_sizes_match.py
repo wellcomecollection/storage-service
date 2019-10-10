@@ -44,10 +44,7 @@ def get_matching_s3_objects(bucket, prefix=""):
     s3 = aws_client.read_only_client.s3_client()
     paginator = s3.get_paginator("list_objects_v2")
 
-    kwargs = {
-        "Bucket": bucket,
-        "Prefix": prefix,
-    }
+    kwargs = {"Bucket": bucket, "Prefix": prefix}
 
     for page in paginator.paginate(**kwargs):
         try:
@@ -64,9 +61,7 @@ def run_check(status_updater, storage_client, row):
     from pprint import pprint
 
     alto_files_in_bag = [
-        f
-        for f in bag["manifest"]["files"]
-        if f["name"].startswith("data/alto/")
+        f for f in bag["manifest"]["files"] if f["name"].startswith("data/alto/")
     ]
 
     shard_path = "/".join(list(bnumber[-4:][::-1]))
@@ -74,8 +69,7 @@ def run_check(status_updater, storage_client, row):
 
     alto_files_in_s3 = list(
         get_matching_s3_objects(
-            bucket="wellcomecollection-assets-workingstorage",
-            prefix=prefix
+            bucket="wellcomecollection-assets-workingstorage", prefix=prefix
         )
     )
 
