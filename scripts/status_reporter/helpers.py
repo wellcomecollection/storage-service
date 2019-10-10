@@ -26,7 +26,7 @@ def needs_check(status_summary, *, previous_check, current_check, step_name):
             print(f"{step_name} / {bnumber}: already recorded success")
             return False
 
-    print(f"{step_name} / {bnumber}: no previous result")
+    print(f"{step_name} / {bnumber}: no existing result")
     return True
 
 

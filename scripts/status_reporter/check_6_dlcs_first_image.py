@@ -61,11 +61,15 @@ def run_check(status_updater, storage_client, row):
     matcher_result = json.load(s3_body)
 
     # Find a JP2 that's in this manifest
-    first_file = next(
-        f
-        for f in matcher_result["files"]
-        if f["storage_manifest_entry"]["name"].endswith(".jp2")
-    )
+    try:
+        first_file = next(
+            f
+            for f in matcher_result["files"]
+            if f["storage_manifest_entry"]["name"].endswith((".jp2", ".JP2"))
+        )
+    except StopIteration:
+        print("Not sure what to do: no JP2s? %r" % matcher_result["files"])
+        return
 
     preservica_guid = first_file["preservica_guid"]
     storage_service_filename = os.path.basename(
@@ -88,6 +92,14 @@ def run_check(status_updater, storage_client, row):
 
     has_differences = False
 
+    if storage_service_resp.json() == {"success": "false"}:
+        print(f"{bnumber}: error response looking up storage service file in DLCS")
+        return True
+
+    if preservica_resp.json() == {"success": "false"}:
+        print(f"{bnumber}: error response looking up Preservica file in DLCS")
+        return True
+
     for key in (
         "duration",
         "family",
@@ -102,8 +114,20 @@ def run_check(status_updater, storage_client, row):
         "string3",
         "width",
     ):
-        storage_value = storage_service_resp.json()[key]
-        preservica_value = preservica_resp.json()[key]
+        try:
+            storage_value = storage_service_resp.json()[key]
+        except KeyError:
+            print(f"{bnumber} [{key}]: no value in storage service response")
+            has_differences = True
+            continue
+
+        try:
+            preservica_value = preservica_resp.json()[key]
+        except KeyError:
+            print(f"{bnumber} [{key}]: no value in preservica response")
+            has_differences = True
+            continue
+
         if storage_value != preservica_value:
             print(f"{bnumber} [{key}]: {storage_value!r} != {preservica_value!r}")
             has_differences = True
