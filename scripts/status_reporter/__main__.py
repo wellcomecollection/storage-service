@@ -25,6 +25,19 @@ import dynamo_status_manager
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# Register check files
+# [check_1_mets, check_2_storage_manifests, ...]
+
+# Get a list of .py files that are checks
+SRC_DIR = pathlib.Path(__file__).resolve().parent
+
+CHECK_MODULES = sorted(
+    [
+        os.path.splitext(f)[0]
+        for f in os.listdir(SRC_DIR)
+        if re.match(r"^check_\d+_[a-z_]+\.py$", f)
+    ]
+)
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
@@ -58,20 +71,7 @@ def _add_report_all(subparsers):
 
 
 def _add_check_commands(subparsers):
-    # Get a list of .py files that are checks
-    thisfile = pathlib.Path(__file__).resolve()
-    srcdir = thisfile.parent
-
-    # [check_1_mets, check_2_storage_manifests, ...]
-    check_modules = sorted(
-        [
-            os.path.splitext(f)[0]
-            for f in os.listdir(srcdir)
-            if re.match(r"^check_\d+_[a-z_]+\.py$", f)
-        ]
-    )
-
-    for name in check_modules:
+    for name in CHECK_MODULES:
         report_name = name.replace("check_", "report_")
 
         check_parser = subparsers.add_parser(name, help=f"Run {name}")
@@ -96,7 +96,12 @@ def main():
 
     # Not check or reporting
 
-    parser.add_argument("--get_status", default=None, help="Get status for b numbers")
+    parser.add_argument(
+        "--run_all", default=None, help="Run all checks for b numbers"
+    )
+    parser.add_argument(
+        "--get_status", default=None, help="Get status for b numbers"
+    )
     parser.add_argument(
         "--reset_status", default=None, help="Reset status for b numbers"
     )
@@ -107,9 +112,7 @@ def main():
         "--dds_job_status", default=None, help="Inspect status from DDS for b numbers"
     )
     parser.add_argument(
-        "--compare_manifest",
-        default=None,
-        help="Compare library manifests for b numbers",
+        "--compare_manifest", default=None, help="Compare library manifests for b numbers",
     )
     parser.add_argument(
         "--match_files", default=None, help="Compare manifest files for b numbers"
@@ -127,6 +130,16 @@ def main():
     _iiif_diff = iiif_diff.IIIFDiff(_library_iiif, _id_mapper)
     _storage_client = helpers.create_storage_client(storage_api_url)
     _matcher = matcher.Matcher(_iiif_diff, _storage_client)
+
+    if args.run_all:
+        reader = dynamo_status_manager.DynamoStatusReader()
+
+        bnumbers = args.run_all
+        bnumbers = _split_on_comma(bnumbers)
+
+        print(bnumbers)
+
+        return
 
     if args.get_status:
         reader = dynamo_status_manager.DynamoStatusReader()
@@ -186,9 +199,14 @@ def main():
 
     # Subcommands for check/reporting start here
 
+    if(args.subcommand_name):
+        report_match = re.match(r"^report_(?P<name>\d+_[a-z_]+)$", args.subcommand_name)
+    else:
+        parser.print_help()
+        sys.exit(2)
+
     # check_mets
 
-    subcommand_match = re.match(r"^check_\d+_[a-z_]+$", args.subcommand_name)
     if subcommand_match is not None:
         name = subcommand_match.group(0)
         importlib.import_module(name)
@@ -204,7 +222,6 @@ def main():
 
         sys.exit(0)
 
-    report_match = re.match(r"^report_(?P<name>\d+_[a-z_]+)$", args.subcommand_name)
     if report_match is not None:
         name = report_match.group("name")
         module_name = f"check_{name}"
