@@ -35,6 +35,17 @@ def _register_module(f):
     name = os.path.splitext(f)[0]
     importlib.import_module(name)
 
+    module = sys.modules[name]
+
+    valid_module = (
+        hasattr(module, 'run') and
+        hasattr(module, 'run_one') and
+        hasattr(module, 'report')
+    )
+
+    if not valid_module:
+        raise Exception("Invalid module, missing required method!")
+
     return name
 
 CHECK_MODULES = sorted(
