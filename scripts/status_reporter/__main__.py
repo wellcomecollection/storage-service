@@ -31,9 +31,15 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # Get a list of .py files that are checks
 SRC_DIR = pathlib.Path(__file__).resolve().parent
 
+def _register_module(f):
+    name = os.path.splitext(f)[0]
+    importlib.import_module(name)
+
+    return name
+
 CHECK_MODULES = sorted(
     [
-        os.path.splitext(f)[0]
+        _register_module(f)
         for f in os.listdir(SRC_DIR)
         if re.match(r"^check_\d+_[a-z_]+\.py$", f)
     ]
@@ -97,7 +103,17 @@ def main():
 
     # Not check or reporting
 
-    parser.add_argument("--run_all", default=None, help="Run all checks for b numbers")
+    run_all = subparsers.add_parser("run_all", help="Run all checks for b numbers")
+    run_all.add_argument(
+     "--first_bnumber", help="Start checking from this b number"
+    )
+    run_all.add_argument(
+     "--skip_checks", default=[], help="Skip these checks"
+    )
+    run_all.add_argument(
+     "--check_one", help="check only this bnumber"
+    )
+
     parser.add_argument("--get_status", default=None, help="Get status for b numbers")
     parser.add_argument(
         "--reset_status", default=None, help="Reset status for b numbers"
@@ -130,18 +146,38 @@ def main():
     _storage_client = helpers.create_storage_client(storage_api_url)
     _matcher = matcher.Matcher(_iiif_diff, _storage_client)
 
-    if args.run_all:
-        reader = dynamo_status_manager.DynamoStatusReader()
-        bnumbers = args.run_all
-        bnumbers = _split_on_comma(bnumbers)
-
+    if args.subcommand_name == 'run_all':
         modules = sorted([name for name in CHECK_MODULES])
 
-        for bnum in bnumbers:
+        checks_to_skip = []
+        first_bnumber = None
+
+        if args.skip_checks:
+            checks_to_skip = _split_on_comma(args.skip_checks)
+            for check_skip_name in checks_to_skip:
+                if check_skip_name not in CHECK_MODULES:
+                    raise Exception(f"Cannot skip check {check_skip_name}! Must be one of {CHECK_MODULES}.")
+
+        if args.first_bnumber:
+            first_bnumber = args.first_bnumber
+        elif args.check_one:
+            bnumber = args.check_one
+
             for module_name in modules:
-                importlib.import_module(module_name)
-                module = sys.modules[module_name]
-                module.run_one(bnum)
+                if module_name not in checks_to_skip:
+                    module = sys.modules[module_name]
+                    module.run_one(bnumber)
+                else:
+                    print(f"Skipping check: {module_name}")
+        else:
+            reader = dynamo_status_manager.DynamoStatusReader()
+
+            for status_summary in reader.all(first_bnumber):
+                for module_name in modules:
+                    module = sys.modules[module_name]
+                    module.run_one(status_summary['bnumber'])
+
+                print('')
 
         return
 
@@ -214,8 +250,6 @@ def main():
 
     if check_match is not None:
         name = check_match.group(0)
-        importlib.import_module(name)
-
         module = sys.modules[name]
 
         if args.check_one:
@@ -230,7 +264,6 @@ def main():
     if report_match is not None:
         name = report_match.group("name")
         module_name = f"check_{name}"
-        importlib.import_module(module_name)
 
         module = sys.modules[module_name]
         module.report()
