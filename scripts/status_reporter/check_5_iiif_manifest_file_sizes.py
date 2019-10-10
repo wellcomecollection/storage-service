@@ -64,7 +64,6 @@ def run_check(status_updater, status_summary):
 
     if differences:
         print(f"Not all file sizes match for {bnumber}: {differences}")
-        status_updater.update(
         status_updater.update_status(
             bnumber,
             status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,

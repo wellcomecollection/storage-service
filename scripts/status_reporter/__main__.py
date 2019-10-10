@@ -3,12 +3,18 @@
 import argparse
 import decimal
 import getpass
+import importlib
 import json
+import os
+import pathlib
+import re
+import sys
+
 import urllib3
-import warnings
 
 from aws_client import read_only_client
 import check_names
+from defaults import defaults
 import dds_client
 import helpers
 import iiif_diff
@@ -16,8 +22,6 @@ import id_mapper
 import library_iiif
 import matcher
 import dynamo_status_manager
-
-from defaults import defaults
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -37,95 +41,6 @@ def _split_on_comma(string):
     return [i.strip() for i in string.split(",") if i]
 
 
-def _add_check_mets(subparsers):
-    check_mets = subparsers.add_parser(
-        "check_mets", help="Check the METS for all b numbers"
-    )
-
-    check_mets.add_argument(
-        "--check_one", help="Check only the bnumber"
-    )
-    check_mets.add_argument(
-        "--first_bnumber", help="Start checking from this b number"
-    )
-
-    report_mets = subparsers.add_parser(
-        "report_mets", help="Report how many b numbers in the METS"
-    )
-
-
-def _add_check_storage_manifests(subparsers):
-    check_storage_manifests = subparsers.add_parser(
-        "check_storage_manifests", help="Check for a storage manifest for each b number"
-    )
-    check_storage_manifests.add_argument(
-        "--first_bnumber", help="Start checking from this b number"
-    )
-
-    check_storage_manifests.add_argument(
-        "--check_one", help="Check only the bnumber"
-    )
-
-    report_storage_manifests = subparsers.add_parser(
-        "report_storage_manifests",
-        help="Report how many b numbers have storage manifests",
-    )
-
-
-def _add_check_dds_sync(subparsers):
-    check_dds_sync = subparsers.add_parser(
-        "check_dds_sync", help="Check for a successful DDS sync for each b number"
-    )
-    check_dds_sync.add_argument(
-        "--first_bnumber", help="Start checking from this b number"
-    )
-    check_dds_sync.add_argument(
-        "--check_one", help="Check only the bnumber"
-    )
-
-    report_dds_sync = subparsers.add_parser(
-        "report_dds_sync", help="Report how many b numbers have a successful DDS sync"
-    )
-
-
-def _add_check_iiif_manifest_contents(subparsers):
-    check_iiif_manifest_contents = subparsers.add_parser(
-        "check_iiif_manifest_contents",
-        help="Check for matching IIIF manifest contents for each b number",
-    )
-    check_iiif_manifest_contents.add_argument(
-        "--first_bnumber", help="Start checking from this b number"
-    )
-
-    check_iiif_manifest_contents.add_argument(
-        "--check_one", help="Check only the bnumber"
-    )
-
-    report_iiif_manifest_contents = subparsers.add_parser(
-        "report_iiif_manifest_contents",
-        help="Report how many b numbers have matching IIIF manifest contents",
-    )
-
-
-def _add_check_iiif_manifest_file_sizes(subparsers):
-    check_iiif_manifest_file_sizes = subparsers.add_parser(
-        "check_iiif_manifest_file_sizes",
-        help="Check the size of entries in the IIIF manifests for each b number",
-    )
-    check_iiif_manifest_file_sizes.add_argument(
-        "--first_bnumber", help="Start checking from this b number"
-    )
-
-    check_iiif_manifest_file_sizes.add_argument(
-        "--check_one", help="Check only the bnumber"
-    )
-
-    report_iiif_manifest_file_sizes = subparsers.add_parser(
-        "report_iiif_manifest_file_sizes",
-        help="Report how many b numbers have correct sizes for IIIF manifest entries",
-    )
-
-
 def _add_manual_skip(subparsers):
     manually_skip = subparsers.add_parser(
         "manually_skip_bnumber",
@@ -139,20 +54,44 @@ def _add_manual_skip(subparsers):
 
 
 def _add_report_all(subparsers):
-    report_all = subparsers.add_parser(
+    subparsers.add_parser(
         "report_all", help="Report stats for the entire migration"
     )
+
+
+def _add_check_commands(subparsers):
+    # Get a list of .py files that are checks
+    thisfile = pathlib.Path(__file__).resolve()
+    srcdir = thisfile.parent
+
+    # [check_1_mets, check_2_storage_manifests, ...]
+    check_modules = sorted([
+        os.path.splitext(f)[0]
+        for f in os.listdir(srcdir)
+        if re.match(r'^check_\d+_[a-z_]+\.py$', f)
+    ])
+
+    for name in check_modules:
+        report_name = name.replace("check_", "report_")
+
+        check_parser = subparsers.add_parser(name, help=f"Run {name}",)
+
+        check_parser.add_argument(
+            "--first_bnumber", help="Start checking from this b number")
+        check_parser.add_argument(
+            "--check_one", help="Check only this b number")
+
+        subparsers.add_parser(
+            report_name,
+            help=f"Report how many b numbers have passed {name}",
+        )
 
 
 def main():
     parser = argparse.ArgumentParser(description="Check status of jobs")
     subparsers = parser.add_subparsers(dest="subcommand_name", help="subcommand help")
 
-    _add_check_mets(subparsers)
-    _add_check_storage_manifests(subparsers)
-    _add_check_dds_sync(subparsers)
-    _add_check_iiif_manifest_contents(subparsers)
-    _add_check_iiif_manifest_file_sizes(subparsers)
+    _add_check_commands(subparsers)
     _add_manual_skip(subparsers)
     _add_report_all(subparsers)
 
@@ -216,7 +155,7 @@ def main():
 
         print(f"Calling DDS Client for ingest of {bnumber}")
 
-        results = [_dds_client.ingest(bnumber) for bnumber in bnumbers]
+        results = [_dds_client.ingest(bnum) for bnum in bnumbers]
         _print_as_json(results)
 
     elif args.dds_job_status:
@@ -250,99 +189,31 @@ def main():
 
     # check_mets
 
-    if args.subcommand_name == "check_mets":
-        import check_1_mets as check_mets
+    subcommand_match = re.match(r'^check_\d+_[a-z_]+$', args.subcommand_name)
+    if subcommand_match is not None:
+        name = subcommand_match.group(0)
+        importlib.import_module(name)
+
+        module = sys.modules[name]
 
         if args.check_one:
-            check_mets.run_one(args.check_one)
+            module.run_one(args.check_one)
         elif args.first_bnumber:
-            check_mets.run(first_bnumber=args.first_bnumber)
+            module.run(first_bnumber=args.first_bnumber)
         else:
-            check_mets.run()
+            module.run()
 
-        return
+        sys.exit(0)
 
-    if args.subcommand_name == "report_mets":
-        import check_1_mets as check_mets
+    report_match = re.match(r'^report_(?P<name>\d+_[a-z_]+)$', args.subcommand_name)
+    if report_match is not None:
+        name = report_match.group("name")
+        module_name = f"check_{name}"
+        importlib.import_module(module_name)
 
-        check_mets.report()
-        return
-
-    # storage_manifests
-
-    if args.subcommand_name == "check_storage_manifests":
-        import check_2_storage_manifests as check_storage_manifests
-
-        if args.check_one:
-            check_storage_manifests.run_one(args.check_one)
-        else:
-            check_storage_manifests.run(first_bnumber=args.first_bnumber)
-
-        return
-
-    if args.subcommand_name == "report_storage_manifests":
-        import check_2_storage_manifests as check_storage_manifests
-
-        check_storage_manifests.report()
-        return
-
-    # dds_sync
-
-    if args.subcommand_name == "check_dds_sync":
-        import check_3_dds_sync as check_dds_sync
-
-        if args.check_one:
-            check_dds_sync.run_one(args.check_one)
-        else:
-            check_dds_sync.run(first_bnumber=args.first_bnumber)
-
-        return
-
-    if args.subcommand_name == "report_dds_sync":
-        import check_3_dds_sync as check_dds_sync
-
-        check_dds_sync.report()
-        return
-
-    # iiif_manifest_contents
-
-    if args.subcommand_name == "check_iiif_manifest_contents":
-        import check_4_iiif_manifest_contents as check_iiif_manifest_contents
-
-        if args.check_one:
-            check_iiif_manifest_contents.run_one(args.check_one)
-        else:
-            check_iiif_manifest_contents.run(first_bnumber=args.first_bnumber)
-
-        return
-
-    if args.subcommand_name == "report_iiif_manifest_contents":
-        import check_4_iiif_manifest_contents as check_iiif_manifest_contents
-
-        if args.check_one:
-            check_iiif_manifest_contents.run_one(args.check_one)
-        else:
-            check_iiif_manifest_contents.report()
-
-        return
-
-    # iiif_manifest_file_sizes
-
-    if args.subcommand_name == "check_iiif_manifest_file_sizes":
-        import check_5_iiif_manifest_file_sizes as check_iiif_manifest_file_sizes
-
-        if args.check_one:
-            check_iiif_manifest_file_sizes.run_one(args.check_one)
-        else:
-            check_iiif_manifest_file_sizes.run(first_bnumber=args.first_bnumber)
-
-        return
-
-    if args.subcommand_name == "report_iiif_manifest_file_sizes":
-        import check_5_iiif_manifest_file_sizes as check_iiif_manifest_file_sizes
-
-        check_iiif_manifest_file_sizes.report()
-        return
+        module = sys.modules[module_name]
+        module.report()
+        sys.exit(0)
 
     if args.subcommand_name == "manually_skip_bnumber":
         dynamo_table = read_only_client.dynamo_table("storage-migration-status")
