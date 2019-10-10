@@ -52,15 +52,15 @@ def run_check(status_updater, storage_client, status_summary):
 
     print(f"Recorded storage manifest creation for {bnumber}")
 
+
 def run_one(bnumber):
     reader = dynamo_status_manager.DynamoStatusReader()
     status_summary = reader.get_one(bnumber)
     storage_client = helpers.create_storage_client()
 
     if needs_check(status_summary):
-        run_check(
-            status_updater, storage_client, status_summary
-        )
+        run_check(status_updater, storage_client, status_summary)
+
 
 def run(first_bnumber=None):
     futures = []
