@@ -63,22 +63,23 @@ def _draw_ascii_bar_chart(data, colors=None):
             )
         )
 
+
 def pprint_status_summary(status_summary):
     title = f"Reporting on: {status_summary['bnumber']}"
-    print(termcolor.colored(title, 'white', attrs=['bold']))
+    print(termcolor.colored(title, "white", attrs=["bold"]))
 
     for name in ALL_CHECK_NAMES:
-        success = status_summary[name].get('success', False)
-        has_run = status_summary[name].get('has_run', False)
+        success = status_summary[name].get("success", False)
+        has_run = status_summary[name].get("has_run", False)
 
-        if(success and has_run):
-            status_check = termcolor.colored("✓ Succeeded", 'green')
-        elif(not success and has_run):
-            status_check = termcolor.colored("✗ Failed", 'red')
-        elif(not success and not has_run):
-            status_check = termcolor.colored("✌︎ Not checked", 'blue')
+        if success and has_run:
+            status_check = termcolor.colored("✓ Succeeded", "green")
+        elif not success and has_run:
+            status_check = termcolor.colored("✗ Failed", "red")
+        elif not success and not has_run:
+            status_check = termcolor.colored("✌︎ Not checked", "blue")
         else:
-            status_check = termcolor.colored("?︎ Inconsistent", 'yellow')
+            status_check = termcolor.colored("?︎ Inconsistent", "yellow")
 
         print(f"{name.ljust(40)}{status_check}")
 
@@ -106,16 +107,19 @@ def pprint_report(report, title):
         if count == 0:
             colors[label] = "grey"
 
-    print('')
-    print(termcolor.colored(title, 'white', attrs=['bold']))
+    print("")
+    print(termcolor.colored(title, "white", attrs=["bold"]))
     _draw_ascii_bar_chart(data, colors)
+
 
 def _get_reader():
     reader = dynamo_status_manager.DynamoStatusReader()
     return reader.all()
 
+
 def generate_full_report():
     return list(_get_reader())
+
 
 def build_report(name, report=None):
     if report is None:

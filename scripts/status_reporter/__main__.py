@@ -89,8 +89,12 @@ def _add_manual_skip(subparsers):
 
 
 def _add_report_all(subparsers):
-    report_all = subparsers.add_parser("report_all", help="Report stats for the entire migration")
-    report_all.add_argument("--check_detail", action='store_true', help="Break out details of checks")
+    report_all = subparsers.add_parser(
+        "report_all", help="Report stats for the entire migration"
+    )
+    report_all.add_argument(
+        "--check_detail", action="store_true", help="Break out details of checks"
+    )
     report_all.add_argument("--load_report", help="Load json report from file")
 
 
@@ -265,7 +269,6 @@ def main():
 
         sys.exit(0)
 
-
     # Subcommands for check/reporting start here
 
     if args.subcommand_name:
@@ -323,13 +326,12 @@ def main():
 
         sys.exit(0)
 
-
     if args.subcommand_name == "report_all":
         import report_all
 
         if args.load_report:
             file_name = args.load_report
-            
+
             with open(file_name, "r") as f:
                 full_report = json.load(f)
 
@@ -340,7 +342,9 @@ def main():
         elif args.check_detail:
             full_report = reporting.generate_full_report()
 
-            out_path = f"full_report-{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
+            out_path = (
+                f"full_report-{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
+            )
             with open(out_path, "w") as f:
                 f.write(json.dumps(full_report, indent=2, sort_keys=True))
 

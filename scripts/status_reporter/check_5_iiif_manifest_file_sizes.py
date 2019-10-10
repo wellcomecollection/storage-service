@@ -94,5 +94,7 @@ def run(first_bnumber=None):
             run_check(status_updater, status_summary)
 
 
-def report(report = None):
-    return reporting.build_report(name=check_names.IIIF_MANIFESTS_CONTENTS, report=report)
+def report(report=None):
+    return reporting.build_report(
+        name=check_names.IIIF_MANIFESTS_CONTENTS, report=report
+    )

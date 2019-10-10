@@ -96,10 +96,12 @@ def run(first_bnumber=None):
 
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         with concurrent.futures.ThreadPoolExecutor(max_workers=WORKERS) as executor:
-            for status_summary in get_statuses_for_updating(first_bnumber=first_bnumber):
+            for status_summary in get_statuses_for_updating(
+                first_bnumber=first_bnumber
+            ):
                 for status_summary in get_statuses_for_updating(first_bnumber):
                     executor.submit(run_check, status_updater, status_summary)
 
 
-def report(report = None):
+def report(report=None):
     return reporting.build_report(name=check_names.DDS_SYNC, report=report)
