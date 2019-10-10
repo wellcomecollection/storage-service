@@ -132,10 +132,9 @@ def _get_preservica_asset_size_from_s3(guid):
 
         resp = s3_client.list_objects_v2(
             Bucket="wdl-preservica",
-
             # Chop a few chars off the end so we get the GUID we're looking for,
             # if it's here.
-            StartAfter=guid[:-2]
+            StartAfter=guid[:-2],
         )
 
         for s3_obj in resp["Contents"]:
