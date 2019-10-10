@@ -39,6 +39,7 @@ CHECK_MODULES = sorted(
     ]
 )
 
+
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, decimal.Decimal):
@@ -96,12 +97,8 @@ def main():
 
     # Not check or reporting
 
-    parser.add_argument(
-        "--run_all", default=None, help="Run all checks for b numbers"
-    )
-    parser.add_argument(
-        "--get_status", default=None, help="Get status for b numbers"
-    )
+    parser.add_argument("--run_all", default=None, help="Run all checks for b numbers")
+    parser.add_argument("--get_status", default=None, help="Get status for b numbers")
     parser.add_argument(
         "--reset_status", default=None, help="Reset status for b numbers"
     )
@@ -112,7 +109,9 @@ def main():
         "--dds_job_status", default=None, help="Inspect status from DDS for b numbers"
     )
     parser.add_argument(
-        "--compare_manifest", default=None, help="Compare library manifests for b numbers",
+        "--compare_manifest",
+        default=None,
+        help="Compare library manifests for b numbers",
     )
     parser.add_argument(
         "--match_files", default=None, help="Compare manifest files for b numbers"
@@ -204,7 +203,7 @@ def main():
 
     # Subcommands for check/reporting start here
 
-    if(args.subcommand_name):
+    if args.subcommand_name:
         report_match = re.match(r"^report_(?P<name>\d+_[a-z_]+)$", args.subcommand_name)
         check_match = re.match(r"^check_(?P<name>\d+_[a-z_]+)$", args.subcommand_name)
     else:
