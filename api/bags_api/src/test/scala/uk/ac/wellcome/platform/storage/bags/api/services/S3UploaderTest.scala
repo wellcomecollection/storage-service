@@ -32,15 +32,20 @@ class S3UploaderTest extends FunSpec with Matchers with S3Fixtures with EitherVa
     val content = randomAlphanumeric
 
     withLocalS3Bucket { bucket =>
+      // Picking a good expiryLength here is tricky: too fast and the test becomes
+      // flaky, but too slow and the test takes an age!
+      //
+      // 3 seconds seems to be reliable on my machine; if this test gets flaky,
+      // consider bumping the expiryLength.
       val url = uploader.uploadAndGetURL(
         location = createObjectLocationWith(bucket),
         content = content,
-        expiryLength = 2.seconds
+        expiryLength = 3.seconds
       ).right.value
 
       getUrl(url) shouldBe content
 
-      Thread.sleep(3000)
+      Thread.sleep(3500)
 
       val thrown = intercept[IOException] {
         getUrl(url)
