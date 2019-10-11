@@ -85,9 +85,7 @@ def run_one(bnumber):
 
 def run(first_bnumber=None):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-        for status_summary in get_statuses_for_updating(
-            first_bnumber=first_bnumber
-        ):
+        for status_summary in get_statuses_for_updating(first_bnumber=first_bnumber):
             try:
                 run_check(status_updater, status_summary)
             except Exception as err:
