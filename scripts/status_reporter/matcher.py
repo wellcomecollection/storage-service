@@ -46,7 +46,7 @@ class Matcher:
 
             # If this b number is actually a collection, we also want to ignore
             # the METS files for the individual manifests.
-            if re.match(r'^data/' + bnumber + r'_\d{4}\.xml$', entry["name"]):
+            if re.match(r"^data/" + bnumber + r"_\d{4}\.xml$", entry["name"]):
                 continue
 
             # e.g.  data/alto/b30181197_0001.xml

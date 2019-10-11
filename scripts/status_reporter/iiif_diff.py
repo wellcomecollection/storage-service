@@ -162,8 +162,7 @@ class IIIFDiff:
             old_manifest = self.library_iiif.prod(bnum_to_check)
 
             curr_diff = self.diff_manifests(
-                old_manifest=old_manifest,
-                new_manifest=new_manifest
+                old_manifest=old_manifest, new_manifest=new_manifest
             )
 
             # If we diff one of the individual manifests and there are differences,
