@@ -27,8 +27,10 @@ def get_preservica_asset_path(guid):
 LAST_CHECKS = collections.deque([], maxlen=5)
 
 
-def get_preservica_asset_size(guid):
-    db_size = _get_preservica_asset_size_from_db(guid)
+def get_preservica_asset_size(guid, confirm_with_db=False):
+    return _get_preservica_asset_size_from_db(guid)
+    if confirm_with_db:
+        db_size = _get_preservica_asset_size_from_db(guid)
 
     # The aim of this slightly fiddly looking code is to bias the Preservica
     # size lookup.  All the files in a single bag will typically be in the
@@ -62,9 +64,10 @@ def get_preservica_asset_size(guid):
             f"Could not find asset {guid} in Preservica local storage or S3!"
         )
 
-    assert db_size == actual_size
+    if confirm_with_db:
+        assert db_size == actual_size
 
-    return db_size
+    return actual_size
 
 
 def get_preservica_cursor():

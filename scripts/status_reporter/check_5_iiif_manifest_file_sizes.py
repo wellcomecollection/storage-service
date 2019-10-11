@@ -25,10 +25,10 @@ def needs_check(status_summary):
     )
 
 
-def get_statuses_for_updating(first_bnumber):
+def get_statuses_for_updating(first_bnumber, segment, total_segments):
     reader = dynamo_status_manager.DynamoStatusReader()
 
-    for status_summary in reader.all(first_bnumber=first_bnumber):
+    for status_summary in reader.all(first_bnumber, segment, total_segments):
         if needs_check(status_summary):
             yield status_summary
 
@@ -49,7 +49,15 @@ def run_check(status_updater, status_summary):
 
     differences = []
 
-    for f in matcher_result["files"]:
+    import tqdm
+
+    import random
+    files_to_check = random.sample(
+        matcher_result["files"],
+        min(100, len(matcher_result["files"]))
+    )
+
+    for f in tqdm.tqdm(files_to_check):
         preservica_size = preservica.get_preservica_asset_size(f["preservica_guid"])
         storage_manifest_size = f["storage_manifest_entry"]["size"]
 
@@ -77,6 +85,7 @@ def run_check(status_updater, status_summary):
             status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
             success=True,
             last_modified=dt.datetime.now().isoformat(),
+            method="only_check_db_row_with_random_sample_100"
         )
 
 
@@ -88,10 +97,34 @@ def run_one(bnumber):
             run_check(status_updater, status_summary)
 
 
-def run(first_bnumber=None):
+def _run_all(first_bnumber, segment, total_segments):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-        for status_summary in get_statuses_for_updating(first_bnumber=first_bnumber):
-            run_check(status_updater, status_summary)
+        for status_summary in get_statuses_for_updating(
+            first_bnumber=first_bnumber,
+            segment=segment,
+            total_segments=total_segments
+        ):
+            try:
+                run_check(status_updater, status_summary)
+            except Exception as err:
+                print(err)
+
+
+def run(first_bnumber=None):
+    import concurrent.futures
+    import multiprocessing
+
+    workers = multiprocessing.cpu_count() * 2 + 1
+    total_segments = 5
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = [
+            executor.submit(_run_all, first_bnumber, segment, total_segments)
+            for segment in range(total_segments)
+        ]
+
+        for fut in concurrent.futures.as_completed(futures):
+            fut.result()
 
 
 def report(report=None):
