@@ -22,9 +22,9 @@ def get_named_status(status_summary, name):
 
     if stored_result is None:
         return "not checked"
-    elif not stored_result.get('has_run', False):
+    elif not stored_result.get("has_run", False):
         return "not checked"
-    elif stored_result.get('success', False):
+    elif stored_result.get("success", False):
         return "success"
     else:
         return "failure"
@@ -32,7 +32,7 @@ def get_named_status(status_summary, name):
 
 def _draw_ascii_bar_chart(data, format=None):
     if format is None:
-        format = ({},[])
+        format = ({}, [])
 
     max_value = max(count for _, count in data)
     increment = max_value / 25
@@ -63,7 +63,8 @@ def _draw_ascii_bar_chart(data, format=None):
         print(
             termcolor.colored(
                 f"{label.ljust(longest_label_length)} ▏ {count:#6d} {bar}",
-                color, attrs=attrs
+                color,
+                attrs=attrs,
             )
         )
 
@@ -94,25 +95,25 @@ def pprint_report(report, title):
     unknown = TOTAL_BNUMBERS - sum(report.values())
 
     data = [
-        ('success', report['success']),
-        ('failure', report['failure']),
-        ('not checked', report['not checked']),
-        ('unknown', unknown),
+        ("success", report["success"]),
+        ("failure", report["failure"]),
+        ("not checked", report["not checked"]),
+        ("unknown", unknown),
     ]
 
     format = {
-        'success': ('green', []),
-        'failure': ('red',[]),
-        'not checked': ('blue',[]),
-        'unknown': ('yellow',[]),
+        "success": ("green", []),
+        "failure": ("red", []),
+        "not checked": ("blue", []),
+        "unknown": ("yellow", []),
     }
 
     for (label, count) in data:
         if count == 0:
-            format[label] = ('white', ['dark'])
+            format[label] = ("white", ["dark"])
 
-    print('')
-    print(termcolor.colored(title, 'white', attrs=['bold']))
+    print("")
+    print(termcolor.colored(title, "white", attrs=["bold"]))
     _draw_ascii_bar_chart(data, format)
 
 
@@ -124,9 +125,7 @@ def _get_reader():
 def generate_full_report():
     full_report = list(_get_reader())
 
-    out_path = (
-        f"full_report-{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
-    )
+    out_path = f"full_report-{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
 
     with open(out_path, "w") as f:
         f.write(json.dumps(full_report, indent=2, sort_keys=True))
