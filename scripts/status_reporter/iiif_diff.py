@@ -136,9 +136,7 @@ class IIIFDiff:
         self._diff_modulo_imageanno(deep_diff)
         self._diff_modulo_dlcs(deep_diff)
         self._diff_modulo_author_ordering(
-            deep_diff,
-            old_manifest=old_manifest,
-            new_manifest=new_manifest
+            deep_diff, old_manifest=old_manifest, new_manifest=new_manifest
         )
 
         if not deep_diff.get("values_changed", True):
