@@ -1,5 +1,7 @@
 # -*- encoding: utf-8
 
+import collections
+
 from deepdiff import DeepDiff
 import hyperlink
 
@@ -103,12 +105,41 @@ class IIIFDiff:
             ):
                 del deep_diff["values_changed"][label]
 
+    @staticmethod
+    def _diff_modulo_author_ordering(deep_diff, old_manifest, new_manifest):
+        # DDS returns authors in an arbitrary order, semicolon-separated.
+        #
+        # As long as the authors are the same, even if the order is different,
+        # the manifests are equivalent enough for us.
+        #
+        # See conversation at
+        # https://wellcome.slack.com/archives/CBT40CMKQ/p1570734445106800
+        for label, diff in list(deep_diff.get("values_changed", {}).items()):
+            if label != "root['metadata'][1]['value']":
+                continue
+
+            if old_manifest["metadata"][1]["label"] != "Author(s)":
+                continue
+
+            old_authors = collections.Counter(diff["old_value"].split(";"))
+            new_authors = collections.Counter(diff["new_value"].split(";"))
+
+            if old_authors != new_authors:
+                continue
+
+            del deep_diff["values_changed"][label]
+
     def diff_manifests(self, old_manifest, new_manifest):
         deep_diff = DeepDiff(old_manifest, new_manifest)
 
         self._diff_modulo_hostname(deep_diff)
         self._diff_modulo_imageanno(deep_diff)
         self._diff_modulo_dlcs(deep_diff)
+        self._diff_modulo_author_ordering(
+            deep_diff,
+            old_manifest=old_manifest,
+            new_manifest=new_manifest
+        )
 
         if not deep_diff.get("values_changed", True):
             del deep_diff["values_changed"]
