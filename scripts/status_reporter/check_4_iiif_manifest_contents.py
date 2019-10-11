@@ -24,10 +24,10 @@ def needs_check(status_summary):
     )
 
 
-def get_statuses_for_updating(first_bnumber):
+def get_statuses_for_updating(first_bnumber, segment, total_segments):
     reader = dynamo_status_manager.DynamoStatusReader()
 
-    for status_summary in reader.all(first_bnumber=first_bnumber):
+    for status_summary in reader.all(first_bnumber, segment, total_segments):
         if needs_check(status_summary):
             yield status_summary
 
@@ -83,13 +83,29 @@ def run_one(bnumber):
             run_check(status_updater, status_summary)
 
 
-def run(first_bnumber=None):
+def _run_all(first_bnumber, segment, total_segments):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-        for status_summary in get_statuses_for_updating(first_bnumber=first_bnumber):
+        for status_summary in get_statuses_for_updating(
+            first_bnumber=first_bnumber,
+            segment=segment,
+            total_segments=total_segments
+        ):
             try:
                 run_check(status_updater, status_summary)
             except Exception as err:
                 print(err)
+
+
+def run(first_bnumber=None):
+    import concurrent.futures
+    import multiprocessing
+
+    workers = multiprocessing.cpu_count() * 2 + 1
+    total_segments = 5
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        for segment in range(total_segments):
+            executor.submit(_run_all, first_bnumber, segment, total_segments)
 
 
 def report(report=None):
