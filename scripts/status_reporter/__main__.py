@@ -92,9 +92,6 @@ def _add_report_all(subparsers):
     report_all = subparsers.add_parser(
         "report_all", help="Report stats for the entire migration"
     )
-    report_all.add_argument(
-        "--check_detail", action="store_true", help="Break out details of checks"
-    )
     report_all.add_argument("--load_report", help="Load json report from file")
 
 
@@ -278,8 +275,6 @@ def main():
         parser.print_help()
         sys.exit(2)
 
-    # check_mets
-
     if check_match is not None:
         name = check_match.group(0)
         module = sys.modules[name]
@@ -330,30 +325,14 @@ def main():
         import report_all
 
         if args.load_report:
-            file_name = args.load_report
-
-            with open(file_name, "r") as f:
+            with open(args.load_report, "r") as f:
                 full_report = json.load(f)
-
-                for module_name in CHECK_MODULES:
-                    module = sys.modules[module_name]
-                    module.report(report=full_report)
-
-        elif args.check_detail:
+        else:
             full_report = reporting.generate_full_report()
 
-            out_path = (
-                f"full_report-{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
-            )
-            with open(out_path, "w") as f:
-                f.write(json.dumps(full_report, indent=2, sort_keys=True))
-
-            for module_name in CHECK_MODULES:
-                module = sys.modules[module_name]
-                module.report(report=full_report)
-
-        else:
-            report_all.run()
+        for module_name in CHECK_MODULES:
+            sys.modules[module_name].report(report=full_report)
+            print('')
 
         sys.exit(0)
 

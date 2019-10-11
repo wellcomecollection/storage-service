@@ -96,5 +96,5 @@ def run(first_bnumber=None):
 
 def report(report=None):
     return reporting.build_report(
-        name=check_names.IIIF_MANIFESTS_CONTENTS, report=report
+        name=check_names.IIIF_MANIFESTS_FILE_SIZES, report=report
     )

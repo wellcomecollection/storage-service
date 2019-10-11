@@ -123,4 +123,4 @@ def run(first_bnumber=None):
 
 
 def report(report=None):
-    return reporting.build_report(name=check_names.DLCS_ORIGIN_MATCH, report=report)
+    return reporting.build_report(name=check_names.ALTO_SIZES_MATCH, report=report)

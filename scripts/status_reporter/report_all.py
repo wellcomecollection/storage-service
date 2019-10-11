@@ -118,6 +118,7 @@ def run():
     ]
 
     out_path = f"statuses-{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
+
     with open(out_path, "w") as f:
         f.write(json.dumps(all_statuses, indent=2, sort_keys=True))
 
