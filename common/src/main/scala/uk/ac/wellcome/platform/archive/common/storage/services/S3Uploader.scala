@@ -1,14 +1,15 @@
-package uk.ac.wellcome.platform.storage.bags.api.services
+package uk.ac.wellcome.platform.archive.common.storage.services
+
 import java.net.URL
 import java.util
 
 import com.amazonaws.HttpMethod
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
-import uk.ac.wellcome.storage.{ObjectLocation, ReadError, StorageError, StoreReadError}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
+import uk.ac.wellcome.storage.{ObjectLocation, ReadError, StorageError, StoreReadError}
 
 import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try}
