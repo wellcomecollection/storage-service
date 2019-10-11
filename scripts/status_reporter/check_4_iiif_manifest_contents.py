@@ -1,9 +1,7 @@
 # -*- encoding: utf-8
 
-import concurrent.futures
 import datetime as dt
 import json
-import multiprocessing
 
 import aws_client
 import check_names
@@ -86,14 +84,14 @@ def run_one(bnumber):
 
 
 def run(first_bnumber=None):
-    WORKERS = 2 * multiprocessing.cpu_count() + 1
-
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=WORKERS) as executor:
-            for status_summary in get_statuses_for_updating(
-                first_bnumber=first_bnumber
-            ):
-                executor.submit(run_check, status_updater, status_summary)
+        for status_summary in get_statuses_for_updating(
+            first_bnumber=first_bnumber
+        ):
+            try:
+                run_check(status_updater, status_summary)
+            except Exception as err:
+                print(err)
 
 
 def report(report=None):
