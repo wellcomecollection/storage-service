@@ -82,6 +82,18 @@ def run_check(status_updater, storage_client, row):
         auth=(dlcs_api_key(), dlcs_api_secret()),
     )
 
+    # Handle the case where DLCS has prepended the b number to the filename
+    # from the storage manifest, e.g.
+    # https://api.dlcs.io/customers/2/spaces/5/images/b19925700_haldane_4_27_17_0001.JP2
+    if (
+        storage_service_resp.json() == {"success": "false"} and
+        not storage_service_filename.startswith(bnumber)
+    ):
+        storage_service_resp = requests.get(
+            f"https://api.dlcs.io/customers/2/spaces/5/images/{bnumber}_{storage_service_filename}",
+            auth=(dlcs_api_key(), dlcs_api_secret()),
+        )
+
     preservica_resp = requests.get(
         f"https://api.dlcs.io/customers/2/spaces/1/images/{preservica_guid}",
         auth=(dlcs_api_key(), dlcs_api_secret()),
