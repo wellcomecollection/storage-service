@@ -332,7 +332,7 @@ def main():
 
         for module_name in CHECK_MODULES:
             sys.modules[module_name].report(report=full_report)
-            print('')
+            print("")
 
         sys.exit(0)
 
