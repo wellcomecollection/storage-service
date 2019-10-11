@@ -123,9 +123,11 @@ class IIIFDiff:
                 continue
 
             old_authors = collections.Counter(
-                [v.strip() for v in diff["old_value"].split(";")])
+                [v.strip() for v in diff["old_value"].split(";")]
+            )
             new_authors = collections.Counter(
-                [v.strip() for v in diff["new_value"].split(";")])
+                [v.strip() for v in diff["new_value"].split(";")]
+            )
 
             if old_authors != new_authors:
                 continue
