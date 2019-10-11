@@ -1,6 +1,7 @@
 # -*- encoding: utf-8
 
 import collections
+import re
 
 from deepdiff import DeepDiff
 import hyperlink
@@ -144,11 +145,54 @@ class IIIFDiff:
 
         return deep_diff
 
+    # If this is a collection, we need to recurse into all the manifests that
+    # appear under this collection.
+    #
+    # Look inside the manifest for a list of "manifest" URLs we should also check.
     def fetch_and_diff(self, bnum):
-        new_manifest = self.library_iiif.stage(bnum)
-        old_manifest = self.library_iiif.prod(bnum)
+        to_check = [bnum]
+        checked = set()
 
-        return self.diff_manifests(old_manifest=old_manifest, new_manifest=new_manifest)
+        while to_check:
+            bnum_to_check = to_check.pop()
+            print(f"Inspecting IIIF manifest for {bnum}/{bnum_to_check}")
+            checked.add(bnum_to_check)
+
+            new_manifest = self.library_iiif.stage(bnum_to_check)
+            old_manifest = self.library_iiif.prod(bnum_to_check)
+
+            curr_diff = self.diff_manifests(
+                old_manifest=old_manifest,
+                new_manifest=new_manifest
+            )
+
+            # If we diff one of the individual manifests and there are differences,
+            # error out here rather than continuing.
+            if curr_diff:
+                return curr_diff
+
+            try:
+                other_manifests = old_manifest["manifests"]
+            except KeyError:
+                pass
+            else:
+                # We expect these @id URLs will be a URL of the form
+                #
+                #   https://wellcomelibrary.org/iiif/b29324890-0/manifest
+                #
+                for man in other_manifests:
+                    man_id = man["@id"]
+                    url = hyperlink.URL.from_text(man_id)
+
+                    assert len(url.path) == 3, url
+                    assert url.path[0] == "iiif", url
+                    assert url.path[1].startswith(bnum)
+                    assert url.path[2] == "manifest"
+
+                    if url.path[1] not in checked and url.path[1] not in to_check:
+                        to_check.append(url.path[1])
+
+        return {}
 
 
 if __name__ == "__main__":
