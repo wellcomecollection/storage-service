@@ -147,8 +147,14 @@ class DynamoStatusUpdater:
         self.insert(bnumber)
 
     def update(
-        self, bnumber, *,
-        status_name, success, has_run=True, last_modified=None, **kwargs
+        self,
+        bnumber,
+        *,
+        status_name,
+        success,
+        has_run=True,
+        last_modified=None,
+        **kwargs,
     ):
         if status_name not in ALL_CHECK_NAMES:
             raise Exception(

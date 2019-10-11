@@ -86,9 +86,7 @@ def run_one(bnumber):
 def _run_all(first_bnumber, segment, total_segments):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         for status_summary in get_statuses_for_updating(
-            first_bnumber=first_bnumber,
-            segment=segment,
-            total_segments=total_segments
+            first_bnumber=first_bnumber, segment=segment, total_segments=total_segments
         ):
             try:
                 run_check(status_updater, status_summary)
