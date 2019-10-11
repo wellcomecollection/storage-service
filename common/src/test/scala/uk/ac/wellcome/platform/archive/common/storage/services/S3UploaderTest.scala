@@ -11,18 +11,25 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import scala.concurrent.duration._
 import scala.io.Source
 
-class S3UploaderTest extends FunSpec with Matchers with S3Fixtures with EitherValues {
+class S3UploaderTest
+    extends FunSpec
+    with Matchers
+    with S3Fixtures
+    with EitherValues {
   val uploader = new S3Uploader()
 
   it("creates a pre-signed URL for an object") {
     val content = randomAlphanumeric
 
     withLocalS3Bucket { bucket =>
-      val url = uploader.uploadAndGetURL(
-        location = createObjectLocationWith(bucket),
-        content = content,
-        expiryLength = 5.minutes
-      ).right.value
+      val url = uploader
+        .uploadAndGetURL(
+          location = createObjectLocationWith(bucket),
+          content = content,
+          expiryLength = 5.minutes
+        )
+        .right
+        .value
 
       getUrl(url) shouldBe content
     }
@@ -37,11 +44,14 @@ class S3UploaderTest extends FunSpec with Matchers with S3Fixtures with EitherVa
       //
       // 3 seconds seems to be reliable on my machine; if this test gets flaky,
       // consider bumping the expiryLength.
-      val url = uploader.uploadAndGetURL(
-        location = createObjectLocationWith(bucket),
-        content = content,
-        expiryLength = 3.seconds
-      ).right.value
+      val url = uploader
+        .uploadAndGetURL(
+          location = createObjectLocationWith(bucket),
+          content = content,
+          expiryLength = 3.seconds
+        )
+        .right
+        .value
 
       getUrl(url) shouldBe content
 
@@ -51,16 +61,21 @@ class S3UploaderTest extends FunSpec with Matchers with S3Fixtures with EitherVa
         getUrl(url)
       }
 
-      thrown.getMessage should startWith("Server returned HTTP response code: 403")
+      thrown.getMessage should startWith(
+        "Server returned HTTP response code: 403"
+      )
     }
   }
 
   it("fails if it cannot upload to the bucket") {
-    val err = uploader.uploadAndGetURL(
-      location = createObjectLocationWith(createBucket),
-      content = randomAlphanumeric,
-      expiryLength = 5.minutes
-    ).left.value
+    val err = uploader
+      .uploadAndGetURL(
+        location = createObjectLocationWith(createBucket),
+        content = randomAlphanumeric,
+        expiryLength = 5.minutes
+      )
+      .left
+      .value
 
     err shouldBe a[StoreWriteError]
     err.e shouldBe a[AmazonS3Exception]
