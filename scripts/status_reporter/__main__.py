@@ -303,14 +303,9 @@ def main():
         bnumber = args.bnumber
         reason = args.reason
 
-        resp = dynamo_table.get_item(Key={"bnumber": bnumber})
-
-        # TODO: What if this item doesn't exist yet?
-        item = resp["Item"]
-
         with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
             status_updater.update(
-                item,
+                bnumber,
                 status_name=check_names.MANUAL_SKIP,
                 success=True,
                 reason=reason,
