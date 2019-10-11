@@ -122,8 +122,10 @@ class IIIFDiff:
             if old_manifest["metadata"][1]["label"] != "Author(s)":
                 continue
 
-            old_authors = collections.Counter(diff["old_value"].split(";"))
-            new_authors = collections.Counter(diff["new_value"].split(";"))
+            old_authors = collections.Counter(
+                [v.strip() for v in diff["old_value"].split(";")])
+            new_authors = collections.Counter(
+                [v.strip() for v in diff["new_value"].split(";")])
 
             if old_authors != new_authors:
                 continue
