@@ -52,9 +52,9 @@ def run_check(status_updater, status_summary):
     import tqdm
 
     import random
+
     files_to_check = random.sample(
-        matcher_result["files"],
-        min(100, len(matcher_result["files"]))
+        matcher_result["files"], min(100, len(matcher_result["files"]))
     )
 
     for f in tqdm.tqdm(files_to_check):
@@ -85,7 +85,7 @@ def run_check(status_updater, status_summary):
             status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
             success=True,
             last_modified=dt.datetime.now().isoformat(),
-            method="only_check_db_row_with_random_sample_100"
+            method="only_check_db_row_with_random_sample_100",
         )
 
 
@@ -100,9 +100,7 @@ def run_one(bnumber):
 def _run_all(first_bnumber, segment, total_segments):
     with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
         for status_summary in get_statuses_for_updating(
-            first_bnumber=first_bnumber,
-            segment=segment,
-            total_segments=total_segments
+            first_bnumber=first_bnumber, segment=segment, total_segments=total_segments
         ):
             try:
                 run_check(status_updater, status_summary)
