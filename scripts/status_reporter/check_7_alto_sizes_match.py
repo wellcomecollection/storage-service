@@ -17,7 +17,7 @@ import reporting
 def needs_check(status_summary):
     return helpers.needs_check(
         status_summary,
-        previous_check=check_names.DLCS_ORIGIN_MATCH,
+        previous_check=check_names.STORAGE_MANIFESTS,
         current_check=check_names.ALTO_SIZES_MATCH,
         step_name="ALTO sizes",
     )
