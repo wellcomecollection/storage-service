@@ -56,8 +56,7 @@ def run_check(status_updater, status_summary):
     CHECK_COUNT = 10
 
     files_to_check = random.sample(
-        matcher_result["files"],
-        min(CHECK_COUNT, len(matcher_result["files"]))
+        matcher_result["files"], min(CHECK_COUNT, len(matcher_result["files"]))
     )
 
     for f in tqdm.tqdm(files_to_check):
@@ -89,7 +88,7 @@ def run_check(status_updater, status_summary):
                 status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
                 success=True,
                 last_modified=dt.datetime.now().isoformat(),
-                method=f"only_check_db_row_with_random_sample_{CHECK_COUNT}"
+                method=f"only_check_db_row_with_random_sample_{CHECK_COUNT}",
             )
         else:
             status_updater.update(

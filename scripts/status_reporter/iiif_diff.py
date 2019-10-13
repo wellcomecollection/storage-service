@@ -125,7 +125,9 @@ class IIIFDiff:
             if not old_value.startswith("https://wellcomelibrary.org/posterimages/"):
                 continue
 
-            if not new_value.startswith("https://library-uat.wellcomelibrary.org/posterimages/"):
+            if not new_value.startswith(
+                "https://library-uat.wellcomelibrary.org/posterimages/"
+            ):
                 continue
 
             old_url = hyperlink.URL.from_text(old_value)
@@ -140,8 +142,7 @@ class IIIFDiff:
                 continue
 
             self._check_preservica_id_matches(
-                old_posterimage_filename,
-                old_posterimage_filename
+                old_posterimage_filename, old_posterimage_filename
             )
 
             del deep_diff["values_changed"][label]
@@ -157,8 +158,9 @@ class IIIFDiff:
         """
         for label, diff in list(deep_diff.get("values_changed", {}).items()):
             if (
-                diff["old_value"] == "https://wellcomelibrary.orgplaceholder.jpg" and
-                diff["new_value"] == "https://library-uat.wellcomelibrary.orgplaceholder.jpg"
+                diff["old_value"] == "https://wellcomelibrary.orgplaceholder.jpg"
+                and diff["new_value"]
+                == "https://library-uat.wellcomelibrary.orgplaceholder.jpg"
             ):
                 del deep_diff["values_changed"][label]
 
@@ -224,9 +226,7 @@ class IIIFDiff:
             old_manifest = self.library_iiif.prod(bnum_to_check)
 
             curr_diff = self.diff_manifests(
-                bnumber=bnum,
-                old_manifest=old_manifest,
-                new_manifest=new_manifest
+                bnumber=bnum, old_manifest=old_manifest, new_manifest=new_manifest
             )
 
             # If we diff one of the individual manifests and there are differences,
