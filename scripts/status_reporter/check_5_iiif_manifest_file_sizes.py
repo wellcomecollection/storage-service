@@ -83,16 +83,6 @@ def run_check(status_updater, status_summary):
         )
     else:
         print(f"File sizes in IIIF and storage service manifests match for {bnumber}!")
-<<<<<<< HEAD
-        status_updater.update(
-            bnumber,
-            status_name=check_names.IIIF_MANIFESTS_FILE_SIZES,
-            success=True,
-            last_modified=dt.datetime.now().isoformat(),
-            method="only_check_db_row_with_random_sample_100",
-        )
-=======
-
         if len(matcher_result["files"]) > CHECK_COUNT:
             status_updater.update(
                 bnumber,
@@ -108,7 +98,6 @@ def run_check(status_updater, status_summary):
                 success=True,
                 last_modified=dt.datetime.now().isoformat(),
             )
->>>>>>> Allow doing a sample of file sizes in the IIIF manifest file size check
 
 
 def run_one(bnumber):
