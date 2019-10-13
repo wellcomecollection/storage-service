@@ -74,7 +74,11 @@ class IIIFDiff:
             old_value = diff["old_value"]
             new_value = diff["new_value"]
 
-            dlcs_prefixes = ("https://dlcs.io/iiif-img/", "https://dlcs.io/thumbs/")
+            dlcs_prefixes = (
+                "https://dlcs.io/iiif-av/",
+                "https://dlcs.io/iiif-img/",
+                "https://dlcs.io/thumbs/",
+            )
 
             if not old_value.startswith(dlcs_prefixes):
                 continue
@@ -106,6 +110,58 @@ class IIIFDiff:
             ):
                 del deep_diff["values_changed"][label]
 
+    def _diff_module_posterimages(self, bnumber, deep_diff):
+        """
+        Compare URLs of the form
+
+            https://library-uat.wellcomelibrary.org/posterimages/b29489076/0055-0000-8822-0000-0-0000-0000-0.jpg
+            https://wellcomelibrary.org/posterimages/0055-0000-8822-0000-0-0000-0000-0.jpg
+
+        """
+        for label, diff in list(deep_diff.get("values_changed", {}).items()):
+            old_value = diff["old_value"]
+            new_value = diff["new_value"]
+
+            if not old_value.startswith("https://wellcomelibrary.org/posterimages/"):
+                continue
+
+            if not new_value.startswith("https://library-uat.wellcomelibrary.org/posterimages/"):
+                continue
+
+            old_url = hyperlink.URL.from_text(old_value)
+            new_url = hyperlink.URL.from_text(new_value)
+
+            if len(old_url.path) != 2:
+                continue
+
+            old_posterimage_filename = old_url.path[1]
+
+            if new_url.path != ("posterimages", bnumber, old_posterimage_filename):
+                continue
+
+            self._check_preservica_id_matches(
+                old_posterimage_filename,
+                old_posterimage_filename
+            )
+
+            del deep_diff["values_changed"][label]
+
+    @staticmethod
+    def _diff_module_placeholder_images(deep_diff):
+        """
+        Straight-up bug in DDS:
+
+            https://library-uat.wellcomelibrary.orgplaceholder.jpg
+            https://wellcomelibrary.orgplaceholder.jpg
+
+        """
+        for label, diff in list(deep_diff.get("values_changed", {}).items()):
+            if (
+                diff["old_value"] == "https://wellcomelibrary.orgplaceholder.jpg" and
+                diff["new_value"] == "https://library-uat.wellcomelibrary.orgplaceholder.jpg"
+            ):
+                del deep_diff["values_changed"][label]
+
     @staticmethod
     def _diff_modulo_author_ordering(deep_diff, old_manifest, new_manifest):
         # DDS returns authors in an arbitrary order, semicolon-separated.
@@ -134,12 +190,14 @@ class IIIFDiff:
 
             del deep_diff["values_changed"][label]
 
-    def diff_manifests(self, old_manifest, new_manifest):
+    def diff_manifests(self, bnumber, old_manifest, new_manifest):
         deep_diff = DeepDiff(old_manifest, new_manifest)
 
         self._diff_modulo_hostname(deep_diff)
         self._diff_modulo_imageanno(deep_diff)
         self._diff_modulo_dlcs(deep_diff)
+        self._diff_module_posterimages(bnumber=bnumber, deep_diff=deep_diff)
+        self._diff_module_placeholder_images(deep_diff)
         self._diff_modulo_author_ordering(
             deep_diff, old_manifest=old_manifest, new_manifest=new_manifest
         )
@@ -166,7 +224,9 @@ class IIIFDiff:
             old_manifest = self.library_iiif.prod(bnum_to_check)
 
             curr_diff = self.diff_manifests(
-                old_manifest=old_manifest, new_manifest=new_manifest
+                bnumber=bnum,
+                old_manifest=old_manifest,
+                new_manifest=new_manifest
             )
 
             # If we diff one of the individual manifests and there are differences,
