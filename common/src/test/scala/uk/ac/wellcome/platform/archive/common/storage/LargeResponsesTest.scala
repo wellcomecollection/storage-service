@@ -71,7 +71,8 @@ class LargeResponsesTest
                 val madeRequest = Http()
                   .singleRequest(HttpRequest(uri = redirectLocation.uri))
 
-                val madeRequestResult: HttpResponse = Await.result(madeRequest, 10.seconds)
+                val madeRequestResult: HttpResponse =
+                  Await.result(madeRequest, 10.seconds)
 
                 madeRequestResult.status shouldBe StatusCodes.OK
                 val inputStream = madeRequestResult.entity
