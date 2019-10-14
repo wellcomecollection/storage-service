@@ -27,7 +27,7 @@ import scala.util.{Failure, Success, Try}
   */
 class S3Uploader(implicit s3Client: AmazonS3) {
   private val s3StreamStore: S3StreamStore = new S3StreamStore()
-  
+
   def uploadAndGetURL(
     location: ObjectLocation,
     content: InputStreamWithLengthAndMetadata,
