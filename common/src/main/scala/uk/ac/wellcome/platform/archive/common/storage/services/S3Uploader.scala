@@ -9,12 +9,7 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
-import uk.ac.wellcome.storage.{
-  ObjectLocation,
-  ReadError,
-  StorageError,
-  StoreReadError
-}
+import uk.ac.wellcome.storage.{Identified, ObjectLocation, ReadError, StorageError, StoreReadError}
 
 import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try}
@@ -25,16 +20,27 @@ import scala.util.{Failure, Success, Try}
   * It's based on an example from the AWS SDK for Java docs:
   * https://docs.aws.amazon.com/AmazonS3/latest/dev/ShareObjectPreSignedURLJavaSDK.html
   */
+
 class S3Uploader(implicit s3Client: AmazonS3) {
+  import S3ObjectExists._
+
   private val s3StreamStore: S3StreamStore = new S3StreamStore()
 
   def uploadAndGetURL(
-    location: ObjectLocation,
-    content: InputStreamWithLengthAndMetadata,
-    expiryLength: Duration
-  ): Either[StorageError, URL] =
+                                  location: ObjectLocation,
+                                  content: InputStreamWithLengthAndMetadata,
+                                  expiryLength: Duration,
+                                  checkExists: Boolean = false
+                                ): Either[StorageError, URL] =
     for {
-      _ <- s3StreamStore.put(location)(content)
+      exists <- location.exists
+
+      _ <-  if(!exists || !checkExists) {
+              s3StreamStore.put(location)(content)
+            } else {
+              Right(Identified(location, content))
+            }
+
       url <- getPresignedGetURL(location, expiryLength)
     } yield url
 
