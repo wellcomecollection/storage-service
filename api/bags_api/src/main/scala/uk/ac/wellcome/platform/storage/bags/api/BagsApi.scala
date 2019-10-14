@@ -4,6 +4,7 @@ import java.net.URL
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model.headers.ETag
 import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
@@ -68,12 +69,17 @@ trait BagsApi extends Logging {
 
           result match {
             case Right(storageManifest) =>
-              complete(
-                ResponseDisplayBag(
-                  storageManifest = storageManifest,
-                  contextUrl = contextURL
+              val etag = ETag(storageManifest.idWithVersion)
+              
+              respondWithHeaders(etag) {
+                complete(
+                  ResponseDisplayBag(
+                    storageManifest = storageManifest,
+                    contextUrl = contextURL
+                  )
                 )
-              )
+              }
+
             case Left(_: NoVersionExistsError) =>
               val errorMessage = maybeVersion match {
                 case Some(version) =>
