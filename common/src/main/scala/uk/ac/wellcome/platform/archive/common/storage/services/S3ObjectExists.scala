@@ -10,18 +10,24 @@ trait ObjectExists {
 }
 
 class S3ObjectExists(s3Client: AmazonS3) extends ObjectExists {
-  override def exists(objectLocation: ObjectLocation): Either[StoreReadError, Boolean] = Try {
-    s3Client.doesObjectExist(
-      objectLocation.namespace, objectLocation.path
-    )
-  } match {
-    case Success(exists) => Right(exists)
-    case Failure(e) => Left(StoreReadError(e))
-  }
+  override def exists(
+    objectLocation: ObjectLocation
+  ): Either[StoreReadError, Boolean] =
+    Try {
+      s3Client.doesObjectExist(
+        objectLocation.namespace,
+        objectLocation.path
+      )
+    } match {
+      case Success(exists) => Right(exists)
+      case Failure(e)      => Left(StoreReadError(e))
+    }
 }
 
 object S3ObjectExists {
-  implicit class S3ObjectExistsImplicit(objectLocation: ObjectLocation)(implicit s3Client: AmazonS3) {
+  implicit class S3ObjectExistsImplicit(objectLocation: ObjectLocation)(
+    implicit s3Client: AmazonS3
+  ) {
     val s3ObjectExists = new S3ObjectExists(s3Client)
 
     def exists = s3ObjectExists.exists(objectLocation)
