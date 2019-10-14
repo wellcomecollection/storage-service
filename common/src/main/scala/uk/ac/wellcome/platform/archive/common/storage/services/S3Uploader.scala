@@ -28,6 +28,8 @@ import scala.util.{Failure, Success, Try}
 class S3Uploader(implicit s3Client: AmazonS3) {
   private val s3StreamStore: S3StreamStore = new S3StreamStore()
 
+
+  // TODO: Ensure idempotency in puts by key
   def uploadAndGetURL(
     location: ObjectLocation,
     content: InputStreamWithLengthAndMetadata,

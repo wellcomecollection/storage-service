@@ -70,7 +70,7 @@ trait BagsApi extends Logging {
           result match {
             case Right(storageManifest) =>
               val etag = ETag(storageManifest.idWithVersion)
-
+              
               respondWithHeaders(etag) {
                 complete(
                   ResponseDisplayBag(
