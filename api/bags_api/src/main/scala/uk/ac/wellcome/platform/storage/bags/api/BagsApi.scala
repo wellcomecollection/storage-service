@@ -129,14 +129,19 @@ trait BagsApi extends Logging {
             )
 
           case Right(manifests) =>
-            complete(
-              DisplayResultList(
-                context = contextURL.toString,
-                results = manifests.map {
-                  ResultListEntry(_)
-                }
+            val etagValue = manifests.map(_.idWithVersion).mkString("&")
+            val etag = ETag(etagValue)
+
+            respondWithHeaders(etag) {
+              complete(
+                DisplayResultList(
+                  context = contextURL.toString,
+                  results = manifests.map {
+                    ResultListEntry(_)
+                  }
+                )
               )
-            )
+            }
 
           case Left(err) =>
             error(s"Error while trying to look up versions of $bagId", err.e)
