@@ -10,7 +10,11 @@ import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  BagInfoGenerators,
+  StorageManifestGenerators
+}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
@@ -67,7 +71,7 @@ class BagsApiFeatureTest
             }
 
             val header: ETag = response.header[ETag].get
-            val etagValue = header.etag.value.replace("\"","")
+            val etagValue = header.etag.value.replace("\"", "")
 
             etagValue shouldBe storageManifest.idWithVersion
 
@@ -131,7 +135,7 @@ class BagsApiFeatureTest
               }
 
               val header: ETag = response.header[ETag].get
-              val etagValue = header.etag.value.replace("\"","")
+              val etagValue = header.etag.value.replace("\"", "")
 
               etagValue shouldBe storageManifest.idWithVersion
 
@@ -328,10 +332,11 @@ class BagsApiFeatureTest
               assertJsonStringsAreEqual(actualJson, expectedJson)
             }
 
-            val expectedEtagValue = initialManifests.map(_.idWithVersion).mkString("&")
+            val expectedEtagValue =
+              initialManifests.map(_.idWithVersion).mkString("&")
 
             val header: ETag = response.header[ETag].get
-            val etagValue = header.etag.value.replace("\"","")
+            val etagValue = header.etag.value.replace("\"", "")
 
             etagValue shouldBe expectedEtagValue
 
@@ -419,13 +424,12 @@ class BagsApiFeatureTest
               assertJsonStringsAreEqual(actualJson, expectedJson)
             }
 
-            val expectedEtagValue = initialManifests
-              .reverse
+            val expectedEtagValue = initialManifests.reverse
               .map(_.idWithVersion)
               .mkString("&")
 
             val header: ETag = response.header[ETag].get
-            val etagValue = header.etag.value.replace("\"","")
+            val etagValue = header.etag.value.replace("\"", "")
 
             etagValue shouldBe expectedEtagValue
 
