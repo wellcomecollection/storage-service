@@ -78,7 +78,16 @@ def run_check(status_updater, storage_client, row):
     has_differences = False
 
     for bag_alto, s3_alto in zip(alto_files_in_bag, alto_files_in_s3):
-        if os.path.basename(bag_alto["name"]) != os.path.basename(s3_alto["Key"]):
+        # We need to account for the fact that the ALTO files in S3 might have
+        # different capitalisations, e.g.
+        #
+        #   B1234.xml
+        #   b1234X.xml
+        #
+        bag_name = os.path.basename(bag_alto["name"])
+        s3_name = os.path.basename(s3_alto["Key"]).lower()
+
+        if bag_name != s3_name:
             print(
                 f"{bnumber}: ALTO filenames don't match! {os.path.basename(bag_alto['name'])} != {os.path.basename(s3_alto['Key'])}"
             )
