@@ -137,7 +137,7 @@ class BagsApiFeatureTest
               val header: ETag = response.header[ETag].get
               val etagValue = header.etag.value.replace("\"", "")
 
-              etagValue shouldBe storageManifest.idWithVersion
+              etagValue shouldBe s"${storageManifest.space}/${storageManifest.info.externalIdentifier}/${storageManifest.version}"
 
               assertMetricSent(
                 metrics,
@@ -333,7 +333,10 @@ class BagsApiFeatureTest
             }
 
             val expectedEtagValue =
-              initialManifests.map(_.idWithVersion).mkString("&")
+              initialManifests
+                .sortBy(_.idWithVersion)
+                .map(_.idWithVersion)
+                .mkString("&")
 
             val header: ETag = response.header[ETag].get
             val etagValue = header.etag.value.replace("\"", "")
@@ -424,7 +427,8 @@ class BagsApiFeatureTest
               assertJsonStringsAreEqual(actualJson, expectedJson)
             }
 
-            val expectedEtagValue = initialManifests.reverse
+            val expectedEtagValue = initialManifests
+              .sortBy(_.idWithVersion)
               .map(_.idWithVersion)
               .mkString("&")
 
