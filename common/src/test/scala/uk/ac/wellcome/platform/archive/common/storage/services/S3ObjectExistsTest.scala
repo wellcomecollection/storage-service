@@ -20,10 +20,17 @@ class S3ObjectExistsTest
       it("returns true") {
         withLocalS3Bucket { bucket =>
           val objectLocation = createObjectLocationWith(bucket.name)
-          val byteLength = randomInt(100,200)
+          val byteLength = randomInt(100, 200)
           val randomData = randomInputStream(byteLength)
 
-          putStream(objectLocation, new InputStreamWithLengthAndMetadata(randomData, byteLength, Map.empty))
+          putStream(
+            objectLocation,
+            new InputStreamWithLengthAndMetadata(
+              randomData,
+              byteLength,
+              Map.empty
+            )
+          )
 
           objectLocation.exists.right.value shouldBe true
         }

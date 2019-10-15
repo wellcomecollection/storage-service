@@ -50,10 +50,12 @@ class S3UploaderTest
         .right
         .value
 
-      val lastModified = s3Client.getObjectMetadata(
-        objectLocation.namespace,
-        objectLocation.path
-      ).getLastModified()
+      val lastModified = s3Client
+        .getObjectMetadata(
+          objectLocation.namespace,
+          objectLocation.path
+        )
+        .getLastModified()
 
       getUrl(url) shouldBe content
 
@@ -69,10 +71,12 @@ class S3UploaderTest
         .right
         .value
 
-      val newLastModified = s3Client.getObjectMetadata(
-        objectLocation.namespace,
-        objectLocation.path
-      ).getLastModified()
+      val newLastModified = s3Client
+        .getObjectMetadata(
+          objectLocation.namespace,
+          objectLocation.path
+        )
+        .getLastModified()
 
       newUrl shouldNot equal(url)
       lastModified shouldBe newLastModified
@@ -96,10 +100,12 @@ class S3UploaderTest
         .right
         .value
 
-      val lastModified = s3Client.getObjectMetadata(
-        objectLocation.namespace,
-        objectLocation.path
-      ).getLastModified()
+      val lastModified = s3Client
+        .getObjectMetadata(
+          objectLocation.namespace,
+          objectLocation.path
+        )
+        .getLastModified()
 
       getUrl(url) shouldBe content
 
@@ -114,10 +120,12 @@ class S3UploaderTest
         .right
         .value
 
-      val newLastModified = s3Client.getObjectMetadata(
-        objectLocation.namespace,
-        objectLocation.path
-      ).getLastModified()
+      val newLastModified = s3Client
+        .getObjectMetadata(
+          objectLocation.namespace,
+          objectLocation.path
+        )
+        .getLastModified()
 
       newUrl shouldNot equal(url)
 
