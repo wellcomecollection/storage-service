@@ -29,15 +29,16 @@ import uk.ac.wellcome.platform.storage.bags.api.models.{
   ResultListEntry
 }
 import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
-
+import uk.ac.wellcome.platform.archive.common.storage.LargeResponses
 import scala.concurrent.ExecutionContext
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
-trait BagsApi extends Logging {
+trait BagsApi extends LargeResponses with Logging {
 
   import akka.http.scaladsl.server.Directives._
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+
 
   implicit val printer: Printer =
     Printer.noSpaces.copy(dropNullValues = true)
@@ -47,7 +48,9 @@ trait BagsApi extends Logging {
   val contextURL: URL
   val storageManifestDao: StorageManifestDao
 
-  val bags: Route = pathPrefix("bags") {
+  val bags = wrapLargeResponses(routes)
+
+  private val routes: Route = pathPrefix("bags") {
     path(Segment / Segment) { (space, externalIdentifier) =>
       val bagId = BagId(
         space = StorageSpace(space),
