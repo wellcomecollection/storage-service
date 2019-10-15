@@ -38,7 +38,7 @@ trait LargeResponses extends Logging {
 
         val storageKey = response
           .header[ETag]
-          .map(_.value.replace("\"",""))
+          .map(_.value.replace("\"", ""))
           .getOrElse(UUID.randomUUID().toString)
 
         val objectLocation = prefix.asLocation(storageKey)

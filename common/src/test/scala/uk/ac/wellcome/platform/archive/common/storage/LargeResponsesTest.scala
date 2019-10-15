@@ -5,7 +5,12 @@ import java.util.UUID
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.headers.{ETag, Location}
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{
+  HttpHeader,
+  HttpRequest,
+  HttpResponse,
+  StatusCodes
+}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.StreamConverters
@@ -65,35 +70,39 @@ class LargeResponsesTest
               val expectedByteArray = randomBytes(maxBytes + 10)
               val prefix = randomAlphanumeric
 
-              withLargeResponderResult(bucket, maxBytes, expectedByteArray, prefix) {
-                response: HttpResponse =>
-                  response.status shouldBe StatusCodes.TemporaryRedirect
+              withLargeResponderResult(
+                bucket,
+                maxBytes,
+                expectedByteArray,
+                prefix
+              ) { response: HttpResponse =>
+                response.status shouldBe StatusCodes.TemporaryRedirect
 
-                  val redirectLocation = response.header[Location].get
+                val redirectLocation = response.header[Location].get
 
-                  val madeRequest = Http()
-                    .singleRequest(HttpRequest(uri = redirectLocation.uri))
+                val madeRequest = Http()
+                  .singleRequest(HttpRequest(uri = redirectLocation.uri))
 
-                  val madeRequestResult: HttpResponse =
-                    Await.result(madeRequest, 10.seconds)
+                val madeRequestResult: HttpResponse =
+                  Await.result(madeRequest, 10.seconds)
 
-                  madeRequestResult.status shouldBe StatusCodes.OK
-                  val inputStream = madeRequestResult.entity
-                    .getDataBytes()
-                    .runWith(converter, mat)
+                madeRequestResult.status shouldBe StatusCodes.OK
+                val inputStream = madeRequestResult.entity
+                  .getDataBytes()
+                  .runWith(converter, mat)
 
-                  val actualByteArray = IOUtils.toByteArray(inputStream)
+                val actualByteArray = IOUtils.toByteArray(inputStream)
 
-                  actualByteArray shouldBe expectedByteArray
+                actualByteArray shouldBe expectedByteArray
 
-                  val keys = listKeysInBucket(bucket)
-                  keys should have length (1)
+                val keys = listKeysInBucket(bucket)
+                keys should have length (1)
 
-                  val keyParts = keys.head.split("/")
-                  keyParts should have length (2)
+                val keyParts = keys.head.split("/")
+                keyParts should have length (2)
 
-                  keyParts.head shouldBe prefix
-                  UUID.fromString(keyParts(1)) shouldBe a[UUID]
+                keyParts.head shouldBe prefix
+                UUID.fromString(keyParts(1)) shouldBe a[UUID]
               }
             }
           }
@@ -104,42 +113,46 @@ class LargeResponsesTest
         withLocalS3Bucket { bucket =>
           withActorSystem { implicit actorSystem =>
             withMaterializer(actorSystem) { implicit mat =>
-
               val maxBytes = 100
               val expectedByteArray = randomBytes(maxBytes + 10)
               val header = ETag(randomAlphanumeric)
               val prefix = randomAlphanumeric
 
-              withLargeResponderResult(bucket, maxBytes, expectedByteArray, prefix, List(header)) {
-                response: HttpResponse =>
-                  response.status shouldBe StatusCodes.TemporaryRedirect
+              withLargeResponderResult(
+                bucket,
+                maxBytes,
+                expectedByteArray,
+                prefix,
+                List(header)
+              ) { response: HttpResponse =>
+                response.status shouldBe StatusCodes.TemporaryRedirect
 
-                  val redirectLocation = response.header[Location].get
+                val redirectLocation = response.header[Location].get
 
-                  val madeRequest = Http()
-                    .singleRequest(HttpRequest(uri = redirectLocation.uri))
+                val madeRequest = Http()
+                  .singleRequest(HttpRequest(uri = redirectLocation.uri))
 
-                  val madeRequestResult: HttpResponse =
-                    Await.result(madeRequest, 10.seconds)
+                val madeRequestResult: HttpResponse =
+                  Await.result(madeRequest, 10.seconds)
 
-                  madeRequestResult.status shouldBe StatusCodes.OK
-                  val inputStream = madeRequestResult.entity
-                    .getDataBytes()
-                    .runWith(converter, mat)
+                madeRequestResult.status shouldBe StatusCodes.OK
+                val inputStream = madeRequestResult.entity
+                  .getDataBytes()
+                  .runWith(converter, mat)
 
-                  val actualByteArray = IOUtils.toByteArray(inputStream)
+                val actualByteArray = IOUtils.toByteArray(inputStream)
 
-                  actualByteArray shouldBe expectedByteArray
+                actualByteArray shouldBe expectedByteArray
 
-                  val keys = listKeysInBucket(bucket)
+                val keys = listKeysInBucket(bucket)
 
-                  keys should have length (1)
+                keys should have length (1)
 
-                  val keyParts = keys.head.split("/")
-                  keyParts should have length (2)
+                val keyParts = keys.head.split("/")
+                keyParts should have length (2)
 
-                  keyParts.head shouldBe prefix
-                  keyParts.tail.head shouldBe header.value().replace("\"","")
+                keyParts.head shouldBe prefix
+                keyParts.tail.head shouldBe header.value().replace("\"", "")
               }
             }
           }
