@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.storage.bags.api
 import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.ETag
 import io.circe.optics.JsonPath._
 import io.circe.parser._
 import org.scalatest.concurrent.IntegrationPatience
@@ -69,6 +70,11 @@ class BagsApiFeatureTest
               assertJsonStringsAreEqual(actualJson, expectedJson)
             }
 
+            val header: ETag = response.header[ETag].get
+            val etagValue = header.etag.value.replace("\"", "")
+
+            etagValue shouldBe storageManifest.idWithVersion
+
             assertMetricSent(
               metrics,
               result = HttpMetricResults.Success
@@ -127,6 +133,11 @@ class BagsApiFeatureTest
               withStringEntity(response.entity) { actualJson =>
                 assertJsonStringsAreEqual(actualJson, expectedJson)
               }
+
+              val header: ETag = response.header[ETag].get
+              val etagValue = header.etag.value.replace("\"", "")
+
+              etagValue shouldBe storageManifest.idWithVersion
 
               assertMetricSent(
                 metrics,
@@ -289,7 +300,9 @@ class BagsApiFeatureTest
     it("finds a single version of a storage manifest") {
       val storageManifest = createStorageManifest
 
-      withConfiguredApp(initialManifests = Seq(storageManifest)) {
+      val initialManifests = Seq(storageManifest)
+
+      withConfiguredApp(initialManifests) {
         case (_, metrics, baseUrl) =>
           val expectedJson =
             s"""
@@ -318,6 +331,14 @@ class BagsApiFeatureTest
             withStringEntity(response.entity) { actualJson =>
               assertJsonStringsAreEqual(actualJson, expectedJson)
             }
+
+            val expectedEtagValue =
+              initialManifests.map(_.idWithVersion).mkString("&")
+
+            val header: ETag = response.header[ETag].get
+            val etagValue = header.etag.value.replace("\"", "")
+
+            etagValue shouldBe expectedEtagValue
 
             assertMetricSent(
               metrics,
@@ -402,6 +423,15 @@ class BagsApiFeatureTest
             withStringEntity(response.entity) { actualJson =>
               assertJsonStringsAreEqual(actualJson, expectedJson)
             }
+
+            val expectedEtagValue = initialManifests.reverse
+              .map(_.idWithVersion)
+              .mkString("&")
+
+            val header: ETag = response.header[ETag].get
+            val etagValue = header.etag.value.replace("\"", "")
+
+            etagValue shouldBe expectedEtagValue
 
             assertMetricSent(
               metrics,
