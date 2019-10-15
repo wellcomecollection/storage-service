@@ -1,10 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.storage
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.headers.Location
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives.{complete, get}
+import akka.http.scaladsl.model.headers.{ETag, Location}
+import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, StatusCodes}
+import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.StreamConverters
 import org.apache.commons.io.IOUtils
@@ -30,7 +32,6 @@ class LargeResponsesTest
   private val converter = StreamConverters.asInputStream()
 
   describe("LargeResponsesTest") {
-
     it("does not redirect a < max-length response") {
       withLocalS3Bucket { bucket =>
         withActorSystem { implicit actorSystem =>
@@ -55,33 +56,91 @@ class LargeResponsesTest
       }
     }
 
-    it("redirects a > max-length response") {
-      withLocalS3Bucket { bucket =>
-        withActorSystem { implicit actorSystem =>
-          withMaterializer(actorSystem) { implicit mat =>
-            val maxBytes = 100
-            val expectedByteArray = randomBytes(maxBytes + 10)
+    describe("redirects a > max-length response") {
+      it("without Etag") {
+        withLocalS3Bucket { bucket =>
+          withActorSystem { implicit actorSystem =>
+            withMaterializer(actorSystem) { implicit mat =>
+              val maxBytes = 100
+              val expectedByteArray = randomBytes(maxBytes + 10)
+              val prefix = randomAlphanumeric
 
-            withLargeResponderResult(bucket, maxBytes, expectedByteArray) {
-              response: HttpResponse =>
-                response.status shouldBe StatusCodes.TemporaryRedirect
+              withLargeResponderResult(bucket, maxBytes, expectedByteArray, prefix) {
+                response: HttpResponse =>
+                  response.status shouldBe StatusCodes.TemporaryRedirect
 
-                val redirectLocation = response.header[Location].get
+                  val redirectLocation = response.header[Location].get
 
-                val madeRequest = Http()
-                  .singleRequest(HttpRequest(uri = redirectLocation.uri))
+                  val madeRequest = Http()
+                    .singleRequest(HttpRequest(uri = redirectLocation.uri))
 
-                val madeRequestResult: HttpResponse =
-                  Await.result(madeRequest, 10.seconds)
+                  val madeRequestResult: HttpResponse =
+                    Await.result(madeRequest, 10.seconds)
 
-                madeRequestResult.status shouldBe StatusCodes.OK
-                val inputStream = madeRequestResult.entity
-                  .getDataBytes()
-                  .runWith(converter, mat)
+                  madeRequestResult.status shouldBe StatusCodes.OK
+                  val inputStream = madeRequestResult.entity
+                    .getDataBytes()
+                    .runWith(converter, mat)
 
-                val actualByteArray = IOUtils.toByteArray(inputStream)
+                  val actualByteArray = IOUtils.toByteArray(inputStream)
 
-                actualByteArray shouldBe expectedByteArray
+                  actualByteArray shouldBe expectedByteArray
+
+                  val keys = listKeysInBucket(bucket)
+                  keys should have length (1)
+
+                  val keyParts = keys.head.split("/")
+                  keyParts should have length (2)
+
+                  keyParts.head shouldBe prefix
+                  UUID.fromString(keyParts(1)) shouldBe a[UUID]
+              }
+            }
+          }
+        }
+      }
+
+      it("with Etag") {
+        withLocalS3Bucket { bucket =>
+          withActorSystem { implicit actorSystem =>
+            withMaterializer(actorSystem) { implicit mat =>
+
+              val maxBytes = 100
+              val expectedByteArray = randomBytes(maxBytes + 10)
+              val header = ETag(randomAlphanumeric)
+              val prefix = randomAlphanumeric
+
+              withLargeResponderResult(bucket, maxBytes, expectedByteArray, prefix, List(header)) {
+                response: HttpResponse =>
+                  response.status shouldBe StatusCodes.TemporaryRedirect
+
+                  val redirectLocation = response.header[Location].get
+
+                  val madeRequest = Http()
+                    .singleRequest(HttpRequest(uri = redirectLocation.uri))
+
+                  val madeRequestResult: HttpResponse =
+                    Await.result(madeRequest, 10.seconds)
+
+                  madeRequestResult.status shouldBe StatusCodes.OK
+                  val inputStream = madeRequestResult.entity
+                    .getDataBytes()
+                    .runWith(converter, mat)
+
+                  val actualByteArray = IOUtils.toByteArray(inputStream)
+
+                  actualByteArray shouldBe expectedByteArray
+
+                  val keys = listKeysInBucket(bucket)
+
+                  keys should have length (1)
+
+                  val keyParts = keys.head.split("/")
+                  keyParts should have length (2)
+
+                  keyParts.head shouldBe prefix
+                  keyParts.tail.head shouldBe header.value().replace("\"","")
+              }
             }
           }
         }
@@ -92,16 +151,22 @@ class LargeResponsesTest
   private def withLargeResponderResult[R](
     bucket: Bucket,
     maxBytes: Int,
-    testBytes: Array[Byte]
+    testBytes: Array[Byte],
+    prefix: String = randomAlphanumeric,
+    headers: List[HttpHeader] = Nil
   )(testWith: TestWith[HttpResponse, R])(
     implicit mat: ActorMaterializer,
     as: ActorSystem
   ) = {
 
+    val port = 8080
+    val interface = "127.0.0.1"
+
     val uploader = new S3Uploader()
 
     val objectLocationPrefix =
-      ObjectLocationPrefix(bucket.name, randomAlphanumeric)
+      ObjectLocationPrefix(bucket.name, prefix)
+
     val duration = 30 seconds
 
     val largeResponder = new LargeResponses {
@@ -113,16 +178,20 @@ class LargeResponsesTest
     }
 
     val routes = largeResponder.wrapLargeResponses(get {
-      complete(testBytes)
+      respondWithHeaders(headers) {
+        complete(testBytes)
+      }
     })
 
     val binding: Future[Http.ServerBinding] =
-      Http().bindAndHandle(routes, "127.0.0.1", 8080)
+      Http().bindAndHandle(routes, interface, port)
 
-    val madeRequest = Http()
-      .singleRequest(HttpRequest(uri = "http://127.0.0.1:8080"))
+    val madeRequest = Http().singleRequest(
+      HttpRequest(uri = s"http://$interface:$port")
+    )
 
-    val madeRequestResult: HttpResponse = Await.result(madeRequest, 1.seconds)
+    val madeRequestResult: HttpResponse =
+      Await.result(madeRequest, 1.seconds)
 
     val result = testWith(madeRequestResult)
 
