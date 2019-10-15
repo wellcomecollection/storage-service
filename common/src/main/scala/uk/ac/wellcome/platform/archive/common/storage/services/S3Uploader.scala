@@ -30,7 +30,7 @@ class S3Uploader(implicit s3Client: AmazonS3) {
                                   location: ObjectLocation,
                                   content: InputStreamWithLengthAndMetadata,
                                   expiryLength: Duration,
-                                  checkExists: Boolean = false
+                                  checkExists: Boolean
                                 ): Either[StorageError, URL] =
     for {
       exists <- location.exists
@@ -47,7 +47,8 @@ class S3Uploader(implicit s3Client: AmazonS3) {
   def uploadAndGetURL(
     location: ObjectLocation,
     content: String,
-    expiryLength: Duration
+    expiryLength: Duration,
+    checkExists: Boolean = false
   ): Either[StorageError, URL] =
     for {
       inputStream <- stringCodec.toStream(content)
@@ -55,7 +56,8 @@ class S3Uploader(implicit s3Client: AmazonS3) {
         location = location,
         content =
           InputStreamWithLengthAndMetadata(inputStream, metadata = Map.empty),
-        expiryLength = expiryLength
+        expiryLength = expiryLength,
+        checkExists = checkExists
       )
     } yield result
 
