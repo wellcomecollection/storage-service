@@ -121,12 +121,10 @@ trait BagsApiFixture
   def withBrokenApp[R](
     testWith: TestWith[(MemoryMetrics[Unit], String), R]
   ): R = {
-    val versionedStore = MemoryVersionedStore[
-      BagId,
-      HybridStoreEntry[
-        StorageManifest,
-        EmptyMetadata
-      ]](
+    val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[
+      StorageManifest,
+      EmptyMetadata
+    ]](
       initialEntries = Map.empty
     )
 

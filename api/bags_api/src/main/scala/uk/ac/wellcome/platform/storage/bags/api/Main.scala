@@ -8,8 +8,14 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders._
-import uk.ac.wellcome.platform.archive.common.http.{HttpMetrics, WellcomeHttpApp}
-import uk.ac.wellcome.platform.archive.common.storage.services.{S3Uploader, StorageManifestDao}
+import uk.ac.wellcome.platform.archive.common.http.{
+  HttpMetrics,
+  WellcomeHttpApp
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  S3Uploader,
+  StorageManifestDao
+}
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp

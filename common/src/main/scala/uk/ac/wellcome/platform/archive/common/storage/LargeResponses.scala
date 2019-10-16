@@ -41,7 +41,8 @@ trait LargeResponses extends Logging {
           .getOrElse(UUID.randomUUID().toString)
 
         debug(
-          msg = s"Attempting to return large object ($length > $maximumResponseByteLength): assigning key $storageKey"
+          msg =
+            s"Attempting to return large object ($length > $maximumResponseByteLength): assigning key $storageKey"
         )
 
         val objectLocation = prefix.asLocation(storageKey)

@@ -10,7 +10,11 @@ import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, BagInfoGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  BagInfoGenerators,
+  StorageManifestGenerators
+}
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
@@ -84,7 +88,8 @@ class BagsApiFeatureTest
     }
 
     it(
-      "redirects to a stored response if that response is greater than the max allowable length") {
+      "redirects to a stored response if that response is greater than the max allowable length"
+    ) {
       // This is not an exact mechanism!
       // We can experiment to identify a size which exceeds the maxResponseByteLength
       val storageManifest = createStorageManifestWithFileCount(fileCount = 100)
@@ -110,12 +115,14 @@ class BagsApiFeatureTest
                            |  "info": ${bagInfo(storageManifest.info)},
                            |  "manifest": ${manifest(storageManifest.manifest)},
                            |  "tagManifest": ${manifest(
-                   storageManifest.tagManifest)},
+                   storageManifest.tagManifest
+                 )},
                            |  "location": ${location(storageManifest.location)},
                            |  "replicaLocations": [
                            |    ${asList(
                    storageManifest.replicaLocations,
-                   location)}
+                   location
+                 )}
                            |  ],
                            |  "createdDate": "${DateTimeFormatter.ISO_INSTANT
                    .format(
