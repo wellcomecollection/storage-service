@@ -84,19 +84,26 @@ def run_check(status_updater, storage_client, row):
         #   B1234.xml
         #   b1234X.xml
         #
+        # But we don't always want to lowercase!  e.g.
+        #
+        #   PP_CRI_E_1_16_8_0100.xml
+        #
         bag_name = os.path.basename(bag_alto["name"])
-        s3_name = os.path.basename(s3_alto["Key"]).lower()
+        s3_name = os.path.basename(s3_alto["Key"])
 
-        if bag_name != s3_name:
+        if (
+            bag_name != s3_name and
+            bag_name != s3_name.lower()
+        ):
             print(
-                f"{bnumber}: ALTO filenames don't match! {os.path.basename(bag_alto['name'])} != {os.path.basename(s3_alto['Key'])}"
+                f"{bnumber}: ALTO filenames don't match! {bag_name} != {s3_name}"
             )
             has_differences = True
             continue
 
         if bag_alto["size"] != s3_alto["Size"]:
             print(
-                f"{bnumber}: ALTO sizes don't match! {os.path.basename(bag_alto['name'])}: {bag_alto['size']} != {s3_alto['Size']}"
+                f"{bnumber}: ALTO sizes don't match! {bag_name}: {bag_alto['size']} != {s3_alto['Size']}"
             )
             has_differences = True
             continue
