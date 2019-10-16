@@ -332,11 +332,7 @@ class BagsApiFeatureTest
               assertJsonStringsAreEqual(actualJson, expectedJson)
             }
 
-            val expectedEtagValue =
-              initialManifests
-                .sortBy(_.idWithVersion)
-                .map(_.idWithVersion)
-                .mkString("&")
+            val expectedEtagValue = s"${storageManifest.space}/${storageManifest.info.externalIdentifier}/${storageManifest.version}"
 
             val header: ETag = response.header[ETag].get
             val etagValue = header.etag.value.replace("\"", "")
@@ -427,10 +423,13 @@ class BagsApiFeatureTest
               assertJsonStringsAreEqual(actualJson, expectedJson)
             }
 
-            val expectedEtagValue = initialManifests
-              .sortBy(_.idWithVersion)
-              .map(_.idWithVersion)
-              .mkString("&")
+            val expectedEtagValue = List(
+              s"${initialManifests(0).space}/${initialManifests(0).info.externalIdentifier}/${initialManifests(0).version}",
+              s"${initialManifests(1).space}/${initialManifests(1).info.externalIdentifier}/${initialManifests(1).version}",
+              s"${initialManifests(2).space}/${initialManifests(2).info.externalIdentifier}/${initialManifests(2).version}",
+              s"${initialManifests(3).space}/${initialManifests(3).info.externalIdentifier}/${initialManifests(3).version}",
+              s"${initialManifests(4).space}/${initialManifests(4).info.externalIdentifier}/${initialManifests(4).version}",
+            ).mkString("&")
 
             val header: ETag = response.header[ETag].get
             val etagValue = header.etag.value.replace("\"", "")

@@ -132,7 +132,12 @@ trait BagsApi extends LargeResponses with Logging {
             )
 
           case Right(manifests) =>
-            val etagValue = manifests.map(_.idWithVersion).mkString("&")
+
+            val etagValue = manifests
+              .sortBy(_.idWithVersion)
+              .map(_.idWithVersion)
+              .mkString("&")
+
             val etag = ETag(etagValue)
 
             respondWithHeaders(etag) {
