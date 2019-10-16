@@ -37,22 +37,39 @@ class S3ObjectExistsTest
       }
     }
 
-    describe("when an object does not exist in S3") {
-      it("returns false") {
+    describe("when an object is not in S3") {
+      it("with a valid existing bucket but no key") {
         withLocalS3Bucket { bucket =>
           val objectLocation = ObjectLocation(bucket.name, randomAlphanumeric)
 
           objectLocation.exists.right.value shouldBe false
         }
       }
+
+      it("with a valid but NOT existing bucket AND no key") {
+        val objectLocation =
+          ObjectLocation(createBucketName, randomAlphanumeric)
+
+        objectLocation.exists.right.value shouldBe false
+      }
     }
 
     describe("when there is an error retrieving from S3") {
-      it("returns a StorageError") {
+      it("with an invalid bucket name") {
         val objectLocation =
-          ObjectLocation(randomAlphanumeric, randomAlphanumeric)
-
+          ObjectLocation(createInvalidBucketName, randomAlphanumeric)
+        
         objectLocation.exists.left.value shouldBe a[StorageError]
+      }
+
+      it("with a broken s3 client") {
+        val objectLocation =
+          ObjectLocation(createInvalidBucketName, randomAlphanumeric)
+
+        val existsCheck = new S3ObjectExists
+          .S3ObjectExistsImplicit(objectLocation)(brokenS3Client).exists
+
+        existsCheck.left.value shouldBe a[StorageError]
       }
     }
   }
