@@ -25,6 +25,8 @@ class S3Uploader(implicit s3Client: AmazonS3) {
 
   private val s3StreamStore: S3StreamStore = new S3StreamStore()
 
+  // NOTE: checkExists will allow overwriting of existing content if set to false
+  // overwriting existing content will change what previously generated URLs return
   def uploadAndGetURL(
     location: ObjectLocation,
     content: InputStreamWithLengthAndMetadata,

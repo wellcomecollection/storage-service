@@ -58,7 +58,7 @@ class S3ObjectExistsTest
       it("with an invalid bucket name") {
         val objectLocation =
           ObjectLocation(createInvalidBucketName, randomAlphanumeric)
-        
+
         objectLocation.exists.left.value shouldBe a[StorageError]
       }
 
