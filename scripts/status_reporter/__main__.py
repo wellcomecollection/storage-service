@@ -150,13 +150,6 @@ def main():
     dds_item_query_url = defaults["goobi_call_url"]
     storage_api_url = defaults["storage_api_url"]
 
-    _dds_client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)
-    _library_iiif = library_iiif.LibraryIIIF()
-    _id_mapper = id_mapper.IDMapper()
-    _iiif_diff = iiif_diff.IIIFDiff(_library_iiif, _id_mapper)
-    _storage_client = helpers.create_storage_client(storage_api_url)
-    _matcher = matcher.Matcher(_iiif_diff, _storage_client)
-
     if args.subcommand_name == "run_all":
         modules = sorted([name for name in CHECK_MODULES])
 
@@ -223,6 +216,7 @@ def main():
 
         print(f"Calling DDS Client for ingest of {bnumber}")
 
+        _dds_client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)
         results = [_dds_client.ingest(bnum) for bnum in bnumbers]
 
         _print_as_json(results)
@@ -235,6 +229,7 @@ def main():
 
         print(f"Calling DDS Client for status of {bnumber}")
 
+        _dds_client = dds_client.DDSClient(dds_start_ingest_url, dds_item_query_url)
         results = [_dds_client.status(bnumber) for bnumber in bnumbers]
 
         _print_as_json(results)
@@ -247,6 +242,9 @@ def main():
 
         print(f"Comparing Production and UAT manifests for {bnumber}")
 
+        _library_iiif = library_iiif.LibraryIIIF()
+        _id_mapper = id_mapper.IDMapper()
+        _iiif_diff = iiif_diff.IIIFDiff(_library_iiif, _id_mapper)
         results = [_iiif_diff.fetch_and_diff(bnumber) for bnumber in bnumbers]
 
         _print_as_json(results)
@@ -259,6 +257,11 @@ def main():
 
         print(f"Comparing files for {bnumber}")
 
+        _library_iiif = library_iiif.LibraryIIIF()
+        _id_mapper = id_mapper.IDMapper()
+        _iiif_diff = iiif_diff.IIIFDiff(_library_iiif, _id_mapper)
+        _storage_client = helpers.create_storage_client(storage_api_url)
+        _matcher = matcher.Matcher(_iiif_diff, _storage_client)
         results = [_matcher.match(bnumber) for bnumber in bnumbers]
 
         _print_as_json(results)
