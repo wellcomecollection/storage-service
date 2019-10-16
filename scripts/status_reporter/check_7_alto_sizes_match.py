@@ -72,9 +72,18 @@ def run_check(status_updater, storage_client, row):
 
     has_differences = False
 
-    has_differences = False
+    def _sort(f):
+        # ALTO files are numbered b1234_001.xml, b1234_002.xml.
+        #
+        # We need to sort them correctly even if the prefix is borked, e.g.
+        # B1234_005.xml, b1234_001.xml.
+        #
+        return f.split("_")[-1]
 
-    for bag_alto, s3_alto in zip(alto_files_in_bag, alto_files_in_s3):
+    for bag_alto, s3_alto in zip(
+        sorted(alto_files_in_bag, key=lambda f: _sort(f["name"])),
+        sorted(alto_files_in_s3, key=lambda f: _sort(f["Key"]))
+    ):
         # We need to account for the fact that the ALTO files in S3 might have
         # different capitalisations, e.g.
         #
