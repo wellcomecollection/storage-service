@@ -4,9 +4,6 @@ import functools
 import json
 import os
 
-import hyperlink
-import requests
-
 import aws_client
 import check_names
 import dynamo_status_manager
