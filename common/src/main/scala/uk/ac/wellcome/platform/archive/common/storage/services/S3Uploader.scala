@@ -9,12 +9,7 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
-import uk.ac.wellcome.storage.{
-  ObjectLocation,
-  ReadError,
-  StorageError,
-  StoreReadError
-}
+import uk.ac.wellcome.storage._
 
 import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try}
@@ -26,22 +21,35 @@ import scala.util.{Failure, Success, Try}
   * https://docs.aws.amazon.com/AmazonS3/latest/dev/ShareObjectPreSignedURLJavaSDK.html
   */
 class S3Uploader(implicit s3Client: AmazonS3) {
+  import S3ObjectExists._
+
   private val s3StreamStore: S3StreamStore = new S3StreamStore()
 
+  // NOTE: checkExists will allow overwriting of existing content if set to false
+  // overwriting existing content will change what previously generated URLs return
   def uploadAndGetURL(
     location: ObjectLocation,
     content: InputStreamWithLengthAndMetadata,
-    expiryLength: Duration
+    expiryLength: Duration,
+    checkExists: Boolean
   ): Either[StorageError, URL] =
     for {
-      _ <- s3StreamStore.put(location)(content)
+      exists <- location.exists
+
+      _ <- if (!exists || !checkExists) {
+        s3StreamStore.put(location)(content)
+      } else {
+        Right(Identified(location, content))
+      }
+
       url <- getPresignedGetURL(location, expiryLength)
     } yield url
 
   def uploadAndGetURL(
     location: ObjectLocation,
     content: String,
-    expiryLength: Duration
+    expiryLength: Duration,
+    checkExists: Boolean = false
   ): Either[StorageError, URL] =
     for {
       inputStream <- stringCodec.toStream(content)
@@ -49,7 +57,8 @@ class S3Uploader(implicit s3Client: AmazonS3) {
         location = location,
         content =
           InputStreamWithLengthAndMetadata(inputStream, metadata = Map.empty),
-        expiryLength = expiryLength
+        expiryLength = expiryLength,
+        checkExists = checkExists
       )
     } yield result
 
