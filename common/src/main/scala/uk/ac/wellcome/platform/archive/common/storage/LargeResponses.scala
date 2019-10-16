@@ -35,11 +35,15 @@ trait LargeResponses extends Logging {
   private def storeAndRedirect(response: HttpResponse): HttpResponse = {
     response.entity.contentLengthOption match {
       case Some(length) if length > maximumResponseByteLength => {
-
         val storageKey = response
           .header[ETag]
           .map(_.value.replace("\"", ""))
           .getOrElse(UUID.randomUUID().toString)
+
+        debug(
+          msg =
+            s"Attempting to return large object ($length > $maximumResponseByteLength): assigning key $storageKey"
+        )
 
         val objectLocation = prefix.asLocation(storageKey)
 
@@ -56,7 +60,8 @@ trait LargeResponses extends Logging {
         val uploaded = s3Uploader.uploadAndGetURL(
           location = objectLocation,
           content = content,
-          expiryLength = cacheDuration
+          expiryLength = cacheDuration,
+          checkExists = true
         )
 
         uploaded match {

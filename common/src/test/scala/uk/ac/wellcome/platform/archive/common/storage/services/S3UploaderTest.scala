@@ -35,6 +35,107 @@ class S3UploaderTest
     }
   }
 
+  it("will not update an existing stored object if instructed so") {
+    val content = randomAlphanumeric
+
+    withLocalS3Bucket { bucket =>
+      val objectLocation = createObjectLocationWith(bucket)
+
+      val url = uploader
+        .uploadAndGetURL(
+          location = objectLocation,
+          content = content,
+          expiryLength = 5.minutes
+        )
+        .right
+        .value
+
+      val lastModified = s3Client
+        .getObjectMetadata(
+          objectLocation.namespace,
+          objectLocation.path
+        )
+        .getLastModified()
+
+      getUrl(url) shouldBe content
+
+      Thread.sleep(1500)
+
+      val newUrl = uploader
+        .uploadAndGetURL(
+          location = objectLocation,
+          content = content,
+          expiryLength = 5.minutes,
+          checkExists = true
+        )
+        .right
+        .value
+
+      val newLastModified = s3Client
+        .getObjectMetadata(
+          objectLocation.namespace,
+          objectLocation.path
+        )
+        .getLastModified()
+
+      newUrl shouldNot equal(url)
+      lastModified shouldBe newLastModified
+
+      getUrl(newUrl) shouldBe content
+    }
+  }
+
+  it("will update an existing stored object if instructed so") {
+    val content = randomAlphanumeric
+
+    withLocalS3Bucket { bucket =>
+      val objectLocation = createObjectLocationWith(bucket)
+
+      val url = uploader
+        .uploadAndGetURL(
+          location = objectLocation,
+          content = content,
+          expiryLength = 5.minutes
+        )
+        .right
+        .value
+
+      val lastModified = s3Client
+        .getObjectMetadata(
+          objectLocation.namespace,
+          objectLocation.path
+        )
+        .getLastModified()
+
+      getUrl(url) shouldBe content
+
+      Thread.sleep(1500)
+
+      val newUrl = uploader
+        .uploadAndGetURL(
+          location = objectLocation,
+          content = content,
+          expiryLength = 5.minutes
+        )
+        .right
+        .value
+
+      val newLastModified = s3Client
+        .getObjectMetadata(
+          objectLocation.namespace,
+          objectLocation.path
+        )
+        .getLastModified()
+
+      newUrl shouldNot equal(url)
+
+      lastModified shouldNot equal(newLastModified)
+      newLastModified.after(lastModified) shouldBe true
+
+      getUrl(newUrl) shouldBe content
+    }
+  }
+
   it("expires the URL after the given duration") {
     val content = randomAlphanumeric
 
