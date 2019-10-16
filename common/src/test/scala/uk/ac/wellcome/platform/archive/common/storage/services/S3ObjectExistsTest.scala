@@ -66,8 +66,9 @@ class S3ObjectExistsTest
         val objectLocation =
           ObjectLocation(createInvalidBucketName, randomAlphanumeric)
 
-        val existsCheck = new S3ObjectExists
-          .S3ObjectExistsImplicit(objectLocation)(brokenS3Client).exists
+        val existsCheck = new S3ObjectExists.S3ObjectExistsImplicit(
+          objectLocation
+        )(brokenS3Client).exists
 
         existsCheck.left.value shouldBe a[StorageError]
       }
