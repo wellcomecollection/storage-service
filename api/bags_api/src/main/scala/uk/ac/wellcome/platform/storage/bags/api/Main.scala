@@ -19,6 +19,10 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 object Main extends WellcomeTypesafeApp {
+  val defaultCacheDuration = 1 days
+  // 9MB = 1048576 Bytes * 9
+  val defaultMaxByteLength = 1048576 * 9
+
   runWithConfig { config: Config =>
     implicit val asMain: ActorSystem =
       AkkaBuilder.buildActorSystem()
@@ -46,10 +50,6 @@ object Main extends WellcomeTypesafeApp {
       s3Config.bucketName,
       "responses"
     )
-
-    val defaultCacheDuration = 30 days
-    // 9MB = 1048576 Bytes * 9
-    val defaultMaxByteLength = 1048576 * 9
 
     val router: BagsApi = new BagsApi {
       override implicit val ec: ExecutionContext = ecMain

@@ -9,27 +9,14 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagId,
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.http.models.{
-  InternalServerErrorResponse,
-  UserErrorResponse
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageManifest,
-  StorageSpace
-}
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.storage.bags.api.models.{
-  DisplayResultList,
-  ResponseDisplayBag,
-  ResultListEntry
-}
-import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
 import uk.ac.wellcome.platform.archive.common.storage.LargeResponses
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
+import uk.ac.wellcome.platform.storage.bags.api.models.{DisplayResultList, ResponseDisplayBag, ResultListEntry}
+import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
+
 import scala.concurrent.ExecutionContext
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
@@ -39,7 +26,6 @@ trait BagsApi extends LargeResponses with Logging {
   import akka.http.scaladsl.server.Directives._
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 
-
   implicit val printer: Printer =
     Printer.noSpaces.copy(dropNullValues = true)
 
@@ -47,8 +33,6 @@ trait BagsApi extends LargeResponses with Logging {
 
   val contextURL: URL
   val storageManifestDao: StorageManifestDao
-
-  val bags = wrapLargeResponses(routes)
 
   private val routes: Route = pathPrefix("bags") {
     path(Segment / Segment) { (space, externalIdentifier) =>
@@ -132,24 +116,14 @@ trait BagsApi extends LargeResponses with Logging {
             )
 
           case Right(manifests) =>
-
-            val etagValue = manifests
-              .sortBy(_.idWithVersion)
-              .map(_.idWithVersion)
-              .mkString("&")
-
-            val etag = ETag(etagValue)
-
-            respondWithHeaders(etag) {
-              complete(
-                DisplayResultList(
-                  context = contextURL.toString,
-                  results = manifests.map {
-                    ResultListEntry(_)
-                  }
-                )
+            complete(
+              DisplayResultList(
+                context = contextURL.toString,
+                results = manifests.map {
+                  ResultListEntry(_)
+                }
               )
-            }
+            )
 
           case Left(err) =>
             error(s"Error while trying to look up versions of $bagId", err.e)
@@ -217,4 +191,6 @@ trait BagsApi extends LargeResponses with Logging {
 
       case None => Success(None)
     }
+
+  val bags = wrapLargeResponses(routes)
 }
