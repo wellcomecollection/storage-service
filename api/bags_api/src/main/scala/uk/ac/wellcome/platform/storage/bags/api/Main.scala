@@ -20,6 +20,8 @@ import scala.concurrent.duration._
 
 object Main extends WellcomeTypesafeApp {
   val defaultCacheDuration = 1 days
+  // The size here is dictated by the AWS API Gateway limits:
+  // https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html
   // 9MB = 1048576 Bytes * 9
   val defaultMaxByteLength = 1048576 * 9
 
