@@ -67,6 +67,7 @@ def run_check(status_updater, status_summary):
         if dds_sync_is_older_than_storage_manifest(
             dds_sync_last_modified, status_summary
         ):
+            print("DDS sync is older than storage manifest, needs re-ingesting")
             result = False
         else:
             result = True
