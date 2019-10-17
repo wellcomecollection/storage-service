@@ -20,6 +20,7 @@ s3 = boto3.resource("s3").meta.client
 
 dynamodb = boto3.resource("dynamodb").meta.client
 
+
 def delete_s3_object(bucket, key):
     logger.debug("Deleting s3://%s/%s" % (bucket, key))
     s3.delete_object(Bucket=bucket, Key=key)

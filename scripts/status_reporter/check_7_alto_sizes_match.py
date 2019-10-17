@@ -90,7 +90,7 @@ def run_check(status_updater, storage_client, row):
     # pprint(alto_files_in_s3)
 
     if False:
-    # if False or len(alto_files_in_bag) != len(alto_files_in_s3) or False:
+        # if False or len(alto_files_in_bag) != len(alto_files_in_s3) or False:
         print(
             f"Different counts: bag has {len(alto_files_in_bag)} ALTO files, S3 has {len(alto_files_in_s3)}"
         )
@@ -98,7 +98,7 @@ def run_check(status_updater, storage_client, row):
     else:
         for bag_alto, s3_alto in zip(
             sorted(alto_files_in_bag, key=lambda f: _sort(f["name"])),
-            sorted(alto_files_in_s3, key=lambda f: _sort(f["Key"]))
+            sorted(alto_files_in_s3, key=lambda f: _sort(f["Key"])),
         ):
             # We need to account for the fact that the ALTO files in S3 might have
             # different capitalisations, e.g.
@@ -113,13 +113,8 @@ def run_check(status_updater, storage_client, row):
             bag_name = os.path.basename(bag_alto["name"])
             s3_name = os.path.basename(s3_alto["Key"])
 
-            if (
-                bag_name != s3_name and
-                bag_name != s3_name.lower()
-            ):
-                print(
-                    f"{bnumber}: ALTO filenames don't match! {bag_name} != {s3_name}"
-                )
+            if bag_name != s3_name and bag_name != s3_name.lower():
+                print(f"{bnumber}: ALTO filenames don't match! {bag_name} != {s3_name}")
                 has_differences = True
                 continue
 

@@ -18,11 +18,13 @@ def main():
     while True:
         # messages = aws.get_bagging_messages()
 
-        process_message({
-            "identifier": "b16653853",
-            "bagger_filter": "b16653853",
-            "bagger_batch_id": "b16653853",
-        })
+        process_message(
+            {
+                "identifier": "b16653853",
+                "bagger_filter": "b16653853",
+                "bagger_batch_id": "b16653853",
+            }
+        )
 
         break
 
