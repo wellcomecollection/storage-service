@@ -16,25 +16,34 @@ import status_table
 
 def main():
     while True:
-        messages = aws.get_bagging_messages()
-        for message in messages:
-            if message is not None:
-                try:
-                    body = json.loads(message.body)
-                    bnumber = body["identifier"]
-                    status_table.record_data(
-                        bnumber,
-                        {
-                            "bagger_start": status_table.activity_timestamp(),
-                            "bagger_batch_id": body["bagger_batch_id"],
-                            "bagger_filter": body["bagger_filter"],
-                        },
-                    )
-                    message.delete()
-                    process_message(body)
-                    status_table.record_activity(bnumber, "bagger_end")
-                except Exception as e:
-                    print("Unhandled exception {0}".format(e))
+        # messages = aws.get_bagging_messages()
+
+        process_message({
+            "identifier": "b16653853",
+            "bagger_filter": "b16653853",
+            "bagger_batch_id": "b16653853",
+        })
+
+        break
+
+        # for message in messages:
+        #     if message is not None:
+        #         try:
+        #             body = json.loads(message.body)
+        #             bnumber = body["identifier"]
+        #             status_table.record_data(
+        #                 bnumber,
+        #                 {
+        #                     "bagger_start": status_table.activity_timestamp(),
+        #                     "bagger_batch_id": body["bagger_batch_id"],
+        #                     "bagger_filter": body["bagger_filter"],
+        #                 },
+        #             )
+        #             message.delete()
+        #             process_message(body)
+        #             status_table.record_activity(bnumber, "bagger_end")
+        #         except Exception as e:
+        #             print("Unhandled exception {0}".format(e))
 
 
 def process_message(message_body):

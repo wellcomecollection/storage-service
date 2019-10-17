@@ -32,28 +32,30 @@ if __name__ == "__main__":
 
     logger.debug("Creating ingest for file %s", filename)
 
-    s3 = get_read_only_aws_resource("s3")
+    # s3 = get_read_only_aws_resource("s3")
 
     buckets = {
         "prod": "wellcomecollection-storage-bagger-drop",
         "stage": "wellcomecollection-storage-staging-bagger-drop",
     }
 
-    for api_name, bucket_name in buckets.items():
-        try:
-            s3.Object(bucket_name, filename).load()
-        except ClientError as err:
-            if (
-                str(err)
-                == "An error occurred (404) when calling the HeadObject operation: Not Found"
-            ):
-                logger.debug("Didn't find object in bucket %s", bucket_name)
-                continue
-            else:
-                raise
-        else:
-            api = api_name
-            break
+    # for api_name, bucket_name in buckets.items():
+    #     try:
+    #         s3.Object(bucket_name, filename).load()
+    #     except ClientError as err:
+    #         if (
+    #             str(err)
+    #             == "An error occurred (404) when calling the HeadObject operation: Not Found"
+    #         ):
+    #             logger.debug("Didn't find object in bucket %s", bucket_name)
+    #             continue
+    #         else:
+    #             raise
+    #     else:
+    #         api = api_name
+    #         break
+
+    api = "prod"
 
     try:
         logger.info("Using %s API", api)

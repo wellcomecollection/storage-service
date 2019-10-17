@@ -13,15 +13,12 @@ from ss_get_ingest import lookup_ingest
 
 logger = get_logger(__name__)
 
+import boto3
 
-s3 = get_aws_resource(
-    "s3", role_arn="arn:aws:iam::975596993436:role/storage-developer"
-).meta.client
 
-dynamodb = get_aws_resource(
-    "dynamodb", role_arn="arn:aws:iam::975596993436:role/storage-developer"
-).meta.client
+s3 = boto3.resource("s3").meta.client
 
+dynamodb = boto3.resource("dynamodb").meta.client
 
 def delete_s3_object(bucket, key):
     logger.debug("Deleting s3://%s/%s" % (bucket, key))
