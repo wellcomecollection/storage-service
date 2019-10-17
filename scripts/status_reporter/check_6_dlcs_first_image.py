@@ -32,7 +32,7 @@ def dlcs_api_secret():
 def needs_check(status_summary):
     return helpers.needs_check(
         status_summary,
-        previous_check=check_names.IIIF_MANIFESTS_FILE_SIZES,
+        previous_check=check_names.IIIF_MANIFESTS_CONTENTS,
         current_check=check_names.DLCS_ORIGIN_MATCH,
         step_name="DLCS origins match",
     )
