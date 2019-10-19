@@ -55,13 +55,9 @@ def run_check(status_updater, storage_client, row):
 
     bag = storage_client.get_bag("digitised", bnumber)
 
-    from pprint import pprint
-
     alto_files_in_bag = [
         f for f in bag["manifest"]["files"] if f["name"].startswith("data/alto/")
     ]
-
-    pprint([f["name"] for f in bag["manifest"]["files"]])
 
     shard_path = "/".join(list(bnumber[-4:][::-1]))
     prefix = f"mets/{shard_path}/{bnumber}"
@@ -71,7 +67,7 @@ def run_check(status_updater, storage_client, row):
         for s3_obj in get_matching_s3_objects(
             bucket="wellcomecollection-assets-workingstorage", prefix=prefix
         )
-        if "alto/" in s3_obj["Key"]
+        if "alto/" in s3_obj["Key"] and s3_obj["Key"].endswith(".xml")
     ]
 
     has_differences = False
@@ -83,11 +79,6 @@ def run_check(status_updater, storage_client, row):
         # B1234_005.xml, b1234_001.xml.
         #
         return f.split("_")[-1]
-
-    from pprint import pprint
-
-    # pprint(alto_files_in_bag)
-    # pprint(alto_files_in_s3)
 
     if False:
         # if False or len(alto_files_in_bag) != len(alto_files_in_s3) or False:
