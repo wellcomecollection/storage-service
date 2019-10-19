@@ -110,7 +110,7 @@ class IIIFDiff:
             ):
                 del deep_diff["values_changed"][label]
 
-    def _diff_module_posterimages(self, bnumber, deep_diff):
+    def _diff_modulo_posterimages(self, bnumber, deep_diff):
         """
         Compare URLs of the form
 
@@ -148,7 +148,7 @@ class IIIFDiff:
             del deep_diff["values_changed"][label]
 
     @staticmethod
-    def _diff_module_placeholder_images(deep_diff):
+    def _diff_modulo_placeholder_images(deep_diff):
         """
         Straight-up bug in DDS:
 
@@ -161,6 +161,23 @@ class IIIFDiff:
                 diff["old_value"] == "https://wellcomelibrary.orgplaceholder.jpg"
                 and diff["new_value"]
                 == "https://library-uat.wellcomelibrary.orgplaceholder.jpg"
+            ):
+                del deep_diff["values_changed"][label]
+
+    @staticmethod
+    def _diff_modulo_placeholder_video_images(deep_diff):
+        """
+        Smilar to above:
+
+            https://library-uat.wellcomelibrary.org/posterimages/placeholders/videoplaceholder.png
+            https://wellcomelibrary.org/posterimages/videoplaceholder.png
+
+        """
+        for label, diff in list(deep_diff.get("values_changed", {}).items()):
+            if (
+                diff["old_value"] == "https://wellcomelibrary.org/posterimages/videoplaceholder.png"
+                and diff["new_value"]
+                == "https://library-uat.wellcomelibrary.org/posterimages/placeholders/videoplaceholder.png"
             ):
                 del deep_diff["values_changed"][label]
 
@@ -198,8 +215,9 @@ class IIIFDiff:
         self._diff_modulo_hostname(deep_diff)
         self._diff_modulo_imageanno(deep_diff)
         self._diff_modulo_dlcs(deep_diff)
-        self._diff_module_posterimages(bnumber=bnumber, deep_diff=deep_diff)
-        self._diff_module_placeholder_images(deep_diff)
+        self._diff_modulo_posterimages(bnumber=bnumber, deep_diff=deep_diff)
+        self._diff_modulo_placeholder_images(deep_diff)
+        self._diff_modulo_placeholder_video_images(deep_diff)
         self._diff_modulo_author_ordering(
             deep_diff, old_manifest=old_manifest, new_manifest=new_manifest
         )
