@@ -14,6 +14,10 @@ def has_succeeded_previously(status_summary, name):
     return status_summary.get(name, {}).get("success")
 
 
+def has_run_previously(status_summary, name):
+    return status_summary.get(name, {}).get("has_run")
+
+
 def get_named_status(status_summary, name):
     if name not in ALL_CHECK_NAMES:
         raise Exception(f"{name} is invalid, must be one of {ALL_CHECK_NAMES}")
