@@ -17,12 +17,29 @@ import reporting
 
 
 def needs_check(status_summary):
-    return helpers.needs_check(
-        status_summary,
-        previous_check=check_names.IIIF_MANIFESTS_CONTENTS,
-        current_check=check_names.IIIF_MANIFESTS_FILE_SIZES,
-        step_name="IIIF manifests sizes",
-    )
+    bnumber = status_summary["bnumber"]
+    step_name = "IIIF manifests sizes"
+
+    previous_check = check_names.IIIF_MANIFESTS_CONTENTS
+    current_check = check_names.IIIF_MANIFESTS_FILE_SIZES
+
+    if not reporting.has_run_previously(status_summary, previous_check):
+        print(f"{step_name} / {bnumber}: previous step has not succeeded")
+        return False
+
+    if reporting.has_succeeded_previously(status_summary, current_check):
+        if (
+            status_summary[previous_check]["last_modified"]
+            > status_summary[current_check]["last_modified"]
+        ):
+            print(f"{step_name} / {bnumber}: previous step is newer than current step")
+            return True
+        else:
+            print(f"{step_name} / {bnumber}: already recorded success")
+            return False
+
+    print(f"{step_name} / {bnumber}: no existing result")
+    return True
 
 
 def get_statuses_for_updating(first_bnumber, segment, total_segments):
