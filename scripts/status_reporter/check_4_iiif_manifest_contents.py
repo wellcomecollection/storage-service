@@ -2,6 +2,9 @@
 
 import datetime as dt
 import json
+import random
+
+import requests
 
 import aws_client
 import check_names
@@ -32,19 +35,51 @@ def get_statuses_for_updating(first_bnumber, segment, total_segments):
             yield status_summary
 
 
+def _is_closed(bnumber):
+    for url in [
+        f"https://wellcomelibrary.org/iiif/{bnumber}/manifest",
+        f"https://library-uat.wellcomelibrary.org/iiif/{bnumber}/manifest",
+    ]:
+        resp = requests.get(url, params={"cachebust": random.randint(0, 100)})
+
+        if (
+            resp.status_code != 500 or
+            'ERROR: I will not serve a b number that has a closed section' not in resp.text
+        ):
+            return False
+
+    return True
+
+
 def run_check(status_updater, status_summary):
     bnumber = status_summary["bnumber"]
 
     storage_api_url = defaults["storage_api_url"]
 
-    id_mapper = IDMapper()
+    # Some b numbers have a closed section, which don't return a storage manifest
+    # but instead a 500 error.
+    # e.g. https://wellcomelibrary.org/iiif/b18876985/manifest
+    #
+    # In this case, we should check that UAT and live both return a 500 error
+    # with the same error.
+    if _is_closed(bnumber):
+        print(f"Both sites report {bnumber} as having a closed section")
+        match_result = {
+            "bnumber": bnumber,
+            "space": "digitised",
+            "files": [],
+            "diff": {},
+            "is_closed_manifest": True
+        }
+    else:
+        id_mapper = IDMapper()
 
-    iiif_diff = IIIFDiff(library_iiif=LibraryIIIF(), id_mapper=id_mapper)
+        iiif_diff = IIIFDiff(library_iiif=LibraryIIIF(), id_mapper=id_mapper)
 
-    storage_client = helpers.create_storage_client(storage_api_url)
+        storage_client = helpers.create_storage_client(storage_api_url)
 
-    iiif_matcher = Matcher(iiif_diff, storage_client)
-    match_result = iiif_matcher.match(bnumber)
+        iiif_matcher = Matcher(iiif_diff, storage_client)
+        match_result = iiif_matcher.match(bnumber)
 
     s3_client = aws_client.dev_client.s3_client()
 
