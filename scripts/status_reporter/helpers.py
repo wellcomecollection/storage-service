@@ -15,6 +15,10 @@ def needs_check(status_summary, *, previous_check, current_check, step_name):
         print(f"{step_name} / {bnumber}: previous step has not succeeded")
         return False
 
+    if status_summary.get(current_check, {}).get("known_failure"):
+        print(f"{step_name} / {bnumber}: marked as a known failure")
+        return False
+
     if reporting.has_succeeded_previously(status_summary, current_check):
         if (
             status_summary[previous_check]["last_modified"]
