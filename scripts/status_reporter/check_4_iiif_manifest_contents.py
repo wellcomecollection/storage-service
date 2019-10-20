@@ -135,6 +135,7 @@ def run_check(status_updater, status_summary):
         }
 
         if known_failure_reason is not None:
+            print(f"Marking {bnumber} as a known failure: {known_failure_reason}")
             kwargs["known_failure"] = known_failure_reason
 
         status_updater.update(bnumber, **kwargs)
