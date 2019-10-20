@@ -105,18 +105,8 @@ def run_check(status_updater, status_summary):
 
         known_failure_reason = None
 
-        # Handle the case where the new value has an extra trailing slash.
-        # It's not that interesting and is probably a DDS config bug.  e.g.
-        #
-        #       {
-        #           'values_changed': {
-        #               "root['label']": {
-        #                   'new_value': '[Report 1927] /',
-        #                   'old_value': '[Report 1927]'
-        #               }
-        #           }
-        #       }
-        #
+        # There are some cases where labels are mangled, probably by DDS config,
+        # in ways that aren't interesting.
         if (
             match_result["diff"].keys() == {"values_changed"} and
             match_result["diff"]["values_changed"].keys() == {"root['label']"}
@@ -124,8 +114,34 @@ def run_check(status_updater, status_summary):
             label_diff = match_result["diff"]["values_changed"]["root['label']"]
             old_label = label_diff["old_value"]
             new_label = label_diff["new_value"]
+
+            # Trailing slash:
+            #
+            #       {
+            #           'values_changed': {
+            #               "root['label']": {
+            #                   'new_value': '[Report 1927] /',
+            #                   'old_value': '[Report 1927]'
+            #               }
+            #           }
+            #       }
+            #
             if new_label == old_label + " /":
                 known_failure_reason = "trailing slash: (new label) = (old label) + /"
+
+            # Square brackets:
+            #
+            #       {
+            #           'values_changed': {
+            #               "root['label']": {
+            #                   'new_value': '[Miniyar, Govind Lal]',
+            #                   'old_value': 'Miniyar, Govind Lal'
+            #               }
+            #           }
+            #       }
+            #
+            if new_label == f"[{old_label}]":
+                known_failure_reason = "square brackets: (new label) = [ (old label) ]"
 
         # Now assemble the line to store in DynamoDB.
         kwargs = {
