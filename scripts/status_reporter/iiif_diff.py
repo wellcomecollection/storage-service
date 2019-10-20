@@ -2,6 +2,7 @@
 
 import collections
 import re
+import unicodedata
 
 from deepdiff import DeepDiff
 import hyperlink
@@ -209,6 +210,33 @@ class IIIFDiff:
 
             del deep_diff["values_changed"][label]
 
+    @staticmethod
+    def _diff_modulo_unicode_differences(deep_diff):
+        # Sometimes two strings are visually equivalent but contain different
+        # UTF-8 codepoints.
+        #
+        # For example, b21060940:
+        #
+        #       Versuch einer wissenschaftlichen Begründung
+        #
+        # which is one of:
+        #
+        #       Versuch einer wissenschaftlichen Begr\xc3\xbcndung
+        #       Versuch einer wissenschaftlichen Begru\xcc\x88ndung
+        #
+        # We normalize so we can compare visual equivalence; the exact
+        # code points are unimportant.
+        #
+        for label, diff in list(deep_diff.get("values_changed", {}).items()):
+            old_value = diff["old_value"]
+            new_value = diff["new_value"]
+
+            def _normalize(s):
+                return unicodedata.normalize("NFC", s)
+
+            if _normalize(old_value) == _normalize(new_value):
+                del deep_diff["values_changed"][label]
+
     def diff_manifests(self, bnumber, old_manifest, new_manifest):
         deep_diff = DeepDiff(old_manifest, new_manifest)
 
@@ -218,6 +246,7 @@ class IIIFDiff:
         self._diff_modulo_posterimages(bnumber=bnumber, deep_diff=deep_diff)
         self._diff_modulo_placeholder_images(deep_diff)
         self._diff_modulo_placeholder_video_images(deep_diff)
+        self._diff_modulo_unicode_differences(deep_diff)
         self._diff_modulo_author_ordering(
             deep_diff, old_manifest=old_manifest, new_manifest=new_manifest
         )
