@@ -51,27 +51,39 @@ def _is_closed(bnumber):
     return True
 
 
+def _is_shared_error(bnumber):
+    resps = [
+        requests.get(url, params={"cachebust": random.randint(0, 100)})
+        for url in [
+            f"https://wellcomelibrary.org/iiif/{bnumber}/manifest",
+            f"https://library-uat.wellcomelibrary.org/iiif/{bnumber}/manifest",
+        ]
+    ]
+
+    if not all(r.status_code == 500 for r in resps):
+        return False
+
+    for err_text in [
+        "ERROR: No width or height data in METS file",
+        "ERROR: MODS Section does not contain a DZ License Code",
+        "Object reference not set to an instance of an object.",
+        "Sequence contains more than one matching element",
+    ]:
+        if all(err_text in r.text for r in resps):
+            print(f"{bnumber}: error is {err_text}")
+            return True
+
+    return False
+
+
 def run_check(status_updater, status_summary):
     bnumber = status_summary["bnumber"]
 
     storage_api_url = defaults["storage_api_url"]
 
-    # Some b numbers have a closed section, which don't return a storage manifest
-    # but instead a 500 error.
-    # e.g. https://wellcomelibrary.org/iiif/b18876985/manifest
-    #
-    # In this case, we should check that UAT and live both return a 500 error
-    # with the same error.
-    if _is_closed(bnumber):
-        print(f"Both sites report {bnumber} as having a closed section")
-        match_result = {
-            "bnumber": bnumber,
-            "space": "digitised",
-            "files": [],
-            "diff": {},
-            "is_closed_manifest": True
-        }
-    else:
+    known_failure_reason = None
+
+    try:
         id_mapper = IDMapper()
 
         iiif_diff = IIIFDiff(library_iiif=LibraryIIIF(), id_mapper=id_mapper)
@@ -80,6 +92,39 @@ def run_check(status_updater, status_summary):
 
         iiif_matcher = Matcher(iiif_diff, storage_client)
         match_result = iiif_matcher.match(bnumber)
+    except requests.exceptions.HTTPError:
+
+        # Some b numbers have a closed section, which don't return a storage manifest
+        # but instead a 500 error.
+        # e.g. https://wellcomelibrary.org/iiif/b18876985/manifest
+        #
+        # In this case, we should check that UAT and live both return a 500 error
+        # with the same error.
+        if _is_closed(bnumber):
+            print(f"Both sites report {bnumber} as having a closed section")
+            match_result = {
+                "bnumber": bnumber,
+                "space": "digitised",
+                "files": [],
+                "diff": {},
+                "is_closed_manifest": True
+            }
+
+            known_failure_reason = "Both UAT and live site have closed section in the METS"
+
+        elif _is_shared_error(bnumber):
+            print(f"Both sites report {bnumber} have the same error")
+            match_result = {
+                "bnumber": bnumber,
+                "space": "digitised",
+                "files": [],
+                "diff": {},
+                "is_common_error": True
+            }
+
+            known_failure_reason = "Both UAT and live site have the same 500 errror"
+        else:
+            raise
 
     s3_client = aws_client.dev_client.s3_client()
 
@@ -89,7 +134,7 @@ def run_check(status_updater, status_summary):
         Body=json.dumps(match_result),
     )
 
-    if match_result["diff"] == {}:
+    if match_result["diff"] == {} and known_failure_reason is None:
         print(f"IIIF manifests match for {bnumber}!")
         status_updater.update(
             bnumber,
@@ -102,8 +147,6 @@ def run_check(status_updater, status_summary):
         from pprint import pprint
 
         pprint(match_result["diff"])
-
-        known_failure_reason = None
 
         # There are some cases where labels are mangled, probably by DDS config,
         # in ways that aren't interesting.
