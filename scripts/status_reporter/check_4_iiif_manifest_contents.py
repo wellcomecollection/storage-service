@@ -174,16 +174,17 @@ def run_check(status_updater, status_summary):
 
             # Square brackets:
             #
-            #       {
-            #           'values_changed': {
-            #               "root['label']": {
-            #                   'new_value': '[Miniyar, Govind Lal]',
-            #                   'old_value': 'Miniyar, Govind Lal'
-            #               }
-            #           }
+            #       "root['label']": {
+            #           'new_value': '[Miniyar, Govind Lal]',
+            #           'old_value': 'Miniyar, Govind Lal'
             #       }
             #
-            if new_label == f"[{old_label}]":
+            #       {
+            #           'new_value': '[James, Brennig ]',
+            #           'old_value': 'James, Brennig'
+            #       }
+            #
+            if new_label in {f"[{old_label}]", f"[{old_label} ]"}:
                 known_failure_reason = "square brackets: (new label) = [ (old label) ]"
 
         # Now assemble the line to store in DynamoDB.
