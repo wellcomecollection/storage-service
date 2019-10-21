@@ -176,7 +176,8 @@ class IIIFDiff:
         """
         for label, diff in list(deep_diff.get("values_changed", {}).items()):
             if (
-                diff["old_value"] == "https://wellcomelibrary.org/posterimages/videoplaceholder.png"
+                diff["old_value"]
+                == "https://wellcomelibrary.org/posterimages/videoplaceholder.png"
                 and diff["new_value"]
                 == "https://library-uat.wellcomelibrary.org/posterimages/placeholders/videoplaceholder.png"
             ):

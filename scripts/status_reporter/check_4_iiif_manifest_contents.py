@@ -43,8 +43,9 @@ def _is_closed(bnumber):
         resp = requests.get(url, params={"cachebust": random.randint(0, 100)})
 
         if (
-            resp.status_code != 500 or
-            'ERROR: I will not serve a b number that has a closed section' not in resp.text
+            resp.status_code != 500
+            or "ERROR: I will not serve a b number that has a closed section"
+            not in resp.text
         ):
             return False
 
@@ -107,10 +108,12 @@ def run_check(status_updater, status_summary):
                 "space": "digitised",
                 "files": [],
                 "diff": {},
-                "is_closed_manifest": True
+                "is_closed_manifest": True,
             }
 
-            known_failure_reason = "Both UAT and live site have closed section in the METS"
+            known_failure_reason = (
+                "Both UAT and live site have closed section in the METS"
+            )
 
         elif _is_shared_error(bnumber):
             print(f"Both sites report {bnumber} have the same error")
@@ -119,7 +122,7 @@ def run_check(status_updater, status_summary):
                 "space": "digitised",
                 "files": [],
                 "diff": {},
-                "is_common_error": True
+                "is_common_error": True,
             }
 
             known_failure_reason = "Both UAT and live site have the same 500 errror"
@@ -150,10 +153,9 @@ def run_check(status_updater, status_summary):
 
         # There are some cases where labels are mangled, probably by DDS config,
         # in ways that aren't interesting.
-        if (
-            match_result["diff"].keys() == {"values_changed"} and
-            match_result["diff"]["values_changed"].keys() == {"root['label']"}
-        ):
+        if match_result["diff"].keys() == {"values_changed"} and match_result["diff"][
+            "values_changed"
+        ].keys() == {"root['label']"}:
             label_diff = match_result["diff"]["values_changed"]["root['label']"]
             old_label = label_diff["old_value"]
             new_label = label_diff["new_value"]
@@ -189,11 +191,7 @@ def run_check(status_updater, status_summary):
             #           'old_value': '\'"Memory" Series\''
             #       }
             #
-            if new_label in {
-                f"[{old_label}]",
-                f"[{old_label} ]",
-                f"[ {old_label}]",
-            }:
+            if new_label in {f"[{old_label}]", f"[{old_label} ]", f"[ {old_label}]"}:
                 known_failure_reason = "square brackets: (new label) = [ (old label) ]"
 
             # Truncated labels:
@@ -206,15 +204,17 @@ def run_check(status_updater, status_summary):
             # The length check isn't strictly required, but helps avoid this
             # accidentally catching trivial labels.
             if (
-                len(new_label) > 10 and
-                new_label.endswith(" :") and
-                old_label.startswith(new_label)
+                len(new_label) > 10
+                and new_label.endswith(" :")
+                and old_label.startswith(new_label)
             ) or (
-                len(new_label) > 10 and
-                not new_label.endswith(" :") and
-                old_label.startswith(new_label + " :")
+                len(new_label) > 10
+                and not new_label.endswith(" :")
+                and old_label.startswith(new_label + " :")
             ):
-                known_failure_reason = "truncated label: (old label) = (new label) : (extra)"
+                known_failure_reason = (
+                    "truncated label: (old label) = (new label) : (extra)"
+                )
 
         # Now assemble the line to store in DynamoDB.
         kwargs = {

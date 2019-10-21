@@ -92,15 +92,15 @@ def run_check(status_updater, storage_client, row):
             os.path.basename(s3_alto["Key"]) for s3_alto in alto_files_in_s3
         }
 
-        in_bag_not_s3 = sorted([
-            name for name in bag_names if name not in s3_alto_names
-        ])
+        in_bag_not_s3 = sorted(
+            [name for name in bag_names if name not in s3_alto_names]
+        )
         if in_bag_not_s3:
             print(f"In bag but not in S3: {', '.join(in_bag_not_s3)}")
 
-        in_s3_not_in_bag = sorted([
-            name for name in s3_alto_names if name not in bag_names
-        ])
+        in_s3_not_in_bag = sorted(
+            [name for name in s3_alto_names if name not in bag_names]
+        )
         if in_s3_not_in_bag:
             print(f"In S3 but not in bag: {', '.join(in_s3_not_in_bag)}")
 
