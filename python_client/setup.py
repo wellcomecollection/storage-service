@@ -28,7 +28,12 @@ setup(
     packages=find_packages(SOURCE),
     package_dir={"": SOURCE},
     version=__version__,
-    install_requires=["requests_oauthlib>=1.2.0,<2"],
+    install_requires=[
+        "requests_oauthlib>=1.2.0,<2",
+    ],
+    extras_require={
+        "s3": ["boto3>=2.49.0,<3"],
+    },
     description="A client for the Wellcome Storage Service",
     long_description=open(README).read(),
     author="Wellcome Trust (Digital Platform Team)",

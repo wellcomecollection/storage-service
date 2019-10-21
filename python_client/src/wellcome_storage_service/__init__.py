@@ -6,6 +6,7 @@ import time
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
+from .downloader import download_bag
 from .exceptions import BagNotFound, IngestNotFound, ServerError, UserError
 
 
