@@ -184,7 +184,16 @@ def run_check(status_updater, status_summary):
             #           'old_value': 'James, Brennig'
             #       }
             #
-            if new_label in {f"[{old_label}]", f"[{old_label} ]"}:
+            #       {
+            #           'new_value': '[ \'"Memory" Series\']',
+            #           'old_value': '\'"Memory" Series\''
+            #       }
+            #
+            if new_label in {
+                f"[{old_label}]",
+                f"[{old_label} ]",
+                f"[ {old_label}]",
+            }:
                 known_failure_reason = "square brackets: (new label) = [ (old label) ]"
 
         # Now assemble the line to store in DynamoDB.
