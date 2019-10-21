@@ -62,7 +62,7 @@ def run_check(status_updater, status_summary):
 
     matcher_result = json.load(s3_body)
 
-    assert not matcher_result["diff"]
+    # assert not matcher_result["diff"]
 
     differences = []
 

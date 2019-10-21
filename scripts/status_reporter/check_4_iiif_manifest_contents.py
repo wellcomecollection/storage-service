@@ -196,6 +196,26 @@ def run_check(status_updater, status_summary):
             }:
                 known_failure_reason = "square brackets: (new label) = [ (old label) ]"
 
+            # Truncated labels:
+            #
+            #       "root['label']": {
+            #           'new_value': 'Spec of Henry Beriah Brook :',
+            #           'old_value': 'Spec of Henry Beriah Brook : medicinal compound.'
+            #       }
+            #
+            # The length check isn't strictly required, but helps avoid this
+            # accidentally catching trivial labels.
+            if (
+                len(new_label) > 10 and
+                new_label.endswith(" :") and
+                old_label.startswith(new_label)
+            ) or (
+                len(new_label) > 10 and
+                not new_label.endswith(" :") and
+                old_label.startswith(new_label + " :")
+            ):
+                known_failure_reason = "truncated label: (old label) = (new label) : (extra)"
+
         # Now assemble the line to store in DynamoDB.
         kwargs = {
             "status_name": check_names.IIIF_MANIFESTS_CONTENTS,
