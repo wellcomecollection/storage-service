@@ -3,6 +3,11 @@
 import abc
 import os
 
+try:
+    from abc import ABC
+except ImportError:  # Python 2
+    from abc import ABCMeta as ABC
+
 from ._utils import mkdir_p
 
 
@@ -31,13 +36,18 @@ def download_bag(storage_manifest, out_dir):
 
     for manifest_file in all_files:
         provider.download(
-            out_dir=out_dir,
-            location=location,
-            manifest_file=manifest_file
+            out_dir=out_dir, location=location, manifest_file=manifest_file
         )
 
 
-class AbstractProvider(abc.ABC):
+class AbstractProvider(ABC):
+    """
+    Abstract class for a download provider.
+
+    Subclasses should implement the ``_download_fileobj`` method, which
+    downloads a single ``manifest_file`` from a bag's manifest at ``location``
+    to a writable ``file_obj`` in binary mode.
+    """
 
     @abc.abstractmethod
     def _download_fileobj(self, location, manifest_file, file_obj):
@@ -50,9 +60,7 @@ class AbstractProvider(abc.ABC):
 
         with open(out_path, "wb") as file_obj:
             self._download_fileobj(
-                location=location,
-                manifest_file=manifest_file,
-                file_obj=file_obj
+                location=location, manifest_file=manifest_file, file_obj=file_obj
             )
 
 
@@ -70,8 +78,4 @@ class S3InfrequentAccessProvider(AbstractProvider):
 
         s3_key = os.path.join(path_prefix, manifest_file["path"])
 
-        self.s3_client.download_fileobj(
-            Bucket=bucket,
-            Key=s3_key,
-            Fileobj=file_obj
-        )
+        self.s3_client.download_fileobj(Bucket=bucket, Key=s3_key, Fileobj=file_obj)

@@ -1,5 +1,6 @@
 betamax
 betamax-serializers
 coverage
+mock
 pytest-cov
 pytest
