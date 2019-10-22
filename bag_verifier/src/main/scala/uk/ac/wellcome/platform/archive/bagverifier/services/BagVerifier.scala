@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.{
   BagReader,
   BagVerifiable
 }
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.verify.Verification._
@@ -33,6 +34,7 @@ class BagVerifier()(
   type InternalResult[T] = Either[BagVerifierError, T]
 
   def verify(
+    ingestId: IngestID,
     root: ObjectLocationPrefix,
     externalIdentifier: ExternalIdentifier
   ): Try[IngestStepResult[VerificationSummary]] =
@@ -81,7 +83,12 @@ class BagVerifier()(
 
         } yield verificationResult
 
-      buildStepResult(internalResult, root = root, startTime = startTime)
+      buildStepResult(
+        ingestId = ingestId,
+        internalResult = internalResult,
+        root = root,
+        startTime = startTime
+      )
     }
 
   private def getBag(
@@ -127,8 +134,8 @@ class BagVerifier()(
       new BagVerifiable(root.asLocation())
 
     Try { bag.verify } match {
-      case Failure(err)    => Left(BagVerifierError(err))
-      case Success(result) => Right(result)
+      case Failure(err: Throwable) => Left(BagVerifierError(err))
+      case Success(result)         => Right(result)
     }
   }
 
@@ -323,6 +330,7 @@ class BagVerifier()(
     }
 
   private def buildStepResult(
+    ingestId: IngestID,
     internalResult: InternalResult[VerificationResult],
     root: ObjectLocationPrefix,
     startTime: Instant
@@ -331,6 +339,7 @@ class BagVerifier()(
       case Left(error) =>
         IngestFailed(
           summary = VerificationSummary.incomplete(
+            ingestId = ingestId,
             root = root,
             e = error.e,
             t = startTime
@@ -342,6 +351,7 @@ class BagVerifier()(
       case Right(incomplete: VerificationIncomplete) =>
         IngestFailed(
           summary = VerificationIncompleteSummary(
+            ingestId = ingestId,
             rootLocation = root,
             e = incomplete,
             startTime = startTime,
@@ -354,6 +364,7 @@ class BagVerifier()(
       case Right(success: VerificationSuccess) =>
         IngestStepSucceeded(
           VerificationSuccessSummary(
+            ingestId = ingestId,
             rootLocation = root,
             verification = Some(success),
             startTime = startTime,
@@ -383,6 +394,7 @@ class BagVerifier()(
 
         IngestFailed(
           summary = VerificationFailureSummary(
+            ingestId = ingestId,
             rootLocation = root,
             verification = Some(result),
             startTime = startTime,

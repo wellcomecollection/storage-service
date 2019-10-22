@@ -266,6 +266,19 @@ data "aws_iam_policy_document" "cloudwatch_put" {
   }
 }
 
+data "aws_iam_policy_document" "s3_large_response_cache" {
+  statement {
+    actions = [
+      "s3:*"
+    ]
+
+    resources = [
+      "${aws_s3_bucket.large_response_cache.arn}",
+      "${aws_s3_bucket.large_response_cache.arn}/*",
+    ]
+  }
+}
+
 # bagger
 
 data "aws_iam_policy_document" "bagger_s3_readwrite" {

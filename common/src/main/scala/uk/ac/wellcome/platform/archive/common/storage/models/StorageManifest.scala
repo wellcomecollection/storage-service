@@ -7,6 +7,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   BagVersion
 }
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.verify.{
   ChecksumValue,
   HashingAlgorithm
@@ -32,7 +33,9 @@ case class StorageManifest(
   tagManifest: FileManifest,
   location: StorageLocation,
   replicaLocations: Seq[StorageLocation],
-  createdDate: Instant
+  createdDate: Instant,
+  ingestId: IngestID
 ) {
   val id = BagId(space, info.externalIdentifier)
+  val idWithVersion = s"${id}/${version}"
 }

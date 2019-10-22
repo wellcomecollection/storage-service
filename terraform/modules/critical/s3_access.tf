@@ -48,6 +48,18 @@ data "aws_iam_policy_document" "access_read" {
 
       values = [
         "AROAZQI22QHW3LZ4TYY54:*",
+
+        # For the auxiliary ingest engine
+        # See https://wellcome.slack.com/archives/CBT40CMKQ/p1569923258424800
+        "AROAZQI22QHWUG2I4CBRN:*",
+
+        # For Digirati
+        # See https://wellcome.slack.com/archives/CBT40CMKQ/p1570188255112200
+        "AROAZQI22QHWYAPBYZG6U:*",
+
+        # For video ingests
+        # See https://wellcome.slack.com/archives/CBT40CMKQ/p1571310993345000
+        "AROAZQI22QHWV2KHZZHCT:*",
       ]
     }
 

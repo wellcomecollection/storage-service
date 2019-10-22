@@ -16,7 +16,7 @@ module "stack_staging" {
   desired_bagger_count  = 3
   desired_ec2_instances = 1
 
-  min_capacity = 0
+  min_capacity = 1
   max_capacity = 3
 
   vpc_id   = "${local.vpc_id}"

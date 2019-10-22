@@ -32,6 +32,11 @@ resource "aws_iam_role_policy" "bags_api_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
+resource "aws_iam_role_policy" "s3_large_response_cache" {
+  role   = "${module.api.bags_role_name}"
+  policy = "${data.aws_iam_policy_document.s3_large_response_cache.json}"
+}
+
 # ingests
 
 resource "aws_iam_role_policy" "ingests_archive_ingest_table" {

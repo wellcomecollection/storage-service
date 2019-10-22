@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bag_register.models
 
 import java.time.Instant
 
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   PrimaryStorageLocation,
@@ -9,6 +10,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 
 case class RegistrationSummary(
+  ingestId: IngestID,
   location: PrimaryStorageLocation,
   space: StorageSpace,
   startTime: Instant,
@@ -19,10 +21,9 @@ case class RegistrationSummary(
       maybeEndTime = Some(Instant.now())
     )
 
-  override def toString: String =
-    f"""|bag=$location
-        |space=$space
-        |durationSeconds=$durationSeconds
-        |duration=$formatDuration""".stripMargin
-      .replaceAll("\n", ", ")
+  override val fieldsToLog: Seq[(String, Any)] =
+    Seq(
+      ("location", location),
+      ("space", space)
+    )
 }

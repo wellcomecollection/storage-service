@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion}
-import uk.ac.wellcome.platform.archive.common.ingests.models.StandardStorageProvider
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestID,
+  StandardStorageProvider
+}
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
@@ -29,9 +32,11 @@ trait StorageManifestGenerators
   }
 
   def createStorageManifestWith(
+    ingestId: IngestID = createIngestID,
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
-    version: BagVersion = BagVersion(Random.nextInt)
+    version: BagVersion = BagVersion(Random.nextInt),
+    fileCount: Int = 3
   ): StorageManifest =
     StorageManifest(
       space = space,
@@ -39,11 +44,8 @@ trait StorageManifestGenerators
       version = version,
       manifest = FileManifest(
         checksumAlgorithm,
-        files = Seq(
-          createStorageManifestFile,
-          createStorageManifestFile,
-          createStorageManifestFile
-        )
+        files = (1 to fileCount)
+          .map(_ => createStorageManifestFile)
       ),
       tagManifest = FileManifest(
         checksumAlgorithm,
@@ -64,8 +66,12 @@ trait StorageManifestGenerators
             prefix = createObjectLocationPrefix
           )
         },
-      createdDate = Instant.now
+      createdDate = Instant.now,
+      ingestId = ingestId
     )
+
+  def createStorageManifestWithFileCount(fileCount: Int): StorageManifest =
+    createStorageManifestWith(fileCount = fileCount)
 
   def createStorageManifest: StorageManifest =
     createStorageManifestWith()

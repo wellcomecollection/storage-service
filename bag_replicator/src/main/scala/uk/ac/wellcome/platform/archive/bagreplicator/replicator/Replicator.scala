@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.storage.transfer.{PrefixTransfer, TransferResult}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
@@ -20,8 +21,12 @@ trait Replicator {
     ObjectLocation
   ]
 
-  def replicate(request: ReplicationRequest): ReplicationResult = {
+  def replicate(
+    ingestId: IngestID,
+    request: ReplicationRequest
+  ): ReplicationResult = {
     val summary = ReplicationSummary(
+      ingestId = ingestId,
       startTime = Instant.now,
       request = request
     )

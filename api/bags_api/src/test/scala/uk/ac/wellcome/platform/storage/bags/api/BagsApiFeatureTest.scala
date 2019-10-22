@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.storage.bags.api
 import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.{ETag, Location}
 import io.circe.optics.JsonPath._
 import io.circe.parser._
 import org.scalatest.concurrent.IntegrationPatience
@@ -17,6 +18,8 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
+import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 class BagsApiFeatureTest
     extends FunSpec
@@ -27,9 +30,11 @@ class BagsApiFeatureTest
     with StorageManifestGenerators
     with DisplayJsonHelpers
     with JsonAssertions
+    with S3Fixtures
     with IntegrationPatience {
 
   describe("GET /bags/:space/:id") {
+
     it("finds the latest version of a bag") {
       val storageManifest = createStorageManifest
 
@@ -69,11 +74,86 @@ class BagsApiFeatureTest
               assertJsonStringsAreEqual(actualJson, expectedJson)
             }
 
+            val header: ETag = response.header[ETag].get
+            val etagValue = header.etag.value.replace("\"", "")
+
+            etagValue shouldBe storageManifest.idWithVersion
+
             assertMetricSent(
               metrics,
               result = HttpMetricResults.Success
             )
           }
+      }
+    }
+
+    it(
+      "redirects to a stored response if that response is greater than the max allowable length"
+    ) {
+      // This is not an exact mechanism!
+      // We can experiment to identify a size which exceeds the maxResponseByteLength
+      val storageManifest = createStorageManifestWithFileCount(fileCount = 100)
+
+      withLocalS3Bucket { bucket =>
+        val prefix = ObjectLocationPrefix(bucket.name, randomAlphanumeric)
+
+        withConfiguredApp(
+          initialManifests = Seq(storageManifest),
+          locationPrefix = prefix,
+          maxResponseByteLength = 10000
+        ) {
+          case (_, metrics, baseUrl) =>
+            val expectedJson =
+              s"""
+                           |{
+                           |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+                           |  "id": "${storageManifest.id.toString}",
+                           |  "space": {
+                           |    "id": "${storageManifest.space.underlying}",
+                           |    "type": "Space"
+                           |  },
+                           |  "info": ${bagInfo(storageManifest.info)},
+                           |  "manifest": ${manifest(storageManifest.manifest)},
+                           |  "tagManifest": ${manifest(
+                   storageManifest.tagManifest
+                 )},
+                           |  "location": ${location(storageManifest.location)},
+                           |  "replicaLocations": [
+                           |    ${asList(
+                   storageManifest.replicaLocations,
+                   location
+                 )}
+                           |  ],
+                           |  "createdDate": "${DateTimeFormatter.ISO_INSTANT
+                   .format(
+                     storageManifest.createdDate
+                   )}",
+                           |  "version": "${storageManifest.version}",
+                           |  "type": "Bag"
+                           |}
+                          """.stripMargin
+
+            val url =
+              s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
+
+            whenGetRequestReady(url) { response =>
+              response.status shouldBe StatusCodes.TemporaryRedirect
+
+              assertMetricSent(
+                metrics,
+                result = HttpMetricResults.Success
+              )
+
+              val redirectedUrl = response.header[Location].get.uri.toString()
+
+              whenGetRequestReady(redirectedUrl) { redirectedResponse =>
+                withStringEntity(redirectedResponse.entity) { actualJson =>
+                  assertJsonStringsAreEqual(actualJson, expectedJson)
+                }
+              }
+            }
+
+        }
       }
     }
 
@@ -127,6 +207,11 @@ class BagsApiFeatureTest
               withStringEntity(response.entity) { actualJson =>
                 assertJsonStringsAreEqual(actualJson, expectedJson)
               }
+
+              val header: ETag = response.header[ETag].get
+              val etagValue = header.etag.value.replace("\"", "")
+
+              etagValue shouldBe s"${storageManifest.space}/${storageManifest.info.externalIdentifier}/${storageManifest.version}"
 
               assertMetricSent(
                 metrics,
@@ -289,7 +374,9 @@ class BagsApiFeatureTest
     it("finds a single version of a storage manifest") {
       val storageManifest = createStorageManifest
 
-      withConfiguredApp(initialManifests = Seq(storageManifest)) {
+      val initialManifests = Seq(storageManifest)
+
+      withConfiguredApp(initialManifests) {
         case (_, metrics, baseUrl) =>
           val expectedJson =
             s"""
@@ -421,7 +508,9 @@ class BagsApiFeatureTest
         )
       }.toMap
 
-      val initialManifests = multipleManifests.values.toSeq.sortBy { _.version }
+      val initialManifests = multipleManifests.values.toSeq.sortBy {
+        _.version
+      }
 
       withConfiguredApp(initialManifests) {
         case (_, metrics, baseUrl) =>
@@ -489,7 +578,9 @@ class BagsApiFeatureTest
         )
       }.toMap
 
-      val initialManifests = multipleManifests.values.toSeq.sortBy { _.version }
+      val initialManifests = multipleManifests.values.toSeq.sortBy {
+        _.version
+      }
 
       withConfiguredApp(initialManifests) {
         case (_, metrics, baseUrl) =>

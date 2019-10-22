@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.storage.bag_root_finder.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
@@ -19,7 +20,10 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
 
   type IngestStep = Try[IngestStepResult[RootFinderSummary]]
 
-  def getSummary(unpackLocation: ObjectLocationPrefix): IngestStep =
+  def getSummary(
+    ingestId: IngestID,
+    unpackLocation: ObjectLocationPrefix
+  ): IngestStep =
     Try {
       val startTime = Instant.now()
 
@@ -27,6 +31,7 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
         case Success(rootLocation) =>
           IngestStepSucceeded(
             RootFinderSuccessSummary(
+              ingestId = ingestId,
               startTime = startTime,
               endTime = Instant.now(),
               location = unpackLocation,
@@ -37,6 +42,7 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
         case Failure(err) =>
           IngestFailed(
             RootFinderFailureSummary(
+              ingestId = ingestId,
               startTime = startTime,
               endTime = Instant.now(),
               location = unpackLocation

@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
 import java.time.Instant
 
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 import uk.ac.wellcome.platform.archive.common.storage.models.KnownReplicas
 import uk.ac.wellcome.platform.storage.replica_aggregator.services.ReplicaCounterError
@@ -12,32 +13,25 @@ sealed trait ReplicationAggregationSummary extends Summary {
 
   override val maybeEndTime: Option[Instant] = Some(endTime)
 
-  override def toString: String = {
+  override val fieldsToLog: Seq[(String, Any)] = {
     val status = this match {
       case _: ReplicationAggregationComplete =>
-        """
-          |status=complete
-         """.stripMargin
+        "complete"
       case _: ReplicationAggregationIncomplete =>
-        """
-          |status=incomplete
-        """.stripMargin
+        "incomplete"
       case _: ReplicationAggregationFailed =>
-        """
-          |status=failed
-        """.stripMargin
+        "failed"
     }
 
-    f"""|replicaPath=$replicaPath
-        |durationSeconds=$durationSeconds
-        |duration=$formatDuration
-        |$status
-      """.stripMargin
-      .replaceAll("\n", ", ")
+    Seq(
+      ("replicaPath", replicaPath),
+      ("status", status)
+    )
   }
 }
 
 case class ReplicationAggregationComplete(
+  ingestId: IngestID,
   replicaPath: ReplicaPath,
   knownReplicas: KnownReplicas,
   startTime: Instant,
@@ -45,6 +39,7 @@ case class ReplicationAggregationComplete(
 ) extends ReplicationAggregationSummary
 
 case class ReplicationAggregationIncomplete(
+  ingestId: IngestID,
   replicaPath: ReplicaPath,
   aggregatorRecord: AggregatorInternalRecord,
   counterError: ReplicaCounterError,
@@ -53,6 +48,7 @@ case class ReplicationAggregationIncomplete(
 ) extends ReplicationAggregationSummary
 
 case class ReplicationAggregationFailed(
+  ingestId: IngestID,
   e: Throwable,
   replicaPath: ReplicaPath,
   startTime: Instant,

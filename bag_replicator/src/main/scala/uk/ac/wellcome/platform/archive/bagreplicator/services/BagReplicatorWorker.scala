@@ -14,6 +14,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
@@ -85,9 +86,9 @@ class BagReplicatorWorker[
 
       result <- lockingService
         .withLock(dstPrefix.toString) {
-          replicate(replicationRequest)
+          replicate(payload.ingestId, replicationRequest)
         }
-        .map(lockFailed(replicationRequest).apply(_))
+        .map(lockFailed(payload.ingestId, replicationRequest).apply(_))
 
       _ <- ingestUpdater.send(payload.ingestId, result)
 
@@ -103,10 +104,14 @@ class BagReplicatorWorker[
     } yield result
 
   def replicate(
+    ingestId: IngestID,
     bagReplicationRequest: BagReplicationRequest
   ): Try[IngestStepResult[BagReplicationSummary[BagReplicationRequest]]] =
     bagReplicator
-      .replicateBag(bagReplicationRequest)
+      .replicateBag(
+        ingestId = ingestId,
+        bagRequest = bagReplicationRequest
+      )
       .map {
         case BagReplicationSucceeded(summary) =>
           IngestStepSucceeded(summary)
@@ -156,6 +161,7 @@ class BagReplicatorWorker[
   }
 
   def lockFailed(
+    ingestId: IngestID,
     request: BagReplicationRequest
   ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
     BagReplicationSummary[_]
@@ -165,6 +171,7 @@ class BagReplicatorWorker[
       warn(s"Unable to lock successfully: $failedLockingServiceOp")
       IngestShouldRetry(
         BagReplicationSummary(
+          ingestId = ingestId,
           startTime = Instant.now,
           request = request
         ),

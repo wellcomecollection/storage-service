@@ -1,0 +1,6 @@
+s3:
+  image: "zenko/cloudserver:8.1.8"
+  environment:
+    - "S3BACKEND=mem"
+  ports:
+    - "33333:8000"

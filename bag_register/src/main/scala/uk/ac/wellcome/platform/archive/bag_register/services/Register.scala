@@ -6,6 +6,7 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   BadFetchLocationException,
@@ -22,12 +23,15 @@ class Register(
 ) extends Logging {
 
   def update(
+    ingestId: IngestID,
     location: PrimaryStorageLocation,
     replicas: Seq[SecondaryStorageLocation],
     version: BagVersion,
     space: StorageSpace
   ): Try[IngestStepResult[RegistrationSummary]] = {
+
     val registration = RegistrationSummary(
+      ingestId = ingestId,
       startTime = Instant.now(),
       location = location,
       space = space
@@ -41,6 +45,7 @@ class Register(
       }
 
       storageManifest <- storageManifestService.createManifest(
+        ingestId = ingestId,
         bag = bag,
         location = location,
         replicas = replicas,

@@ -10,6 +10,8 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationResult,
   ReplicationSucceeded
 }
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
@@ -24,11 +26,13 @@ class BagReplicator(
 ) {
 
   def replicateBag(
+    ingestId: IngestID,
     bagRequest: BagReplicationRequest
   ): Try[BagReplicationResult[BagReplicationRequest]] = {
     val startTime = Instant.now()
 
     val bagSummary = BagReplicationSummary(
+      ingestId = ingestId,
       startTime = startTime,
       request = bagRequest
     )
@@ -42,7 +46,8 @@ class BagReplicator(
 
     val result: Try[ReplicationResult] = for {
       replicationResult: ReplicationResult <- replicator.replicate(
-        bagRequest.request
+        ingestId = ingestId,
+        request = bagRequest.request
       ) match {
         case success: ReplicationSucceeded => Success(success)
         case ReplicationFailed(_, e)       => Failure(e)
