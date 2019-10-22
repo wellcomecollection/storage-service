@@ -59,7 +59,9 @@ class S3ObjectVerifierTest
 
     verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
     verifiedFailure.verificationError shouldBe a[VerificationReadError]
-    verifiedFailure.verificationError.asInstanceOf[VerificationReadError].error shouldBe a[NotFoundError]
+    verifiedFailure.verificationError
+      .asInstanceOf[VerificationReadError]
+      .error shouldBe a[NotFoundError]
   }
 
   it("fails if the bucket name is invalid") {
@@ -84,9 +86,15 @@ class S3ObjectVerifierTest
     verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
     verifiedFailure.verificationError shouldBe a[VerificationReadError]
 
-    verifiedFailure.verificationError.asInstanceOf[VerificationReadError].error shouldBe a[StoreReadError]
-    verifiedFailure.verificationError.asInstanceOf[VerificationReadError]
-      .error.asInstanceOf[StoreReadError].e.getMessage should include(
+    verifiedFailure.verificationError
+      .asInstanceOf[VerificationReadError]
+      .error shouldBe a[StoreReadError]
+    verifiedFailure.verificationError
+      .asInstanceOf[VerificationReadError]
+      .error
+      .asInstanceOf[StoreReadError]
+      .e
+      .getMessage should include(
       "The specified bucket is not valid"
     )
   }
@@ -113,7 +121,9 @@ class S3ObjectVerifierTest
 
       verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
       verifiedFailure.verificationError shouldBe a[VerificationReadError]
-      verifiedFailure.verificationError.asInstanceOf[VerificationReadError].error shouldBe a[NotFoundError]
+      verifiedFailure.verificationError
+        .asInstanceOf[VerificationReadError]
+        .error shouldBe a[NotFoundError]
     }
   }
 }

@@ -3,13 +3,32 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest._
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.bagverifier.models.{VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagPath, ExternalIdentifier, PayloadOxum}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  VerificationFailureSummary,
+  VerificationIncompleteSummary,
+  VerificationSuccessSummary
+}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagPath,
+  ExternalIdentifier,
+  PayloadOxum
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{S3BagBuilder, S3BagBuilderBase}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
-import uk.ac.wellcome.platform.archive.common.verify.{FailedChecksumNoMatch, VerificationChecksumError, VerificationReadError, VerifiedSuccess}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  S3BagBuilder,
+  S3BagBuilderBase
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepSucceeded
+}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  FailedChecksumNoMatch,
+  VerificationChecksumError,
+  VerificationReadError,
+  VerifiedSuccess
+}
 import uk.ac.wellcome.storage.DoesNotExistError
 
 class BagVerifierTest
@@ -158,7 +177,9 @@ class BagVerifierTest
       val error = location.verificationError
 
       error shouldBe a[FailedChecksumNoMatch]
-      error.asInstanceOf[FailedChecksumNoMatch].getMessage should include("Checksum values do not match!")
+      error.asInstanceOf[FailedChecksumNoMatch].getMessage should include(
+        "Checksum values do not match!"
+      )
     }
   }
 
@@ -249,7 +270,7 @@ class BagVerifierTest
       error shouldBe a[VerificationReadError]
       val innerError = error.asInstanceOf[VerificationReadError].error
       innerError shouldBe a[DoesNotExistError]
-      //error.getMessage should startWith("Location not available!")
+    //error.getMessage should startWith("Location not available!")
     }
   }
 

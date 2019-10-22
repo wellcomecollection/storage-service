@@ -8,23 +8,22 @@ sealed trait VerificationError {
 }
 
 case class VerificationChecksumError(
-                                      verifiableLocation: VerifiableLocation,
-                                      checksumFailure: FailedChecksum
-                                    ) extends VerificationError
+  verifiableLocation: VerifiableLocation,
+  checksumFailure: FailedChecksum
+) extends VerificationError
 
 case class VerificationLocationError[T](
-                                         verifiableLocation: VerifiableLocation,
-                                         locateFailure: LocateFailure[T]
-                                       ) extends VerificationError
+  verifiableLocation: VerifiableLocation,
+  locateFailure: LocateFailure[T]
+) extends VerificationError
 
 case class VerificationReadError(
-                                  verifiableLocation: VerifiableLocation,
-                                  error: ReadError
-                                ) extends VerificationError
+  verifiableLocation: VerifiableLocation,
+  error: ReadError
+) extends VerificationError
 
 case class VerificationLengthsDoNotMatch(
-                                          verifiableLocation: VerifiableLocation,
-                                          expectedLength: Long,
-                                          actualLength: Long
-                                        ) extends VerificationError
-
+  verifiableLocation: VerifiableLocation,
+  expectedLength: Long,
+  actualLength: Long
+) extends VerificationError

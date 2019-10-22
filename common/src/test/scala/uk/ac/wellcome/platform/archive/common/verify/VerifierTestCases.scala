@@ -80,7 +80,9 @@ trait VerifierTestCases[Namespace, Context]
 
         verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
         verifiedFailure.verificationError shouldBe a[VerificationReadError]
-        verifiedFailure.verificationError.asInstanceOf[VerificationReadError].error shouldBe a[NotFoundError]
+        verifiedFailure.verificationError
+          .asInstanceOf[VerificationReadError]
+          .error shouldBe a[NotFoundError]
       }
     }
   }
@@ -109,7 +111,9 @@ trait VerifierTestCases[Namespace, Context]
 
         verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
         verifiedFailure.verificationError shouldBe a[VerificationChecksumError]
-        verifiedFailure.verificationError.asInstanceOf[VerificationChecksumError].checksumFailure shouldBe a[FailedChecksumNoMatch]
+        verifiedFailure.verificationError
+          .asInstanceOf[VerificationChecksumError]
+          .checksumFailure shouldBe a[FailedChecksumNoMatch]
       }
     }
   }
@@ -145,7 +149,9 @@ trait VerifierTestCases[Namespace, Context]
         val verifiedFailure = result.asInstanceOf[VerifiedFailure]
 
         verifiedFailure.verificationError.verifiableLocation shouldBe verifiableLocation
-        verifiedFailure.verificationError shouldBe a[VerificationLengthsDoNotMatch]
+        verifiedFailure.verificationError shouldBe a[
+          VerificationLengthsDoNotMatch
+        ]
       }
     }
   }

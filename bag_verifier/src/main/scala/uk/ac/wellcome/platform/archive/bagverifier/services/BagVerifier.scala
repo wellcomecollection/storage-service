@@ -384,7 +384,9 @@ class BagVerifier()(
 
         val errorCount = result.failure.size
         val pathList =
-          result.failure.map { _.verificationError.verifiableLocation.path.value }.mkString(", ")
+          result.failure
+            .map { _.verificationError.verifiableLocation.path.value }
+            .mkString(", ")
 
         val userFacingMessage =
           if (errorCount == 1)

@@ -24,15 +24,16 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
     val eitherInputStream = for {
       objectLocation <- locate(verifiableLocation.uri) match {
         case Right(l) => Right(l)
-        case Left(locateError) => Left(
-          VerificationLocationError(verifiableLocation, locateError)
-        )
+        case Left(locateError) =>
+          Left(
+            VerificationLocationError(verifiableLocation, locateError)
+          )
       }
 
       inputStream <- streamStore.get(objectLocation) match {
         case Right(stream) => Right(stream.identifiedT)
-        case Left(readError: ReadError) => Left(
-          VerificationReadError(verifiableLocation, readError))
+        case Left(readError: ReadError) =>
+          Left(VerificationReadError(verifiableLocation, readError))
       }
 
     } yield (inputStream, objectLocation)
