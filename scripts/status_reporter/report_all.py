@@ -88,9 +88,14 @@ def run():
         STATUSES.waiting: [],
     }
 
-    for status_record in reader.all():
-        overall_status = get_overall_status(status_record)
-        all_statuses[overall_status].append(status_record["bnumber"])
+    out_path = f"statuses-{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
+    print(out_path)
+
+    with open(out_path, "w") as f:
+        for status_record in reader.all():
+            overall_status = get_overall_status(status_record)
+            all_statuses[overall_status].append(status_record["bnumber"])
+            f.write(json.dumps(all_statuses) + "\n")
 
     colors = {
         STATUSES.inconsistent: "red",
@@ -116,10 +121,5 @@ def run():
             STATUSES.succeeded,
         ]
     ]
-
-    out_path = f"statuses-{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
-
-    with open(out_path, "w") as f:
-        f.write(json.dumps(all_statuses, indent=2, sort_keys=True))
 
     reporting._draw_ascii_bar_chart(data, colors)

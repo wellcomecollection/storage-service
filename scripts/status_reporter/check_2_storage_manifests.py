@@ -32,7 +32,7 @@ def get_statuses_for_updating(first_bnumber, db_shard, total_db_shards):
 
 
 def run_check(status_updater, storage_client, status_summary):
-    bnumber = row["bnumber"]
+    bnumber = status_summary["bnumber"]
 
     try:
         response = storage_client.get_bag("digitised", bnumber)
@@ -59,7 +59,8 @@ def run_one(bnumber):
     storage_client = helpers.create_storage_client()
 
     if needs_check(status_summary):
-        run_check(status_updater, storage_client, status_summary)
+        with dynamo_status_manager.DynamoStatusUpdater() as status_updater:
+            run_check(status_updater, storage_client, status_summary)
 
 
 def run(first_bnumber=None):

@@ -3,10 +3,10 @@
 
 import collections
 import datetime as dt
-import json
-import sys
 
 import termcolor
+
+from dynamodb import cached_scan_iterator
 
 
 def draw_chart(data, colors=None):
@@ -61,21 +61,30 @@ def to_s(last_event):
         return "%ds" % (last_event.seconds)
 
 
-if __name__ == "__main__":
-    try:
-        ingests_dump = sys.argv[1]
-    except IndexError:
-        sys.exit(f"Usage: {__file__} <INGESTS_JSON_DUMP>")
+def get_failure_description(events):
+    descriptions = [ev["description"] for ev in events]
 
+    if len(descriptions) == 1:
+        return descriptions[0]
+
+    failures = [
+        desc for desc in descriptions if "failed -" in desc or desc == "Register failed"
+    ]
+
+    if len(failures) == 1:
+        return failures[0]
+
+    return descriptions[-1]
+
+
+if __name__ == "__main__":
     KNOWN_FAILURES = {line.strip() for line in open("known_failures.txt")}
 
     def all_ingests():
-        with open(ingests_dump) as f:
-            for line in f:
-                ingest = json.loads(line)
-                if ingest["id"] in KNOWN_FAILURES:
-                    continue
-                yield ingest
+        for ingest in cached_scan_iterator("storage-ingests"):
+            if ingest["id"] in KNOWN_FAILURES:
+                continue
+            yield ingest
 
     data = {"Accepted": 0, "Failed": 0, "Completed": 0, "Processing": 0}
 
@@ -101,7 +110,7 @@ if __name__ == "__main__":
         if status == "Failed":
             failed[ingest_id] = {
                 "date": last_event,
-                "description": item["payload"]["events"][-1]["description"],
+                "description": get_failure_description(item["payload"]["events"]),
             }
         if status == "Processing":
             processing[ingest_id] = last_event
@@ -109,19 +118,13 @@ if __name__ == "__main__":
         data[status] += 1
 
     if failed:
-        for ingest_id, ingest_data in failed.items():
+        for ingest_id, ingest_data in sorted(failed.items()):
             if ingest_data["description"].startswith(
                 "Unpacking failed - There is no archive at"
             ):
                 ingest_data[
                     "description"
                 ] = "Unpacking failed - There is no archive at <src>"
-            if ingest_data["description"].startswith(
-                ("Verification (Amazon Glacier) failed -",)
-            ):
-                ingest_data["description"] = (
-                    ingest_data["description"].split("-")[0].strip()
-                )
 
         failed_by_reason = collections.defaultdict(list)
 
@@ -133,7 +136,9 @@ if __name__ == "__main__":
         print("== failed ==")
 
         lines = []
-        for reason, ingest_ids in failed_by_reason.items():
+        for reason, ingest_ids in sorted(
+            failed_by_reason.items(), key=lambda t: -len(t[1])
+        ):
             lines.append("%s:" % reason)
             for i_id in ingest_ids:
                 lines.append("  %s" % i_id)

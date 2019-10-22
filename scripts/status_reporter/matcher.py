@@ -44,9 +44,15 @@ class Matcher:
             if entry["name"] == f"data/{bnumber}.xml":
                 continue
 
-            # e.g. data/alto/b30181197_0001.xml
+            # If this b number is actually a collection, we also want to ignore
+            # the METS files for the individual manifests.
+            if re.match(r"^data/" + bnumber + r"_\d{4}\.xml$", entry["name"]):
+                continue
+
+            # e.g.  data/alto/b30181197_0001.xml
+            #       data/alto/b29324890_0003_0001.xml (if collection)
             is_alto_file = re.search(
-                f"^data/alto/{bnumber}" + r"_\d{4}\.xml$", entry["name"]
+                f"^data/alto/{bnumber}" + r"_\d{4}(_\d{4})?\.xml$", entry["name"]
             )
             if is_alto_file:
                 continue
@@ -60,7 +66,9 @@ class Matcher:
             }
 
             if len(matching) != 1:
-                raise ValueError(f"No exact match for {bnumber}:{filename}: {matching}")
+                raise ValueError(
+                    f"File in storage service but not Preservica {bnumber}:{filename}: {matching}"
+                )
 
             results["files"].append(
                 {

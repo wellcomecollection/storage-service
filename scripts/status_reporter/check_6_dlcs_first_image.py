@@ -30,12 +30,29 @@ def dlcs_api_secret():
 
 
 def needs_check(status_summary):
-    return helpers.needs_check(
-        status_summary,
-        previous_check=check_names.IIIF_MANIFESTS_FILE_SIZES,
-        current_check=check_names.DLCS_ORIGIN_MATCH,
-        step_name="DLCS origins match",
-    )
+    bnumber = status_summary["bnumber"]
+    step_name = "DLCS origins match"
+
+    previous_check = check_names.IIIF_MANIFESTS_CONTENTS
+    current_check = check_names.DLCS_ORIGIN_MATCH
+
+    if not reporting.has_run_previously(status_summary, previous_check):
+        print(f"{step_name} / {bnumber}: previous step has not succeeded")
+        return False
+
+    if reporting.has_succeeded_previously(status_summary, current_check):
+        if (
+            status_summary[previous_check]["last_modified"]
+            > status_summary[current_check]["last_modified"]
+        ):
+            print(f"{step_name} / {bnumber}: previous step is newer than current step")
+            return True
+        else:
+            print(f"{step_name} / {bnumber}: already recorded success")
+            return False
+
+    print(f"{step_name} / {bnumber}: no existing result")
+    return True
 
 
 def get_statuses_for_updating(first_bnumber):
@@ -81,6 +98,17 @@ def run_check(status_updater, storage_client, row):
         f"https://api.dlcs.io/customers/2/spaces/5/images/{storage_service_filename}",
         auth=(dlcs_api_key(), dlcs_api_secret()),
     )
+
+    # Handle the case where DLCS has prepended the b number to the filename
+    # from the storage manifest, e.g.
+    # https://api.dlcs.io/customers/2/spaces/5/images/b19925700_haldane_4_27_17_0001.JP2
+    if storage_service_resp.json() == {
+        "success": "false"
+    } and not storage_service_filename.startswith(bnumber):
+        storage_service_resp = requests.get(
+            f"https://api.dlcs.io/customers/2/spaces/5/images/{bnumber}_{storage_service_filename}",
+            auth=(dlcs_api_key(), dlcs_api_secret()),
+        )
 
     preservica_resp = requests.get(
         f"https://api.dlcs.io/customers/2/spaces/1/images/{preservica_guid}",

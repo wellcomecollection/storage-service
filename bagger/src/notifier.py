@@ -13,6 +13,7 @@ def _publish_notification(result):
 
 
 def bagging_complete(result):
+    return
     logging.info(
         "-- completed bagging %s in %s secs",
         result["identifier"],

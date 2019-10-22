@@ -14,6 +14,10 @@ def has_succeeded_previously(status_summary, name):
     return status_summary.get(name, {}).get("success")
 
 
+def has_run_previously(status_summary, name):
+    return status_summary.get(name, {}).get("has_run")
+
+
 def get_named_status(status_summary, name):
     if name not in ALL_CHECK_NAMES:
         raise Exception(f"{name} is invalid, must be one of {ALL_CHECK_NAMES}")
@@ -123,12 +127,16 @@ def _get_reader():
 
 
 def generate_full_report():
-    full_report = list(_get_reader())
+    import tqdm
 
     out_path = f"full_report-{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
 
+    full_report = []
+
     with open(out_path, "w") as f:
-        f.write(json.dumps(full_report, indent=2, sort_keys=True))
+        for status in tqdm.tqdm(_get_reader(), total=268_605):
+            f.write(json.dumps(status) + "\n")
+            full_report.append(status)
 
     return full_report
 

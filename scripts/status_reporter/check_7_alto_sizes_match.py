@@ -4,9 +4,6 @@ import functools
 import json
 import os
 
-import hyperlink
-import requests
-
 import aws_client
 import check_names
 import dynamo_status_manager
@@ -17,7 +14,7 @@ import reporting
 def needs_check(status_summary):
     return helpers.needs_check(
         status_summary,
-        previous_check=check_names.DLCS_ORIGIN_MATCH,
+        previous_check=check_names.STORAGE_MANIFESTS,
         current_check=check_names.ALTO_SIZES_MATCH,
         step_name="ALTO sizes",
     )
@@ -58,39 +55,85 @@ def run_check(status_updater, storage_client, row):
 
     bag = storage_client.get_bag("digitised", bnumber)
 
-    from pprint import pprint
-
     alto_files_in_bag = [
         f for f in bag["manifest"]["files"] if f["name"].startswith("data/alto/")
     ]
 
     shard_path = "/".join(list(bnumber[-4:][::-1]))
-    prefix = f"mets/{shard_path}/{bnumber}_alto/"
+    prefix = f"mets/{shard_path}/{bnumber}"
 
-    alto_files_in_s3 = list(
-        get_matching_s3_objects(
+    alto_files_in_s3 = [
+        s3_obj
+        for s3_obj in get_matching_s3_objects(
             bucket="wellcomecollection-assets-workingstorage", prefix=prefix
         )
-    )
+        if "alto/" in s3_obj["Key"] and s3_obj["Key"].endswith(".xml")
+    ]
 
     has_differences = False
 
-    has_differences = False
+    def _sort(f):
+        # ALTO files are numbered b1234_001.xml, b1234_002.xml.
+        #
+        # We need to sort them correctly even if the prefix is borked, e.g.
+        # B1234_005.xml, b1234_001.xml.
+        #
+        return f.split("_")[-1]
 
-    for bag_alto, s3_alto in zip(alto_files_in_bag, alto_files_in_s3):
-        if os.path.basename(bag_alto["name"]) != os.path.basename(s3_alto["Key"]):
-            print(
-                f"{bnumber}: ALTO filenames don't match! {os.path.basename(bag_alto['name'])} != {os.path.basename(s3_alto['Key'])}"
-            )
-            has_differences = True
-            continue
+    if len(alto_files_in_bag) != len(alto_files_in_s3):
+        print(
+            f"Different counts: bag has {len(alto_files_in_bag)} ALTO files, S3 has {len(alto_files_in_s3)}"
+        )
 
-        if bag_alto["size"] != s3_alto["Size"]:
-            print(
-                f"{bnumber}: ALTO sizes don't match! {os.path.basename(bag_alto['name'])}: {bag_alto['size']} != {s3_alto['Size']}"
-            )
-            has_differences = True
-            continue
+        bag_names = {
+            os.path.basename(bag_alto["name"]) for bag_alto in alto_files_in_bag
+        }
+        s3_alto_names = {
+            os.path.basename(s3_alto["Key"]) for s3_alto in alto_files_in_s3
+        }
+
+        in_bag_not_s3 = sorted(
+            [name for name in bag_names if name not in s3_alto_names]
+        )
+        if in_bag_not_s3:
+            print(f"In bag but not in S3: {', '.join(in_bag_not_s3)}")
+
+        in_s3_not_in_bag = sorted(
+            [name for name in s3_alto_names if name not in bag_names]
+        )
+        if in_s3_not_in_bag:
+            print(f"In S3 but not in bag: {', '.join(in_s3_not_in_bag)}")
+
+        has_differences = True
+    else:
+        for bag_alto, s3_alto in zip(
+            sorted(alto_files_in_bag, key=lambda f: _sort(f["name"])),
+            sorted(alto_files_in_s3, key=lambda f: _sort(f["Key"])),
+        ):
+            # We need to account for the fact that the ALTO files in S3 might have
+            # different capitalisations, e.g.
+            #
+            #   B1234.xml
+            #   b1234X.xml
+            #
+            # But we don't always want to lowercase!  e.g.
+            #
+            #   PP_CRI_E_1_16_8_0100.xml
+            #
+            bag_name = os.path.basename(bag_alto["name"])
+            s3_name = os.path.basename(s3_alto["Key"])
+
+            if bag_name != s3_name and bag_name != s3_name.lower():
+                print(f"{bnumber}: ALTO filenames don't match! {bag_name} != {s3_name}")
+                has_differences = True
+                continue
+
+            if bag_alto["size"] != s3_alto["Size"]:
+                print(
+                    f"{bnumber}: ALTO sizes don't match! {bag_name}: {bag_alto['size']} != {s3_alto['Size']}"
+                )
+                has_differences = True
+                continue
 
     if has_differences:
         print(f"{bnumber}: differences between ALTO sizes in bag and S3")
