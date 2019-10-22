@@ -18,6 +18,14 @@ def test_cannot_download_a_bag_with_wrong_provider(tmpdir):
 
 
 class TestS3IADownload(object):
+    # Implementation note: these tests are reading from the production bucket.
+    #
+    # This isn't ideal, but it was simpler than trying to set up a Docker image,
+    # create a bucket, intercept client creation in downloader.py…
+    #
+    # This makes the tests quite slow -- if we end up editing this code a lot,
+    # refactoring these tests to use a local source would be sensible.
+
     def test_downloading_bag(self, tmpdir):
         bag = {
             "location": {
