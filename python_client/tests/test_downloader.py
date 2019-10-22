@@ -62,11 +62,18 @@ class TestS3IADownload(object):
             "tagManifest": {"files": []},
         }
 
-        with pytest.raises(
-            Exception,
-            match='Could not connect to the endpoint URL: "https://does-not-exist.s3.amazonaws.com'
-        ):
+        with pytest.raises(Exception) as err:
             downloader.download_bag(bag, out_dir=str(tmpdir))
+
+        assert err.value.args[0].startswith(
+            (
+                # Python 2
+                'Could not connect to the endpoint URL: "https://does-not-exist.s3.amazonaws.com',
+
+                # Python 3
+                "An error occurred (403) when calling the HeadObject operation",
+            )
+        )
 
     def test_downloading_from_non_existent_key_is_error(self, tmpdir):
         bag = {
