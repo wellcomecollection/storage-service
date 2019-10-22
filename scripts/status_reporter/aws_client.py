@@ -4,9 +4,12 @@ import boto3
 
 
 class AwsClient:
-    def __init__(self, role_arn):
+    def __init__(self, role_arn, assume_role=False):
         self.role_arn = role_arn
-        # self._assume_role_session()
+        self._aws = boto3
+
+        if assume_role:
+            self._aws = self._assume_role_session()
 
     def _assume_role_session(self):
         session = boto3.session.Session()
@@ -18,26 +21,26 @@ class AwsClient:
 
         credentials = assumed_role_object["Credentials"]
 
-        boto3 = boto3.Session(
+        return boto3.Session(
             aws_access_key_id=credentials["AccessKeyId"],
             aws_secret_access_key=credentials["SecretAccessKey"],
             aws_session_token=credentials["SessionToken"],
         )
 
     def s3_client(self):
-        return boto3.client("s3")
+        return self._aws.client("s3")
 
     def dynamo_client(self):
-        return boto3.client("dynamodb")
+        return self._aws.client("dynamodb")
 
     def dynamo_resource(self):
-        return boto3.resource("dynamodb")
+        return self._aws.resource("dynamodb")
 
     def dynamo_table(self, table_name):
         return self.dynamo_resource().Table(table_name)
 
     def secrets_manager_value(self, secret_name):
-        client = boto3.client("secretsmanager")
+        client = self._aws.client("secretsmanager")
         return client.get_secret_value(SecretId=secret_name)["SecretString"]
 
 
