@@ -121,8 +121,6 @@ module "bag_unpacker_queue" {
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = "${60 * 60 * 5}"
 
-  max_receive_count = 1
-
   queue_high_actions = [
     "${module.bag_unpacker.scale_up_arn}",
   ]
@@ -192,8 +190,6 @@ module "bag_verifier_pre_replicate_queue" {
   # We keep a high visibility timeout to
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = "${60 * 60 * 5}"
-
-  max_receive_count = 1
 
   queue_high_actions = [
     "${module.bag_verifier_pre_replication.scale_up_arn}",
