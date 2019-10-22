@@ -21,7 +21,7 @@ case object VerifiedFailure {
   ): VerifiedFailure =
     VerifiedFailure(
       objectLocation = None,
-      verificationError= verificationError
+      verificationError = verificationError
     )
 
   def apply(
