@@ -2,6 +2,8 @@ package uk.ac.wellcome.platform.storage.bags.api.fixtures
 
 import java.net.URL
 
+import akka.stream.ActorMaterializer
+import com.amazonaws.services.s3.AmazonS3
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
@@ -20,20 +22,24 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   EmptyMetadata,
+  S3Uploader,
   StorageManifestDao
 }
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 trait BagsApiFixture
     extends StorageRandomThings
     with ScalaFutures
     with StorageManifestVHSFixture
+    with S3Fixtures
     with HttpFixtures
     with MetricsSenderFixture {
 
@@ -45,20 +51,30 @@ trait BagsApiFixture
 
   private def withApp[R](
     metrics: MemoryMetrics[Unit],
-    storageManifestDaoTest: StorageManifestDao
+    maxResponseByteLength: Long,
+    locationPrefix: ObjectLocationPrefix,
+    storageManifestDaoTest: StorageManifestDao,
+    uploader: S3Uploader
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
-      withMaterializer(actorSystem) { implicit materializer =>
+      withMaterializer(actorSystem) { implicit mat =>
         val httpMetrics = new HttpMetrics(
           name = metricsName,
           metrics = metrics
         )
 
-        val router: BagsApi = new BagsApi {
+        lazy val router: BagsApi = new BagsApi {
           override implicit val ec: ExecutionContext = global
           override val contextURL: URL = contextURLTest
           override val storageManifestDao: StorageManifestDao =
             storageManifestDaoTest
+
+          override val s3Uploader: S3Uploader = uploader
+          override val cacheDuration: Duration = 1 days
+          override val prefix: ObjectLocationPrefix = locationPrefix
+
+          override implicit val materializer: ActorMaterializer = mat
+          override val maximumResponseByteLength: Long = maxResponseByteLength
         }
 
         val app = new WellcomeHttpApp(
@@ -75,10 +91,15 @@ trait BagsApiFixture
       }
     }
 
-  def withConfiguredApp[R](initialManifests: Seq[StorageManifest] = Seq.empty)(
+  def withConfiguredApp[R](
+    initialManifests: Seq[StorageManifest] = Seq.empty,
+    locationPrefix: ObjectLocationPrefix = createObjectLocationPrefix,
+    maxResponseByteLength: Long = 1048576
+  )(
     testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R]
-  ): R = {
+  )(implicit s3Client: AmazonS3): R = {
     val dao = createStorageManifestDao()
+    val uploader = new S3Uploader()
 
     initialManifests.foreach { manifest =>
       dao.put(manifest) shouldBe a[Right[_, _]]
@@ -86,7 +107,13 @@ trait BagsApiFixture
 
     val metrics = new MemoryMetrics[Unit]()
 
-    withApp(metrics, dao) { _ =>
+    withApp(
+      metrics = metrics,
+      maxResponseByteLength = maxResponseByteLength,
+      locationPrefix = locationPrefix,
+      storageManifestDaoTest = dao,
+      uploader = uploader
+    ) { _ =>
       testWith((dao, metrics, httpServerConfigTest.externalBaseURL))
     }
   }
@@ -120,8 +147,11 @@ trait BagsApiFixture
     }
 
     val metrics = new MemoryMetrics[Unit]()
+    val maxResponseByteLength = 1048576
+    val prefix = createObjectLocationPrefix
+    val uploader = new S3Uploader()
 
-    withApp(metrics, brokenDao) { _ =>
+    withApp(metrics, maxResponseByteLength, prefix, brokenDao, uploader) { _ =>
       testWith((metrics, httpServerConfigTest.externalBaseURL))
     }
   }

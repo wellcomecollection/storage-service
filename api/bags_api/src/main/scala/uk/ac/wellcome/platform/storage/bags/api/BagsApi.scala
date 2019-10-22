@@ -4,6 +4,7 @@ import java.net.URL
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model.headers.ETag
 import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import io.circe.Printer
@@ -17,6 +18,7 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   InternalServerErrorResponse,
   UserErrorResponse
 }
+import uk.ac.wellcome.platform.archive.common.storage.LargeResponses
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageSpace
@@ -33,7 +35,7 @@ import scala.concurrent.ExecutionContext
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
-trait BagsApi extends Logging {
+trait BagsApi extends LargeResponses with Logging {
 
   import akka.http.scaladsl.server.Directives._
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
@@ -46,7 +48,7 @@ trait BagsApi extends Logging {
   val contextURL: URL
   val storageManifestDao: StorageManifestDao
 
-  val bags: Route = pathPrefix("bags") {
+  private val routes: Route = pathPrefix("bags") {
     path(Segment / Segment) { (space, externalIdentifier) =>
       val bagId = BagId(
         space = StorageSpace(space),
@@ -68,12 +70,17 @@ trait BagsApi extends Logging {
 
           result match {
             case Right(storageManifest) =>
-              complete(
-                ResponseDisplayBag(
-                  storageManifest = storageManifest,
-                  contextUrl = contextURL
+              val etag = ETag(storageManifest.idWithVersion)
+
+              respondWithHeaders(etag) {
+                complete(
+                  ResponseDisplayBag(
+                    storageManifest = storageManifest,
+                    contextUrl = contextURL
+                  )
                 )
-              )
+              }
+
             case Left(_: NoVersionExistsError) =>
               val errorMessage = maybeVersion match {
                 case Some(version) =>
@@ -198,4 +205,6 @@ trait BagsApi extends Logging {
 
       case None => Success(None)
     }
+
+  val bags = wrapLargeResponses(routes)
 }

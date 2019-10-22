@@ -34,10 +34,10 @@ module "bags" {
   memory = 4096
 
   sidecar_cpu    = 1024
-  sidecar_memory = 2048
+  sidecar_memory = 256
 
   app_cpu    = 1024
-  app_memory = 2048
+  app_memory = 3840
 
   task_desired_count = "${var.desired_bags_api_count}"
 }

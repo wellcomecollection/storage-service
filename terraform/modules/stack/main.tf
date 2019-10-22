@@ -485,9 +485,11 @@ module "api" {
     metrics_namespace = "${local.bags_api_service_name}"
     logstash_host     = "${local.logstash_host}"
 
+    responses_bucket_name = "${aws_s3_bucket.large_response_cache.id}"
+
     JAVA_OPTS = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bags_api_service_name}"
   }
-  bags_env_vars_length       = 7
+  bags_env_vars_length       = 8
   bags_nginx_container_image = "${var.nginx_image}"
   bags_nginx_container_port  = "9000"
 
