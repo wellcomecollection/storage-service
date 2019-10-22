@@ -21,8 +21,7 @@ def download_bag(storage_manifest, out_dir):
 
     """
     all_files = (
-        storage_manifest["manifest"]["files"] +
-        storage_manifest["tagManifest"]["files"]
+        storage_manifest["manifest"]["files"] + storage_manifest["tagManifest"]["files"]
     )
 
     location = storage_manifest["location"]
@@ -40,14 +39,16 @@ def download_bag(storage_manifest, out_dir):
         )
 
 
-class AbstractProvider(ABC):
+class AbstractProvider(object):
     """
-    Abstract class for a download provider.
+    Abstract class for a downloader.
 
     Subclasses should implement the ``_download_fileobj`` method, which
     downloads a single ``manifest_file`` from a bag's manifest at ``location``
     to a writable ``file_obj`` in binary mode.
     """
+
+    __metaclass__ = ABC
 
     @abc.abstractmethod
     def _download_fileobj(self, location, manifest_file, file_obj):
@@ -68,7 +69,9 @@ class S3InfrequentAccessProvider(AbstractProvider):
 
     def __init__(self):
         import boto3
+
         self.s3_client = boto3.client("s3")
+        super(S3InfrequentAccessProvider, self).__init__()
 
     def _download_fileobj(self, location, manifest_file, file_obj):
         assert location["provider"]["id"] == "aws-s3-ia"

@@ -10,6 +10,16 @@ from .downloader import download_bag
 from .exceptions import BagNotFound, IngestNotFound, ServerError, UserError
 
 
+__all__ = [
+    "download_bag",
+    "BagNotFound",
+    "IngestNotFound",
+    "ServerError",
+    "UserError",
+    "StorageServiceClient",
+]
+
+
 def raise_for_status(resp):
     if resp.status_code >= 500:
         raise ServerError("Unexpected error from storage service")
