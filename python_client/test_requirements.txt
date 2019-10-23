@@ -12,6 +12,7 @@ certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
 coverage==4.5.3
 idna==2.8                 # via requests
+mock==3.0.5
 more-itertools==5.0.0     # via pytest
 pluggy==0.9.0             # via pytest
 py==1.8.0                 # via pytest

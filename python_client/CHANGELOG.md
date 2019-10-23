@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v1.3.0 - 2019-10-23
+
+Add two methods for downloading the complete contents of a bag to disk.  Namely:
+
+-  `download_bag()`, which downloads the bag as unpacked files
+-  `download_compressed_bag()`, which downloads the bag as a tar.gz file
+
 ## v1.2.1 - 2019-08-08
 
 If the OAuth token for connecting to the storage service expires, the library refreshes the token rather than throwing a `TokenExpired` error.

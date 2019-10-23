@@ -29,6 +29,7 @@ setup(
     package_dir={"": SOURCE},
     version=__version__,
     install_requires=["requests_oauthlib>=1.2.0,<2"],
+    extras_require={"s3": ["boto3>=1.9.253,<2"]},
     description="A client for the Wellcome Storage Service",
     long_description=open(README).read(),
     author="Wellcome Trust (Digital Platform Team)",
@@ -37,8 +38,8 @@ setup(
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Software Development",
         "Topic :: Utilities",
     ],
