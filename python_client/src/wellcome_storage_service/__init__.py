@@ -6,12 +6,13 @@ import time
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
-from .downloader import download_bag
+from .downloader import download_bag, download_compressed_bag
 from .exceptions import BagNotFound, IngestNotFound, ServerError, UserError
 
 
 __all__ = [
     "download_bag",
+    "download_compressed_bag",
     "BagNotFound",
     "IngestNotFound",
     "ServerError",
