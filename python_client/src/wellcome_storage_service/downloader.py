@@ -4,7 +4,7 @@ import abc
 import os
 
 try:
-    from abc import ABC
+    from collections.abc import ABC
 except ImportError:  # Python 2
     from abc import ABCMeta as ABC
 
