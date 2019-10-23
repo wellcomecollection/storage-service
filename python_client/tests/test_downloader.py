@@ -97,7 +97,7 @@ class TestS3IADownload(object):
                     },
                     {"name": "bag-info.txt", "path": "v1/bag-info.txt", "size": 331},
                 ]
-            }
+            },
         }
 
         downloader.download_compressed_bag(bag, out_path=str(out_path))

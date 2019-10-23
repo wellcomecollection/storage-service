@@ -108,7 +108,6 @@ class AbstractProvider(object):
 
 
 class S3InfrequentAccessProvider(AbstractProvider):
-
     def __init__(self):
         import boto3
 

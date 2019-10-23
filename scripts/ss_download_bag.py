@@ -21,7 +21,9 @@ logger = get_logger(__name__)
 
 
 def confirm_size(storage_manifest):
-    all_files = storage_manifest["manifest"]["files"] + storage_manifest["tagManifest"]["files"]
+    all_files = (
+        storage_manifest["manifest"]["files"] + storage_manifest["tagManifest"]["files"]
+    )
     total_size = sum(f["size"] for f in all_files)
 
     # If the size is >100MB, double-check before initiating the download.
