@@ -307,6 +307,17 @@ module "bag_register_input_queue" {
 
   aws_region    = "${var.aws_region}"
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
+
+  # Only a handful of big bags take more than half an hour to assemble
+  # the storage manifest, and currently the bag register doesn't handle getting
+  # duplicate messages well.
+  #
+  # Setting the timeout this high means we'll get fast retries if somebody goes
+  # wrong, but we won't get the register trying to process the same ingest twice
+  # if it's moderately-sized.
+  #
+  # See https://github.com/wellcometrust/platform/issues/3889
+  visibility_timeout_seconds = 1800
 }
 
 module "bag_register_output_topic" {
