@@ -1,0 +1,43 @@
+body {
+  max-width: 950px;
+  margin-left:  auto;
+  margin-right: auto;
+  font-size: 1.2em;
+  line-height: 1.35em;
+}
+
+.collapsibleList li{
+  list-style-image : url('button.png');
+  cursor           : auto;
+}
+
+li.collapsibleListOpen{
+  list-style-image : url('button-open.png');
+  cursor           : pointer;
+}
+
+li.collapsibleListClosed{
+  list-style-image : url('button-closed.png');
+  cursor           : pointer;
+}
+
+.collection_ref {
+  font-size: 75%;
+  color: #666;
+}
+
+li {
+  margin-top: 0.5em;
+}
+
+div {
+  padding: 7px;
+}
+
+div.status__delete {
+  background: rgba(255, 0, 0, 0.3);
+}
+
+div.status__ignore {
+  background: rgba(255, 242, 0, 0.5);
+}

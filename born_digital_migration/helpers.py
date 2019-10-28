@@ -18,9 +18,16 @@ def get_connection():
 
 def get_iterator(cnxn, *, query):
     cursor = cnxn.cursor()
-    cursor.execute("SELECT * FROM Collection")
 
-    for row in cursor.fetchall():
+    if isinstance(query, str):
+        cursor.execute(query)
+    else:
+        cursor.execute(*query)
+
+    while True:
+        row = cursor.fetchone()
+        if not row:
+            break
         yield {
             desc[0]: value
             for desc, value in zip(cursor.description, row)
