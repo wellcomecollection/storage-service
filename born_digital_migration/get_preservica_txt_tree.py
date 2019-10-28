@@ -35,9 +35,12 @@ def pprint_nested_tree(tree, is_root=True):
                 lines.append("    " + title)
 
             lines.append("    " + collection_ref)
-            lines.extend([
-                "    " + l for l in pprint_nested_tree(entry["children"], is_root=False)
-            ])
+            lines.extend(
+                [
+                    "    " + l
+                    for l in pprint_nested_tree(entry["children"], is_root=False)
+                ]
+            )
 
         else:
             lines.append("│")
@@ -47,9 +50,12 @@ def pprint_nested_tree(tree, is_root=True):
                 lines.append("│   " + title)
             lines.append("│   " + collection_ref)
 
-            lines.extend([
-                "│   " + l for l in pprint_nested_tree(entry["children"], is_root=False)
-            ])
+            lines.extend(
+                [
+                    "│   " + l
+                    for l in pprint_nested_tree(entry["children"], is_root=False)
+                ]
+            )
 
     return lines
 
@@ -61,7 +67,6 @@ if __name__ == "__main__":
         sys.exit(f"Usage: {__file__} <COLLECTIONS_JSON>")
 
     data = json.load(open(path))
-
 
     with open("tree.txt", "w") as of:
         of.write("\n".join(pprint_nested_tree(data.values())))

@@ -29,10 +29,7 @@ class Collection:
 class CollectionEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Collection):
-            return {
-                "metadata": obj.metadata,
-                "children": obj.children,
-            }
+            return {"metadata": obj.metadata, "children": obj.children}
 
 
 if __name__ == "__main__":
@@ -50,13 +47,12 @@ if __name__ == "__main__":
         if not collection.metadata["ParentRef"]:
             root_collections[c_id] = collection
         else:
-            all_collections[collection.metadata["ParentRef"]].children.append(collection)
+            all_collections[collection.metadata["ParentRef"]].children.append(
+                collection
+            )
 
     json_string = json.dumps(
-        root_collections,
-        cls=CollectionEncoder,
-        indent=2,
-        sort_keys=True
+        root_collections, cls=CollectionEncoder, indent=2, sort_keys=True
     )
 
     with open("collections.json", "w") as outfile:

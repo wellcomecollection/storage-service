@@ -57,9 +57,10 @@ def pprint_html_tree(tree, is_root=False, parent_is_deleted=False):
 
         if entry["children"]:
             lines.extend(
-                "  " + l for l in pprint_html_tree(entry["children"],
-                                                   is_root=False,
-                                                   parent_is_deleted=to_delete)
+                "  " + l
+                for l in pprint_html_tree(
+                    entry["children"], is_root=False, parent_is_deleted=to_delete
+                )
             )
 
         lines.append("</div>")
