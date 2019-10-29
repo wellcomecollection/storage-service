@@ -8,10 +8,6 @@ import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import grizzled.slf4j.Logging
 import io.circe.Printer
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagId,
-  ExternalIdentifier
-}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.http.models.{
   InternalServerErrorResponse,
@@ -22,9 +18,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
   IngestDoesNotExistError,
   IngestTracker
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display.{
-  DisplayIngestMinimal,
   RequestDisplayIngest,
   ResponseDisplayIngest
 }
@@ -96,43 +90,8 @@ trait IngestsApi extends Logging {
             )
         }
       }
-    } ~ path("find-by-bag-id" / Segment) { combinedId: String =>
-      // Temporary route to match colon separated ids '/find-by-bag-id/storageSpace:bagId' used by DLCS
-      // remove when DLCS replaces this by '/find-by-bag-id/storageSpace/bagId'
-      get {
-        val parts = combinedId.split(':')
-        val bagId =
-          BagId(StorageSpace(parts.head), ExternalIdentifier(parts.last))
-        findIngest(bagId)
-      }
-    } ~ path("find-by-bag-id" / Segment / Segment) { (space, id) =>
-      // Route used by DLCS to find ingests for a bag, not part of the public/documented API.  Either remove
-      // if no longer needed after migration or enhance and document as part of the API.
-      get {
-        val bagId = BagId(StorageSpace(space), ExternalIdentifier(id))
-        findIngest(bagId)
-      }
     }
   }
-
-  private def findIngest(bagId: BagId): StandardRoute =
-    ingestTracker.listByBagId(bagId) match {
-      case Right(results) =>
-        if (results.nonEmpty) {
-          complete(StatusCodes.OK -> results.map { DisplayIngestMinimal(_) })
-        } else {
-          complete(StatusCodes.NotFound -> List[DisplayIngestMinimal]())
-        }
-
-      case Left(err) =>
-        warn(s"""errors fetching ingests for $bagId: $err""")
-        complete(
-          StatusCodes.InternalServerError -> InternalServerErrorResponse(
-            context = contextURL,
-            statusCode = StatusCodes.InternalServerError
-          )
-        )
-    }
 
   private def createLocationHeader(ingest: Ingest) =
     Location(s"${httpServerConfig.externalBaseURL}/${ingest.id}")
