@@ -31,26 +31,21 @@ import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
 class DynamoIngestTrackerTest
-    extends IngestTrackerTestCases[(DynamoTable, DynamoTable)]
+    extends IngestTrackerTestCases[DynamoTable]
     with DynamoFixtures
     with RandomThings {
   override def withContext[R](
-    testWith: TestWith[(DynamoTable, DynamoTable), R]
+    testWith: TestWith[DynamoTable, R]
   ): R =
     withSpecifiedTable(createIngestTrackerTable) { ingestTrackerTable =>
-      withSpecifiedTable(createBagIdLookupTable) { bagIdLookupTable =>
-        testWith((ingestTrackerTable, bagIdLookupTable))
-      }
+      testWith(ingestTrackerTable)
     }
 
   override def withIngestTracker[R](initialIngests: Seq[Ingest])(
     testWith: TestWith[IngestTracker, R]
-  )(implicit tables: (DynamoTable, DynamoTable)): R = {
-    val (ingestTrackerTable, bagIdLookupTable) = tables
-
+  )(implicit ingestTrackerTable: DynamoTable): R = {
     val tracker = new DynamoIngestTracker(
-      config = createDynamoConfigWith(ingestTrackerTable),
-      bagIdLookupConfig = createDynamoConfigWith(bagIdLookupTable)
+      config = createDynamoConfigWith(ingestTrackerTable)
     )
 
     initialIngests.foreach { ingest =>
@@ -70,27 +65,13 @@ class DynamoIngestTrackerTest
       keyType = ScalarAttributeType.S
     )
 
-  def createBagIdLookupTable(table: DynamoTable): DynamoTable =
-    createTableWithHashRangeKey(
-      table,
-      hashKeyName = "bagId",
-      hashKeyType = ScalarAttributeType.S,
-      rangeKeyName = "ingestDate",
-      rangeKeyType = ScalarAttributeType.N
-    )
-
   private def withBrokenPutTracker[R](
     testWith: TestWith[IngestTracker, R]
-  )(implicit tables: (DynamoTable, DynamoTable)): R = {
-    val (ingestTrackerTable, bagIdLookupTable) = tables
-
+  )(implicit ingestTrackerTable: DynamoTable): R = {
     val config = createDynamoConfigWith(ingestTrackerTable)
 
     testWith(
-      new DynamoIngestTracker(
-        config = createDynamoConfigWith(ingestTrackerTable),
-        bagIdLookupConfig = createDynamoConfigWith(bagIdLookupTable)
-      ) {
+      new DynamoIngestTracker(config = config) {
         override val underlying = new VersionedStore[IngestID, Int, Ingest](
           new DynamoHashStore[IngestID, Int, Ingest](config) {
             override def max(hashKey: IngestID): Either[ReadError, Int] =
@@ -111,23 +92,18 @@ class DynamoIngestTrackerTest
 
   override def withBrokenUnderlyingInitTracker[R](
     testWith: TestWith[IngestTracker, R]
-  )(implicit tables: (DynamoTable, DynamoTable)): R =
+  )(implicit ingestTrackerTable: DynamoTable): R =
     withBrokenPutTracker { tracker =>
       testWith(tracker)
     }
 
   override def withBrokenUnderlyingGetTracker[R](
     testWith: TestWith[IngestTracker, R]
-  )(implicit tables: (DynamoTable, DynamoTable)): R = {
-    val (ingestTrackerTable, bagIdLookupTable) = tables
-
+  )(implicit ingestTrackerTable: DynamoTable): R = {
     val config = createDynamoConfigWith(ingestTrackerTable)
 
     testWith(
-      new DynamoIngestTracker(
-        config = config,
-        bagIdLookupConfig = createDynamoConfigWith(bagIdLookupTable)
-      ) {
+      new DynamoIngestTracker(config = config) {
         override val underlying = new VersionedStore[IngestID, Int, Ingest](
           new DynamoHashStore[IngestID, Int, Ingest](config) {
             override def max(hashKey: IngestID): Either[ReadError, Int] =
@@ -140,7 +116,7 @@ class DynamoIngestTrackerTest
 
   override def withBrokenUnderlyingUpdateTracker[R](
     testWith: TestWith[IngestTracker, R]
-  )(implicit tables: (DynamoTable, DynamoTable)): R =
+  )(implicit ingestTrackerTable: DynamoTable): R =
     withBrokenPutTracker { tracker =>
       testWith(tracker)
     }
