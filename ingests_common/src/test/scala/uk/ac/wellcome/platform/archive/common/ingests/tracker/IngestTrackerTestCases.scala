@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
 import java.net.URI
-import java.time.Instant
 
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{Assertion, EitherValues, FunSpec, Matchers}
@@ -543,98 +542,6 @@ trait IngestTrackerTestCases[Context]
         withBrokenUnderlyingUpdateTracker { tracker =>
           tracker.update(update).left.value shouldBe a[IngestStoreError]
         }
-      }
-    }
-  }
-
-  describe("listByBagId()") {
-    it("returns an empty list if there aren't any matching ingests") {
-      withIngestTrackerFixtures() { tracker =>
-        tracker.listByBagId(createBagId).right.value shouldBe Seq.empty
-      }
-    }
-
-    it("finds a single matching ingest") {
-      val space = createStorageSpace
-      val externalIdentifier = createExternalIdentifier
-
-      val ingest = createIngestWith(
-        space = space,
-        externalIdentifier = externalIdentifier
-      )
-
-      val bagId = createBagIdWith(
-        space = space,
-        externalIdentifier = externalIdentifier
-      )
-
-      withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-        assertIngestSeqEqual(
-          tracker.listByBagId(bagId).right.value,
-          Seq(ingest)
-        )
-      }
-    }
-
-    it("ignores ingests with a different storage space or externalIdentifier") {
-      val space = createStorageSpace
-      val externalIdentifier = createExternalIdentifier
-
-      val matchingIngests = (1 to 3).map { t =>
-        createIngestWith(
-          space = space,
-          externalIdentifier = externalIdentifier,
-          createdDate = Instant.ofEpochSecond(t)
-        )
-      }.reverse
-
-      val initialIngests = matchingIngests ++ Seq(
-        createIngestWith(space = space),
-        createIngestWith(externalIdentifier = externalIdentifier),
-        createIngest
-      )
-
-      val bagId = createBagIdWith(
-        space = space,
-        externalIdentifier = externalIdentifier
-      )
-
-      withIngestTrackerFixtures(initialIngests) { tracker =>
-        assertIngestSeqEqual(
-          tracker
-            .listByBagId(bagId)
-            .right
-            .value,
-          matchingIngests
-        )
-      }
-    }
-
-    it("sorts ingests by creation date") {
-      val space = createStorageSpace
-      val externalIdentifier = createExternalIdentifier
-
-      val initialIngests = (1 to 5).map { _ =>
-        createIngestWith(
-          space = space,
-          externalIdentifier = externalIdentifier,
-          createdDate = randomInstant
-        )
-      }
-
-      val bagId = createBagIdWith(
-        space = space,
-        externalIdentifier = externalIdentifier
-      )
-
-      withIngestTrackerFixtures(initialIngests) { tracker =>
-        assertIngestSeqEqual(
-          tracker
-            .listByBagId(bagId)
-            .right
-            .value,
-          initialIngests.sortBy { _.createdDate }.reverse
-        )
       }
     }
   }

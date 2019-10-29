@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.tracker
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
@@ -50,13 +49,4 @@ trait IngestTracker extends Logging {
         }
     }
   }
-
-  /** Given a bag ID, find the ingests that it was involved in.
-    *
-    * This is intended to meet a particular use case for DLCS during migration and not as part of the
-    * public/documented API.  Consider either removing this functionality or enhancing it to be fully
-    * featured if a use case arises after migration.
-    *
-    */
-  def listByBagId(bagId: BagId): Either[IngestStoreError, Seq[Ingest]]
 }

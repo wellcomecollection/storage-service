@@ -7,16 +7,11 @@ import grizzled.slf4j.Logging
 import org.scanamo.{Scanamo, Table => ScanamoTable}
 import org.scanamo.auto._
 import org.scanamo.error.DynamoReadError
-import org.scanamo.syntax._
 import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
-  IngestStoreError,
-  IngestStoreUnexpectedError,
-  IngestTracker
-}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.store.VersionedStore
@@ -80,29 +75,5 @@ class DynamoIngestTracker(config: DynamoConfig, bagIdLookupConfig: DynamoConfig)
       )
 
     Try { Scanamo(client).exec(ops) }
-  }
-
-  override def listByBagId(
-    bagId: BagId
-  ): Either[IngestStoreError, Seq[Ingest]] = {
-    val query = ScanamoTable[BagIdLookup](bagIdLookupConfig.tableName)
-      .limit(30)
-      .descending
-      .query('bagId -> bagId.toString)
-
-    val result = Scanamo(client).exec(query)
-
-    val ingests = result.collect {
-      case Right(bagIdLookup) => bagIdLookup.ingest
-    }
-    val errors = result.collect { case Left(err) => err }
-
-    Either.cond(
-      errors.isEmpty,
-      right = ingests,
-      left = IngestStoreUnexpectedError(
-        new Throwable(s"Errors from DynamoDB: $errors")
-      )
-    )
   }
 }
