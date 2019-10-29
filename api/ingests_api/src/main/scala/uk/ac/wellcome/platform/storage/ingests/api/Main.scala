@@ -37,9 +37,7 @@ object Main extends WellcomeTypesafeApp {
       DynamoBuilder.buildDynamoClient(config)
 
     val ingestTrackerMain = new DynamoIngestTracker(
-      config = DynamoBuilder.buildDynamoConfig(config),
-      bagIdLookupConfig =
-        DynamoBuilder.buildDynamoConfig(config, namespace = "bagIdLookup")
+      config = DynamoBuilder.buildDynamoConfig(config)
     )
 
     val ingestStarterMain = new IngestStarter[SNSConfig](
