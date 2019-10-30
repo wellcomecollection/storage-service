@@ -30,14 +30,6 @@ output "ingests_table_arn" {
   value = "${module.critical.ingests_table_arn}"
 }
 
-output "bag_id_lookup_table_name" {
-  value = "${module.critical.bag_id_lookup_table_name}"
-}
-
-output "bag_id_lookup_table_arn" {
-  value = "${module.critical.bag_id_lookup_table_arn}"
-}
-
 output "replicas_table_arn" {
   value = "${module.critical.replicas_table_arn}"
 }
