@@ -1,10 +1,5 @@
 # bag_register
 
-resource "aws_iam_role_policy" "bag_register_archive_get" {
-  role   = "${module.bag_register.task_role_name}"
-  policy = "${data.aws_iam_policy_document.storage_archive_read.json}"
-}
-
 resource "aws_iam_role_policy" "bag_register_replica_primary_readonly" {
   role   = "${module.bag_register.task_role_name}"
   policy = "${data.aws_iam_policy_document.replica_primary_readonly.json}"

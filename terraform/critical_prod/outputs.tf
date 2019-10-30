@@ -56,8 +56,8 @@ output "replica_primary_bucket_name" {
   value = "${module.critical.replica_primary_bucket_name}"
 }
 
-output "archive_bucket_name" {
-  value = "${module.critical.archive_bucket_name}"
+output "replica_ireland_bucket_name" {
+  value = "${module.critical.replica_ireland_bucket_name}"
 }
 
 #

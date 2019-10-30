@@ -63,8 +63,8 @@ data "aws_iam_policy_document" "prevent_writes_to_prod" {
       "${module.critical.replica_primary_bucket_arn}",
       "${module.critical.replica_primary_bucket_arn}/*",
 
-      "${module.critical.archive_bucket_arn}",
-      "${module.critical.archive_bucket_arn}/*",
+      "${module.critical.replica_ireland_bucket_arn}",
+      "${module.critical.replica_ireland_bucket_arn}/*",
 
       "${module.critical.manifests_bucket_arn}",
       "${module.critical.manifests_bucket_arn}/*",

@@ -48,20 +48,20 @@ output "ingest_drop_bucket_name" {
 
 # Replica buckets
 
-output "archive_bucket_name" {
-  value = "${aws_s3_bucket.archive.bucket}"
-}
-
-output "archive_bucket_arn" {
-  value = "${aws_s3_bucket.archive.arn}"
-}
-
 output "replica_primary_bucket_name" {
   value = "${aws_s3_bucket.replica_primary.bucket}"
 }
 
 output "replica_primary_bucket_arn" {
   value = "${aws_s3_bucket.replica_primary.arn}"
+}
+
+output "replica_ireland_bucket_name" {
+  value = "${aws_s3_bucket.replica_ireland.bucket}"
+}
+
+output "replica_ireland_bucket_arn" {
+  value = "${aws_s3_bucket.replica_ireland.arn}"
 }
 
 # Bagger

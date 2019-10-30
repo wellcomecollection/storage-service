@@ -277,7 +277,7 @@ module "replicator_verifier_glacier" {
     "${module.bag_versioner_output_topic.name}",
   ]
 
-  bucket_name         = "${var.archive_bucket_name}"
+  bucket_name         = "${var.replica_ireland_bucket_name}"
   primary_bucket_name = "${var.replica_primary_bucket_name}"
 
   ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_read.json}"
@@ -359,7 +359,7 @@ module "bag_register" {
 
   env_vars = {
     queue_url         = "${module.bag_register_input_queue.url}"
-    archive_bucket    = "${var.archive_bucket_name}"
+    archive_bucket    = "${var.replica_primary_bucket_name}"
     ongoing_topic_arn = "${module.bag_register_output_topic.arn}"
     ingest_topic_arn  = "${module.ingests_topic.arn}"
     vhs_bucket_name   = "${var.vhs_archive_manifest_bucket_name}"

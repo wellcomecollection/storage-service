@@ -122,25 +122,6 @@ data "aws_iam_policy_document" "bagger_preservica_read" {
   }
 }
 
-data "aws_iam_policy_document" "storage_archive_read" {
-  statement {
-    actions = [
-      "s3:ListBucket",
-      "s3:GetObject*",
-    ]
-
-    resources = [
-      # Allow service to read bagger drop bucket
-      "arn:aws:s3:::${var.ingest_drop_bucket_name}/*",
-
-      # Allow service to read our archive bucket
-      "arn:aws:s3:::${var.archive_bucket_name}",
-
-      "arn:aws:s3:::${var.archive_bucket_name}/*",
-    ]
-  }
-}
-
 data "aws_iam_policy_document" "replica_primary_readonly" {
   statement {
     actions = [
@@ -151,19 +132,6 @@ data "aws_iam_policy_document" "replica_primary_readonly" {
     resources = [
       "arn:aws:s3:::${var.replica_primary_bucket_name}",
       "arn:aws:s3:::${var.replica_primary_bucket_name}/*",
-    ]
-  }
-}
-
-data "aws_iam_policy_document" "storage_archive_readwrite" {
-  statement {
-    actions = [
-      "s3:PutObject*",
-      "s3:GetObject*",
-    ]
-
-    resources = [
-      "arn:aws:s3:::${var.archive_bucket_name}/*",
     ]
   }
 }
