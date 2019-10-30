@@ -15,8 +15,3 @@ variable "replica_ireland_read_principals" {
   type    = "list"
   default = []
 }
-
-variable "ingest_read_principles" {
-  type    = "list"
-  default = []
-}

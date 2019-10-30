@@ -20,11 +20,4 @@ module "critical" {
     "${local.goobi_task_role_arn}",
     "${local.workflow_account_principal}",
   ]
-
-  ingest_read_principles = [
-    "${local.goobi_task_role_arn}",
-    "${local.archivematica_task_role_arn}",
-    "${local.digitisation_account_principal}",
-    "${local.workflow_account_principal}",
-  ]
 }

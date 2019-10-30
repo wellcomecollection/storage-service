@@ -85,8 +85,5 @@ module "stack_staging" {
 
   workflow_bucket_name = "${local.workflow_staging_bucket_name}"
 
-  ingests_drop_bucket_name = "${data.terraform_remote_state.critical_staging.ingests_drop_bucket_name}"
-  ingests_drop_bucket_arn  = "${data.terraform_remote_state.critical_staging.ingests_drop_bucket_arn}"
-
   archivematica_ingests_bucket = "${local.archivematica_ingests_bucket}"
 }

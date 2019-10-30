@@ -61,9 +61,6 @@ variable "bagger_dds_asset_prefix" {}
 variable "bagger_ingest_table" {}
 variable "bagger_ingest_table_arn" {}
 
-variable "ingests_drop_bucket_name" {}
-variable "ingests_drop_bucket_arn" {}
-
 variable "cognito_storage_api_identifier" {}
 variable "cognito_user_pool_arn" {}
 

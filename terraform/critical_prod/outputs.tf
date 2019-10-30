@@ -42,16 +42,6 @@ output "use_encryption_key_policy" {
   value = "${module.critical.use_encryption_key_policy}"
 }
 
-# Ingests drop bucket
-
-output "ingests_drop_bucket_name" {
-  value = "${module.critical.ingests_drop_bucket_name}"
-}
-
-output "ingests_drop_bucket_arn" {
-  value = "${module.critical.ingests_drop_bucket_arn}"
-}
-
 # Replica buckets
 
 output "replica_primary_bucket_name" {

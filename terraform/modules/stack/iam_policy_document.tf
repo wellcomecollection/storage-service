@@ -88,7 +88,7 @@ data "aws_iam_policy_document" "bagger_readwrite" {
     ]
 
     resources = [
-      "${var.ingests_drop_bucket_arn}/*",
+      "${aws_s3_bucket.unpacked_bags.arn}/*",
       "${var.s3_bagger_drop_arn}/*",
       "${var.s3_bagger_drop_mets_only_arn}/*",
       "${var.s3_bagger_errors_arn}/*",
@@ -136,14 +136,14 @@ data "aws_iam_policy_document" "replica_primary_readonly" {
   }
 }
 
-data "aws_iam_policy_document" "ingests_drop_bucket_readonly" {
+data "aws_iam_policy_document" "unpacked_bags_bucket_readonly" {
   statement {
     actions = [
       "s3:ListBucket",
     ]
 
     resources = [
-      "${var.ingests_drop_bucket_arn}",
+      "${aws_s3_bucket.unpacked_bags.arn}",
     ]
   }
 
@@ -154,12 +154,12 @@ data "aws_iam_policy_document" "ingests_drop_bucket_readonly" {
     ]
 
     resources = [
-      "${var.ingests_drop_bucket_arn}/*",
+      "${aws_s3_bucket.unpacked_bags.arn}/*",
     ]
   }
 }
 
-data "aws_iam_policy_document" "ingests_drop_bucket_readwrite" {
+data "aws_iam_policy_document" "unpacked_bags_bucket_readwrite" {
   statement {
     actions = [
       "s3:GetObject*",
@@ -167,7 +167,7 @@ data "aws_iam_policy_document" "ingests_drop_bucket_readwrite" {
     ]
 
     resources = [
-      "${var.ingests_drop_bucket_arn}/*",
+      "${aws_s3_bucket.unpacked_bags.arn}/*",
     ]
   }
 }

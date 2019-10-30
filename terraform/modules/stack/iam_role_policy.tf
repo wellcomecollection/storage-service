@@ -58,9 +58,9 @@ resource "aws_iam_role_policy" "ingests_api_table_readwrite" {
 
 # bag root finder
 
-resource "aws_iam_role_policy" "bag_root_finder_ingests_drop_bucket_readonly" {
+resource "aws_iam_role_policy" "bag_root_finder_unpacked_bags_bucket_readonly" {
   role   = "${module.bag_root_finder.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_drop_bucket_readonly.json}"
+  policy = "${data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json}"
 }
 
 resource "aws_iam_role_policy" "bag_root_finder_metrics" {
@@ -87,9 +87,9 @@ resource "aws_iam_role_policy" "bag_versioner_versions_table" {
 
 # bag_verifier pre-replication
 
-resource "aws_iam_role_policy" "bag_verifier_pre_repl_ingests_drop_bucket_readonly" {
+resource "aws_iam_role_policy" "bag_verifier_pre_repl_unpacked_bags_bucket_readonly" {
   role   = "${module.bag_verifier_pre_replication.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_drop_bucket_readonly.json}"
+  policy = "${data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json}"
 }
 
 resource "aws_iam_role_policy" "bag_verifier_pre_repl_metrics" {
@@ -111,9 +111,9 @@ resource "aws_iam_role_policy" "bag_unpacker_drop_buckets_readonly" {
   policy = "${data.aws_iam_policy_document.drop_buckets_readonly.json}"
 }
 
-resource "aws_iam_role_policy" "bag_unpacker_ingests_drop_bucket_readwrite" {
+resource "aws_iam_role_policy" "bag_unpacker_unpacked_bags_bucket_readwrite" {
   role   = "${module.bag_unpacker.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_drop_bucket_readwrite.json}"
+  policy = "${data.aws_iam_policy_document.unpacked_bags_bucket_readwrite.json}"
 }
 
 resource "aws_iam_role_policy" "bag_unpacker_metrics" {
