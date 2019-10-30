@@ -6,6 +6,10 @@ output "manifests_bucket_name" {
   value = "${module.vhs_manifests.bucket_name}"
 }
 
+output "manifests_bucket_arn" {
+  value = "${module.vhs_manifests.bucket_arn}"
+}
+
 output "manifests_read_policy" {
   value = "${module.vhs_manifests.read_policy}"
 }
@@ -16,6 +20,10 @@ output "manifests_full_access_policy" {
 
 output "manifests_table_name" {
   value = "${module.vhs_manifests.table_name}"
+}
+
+output "manifests_table_arn" {
+  value = "${module.vhs_manifests.table_arn}"
 }
 
 output "ingests_table_name" {
@@ -38,13 +46,25 @@ output "ingest_drop_bucket_name" {
   value = "${aws_s3_bucket.ingests_drop.bucket}"
 }
 
+# Storage buckets
+
 output "archive_bucket_name" {
   value = "${aws_s3_bucket.archive.bucket}"
+}
+
+output "archive_bucket_arn" {
+  value = "${aws_s3_bucket.archive.arn}"
 }
 
 output "access_bucket_name" {
   value = "${aws_s3_bucket.access.bucket}"
 }
+
+output "access_bucket_arn" {
+  value = "${aws_s3_bucket.access.arn}"
+}
+
+# Bagger
 
 output "s3_bagger_drop_arn" {
   value = "${aws_s3_bucket.bagger_drop.arn}"
@@ -73,6 +93,8 @@ output "s3_bagger_errors_name" {
 output "s3_bagger_cache_name" {
   value = "${aws_s3_bucket.bagger_cache.id}"
 }
+
+# DynamoDB tables
 
 output "replicas_table_arn" {
   value = "${aws_dynamodb_table.replicas_table.arn}"
