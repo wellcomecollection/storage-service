@@ -57,7 +57,7 @@ module "bag_unpacker" {
 
   env_vars = {
     queue_url               = "${module.bag_unpacker_queue.url}"
-    destination_bucket_name = "${var.ingest_bucket_name}"
+    destination_bucket_name = "${var.ingests_drop_bucket_name}"
     ingest_topic_arn        = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bag_unpacker_output_topic.arn}"
     metrics_namespace       = "${local.bag_unpacker_service_name}"
@@ -232,8 +232,8 @@ module "replicator_verifier_primary" {
   bucket_name         = "${var.replica_primary_bucket_name}"
   primary_bucket_name = "${var.replica_primary_bucket_name}"
 
-  ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_read.json}"
-  cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_drop_bucket_readonly.json}"
+  cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
   replicator_lock_table_policy_json = "${module.replicator_lock_table.iam_policy}"
 
   security_group_ids = [
@@ -280,8 +280,8 @@ module "replicator_verifier_glacier" {
   bucket_name         = "${var.replica_ireland_bucket_name}"
   primary_bucket_name = "${var.replica_primary_bucket_name}"
 
-  ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_read.json}"
-  cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_drop_bucket_readonly.json}"
+  cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
   replicator_lock_table_policy_json = "${module.replicator_lock_table.iam_policy}"
 
   security_group_ids = [
@@ -592,7 +592,7 @@ module "trigger_bag_ingest" {
   infra_bucket           = "${var.infra_bucket}"
   oauth_details_enc      = "${var.archive_oauth_details_enc}"
   bag_paths              = "${var.bag_paths}"
-  ingest_bucket_name     = "${var.ingest_bucket_name}"
+  ingest_bucket_name     = "${var.ingests_drop_bucket_name}"
 
   use_encryption_key_policy = "${var.use_encryption_key_policy}"
 }

@@ -60,7 +60,9 @@ variable "bagger_dlcs_space" {}
 variable "bagger_dds_asset_prefix" {}
 variable "bagger_ingest_table" {}
 variable "bagger_ingest_table_arn" {}
-variable "ingest_drop_bucket_name" {}
+
+variable "ingests_drop_bucket_name" {}
+variable "ingests_drop_bucket_arn" {}
 
 variable "cognito_storage_api_identifier" {}
 variable "cognito_user_pool_arn" {}
@@ -72,7 +74,6 @@ variable "replicas_table_name" {}
 
 # trigger_bag_ingest
 
-variable "ingest_bucket_name" {}
 variable "archive_oauth_details_enc" {}
 
 variable "bag_paths" {

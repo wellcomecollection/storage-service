@@ -38,16 +38,18 @@ output "replicas_table_name" {
   value = "${module.critical.replicas_table_name}"
 }
 
-output "ingest_bucket_name" {
-  value = "${module.critical.ingest_drop_bucket_name}"
-}
-
 output "use_encryption_key_policy" {
   value = "${module.critical.use_encryption_key_policy}"
 }
 
-output "ingest_drop_bucket_name" {
-  value = "${module.critical.ingest_drop_bucket_name}"
+# Ingests drop bucket
+
+output "ingests_drop_bucket_name" {
+  value = "${module.critical.ingests_drop_bucket_name}"
+}
+
+output "ingests_drop_bucket_arn" {
+  value = "${module.critical.ingests_drop_bucket_arn}"
 }
 
 # Replica buckets

@@ -12,7 +12,7 @@ resource "aws_iam_role_policy" "bag_register_vhs_write" {
 
 resource "aws_iam_role_policy" "bag_register_metrics" {
   role   = "${module.bag_register.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
 }
 
 # bags_api
@@ -24,7 +24,7 @@ resource "aws_iam_role_policy" "bags_vhs" {
 
 resource "aws_iam_role_policy" "bags_api_metrics" {
   role   = "${module.api.bags_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
 }
 
 resource "aws_iam_role_policy" "s3_large_response_cache" {
@@ -34,45 +34,45 @@ resource "aws_iam_role_policy" "s3_large_response_cache" {
 
 # ingests
 
-resource "aws_iam_role_policy" "ingests_archive_ingest_table" {
+resource "aws_iam_role_policy" "ingests_table_readwrite" {
   role   = "${module.ingests.task_role_name}"
-  policy = "${data.aws_iam_policy_document.archive_ingest_table_read_write_policy.json}"
+  policy = "${data.aws_iam_policy_document.table_ingests_readwrite.json}"
 }
 
 resource "aws_iam_role_policy" "ingests_metrics" {
   role   = "${module.ingests.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
 }
 
 # ingests_api
 
 resource "aws_iam_role_policy" "ingests_api_metrics" {
   role   = "${module.api.ingests_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
 }
 
-resource "aws_iam_role_policy" "ingests_api_archive_ingest_table" {
+resource "aws_iam_role_policy" "ingests_api_table_readwrite" {
   role   = "${module.api.ingests_role_name}"
-  policy = "${data.aws_iam_policy_document.archive_ingest_table_read_write_policy.json}"
+  policy = "${data.aws_iam_policy_document.table_ingests_readwrite.json}"
 }
 
 # bag root finder
 
-resource "aws_iam_role_policy" "bag_root_finder_read_s3_ingests" {
+resource "aws_iam_role_policy" "bag_root_finder_ingests_drop_bucket_readonly" {
   role   = "${module.bag_root_finder.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_read.json}"
+  policy = "${data.aws_iam_policy_document.ingests_drop_bucket_readonly.json}"
 }
 
 resource "aws_iam_role_policy" "bag_root_finder_metrics" {
   role   = "${module.bag_root_finder.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
 }
 
 # bag versioner
 
 resource "aws_iam_role_policy" "bag_versioner_metrics" {
   role   = "${module.bag_versioner.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
 }
 
 resource "aws_iam_role_policy" "bag_versioner_locking_table" {
@@ -87,14 +87,14 @@ resource "aws_iam_role_policy" "bag_versioner_versions_table" {
 
 # bag_verifier pre-replication
 
-resource "aws_iam_role_policy" "bag_verifier_pre_repl_read_s3_ingests" {
+resource "aws_iam_role_policy" "bag_verifier_pre_repl_ingests_drop_bucket_readonly" {
   role   = "${module.bag_verifier_pre_replication.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_read.json}"
+  policy = "${data.aws_iam_policy_document.ingests_drop_bucket_readonly.json}"
 }
 
 resource "aws_iam_role_policy" "bag_verifier_pre_repl_metrics" {
   role   = "${module.bag_verifier_pre_replication.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
 }
 
 # The fetch files in the bag may refer to objects in the primary bucket,
@@ -106,19 +106,19 @@ resource "aws_iam_role_policy" "bag_verifier_pre_repl_replica_primary_readonly" 
 
 # bag_unpacker
 
-resource "aws_iam_role_policy" "bag_unpacker_task_read_ingests_s3" {
+resource "aws_iam_role_policy" "bag_unpacker_drop_buckets_readonly" {
   role   = "${module.bag_unpacker.task_role_name}"
-  policy = "${data.aws_iam_policy_document.ingests_read.json}"
+  policy = "${data.aws_iam_policy_document.drop_buckets_readonly.json}"
 }
 
-resource "aws_iam_role_policy" "bag_unpacker_task_readwrite_ingests_drop_s3" {
+resource "aws_iam_role_policy" "bag_unpacker_ingests_drop_bucket_readwrite" {
   role   = "${module.bag_unpacker.task_role_name}"
-  policy = "${data.aws_iam_policy_document.storage_ingests_drop_read_write.json}"
+  policy = "${data.aws_iam_policy_document.ingests_drop_bucket_readwrite.json}"
 }
 
 resource "aws_iam_role_policy" "bag_unpacker_metrics" {
   role   = "${module.bag_unpacker.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
 }
 
 resource "aws_iam_role_policy" "bag_unpacker_get_archivematica_ingests" {
@@ -142,19 +142,19 @@ data "aws_iam_policy_document" "archivematica_ingests_get" {
 
 resource "aws_iam_role_policy" "replica_aggregator_post_repl_metrics" {
   role   = "${module.replica_aggregator.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
 }
 
 resource "aws_iam_role_policy" "replica_aggregator_replicas_table" {
   role   = "${module.replica_aggregator.task_role_name}"
-  policy = "${data.aws_iam_policy_document.replicas_table_readwrite.json}"
+  policy = "${data.aws_iam_policy_document.table_replicas_readwrite.json}"
 }
 
 # notifier
 
 resource "aws_iam_role_policy" "notifier_metrics" {
   role   = "${module.notifier.task_role_name}"
-  policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  policy = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
 }
 
 # bagger

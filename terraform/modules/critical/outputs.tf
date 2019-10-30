@@ -42,8 +42,14 @@ output "static_content_bucket_name" {
   value = "${aws_s3_bucket.static_content.bucket}"
 }
 
-output "ingest_drop_bucket_name" {
+# Ingests drop bucket
+
+output "ingests_drop_bucket_name" {
   value = "${aws_s3_bucket.ingests_drop.bucket}"
+}
+
+output "ingests_drop_bucket_arn" {
+  value = "${aws_s3_bucket.ingests_drop.arn}"
 }
 
 # Replica buckets
