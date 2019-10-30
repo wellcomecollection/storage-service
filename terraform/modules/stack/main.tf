@@ -76,7 +76,7 @@ module "bag_unpacker" {
     queue_parallelism = 10
   }
 
-  env_vars_length = 10
+  env_vars_length = 9
 
   cpu    = 2048
   memory = 4096
