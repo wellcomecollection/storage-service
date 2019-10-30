@@ -36,8 +36,9 @@ module "stack_prod" {
   release_label = "prod"
   nginx_image   = "${local.nginx_image}"
 
+  replica_primary_bucket_name = "${data.terraform_remote_state.critical_prod.replica_primary_bucket_name}"
+
   archive_bucket_name              = "${data.terraform_remote_state.critical_prod.archive_bucket_name}"
-  access_bucket_name               = "${data.terraform_remote_state.critical_prod.access_bucket_name}"
   static_content_bucket_name       = "${data.terraform_remote_state.critical_prod.static_content_bucket_name}"
   vhs_archive_manifest_table_name  = "${data.terraform_remote_state.critical_prod.manifests_table_name}"
   vhs_archive_manifest_bucket_name = "${data.terraform_remote_state.critical_prod.manifests_bucket_name}"

@@ -46,7 +46,7 @@ output "ingest_drop_bucket_name" {
   value = "${aws_s3_bucket.ingests_drop.bucket}"
 }
 
-# Storage buckets
+# Replica buckets
 
 output "archive_bucket_name" {
   value = "${aws_s3_bucket.archive.bucket}"
@@ -56,12 +56,12 @@ output "archive_bucket_arn" {
   value = "${aws_s3_bucket.archive.arn}"
 }
 
-output "access_bucket_name" {
-  value = "${aws_s3_bucket.access.bucket}"
+output "replica_primary_bucket_name" {
+  value = "${aws_s3_bucket.replica_primary.bucket}"
 }
 
-output "access_bucket_arn" {
-  value = "${aws_s3_bucket.access.arn}"
+output "replica_primary_bucket_arn" {
+  value = "${aws_s3_bucket.replica_primary.arn}"
 }
 
 # Bagger

@@ -42,8 +42,9 @@ variable "nginx_image" {}
 
 # Configuration
 
+variable "replica_primary_bucket_name" {}
+
 variable "archive_bucket_name" {}
-variable "access_bucket_name" {}
 variable "vhs_archive_manifest_bucket_name" {}
 variable "vhs_archive_manifest_table_name" {}
 variable "static_content_bucket_name" {}

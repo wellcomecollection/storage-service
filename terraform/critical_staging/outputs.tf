@@ -50,13 +50,17 @@ output "ingest_drop_bucket_name" {
   value = "${module.critical.ingest_drop_bucket_name}"
 }
 
-output "access_bucket_name" {
-  value = "${module.critical.access_bucket_name}"
+# Replica buckets
+
+output "replica_primary_bucket_name" {
+  value = "${module.critical.replica_primary_bucket_name}"
 }
 
 output "archive_bucket_name" {
   value = "${module.critical.archive_bucket_name}"
 }
+
+#
 
 output "static_content_bucket_name" {
   value = "${module.critical.static_content_bucket_name}"

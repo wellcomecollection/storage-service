@@ -5,9 +5,9 @@ resource "aws_iam_role_policy" "bag_register_archive_get" {
   policy = "${data.aws_iam_policy_document.storage_archive_read.json}"
 }
 
-resource "aws_iam_role_policy" "bag_register_access_get" {
+resource "aws_iam_role_policy" "bag_register_replica_primary_readonly" {
   role   = "${module.bag_register.task_role_name}"
-  policy = "${data.aws_iam_policy_document.storage_access_read.json}"
+  policy = "${data.aws_iam_policy_document.replica_primary_readonly.json}"
 }
 
 resource "aws_iam_role_policy" "bag_register_vhs_write" {
@@ -102,11 +102,11 @@ resource "aws_iam_role_policy" "bag_verifier_pre_repl_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
-# The fetch files in the bag may refer to objects in the access bucket,
+# The fetch files in the bag may refer to objects in the primary bucket,
 # so we need to grant this verifier read perms to that bucket as well.
-resource "aws_iam_role_policy" "bag_verifier_pre_repl_read_replicator_bucket" {
+resource "aws_iam_role_policy" "bag_verifier_pre_repl_replica_primary_readonly" {
   role   = "${module.bag_verifier_pre_replication.task_role_name}"
-  policy = "${data.aws_iam_policy_document.storage_access_read.json}"
+  policy = "${data.aws_iam_policy_document.replica_primary_readonly.json}"
 }
 
 # bag_unpacker

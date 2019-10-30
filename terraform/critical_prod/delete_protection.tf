@@ -60,8 +60,8 @@ data "aws_iam_policy_document" "prevent_writes_to_prod" {
     effect = "Deny"
 
     resources = [
-      "${module.critical.access_bucket_arn}",
-      "${module.critical.access_bucket_arn}/*",
+      "${module.critical.replica_primary_bucket_arn}",
+      "${module.critical.replica_primary_bucket_arn}/*",
 
       "${module.critical.archive_bucket_arn}",
       "${module.critical.archive_bucket_arn}/*",

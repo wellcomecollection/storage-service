@@ -141,7 +141,7 @@ data "aws_iam_policy_document" "storage_archive_read" {
   }
 }
 
-data "aws_iam_policy_document" "storage_access_read" {
+data "aws_iam_policy_document" "replica_primary_readonly" {
   statement {
     actions = [
       "s3:ListBucket",
@@ -149,8 +149,8 @@ data "aws_iam_policy_document" "storage_access_read" {
     ]
 
     resources = [
-      "arn:aws:s3:::${var.access_bucket_name}",
-      "arn:aws:s3:::${var.access_bucket_name}/*",
+      "arn:aws:s3:::${var.replica_primary_bucket_name}",
+      "arn:aws:s3:::${var.replica_primary_bucket_name}/*",
     ]
   }
 }

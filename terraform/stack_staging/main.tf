@@ -36,8 +36,9 @@ module "stack_staging" {
   release_label = "stage"
   nginx_image   = "${local.nginx_image}"
 
+  replica_primary_bucket_name = "${data.terraform_remote_state.critical_staging.replica_primary_bucket_name}"
+
   archive_bucket_name              = "${data.terraform_remote_state.critical_staging.archive_bucket_name}"
-  access_bucket_name               = "${data.terraform_remote_state.critical_staging.access_bucket_name}"
   static_content_bucket_name       = "${data.terraform_remote_state.critical_staging.static_content_bucket_name}"
   vhs_archive_manifest_table_name  = "${data.terraform_remote_state.critical_staging.manifests_table_name}"
   vhs_archive_manifest_bucket_name = "${data.terraform_remote_state.critical_staging.manifests_bucket_name}"

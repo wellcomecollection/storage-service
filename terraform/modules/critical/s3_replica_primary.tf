@@ -1,14 +1,14 @@
-resource "aws_s3_bucket" "access" {
+resource "aws_s3_bucket" "replica_primary" {
   bucket = "wellcomecollection-${var.namespace}"
   acl    = "private"
 }
 
-resource "aws_s3_bucket_policy" "access_read" {
-  bucket = "${aws_s3_bucket.access.id}"
-  policy = "${data.aws_iam_policy_document.access_read.json}"
+resource "aws_s3_bucket_policy" "replica_primary_read" {
+  bucket = "${aws_s3_bucket.replica_primary.id}"
+  policy = "${data.aws_iam_policy_document.replica_primary_read.json}"
 }
 
-data "aws_iam_policy_document" "access_read" {
+data "aws_iam_policy_document" "replica_primary_read" {
   statement {
     actions = [
       "s3:List*",
@@ -16,15 +16,15 @@ data "aws_iam_policy_document" "access_read" {
     ]
 
     resources = [
-      "${aws_s3_bucket.access.arn}",
-      "${aws_s3_bucket.access.arn}/*",
+      "${aws_s3_bucket.replica_primary.arn}",
+      "${aws_s3_bucket.replica_primary.arn}/*",
     ]
 
     principals {
       type = "AWS"
 
       identifiers = [
-        "${var.access_read_principles}",
+        "${var.replica_primary_read_principals}",
       ]
     }
   }
@@ -38,8 +38,8 @@ data "aws_iam_policy_document" "access_read" {
     ]
 
     resources = [
-      "${aws_s3_bucket.access.arn}",
-      "${aws_s3_bucket.access.arn}/*",
+      "${aws_s3_bucket.replica_primary.arn}",
+      "${aws_s3_bucket.replica_primary.arn}/*",
     ]
 
     condition {

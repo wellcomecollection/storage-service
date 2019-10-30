@@ -6,12 +6,12 @@ variable "billing_mode" {
   description = "Should be either PAY_PER_REQUEST or PROVISIONED"
 }
 
-variable "archive_read_principles" {
+variable "replica_primary_read_principals" {
   type    = "list"
   default = []
 }
 
-variable "access_read_principles" {
+variable "archive_read_principles" {
   type    = "list"
   default = []
 }

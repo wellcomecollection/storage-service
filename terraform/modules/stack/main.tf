@@ -229,8 +229,8 @@ module "replicator_verifier_primary" {
     "${module.bag_versioner_output_topic.name}",
   ]
 
-  bucket_name         = "${var.access_bucket_name}"
-  primary_bucket_name = "${var.access_bucket_name}"
+  bucket_name         = "${var.replica_primary_bucket_name}"
+  primary_bucket_name = "${var.replica_primary_bucket_name}"
 
   ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_read.json}"
   cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_put.json}"
@@ -278,7 +278,7 @@ module "replicator_verifier_glacier" {
   ]
 
   bucket_name         = "${var.archive_bucket_name}"
-  primary_bucket_name = "${var.access_bucket_name}"
+  primary_bucket_name = "${var.replica_primary_bucket_name}"
 
   ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_read.json}"
   cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_put.json}"
