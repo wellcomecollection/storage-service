@@ -81,9 +81,6 @@ variable "bag_paths" {
 variable "ingests_table_name" {}
 variable "ingests_table_arn" {}
 
-variable "bag_id_lookup_table_name" {}
-variable "bag_id_lookup_table_arn" {}
-
 variable "workflow_bucket_name" {}
 
 # bagger buckets

@@ -75,9 +75,6 @@ module "stack_staging" {
   ingests_table_name = "${data.terraform_remote_state.critical_staging.ingests_table_name}"
   ingests_table_arn  = "${data.terraform_remote_state.critical_staging.ingests_table_arn}"
 
-  bag_id_lookup_table_name = "${data.terraform_remote_state.critical_staging.bag_id_lookup_table_name}"
-  bag_id_lookup_table_arn  = "${data.terraform_remote_state.critical_staging.bag_id_lookup_table_arn}"
-
   replicas_table_arn  = "${data.terraform_remote_state.critical_staging.replicas_table_arn}"
   replicas_table_name = "${data.terraform_remote_state.critical_staging.replicas_table_name}"
 
