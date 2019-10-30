@@ -26,14 +26,6 @@ output "ingests_table_arn" {
   value = "${aws_dynamodb_table.ingests.arn}"
 }
 
-output "bag_id_lookup_table_name" {
-  value = "${aws_dynamodb_table.bag_id_lookup.name}"
-}
-
-output "bag_id_lookup_table_arn" {
-  value = "${aws_dynamodb_table.bag_id_lookup.arn}"
-}
-
 output "use_encryption_key_policy" {
   value = "${module.kms_key.use_encryption_key_policy}"
 }

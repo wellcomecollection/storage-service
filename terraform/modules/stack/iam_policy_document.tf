@@ -12,20 +12,6 @@ data "aws_iam_policy_document" "archive_ingest_table_read_write_policy" {
   }
 }
 
-data "aws_iam_policy_document" "bag_id_lookup_table_read_write_policy" {
-  statement {
-    actions = [
-      "dynamodb:Query",
-      "dynamodb:PutItem",
-      "dynamodb:GetItem",
-    ]
-
-    resources = [
-      "${var.bag_id_lookup_table_arn}",
-    ]
-  }
-}
-
 data "aws_iam_policy_document" "replicas_table_readwrite" {
   statement {
     actions = [

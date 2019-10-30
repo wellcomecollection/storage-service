@@ -78,9 +78,6 @@ module "stack_prod" {
   replicas_table_arn  = "${data.terraform_remote_state.critical_prod.replicas_table_arn}"
   replicas_table_name = "${data.terraform_remote_state.critical_prod.replicas_table_name}"
 
-  bag_id_lookup_table_name = "${data.terraform_remote_state.critical_prod.bag_id_lookup_table_name}"
-  bag_id_lookup_table_arn  = "${data.terraform_remote_state.critical_prod.bag_id_lookup_table_arn}"
-
   ingest_bucket_name = "${data.terraform_remote_state.critical_prod.ingest_drop_bucket_name}"
 
   archive_oauth_details_enc = "${local.archive_oauth_details_enc}"

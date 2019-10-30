@@ -49,11 +49,6 @@ resource "aws_iam_role_policy" "ingests_metrics" {
   policy = "${data.aws_iam_policy_document.cloudwatch_put.json}"
 }
 
-resource "aws_iam_role_policy" "ingests_bag_id_lookup_table" {
-  role   = "${module.ingests.task_role_name}"
-  policy = "${data.aws_iam_policy_document.bag_id_lookup_table_read_write_policy.json}"
-}
-
 # ingests_api
 
 resource "aws_iam_role_policy" "ingests_api_metrics" {
@@ -64,11 +59,6 @@ resource "aws_iam_role_policy" "ingests_api_metrics" {
 resource "aws_iam_role_policy" "ingests_api_archive_ingest_table" {
   role   = "${module.api.ingests_role_name}"
   policy = "${data.aws_iam_policy_document.archive_ingest_table_read_write_policy.json}"
-}
-
-resource "aws_iam_role_policy" "ingests_api_bag_id_lookup_table" {
-  role   = "${module.api.ingests_role_name}"
-  policy = "${data.aws_iam_policy_document.bag_id_lookup_table_read_write_policy.json}"
 }
 
 # bag root finder
