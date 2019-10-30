@@ -52,7 +52,7 @@ class BagVersionerTest
     }
   }
 
-  ignore("fails if you ask for ingestType 'update' on a new bag") {
+  it("fails if you ask for ingestType 'update' on a new bag") {
     val externalIdentifier = createExternalIdentifier
     val storageSpace = createStorageSpace
 
@@ -75,7 +75,7 @@ class BagVersionerTest
     }
   }
 
-  ignore("fails if you ask for ingestType 'create' on an existing bag") {
+  it("fails if you ask for ingestType 'create' on an existing bag") {
     val externalIdentifier = createExternalIdentifier
     val storageSpace = createStorageSpace
 
