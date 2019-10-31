@@ -15,11 +15,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   UpdateIngestType
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
-import uk.ac.wellcome.platform.archive.common.versioning.{
-  IngestVersionManager,
-  IngestVersionManagerError
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.dynamo.DynamoID
 import uk.ac.wellcome.storage.locking.{FailedProcess, LockDao, LockingService}
 
 class VersionPicker(

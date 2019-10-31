@@ -13,9 +13,9 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerDaoError
 import uk.ac.wellcome.platform.storage.bag_versioner.models._
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
+  IngestVersionManagerDaoError,
   UnableToAssignVersion,
   VersionPicker,
   VersionPickerError
@@ -56,16 +56,16 @@ class BagVersioner(versionPicker: VersionPicker) {
             maybeUserFacingMessage = Some(s"Assigned bag version $version")
           )
 
-        case Left(auditError) =>
+        case Left(error) =>
           IngestFailed(
             BagVersionerFailureSummary(
               ingestId = ingestId,
               startTime = startTime,
               endTime = Instant.now()
             ),
-            e = getUnderlyingThrowable(auditError),
+            e = getUnderlyingThrowable(error),
             maybeUserFacingMessage =
-              UserFacingMessages.createMessage(ingestId, auditError)
+              UserFacingMessages.createMessage(ingestId, error)
           )
       }
     }
@@ -74,6 +74,6 @@ class BagVersioner(versionPicker: VersionPicker) {
     error match {
       case UnableToAssignVersion(internalError: IngestVersionManagerDaoError) =>
         internalError.e
-      case err => new Throwable(s"Unexpected error in the auditor: $err")
+      case err => new Throwable(s"Unexpected error in the bag versioner: $err")
     }
 }

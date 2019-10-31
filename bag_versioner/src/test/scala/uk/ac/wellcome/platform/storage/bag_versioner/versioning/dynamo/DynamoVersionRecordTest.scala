@@ -1,11 +1,11 @@
-package uk.ac.wellcome.platform.archive.common.versioning.dynamo
+package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 
 import java.time.Instant
 
 import org.scalatest.{FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.versioning.VersionRecordGenerators
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning.VersionRecordGenerators
 
 class DynamoVersionRecordTest
     extends FunSpec

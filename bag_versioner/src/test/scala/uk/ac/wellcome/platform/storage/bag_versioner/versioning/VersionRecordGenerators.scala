@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.versioning
+package uk.ac.wellcome.platform.storage.bag_versioner.versioning
 
 import java.time.Instant
 
