@@ -26,3 +26,8 @@ If you find references to these in current code, they should probably be updated
 
 *   **Bag auditor.**
     The early name of the *bag versioner*.
+
+*   **Bagger.**
+    This is a service we used when migrating the digitised content from Preservica into the new storage service.
+    It created BagIt packages for the content in Preservica, as if they'd come out of Goobi in the new workflow.
+    It was removed after the migration; you can find the source code and infrastructure in <https://github.com/wellcometrust/storage-service/pull/399>.
