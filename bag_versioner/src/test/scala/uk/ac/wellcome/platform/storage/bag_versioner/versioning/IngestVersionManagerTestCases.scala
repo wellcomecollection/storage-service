@@ -34,7 +34,9 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
     implicit context: Context
   ): R
 
-  def withManager[R](testWith: TestWith[IngestVersionManager, R])(implicit context: Context): R =
+  def withManager[R](
+    testWith: TestWith[IngestVersionManager, R]
+  )(implicit context: Context): R =
     withDao { dao =>
       withManager(dao) { manager =>
         testWith(manager)
