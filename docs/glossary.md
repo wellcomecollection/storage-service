@@ -2,6 +2,10 @@
 
 These are the naming conventions used in the codebase, particularly in variable names.
 
+In particular, this is a good place to record an *old* name for something.
+Hopefully most names are self-explanatory, but how would you know that X used to be named Y, and a leftover reference to Y is really about X?
+Recording it here can help future developers.
+
 <dl>
 
 
