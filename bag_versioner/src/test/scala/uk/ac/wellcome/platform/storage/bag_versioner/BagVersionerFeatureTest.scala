@@ -50,36 +50,40 @@ class BagVersionerFeatureTest
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
-      withBagVersionerWorker(queue, ingests, outgoing, stepName = "assigning bag version") {
-        _ =>
-          sendNotificationToSQS(queue, payload)
+      withBagVersionerWorker(
+        queue,
+        ingests,
+        outgoing,
+        stepName = "assigning bag version"
+      ) { _ =>
+        sendNotificationToSQS(queue, payload)
 
-          eventually {
-            assertQueueEmpty(queue)
+        eventually {
+          assertQueueEmpty(queue)
 
-            outgoing
-              .getMessages[VersionedBagRootPayload] shouldBe Seq(
-              expectedPayload
-            )
+          outgoing
+            .getMessages[VersionedBagRootPayload] shouldBe Seq(
+            expectedPayload
+          )
 
-            assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
-              ingestUpdates =>
-                ingestUpdates should have size 2
+          assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+            ingestUpdates =>
+              ingestUpdates should have size 2
 
-                ingestUpdates(0) shouldBe a[IngestEventUpdate]
-                ingestUpdates(0).events.map { _.description } shouldBe Seq(
-                  "Assigning bag version started"
-                )
+              ingestUpdates(0) shouldBe a[IngestEventUpdate]
+              ingestUpdates(0).events.map { _.description } shouldBe Seq(
+                "Assigning bag version started"
+              )
 
-                ingestUpdates(1) shouldBe a[IngestVersionUpdate]
-                ingestUpdates(1)
-                  .asInstanceOf[IngestVersionUpdate]
-                  .version shouldBe BagVersion(1)
-                ingestUpdates(1).events.map { _.description } shouldBe Seq(
-                  "Assigning bag version succeeded - assigned bag version v1"
-                )
-            }
+              ingestUpdates(1) shouldBe a[IngestVersionUpdate]
+              ingestUpdates(1)
+                .asInstanceOf[IngestVersionUpdate]
+                .version shouldBe BagVersion(1)
+              ingestUpdates(1).events.map { _.description } shouldBe Seq(
+                "Assigning bag version succeeded - assigned bag version v1"
+              )
           }
+        }
       }
     }
   }
@@ -108,76 +112,80 @@ class BagVersionerFeatureTest
     val outgoing = new MemoryMessageSender()
 
     withLocalSqsQueue { queue =>
-      withBagVersionerWorker(queue, ingests, outgoing, stepName = "assigning bag version") {
-        _ =>
-          // Send the initial payload with "create" and check it completes
-          sendNotificationToSQS(queue, payload1)
+      withBagVersionerWorker(
+        queue,
+        ingests,
+        outgoing,
+        stepName = "assigning bag version"
+      ) { _ =>
+        // Send the initial payload with "create" and check it completes
+        sendNotificationToSQS(queue, payload1)
 
-          eventually {
-            assertQueueEmpty(queue)
+        eventually {
+          assertQueueEmpty(queue)
 
-            outgoing
-              .getMessages[VersionedBagRootPayload] should have size 1
+          outgoing
+            .getMessages[VersionedBagRootPayload] should have size 1
 
-            assertTopicReceivesIngestUpdates(payload1.ingestId, ingests) {
-              ingestUpdates =>
-                ingestUpdates should have size 2
+          assertTopicReceivesIngestUpdates(payload1.ingestId, ingests) {
+            ingestUpdates =>
+              ingestUpdates should have size 2
 
-                ingestUpdates(0) shouldBe a[IngestEventUpdate]
-                ingestUpdates(0).events.map { _.description } shouldBe Seq(
-                  "Assigning bag version started"
-                )
+              ingestUpdates(0) shouldBe a[IngestEventUpdate]
+              ingestUpdates(0).events.map { _.description } shouldBe Seq(
+                "Assigning bag version started"
+              )
 
-                ingestUpdates(1) shouldBe a[IngestVersionUpdate]
-                ingestUpdates(1)
-                  .asInstanceOf[IngestVersionUpdate]
-                  .version shouldBe BagVersion(1)
-                ingestUpdates(1).events.map { _.description } shouldBe Seq(
-                  "Assigning bag version succeeded - assigned bag version v1"
-                )
-            }
+              ingestUpdates(1) shouldBe a[IngestVersionUpdate]
+              ingestUpdates(1)
+                .asInstanceOf[IngestVersionUpdate]
+                .version shouldBe BagVersion(1)
+              ingestUpdates(1).events.map { _.description } shouldBe Seq(
+                "Assigning bag version succeeded - assigned bag version v1"
+              )
           }
+        }
 
-          // Now send the payload with "update"
-          sendNotificationToSQS(queue, payload2)
+        // Now send the payload with "update"
+        sendNotificationToSQS(queue, payload2)
 
-          eventually {
-            assertQueueEmpty(queue)
+        eventually {
+          assertQueueEmpty(queue)
 
-            outgoing
-              .getMessages[VersionedBagRootPayload] should have size 2
+          outgoing
+            .getMessages[VersionedBagRootPayload] should have size 2
 
-            assertTopicReceivesIngestUpdates(payload1.ingestId, ingests) {
-              ingestUpdates =>
-                ingestUpdates should have size 4
+          assertTopicReceivesIngestUpdates(payload1.ingestId, ingests) {
+            ingestUpdates =>
+              ingestUpdates should have size 4
 
-                ingestUpdates(0) shouldBe a[IngestEventUpdate]
-                ingestUpdates(0).events.map { _.description } shouldBe Seq(
-                  "Assigning bag version started"
-                )
+              ingestUpdates(0) shouldBe a[IngestEventUpdate]
+              ingestUpdates(0).events.map { _.description } shouldBe Seq(
+                "Assigning bag version started"
+              )
 
-                ingestUpdates(1) shouldBe a[IngestVersionUpdate]
-                ingestUpdates(1)
-                  .asInstanceOf[IngestVersionUpdate]
-                  .version shouldBe BagVersion(1)
-                ingestUpdates(1).events.map { _.description } shouldBe Seq(
-                  "Assigning bag version succeeded - assigned bag version v1"
-                )
+              ingestUpdates(1) shouldBe a[IngestVersionUpdate]
+              ingestUpdates(1)
+                .asInstanceOf[IngestVersionUpdate]
+                .version shouldBe BagVersion(1)
+              ingestUpdates(1).events.map { _.description } shouldBe Seq(
+                "Assigning bag version succeeded - assigned bag version v1"
+              )
 
-                ingestUpdates(2) shouldBe a[IngestEventUpdate]
-                ingestUpdates(2).events.map { _.description } shouldBe Seq(
-                  "Assigning bag version started"
-                )
+              ingestUpdates(2) shouldBe a[IngestEventUpdate]
+              ingestUpdates(2).events.map { _.description } shouldBe Seq(
+                "Assigning bag version started"
+              )
 
-                ingestUpdates(3) shouldBe a[IngestVersionUpdate]
-                ingestUpdates(3)
-                  .asInstanceOf[IngestVersionUpdate]
-                  .version shouldBe BagVersion(2)
-                ingestUpdates(3).events.map { _.description } shouldBe Seq(
-                  "Assigning bag version succeeded - assigned bag version v2"
-                )
-            }
+              ingestUpdates(3) shouldBe a[IngestVersionUpdate]
+              ingestUpdates(3)
+                .asInstanceOf[IngestVersionUpdate]
+                .version shouldBe BagVersion(2)
+              ingestUpdates(3).events.map { _.description } shouldBe Seq(
+                "Assigning bag version succeeded - assigned bag version v2"
+              )
           }
+        }
       }
     }
   }
