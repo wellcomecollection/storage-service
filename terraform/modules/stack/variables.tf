@@ -43,7 +43,7 @@ variable "nginx_image" {}
 # Configuration
 
 variable "replica_primary_bucket_name" {}
-variable "replica_ireland_bucket_name" {}
+variable "replica_glacier_bucket_name" {}
 
 variable "vhs_archive_manifest_bucket_name" {}
 variable "vhs_archive_manifest_table_name" {}

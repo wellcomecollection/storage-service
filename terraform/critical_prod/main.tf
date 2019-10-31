@@ -14,7 +14,7 @@ module "critical" {
     "arn:aws:iam::653428163053:user/echo-fs",
   ]
 
-  replica_ireland_read_principals = [
+  replica_glacier_read_principals = [
     "${local.archivematica_task_role_arn}",
     "${local.digitisation_account_principal}",
     "${local.goobi_task_role_arn}",

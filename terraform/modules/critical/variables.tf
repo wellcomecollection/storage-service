@@ -11,7 +11,7 @@ variable "replica_primary_read_principals" {
   default = []
 }
 
-variable "replica_ireland_read_principals" {
+variable "replica_glacier_read_principals" {
   type    = "list"
   default = []
 }

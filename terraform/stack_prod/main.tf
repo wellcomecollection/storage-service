@@ -37,7 +37,7 @@ module "stack_prod" {
   nginx_image   = "${local.nginx_image}"
 
   replica_primary_bucket_name = "${data.terraform_remote_state.critical_prod.replica_primary_bucket_name}"
-  replica_ireland_bucket_name = "${data.terraform_remote_state.critical_prod.replica_ireland_bucket_name}"
+  replica_glacier_bucket_name = "${data.terraform_remote_state.critical_prod.replica_glacier_bucket_name}"
 
   static_content_bucket_name       = "${data.terraform_remote_state.critical_prod.static_content_bucket_name}"
   vhs_archive_manifest_table_name  = "${data.terraform_remote_state.critical_prod.manifests_table_name}"

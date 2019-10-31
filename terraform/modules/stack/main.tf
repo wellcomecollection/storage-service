@@ -277,7 +277,7 @@ module "replicator_verifier_glacier" {
     "${module.bag_versioner_output_topic.name}",
   ]
 
-  bucket_name         = "${var.replica_ireland_bucket_name}"
+  bucket_name         = "${var.replica_glacier_bucket_name}"
   primary_bucket_name = "${var.replica_primary_bucket_name}"
 
   ingests_read_policy_json          = "${data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json}"

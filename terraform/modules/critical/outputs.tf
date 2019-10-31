@@ -52,12 +52,12 @@ output "replica_primary_bucket_arn" {
   value = "${aws_s3_bucket.replica_primary.arn}"
 }
 
-output "replica_ireland_bucket_name" {
-  value = "${aws_s3_bucket.replica_ireland.bucket}"
+output "replica_glacier_bucket_name" {
+  value = "${aws_s3_bucket.replica_glacier.bucket}"
 }
 
-output "replica_ireland_bucket_arn" {
-  value = "${aws_s3_bucket.replica_ireland.arn}"
+output "replica_glacier_bucket_arn" {
+  value = "${aws_s3_bucket.replica_glacier.arn}"
 }
 
 # Bagger
