@@ -1,8 +1,7 @@
 module "critical" {
   source = "../modules/critical"
 
-  namespace  = "${local.namespace}-staging"
-  account_id = "${local.account_id}"
+  namespace = "${local.namespace}-staging"
 
   replica_primary_read_principals = [
     "${local.archivematica_task_role_arn}",

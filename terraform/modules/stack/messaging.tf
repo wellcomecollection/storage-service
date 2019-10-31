@@ -67,35 +67,6 @@ module "notifier_input_queue" {
   dlq_alarm_arn = "${var.dlq_alarm_arn}"
 }
 
-# bagger
-
-module "bagger_topic" {
-  source = "../topic"
-
-  name       = "${var.namespace}_bagger"
-  role_names = []
-}
-
-module "bagger_queue" {
-  source = "../queue"
-
-  name = "${var.namespace}_bagger"
-
-  topic_names = ["${module.bagger_topic.name}"]
-
-  role_names = ["${module.bagger.task_role_name}"]
-
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
-}
-
-module "bagging_complete_topic" {
-  source = "../topic"
-
-  name       = "${var.namespace}_bagging_complete"
-  role_names = ["${module.bagger.task_role_name}"]
-}
-
 # bag_unpacker
 
 module "bag_unpacker_input_topic" {

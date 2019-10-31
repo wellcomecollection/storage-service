@@ -1,5 +1,4 @@
 variable "namespace" {}
-variable "account_id" {}
 
 variable "billing_mode" {
   default     = "PAY_PER_REQUEST"
