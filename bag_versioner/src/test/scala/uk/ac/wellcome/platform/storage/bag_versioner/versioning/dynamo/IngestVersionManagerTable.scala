@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.versioning.dynamo
+package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 
 import com.amazonaws.services.dynamodbv2.model._
 import uk.ac.wellcome.fixtures.TestWith

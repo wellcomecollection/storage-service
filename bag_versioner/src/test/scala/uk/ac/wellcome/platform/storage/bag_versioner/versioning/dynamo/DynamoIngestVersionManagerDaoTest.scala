@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.versioning.dynamo
+package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 
 import java.time.temporal.ChronoUnit
 
@@ -9,7 +9,7 @@ import org.scanamo.time.JavaTimeFormats._
 import org.scanamo.{Table => ScanamoTable}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.versioning.{
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManagerDao,
   IngestVersionManagerDaoTestCases,
   VersionRecord

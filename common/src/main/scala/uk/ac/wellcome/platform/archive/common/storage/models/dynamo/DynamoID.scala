@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.versioning.dynamo
+package uk.ac.wellcome.platform.archive.common.storage.models.dynamo
 
 import java.net.{URLDecoder, URLEncoder}
 import java.nio.charset.StandardCharsets

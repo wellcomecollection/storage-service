@@ -13,9 +13,9 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerDaoError
 import uk.ac.wellcome.platform.storage.bag_versioner.models._
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
+  IngestVersionManagerDaoError,
   UnableToAssignVersion,
   VersionPicker,
   VersionPickerError

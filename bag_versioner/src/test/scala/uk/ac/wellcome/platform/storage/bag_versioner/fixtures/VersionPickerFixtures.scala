@@ -5,9 +5,11 @@ import java.util.UUID
 import cats.Id
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerError
-import uk.ac.wellcome.platform.archive.common.versioning.memory.MemoryIngestVersionManager
-import uk.ac.wellcome.platform.storage.bag_versioner.versioning.VersionPicker
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning.memory.MemoryIngestVersionManager
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
+  IngestVersionManagerError,
+  VersionPicker
+}
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 

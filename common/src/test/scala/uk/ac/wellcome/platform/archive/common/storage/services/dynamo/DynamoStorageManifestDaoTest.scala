@@ -6,11 +6,11 @@ import org.scanamo.{Table => ScanamoTable}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.storage.models.dynamo.DynamoID
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestDao,
   StorageManifestDaoTestCases
 }
-import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.fixtures.{DynamoFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket

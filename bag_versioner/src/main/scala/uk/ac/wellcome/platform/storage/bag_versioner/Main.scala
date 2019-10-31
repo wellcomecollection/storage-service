@@ -20,16 +20,18 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.platform.archive.common.versioning.IngestVersionManagerError
-import uk.ac.wellcome.platform.archive.common.versioning.dynamo.{
-  DynamoIngestVersionManager,
-  DynamoIngestVersionManagerDao
-}
 import uk.ac.wellcome.platform.storage.bag_versioner.services.{
   BagVersioner,
   BagVersionerWorker
 }
-import uk.ac.wellcome.platform.storage.bag_versioner.versioning.VersionPicker
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo.{
+  DynamoIngestVersionManager,
+  DynamoIngestVersionManagerDao
+}
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
+  IngestVersionManagerError,
+  VersionPicker
+}
 import uk.ac.wellcome.storage.locking.dynamo.DynamoLockingService
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, DynamoLockDaoBuilder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp

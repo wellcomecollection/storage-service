@@ -2,16 +2,7 @@ package uk.ac.wellcome.platform.storage.bag_versioner.services
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.versioning.{
-  ExternalIdentifiersMismatch,
-  NewerIngestAlreadyExists
-}
-import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
-  IngestTypeCreateForExistingBag,
-  IngestTypeUpdateForNewBag,
-  UnableToAssignVersion,
-  VersionPickerError
-}
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning._
 
 object UserFacingMessages extends Logging {
   def createMessage(

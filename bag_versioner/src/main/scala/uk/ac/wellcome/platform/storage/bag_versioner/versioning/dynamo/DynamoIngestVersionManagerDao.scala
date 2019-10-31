@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.versioning.dynamo
+package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import org.scanamo.auto._
@@ -8,7 +8,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.versioning.{
+import uk.ac.wellcome.platform.archive.common.storage.models.dynamo.DynamoID
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManagerDao,
   VersionRecord
 }

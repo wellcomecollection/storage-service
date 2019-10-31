@@ -1,10 +1,10 @@
-package uk.ac.wellcome.platform.archive.common.versioning.memory
+package uk.ac.wellcome.platform.storage.bag_versioner.versioning.memory
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.versioning.{
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManager,
   IngestVersionManagerTestCases,
   VersionRecord

@@ -17,10 +17,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   UpdateIngestType
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.versioning.{
-  ExternalIdentifiersMismatch,
-  NewerIngestAlreadyExists
-}
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.VersionPickerFixtures
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure, UnlockFailure}
 

@@ -10,11 +10,11 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.storage.models.dynamo.DynamoID
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   EmptyMetadata,
   StorageManifestDao
 }
-import uk.ac.wellcome.platform.archive.common.versioning.dynamo.DynamoID
 import uk.ac.wellcome.storage.{
   ObjectLocation,
   ObjectLocationPrefix,
