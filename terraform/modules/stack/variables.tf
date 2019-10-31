@@ -4,10 +4,7 @@ variable "api_url" {}
 variable "domain_name" {}
 variable "cert_domain_name" {}
 
-variable "lambda_error_alarm_arn" {}
 variable "dlq_alarm_arn" {}
-
-variable "infra_bucket" {}
 
 variable "ssh_key_name" {}
 
@@ -28,8 +25,6 @@ variable "vpc_cidr" {
 variable "aws_region" {
   default = "eu-west-1"
 }
-
-variable "use_encryption_key_policy" {}
 
 # Container images
 
@@ -69,14 +64,6 @@ variable "alarm_topic_arn" {}
 
 variable "replicas_table_arn" {}
 variable "replicas_table_name" {}
-
-# trigger_bag_ingest
-
-variable "archive_oauth_details_enc" {}
-
-variable "bag_paths" {
-  default = "b22454408.zip"
-}
 
 variable "ingests_table_name" {}
 variable "ingests_table_arn" {}

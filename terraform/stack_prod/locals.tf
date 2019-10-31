@@ -10,11 +10,9 @@ locals {
 
   cert_domain_name = "storage.api.wellcomecollection.org"
 
-  key_name     = "wellcomedigitalstorage"
-  infra_bucket = "wellcomecollection-storage-infra"
+  key_name = "wellcomedigitalstorage"
 
-  lambda_error_alarm_arn         = "${data.terraform_remote_state.infra_shared.lambda_error_alarm_arn}"
-  dlq_alarm_arn                  = "${data.terraform_remote_state.infra_shared.dlq_alarm_arn}"
+  dlq_alarm_arn = "${data.terraform_remote_state.infra_shared.dlq_alarm_arn}"
 
   cognito_user_pool_arn          = "${data.terraform_remote_state.infra_critical.cognito_user_pool_arn}"
   cognito_storage_api_identifier = "${data.terraform_remote_state.infra_critical.cognito_storage_api_identifier}"

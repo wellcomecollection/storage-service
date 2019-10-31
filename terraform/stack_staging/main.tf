@@ -25,10 +25,8 @@ module "stack_staging" {
   private_subnets = "${local.private_subnets}"
 
   ssh_key_name = "${local.key_name}"
-  infra_bucket = "${local.infra_bucket}"
 
-  lambda_error_alarm_arn = "${local.lambda_error_alarm_arn}"
-  dlq_alarm_arn          = "${local.dlq_alarm_arn}"
+  dlq_alarm_arn = "${local.dlq_alarm_arn}"
 
   cognito_user_pool_arn          = "${local.cognito_user_pool_arn}"
   cognito_storage_api_identifier = "${local.cognito_storage_api_identifier}"
@@ -79,10 +77,6 @@ module "stack_staging" {
 
   replicas_table_arn  = "${data.terraform_remote_state.critical_staging.replicas_table_arn}"
   replicas_table_name = "${data.terraform_remote_state.critical_staging.replicas_table_name}"
-
-  archive_oauth_details_enc = "${local.archive_oauth_details_enc}"
-
-  use_encryption_key_policy = "${data.terraform_remote_state.critical_staging.use_encryption_key_policy}"
 
   workflow_bucket_name = "${local.workflow_staging_bucket_name}"
 

@@ -34,10 +34,6 @@ data "aws_ssm_parameter" "bagger_dlcs_source_bucket" {
   name = "/storage/config/prod/bagger_dlcs_source_bucket"
 }
 
-data "aws_ssm_parameter" "archive_oauth_details_enc" {
-  name = "/storage/config/prod/archive_oauth_details_enc"
-}
-
 locals {
   bagger_mets_bucket_name            = "${data.aws_ssm_parameter.bagger_mets_bucket_name.value}"
   bagger_read_mets_from_fileshare    = "${data.aws_ssm_parameter.bagger_read_mets_from_fileshare.value == "true" ? true : false}"
@@ -50,6 +46,4 @@ locals {
   bagger_dlcs_source_bucket = "${data.aws_ssm_parameter.bagger_dlcs_source_bucket.value}"
 
   bagger_dds_asset_prefix = "${data.aws_ssm_parameter.bagger_dds_asset_prefix.value}"
-
-  archive_oauth_details_enc = "${data.aws_ssm_parameter.archive_oauth_details_enc.value}"
 }

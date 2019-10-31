@@ -38,10 +38,6 @@ output "replicas_table_name" {
   value = "${module.critical.replicas_table_name}"
 }
 
-output "use_encryption_key_policy" {
-  value = "${module.critical.use_encryption_key_policy}"
-}
-
 # Replica buckets
 
 output "replica_primary_bucket_name" {

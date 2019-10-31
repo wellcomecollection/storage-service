@@ -582,17 +582,3 @@ module "bagger" {
 
   container_image = "${local.bagger_image}"
 }
-
-module "trigger_bag_ingest" {
-  source = "trigger_bag_ingest"
-
-  name                   = "${var.namespace}-trigger-bag-ingest"
-  lambda_s3_key          = "lambdas/archive/lambdas/trigger_bag_ingest.zip"
-  lambda_error_alarm_arn = "${var.lambda_error_alarm_arn}"
-  infra_bucket           = "${var.infra_bucket}"
-  oauth_details_enc      = "${var.archive_oauth_details_enc}"
-  bag_paths              = "${var.bag_paths}"
-  ingest_bucket_name     = "wellcomecollection-storage-ingests"
-
-  use_encryption_key_policy = "${var.use_encryption_key_policy}"
-}

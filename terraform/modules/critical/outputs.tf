@@ -34,10 +34,6 @@ output "ingests_table_arn" {
   value = "${aws_dynamodb_table.ingests.arn}"
 }
 
-output "use_encryption_key_policy" {
-  value = "${module.kms_key.use_encryption_key_policy}"
-}
-
 output "static_content_bucket_name" {
   value = "${aws_s3_bucket.static_content.bucket}"
 }
