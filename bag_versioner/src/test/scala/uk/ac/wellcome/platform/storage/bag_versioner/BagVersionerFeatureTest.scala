@@ -35,7 +35,8 @@ class BagVersionerFeatureTest
 
     val payload = createBagRootLocationPayloadWith(
       context = createPipelineContextWith(
-        storageSpace = storageSpace
+        storageSpace = storageSpace,
+        ingestType = CreateIngestType
       ),
       bagRoot = bagRoot
     )
@@ -49,7 +50,7 @@ class BagVersionerFeatureTest
     withLocalSqsQueue { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
-      withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") {
+      withBagVersionerWorker(queue, ingests, outgoing, stepName = "assigning bag version") {
         _ =>
           sendNotificationToSQS(queue, payload)
 
@@ -67,7 +68,7 @@ class BagVersionerFeatureTest
 
                 ingestUpdates(0) shouldBe a[IngestEventUpdate]
                 ingestUpdates(0).events.map { _.description } shouldBe Seq(
-                  "Auditing bag started"
+                  "Assigning bag version started"
                 )
 
                 ingestUpdates(1) shouldBe a[IngestVersionUpdate]
@@ -75,7 +76,7 @@ class BagVersionerFeatureTest
                   .asInstanceOf[IngestVersionUpdate]
                   .version shouldBe BagVersion(1)
                 ingestUpdates(1).events.map { _.description } shouldBe Seq(
-                  "Auditing bag succeeded - assigned bag version v1"
+                  "Assigning bag version succeeded - assigned bag version v1"
                 )
             }
           }
@@ -107,7 +108,7 @@ class BagVersionerFeatureTest
     val outgoing = new MemoryMessageSender()
 
     withLocalSqsQueue { queue =>
-      withAuditorWorker(queue, ingests, outgoing, stepName = "auditing bag") {
+      withBagVersionerWorker(queue, ingests, outgoing, stepName = "assigning bag version") {
         _ =>
           // Send the initial payload with "create" and check it completes
           sendNotificationToSQS(queue, payload1)
@@ -124,7 +125,7 @@ class BagVersionerFeatureTest
 
                 ingestUpdates(0) shouldBe a[IngestEventUpdate]
                 ingestUpdates(0).events.map { _.description } shouldBe Seq(
-                  "Auditing bag started"
+                  "Assigning bag version started"
                 )
 
                 ingestUpdates(1) shouldBe a[IngestVersionUpdate]
@@ -132,7 +133,7 @@ class BagVersionerFeatureTest
                   .asInstanceOf[IngestVersionUpdate]
                   .version shouldBe BagVersion(1)
                 ingestUpdates(1).events.map { _.description } shouldBe Seq(
-                  "Auditing bag succeeded - assigned bag version v1"
+                  "Assigning bag version succeeded - assigned bag version v1"
                 )
             }
           }
@@ -152,7 +153,7 @@ class BagVersionerFeatureTest
 
                 ingestUpdates(0) shouldBe a[IngestEventUpdate]
                 ingestUpdates(0).events.map { _.description } shouldBe Seq(
-                  "Auditing bag started"
+                  "Assigning bag version started"
                 )
 
                 ingestUpdates(1) shouldBe a[IngestVersionUpdate]
@@ -160,12 +161,12 @@ class BagVersionerFeatureTest
                   .asInstanceOf[IngestVersionUpdate]
                   .version shouldBe BagVersion(1)
                 ingestUpdates(1).events.map { _.description } shouldBe Seq(
-                  "Auditing bag succeeded - assigned bag version v1"
+                  "Assigning bag version succeeded - assigned bag version v1"
                 )
 
                 ingestUpdates(2) shouldBe a[IngestEventUpdate]
                 ingestUpdates(2).events.map { _.description } shouldBe Seq(
-                  "Auditing bag started"
+                  "Assigning bag version started"
                 )
 
                 ingestUpdates(3) shouldBe a[IngestVersionUpdate]
@@ -173,7 +174,7 @@ class BagVersionerFeatureTest
                   .asInstanceOf[IngestVersionUpdate]
                   .version shouldBe BagVersion(2)
                 ingestUpdates(3).events.map { _.description } shouldBe Seq(
-                  "Auditing bag succeeded - assigned bag version v2"
+                  "Assigning bag version succeeded - assigned bag version v2"
                 )
             }
           }

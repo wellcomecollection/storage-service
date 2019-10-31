@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.storage.bag_versioner.services.{
   BagVersioner,
   BagVersionerWorker
 }
-import uk.ac.wellcome.platform.storage.bag_versioner.versioning.VersionPicker
 
 import uk.ac.wellcome.json.JsonUtil._
 
@@ -29,22 +28,12 @@ trait BagVersionerFixtures
     arn = "arn::default_q"
   )
 
-  def withBagAuditor[R](testWith: TestWith[BagVersioner, R]): R =
+  def withBagVersioner[R](testWith: TestWith[BagVersioner, R]): R =
     withVersionPicker { versionPicker =>
-      withBagAuditor(versionPicker) { bagAuditor =>
-        testWith(bagAuditor)
-      }
+      testWith(new BagVersioner(versionPicker))
     }
 
-  def withBagAuditor[R](
-    versionPicker: VersionPicker
-  )(testWith: TestWith[BagVersioner, R]): R = {
-    val bagAuditor = new BagVersioner(versionPicker)
-
-    testWith(bagAuditor)
-  }
-
-  def withAuditorWorker[R](
+  def withBagVersionerWorker[R](
     queue: Queue = defaultQueue,
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
@@ -54,10 +43,10 @@ trait BagVersionerFixtures
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
       withMonitoringClient { implicit monitoringClient =>
-        withBagAuditor { bagAuditor =>
+        withBagVersioner { bagVersioner =>
           val worker = new BagVersionerWorker(
             config = createAlpakkaSQSWorkerConfig(queue),
-            bagVersioner = bagAuditor,
+            bagVersioner = bagVersioner,
             ingestUpdater = ingestUpdater,
             outgoingPublisher = outgoingPublisher
           )

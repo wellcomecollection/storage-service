@@ -33,8 +33,8 @@ class BagVersionerTest
     val externalIdentifier = createExternalIdentifier
     val storageSpace = createStorageSpace
 
-    withBagAuditor { bagAuditor =>
-      val maybeAudit = bagAuditor.getSummary(
+    withBagVersioner { bagVersioner =>
+      val maybeVersion = bagVersioner.getSummary(
         ingestId = createIngestID,
         ingestDate = Instant.now,
         ingestType = CreateIngestType,
@@ -42,7 +42,7 @@ class BagVersionerTest
         storageSpace = storageSpace
       )
 
-      val result = maybeAudit.success.get
+      val result = maybeVersion.success.get
       result.maybeUserFacingMessage shouldBe Some("Assigned bag version v1")
 
       val summary = result.summary
@@ -56,8 +56,8 @@ class BagVersionerTest
     val externalIdentifier = createExternalIdentifier
     val storageSpace = createStorageSpace
 
-    withBagAuditor { bagAuditor =>
-      val maybeAudit = bagAuditor.getSummary(
+    withBagVersioner { bagVersioner =>
+      val maybeVersion = bagVersioner.getSummary(
         ingestId = createIngestID,
         ingestDate = Instant.now,
         ingestType = UpdateIngestType,
@@ -65,7 +65,7 @@ class BagVersionerTest
         storageSpace = storageSpace
       )
 
-      val result = maybeAudit.success.get
+      val result = maybeVersion.success.get
       result shouldBe a[IngestFailed[_]]
 
       result.summary shouldBe a[BagVersionerFailureSummary]
@@ -79,8 +79,8 @@ class BagVersionerTest
     val externalIdentifier = createExternalIdentifier
     val storageSpace = createStorageSpace
 
-    withBagAuditor { bagAuditor =>
-      bagAuditor.getSummary(
+    withBagVersioner { bagVersioner =>
+      bagVersioner.getSummary(
         ingestId = createIngestID,
         ingestDate = Instant.ofEpochSecond(1),
         ingestType = CreateIngestType,
@@ -88,7 +88,7 @@ class BagVersionerTest
         storageSpace = storageSpace
       )
 
-      val maybeAudit = bagAuditor.getSummary(
+      val maybeVersion = bagVersioner.getSummary(
         ingestId = createIngestID,
         ingestDate = Instant.ofEpochSecond(2),
         ingestType = CreateIngestType,
@@ -96,7 +96,7 @@ class BagVersionerTest
         storageSpace = storageSpace
       )
 
-      val result = maybeAudit.success.get
+      val result = maybeVersion.success.get
       result shouldBe a[IngestFailed[_]]
 
       result.summary shouldBe a[BagVersionerFailureSummary]
