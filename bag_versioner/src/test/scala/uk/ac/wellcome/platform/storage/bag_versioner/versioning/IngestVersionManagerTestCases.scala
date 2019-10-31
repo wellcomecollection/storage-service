@@ -34,43 +34,46 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
     implicit context: Context
   ): R
 
+  def withManager[R](testWith: TestWith[IngestVersionManager, R])(implicit context: Context): R =
+    withDao { dao =>
+      withManager(dao) { manager =>
+        testWith(manager)
+      }
+    }
+
   describe("behaves as an ingest version manager") {
     it("assigns version 1 if it hasn't seen this external ID before") {
       withContext { implicit context =>
-        withDao { dao =>
-          withManager(dao) { manager =>
-            manager
-              .assignVersion(
-                externalIdentifier = createExternalIdentifier,
-                ingestId = createIngestID,
-                ingestDate = Instant.now,
-                storageSpace = createStorageSpace
-              )
-              .right
-              .value shouldBe BagVersion(1)
-          }
+        withManager { manager =>
+          manager
+            .assignVersion(
+              externalIdentifier = createExternalIdentifier,
+              ingestId = createIngestID,
+              ingestDate = Instant.now,
+              storageSpace = createStorageSpace
+            )
+            .right
+            .value shouldBe BagVersion(1)
         }
       }
     }
 
     it("assigns increasing versions if it sees newer ingest dates each time") {
       withContext { implicit context =>
-        withDao { dao =>
-          withManager(dao) { manager =>
-            val externalIdentifier = createExternalIdentifier
-            val storageSpace = createStorageSpace
+        withManager { manager =>
+          val externalIdentifier = createExternalIdentifier
+          val storageSpace = createStorageSpace
 
-            (1 to 5).map { version =>
-              manager
-                .assignVersion(
-                  externalIdentifier = externalIdentifier,
-                  ingestId = createIngestID,
-                  ingestDate = Instant.ofEpochSecond(version),
-                  storageSpace = storageSpace
-                )
-                .right
-                .value shouldBe BagVersion(version)
-            }
+          (1 to 5).map { version =>
+            manager
+              .assignVersion(
+                externalIdentifier = externalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.ofEpochSecond(version),
+                storageSpace = storageSpace
+              )
+              .right
+              .value shouldBe BagVersion(version)
           }
         }
       }
@@ -78,42 +81,40 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
 
     it("always assigns the same version to a given ingest ID") {
       withContext { implicit context =>
-        withDao { dao =>
-          withManager(dao) { manager =>
-            val externalIdentifier = createExternalIdentifier
-            val storageSpace = createStorageSpace
+        withManager { manager =>
+          val externalIdentifier = createExternalIdentifier
+          val storageSpace = createStorageSpace
 
-            val ingestIds = (1 to 5).map { idx =>
-              (idx, createIngestID)
-            }
+          val ingestIds = (1 to 5).map { idx =>
+            (idx, createIngestID)
+          }
 
-            val assignedVersions = ingestIds.map {
-              case (idx, ingestId) =>
-                val version = manager
-                  .assignVersion(
-                    externalIdentifier = externalIdentifier,
-                    ingestId = ingestId,
-                    ingestDate = Instant.ofEpochSecond(idx),
-                    storageSpace = storageSpace
-                  )
-                  .right
-                  .value
+          val assignedVersions = ingestIds.map {
+            case (idx, ingestId) =>
+              val version = manager
+                .assignVersion(
+                  externalIdentifier = externalIdentifier,
+                  ingestId = ingestId,
+                  ingestDate = Instant.ofEpochSecond(idx),
+                  storageSpace = storageSpace
+                )
+                .right
+                .value
 
-                (idx, ingestId, version)
-            }
+              (idx, ingestId, version)
+          }
 
-            assignedVersions.foreach {
-              case (idx, ingestId, version) =>
-                manager
-                  .assignVersion(
-                    externalIdentifier = externalIdentifier,
-                    ingestId = ingestId,
-                    ingestDate = Instant.ofEpochSecond(idx),
-                    storageSpace = storageSpace
-                  )
-                  .right
-                  .value shouldBe version
-            }
+          assignedVersions.foreach {
+            case (idx, ingestId, version) =>
+              manager
+                .assignVersion(
+                  externalIdentifier = externalIdentifier,
+                  ingestId = ingestId,
+                  ingestDate = Instant.ofEpochSecond(idx),
+                  storageSpace = storageSpace
+                )
+                .right
+                .value shouldBe version
           }
         }
       }
@@ -123,30 +124,28 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
       "assigns independent versions to different external IDs in the same space"
     ) {
       withContext { implicit context =>
-        withDao { dao =>
-          withManager(dao) { manager =>
-            val storageSpace = createStorageSpace
+        withManager { manager =>
+          val storageSpace = createStorageSpace
 
-            manager
-              .assignVersion(
-                externalIdentifier = createExternalIdentifier,
-                ingestId = createIngestID,
-                ingestDate = Instant.now,
-                storageSpace = storageSpace
-              )
-              .right
-              .value shouldBe BagVersion(1)
+          manager
+            .assignVersion(
+              externalIdentifier = createExternalIdentifier,
+              ingestId = createIngestID,
+              ingestDate = Instant.now,
+              storageSpace = storageSpace
+            )
+            .right
+            .value shouldBe BagVersion(1)
 
-            manager
-              .assignVersion(
-                externalIdentifier = createExternalIdentifier,
-                ingestId = createIngestID,
-                ingestDate = Instant.now,
-                storageSpace = storageSpace
-              )
-              .right
-              .value shouldBe BagVersion(1)
-          }
+          manager
+            .assignVersion(
+              externalIdentifier = createExternalIdentifier,
+              ingestId = createIngestID,
+              ingestDate = Instant.now,
+              storageSpace = storageSpace
+            )
+            .right
+            .value shouldBe BagVersion(1)
         }
       }
     }
@@ -155,97 +154,91 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
       "assigns independent versions to the same external ID in different spaces"
     ) {
       withContext { implicit context =>
-        withDao { dao =>
-          withManager(dao) { manager =>
-            val externalIdentifier = createExternalIdentifier
+        withManager { manager =>
+          val externalIdentifier = createExternalIdentifier
 
-            manager
-              .assignVersion(
-                externalIdentifier = externalIdentifier,
-                ingestId = createIngestID,
-                ingestDate = Instant.now,
-                storageSpace = createStorageSpace
-              )
-              .right
-              .value shouldBe BagVersion(1)
+          manager
+            .assignVersion(
+              externalIdentifier = externalIdentifier,
+              ingestId = createIngestID,
+              ingestDate = Instant.now,
+              storageSpace = createStorageSpace
+            )
+            .right
+            .value shouldBe BagVersion(1)
 
-            manager
-              .assignVersion(
-                externalIdentifier = externalIdentifier,
-                ingestId = createIngestID,
-                ingestDate = Instant.now,
-                storageSpace = createStorageSpace
-              )
-              .right
-              .value shouldBe BagVersion(1)
-          }
+          manager
+            .assignVersion(
+              externalIdentifier = externalIdentifier,
+              ingestId = createIngestID,
+              ingestDate = Instant.now,
+              storageSpace = createStorageSpace
+            )
+            .right
+            .value shouldBe BagVersion(1)
         }
       }
     }
 
     it("errors if the external ID in the request doesn't match the database") {
       withContext { implicit context =>
-        withDao { dao =>
-          withManager(dao) { manager =>
-            val ingestId = createIngestID
-            val storageSpace = createStorageSpace
+        withManager { manager =>
+          val ingestId = createIngestID
+          val storageSpace = createStorageSpace
 
-            val storedExternalIdentifier = createExternalIdentifier
+          val storedExternalIdentifier = createExternalIdentifier
 
-            manager.assignVersion(
-              externalIdentifier = storedExternalIdentifier,
-              ingestId = ingestId,
-              ingestDate = Instant.now,
-              storageSpace = storageSpace
-            )
+          manager.assignVersion(
+            externalIdentifier = storedExternalIdentifier,
+            ingestId = ingestId,
+            ingestDate = Instant.now,
+            storageSpace = storageSpace
+          )
 
-            val newExternalIdentifier = createExternalIdentifier
+          val newExternalIdentifier = createExternalIdentifier
 
-            val result = manager.assignVersion(
-              externalIdentifier = newExternalIdentifier,
-              ingestId = ingestId,
-              ingestDate = Instant.now,
-              storageSpace = storageSpace
-            )
+          val result = manager.assignVersion(
+            externalIdentifier = newExternalIdentifier,
+            ingestId = ingestId,
+            ingestDate = Instant.now,
+            storageSpace = storageSpace
+          )
 
-            result.left.value shouldBe ExternalIdentifiersMismatch(
-              stored = storedExternalIdentifier,
-              request = newExternalIdentifier
-            )
-          }
+          result.left.value shouldBe ExternalIdentifiersMismatch(
+            stored = storedExternalIdentifier,
+            request = newExternalIdentifier
+          )
         }
       }
     }
 
     it("errors if the storage space in the request doesn't match the database") {
       withContext { implicit context =>
-        withDao { dao =>
-          withManager(dao) { manager =>
-            val ingestId = createIngestID
-            val externalIdentifier = createExternalIdentifier
+        withManager { manager =>
+          val ingestId = createIngestID
+          val externalIdentifier = createExternalIdentifier
 
-            val storedStorageSpace = createStorageSpace
-            val newStorageSpace = createStorageSpace
+          val storedStorageSpace = createStorageSpace
+          val newStorageSpace = createStorageSpace
 
-            manager.assignVersion(
-              externalIdentifier = externalIdentifier,
-              ingestId = ingestId,
-              ingestDate = Instant.now,
-              storageSpace = storedStorageSpace
-            )
+          manager.assignVersion(
+            externalIdentifier = externalIdentifier,
+            ingestId = ingestId,
+            ingestDate = Instant.now,
+            storageSpace = storedStorageSpace
+          )
 
-            val result = manager.assignVersion(
-              externalIdentifier = externalIdentifier,
-              ingestId = ingestId,
-              ingestDate = Instant.now,
-              storageSpace = newStorageSpace
-            )
+          val result = manager.assignVersion(
+            externalIdentifier = externalIdentifier,
+            ingestId = ingestId,
+            ingestDate = Instant.now,
+            storageSpace = newStorageSpace
+          )
 
-            result.left.value shouldBe StorageSpaceMismatch(
-              stored = storedStorageSpace,
-              request = newStorageSpace
-            )
-          }
+          result.left.value shouldBe StorageSpaceMismatch(
+            stored = storedStorageSpace,
+            request = newStorageSpace
+          )
         }
       }
     }
@@ -253,30 +246,28 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
     describe("validates the conditions on the version") {
       it("doesn't assign a new version if the ingest date is older") {
         withContext { implicit context =>
-          withDao { dao =>
-            withManager(dao) { manager =>
-              val externalIdentifier = createExternalIdentifier
-              val storageSpace = createStorageSpace
+          withManager { manager =>
+            val externalIdentifier = createExternalIdentifier
+            val storageSpace = createStorageSpace
 
-              manager.assignVersion(
-                externalIdentifier = externalIdentifier,
-                ingestId = createIngestID,
-                ingestDate = Instant.ofEpochSecond(100),
-                storageSpace = storageSpace
-              )
+            manager.assignVersion(
+              externalIdentifier = externalIdentifier,
+              ingestId = createIngestID,
+              ingestDate = Instant.ofEpochSecond(100),
+              storageSpace = storageSpace
+            )
 
-              val result = manager.assignVersion(
-                externalIdentifier = externalIdentifier,
-                ingestId = createIngestID,
-                ingestDate = Instant.ofEpochSecond(50),
-                storageSpace = storageSpace
-              )
+            val result = manager.assignVersion(
+              externalIdentifier = externalIdentifier,
+              ingestId = createIngestID,
+              ingestDate = Instant.ofEpochSecond(50),
+              storageSpace = storageSpace
+            )
 
-              result.left.value shouldBe NewerIngestAlreadyExists(
-                stored = Instant.ofEpochSecond(100),
-                request = Instant.ofEpochSecond(50)
-              )
-            }
+            result.left.value shouldBe NewerIngestAlreadyExists(
+              stored = Instant.ofEpochSecond(100),
+              request = Instant.ofEpochSecond(50)
+            )
           }
         }
       }
