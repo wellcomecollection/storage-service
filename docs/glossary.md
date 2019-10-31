@@ -13,7 +13,7 @@ Recording it here can help future developers.
 <dd>
   <p>
     The cold copy of a bag kept in S3 Glacier in Ireland.
-    In practice, this means the copy kept in <code>s3://wc-storage-replica-ireland</code> or the staging copy.
+    In practice, this means the copy kept in <code>s3://wc-storage-replica-ireland</code> or the staging equivalent.
   </p>
 
   <p>
