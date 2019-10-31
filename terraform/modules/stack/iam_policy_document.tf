@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "archive_ingest_table_read_write_policy" {
+data "aws_iam_policy_document" "table_ingests_readwrite" {
   statement {
     actions = [
       "dynamodb:Query",
@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "archive_ingest_table_read_write_policy" {
   }
 }
 
-data "aws_iam_policy_document" "replicas_table_readwrite" {
+data "aws_iam_policy_document" "table_replicas_readwrite" {
   statement {
     actions = [
       "dynamodb:GetItem",
@@ -88,7 +88,7 @@ data "aws_iam_policy_document" "bagger_readwrite" {
     ]
 
     resources = [
-      "arn:aws:s3:::${var.ingest_drop_bucket_name}/*",
+      "${aws_s3_bucket.unpacked_bags.arn}/*",
       "${var.s3_bagger_drop_arn}/*",
       "${var.s3_bagger_drop_mets_only_arn}/*",
       "${var.s3_bagger_errors_arn}/*",
@@ -122,7 +122,7 @@ data "aws_iam_policy_document" "bagger_preservica_read" {
   }
 }
 
-data "aws_iam_policy_document" "storage_archive_read" {
+data "aws_iam_policy_document" "replica_primary_readonly" {
   statement {
     actions = [
       "s3:ListBucket",
@@ -130,45 +130,49 @@ data "aws_iam_policy_document" "storage_archive_read" {
     ]
 
     resources = [
-      # Allow service to read bagger drop bucket
-      "arn:aws:s3:::${var.ingest_drop_bucket_name}/*",
-
-      # Allow service to read our archive bucket
-      "arn:aws:s3:::${var.archive_bucket_name}",
-
-      "arn:aws:s3:::${var.archive_bucket_name}/*",
+      "arn:aws:s3:::${var.replica_primary_bucket_name}",
+      "arn:aws:s3:::${var.replica_primary_bucket_name}/*",
     ]
   }
 }
 
-data "aws_iam_policy_document" "storage_access_read" {
+data "aws_iam_policy_document" "unpacked_bags_bucket_readonly" {
   statement {
     actions = [
       "s3:ListBucket",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.unpacked_bags.arn}",
+    ]
+  }
+
+
+  statement {
+    actions = [
       "s3:GetObject*",
     ]
 
     resources = [
-      "arn:aws:s3:::${var.access_bucket_name}",
-      "arn:aws:s3:::${var.access_bucket_name}/*",
+      "${aws_s3_bucket.unpacked_bags.arn}/*",
     ]
   }
 }
 
-data "aws_iam_policy_document" "storage_archive_readwrite" {
+data "aws_iam_policy_document" "unpacked_bags_bucket_readwrite" {
   statement {
     actions = [
+      "s3:GetObject*",
       "s3:PutObject*",
-      "s3:GetObject*",
     ]
 
     resources = [
-      "arn:aws:s3:::${var.archive_bucket_name}/*",
+      "${aws_s3_bucket.unpacked_bags.arn}/*",
     ]
   }
 }
 
-data "aws_iam_policy_document" "ingests_read" {
+data "aws_iam_policy_document" "drop_buckets_readonly" {
   statement {
     actions = [
       "s3:ListBucket",
@@ -177,7 +181,6 @@ data "aws_iam_policy_document" "ingests_read" {
     resources = [
       "arn:aws:s3:::${var.workflow_bucket_name}",
       "${var.s3_bagger_drop_arn}",
-      "arn:aws:s3:::${var.ingest_drop_bucket_name}",
     ]
   }
 
@@ -189,30 +192,6 @@ data "aws_iam_policy_document" "ingests_read" {
     resources = [
       "arn:aws:s3:::${var.workflow_bucket_name}/*",
       "${var.s3_bagger_drop_arn}/*",
-      "arn:aws:s3:::${var.ingest_drop_bucket_name}/*",
-    ]
-  }
-}
-
-data "aws_iam_policy_document" "storage_ingests_drop_read_write" {
-  statement {
-    actions = [
-      "s3:ListBucket",
-    ]
-
-    resources = [
-      "arn:aws:s3:::${var.ingest_drop_bucket_name}",
-    ]
-  }
-
-  statement {
-    actions = [
-      "s3:GetObject*",
-      "s3:PutObject*",
-    ]
-
-    resources = [
-      "arn:aws:s3:::${var.ingest_drop_bucket_name}/*",
     ]
   }
 }
@@ -240,7 +219,7 @@ data "aws_iam_policy_document" "storage_bagger_cache_drop_read_write" {
   }
 }
 
-data "aws_iam_policy_document" "cloudwatch_put" {
+data "aws_iam_policy_document" "cloudwatch_putmetrics" {
   statement {
     actions = [
       "cloudwatch:PutMetricData",

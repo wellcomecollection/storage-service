@@ -36,11 +36,16 @@ module "stack_staging" {
   release_label = "stage"
   nginx_image   = "${local.nginx_image}"
 
-  archive_bucket_name              = "${data.terraform_remote_state.critical_staging.archive_bucket_name}"
-  access_bucket_name               = "${data.terraform_remote_state.critical_staging.access_bucket_name}"
-  static_content_bucket_name       = "${data.terraform_remote_state.critical_staging.static_content_bucket_name}"
-  vhs_archive_manifest_table_name  = "${data.terraform_remote_state.critical_staging.manifests_table_name}"
-  vhs_archive_manifest_bucket_name = "${data.terraform_remote_state.critical_staging.manifests_bucket_name}"
+  replica_primary_bucket_name = "${data.terraform_remote_state.critical_staging.replica_primary_bucket_name}"
+  replica_glacier_bucket_name = "${data.terraform_remote_state.critical_staging.replica_glacier_bucket_name}"
+
+  static_content_bucket_name = "${data.terraform_remote_state.critical_staging.static_content_bucket_name}"
+
+  vhs_manifests_bucket_name = "${data.terraform_remote_state.critical_staging.vhs_manifests_bucket_name}"
+  vhs_manifests_table_name  = "${data.terraform_remote_state.critical_staging.vhs_manifests_table_name}"
+
+  vhs_manifests_readonly_policy  = "${data.terraform_remote_state.critical_staging.vhs_manifests_readonly_policy}"
+  vhs_manifests_readwrite_policy = "${data.terraform_remote_state.critical_staging.vhs_manifests_readwrite_policy}"
 
   bagger_dlcs_space                  = "${local.bagger_dlcs_space}"
   bagger_working_directory           = "${local.bagger_working_directory}"
@@ -67,9 +72,6 @@ module "stack_staging" {
   s3_bagger_drop_mets_only_name = "${data.terraform_remote_state.critical_staging.s3_bagger_drop_mets_only_name}"
   s3_bagger_cache_name          = "${data.terraform_remote_state.critical_prod.s3_bagger_cache_name}"
 
-  vhs_archive_manifest_full_access_policy_json = "${data.terraform_remote_state.critical_staging.manifests_full_access_policy}"
-  vhs_archive_manifest_read_policy_json        = "${data.terraform_remote_state.critical_staging.manifests_read_policy}"
-
   alarm_topic_arn = "${local.gateway_server_error_alarm_arn}"
 
   ingests_table_name = "${data.terraform_remote_state.critical_staging.ingests_table_name}"
@@ -78,15 +80,11 @@ module "stack_staging" {
   replicas_table_arn  = "${data.terraform_remote_state.critical_staging.replicas_table_arn}"
   replicas_table_name = "${data.terraform_remote_state.critical_staging.replicas_table_name}"
 
-  ingest_bucket_name = "${data.terraform_remote_state.critical_staging.ingest_drop_bucket_name}"
-
   archive_oauth_details_enc = "${local.archive_oauth_details_enc}"
 
   use_encryption_key_policy = "${data.terraform_remote_state.critical_staging.use_encryption_key_policy}"
 
   workflow_bucket_name = "${local.workflow_staging_bucket_name}"
-
-  ingest_drop_bucket_name = "${data.terraform_remote_state.critical_staging.ingest_drop_bucket_name}"
 
   archivematica_ingests_bucket = "${local.archivematica_ingests_bucket}"
 }

@@ -57,7 +57,7 @@ module "bag_unpacker" {
 
   env_vars = {
     queue_url               = "${module.bag_unpacker_queue.url}"
-    destination_bucket_name = "${var.ingest_bucket_name}"
+    destination_bucket_name = "${aws_s3_bucket.unpacked_bags.bucket}"
     ingest_topic_arn        = "${module.ingests_topic.arn}"
     outgoing_topic_arn      = "${module.bag_unpacker_output_topic.arn}"
     metrics_namespace       = "${local.bag_unpacker_service_name}"
@@ -229,11 +229,11 @@ module "replicator_verifier_primary" {
     "${module.bag_versioner_output_topic.name}",
   ]
 
-  bucket_name         = "${var.access_bucket_name}"
-  primary_bucket_name = "${var.access_bucket_name}"
+  bucket_name         = "${var.replica_primary_bucket_name}"
+  primary_bucket_name = "${var.replica_primary_bucket_name}"
 
-  ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_read.json}"
-  cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  ingests_read_policy_json          = "${data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json}"
+  cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
   replicator_lock_table_policy_json = "${module.replicator_lock_table.iam_policy}"
 
   security_group_ids = [
@@ -277,11 +277,11 @@ module "replicator_verifier_glacier" {
     "${module.bag_versioner_output_topic.name}",
   ]
 
-  bucket_name         = "${var.archive_bucket_name}"
-  primary_bucket_name = "${var.access_bucket_name}"
+  bucket_name         = "${var.replica_glacier_bucket_name}"
+  primary_bucket_name = "${var.replica_primary_bucket_name}"
 
-  ingests_read_policy_json          = "${data.aws_iam_policy_document.ingests_read.json}"
-  cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_put.json}"
+  ingests_read_policy_json          = "${data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json}"
+  cloudwatch_metrics_policy_json    = "${data.aws_iam_policy_document.cloudwatch_putmetrics.json}"
   replicator_lock_table_policy_json = "${module.replicator_lock_table.iam_policy}"
 
   security_group_ids = [
@@ -359,11 +359,11 @@ module "bag_register" {
 
   env_vars = {
     queue_url         = "${module.bag_register_input_queue.url}"
-    archive_bucket    = "${var.archive_bucket_name}"
+    archive_bucket    = "${var.replica_primary_bucket_name}"
     ongoing_topic_arn = "${module.bag_register_output_topic.arn}"
     ingest_topic_arn  = "${module.ingests_topic.arn}"
-    vhs_bucket_name   = "${var.vhs_archive_manifest_bucket_name}"
-    vhs_table_name    = "${var.vhs_archive_manifest_table_name}"
+    vhs_bucket_name   = "${var.vhs_manifests_bucket_name}"
+    vhs_table_name    = "${var.vhs_manifests_table_name}"
     metrics_namespace = "${local.bag_register_service_name}"
     operation_name    = "register"
     logstash_host     = "${local.logstash_host}"
@@ -479,8 +479,8 @@ module "api" {
   bags_env_vars = {
     context_url       = "${var.api_url}/context.json"
     app_base_url      = "${var.api_url}/storage/v1/bags"
-    vhs_bucket_name   = "${var.vhs_archive_manifest_bucket_name}"
-    vhs_table_name    = "${var.vhs_archive_manifest_table_name}"
+    vhs_bucket_name   = "${var.vhs_manifests_bucket_name}"
+    vhs_table_name    = "${var.vhs_manifests_table_name}"
     metrics_namespace = "${local.bags_api_service_name}"
     logstash_host     = "${local.logstash_host}"
 
@@ -592,7 +592,7 @@ module "trigger_bag_ingest" {
   infra_bucket           = "${var.infra_bucket}"
   oauth_details_enc      = "${var.archive_oauth_details_enc}"
   bag_paths              = "${var.bag_paths}"
-  ingest_bucket_name     = "${var.ingest_bucket_name}"
+  ingest_bucket_name     = "wellcomecollection-storage-ingests"
 
   use_encryption_key_policy = "${var.use_encryption_key_policy}"
 }

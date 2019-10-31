@@ -13,11 +13,6 @@ variable "ssh_key_name" {}
 
 variable "release_label" {}
 
-# IAM
-
-variable "vhs_archive_manifest_full_access_policy_json" {}
-variable "vhs_archive_manifest_read_policy_json" {}
-
 # Network
 
 variable "private_subnets" {
@@ -40,12 +35,19 @@ variable "use_encryption_key_policy" {}
 
 variable "nginx_image" {}
 
+# Storage manifests VHS
+
+variable "vhs_manifests_bucket_name" {}
+variable "vhs_manifests_table_name" {}
+
+variable "vhs_manifests_readonly_policy" {}
+variable "vhs_manifests_readwrite_policy" {}
+
 # Configuration
 
-variable "archive_bucket_name" {}
-variable "access_bucket_name" {}
-variable "vhs_archive_manifest_bucket_name" {}
-variable "vhs_archive_manifest_table_name" {}
+variable "replica_primary_bucket_name" {}
+variable "replica_glacier_bucket_name" {}
+
 variable "static_content_bucket_name" {}
 
 variable "bagger_mets_bucket_name" {}
@@ -59,7 +61,6 @@ variable "bagger_dlcs_space" {}
 variable "bagger_dds_asset_prefix" {}
 variable "bagger_ingest_table" {}
 variable "bagger_ingest_table_arn" {}
-variable "ingest_drop_bucket_name" {}
 
 variable "cognito_storage_api_identifier" {}
 variable "cognito_user_pool_arn" {}
@@ -71,7 +72,6 @@ variable "replicas_table_name" {}
 
 # trigger_bag_ingest
 
-variable "ingest_bucket_name" {}
 variable "archive_oauth_details_enc" {}
 
 variable "bag_paths" {
