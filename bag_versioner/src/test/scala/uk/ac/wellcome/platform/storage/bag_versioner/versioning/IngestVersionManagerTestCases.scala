@@ -250,31 +250,33 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
       }
     }
 
-    it("doesn't assign a new version if the ingest date is older") {
-      withContext { implicit context =>
-        withDao { dao =>
-          withManager(dao) { manager =>
-            val externalIdentifier = createExternalIdentifier
-            val storageSpace = createStorageSpace
+    describe("validates the conditions on the version") {
+      it("doesn't assign a new version if the ingest date is older") {
+        withContext { implicit context =>
+          withDao { dao =>
+            withManager(dao) { manager =>
+              val externalIdentifier = createExternalIdentifier
+              val storageSpace = createStorageSpace
 
-            manager.assignVersion(
-              externalIdentifier = externalIdentifier,
-              ingestId = createIngestID,
-              ingestDate = Instant.ofEpochSecond(100),
-              storageSpace = storageSpace
-            )
+              manager.assignVersion(
+                externalIdentifier = externalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.ofEpochSecond(100),
+                storageSpace = storageSpace
+              )
 
-            val result = manager.assignVersion(
-              externalIdentifier = externalIdentifier,
-              ingestId = createIngestID,
-              ingestDate = Instant.ofEpochSecond(50),
-              storageSpace = storageSpace
-            )
+              val result = manager.assignVersion(
+                externalIdentifier = externalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.ofEpochSecond(50),
+                storageSpace = storageSpace
+              )
 
-            result.left.value shouldBe NewerIngestAlreadyExists(
-              stored = Instant.ofEpochSecond(100),
-              request = Instant.ofEpochSecond(50)
-            )
+              result.left.value shouldBe NewerIngestAlreadyExists(
+                stored = Instant.ofEpochSecond(100),
+                request = Instant.ofEpochSecond(50)
+              )
+            }
           }
         }
       }
