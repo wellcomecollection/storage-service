@@ -146,7 +146,7 @@ trait IngestVersionManager {
     space: StorageSpace
   ): Either[IngestVersionManagerError, BagVersion] =
     if (existingVersion.externalIdentifier == externalIdentifier &&
-      existingVersion.storageSpace == space)
+        existingVersion.storageSpace == space)
       Right(existingVersion.version)
     else if (existingVersion.externalIdentifier != externalIdentifier)
       Left(

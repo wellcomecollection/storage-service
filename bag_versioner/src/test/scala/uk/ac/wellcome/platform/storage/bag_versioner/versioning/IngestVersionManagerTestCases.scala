@@ -339,10 +339,14 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
               result.left.value shouldBe a[IngestTypeCreateForExistingBag]
 
               // Check that nothing was written to the database
-              dao.lookupLatestVersionFor(
-                externalIdentifier = externalIdentifier,
-                storageSpace = storageSpace
-              ).right.value.version shouldBe BagVersion(1)
+              dao
+                .lookupLatestVersionFor(
+                  externalIdentifier = externalIdentifier,
+                  storageSpace = storageSpace
+                )
+                .right
+                .value
+                .version shouldBe BagVersion(1)
             }
           }
         }
@@ -367,10 +371,13 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
             }
 
             // Check that nothing was written to the database
-            dao.lookupLatestVersionFor(
-              externalIdentifier = externalIdentifier,
-              storageSpace = space
-            ).left.value shouldBe a[NoMaximaValueError]
+            dao
+              .lookupLatestVersionFor(
+                externalIdentifier = externalIdentifier,
+                storageSpace = space
+              )
+              .left
+              .value shouldBe a[NoMaximaValueError]
           }
         }
       }
