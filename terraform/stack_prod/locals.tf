@@ -25,9 +25,6 @@ locals {
 
   archivematica_ingests_bucket = "${data.terraform_remote_state.archivematica_infra.ingests_bucket}"
 
-  bagger_ingest_table     = "storage-migration-status"
-  bagger_ingest_table_arn = "arn:aws:dynamodb:eu-west-1:975596993436:table/storage-migration-status"
-
   subnets_ids = [
     "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[0]}",
     "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets[2]}",

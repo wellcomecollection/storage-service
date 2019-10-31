@@ -1,27 +1,3 @@
-output "s3_bagger_drop_arn" {
-  value = "${module.critical.s3_bagger_drop_arn}"
-}
-
-output "s3_bagger_errors_arn" {
-  value = "${module.critical.s3_bagger_errors_arn}"
-}
-
-output "s3_bagger_drop_mets_only_arn" {
-  value = "${module.critical.s3_bagger_drop_mets_only_arn}"
-}
-
-output "s3_bagger_drop_name" {
-  value = "${module.critical.s3_bagger_drop_name}"
-}
-
-output "s3_bagger_errors_name" {
-  value = "${module.critical.s3_bagger_errors_name}"
-}
-
-output "s3_bagger_drop_mets_only_name" {
-  value = "${module.critical.s3_bagger_drop_mets_only_name}"
-}
-
 output "ingests_table_name" {
   value = "${module.critical.ingests_table_name}"
 }
@@ -73,10 +49,6 @@ output "vhs_manifests_readwrite_policy" {
 }
 
 #
-
-output "s3_bagger_cache_name" {
-  value = "${module.critical.s3_bagger_cache_name}"
-}
 
 output "versions_table_arn" {
   value = "${module.critical.versions_table_arn}"

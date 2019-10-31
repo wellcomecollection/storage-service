@@ -1,27 +1,3 @@
-output "s3_bagger_drop_arn" {
-  value = "${module.critical.s3_bagger_drop_arn}"
-}
-
-output "s3_bagger_errors_arn" {
-  value = "${module.critical.s3_bagger_errors_arn}"
-}
-
-output "s3_bagger_drop_mets_only_arn" {
-  value = "${module.critical.s3_bagger_drop_mets_only_arn}"
-}
-
-output "s3_bagger_drop_name" {
-  value = "${module.critical.s3_bagger_drop_name}"
-}
-
-output "s3_bagger_errors_name" {
-  value = "${module.critical.s3_bagger_errors_name}"
-}
-
-output "s3_bagger_drop_mets_only_name" {
-  value = "${module.critical.s3_bagger_drop_mets_only_name}"
-}
-
 output "ingests_table_name" {
   value = "${module.critical.ingests_table_name}"
 }

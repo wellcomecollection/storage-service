@@ -3,7 +3,6 @@ locals {
   ingests_service_name     = "${var.namespace}-ingests"
   ingests_api_service_name = "${var.namespace}-ingests-api"
   notifier_service_name    = "${var.namespace}-notifier"
-  bagger_service_name      = "${var.namespace}-bagger"
 
   bag_unpacker_service_name           = "${var.namespace}-bag-unpacker"
   bag_root_finder_service_name        = "${var.namespace}-bag-root-finder"
@@ -21,7 +20,6 @@ locals {
   ingests_image            = "${module.images.services["ingests"]}"
   ingests_api_image        = "${module.images.services["ingests_api"]}"
   notifier_image           = "${module.images.services["notifier"]}"
-  bagger_image             = "${module.images.services["bagger"]}"
   bag_replicator_image     = "${module.images.services["bag_replicator"]}"
   bag_verifier_image       = "${module.images.services["bag_verifier"]}"
   bag_unpacker_image       = "${module.images.services["bag_unpacker"]}"

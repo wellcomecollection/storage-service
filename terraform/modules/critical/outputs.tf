@@ -56,36 +56,6 @@ output "replica_glacier_bucket_arn" {
   value = "${aws_s3_bucket.replica_glacier.arn}"
 }
 
-# Bagger
-
-output "s3_bagger_drop_arn" {
-  value = "${aws_s3_bucket.bagger_drop.arn}"
-}
-
-output "s3_bagger_drop_mets_only_arn" {
-  value = "${aws_s3_bucket.bagger_drop_mets_only.arn}"
-}
-
-output "s3_bagger_errors_arn" {
-  value = "${aws_s3_bucket.bagger_errors.arn}"
-}
-
-output "s3_bagger_drop_name" {
-  value = "${aws_s3_bucket.bagger_drop.id}"
-}
-
-output "s3_bagger_drop_mets_only_name" {
-  value = "${aws_s3_bucket.bagger_drop_mets_only.id}"
-}
-
-output "s3_bagger_errors_name" {
-  value = "${aws_s3_bucket.bagger_errors.id}"
-}
-
-output "s3_bagger_cache_name" {
-  value = "${aws_s3_bucket.bagger_cache.id}"
-}
-
 # DynamoDB tables
 
 output "replicas_table_arn" {

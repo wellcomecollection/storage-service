@@ -45,18 +45,6 @@ variable "replica_glacier_bucket_name" {}
 
 variable "static_content_bucket_name" {}
 
-variable "bagger_mets_bucket_name" {}
-variable "bagger_read_mets_from_fileshare" {}
-variable "bagger_working_directory" {}
-variable "bagger_current_preservation_bucket" {}
-variable "bagger_dlcs_source_bucket" {}
-variable "bagger_dlcs_entry" {}
-variable "bagger_dlcs_customer_id" {}
-variable "bagger_dlcs_space" {}
-variable "bagger_dds_asset_prefix" {}
-variable "bagger_ingest_table" {}
-variable "bagger_ingest_table_arn" {}
-
 variable "cognito_storage_api_identifier" {}
 variable "cognito_user_pool_arn" {}
 
@@ -70,17 +58,6 @@ variable "ingests_table_arn" {}
 
 variable "workflow_bucket_name" {}
 
-# bagger buckets
-
-variable "s3_bagger_drop_arn" {}
-variable "s3_bagger_drop_mets_only_arn" {}
-variable "s3_bagger_errors_arn" {}
-
-variable "s3_bagger_drop_name" {}
-variable "s3_bagger_drop_mets_only_name" {}
-variable "s3_bagger_errors_name" {}
-variable "s3_bagger_cache_name" {}
-
 # versioner table
 
 variable "versioner_versions_table_arn" {}
@@ -88,10 +65,6 @@ variable "versioner_versions_table_name" {}
 variable "versioner_versions_table_index" {}
 
 # Task counts
-
-variable "desired_bagger_count" {
-  default = 4
-}
 
 variable "desired_ec2_instances" {
   default = 2
