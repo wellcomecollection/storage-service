@@ -9,10 +9,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CreateIngestType,
   IngestID,
-  IngestType,
-  UpdateIngestType
+  IngestType
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.models.dynamo.DynamoID
@@ -53,7 +51,7 @@ class VersionPicker(
     // service operation, the inner Either is the version assignment.
     assignedVersion match {
       case Right(Right(version)) =>
-        checkVersionIsAllowed(ingestType, assignedVersion = version)
+        Right(version)
 
       case Right(Left(ingestVersionManagerError)) =>
         Left(UnableToAssignVersion(ingestVersionManagerError))
@@ -63,18 +61,6 @@ class VersionPicker(
         Left(InternalVersionPickerError(new Throwable(s"Locking error: $err")))
     }
   }
-
-  private def checkVersionIsAllowed(
-    ingestType: IngestType,
-    assignedVersion: BagVersion
-  ): Either[VersionPickerError, BagVersion] =
-    if (ingestType == CreateIngestType && assignedVersion.underlying > 1) {
-      Left(IngestTypeCreateForExistingBag())
-    } else if (ingestType == UpdateIngestType && assignedVersion.underlying == 1) {
-      Left(IngestTypeUpdateForNewBag())
-    } else {
-      Right(assignedVersion)
-    }
 
   // Annoyingly, cats doesn't provide an Implicit for MonadError[Id, Throwable],
   // so we have to implement one ourselves.

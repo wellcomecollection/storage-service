@@ -7,8 +7,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
   IngestID,
-  IngestType
+  IngestType,
+  UpdateIngestType
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.NoMaximaValueError
@@ -18,13 +20,55 @@ import scala.util.{Failure, Success}
 trait IngestVersionManager {
   val dao: IngestVersionManagerDao
 
+  def assignVersion(
+    externalIdentifier: ExternalIdentifier,
+    ingestId: IngestID,
+    ingestDate: Instant,
+    ingestType: IngestType,
+    storageSpace: StorageSpace
+  ): Either[IngestVersionManagerError, BagVersion] = {
+    // As in, the previously stored version for this ingest ID.
+    val previouslyStoredVersion = dao.lookupExistingVersion(ingestId = ingestId)
+
+    previouslyStoredVersion match {
+      case Success(Some(existingVersion)) =>
+        verifyExistingVersion(
+          existingVersion = existingVersion,
+          externalIdentifier = externalIdentifier,
+          space = storageSpace
+        )
+
+      case Success(None) =>
+        createNewVersionFor(
+          externalIdentifier = externalIdentifier,
+          ingestId = ingestId,
+          ingestDate = ingestDate,
+          ingestType = ingestType,
+          storageSpace = storageSpace
+        )
+
+      case Failure(err) => Left(IngestVersionManagerDaoError(err))
+    }
+  }
+
   private def createNewVersionFor(
     externalIdentifier: ExternalIdentifier,
     ingestId: IngestID,
     ingestDate: Instant,
+    ingestType: IngestType,
     storageSpace: StorageSpace
-  ): Either[IngestVersionManagerError, BagVersion] =
-    dao.lookupLatestVersionFor(externalIdentifier, storageSpace) match {
+  ): Either[IngestVersionManagerError, BagVersion] = {
+    val latestVersion = dao.lookupLatestVersionFor(
+      externalIdentifier = externalIdentifier,
+      storageSpace = storageSpace
+    )
+
+    latestVersion match {
+      case Right(existingRecord) if ingestType == CreateIngestType =>
+        Left(
+          IngestTypeCreateForExistingBag(existingRecord)
+        )
+
       case Right(existingRecord) =>
         if (existingRecord.ingestDate.isBefore(ingestDate))
           storeNewVersion(
@@ -42,6 +86,11 @@ trait IngestVersionManager {
             )
           )
 
+      case Left(NoMaximaValueError(_)) if ingestType == UpdateIngestType =>
+        Left(
+          IngestTypeUpdateForNewBag()
+        )
+
       case Left(NoMaximaValueError(_)) =>
         storeNewVersion(
           externalIdentifier = externalIdentifier,
@@ -54,6 +103,7 @@ trait IngestVersionManager {
       // TODO: Can we preserve the StorageError here?
       case Left(err) => Left(IngestVersionManagerDaoError(err.e))
     }
+  }
 
   private def storeNewVersion(
     externalIdentifier: ExternalIdentifier,
@@ -75,32 +125,6 @@ trait IngestVersionManager {
       case Failure(err) => Left(IngestVersionManagerDaoError(err))
     }
   }
-
-  def assignVersion(
-    externalIdentifier: ExternalIdentifier,
-    ingestId: IngestID,
-    ingestDate: Instant,
-    ingestType: IngestType,
-    storageSpace: StorageSpace
-  ): Either[IngestVersionManagerError, BagVersion] =
-    dao.lookupExistingVersion(ingestId) match {
-      case Success(Some(existingVersion)) =>
-        verifyExistingVersion(
-          existingVersion = existingVersion,
-          externalIdentifier = externalIdentifier,
-          space = storageSpace
-        )
-
-      case Success(None) =>
-        createNewVersionFor(
-          externalIdentifier = externalIdentifier,
-          ingestId = ingestId,
-          ingestDate = ingestDate,
-          storageSpace = storageSpace
-        )
-
-      case Failure(err) => Left(IngestVersionManagerDaoError(err))
-    }
 
   /** We always want to assign the same version to a given ingest ID.
     *

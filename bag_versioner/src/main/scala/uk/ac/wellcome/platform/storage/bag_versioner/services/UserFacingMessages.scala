@@ -10,12 +10,12 @@ object UserFacingMessages extends Logging {
     error: VersionPickerError
   ): Option[String] =
     error match {
-      case IngestTypeUpdateForNewBag() =>
+      case UnableToAssignVersion(IngestTypeUpdateForNewBag()) =>
         Some(
           "Cannot update existing bag: a bag with the supplied external identifier does not exist in this space"
         )
 
-      case IngestTypeCreateForExistingBag() =>
+      case UnableToAssignVersion(IngestTypeCreateForExistingBag(_)) =>
         Some(
           "Cannot create new bag: a bag with the supplied external identifier already exists in this space"
         )
