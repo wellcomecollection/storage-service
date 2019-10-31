@@ -40,8 +40,8 @@ data "aws_iam_policy_document" "prevent_writes_to_prod" {
       "${module.critical.ingests_table_arn}",
       "${module.critical.ingests_table_arn}/*",
 
-      "${module.critical.manifests_table_arn}",
-      "${module.critical.manifests_table_arn}/*",
+      "${module.critical.vhs_manifests_table_arn}",
+      "${module.critical.vhs_manifests_table_arn}/*",
 
       "${module.critical.replicas_table_arn}",
       "${module.critical.replicas_table_arn}/*",
@@ -66,8 +66,8 @@ data "aws_iam_policy_document" "prevent_writes_to_prod" {
       "${module.critical.replica_glacier_bucket_arn}",
       "${module.critical.replica_glacier_bucket_arn}/*",
 
-      "${module.critical.manifests_bucket_arn}",
-      "${module.critical.manifests_bucket_arn}/*",
+      "${module.critical.vhs_manifests_bucket_arn}",
+      "${module.critical.vhs_manifests_bucket_arn}/*",
     ]
   }
 }

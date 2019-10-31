@@ -1,30 +1,30 @@
-output "manifests_dynamodb_update_policy" {
-  value = "${module.vhs_manifests.dynamodb_update_policy}"
-}
+# Storage manifests VHS
 
-output "manifests_bucket_name" {
+output "vhs_manifests_bucket_name" {
   value = "${module.vhs_manifests.bucket_name}"
 }
 
-output "manifests_bucket_arn" {
+output "vhs_manifests_bucket_arn" {
   value = "${module.vhs_manifests.bucket_arn}"
 }
 
-output "manifests_read_policy" {
-  value = "${module.vhs_manifests.read_policy}"
-}
-
-output "manifests_full_access_policy" {
-  value = "${module.vhs_manifests.full_access_policy}"
-}
-
-output "manifests_table_name" {
+output "vhs_manifests_table_name" {
   value = "${module.vhs_manifests.table_name}"
 }
 
-output "manifests_table_arn" {
+output "vhs_manifests_table_arn" {
   value = "${module.vhs_manifests.table_arn}"
 }
+
+output "vhs_manifests_readonly_policy" {
+  value = "${module.vhs_manifests.read_policy}"
+}
+
+output "vhs_manifests_readwrite_policy" {
+  value = "${module.vhs_manifests.full_access_policy}"
+}
+
+#
 
 output "ingests_table_name" {
   value = "${aws_dynamodb_table.ingests.name}"

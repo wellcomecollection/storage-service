@@ -362,8 +362,8 @@ module "bag_register" {
     archive_bucket    = "${var.replica_primary_bucket_name}"
     ongoing_topic_arn = "${module.bag_register_output_topic.arn}"
     ingest_topic_arn  = "${module.ingests_topic.arn}"
-    vhs_bucket_name   = "${var.vhs_archive_manifest_bucket_name}"
-    vhs_table_name    = "${var.vhs_archive_manifest_table_name}"
+    vhs_bucket_name   = "${var.vhs_manifests_bucket_name}"
+    vhs_table_name    = "${var.vhs_manifests_table_name}"
     metrics_namespace = "${local.bag_register_service_name}"
     operation_name    = "register"
     logstash_host     = "${local.logstash_host}"
@@ -479,8 +479,8 @@ module "api" {
   bags_env_vars = {
     context_url       = "${var.api_url}/context.json"
     app_base_url      = "${var.api_url}/storage/v1/bags"
-    vhs_bucket_name   = "${var.vhs_archive_manifest_bucket_name}"
-    vhs_table_name    = "${var.vhs_archive_manifest_table_name}"
+    vhs_bucket_name   = "${var.vhs_manifests_bucket_name}"
+    vhs_table_name    = "${var.vhs_manifests_table_name}"
     metrics_namespace = "${local.bags_api_service_name}"
     logstash_host     = "${local.logstash_host}"
 

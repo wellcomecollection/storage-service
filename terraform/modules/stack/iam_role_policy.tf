@@ -5,9 +5,9 @@ resource "aws_iam_role_policy" "bag_register_replica_primary_readonly" {
   policy = "${data.aws_iam_policy_document.replica_primary_readonly.json}"
 }
 
-resource "aws_iam_role_policy" "bag_register_vhs_write" {
+resource "aws_iam_role_policy" "bag_register_vhs_manifests_readwrite" {
   role   = "${module.bag_register.task_role_name}"
-  policy = "${var.vhs_archive_manifest_full_access_policy_json}"
+  policy = "${var.vhs_manifests_readwrite_policy}"
 }
 
 resource "aws_iam_role_policy" "bag_register_metrics" {
@@ -17,9 +17,9 @@ resource "aws_iam_role_policy" "bag_register_metrics" {
 
 # bags_api
 
-resource "aws_iam_role_policy" "bags_vhs" {
+resource "aws_iam_role_policy" "bags_api_vhs_manifests_readonly" {
   role   = "${module.api.bags_role_name}"
-  policy = "${var.vhs_archive_manifest_read_policy_json}"
+  policy = "${var.vhs_manifests_readonly_policy}"
 }
 
 resource "aws_iam_role_policy" "bags_api_metrics" {

@@ -39,9 +39,13 @@ module "stack_prod" {
   replica_primary_bucket_name = "${data.terraform_remote_state.critical_prod.replica_primary_bucket_name}"
   replica_glacier_bucket_name = "${data.terraform_remote_state.critical_prod.replica_glacier_bucket_name}"
 
-  static_content_bucket_name       = "${data.terraform_remote_state.critical_prod.static_content_bucket_name}"
-  vhs_archive_manifest_table_name  = "${data.terraform_remote_state.critical_prod.manifests_table_name}"
-  vhs_archive_manifest_bucket_name = "${data.terraform_remote_state.critical_prod.manifests_bucket_name}"
+  static_content_bucket_name = "${data.terraform_remote_state.critical_prod.static_content_bucket_name}"
+
+  vhs_manifests_bucket_name = "${data.terraform_remote_state.critical_prod.vhs_manifests_bucket_name}"
+  vhs_manifests_table_name  = "${data.terraform_remote_state.critical_prod.vhs_manifests_table_name}"
+
+  vhs_manifests_readonly_policy  = "${data.terraform_remote_state.critical_prod.vhs_manifests_readonly_policy}"
+  vhs_manifests_readwrite_policy = "${data.terraform_remote_state.critical_prod.vhs_manifests_readwrite_policy}"
 
   bagger_dlcs_space                  = "${local.bagger_dlcs_space}"
   bagger_working_directory           = "${local.bagger_working_directory}"
@@ -67,9 +71,6 @@ module "stack_prod" {
   s3_bagger_errors_name         = "${data.terraform_remote_state.critical_prod.s3_bagger_errors_name}"
   s3_bagger_drop_mets_only_name = "${data.terraform_remote_state.critical_prod.s3_bagger_drop_mets_only_name}"
   s3_bagger_cache_name          = "${data.terraform_remote_state.critical_prod.s3_bagger_cache_name}"
-
-  vhs_archive_manifest_full_access_policy_json = "${data.terraform_remote_state.critical_prod.manifests_full_access_policy}"
-  vhs_archive_manifest_read_policy_json        = "${data.terraform_remote_state.critical_prod.manifests_read_policy}"
 
   alarm_topic_arn = "${local.gateway_server_error_alarm_arn}"
 

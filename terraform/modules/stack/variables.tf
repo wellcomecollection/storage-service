@@ -13,11 +13,6 @@ variable "ssh_key_name" {}
 
 variable "release_label" {}
 
-# IAM
-
-variable "vhs_archive_manifest_full_access_policy_json" {}
-variable "vhs_archive_manifest_read_policy_json" {}
-
 # Network
 
 variable "private_subnets" {
@@ -40,13 +35,19 @@ variable "use_encryption_key_policy" {}
 
 variable "nginx_image" {}
 
+# Storage manifests VHS
+
+variable "vhs_manifests_bucket_name" {}
+variable "vhs_manifests_table_name" {}
+
+variable "vhs_manifests_readonly_policy" {}
+variable "vhs_manifests_readwrite_policy" {}
+
 # Configuration
 
 variable "replica_primary_bucket_name" {}
 variable "replica_glacier_bucket_name" {}
 
-variable "vhs_archive_manifest_bucket_name" {}
-variable "vhs_archive_manifest_table_name" {}
 variable "static_content_bucket_name" {}
 
 variable "bagger_mets_bucket_name" {}

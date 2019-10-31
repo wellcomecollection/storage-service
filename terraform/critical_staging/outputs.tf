@@ -58,21 +58,25 @@ output "static_content_bucket_name" {
   value = "${module.critical.static_content_bucket_name}"
 }
 
-output "manifests_bucket_name" {
-  value = "${module.critical.manifests_bucket_name}"
+# Storage manifests VHS
+
+output "vhs_manifests_bucket_name" {
+  value = "${module.critical.vhs_manifests_bucket_name}"
 }
 
-output "manifests_table_name" {
-  value = "${module.critical.manifests_table_name}"
+output "vhs_manifests_table_name" {
+  value = "${module.critical.vhs_manifests_table_name}"
 }
 
-output "manifests_read_policy" {
-  value = "${module.critical.manifests_read_policy}"
+output "vhs_manifests_readonly_policy" {
+  value = "${module.critical.vhs_manifests_readonly_policy}"
 }
 
-output "manifests_full_access_policy" {
-  value = "${module.critical.manifests_full_access_policy}"
+output "vhs_manifests_readwrite_policy" {
+  value = "${module.critical.vhs_manifests_readwrite_policy}"
 }
+
+#
 
 output "versions_table_arn" {
   value = "${module.critical.versions_table_arn}"
