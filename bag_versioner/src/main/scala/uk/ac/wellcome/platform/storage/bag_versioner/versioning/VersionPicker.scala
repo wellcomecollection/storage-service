@@ -44,6 +44,7 @@ class VersionPicker(
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
           ingestDate = ingestDate,
+          ingestType = ingestType,
           storageSpace = storageSpace
         )
       }

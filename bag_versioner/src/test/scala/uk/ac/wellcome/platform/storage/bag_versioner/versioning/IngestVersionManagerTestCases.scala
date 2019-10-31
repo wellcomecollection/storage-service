@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
 }
+import uk.ac.wellcome.platform.archive.common.ingests.models.CreateIngestType
 
 trait IngestVersionManagerTestCases[DaoImpl, Context]
     extends FunSpec
@@ -52,6 +53,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = createExternalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               storageSpace = createStorageSpace
             )
             .right
@@ -72,6 +74,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                 externalIdentifier = externalIdentifier,
                 ingestId = createIngestID,
                 ingestDate = Instant.ofEpochSecond(version),
+                ingestType = CreateIngestType,
                 storageSpace = storageSpace
               )
               .right
@@ -98,6 +101,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   externalIdentifier = externalIdentifier,
                   ingestId = ingestId,
                   ingestDate = Instant.ofEpochSecond(idx),
+                  ingestType = CreateIngestType,
                   storageSpace = storageSpace
                 )
                 .right
@@ -113,6 +117,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   externalIdentifier = externalIdentifier,
                   ingestId = ingestId,
                   ingestDate = Instant.ofEpochSecond(idx),
+                  ingestType = CreateIngestType,
                   storageSpace = storageSpace
                 )
                 .right
@@ -134,6 +139,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = createExternalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               storageSpace = storageSpace
             )
             .right
@@ -144,6 +150,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = createExternalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               storageSpace = storageSpace
             )
             .right
@@ -164,6 +171,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = externalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               storageSpace = createStorageSpace
             )
             .right
@@ -174,6 +182,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = externalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               storageSpace = createStorageSpace
             )
             .right
@@ -194,6 +203,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
             externalIdentifier = storedExternalIdentifier,
             ingestId = ingestId,
             ingestDate = Instant.now,
+            ingestType = CreateIngestType,
             storageSpace = storageSpace
           )
 
@@ -203,6 +213,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
             externalIdentifier = newExternalIdentifier,
             ingestId = ingestId,
             ingestDate = Instant.now,
+            ingestType = CreateIngestType,
             storageSpace = storageSpace
           )
 
@@ -227,6 +238,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
             externalIdentifier = externalIdentifier,
             ingestId = ingestId,
             ingestDate = Instant.now,
+            ingestType = CreateIngestType,
             storageSpace = storedStorageSpace
           )
 
@@ -234,6 +246,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
             externalIdentifier = externalIdentifier,
             ingestId = ingestId,
             ingestDate = Instant.now,
+            ingestType = CreateIngestType,
             storageSpace = newStorageSpace
           )
 
@@ -256,6 +269,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = externalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.ofEpochSecond(100),
+              ingestType = CreateIngestType,
               storageSpace = storageSpace
             )
 
@@ -263,6 +277,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = externalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.ofEpochSecond(50),
+              ingestType = CreateIngestType,
               storageSpace = storageSpace
             )
 
@@ -285,6 +300,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   externalIdentifier = createExternalIdentifier,
                   ingestId = createIngestID,
                   ingestDate = Instant.now,
+                  ingestType = CreateIngestType,
                   storageSpace = createStorageSpace
                 )
                 .left
@@ -303,6 +319,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   externalIdentifier = createExternalIdentifier,
                   ingestId = createIngestID,
                   ingestDate = Instant.now,
+                  ingestType = CreateIngestType,
                   storageSpace = createStorageSpace
                 )
                 .left
@@ -321,6 +338,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   externalIdentifier = createExternalIdentifier,
                   ingestId = createIngestID,
                   ingestDate = Instant.now,
+                  ingestType = CreateIngestType,
                   storageSpace = createStorageSpace
                 )
                 .left
