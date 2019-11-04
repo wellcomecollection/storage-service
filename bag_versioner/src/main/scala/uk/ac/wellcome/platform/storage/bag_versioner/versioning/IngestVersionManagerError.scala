@@ -20,3 +20,7 @@ case class StorageSpaceMismatch(stored: StorageSpace, request: StorageSpace)
 
 case class NewerIngestAlreadyExists(stored: Instant, request: Instant)
     extends IngestVersionManagerError
+
+case class IngestTypeCreateForExistingBag(existingRecord: VersionRecord)
+    extends IngestVersionManagerError
+case class IngestTypeUpdateForNewBag() extends IngestVersionManagerError

@@ -9,8 +9,13 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
 }
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  UpdateIngestType
+}
+import uk.ac.wellcome.storage.NoMaximaValueError
 
-trait IngestVersionManagerTestCases[DaoImpl, Context]
+trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
     extends FunSpec
     with Matchers
     with EitherValues
@@ -52,6 +57,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = createExternalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               storageSpace = createStorageSpace
             )
             .right
@@ -61,17 +67,29 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
     }
 
     it("assigns increasing versions if it sees newer ingest dates each time") {
+      val externalIdentifier = createExternalIdentifier
+      val storageSpace = createStorageSpace
+
       withContext { implicit context =>
         withManager { manager =>
-          val externalIdentifier = createExternalIdentifier
-          val storageSpace = createStorageSpace
+          manager
+            .assignVersion(
+              externalIdentifier = externalIdentifier,
+              ingestId = createIngestID,
+              ingestDate = Instant.ofEpochSecond(1),
+              ingestType = CreateIngestType,
+              storageSpace = storageSpace
+            )
+            .right
+            .value shouldBe BagVersion(1)
 
-          (1 to 5).map { version =>
+          (2 to 5).map { version =>
             manager
               .assignVersion(
                 externalIdentifier = externalIdentifier,
                 ingestId = createIngestID,
                 ingestDate = Instant.ofEpochSecond(version),
+                ingestType = UpdateIngestType,
                 storageSpace = storageSpace
               )
               .right
@@ -82,10 +100,19 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
     }
 
     it("always assigns the same version to a given ingest ID") {
+      val externalIdentifier = createExternalIdentifier
+      val storageSpace = createStorageSpace
+
       withContext { implicit context =>
         withManager { manager =>
-          val externalIdentifier = createExternalIdentifier
-          val storageSpace = createStorageSpace
+          manager
+            .assignVersion(
+              externalIdentifier = externalIdentifier,
+              ingestId = createIngestID,
+              ingestDate = Instant.ofEpochSecond(0),
+              ingestType = CreateIngestType,
+              storageSpace = storageSpace
+            )
 
           val ingestIds = (1 to 5).map { idx =>
             (idx, createIngestID)
@@ -98,6 +125,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   externalIdentifier = externalIdentifier,
                   ingestId = ingestId,
                   ingestDate = Instant.ofEpochSecond(idx),
+                  ingestType = UpdateIngestType,
                   storageSpace = storageSpace
                 )
                 .right
@@ -113,6 +141,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   externalIdentifier = externalIdentifier,
                   ingestId = ingestId,
                   ingestDate = Instant.ofEpochSecond(idx),
+                  ingestType = CreateIngestType,
                   storageSpace = storageSpace
                 )
                 .right
@@ -134,6 +163,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = createExternalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               storageSpace = storageSpace
             )
             .right
@@ -144,6 +174,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = createExternalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               storageSpace = storageSpace
             )
             .right
@@ -164,6 +195,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = externalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               storageSpace = createStorageSpace
             )
             .right
@@ -174,6 +206,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = externalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.now,
+              ingestType = CreateIngestType,
               storageSpace = createStorageSpace
             )
             .right
@@ -194,6 +227,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
             externalIdentifier = storedExternalIdentifier,
             ingestId = ingestId,
             ingestDate = Instant.now,
+            ingestType = CreateIngestType,
             storageSpace = storageSpace
           )
 
@@ -203,6 +237,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
             externalIdentifier = newExternalIdentifier,
             ingestId = ingestId,
             ingestDate = Instant.now,
+            ingestType = CreateIngestType,
             storageSpace = storageSpace
           )
 
@@ -227,6 +262,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
             externalIdentifier = externalIdentifier,
             ingestId = ingestId,
             ingestDate = Instant.now,
+            ingestType = CreateIngestType,
             storageSpace = storedStorageSpace
           )
 
@@ -234,6 +270,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
             externalIdentifier = externalIdentifier,
             ingestId = ingestId,
             ingestDate = Instant.now,
+            ingestType = CreateIngestType,
             storageSpace = newStorageSpace
           )
 
@@ -256,6 +293,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = externalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.ofEpochSecond(100),
+              ingestType = CreateIngestType,
               storageSpace = storageSpace
             )
 
@@ -263,6 +301,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               externalIdentifier = externalIdentifier,
               ingestId = createIngestID,
               ingestDate = Instant.ofEpochSecond(50),
+              ingestType = UpdateIngestType,
               storageSpace = storageSpace
             )
 
@@ -270,6 +309,75 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
               stored = Instant.ofEpochSecond(100),
               request = Instant.ofEpochSecond(50)
             )
+          }
+        }
+      }
+
+      it("if ingestType=Create, it doesn't assign anything except v1") {
+        val externalIdentifier = createExternalIdentifier
+        val storageSpace = createStorageSpace
+
+        withContext { implicit context =>
+          withDao { dao =>
+            withManager(dao) { manager =>
+              manager.assignVersion(
+                externalIdentifier = externalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.now(),
+                ingestType = CreateIngestType,
+                storageSpace = storageSpace
+              )
+
+              val result = manager.assignVersion(
+                externalIdentifier = externalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.now(),
+                ingestType = CreateIngestType,
+                storageSpace = storageSpace
+              )
+
+              result.left.value shouldBe a[IngestTypeCreateForExistingBag]
+
+              // Check that nothing was written to the database
+              dao
+                .lookupLatestVersionFor(
+                  externalIdentifier = externalIdentifier,
+                  storageSpace = storageSpace
+                )
+                .right
+                .value
+                .version shouldBe BagVersion(1)
+            }
+          }
+        }
+      }
+
+      it("if ingestType=Update, it doesn't assign v1") {
+        val externalIdentifier = createExternalIdentifier
+        val space = createStorageSpace
+
+        withContext { implicit context =>
+          withDao { dao: DaoImpl =>
+            withManager(dao) { manager =>
+              val result = manager.assignVersion(
+                externalIdentifier = externalIdentifier,
+                ingestId = createIngestID,
+                ingestDate = Instant.now(),
+                ingestType = UpdateIngestType,
+                storageSpace = space
+              )
+
+              result.left.value shouldBe IngestTypeUpdateForNewBag()
+            }
+
+            // Check that nothing was written to the database
+            dao
+              .lookupLatestVersionFor(
+                externalIdentifier = externalIdentifier,
+                storageSpace = space
+              )
+              .left
+              .value shouldBe a[NoMaximaValueError]
           }
         }
       }
@@ -285,6 +393,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   externalIdentifier = createExternalIdentifier,
                   ingestId = createIngestID,
                   ingestDate = Instant.now,
+                  ingestType = CreateIngestType,
                   storageSpace = createStorageSpace
                 )
                 .left
@@ -303,6 +412,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   externalIdentifier = createExternalIdentifier,
                   ingestId = createIngestID,
                   ingestDate = Instant.now,
+                  ingestType = CreateIngestType,
                   storageSpace = createStorageSpace
                 )
                 .left
@@ -321,6 +431,7 @@ trait IngestVersionManagerTestCases[DaoImpl, Context]
                   externalIdentifier = createExternalIdentifier,
                   ingestId = createIngestID,
                   ingestDate = Instant.now,
+                  ingestType = CreateIngestType,
                   storageSpace = createStorageSpace
                 )
                 .left

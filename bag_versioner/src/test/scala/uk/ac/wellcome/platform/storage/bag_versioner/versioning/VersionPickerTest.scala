@@ -281,48 +281,4 @@ class VersionPickerTest
       err.e shouldBe a[ExternalIdentifiersMismatch]
     }
   }
-
-  describe("checking the ingest type") {
-    it("only allows ingest type 'create' once") {
-      val externalIdentifier = createExternalIdentifier
-      val storageSpace = createStorageSpace
-
-      withVersionPicker { picker =>
-        picker.chooseVersion(
-          externalIdentifier = externalIdentifier,
-          ingestId = createIngestID,
-          ingestType = CreateIngestType,
-          ingestDate = Instant.ofEpochSecond(1),
-          storageSpace = storageSpace
-        )
-
-        val result = picker.chooseVersion(
-          externalIdentifier = externalIdentifier,
-          ingestId = createIngestID,
-          ingestType = CreateIngestType,
-          ingestDate = Instant.ofEpochSecond(2),
-          storageSpace = storageSpace
-        )
-
-        result.left.value shouldBe IngestTypeCreateForExistingBag()
-      }
-    }
-
-    it("only allows ingest type 'update' on an already-existing bag") {
-      val externalIdentifier = createExternalIdentifier
-      val storageSpace = createStorageSpace
-
-      withVersionPicker { picker =>
-        val result = picker.chooseVersion(
-          externalIdentifier = externalIdentifier,
-          ingestId = createIngestID,
-          ingestType = UpdateIngestType,
-          ingestDate = Instant.now(),
-          storageSpace = storageSpace
-        )
-
-        result.left.value shouldBe IngestTypeUpdateForNewBag()
-      }
-    }
-  }
 }
