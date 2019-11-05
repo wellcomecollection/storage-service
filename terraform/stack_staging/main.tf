@@ -13,17 +13,12 @@ module "stack_staging" {
   domain_name      = "${local.staging_domain_name}"
   cert_domain_name = "${local.cert_domain_name}"
 
-  desired_ec2_instances = 1
-
   min_capacity = 1
   max_capacity = 3
 
-  vpc_id   = "${local.vpc_id}"
-  vpc_cidr = "${local.vpc_cidr}"
+  vpc_id = "${local.vpc_id}"
 
   private_subnets = "${local.private_subnets}"
-
-  ssh_key_name = "${local.key_name}"
 
   dlq_alarm_arn = "${local.dlq_alarm_arn}"
 

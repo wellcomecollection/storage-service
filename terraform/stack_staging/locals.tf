@@ -5,12 +5,9 @@ locals {
   staging_domain_name = "storage.api-stage.wellcomecollection.org"
 
   vpc_id          = "${data.terraform_remote_state.infra_shared.storage_vpc_id}"
-  vpc_cidr        = ["${data.terraform_remote_state.infra_shared.storage_cidr_block_vpc}"]
   private_subnets = "${data.terraform_remote_state.infra_shared.storage_vpc_private_subnets}"
 
   cert_domain_name = "storage.api.wellcomecollection.org"
-
-  key_name = "wellcomedigitalstorage"
 
   dlq_alarm_arn = "${data.terraform_remote_state.infra_shared.dlq_alarm_arn}"
 
