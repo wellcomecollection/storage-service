@@ -6,8 +6,6 @@ variable "cert_domain_name" {}
 
 variable "dlq_alarm_arn" {}
 
-variable "ssh_key_name" {}
-
 variable "release_label" {}
 
 # Network
@@ -17,10 +15,6 @@ variable "private_subnets" {
 }
 
 variable "vpc_id" {}
-
-variable "vpc_cidr" {
-  type = "list"
-}
 
 variable "aws_region" {
   default = "eu-west-1"
@@ -63,12 +57,6 @@ variable "workflow_bucket_name" {}
 variable "versioner_versions_table_arn" {}
 variable "versioner_versions_table_name" {}
 variable "versioner_versions_table_index" {}
-
-# Task counts
-
-variable "desired_ec2_instances" {
-  default = 2
-}
 
 # The number of api tasks MUST be one per AZ.  This is due to the behaviour of
 # NLBs that seem to increase latency significantly if number of tasks < number of AZs.
