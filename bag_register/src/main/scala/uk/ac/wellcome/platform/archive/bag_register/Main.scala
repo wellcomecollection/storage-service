@@ -27,6 +27,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   S3SizeFinder,
   StorageManifestService
 }
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -59,6 +60,8 @@ object Main extends WellcomeTypesafeApp {
       config,
       operationName
     )
+
+    implicit val s3StreamStore = new S3StreamStore()
 
     val storageManifestService = new StorageManifestService(
       sizeFinder = new S3SizeFinder()

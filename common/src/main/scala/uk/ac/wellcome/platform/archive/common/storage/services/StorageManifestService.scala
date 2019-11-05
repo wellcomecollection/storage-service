@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
+import java.io.InputStream
 import java.time.Instant
 
 import grizzled.slf4j.Logging
@@ -13,6 +14,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
+import uk.ac.wellcome.storage.store.Readable
+import uk.ac.wellcome.storage.streaming.HasLength
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
@@ -23,7 +26,13 @@ class StorageManifestException(message: String)
 class BadFetchLocationException(message: String)
     extends StorageManifestException(message)
 
-class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
+class StorageManifestService[IS <: InputStream with HasLength](
+  sizeFinder: SizeFinder
+)(
+  implicit streamReader: Readable[ObjectLocation, IS]
+) extends Logging {
+  private val tagManifestFileFinder = new TagManifestFileFinder[IS]()
+
   def createManifest(
     ingestId: IngestID,
     bag: Bag,
@@ -57,6 +66,12 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
         entries = entries
       )
 
+      unreferencedTagManifestFiles <- getUnreferencedFiles(
+        bagRoot = bagRoot,
+        version = version,
+        tagManifest = bag.tagManifest
+      )
+
       storageManifest = StorageManifest(
         space = space,
         info = bag.info,
@@ -67,7 +82,7 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
         ),
         tagManifest = FileManifest(
           checksumAlgorithm = bag.tagManifest.checksumAlgorithm,
-          files = tagManifestFiles
+          files = tagManifestFiles ++ unreferencedTagManifestFiles
         ),
         location = PrimaryStorageLocation(
           provider = location.provider,
@@ -192,7 +207,7 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
     manifest: BagManifest,
     entries: Map[BagPath, (ObjectLocation, Option[Long])],
     bagRoot: ObjectLocationPrefix
-  ) = Try {
+  ): Try[Seq[StorageManifestFile]] = Try {
     manifest.files.map { bagFile =>
       // This lookup should never file -- the BagMatcher populates the
       // entries from the original manifests in the bag.
@@ -233,6 +248,29 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
       )
     }
   }
+
+  // Get StorageManifestFile entries for everything not listed in either the manifest
+  // or tag manifest BagIt files.
+  //
+  // This should only be the tagmanifest-*.txt files -- the verifier checks that these
+  // are the only unreferenced files.
+  //
+  private def getUnreferencedFiles(
+    bagRoot: ObjectLocationPrefix,
+    version: BagVersion,
+    tagManifest: BagManifest
+  ): Try[Seq[StorageManifestFile]] =
+    tagManifestFileFinder
+      .getTagManifestFiles(
+        prefix = bagRoot.asLocation(version.toString).asPrefix,
+        algorithm = tagManifest.checksumAlgorithm
+      )
+      .map {
+        // Remember to prefix all the entries with a version string
+        _.map { f =>
+          f.copy(path = s"$version/${f.path}")
+        }
+      }
 
   private def getReplicaLocations(
     replicas: Seq[SecondaryStorageLocation],

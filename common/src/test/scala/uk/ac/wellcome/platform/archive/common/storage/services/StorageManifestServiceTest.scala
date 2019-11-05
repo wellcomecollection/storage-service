@@ -2,12 +2,18 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import java.net.URI
 
-import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
+import org.scalatest._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetchEntry,
   BagPath,
-  BagVersion
+  BagVersion,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagBuilder,
+  BagBuilderBase
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagFileGenerators,
@@ -24,7 +30,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA256}
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 import scala.util.{Failure, Random, Success, Try}
 
@@ -36,6 +43,7 @@ class StorageManifestServiceTest
     with StorageLocationGenerators
     with StorageSpaceGenerators
     with TimeTestFixture
+    with EitherValues
     with TryValues {
 
   describe("checks the replica root paths") {
@@ -99,11 +107,14 @@ class StorageManifestServiceTest
 
   describe("sets the locations and replicaLocations correctly") {
     val version = createBagVersion
-    val bagRoot = createObjectLocation
+
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
+    val (bagRoot, bag) = createStorageManifestBag(version = version)
 
     val location = createPrimaryLocationWith(
-      bagRoot = bagRoot,
-      version = version
+      prefix = bagRoot
     )
 
     val replicas = collectionOf(max = 10) {
@@ -111,6 +122,7 @@ class StorageManifestServiceTest
     }
 
     val storageManifest = createManifest(
+      bag = bag,
       location = location,
       replicas = replicas,
       version = version
@@ -121,7 +133,9 @@ class StorageManifestServiceTest
     }
 
     it("sets the correct prefix on the primary location") {
-      storageManifest.location.prefix shouldBe bagRoot.asPrefix
+      storageManifest.location.prefix shouldBe bagRoot.copy(
+        path = bagRoot.path.stripSuffix(s"/$version")
+      )
     }
 
     it("uses the correct providers on the replica locations") {
@@ -146,217 +160,159 @@ class StorageManifestServiceTest
     }
   }
 
-  describe("constructs the paths correctly") {
-    it("no fetch.txt => all the file entries under a versioned path") {
-      val version = createBagVersion
-      val location = createPrimaryLocationWith(version = version)
+  describe("if there's no fetch.txt, it versions the paths") {
+    object NoFetchBagBuilder extends BagBuilderBase {
+      override protected def getFetchEntryCount(payloadFileCount: Int): Int = 0
+    }
 
-      val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
+    val version = createBagVersion
 
-      val bag = createBagWith(
-        manifestFiles = files.map { path =>
-          createBagFileWith(path = path)
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
+    val (bagRoot, bag) = createStorageManifestBag(
+      version = version,
+      bagBuilder = NoFetchBagBuilder
+    )
+
+    val location = createPrimaryLocationWith(prefix = bagRoot)
+
+    val storageManifest = createManifest(
+      bag = bag,
+      location = location,
+      version = version
+    )
+
+    it("manifest entries") {
+      storageManifest.manifest.files
+        .foreach { file =>
+          file.path shouldBe s"$version/${file.name}"
         }
-      )
-
-      val storageManifest = createManifest(
-        bag = bag,
-        location = location,
-        version = version
-      )
-
-      val namePathMap =
-        storageManifest.manifest.files.map { file =>
-          (file.name, file.path)
-        }.toMap
-
-      namePathMap shouldBe files.map { f =>
-        (f, s"$version/$f")
-      }.toMap
     }
 
-    it("puts the tag manifest files under a versioned path") {
-      val version = createBagVersion
-      val location = createPrimaryLocationWith(version = version)
-
-      val files =
-        Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
-
-      val bag = createBagWith(
-        tagManifestFiles = files.map { path =>
-          createBagFileWith(path = path)
+    it("tag manifest entries") {
+      storageManifest.tagManifest.files
+        .foreach { file =>
+          file.path shouldBe s"$version/${file.name}"
         }
-      )
+    }
+  }
 
-      val storageManifest = createManifest(
-        bag = bag,
-        location = location,
-        version = version
-      )
-
-      val namePathMap =
-        storageManifest.tagManifest.files.map { file =>
-          (file.name, file.path)
-        }.toMap
-
-      namePathMap shouldBe files.map { f =>
-        (f, s"$version/$f")
-      }.toMap
+  describe("if there's a fetch.txt, it constructs the right paths") {
+    object AtLeastOneFetchEntryBagBuilder extends BagBuilderBase {
+      override protected def getFetchEntryCount(payloadFileCount: Int): Int =
+        randomInt(from = 1, to = payloadFileCount)
     }
 
-    it("puts a fetch entry under the right versioned path") {
-      val version = createBagVersion
-      val bagRoot = createObjectLocation
+    val version = createBagVersion
 
-      val location = createPrimaryLocationWith(
-        bagRoot = bagRoot,
-        version = version
-      )
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
 
-      val fetchVersion = version.copy(underlying = version.underlying - 1)
-      val fetchLocation = bagRoot.copy(
-        path = s"${bagRoot.path}/$fetchVersion/data/file1.txt"
-      )
+    val (bagRoot, bag) = createStorageManifestBag(
+      version = version,
+      bagBuilder = AtLeastOneFetchEntryBagBuilder
+    )
 
-      val fetchEntries = Seq(
-        BagFetchEntry(
-          uri =
-            new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
-          length = None,
-          path = BagPath("data/file1.txt")
-        )
-      )
+    val location = createPrimaryLocationWith(prefix = bagRoot)
 
-      val bag = createBagWith(
-        manifestFiles = Seq(
-          createBagFileWith("data/file1.txt")
-        ),
-        fetchEntries = fetchEntries
-      )
+    val storageManifest = createManifest(
+      bag = bag,
+      location = location,
+      version = version
+    )
 
-      val storageManifest = createManifest(
-        bag = bag,
-        location = location,
-        version = version
-      )
+    val bagFetchFiles = bag.fetch.get.files.map { entry =>
+      entry.path -> entry
+    }.toMap
 
-      storageManifest.manifest.files.map { f =>
-        f.name -> f.path
-      }.toMap shouldBe Map("data/file1.txt" -> s"$fetchVersion/data/file1.txt")
+    it("puts fetched entries under a versioned path") {
+      val fetchedFiles = storageManifest.manifest.files
+        .filter { file =>
+          bagFetchFiles.contains(BagPath(file.name))
+        }
+
+      fetchedFiles.isEmpty shouldBe false
+
+      fetchedFiles
+        .foreach { file =>
+          val fetchEntry = bagFetchFiles(BagPath(file.name))
+
+          // The fetch entry URI is of the form
+          //
+          //    s3://{bucket}/{space}/{externalIdentifier}/{version}/{path_inside_bag}
+          //
+          // We want to check that matches the bag path, which is of the form
+          //
+          //    {version}/{path_inside_bag}
+          //
+          fetchEntry.uri.toString should endWith(file.path)
+          file.path.matches("^v\\d+/")
+        }
     }
 
-    it("uses a mixture of fetch entries and concrete files") {
-      val version = createBagVersion
-      val bagRoot = createObjectLocation
+    it("puts non-fetched entries under the current version") {
+      storageManifest.manifest.files
+        .filterNot { file =>
+          bagFetchFiles.contains(BagPath(file.name))
+        }
+        .foreach { file =>
+          file.path shouldBe s"$version/${file.name}"
+        }
+    }
 
-      val location = createPrimaryLocationWith(
-        bagRoot = bagRoot,
-        version = version
-      )
-
-      val fetchVersion = version.copy(underlying = version.underlying - 1)
-      val fetchLocation = bagRoot.copy(
-        path = s"${bagRoot.path}/$fetchVersion/data/file1.txt"
-      )
-
-      val fetchEntries = Seq(
-        BagFetchEntry(
-          uri =
-            new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
-          length = None,
-          path = BagPath("data/file1.txt")
-        )
-      )
-
-      val bag = createBagWith(
-        manifestFiles = Seq(
-          createBagFileWith("data/file1.txt"),
-          createBagFileWith("data/file2.txt")
-        ),
-        fetchEntries = fetchEntries
-      )
-
-      val storageManifest = createManifest(
-        bag = bag,
-        location = location,
-        version = version
-      )
-
-      storageManifest.manifest.files.map { f =>
-        f.name -> f.path
-      }.toMap shouldBe Map(
-        "data/file1.txt" -> s"$fetchVersion/data/file1.txt",
-        "data/file2.txt" -> s"$version/data/file2.txt"
-      )
+    it("tag manifest entries are always under the current version") {
+      storageManifest.tagManifest.files
+        .foreach { file =>
+          file.path shouldBe s"$version/${file.name}"
+        }
     }
   }
 
   describe("validates the checksums") {
+    val version = createBagVersion
+
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
+    val (bagRoot, bag) = createStorageManifestBag(
+      version = version
+    )
+
+    val location = createPrimaryLocationWith(prefix = bagRoot)
+
+    val storageManifest = createManifest(
+      bag = bag,
+      location = location,
+      version = version
+    )
+
     it("uses the checksum values from the file manifest") {
-      val paths = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
+      val storageManifestChecksums =
+        storageManifest.manifest.files.map { file =>
+          file.name -> file.checksum.value
+        }.toMap
 
-      val filesWithChecksums =
-        paths.map { _ -> randomAlphanumeric }
+      val bagChecksums =
+        bag.manifest.files.map { file =>
+          file.path.value -> file.checksum.value.value
+        }.toMap
 
-      val bag = createBagWith(
-        manifestFiles = filesWithChecksums.map {
-          case (path, checksumValue) =>
-            createBagFileWith(path = path, checksum = checksumValue)
-        }
-      )
-
-      val version = createBagVersion
-      val location = createPrimaryLocationWith(
-        version = version
-      )
-
-      val storageManifest = createManifest(
-        bag = bag,
-        location = location,
-        version = version
-      )
-
-      val nameChecksumMap =
-        storageManifest.manifest.files
-          .map { file =>
-            (file.name, file.checksum.value)
-          }
-
-      nameChecksumMap should contain theSameElementsAs filesWithChecksums
+      storageManifestChecksums shouldBe bagChecksums
     }
 
     it("uses the checksum values from the tag manifest") {
-      val paths =
-        Seq("bag-info.txt", "tag-manifest-sha256.txt", "manifest-sha256.txt")
+      val storageManifestChecksums =
+        storageManifest.tagManifest.files.map { file =>
+          file.name -> file.checksum.value
+        }.toMap
 
-      val filesWithChecksums =
-        paths.map { _ -> randomAlphanumeric }
+      val bagChecksums =
+        bag.tagManifest.files.map { file =>
+          file.path.value -> file.checksum.value.value
+        }.toMap
 
-      val bag = createBagWith(
-        tagManifestFiles = filesWithChecksums.map {
-          case (path, checksum) =>
-            createBagFileWith(path = path, checksum = checksum)
-        }
-      )
-
-      val version = createBagVersion
-      val location = createPrimaryLocationWith(
-        version = version
-      )
-
-      val storageManifest = createManifest(
-        bag = bag,
-        location = location,
-        version = version
-      )
-
-      val nameChecksumMap =
-        storageManifest.tagManifest.files
-          .map { file =>
-            (file.name, file.checksum.value)
-          }
-
-      nameChecksumMap should contain theSameElementsAs filesWithChecksums
+      storageManifestChecksums.filterKeys { _ != "tagmanifest-sha256.txt" } shouldBe bagChecksums
     }
 
     it(
@@ -481,38 +437,40 @@ class StorageManifestServiceTest
   }
 
   describe("passes through metadata correctly") {
+    val version = createBagVersion
+    val space = createStorageSpace
+
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
+    val (bagRoot, bag) = createStorageManifestBag(
+      space = space,
+      version = version
+    )
+
+    val location = createPrimaryLocationWith(prefix = bagRoot)
+
+    val storageManifest = createManifest(
+      bag = bag,
+      location = location,
+      space = space,
+      version = version
+    )
+
     it("sets the correct storage space") {
-      val space = createStorageSpace
-
-      val manifest = createManifest(space = space)
-
-      manifest.space shouldBe space
+      storageManifest.space shouldBe space
     }
 
     it("sets the correct bagInfo") {
-      val bag = createBag
-
-      val manifest = createManifest(bag = bag)
-
-      manifest.info shouldBe bag.info
+      storageManifest.info shouldBe bag.info
     }
 
     it("sets the correct version") {
-      val version = createBagVersion
-      val location = createPrimaryLocationWith(
-        version = version
-      )
-
-      val manifest =
-        createManifest(location = location, version = version)
-
-      manifest.version shouldBe version
+      storageManifest.version shouldBe version
     }
 
     it("sets a recent createdDate") {
-      val manifest = createManifest()
-
-      assertRecent(manifest.createdDate)
+      assertRecent(storageManifest.createdDate)
     }
   }
 
@@ -538,6 +496,9 @@ class StorageManifestServiceTest
           Failure(err)
       }
 
+      implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+        MemoryStreamStore[ObjectLocation]()
+
       val service = new StorageManifestService(brokenSizeFinder)
 
       val result = service.createManifest(
@@ -555,87 +516,81 @@ class StorageManifestServiceTest
       )
     }
 
-    it("uses the provided sizes") {
-      val paths = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
-      val expectedSizes = paths.map { _ -> Random.nextLong().abs }.toMap
-
-      val filesWithChecksums =
-        paths.map { _ -> randomAlphanumeric }
-
-      val bag = createBagWith(
-        manifestFiles = filesWithChecksums.map {
-          case (path, checksum) =>
-            createBagFileWith(path = path, checksum = checksum)
-        }
-      )
-
-      val version = createBagVersion
-      val location = createPrimaryLocationWith(
-        version = version
-      )
-
-      val sizes = expectedSizes.map {
-        case (path, size) => location.prefix.asLocation(path) -> size
+    it("uses the size finder to get sizes") {
+      object NoFetchBagBuilder extends BagBuilderBase {
+        override protected def getFetchEntryCount(payloadFileCount: Int): Int =
+          0
       }
 
-      val sizeFinder = new SizeFinder {
-        override def getSize(location: ObjectLocation): Try[Long] =
-          Try { sizes(location) }
+      val version = createBagVersion
+
+      implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+        MemoryStreamStore[ObjectLocation]()
+
+      val (bagRoot, bag) = createStorageManifestBag(
+        version = version,
+        bagBuilder = NoFetchBagBuilder
+      )
+
+      val location = createPrimaryLocationWith(prefix = bagRoot)
+
+      var sizeCache: Map[ObjectLocation, Long] = Map.empty
+
+      val cachingSizeFinder = new SizeFinder {
+        override def getSize(location: ObjectLocation): Try[Long] = Try {
+          sizeCache = sizeCache + (location -> Random.nextLong())
+          sizeCache(location)
+        }
       }
 
       val storageManifest = createManifest(
-        bag = bag,
+        bag = bag.copy(
+          tagManifest = bag.tagManifest.copy(files = Seq.empty)
+        ),
         location = location,
         version = version,
-        sizeFinder = sizeFinder
+        sizeFinder = cachingSizeFinder
       )
 
-      val actualSizes =
-        storageManifest.manifest.files
-          .map { file =>
-            (file.name, file.size)
+      val storageManifestSizes =
+        (storageManifest.manifest.files ++ storageManifest.tagManifest.files)
+          .filterNot {
+            // The size of this tag manifest is fetched when we read the file contents,
+            // not from the size finder.
+            _.name == "tagmanifest-sha256.txt"
           }
+          .map { file =>
+            storageManifest.location.prefix.asLocation(file.path) -> file.size
+          }
+          .toMap
 
-      actualSizes should contain theSameElementsAs expectedSizes.toSeq
+      storageManifestSizes shouldBe sizeCache
     }
 
     it("uses the size from the fetch file") {
+      // Always create a fetch.txt entry rather than a concrete file, always
+      // include the size in the fetch.txt.
+      object ConcreteFetchEntryBagBuilder extends BagBuilderBase {
+        override protected def getFetchEntryCount(payloadFileCount: Int): Int =
+          payloadFileCount
+
+        override protected def buildFetchEntryLine(
+          entry: PayloadEntry
+        )(implicit namespace: String): String =
+          s"""bag://$namespace/${entry.path} ${entry.contents.getBytes.length} ${entry.bagPath}"""
+      }
+
       val version = createBagVersion
-      val bagRoot = createObjectLocation
 
-      val location = createPrimaryLocationWith(
-        bagRoot = bagRoot,
-        version = version
+      implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+        MemoryStreamStore[ObjectLocation]()
+
+      val (bagRoot, bag) = createStorageManifestBag(
+        version = version,
+        bagBuilder = ConcreteFetchEntryBagBuilder
       )
 
-      val fetchVersion = version.copy(
-        underlying = version.underlying - 1
-      )
-
-      val fetchLocation = bagRoot.copy(
-        path = s"${bagRoot.path}/$fetchVersion/data/file1.txt"
-      )
-
-      val bag = createBagWith(
-        manifestFiles = Seq(
-          createBagFileWith("data/1.txt"),
-          createBagFileWith("data/2.txt")
-        ),
-        fetchEntries = Seq(
-          BagFetchEntry(
-            uri =
-              new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
-            length = Some(10),
-            path = BagPath("data/1.txt")
-          ),
-          BagFetchEntry(
-            uri =
-              new URI(s"s3://${fetchLocation.namespace}/${fetchLocation.path}"),
-            length = Some(20),
-            path = BagPath("data/2.txt")
-          )
-        )
-      )
+      val location = createPrimaryLocationWith(prefix = bagRoot)
 
       val brokenSizeFinder = new SizeFinder {
         override def getSize(location: ObjectLocation): Try[Long] =
@@ -643,36 +598,96 @@ class StorageManifestServiceTest
       }
 
       val storageManifest = createManifest(
-        bag = bag,
+        bag = bag.copy(
+          tagManifest = bag.tagManifest.copy(files = Seq.empty)
+        ),
         location = location,
         version = version,
         sizeFinder = brokenSizeFinder
       )
 
-      val actualSizes =
-        storageManifest.manifest.files
-          .map { file =>
-            (file.name, file.size)
-          }
+      val manifestSizes =
+        storageManifest.manifest.files.map { file =>
+          file.name -> file.size
+        }.toMap
 
-      actualSizes should contain theSameElementsAs Seq(
-        ("data/1.txt", 10L),
-        ("data/2.txt", 20L)
+      val bagSizes =
+        bag.fetch.get.files.map { file =>
+          file.path.value -> file.length.get
+        }.toMap
+
+      manifestSizes shouldBe bagSizes
+    }
+  }
+
+  def createStorageManifestBag(
+    space: StorageSpace = createStorageSpace,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    version: BagVersion,
+    bagBuilder: BagBuilderBase = BagBuilder
+  )(
+    implicit
+    namespace: String = randomAlphanumeric,
+    streamStore: MemoryStreamStore[ObjectLocation]
+  ): (ObjectLocationPrefix, Bag) = {
+    implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
+      new MemoryTypedStore[ObjectLocation, String]()
+
+    val (bagObjects, bagRoot, _) =
+      bagBuilder.createBagContentsWith(
+        space = space,
+        externalIdentifier = externalIdentifier,
+        version = version
       )
+
+    bagBuilder.uploadBagObjects(bagObjects)
+
+    (bagRoot, new MemoryBagReader().get(bagRoot).right.value)
+  }
+
+  describe(
+    "finds files that aren't referenced in the BagIt tagmanifest-sha256.txt"
+  ) {
+    it("finds BagIt tag manifest files") {
+      implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+        MemoryStreamStore[ObjectLocation]()
+
+      val space = createStorageSpace
+      val externalIdentifier = createExternalIdentifier
+      val version = createBagVersion
+
+      val (bagRoot, bag) = createStorageManifestBag(
+        space = space,
+        externalIdentifier,
+        version = version
+      )
+
+      val manifest = createManifest(
+        bag = bag,
+        location = createPrimaryLocationWith(prefix = bagRoot),
+        space = space,
+        version = version
+      )
+
+      val tagManifestFiles = manifest.tagManifest.files.filter {
+        _.name.startsWith("tagmanifest-")
+      }
+
+      tagManifestFiles.isEmpty shouldBe false
     }
   }
 
   private def createManifest(
     ingestId: IngestID = createIngestID,
-    bag: Bag = createBag,
-    location: PrimaryStorageLocation = createPrimaryLocationWith(
-      version = BagVersion(1)
-    ),
+    bag: Bag,
+    location: PrimaryStorageLocation,
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     space: StorageSpace = createStorageSpace,
-    version: BagVersion = BagVersion(1),
+    version: BagVersion,
     sizeFinder: SizeFinder = (location: ObjectLocation) =>
       Success(Random.nextLong().abs)
+  )(
+    implicit streamStore: MemoryStreamStore[ObjectLocation]
   ): StorageManifest = {
     val service = new StorageManifestService(sizeFinder)
 
@@ -725,6 +740,9 @@ class StorageManifestServiceTest
     val sizeFinder = new SizeFinder {
       override def getSize(location: ObjectLocation): Try[Long] = Success(1)
     }
+
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
 
     val service = new StorageManifestService(sizeFinder)
 

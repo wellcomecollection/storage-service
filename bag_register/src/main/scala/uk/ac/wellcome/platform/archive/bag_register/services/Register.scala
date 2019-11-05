@@ -19,7 +19,7 @@ import scala.util.{Failure, Success, Try}
 class Register(
   bagReader: BagReader[_],
   storageManifestDao: StorageManifestDao,
-  storageManifestService: StorageManifestService
+  storageManifestService: StorageManifestService[_]
 ) extends Logging {
 
   def update(
