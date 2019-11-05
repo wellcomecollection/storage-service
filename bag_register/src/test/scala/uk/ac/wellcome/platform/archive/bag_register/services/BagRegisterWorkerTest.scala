@@ -250,15 +250,15 @@ class BagRegisterWorkerTest
         _.processMessage(payload)
       }
 
+    val storageManifest =
+      storageManifestDao.getLatest(bagId).right.value
+
     it("returns an IngestCompleted") {
       result shouldBe a[Success[_]]
       result.success.value shouldBe a[IngestCompleted[_]]
     }
 
     it("stores the manifest in the dao") {
-      val storageManifest =
-        storageManifestDao.getLatest(bagId).right.value
-
       storageManifest.location shouldBe primaryLocation.copy(
         prefix = bagRoot
           .copy(
@@ -275,6 +275,15 @@ class BagRegisterWorkerTest
               .copy(path = prefix.path.stripSuffix(s"/$version"))
           )
         }
+    }
+
+    it("includes the tagmanifest-sha256.txt in the storage manifest") {
+      val tagManifestFiles =
+        storageManifest
+          .tagManifest.files
+          .filter { _.name == "tagmanifest-sha256.txt" }
+
+      tagManifestFiles should have size 1
     }
   }
 
