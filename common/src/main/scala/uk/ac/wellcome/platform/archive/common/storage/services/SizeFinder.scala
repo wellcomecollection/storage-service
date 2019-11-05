@@ -24,7 +24,7 @@ class MemorySizeFinder(
 class S3SizeFinder(implicit s3Client: AmazonS3) extends SizeFinder {
   def getSize(location: ObjectLocation): Try[Long] = Try {
     s3Client
-    .getObjectMetadata(location.namespace, location.path)
-    .getContentLength
+      .getObjectMetadata(location.namespace, location.path)
+      .getContentLength
   }
 }

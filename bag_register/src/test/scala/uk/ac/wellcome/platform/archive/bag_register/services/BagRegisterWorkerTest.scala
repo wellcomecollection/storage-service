@@ -279,8 +279,7 @@ class BagRegisterWorkerTest
 
     it("includes the tagmanifest-sha256.txt in the storage manifest") {
       val tagManifestFiles =
-        storageManifest
-          .tagManifest.files
+        storageManifest.tagManifest.files
           .filter { _.name == "tagmanifest-sha256.txt" }
 
       tagManifestFiles should have size 1

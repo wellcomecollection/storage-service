@@ -26,7 +26,9 @@ class StorageManifestException(message: String)
 class BadFetchLocationException(message: String)
     extends StorageManifestException(message)
 
-class StorageManifestService[IS <: InputStream with HasLength](sizeFinder: SizeFinder)(
+class StorageManifestService[IS <: InputStream with HasLength](
+  sizeFinder: SizeFinder
+)(
   implicit streamReader: Readable[ObjectLocation, IS]
 ) extends Logging {
   private val tagManifestFileFinder = new TagManifestFileFinder[IS]()
@@ -253,14 +255,22 @@ class StorageManifestService[IS <: InputStream with HasLength](sizeFinder: SizeF
   // This should only be the tagmanifest-*.txt files -- the verifier checks that these
   // are the only unreferenced files.
   //
-  private def getUnreferencedFiles(bagRoot: ObjectLocationPrefix, version: BagVersion, tagManifest: BagManifest): Try[Seq[StorageManifestFile]] =
-    tagManifestFileFinder.getTagManifestFiles(
-      prefix = bagRoot.asLocation(version.toString).asPrefix,
-      algorithm = tagManifest.checksumAlgorithm
-    ).map {
-      // Remember to prefix all the entries with a version string
-      _.map { f => f.copy(path = s"$version/${f.path}") }
-    }
+  private def getUnreferencedFiles(
+    bagRoot: ObjectLocationPrefix,
+    version: BagVersion,
+    tagManifest: BagManifest
+  ): Try[Seq[StorageManifestFile]] =
+    tagManifestFileFinder
+      .getTagManifestFiles(
+        prefix = bagRoot.asLocation(version.toString).asPrefix,
+        algorithm = tagManifest.checksumAlgorithm
+      )
+      .map {
+        // Remember to prefix all the entries with a version string
+        _.map { f =>
+          f.copy(path = s"$version/${f.path}")
+        }
+      }
 
   private def getReplicaLocations(
     replicas: Seq[SecondaryStorageLocation],

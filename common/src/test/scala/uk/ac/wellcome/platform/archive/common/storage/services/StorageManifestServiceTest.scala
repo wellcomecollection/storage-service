@@ -31,10 +31,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA256}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
-import uk.ac.wellcome.storage.store.memory.{
-  MemoryStreamStore,
-  MemoryTypedStore
-}
+import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 import scala.util.{Failure, Random, Success, Try}
 
@@ -136,7 +133,9 @@ class StorageManifestServiceTest
     }
 
     it("sets the correct prefix on the primary location") {
-      storageManifest.location.prefix shouldBe bagRoot.copy(path = bagRoot.path.stripSuffix(s"/$version"))
+      storageManifest.location.prefix shouldBe bagRoot.copy(
+        path = bagRoot.path.stripSuffix(s"/$version")
+      )
     }
 
     it("uses the correct providers on the replica locations") {
@@ -185,18 +184,14 @@ class StorageManifestServiceTest
     )
 
     it("manifest entries") {
-      storageManifest
-        .manifest
-        .files
+      storageManifest.manifest.files
         .foreach { file =>
           file.path shouldBe s"$version/${file.name}"
         }
     }
 
     it("tag manifest entries") {
-      storageManifest
-        .tagManifest
-        .files
+      storageManifest.tagManifest.files
         .foreach { file =>
           file.path shouldBe s"$version/${file.name}"
         }
@@ -227,17 +222,15 @@ class StorageManifestServiceTest
       version = version
     )
 
-    val bagFetchFiles = bag
-      .fetch.get
-      .files
-      .map { entry => entry.path -> entry }
-      .toMap
+    val bagFetchFiles = bag.fetch.get.files.map { entry =>
+      entry.path -> entry
+    }.toMap
 
     it("puts fetched entries under a versioned path") {
-      val fetchedFiles = storageManifest
-        .manifest
-        .files
-        .filter { file => bagFetchFiles.contains(BagPath(file.name)) }
+      val fetchedFiles = storageManifest.manifest.files
+        .filter { file =>
+          bagFetchFiles.contains(BagPath(file.name))
+        }
 
       fetchedFiles.isEmpty shouldBe false
 
@@ -259,19 +252,17 @@ class StorageManifestServiceTest
     }
 
     it("puts non-fetched entries under the current version") {
-      storageManifest
-        .manifest
-        .files
-        .filterNot { file => bagFetchFiles.contains(BagPath(file.name)) }
+      storageManifest.manifest.files
+        .filterNot { file =>
+          bagFetchFiles.contains(BagPath(file.name))
+        }
         .foreach { file =>
           file.path shouldBe s"$version/${file.name}"
         }
     }
 
     it("tag manifest entries are always under the current version") {
-      storageManifest
-        .tagManifest
-        .files
+      storageManifest.tagManifest.files
         .foreach { file =>
           file.path shouldBe s"$version/${file.name}"
         }
@@ -298,36 +289,28 @@ class StorageManifestServiceTest
 
     it("uses the checksum values from the file manifest") {
       val storageManifestChecksums =
-        storageManifest.manifest.files
-          .map { file =>
-            file.name -> file.checksum.value
-          }
-          .toMap
+        storageManifest.manifest.files.map { file =>
+          file.name -> file.checksum.value
+        }.toMap
 
       val bagChecksums =
-        bag.manifest.files
-          .map { file =>
-            file.path.value -> file.checksum.value.value
-          }
-          .toMap
+        bag.manifest.files.map { file =>
+          file.path.value -> file.checksum.value.value
+        }.toMap
 
       storageManifestChecksums shouldBe bagChecksums
     }
 
     it("uses the checksum values from the tag manifest") {
       val storageManifestChecksums =
-        storageManifest.tagManifest.files
-          .map { file =>
-            file.name -> file.checksum.value
-          }
-          .toMap
+        storageManifest.tagManifest.files.map { file =>
+          file.name -> file.checksum.value
+        }.toMap
 
       val bagChecksums =
-        bag.tagManifest.files
-          .map { file =>
-            file.path.value -> file.checksum.value.value
-          }
-          .toMap
+        bag.tagManifest.files.map { file =>
+          file.path.value -> file.checksum.value.value
+        }.toMap
 
       storageManifestChecksums.filterKeys { _ != "tagmanifest-sha256.txt" } shouldBe bagChecksums
     }
@@ -535,7 +518,8 @@ class StorageManifestServiceTest
 
     it("uses the size finder to get sizes") {
       object NoFetchBagBuilder extends BagBuilderBase {
-        override protected def getFetchEntryCount(payloadFileCount: Int): Int = 0
+        override protected def getFetchEntryCount(payloadFileCount: Int): Int =
+          0
       }
 
       val version = createBagVersion
@@ -590,7 +574,9 @@ class StorageManifestServiceTest
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
 
-        override protected def buildFetchEntryLine(entry: PayloadEntry)(implicit namespace: String): String =
+        override protected def buildFetchEntryLine(
+          entry: PayloadEntry
+        )(implicit namespace: String): String =
           s"""bag://$namespace/${entry.path} ${entry.contents.getBytes.length} ${entry.bagPath}"""
       }
 
@@ -621,19 +607,14 @@ class StorageManifestServiceTest
       )
 
       val manifestSizes =
-        storageManifest.manifest.files
-          .map { file =>
-            file.name -> file.size
-          }
-        .toMap
+        storageManifest.manifest.files.map { file =>
+          file.name -> file.size
+        }.toMap
 
       val bagSizes =
-        bag.fetch.get
-          .files
-          .map { file =>
-            file.path.value -> file.length.get
-          }
-          .toMap
+        bag.fetch.get.files.map { file =>
+          file.path.value -> file.length.get
+        }.toMap
 
       manifestSizes shouldBe bagSizes
     }
@@ -664,7 +645,9 @@ class StorageManifestServiceTest
     (bagRoot, new MemoryBagReader().get(bagRoot).right.value)
   }
 
-  describe("finds files that aren't referenced in the BagIt tagmanifest-sha256.txt") {
+  describe(
+    "finds files that aren't referenced in the BagIt tagmanifest-sha256.txt"
+  ) {
     it("finds BagIt tag manifest files") {
       implicit val streamStore: MemoryStreamStore[ObjectLocation] =
         MemoryStreamStore[ObjectLocation]()
@@ -686,7 +669,9 @@ class StorageManifestServiceTest
         version = version
       )
 
-      val tagManifestFiles = manifest.tagManifest.files.filter { _.name.startsWith("tagmanifest-") }
+      val tagManifestFiles = manifest.tagManifest.files.filter {
+        _.name.startsWith("tagmanifest-")
+      }
 
       tagManifestFiles.isEmpty shouldBe false
     }
