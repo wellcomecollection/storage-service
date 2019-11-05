@@ -192,7 +192,7 @@ class StorageManifestService(sizeFinder: SizeFinder) extends Logging {
     manifest: BagManifest,
     entries: Map[BagPath, (ObjectLocation, Option[Long])],
     bagRoot: ObjectLocationPrefix
-  ) = Try {
+  ): Try[Seq[StorageManifestFile]] = Try {
     manifest.files.map { bagFile =>
       // This lookup should never file -- the BagMatcher populates the
       // entries from the original manifests in the bag.
