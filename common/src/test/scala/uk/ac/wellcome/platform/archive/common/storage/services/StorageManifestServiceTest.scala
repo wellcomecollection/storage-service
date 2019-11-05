@@ -2,13 +2,15 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import java.net.URI
 
-import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
+import org.scalatest._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetchEntry,
   BagPath,
   BagVersion
 }
+import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
+import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagFileGenerators,
   BagGenerators,
@@ -25,6 +27,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.store.memory.{
+  MemoryStreamStore,
+  MemoryTypedStore
+}
 
 import scala.util.{Failure, Random, Success, Try}
 
@@ -36,6 +42,7 @@ class StorageManifestServiceTest
     with StorageLocationGenerators
     with StorageSpaceGenerators
     with TimeTestFixture
+    with EitherValues
     with TryValues {
 
   describe("checks the replica root paths") {
@@ -659,6 +666,44 @@ class StorageManifestServiceTest
         ("data/1.txt", 10L),
         ("data/2.txt", 20L)
       )
+    }
+  }
+
+  describe("finds files that aren't referenced in the BagIt tagmanifest-sha256.txt") {
+    it("finds BagIt tag manifest files") {
+      implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+        MemoryStreamStore[ObjectLocation]()
+
+      implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
+        new MemoryTypedStore[ObjectLocation, String]()
+
+      implicit val namespace = randomAlphanumeric
+
+      val space = createStorageSpace
+      val externalIdentifier = createExternalIdentifier
+      val version = createBagVersion
+
+      val (bagObjects, bagRoot, _) =
+        BagBuilder.createBagContentsWith(
+          space = space,
+          externalIdentifier = externalIdentifier,
+          version = version
+        )
+
+      BagBuilder.uploadBagObjects(bagObjects)
+
+      val bag = new MemoryBagReader().get(bagRoot).right.value
+
+      val manifest = createManifest(
+        bag = bag,
+        location = createPrimaryLocationWith(prefix = bagRoot),
+        space = space,
+        version = version
+      )
+
+      val tagManifestFiles = manifest.tagManifest.files.filter { _.name.startsWith("tagmanifest-") }
+
+      tagManifestFiles.isEmpty shouldBe false
     }
   }
 
