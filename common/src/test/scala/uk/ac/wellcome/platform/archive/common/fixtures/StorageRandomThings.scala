@@ -165,5 +165,5 @@ trait StorageRandomThings extends RandomThings {
   }
 
   def createBagVersion: BagVersion =
-    BagVersion(Random.nextInt)
+    BagVersion(randomInt(from = 1, to = 100000))
 }
