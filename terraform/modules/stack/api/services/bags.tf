@@ -18,7 +18,7 @@ module "bags" {
     var.interservice_security_group_id,
   ]
 
-  subnets = [var.subnets]
+  subnets = var.subnets
 
   nginx_container_port  = var.bags_nginx_container_port
   nginx_container_image = var.bags_nginx_container_image

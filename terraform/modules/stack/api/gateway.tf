@@ -79,7 +79,7 @@ module "bags" {
   connection_id    = aws_api_gateway_vpc_link.link.id
 
   cognito_id  = aws_api_gateway_authorizer.cognito.id
-  auth_scopes = [var.auth_scopes]
+  auth_scopes = var.auth_scopes
 
   forward_port = "$${stageVariables.bags_port}"
   forward_path = "bags"
@@ -95,7 +95,7 @@ module "ingests" {
   connection_id    = aws_api_gateway_vpc_link.link.id
 
   cognito_id  = aws_api_gateway_authorizer.cognito.id
-  auth_scopes = [var.auth_scopes]
+  auth_scopes = var.auth_scopes
 
   forward_port = "$${stageVariables.ingests_port}"
   forward_path = "ingests"
@@ -104,15 +104,7 @@ module "ingests" {
 # Link
 
 resource "aws_api_gateway_vpc_link" "link" {
-  name = "${var.namespace}-api_vpc_link"
-  # TF-UPGRADE-TODO: In Terraform v0.10 and earlier, it was sometimes necessary to
-  # force an interpolation expression to be interpreted as a list by wrapping it
-  # in an extra set of list brackets. That form was supported for compatibility in
-  # v0.11, but is no longer supported in Terraform v0.12.
-  #
-  # If the expression in the following list itself returns a list, remove the
-  # brackets to avoid interpretation as a list of lists. If the expression
-  # returns a single list item then leave it as-is and remove this TODO comment.
-  target_arns = [module.nlb.arn]
+  name        = "${var.namespace}-api_vpc_link"
+  target_arns = [aws_lb.nlb.arn]
 }
 

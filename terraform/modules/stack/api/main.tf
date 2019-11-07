@@ -5,10 +5,10 @@ module "services" {
 
   namespace_id = var.namespace_id
 
-  subnets    = [var.subnets]
+  subnets    = var.subnets
   cluster_id = var.cluster_id
   vpc_id     = var.vpc_id
-  nlb_arn    = module.nlb.arn
+  nlb_arn    = aws_lb.nlb.arn
 
   desired_bags_api_count    = var.desired_bags_api_count
   desired_ingests_api_count = var.desired_ingests_api_count

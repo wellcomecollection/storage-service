@@ -219,8 +219,8 @@ module "replicator_verifier_primary" {
   storage_provider     = "aws-s3-ia"
   replica_type         = "primary"
 
-  topic_names = [
-    module.bag_versioner_output_topic.name,
+  topic_arns = [
+    module.bag_versioner_output_topic.arn,
   ]
 
   bucket_name         = var.replica_primary_bucket_name
@@ -267,8 +267,8 @@ module "replicator_verifier_glacier" {
   storage_provider     = "aws-s3-glacier"
   replica_type         = "secondary"
 
-  topic_names = [
-    module.bag_versioner_output_topic.name,
+  topic_arns = [
+    module.bag_versioner_output_topic.arn,
   ]
 
   bucket_name         = var.replica_glacier_bucket_name

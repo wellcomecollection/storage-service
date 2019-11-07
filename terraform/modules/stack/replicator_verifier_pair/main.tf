@@ -8,9 +8,7 @@ locals {
 module "bag_replicator" {
   source = "../../service/worker"
 
-  security_group_ids = [
-    var.security_group_ids,
-  ]
+  security_group_ids = var.security_group_ids
 
   cluster_name = var.cluster_name
   cluster_id   = var.cluster_id
@@ -51,9 +49,7 @@ module "bag_replicator" {
 module "bag_verifier" {
   source = "../../service/worker"
 
-  security_group_ids = [
-    var.security_group_ids,
-  ]
+  security_group_ids = var.security_group_ids
 
   cluster_name = var.cluster_name
   cluster_id   = var.cluster_id

@@ -26,7 +26,7 @@ module "ingests_input_queue" {
 
   name = "${var.namespace}_ingests_input"
 
-  topic_names = [module.ingests_topic.name]
+  topic_arns = [module.ingests_topic.arn]
 
   role_names = [
     module.ingests.task_role_name,
@@ -57,7 +57,7 @@ module "notifier_input_queue" {
 
   name = "${var.namespace}_notifier"
 
-  topic_names = [module.ingests_output_topic.name]
+  topic_arns = [module.ingests_output_topic.arn]
 
   role_names = [module.notifier.task_role_name]
 
@@ -82,7 +82,7 @@ module "bag_unpacker_queue" {
 
   name = "${var.namespace}_bag_unpacker_input"
 
-  topic_names = [module.bag_unpacker_input_topic.name]
+  topic_arns = [module.bag_unpacker_input_topic.arn]
 
   role_names = [module.bag_unpacker.task_role_name]
 
@@ -119,7 +119,7 @@ module "bag_root_finder_queue" {
 
   name = "${var.namespace}_bag_root_finder_input"
 
-  topic_names = [module.bag_unpacker_output_topic.name]
+  topic_arns = [module.bag_unpacker_output_topic.arn]
 
   role_names = [module.bag_root_finder.task_role_name]
 
@@ -152,7 +152,7 @@ module "bag_verifier_pre_replicate_queue" {
 
   name = "${var.namespace}_bag_verifier_pre_replicate_input"
 
-  topic_names = [module.bag_root_finder_output_topic.name]
+  topic_arns = [module.bag_root_finder_output_topic.arn]
 
   role_names = [module.bag_verifier_pre_replication.task_role_name]
 
@@ -189,7 +189,7 @@ module "bag_versioner_queue" {
 
   name = "${var.namespace}_bag_versioner_input"
 
-  topic_names = [module.bag_verifier_pre_replicate_output_topic.name]
+  topic_arns = [module.bag_verifier_pre_replicate_output_topic.arn]
 
   role_names = [module.bag_versioner.task_role_name]
 
@@ -222,7 +222,7 @@ module "replica_aggregator_input_queue" {
 
   name = "${var.namespace}_replica_aggregator_input"
 
-  topic_names = [
+  topic_arns = [
     module.replicator_verifier_primary.verifier_output_topic_name,
     module.replicator_verifier_glacier.verifier_output_topic_name,
   ]
@@ -262,7 +262,7 @@ module "bag_register_input_queue" {
 
   name = "${var.namespace}_bag_register_input"
 
-  topic_names = [module.replica_aggregator_output_topic.name]
+  topic_arns = [module.replica_aggregator_output_topic.arn]
 
   role_names = [module.bag_register.task_role_name]
 
@@ -304,7 +304,7 @@ module "bag_register_output_queue" {
 
   name = "${var.namespace}_bag_register_output"
 
-  topic_names = [module.bag_register_output_topic.name]
+  topic_arns = [module.bag_register_output_topic.arn]
 
   role_names = []
 

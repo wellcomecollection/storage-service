@@ -1,17 +1,12 @@
-data "aws_caller_identity" "current" {
-}
-
 locals {
   queue_name = replace(var.name, "-", "_")
 }
 
 module "queue" {
-  source      = "git::https://github.com/wellcometrust/terraform-modules.git//sqs?ref=dc948c2"
-  queue_name  = replace(var.name, "-", "_")
-  aws_region  = var.aws_region
-  account_id  = data.aws_caller_identity.current.account_id
-  topic_names = var.topic_names
-  topic_count = length(var.topic_names)
+  source     = "git::github.com/wellcomecollection/terraform-aws-sqs?ref=v1.0.0"
+  queue_name = replace(var.name, "-", "_")
+  aws_region = var.aws_region
+  topic_arns = var.topic_arns
 
   visibility_timeout_seconds = var.visibility_timeout_seconds
   max_receive_count          = var.max_receive_count

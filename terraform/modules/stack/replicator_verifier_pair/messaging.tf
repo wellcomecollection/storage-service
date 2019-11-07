@@ -5,7 +5,7 @@ module "bag_replicator_input_queue" {
 
   name = "${var.namespace}_bag_replicator_${var.replica_id}_input"
 
-  topic_names = var.topic_names
+  topic_arns = var.topic_arns
 
   role_names = [module.bag_replicator.task_role_name]
 
@@ -43,7 +43,7 @@ module "bag_verifier_queue" {
 
   name = "${var.namespace}_bag_verifier_${var.replica_id}_input"
 
-  topic_names = [module.bag_replicator_output_topic.name]
+  topic_arns = [module.bag_replicator_output_topic.arn]
 
   role_names = [module.bag_verifier.task_role_name]
 

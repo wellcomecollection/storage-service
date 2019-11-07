@@ -4,7 +4,7 @@ variable "name" {
 variable "aws_region" {
 }
 
-variable "topic_names" {
+variable "topic_arns" {
   type = list(string)
 }
 
