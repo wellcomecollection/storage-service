@@ -1,6 +1,8 @@
 # -*- encoding: utf-8
 
+import datetime as dt
 import tarfile
+import time
 
 from botocore.exceptions import ClientError
 import pytest
@@ -77,6 +79,9 @@ class TestS3IADownload(object):
             "tagmanifest-sha512.txt": 579,
         }
 
+        creation_date = dt.datetime(2019, 9, 12, 20, 26, 53)
+        timestamp = time.mktime(creation_date.timetuple())
+
         with tarfile.open(str(out_path), "r:gz") as tf:
             members = tf.getmembers()
             assert len(members) == len(files)
@@ -88,6 +93,9 @@ class TestS3IADownload(object):
 
                 inner_name = tarinfo.name[len("b11733330/"):]
                 assert files[inner_name] == tarinfo.size
+
+                # Check the date matches that of the original manifest
+                assert tarinfo.mtime == timestamp
 
             bagit = tf.getmember("b11733330/bagit.txt")
             tf.extract(bagit, path=str(tmpdir))

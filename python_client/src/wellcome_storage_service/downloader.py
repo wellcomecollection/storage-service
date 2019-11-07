@@ -1,8 +1,10 @@
 # -*- encoding: utf-8
 
 import abc
+import datetime as dt
 import os
 import tarfile
+import time
 
 try:
     from collections.abc import ABC
@@ -69,6 +71,13 @@ def download_compressed_bag(storage_manifest, out_path):
                 name=os.path.join(ext_identifier, manifest_file["name"])
             )
             tarinfo.size = manifest_file["size"]
+
+            # Set the modified time to the creation dateb of the storage manifest
+            creation_date = dt.datetime.strptime(
+                storage_manifest["createdDate"],
+                "%Y-%m-%dT%H:%M:%S.%fZ"
+            )
+            tarinfo.mtime = time.mktime(creation_date.timetuple())
 
             tf.addfile(tarinfo=tarinfo, fileobj=fileobj)
 
