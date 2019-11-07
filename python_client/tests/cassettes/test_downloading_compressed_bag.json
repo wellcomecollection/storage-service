@@ -1,0 +1,207 @@
+{
+  "http_interactions": [
+    {
+      "recorded_at": "2019-11-07T10:39:04",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "grant_type=client_credentials"
+        },
+        "headers": {
+          "Accept": [
+            "application/json"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ],
+          "Authorization": [
+            "<AUTH_TOKEN>"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Length": [
+            "29"
+          ],
+          "Content-Type": [
+            "application/x-www-form-urlencoded;charset=UTF-8"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ]
+        },
+        "method": "POST",
+        "uri": "https://auth.wellcomecollection.org/oauth2/token"
+      },
+      "response": {
+        "body": {
+          "encoding": "UTF-8",
+          "string": "{\"access_token\":\"<ACCESS_TOKEN_13>\",\"expires_in\":3600,\"token_type\":\"Bearer\"}"
+        },
+        "headers": {
+          "Cache-Control": [
+            "no-cache, no-store, max-age=0, must-revalidate"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Type": [
+            "application/json;charset=UTF-8"
+          ],
+          "Date": [
+            "Thu, 07 Nov 2019 10:39:04 GMT"
+          ],
+          "Expires": [
+            "0"
+          ],
+          "Pragma": [
+            "no-cache"
+          ],
+          "Server": [
+            "Server"
+          ],
+          "Set-Cookie": [
+            "XSRF-TOKEN=482fdc65-f1af-4d88-9174-a05ba2fb5086; Path=/; Secure; HttpOnly"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000 ; includeSubDomains"
+          ],
+          "Transfer-Encoding": [
+            "chunked"
+          ],
+          "Via": [
+            "1.1 2fafb26bfb5e0420de152a7abef27a44.cloudfront.net (CloudFront)"
+          ],
+          "X-Amz-Cf-Id": [
+            "3CP5hRpzZl-B_l3epAhDVps8ce-eqK_Wr5dawlSlYNlEEG3Y7rYx0w=="
+          ],
+          "X-Amz-Cf-Pop": [
+            "LHR52-C1"
+          ],
+          "X-Application-Context": [
+            "application:prod:8443"
+          ],
+          "X-Cache": [
+            "Miss from cloudfront"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "DENY"
+          ],
+          "X-XSS-Protection": [
+            "1; mode=block"
+          ],
+          "x-amz-cognito-request-id": [
+            "78d618fd-d005-48fc-a2f2-a5158198eba3"
+          ]
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://auth.wellcomecollection.org/oauth2/token"
+      }
+    },
+    {
+      "recorded_at": "2019-11-07T10:39:04",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": ""
+        },
+        "headers": {
+          "Accept": [
+            "*/*"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ],
+          "Authorization": [
+            "Bearer <ACCESS_TOKEN_13>"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ]
+        },
+        "method": "GET",
+        "uri": "https://api.wellcomecollection.org/storage/v1/bags/digitised/b11733330"
+      },
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"digitised/b11733330\",\"space\":{\"id\":\"digitised\",\"type\":\"Space\"},\"info\":{\"externalIdentifier\":\"b11733330\",\"payloadOxum\":\"1335376.2\",\"baggingDate\":\"2019-08-22\",\"sourceOrganization\":\"Intranda GmbH\",\"externalDescription\":\"Thomas Wakley. Stipple engraving by W. H. Egleton after J.K. Meadows.\",\"type\":\"BagInfo\"},\"manifest\":{\"checksumAlgorithm\":\"SHA-256\",\"files\":[{\"checksum\":\"c195e863630433d2e5e92d5970cfab7321568657d29439c00d35e4c4f6990993\",\"name\":\"data/b11733330.xml\",\"path\":\"v1/data/b11733330.xml\",\"size\":8132,\"type\":\"File\"},{\"checksum\":\"ac4fde3a0e2188de91b3e961310a978e749cf456f18d5830ffcffd59111385ba\",\"name\":\"data/objects/L0008210-LS-CS.jp2\",\"path\":\"v1/data/objects/L0008210-LS-CS.jp2\",\"size\":1327244,\"type\":\"File\"}],\"type\":\"BagManifest\"},\"tagManifest\":{\"checksumAlgorithm\":\"SHA-256\",\"files\":[{\"checksum\":\"894867de4f57a3ed316ec43138190cdd752da95bfa68fd96a7721808bfdcbd5a\",\"name\":\"manifest-sha256.txt\",\"path\":\"v1/manifest-sha256.txt\",\"size\":183,\"type\":\"File\"},{\"checksum\":\"e91f941be5973ff71f1dccbdd1a32d598881893a7f21be516aca743da38b1689\",\"name\":\"bagit.txt\",\"path\":\"v1/bagit.txt\",\"size\":55,\"type\":\"File\"},{\"checksum\":\"d9cf709e5fb7a93a55ba9bd6b69be72a50b5921c97bc67d6e6b2c843b3c32b73\",\"name\":\"manifest-sha512.txt\",\"path\":\"v1/manifest-sha512.txt\",\"size\":311,\"type\":\"File\"},{\"checksum\":\"c793b81c816fcab9b469a6db9a1ba885f5f3ae69a8b8c71eef578e794f370e4d\",\"name\":\"bag-info.txt\",\"path\":\"v1/bag-info.txt\",\"size\":331,\"type\":\"File\"},{\"checksum\":\"8b840d1a71e0d1d127fcad5bd7ba966215161e0883390a3f746d01c438931885\",\"name\":\"tagmanifest-sha256.txt\",\"path\":\"v1/tagmanifest-sha256.txt\",\"size\":323,\"type\":\"File\"},{\"checksum\":\"ce305bde91373d26103390e939611041bd9a58ce74048c85cad7665896fbe5f6\",\"name\":\"tagmanifest-sha512.txt\",\"path\":\"v1/tagmanifest-sha512.txt\",\"size\":579,\"type\":\"File\"}],\"type\":\"BagManifest\"},\"location\":{\"provider\":{\"id\":\"aws-s3-ia\",\"type\":\"Provider\"},\"bucket\":\"wellcomecollection-storage\",\"path\":\"digitised/b11733330\",\"type\":\"Location\"},\"replicaLocations\":[{\"provider\":{\"id\":\"aws-s3-glacier\",\"type\":\"Provider\"},\"bucket\":\"wellcomecollection-storage-replica-ireland\",\"path\":\"digitised/b11733330\",\"type\":\"Location\"}],\"createdDate\":\"2019-09-12T20:26:53.094757Z\",\"version\":\"v1\",\"type\":\"Bag\"}"
+        },
+        "headers": {
+          "Access-Control-Allow-Credentials": [
+            "true"
+          ],
+          "Access-Control-Allow-Headers": [
+            "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type"
+          ],
+          "Access-Control-Allow-Methods": [
+            "GET, POST, OPTIONS"
+          ],
+          "Access-Control-Allow-Origin": [
+            "*"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Length": [
+            "2252"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "Date": [
+            "Thu, 07 Nov 2019 10:39:04 GMT"
+          ],
+          "ETag": [
+            "\"digitised/b11733330/v1\""
+          ],
+          "Via": [
+            "1.1 15c672a1a96e298467d88307b9c85a7b.cloudfront.net (CloudFront)"
+          ],
+          "X-Amz-Cf-Id": [
+            "-jc4XfEX5M-1Rc7opF7vHXtP7Ne7Kh5ql1uA3pfa-TEIbu4zyZ8DwQ=="
+          ],
+          "X-Amz-Cf-Pop": [
+            "LHR52-C1"
+          ],
+          "X-Cache": [
+            "Miss from cloudfront"
+          ],
+          "x-amz-apigw-id": [
+            "CyMbTEmjDoEF-yQ="
+          ],
+          "x-amzn-Remapped-Connection": [
+            "keep-alive"
+          ],
+          "x-amzn-Remapped-Content-Length": [
+            "2252"
+          ],
+          "x-amzn-Remapped-Date": [
+            "Thu, 07 Nov 2019 10:39:04 GMT"
+          ],
+          "x-amzn-Remapped-Server": [
+            "nginx"
+          ],
+          "x-amzn-RequestId": [
+            "0f118ee5-0781-4a77-a926-c30e1b04f22d"
+          ]
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://api.wellcomecollection.org/storage/v1/bags/digitised/b11733330"
+      }
+    }
+  ],
+  "recorded_with": "betamax/0.8.1"
+}

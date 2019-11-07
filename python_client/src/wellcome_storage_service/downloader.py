@@ -57,13 +57,17 @@ def download_compressed_bag(storage_manifest, out_path):
     location = storage_manifest["location"]
     provider = _choose_provider(location)
 
+    ext_identifier = storage_manifest["info"]["externalIdentifier"]
+
     with tarfile.open(out_path, "w:gz") as tf:
         for manifest_file in _all_files(storage_manifest):
             fileobj = provider.get_fileobj(
                 location=location, manifest_file=manifest_file
             )
 
-            tarinfo = tarfile.TarInfo(name=manifest_file["name"])
+            tarinfo = tarfile.TarInfo(
+                name=os.path.join(ext_identifier, manifest_file["name"])
+            )
             tarinfo.size = manifest_file["size"]
 
             tf.addfile(tarinfo=tarinfo, fileobj=fileobj)
