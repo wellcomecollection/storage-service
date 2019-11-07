@@ -3,35 +3,35 @@
 resource "aws_api_gateway_rest_api" "api" {
   name = "Storage API (${var.namespace})"
 
-  endpoint_configuration = {
+  endpoint_configuration {
     types = ["REGIONAL"]
   }
 }
 
 resource "aws_api_gateway_resource" "resource" {
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  parent_id   = "${aws_api_gateway_rest_api.api.root_resource_id}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
   path_part   = "context.json"
 }
 
 module "root_resource_method_static" {
-  source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/prebuilt/method/static?ref=v18.2.3"
+  source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/prebuilt/method/static?ref=d817cd6"
 
-  api_id      = "${aws_api_gateway_rest_api.api.id}"
-  resource_id = "${aws_api_gateway_resource.resource.id}"
+  api_id      = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.resource.id
 
-  aws_region  = "${var.aws_region}"
-  bucket_name = "${aws_s3_bucket_object.context.bucket}"
-  s3_key      = "${aws_s3_bucket_object.context.key}"
+  aws_region  = var.aws_region
+  bucket_name = aws_s3_bucket_object.context.bucket
+  s3_key      = aws_s3_bucket_object.context.key
 
-  static_resource_role_arn = "${aws_iam_role.static_resource_role.arn}"
+  static_resource_role_arn = aws_iam_role.static_resource_role.arn
 }
 
 resource "aws_api_gateway_authorizer" "cognito" {
   name          = "cognito"
   type          = "COGNITO_USER_POOLS"
-  rest_api_id   = "${aws_api_gateway_rest_api.api.id}"
-  provider_arns = ["${var.cognito_user_pool_arn}"]
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  provider_arns = [var.cognito_user_pool_arn]
 }
 
 # Domains
@@ -39,28 +39,31 @@ resource "aws_api_gateway_authorizer" "cognito" {
 module "domain" {
   source = "./domain"
 
-  domain_name      = "${var.domain_name}"
-  cert_domain_name = "${var.cert_domain_name}"
+  domain_name      = var.domain_name
+  cert_domain_name = var.cert_domain_name
 }
 
 # Stages
 
 module "v1" {
-  source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/modules/stage?ref=v18.2.3"
+  source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/modules/stage?ref=4e68905"
 
   stage_name = "v1"
 
-  api_id = "${aws_api_gateway_rest_api.api.id}"
+  api_id = aws_api_gateway_rest_api.api.id
 
   variables = {
-    bags_port    = "${local.bags_listener_port}"
-    ingests_port = "${local.ingests_listener_port}"
+    bags_port    = local.bags_listener_port
+    ingests_port = local.ingests_listener_port
   }
 
   # All integrations
-  depends_on = [
-    "${module.root_resource_method_static.integration_id}",
-    "${concat(module.bags.integration_uris,module.ingests.integration_uris)}",
+  dependencies = [
+    module.root_resource_method_static.integration_id,
+    concat(
+      module.bags.integration_uris,
+      module.ingests.integration_uris,
+    ),
   ]
 }
 
@@ -69,14 +72,14 @@ module "v1" {
 module "bags" {
   source = "../../resource"
 
-  api_id    = "${aws_api_gateway_rest_api.api.id}"
+  api_id    = aws_api_gateway_rest_api.api.id
   path_part = "bags"
 
-  root_resource_id = "${aws_api_gateway_rest_api.api.root_resource_id}"
-  connection_id    = "${aws_api_gateway_vpc_link.link.id}"
+  root_resource_id = aws_api_gateway_rest_api.api.root_resource_id
+  connection_id    = aws_api_gateway_vpc_link.link.id
 
-  cognito_id  = "${aws_api_gateway_authorizer.cognito.id}"
-  auth_scopes = ["${var.auth_scopes}"]
+  cognito_id  = aws_api_gateway_authorizer.cognito.id
+  auth_scopes = [var.auth_scopes]
 
   forward_port = "$${stageVariables.bags_port}"
   forward_path = "bags"
@@ -85,14 +88,14 @@ module "bags" {
 module "ingests" {
   source = "../../resource"
 
-  api_id    = "${aws_api_gateway_rest_api.api.id}"
+  api_id    = aws_api_gateway_rest_api.api.id
   path_part = "ingests"
 
-  root_resource_id = "${aws_api_gateway_rest_api.api.root_resource_id}"
-  connection_id    = "${aws_api_gateway_vpc_link.link.id}"
+  root_resource_id = aws_api_gateway_rest_api.api.root_resource_id
+  connection_id    = aws_api_gateway_vpc_link.link.id
 
-  cognito_id  = "${aws_api_gateway_authorizer.cognito.id}"
-  auth_scopes = ["${var.auth_scopes}"]
+  cognito_id  = aws_api_gateway_authorizer.cognito.id
+  auth_scopes = [var.auth_scopes]
 
   forward_port = "$${stageVariables.ingests_port}"
   forward_path = "ingests"
@@ -101,6 +104,15 @@ module "ingests" {
 # Link
 
 resource "aws_api_gateway_vpc_link" "link" {
-  name        = "${var.namespace}-api_vpc_link"
-  target_arns = ["${module.nlb.arn}"]
+  name = "${var.namespace}-api_vpc_link"
+  # TF-UPGRADE-TODO: In Terraform v0.10 and earlier, it was sometimes necessary to
+  # force an interpolation expression to be interpreted as a list by wrapping it
+  # in an extra set of list brackets. That form was supported for compatibility in
+  # v0.11, but is no longer supported in Terraform v0.12.
+  #
+  # If the expression in the following list itself returns a list, remove the
+  # brackets to avoid interpretation as a list of lists. If the expression
+  # returns a single list item then leave it as-is and remove this TODO comment.
+  target_arns = [module.nlb.arn]
 }
+

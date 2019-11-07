@@ -1,28 +1,36 @@
 variable "env_vars" {
-  type = "map"
+  type = map(string)
 }
 
-variable "env_vars_length" {}
+variable "env_vars_length" {
+}
 
 variable "secret_env_vars" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
-variable "secret_env_vars_length" {}
-
-variable "subnets" {
-  type = "list"
+variable "secret_env_vars_length" {
 }
 
-variable "container_image" {}
+variable "subnets" {
+  type = list(string)
+}
 
-variable "namespace_id" {}
+variable "container_image" {
+}
 
-variable "cluster_name" {}
-variable "cluster_id" {}
+variable "namespace_id" {
+}
 
-variable "service_name" {}
+variable "cluster_name" {
+}
+
+variable "cluster_id" {
+}
+
+variable "service_name" {
+}
 
 variable "min_capacity" {
   default = "1"
@@ -41,7 +49,7 @@ variable "launch_type" {
 }
 
 variable "security_group_ids" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
@@ -52,3 +60,4 @@ variable "cpu" {
 variable "memory" {
   default = 1024
 }
+

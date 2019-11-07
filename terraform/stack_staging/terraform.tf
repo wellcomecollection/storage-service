@@ -12,7 +12,7 @@ terraform {
 data "terraform_remote_state" "infra_shared" {
   backend = "s3"
 
-  config {
+  config = {
     role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
 
     bucket = "wellcomecollection-platform-infra"
@@ -24,7 +24,7 @@ data "terraform_remote_state" "infra_shared" {
 data "terraform_remote_state" "infra_critical" {
   backend = "s3"
 
-  config {
+  config = {
     role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
 
     bucket = "wellcomecollection-platform-infra"
@@ -36,7 +36,7 @@ data "terraform_remote_state" "infra_critical" {
 data "terraform_remote_state" "archivematica_infra" {
   backend = "s3"
 
-  config {
+  config = {
     role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
 
     bucket = "wellcomecollection-workflow-infra"
@@ -45,22 +45,10 @@ data "terraform_remote_state" "archivematica_infra" {
   }
 }
 
-data "terraform_remote_state" "critical_prod" {
-  backend = "s3"
-
-  config {
-    role_arn = "arn:aws:iam::975596993436:role/storage-read_only"
-
-    bucket = "wellcomecollection-storage-infra"
-    key    = "terraform/storage-service/critical_prod.tfstate"
-    region = "eu-west-1"
-  }
-}
-
 data "terraform_remote_state" "critical_staging" {
   backend = "s3"
 
-  config {
+  config = {
     role_arn = "arn:aws:iam::975596993436:role/storage-read_only"
 
     bucket = "wellcomecollection-storage-infra"

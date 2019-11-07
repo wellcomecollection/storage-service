@@ -1,14 +1,14 @@
 module "versioner_lock_table" {
   source = "../lock_table"
 
-  namespace = "${var.namespace}"
+  namespace = var.namespace
   owner     = "versioner"
 }
 
 module "replicator_lock_table" {
   source = "../lock_table"
 
-  namespace = "${var.namespace}"
+  namespace = var.namespace
   owner     = "replicator"
 }
 
@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "versioner_versions_table_table_readwrite" {
     ]
 
     resources = [
-      "${var.versioner_versions_table_arn}",
+      var.versioner_versions_table_arn,
     ]
   }
 
@@ -39,3 +39,4 @@ data "aws_iam_policy_document" "versioner_versions_table_table_readwrite" {
     ]
   }
 }
+

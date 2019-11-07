@@ -1,14 +1,18 @@
-variable "name" {}
-variable "aws_region" {}
-
-variable "topic_names" {
-  type = "list"
+variable "name" {
 }
 
-variable "dlq_alarm_arn" {}
+variable "aws_region" {
+}
+
+variable "topic_names" {
+  type = list(string)
+}
+
+variable "dlq_alarm_arn" {
+}
 
 variable "role_names" {
-  type = "list"
+  type = list(string)
 }
 
 variable "visibility_timeout_seconds" {
@@ -21,10 +25,11 @@ variable "max_receive_count" {
 
 variable "queue_high_actions" {
   default = []
-  type    = "list"
+  type    = list(string)
 }
 
 variable "queue_low_actions" {
   default = []
-  type    = "list"
+  type    = list(string)
 }
+

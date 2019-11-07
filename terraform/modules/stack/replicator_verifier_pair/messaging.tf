@@ -5,27 +5,25 @@ module "bag_replicator_input_queue" {
 
   name = "${var.namespace}_bag_replicator_${var.replica_id}_input"
 
-  topic_names = [
-    "${var.topic_names}",
-  ]
+  topic_names = var.topic_names
 
-  role_names = ["${module.bag_replicator.task_role_name}"]
+  role_names = [module.bag_replicator.task_role_name]
 
   # Because these operations take a long time (potentially copying thousands
   # of S3 objects for a single message), we keep a high visibility timeout to
   # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = "${60 * 60 * 5}"
+  visibility_timeout_seconds = 60 * 60 * 5
 
   queue_high_actions = [
-    "${module.bag_replicator.scale_up_arn}",
+    module.bag_replicator.scale_up_arn,
   ]
 
   queue_low_actions = [
-    "${module.bag_replicator.scale_down_arn}",
+    module.bag_replicator.scale_down_arn,
   ]
 
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
 }
 
 module "bag_replicator_output_topic" {
@@ -34,7 +32,7 @@ module "bag_replicator_output_topic" {
   name = "${var.namespace}_bag_replicator_${var.replica_id}_output"
 
   role_names = [
-    "${module.bag_replicator.task_role_name}",
+    module.bag_replicator.task_role_name,
   ]
 }
 
@@ -45,24 +43,24 @@ module "bag_verifier_queue" {
 
   name = "${var.namespace}_bag_verifier_${var.replica_id}_input"
 
-  topic_names = ["${module.bag_replicator_output_topic.name}"]
+  topic_names = [module.bag_replicator_output_topic.name]
 
-  role_names = ["${module.bag_verifier.task_role_name}"]
+  role_names = [module.bag_verifier.task_role_name]
 
   # We keep a high visibility timeout to
   # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = "${60 * 60 * 5}"
+  visibility_timeout_seconds = 60 * 60 * 5
 
   queue_high_actions = [
-    "${module.bag_verifier.scale_up_arn}",
+    module.bag_verifier.scale_up_arn,
   ]
 
   queue_low_actions = [
-    "${module.bag_verifier.scale_down_arn}",
+    module.bag_verifier.scale_down_arn,
   ]
 
-  aws_region    = "${var.aws_region}"
-  dlq_alarm_arn = "${var.dlq_alarm_arn}"
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
 }
 
 module "bag_verifier_output_topic" {
@@ -71,6 +69,7 @@ module "bag_verifier_output_topic" {
   name = "${var.namespace}_bag_verifier_${var.replica_id}_output"
 
   role_names = [
-    "${module.bag_verifier.task_role_name}",
+    module.bag_verifier.task_role_name,
   ]
 }
+

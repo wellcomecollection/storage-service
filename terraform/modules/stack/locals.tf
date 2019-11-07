@@ -13,19 +13,20 @@ locals {
   bag_verifier_pre_repl_service_name  = "${var.namespace}-bag-verifier-pre-replication"
   replica_aggregator_service_name     = "${var.namespace}-replica_aggregator"
 
-  bag_versioner_image      = "${module.images.services["bag_versioner"]}"
-  bag_register_image       = "${module.images.services["bag_register"]}"
-  bag_root_finder_image    = "${module.images.services["bag_root_finder"]}"
-  bags_api_image           = "${module.images.services["bags_api"]}"
-  ingests_image            = "${module.images.services["ingests"]}"
-  ingests_api_image        = "${module.images.services["ingests_api"]}"
-  notifier_image           = "${module.images.services["notifier"]}"
-  bag_replicator_image     = "${module.images.services["bag_replicator"]}"
-  bag_verifier_image       = "${module.images.services["bag_verifier"]}"
-  bag_unpacker_image       = "${module.images.services["bag_unpacker"]}"
-  replica_aggregator_image = "${module.images.services["replica_aggregator"]}"
+  bag_versioner_image      = module.images.services["bag_versioner"]
+  bag_register_image       = module.images.services["bag_register"]
+  bag_root_finder_image    = module.images.services["bag_root_finder"]
+  bags_api_image           = module.images.services["bags_api"]
+  ingests_image            = module.images.services["ingests"]
+  ingests_api_image        = module.images.services["ingests_api"]
+  notifier_image           = module.images.services["notifier"]
+  bag_replicator_image     = module.images.services["bag_replicator"]
+  bag_verifier_image       = module.images.services["bag_verifier"]
+  bag_unpacker_image       = module.images.services["bag_unpacker"]
+  replica_aggregator_image = module.images.services["replica_aggregator"]
 
   logstash_transit_service_name = "${var.namespace}_logstash_transit"
   logstash_transit_image        = "wellcome/logstash_transit:edgelord"
   logstash_host                 = "${local.logstash_transit_service_name}.${var.namespace}"
 }
+

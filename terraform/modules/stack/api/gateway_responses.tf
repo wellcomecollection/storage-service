@@ -7,8 +7,8 @@ module "response_default_5xx" {
 
   response_type = "DEFAULT_5XX"
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_default_4xx" {
@@ -17,8 +17,8 @@ module "response_default_4xx" {
   response_type = "DEFAULT_4XX"
   label         = "Client Error"
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_access_denied" {
@@ -28,8 +28,8 @@ module "response_access_denied" {
   label         = "Access Denied"
   status_code   = 401
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_bad_request_parameters" {
@@ -38,8 +38,8 @@ module "response_bad_request_parameters" {
   response_type = "BAD_REQUEST_PARAMETERS"
   label         = "Bad Request Parameters"
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_bad_request_body" {
@@ -49,8 +49,8 @@ module "response_bad_request_body" {
   label         = "Bad Request Body"
   status_code   = 401
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_expired_token" {
@@ -60,8 +60,8 @@ module "response_expired_token" {
   label         = "Expired Token"
   status_code   = 401
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_invalid_api_key" {
@@ -71,8 +71,8 @@ module "response_invalid_api_key" {
   label         = "Invalid API key"
   status_code   = 403
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_invalid_signature" {
@@ -82,8 +82,8 @@ module "response_invalid_signature" {
   label         = "Invalid Signature"
   status_code   = 403
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_missing_authentication_token" {
@@ -93,8 +93,8 @@ module "response_missing_authentication_token" {
   label         = "Missing Authentication Token"
   status_code   = 403
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_quota_exceeded" {
@@ -104,8 +104,8 @@ module "response_quota_exceeded" {
   label         = "Quota Exceeded"
   status_code   = 429
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_request_too_large" {
@@ -115,8 +115,8 @@ module "response_request_too_large" {
   label         = "Request Too Large"
   status_code   = 413
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_not_found" {
@@ -126,8 +126,8 @@ module "response_not_found" {
   label         = "Not Found"
   status_code   = 404
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_throttled" {
@@ -137,8 +137,8 @@ module "response_throttled" {
   label         = "Throttled"
   status_code   = 429
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_unauthorized" {
@@ -148,8 +148,8 @@ module "response_unauthorized" {
   label         = "Unauthorized"
   status_code   = 401
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
 
 module "response_unsupported_media_type" {
@@ -159,6 +159,7 @@ module "response_unsupported_media_type" {
   label         = "Unsupported Media Type"
   status_code   = 415
 
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  context_url = "${local.context_url}"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  context_url = local.context_url
 }
+
