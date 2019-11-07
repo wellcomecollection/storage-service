@@ -1,5 +1,5 @@
 output "url" {
-  value = module.queue.id
+  value = module.queue.url
 }
 
 output "name" {

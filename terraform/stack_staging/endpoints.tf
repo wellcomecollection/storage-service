@@ -12,9 +12,7 @@ resource "aws_vpc_endpoint" "pl-winslow" {
     "${module.stack_staging.interservice_sg_id}",
   ]
 
-  subnet_ids = [
-    "${local.subnets_ids}",
-  ]
+  subnet_ids = local.subnets_ids
 
   private_dns_enabled = false
 }

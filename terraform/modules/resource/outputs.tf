@@ -4,4 +4,3 @@ output "integration_uris" {
     module.auth_resource_integration.uri,
   ]
 }
-

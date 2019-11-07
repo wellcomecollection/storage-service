@@ -58,13 +58,13 @@ module "v1" {
   }
 
   # All integrations
-  dependencies = [
+  dependencies = flatten([
     module.root_resource_method_static.integration_id,
     concat(
       module.bags.integration_uris,
       module.ingests.integration_uris,
     ),
-  ]
+  ])
 }
 
 # Resources
