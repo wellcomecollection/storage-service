@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Unreleased
+
+Improvements to the way compressed bags are downloaded, specifically:
+
+-   The modified time inside the archive is set to the creation date of the storage manifest
+-   Files are now compressed within a directory inside the archive, so unpacking the archive with `tar -xzf` will put all the files inside a directory
+
 ## v1.3.0 - 2019-10-23
 
 Add two methods for downloading the complete contents of a bag to disk.  Namely:
