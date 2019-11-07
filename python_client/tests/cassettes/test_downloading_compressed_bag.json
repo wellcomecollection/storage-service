@@ -1,7 +1,7 @@
 {
   "http_interactions": [
     {
-      "recorded_at": "2019-11-07T10:39:04",
+      "recorded_at": "2019-11-07T10:46:48",
       "request": {
         "body": {
           "encoding": "utf-8",
@@ -49,7 +49,7 @@
             "application/json;charset=UTF-8"
           ],
           "Date": [
-            "Thu, 07 Nov 2019 10:39:04 GMT"
+            "Thu, 07 Nov 2019 10:46:48 GMT"
           ],
           "Expires": [
             "0"
@@ -61,7 +61,7 @@
             "Server"
           ],
           "Set-Cookie": [
-            "XSRF-TOKEN=482fdc65-f1af-4d88-9174-a05ba2fb5086; Path=/; Secure; HttpOnly"
+            "XSRF-TOKEN=99255a18-d2b5-44fe-951c-527b6bcd0ce5; Path=/; Secure; HttpOnly"
           ],
           "Strict-Transport-Security": [
             "max-age=31536000 ; includeSubDomains"
@@ -70,13 +70,13 @@
             "chunked"
           ],
           "Via": [
-            "1.1 2fafb26bfb5e0420de152a7abef27a44.cloudfront.net (CloudFront)"
+            "1.1 a654b4b54d3322bdcbd8b65f511761c1.cloudfront.net (CloudFront)"
           ],
           "X-Amz-Cf-Id": [
-            "3CP5hRpzZl-B_l3epAhDVps8ce-eqK_Wr5dawlSlYNlEEG3Y7rYx0w=="
+            "XAwdT5_NeUvyEc8LkelrVryM5mS2PfF-1A7RjFuAxPCfZPMm6J8NFA=="
           ],
           "X-Amz-Cf-Pop": [
-            "LHR52-C1"
+            "LHR3-C1"
           ],
           "X-Application-Context": [
             "application:prod:8443"
@@ -94,7 +94,7 @@
             "1; mode=block"
           ],
           "x-amz-cognito-request-id": [
-            "78d618fd-d005-48fc-a2f2-a5158198eba3"
+            "1af28590-9f27-4dfd-a4b7-73680520963b"
           ]
         },
         "status": {
@@ -105,7 +105,7 @@
       }
     },
     {
-      "recorded_at": "2019-11-07T10:39:04",
+      "recorded_at": "2019-11-07T10:46:48",
       "request": {
         "body": {
           "encoding": "utf-8",
@@ -129,7 +129,7 @@
           ]
         },
         "method": "GET",
-        "uri": "https://api.wellcomecollection.org/storage/v1/bags/digitised/b11733330"
+        "uri": "https://api.wellcomecollection.org/storage/v1/bags/digitised/b11733330?version=v1"
       },
       "response": {
         "body": {
@@ -159,25 +159,25 @@
             "application/json"
           ],
           "Date": [
-            "Thu, 07 Nov 2019 10:39:04 GMT"
+            "Thu, 07 Nov 2019 10:46:48 GMT"
           ],
           "ETag": [
             "\"digitised/b11733330/v1\""
           ],
           "Via": [
-            "1.1 15c672a1a96e298467d88307b9c85a7b.cloudfront.net (CloudFront)"
+            "1.1 d31be1bb3cd2f187c0f45c1f03ead3c6.cloudfront.net (CloudFront)"
           ],
           "X-Amz-Cf-Id": [
-            "-jc4XfEX5M-1Rc7opF7vHXtP7Ne7Kh5ql1uA3pfa-TEIbu4zyZ8DwQ=="
+            "PU-xkdGb112E2s2dWLgCCyCZYcB6XKZbWmjUpYMCdMDoBb7eSJ4NSw=="
           ],
           "X-Amz-Cf-Pop": [
-            "LHR52-C1"
+            "LHR3-C2"
           ],
           "X-Cache": [
             "Miss from cloudfront"
           ],
           "x-amz-apigw-id": [
-            "CyMbTEmjDoEF-yQ="
+            "CyNj1EE9DoEFplw="
           ],
           "x-amzn-Remapped-Connection": [
             "keep-alive"
@@ -186,20 +186,20 @@
             "2252"
           ],
           "x-amzn-Remapped-Date": [
-            "Thu, 07 Nov 2019 10:39:04 GMT"
+            "Thu, 07 Nov 2019 10:46:48 GMT"
           ],
           "x-amzn-Remapped-Server": [
             "nginx"
           ],
           "x-amzn-RequestId": [
-            "0f118ee5-0781-4a77-a926-c30e1b04f22d"
+            "514784fe-f712-4664-adec-90e9e623f56d"
           ]
         },
         "status": {
           "code": 200,
           "message": "OK"
         },
-        "url": "https://api.wellcomecollection.org/storage/v1/bags/digitised/b11733330"
+        "url": "https://api.wellcomecollection.org/storage/v1/bags/digitised/b11733330?version=v1"
       }
     }
   ],

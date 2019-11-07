@@ -64,7 +64,7 @@ class TestS3IADownload(object):
         # only 1.3MB in size, and we can download the whole thing.
         out_path = tmpdir.join("b11733330.tar.gz")
 
-        bag = client.get_bag("digitised", "b11733330")
+        bag = client.get_bag("digitised", "b11733330", "v1")
 
         downloader.download_compressed_bag(bag, out_path=str(out_path))
 
