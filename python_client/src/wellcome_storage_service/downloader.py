@@ -74,8 +74,7 @@ def download_compressed_bag(storage_manifest, out_path):
 
             # Set the modified time to the creation dateb of the storage manifest
             creation_date = dt.datetime.strptime(
-                storage_manifest["createdDate"],
-                "%Y-%m-%dT%H:%M:%S.%fZ"
+                storage_manifest["createdDate"], "%Y-%m-%dT%H:%M:%S.%fZ"
             )
             tarinfo.mtime = time.mktime(creation_date.timetuple())
 
