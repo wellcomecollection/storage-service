@@ -6,7 +6,7 @@ locals {
 # bag_replicator
 
 module "bag_replicator" {
-  source = "../../service/worker"
+  source = "../../service/scaling_worker"
 
   security_group_ids = var.security_group_ids
 
@@ -43,7 +43,7 @@ module "bag_replicator" {
 # bag_verifier
 
 module "bag_verifier" {
-  source = "../../service/worker"
+  source = "../../service/scaling_worker"
 
   security_group_ids = var.security_group_ids
 

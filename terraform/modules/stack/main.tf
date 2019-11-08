@@ -6,14 +6,15 @@ locals {
 # logstash_transit
 
 module "logstash_transit" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecs/prebuilt/default?ref=7673218"
+  source = "../service/worker"
 
   security_group_ids = [
     aws_security_group.interservice.id,
     aws_security_group.service_egress.id,
   ]
 
-  cluster_id   = aws_ecs_cluster.cluster.arn
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+  cluster_name = aws_ecs_cluster.cluster.name
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
   service_name = local.logstash_transit_service_name
@@ -23,15 +24,11 @@ module "logstash_transit" {
     NAMESPACE                = var.namespace
   }
 
-  env_vars_length = 2
-
   secret_env_vars = {
     ES_HOST = "storage/logstash/es_host"
     ES_USER = "storage/logstash/es_user"
     ES_PASS = "storage/logstash/es_pass"
   }
-
-  secret_env_vars_length = 3
 
   cpu    = 1024
   memory = 2048
@@ -42,7 +39,7 @@ module "logstash_transit" {
 # bag_unpacker
 
 module "bag_unpacker" {
-  source = "../service/worker"
+  source = "../service/scaling_worker"
 
   security_group_ids = [
     aws_security_group.interservice.id,
@@ -87,7 +84,7 @@ module "bag_unpacker" {
 # bag root finder
 
 module "bag_root_finder" {
-  source = "../service/worker"
+  source = "../service/scaling_worker"
 
   security_group_ids = [
     aws_security_group.interservice.id,
@@ -122,7 +119,7 @@ module "bag_root_finder" {
 # bag_verifier
 
 module "bag_verifier_pre_replication" {
-  source = "../service/worker"
+  source = "../service/scaling_worker"
 
   security_group_ids = [
     aws_security_group.interservice.id,
@@ -157,7 +154,7 @@ module "bag_verifier_pre_replication" {
 # bag versioner
 
 module "bag_versioner" {
-  source = "../service/worker"
+  source = "../service/scaling_worker"
 
   security_group_ids = [
     aws_security_group.interservice.id,
@@ -292,7 +289,7 @@ module "replicator_verifier_glacier" {
 # replica_aggregator
 
 module "replica_aggregator" {
-  source = "../service/worker"
+  source = "../service/scaling_worker"
 
   cluster_name = aws_ecs_cluster.cluster.name
   cluster_arn  = aws_ecs_cluster.cluster.arn
@@ -321,7 +318,7 @@ module "replica_aggregator" {
 # bag_register
 
 module "bag_register" {
-  source = "../service/worker"
+  source = "../service/scaling_worker"
 
   cluster_name = aws_ecs_cluster.cluster.name
   cluster_arn  = aws_ecs_cluster.cluster.arn
@@ -351,7 +348,7 @@ module "bag_register" {
 # notifier
 
 module "notifier" {
-  source = "../service/worker"
+  source = "../service/scaling_worker"
 
   security_group_ids = [
     aws_security_group.interservice.id,
@@ -382,7 +379,7 @@ module "notifier" {
 # ingests
 
 module "ingests" {
-  source = "../service/worker"
+  source = "../service/scaling_worker"
 
   cluster_name = aws_ecs_cluster.cluster.name
   cluster_arn  = aws_ecs_cluster.cluster.arn

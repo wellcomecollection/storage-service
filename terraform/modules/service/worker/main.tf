@@ -5,7 +5,7 @@ module "service" {
 
   cluster_arn = var.cluster_arn
 
-  task_definition_arn = module.task_definition.task_definition_arn
+  task_definition_arn = module.task_definition.arn
 
   subnets = var.subnets
 
@@ -19,7 +19,7 @@ module "service" {
 }
 
 module "task_definition" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/single_container?ref=4467040e0efe9859f221bcd949ac7b6c05a95a75"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/single_container?ref=e152a0be63468755a401d0d1713261b5574a374b"
 
   task_name = var.service_name
 
@@ -34,16 +34,4 @@ module "task_definition" {
   launch_type = var.launch_type
 
   aws_region = "eu-west-1"
-}
-
-module "scaling" {
-  source = "git::github.com/wellcometrust/terraform.git//autoscaling/app/ecs?ref=767321864a93e1938c14c71cb6a761f3c80fb68f"
-
-  name   = var.service_name
-
-  cluster_name = var.cluster_name
-  service_name = var.service_name
-
-  min_capacity = var.min_capacity
-  max_capacity = var.max_capacity
 }

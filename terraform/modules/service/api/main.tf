@@ -18,14 +18,14 @@ module "service" {
 
   launch_type = var.launch_type
 
-  task_definition_arn = module.task.task_definition_arn
+  task_definition_arn = module.task_definition.arn
 
   container_port = var.nginx_container_port
   container_name = "sidecar"
 }
 
-module "task" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/task/prebuilt/container_with_sidecar?ref=7673218"
+module "task_definition" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/container_with_sidecar?ref=2badc6de4d0825a54717fde07a3e29b38ad49a3e"
 
   task_name = var.namespace
 
@@ -37,14 +37,10 @@ module "task" {
 
   app_env_vars = var.env_vars
 
-  app_env_vars_length = var.env_vars_length
-
   sidecar_env_vars = {
     APP_HOST = "localhost"
     APP_PORT = var.container_port
   }
-
-  sidecar_env_vars_length = "2"
 
   cpu    = var.cpu
   memory = var.memory
@@ -57,4 +53,3 @@ module "task" {
 
   aws_region = var.aws_region
 }
-
