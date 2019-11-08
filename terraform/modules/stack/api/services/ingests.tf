@@ -8,7 +8,7 @@ module "ingests" {
 
   namespace_id = var.namespace_id
 
-  cluster_id = var.cluster_id
+  cluster_arn = var.cluster_arn
 
   vpc_id = var.vpc_id
 
@@ -39,7 +39,7 @@ module "ingests" {
   app_cpu    = 1024
   app_memory = 2048
 
-  task_desired_count = var.desired_ingests_api_count
+  desired_task_count = var.desired_ingests_api_count
 }
 
 resource "aws_iam_role_policy" "allow_ingests_publish_to_unpacker_topic" {

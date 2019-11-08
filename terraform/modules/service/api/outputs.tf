@@ -1,5 +1,5 @@
 output "target_group_arn" {
-  value = module.service.target_group_arn
+  value = aws_lb_target_group.tcp.arn
 }
 
 output "name" {

@@ -408,9 +408,9 @@ module "ingests" {
 module "api" {
   source = "./api"
 
-  vpc_id     = var.vpc_id
-  cluster_id = aws_ecs_cluster.cluster.id
-  subnets    = var.private_subnets
+  vpc_id      = var.vpc_id
+  cluster_arn = aws_ecs_cluster.cluster.arn
+  subnets     = var.private_subnets
 
   domain_name      = var.domain_name
   cert_domain_name = var.cert_domain_name
@@ -429,7 +429,7 @@ module "api" {
   # Bags endpoint
 
   bags_container_image = local.bags_api_image
-  bags_container_port  = "9001"
+  bags_container_port  = 9001
   bags_env_vars = {
     context_url           = "${var.api_url}/context.json"
     app_base_url          = "${var.api_url}/storage/v1/bags"
@@ -442,12 +442,12 @@ module "api" {
   }
   bags_env_vars_length       = 8
   bags_nginx_container_image = var.nginx_image
-  bags_nginx_container_port  = "9000"
+  bags_nginx_container_port  = 9000
 
   # Ingests endpoint
 
   ingests_container_image = local.ingests_api_image
-  ingests_container_port  = "9001"
+  ingests_container_port  = 9001
   ingests_env_vars = {
     context_url               = "${var.api_url}/context.json"
     app_base_url              = "${var.api_url}/storage/v1/ingests"
@@ -459,7 +459,7 @@ module "api" {
   }
   ingests_env_vars_length        = 7
   ingests_nginx_container_image  = var.nginx_image
-  ingests_nginx_container_port   = "9000"
+  ingests_nginx_container_port   = 9000
   static_content_bucket_name     = var.static_content_bucket_name
   interservice_security_group_id = aws_security_group.interservice.id
   alarm_topic_arn                = var.alarm_topic_arn

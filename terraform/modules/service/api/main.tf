@@ -1,31 +1,29 @@
 module "service" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/service/prebuilt/rest/tcp?ref=7673218"
-
-  vpc_id  = var.vpc_id
-  subnets = [var.subnets]
-
-  task_desired_count = var.task_desired_count
-
-  ecs_cluster_id = var.cluster_id
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=d514aef3fd576f3e882834efeaf746c5cea47ce8"
 
   service_name = var.namespace
-  namespace_id = var.namespace_id
 
-  lb_arn        = var.lb_arn
-  listener_port = var.listener_port
-
-  security_group_ids = [var.security_group_ids]
-
-  launch_type = var.launch_type
+  cluster_arn = var.cluster_arn
 
   task_definition_arn = module.task_definition.arn
 
-  container_port = var.nginx_container_port
-  container_name = "sidecar"
+  subnets = var.subnets
+
+  namespace_id = var.namespace_id
+
+  security_group_ids = var.security_group_ids
+
+  launch_type = var.launch_type
+
+  desired_task_count = var.desired_task_count
+
+  target_group_arn = aws_lb_target_group.tcp.arn
+  container_name   = "nginx"
+  container_port   = var.nginx_container_port
 }
 
 module "task_definition" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/container_with_sidecar?ref=2badc6de4d0825a54717fde07a3e29b38ad49a3e"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/container_with_sidecar?ref=7905873c4a3af5d47b82749a88612f607568e73a"
 
   task_name = var.namespace
 

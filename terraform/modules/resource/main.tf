@@ -1,7 +1,7 @@
 resource "aws_api_gateway_resource" "auth_resource" {
   rest_api_id = var.api_id
   parent_id   = var.root_resource_id
-  path_part   = "{proxy+}"
+  path_part   = var.path_part
 }
 
 resource "aws_api_gateway_method" "auth_resource" {
@@ -31,7 +31,7 @@ module "auth_resource_integration" {
 resource "aws_api_gateway_resource" "auth_subresource" {
   rest_api_id = var.api_id
   parent_id   = aws_api_gateway_method.auth_resource.resource_id
-  path_part   = "{proxy+}"
+  path_part   = var.path_part
 }
 
 resource "aws_api_gateway_method" "auth_subresource" {

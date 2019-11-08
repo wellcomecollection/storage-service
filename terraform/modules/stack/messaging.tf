@@ -223,8 +223,8 @@ module "replica_aggregator_input_queue" {
   name = "${var.namespace}_replica_aggregator_input"
 
   topic_arns = [
-    module.replicator_verifier_primary.verifier_output_topic_name,
-    module.replicator_verifier_glacier.verifier_output_topic_name,
+    module.replicator_verifier_primary.verifier_output_topic_arn,
+    module.replicator_verifier_glacier.verifier_output_topic_arn,
   ]
 
   role_names = [module.replica_aggregator.task_role_name]

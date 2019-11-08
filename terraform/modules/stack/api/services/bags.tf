@@ -8,7 +8,7 @@ module "bags" {
 
   namespace_id = var.namespace_id
 
-  cluster_id = var.cluster_id
+  cluster_arn = var.cluster_arn
 
   vpc_id = var.vpc_id
 
@@ -39,6 +39,6 @@ module "bags" {
   app_cpu    = 1024
   app_memory = 3840
 
-  task_desired_count = var.desired_bags_api_count
+  desired_task_count = var.desired_bags_api_count
 }
 
