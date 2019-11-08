@@ -21,8 +21,8 @@ data "aws_iam_role" "developer" {
 
 locals {
   storage_roles = [
-    "${data.aws_iam_role.admin.name}",
-    "${data.aws_iam_role.developer.name}",
+    data.aws_iam_role.admin.name,
+    data.aws_iam_role.developer.name,
   ]
 }
 
@@ -37,16 +37,13 @@ data "aws_iam_policy_document" "prevent_writes_to_prod" {
     effect = "Deny"
 
     resources = [
-      "${module.critical.ingests_table_arn}",
+      module.critical.ingests_table_arn,
       "${module.critical.ingests_table_arn}/*",
-
-      "${module.critical.vhs_manifests_table_arn}",
+      module.critical.vhs_manifests_table_arn,
       "${module.critical.vhs_manifests_table_arn}/*",
-
-      "${module.critical.replicas_table_arn}",
+      module.critical.replicas_table_arn,
       "${module.critical.replicas_table_arn}/*",
-
-      "${module.critical.versions_table_arn}",
+      module.critical.versions_table_arn,
       "${module.critical.versions_table_arn}/*",
     ]
   }
@@ -60,21 +57,20 @@ data "aws_iam_policy_document" "prevent_writes_to_prod" {
     effect = "Deny"
 
     resources = [
-      "${module.critical.replica_primary_bucket_arn}",
+      module.critical.replica_primary_bucket_arn,
       "${module.critical.replica_primary_bucket_arn}/*",
-
-      "${module.critical.replica_glacier_bucket_arn}",
+      module.critical.replica_glacier_bucket_arn,
       "${module.critical.replica_glacier_bucket_arn}/*",
-
-      "${module.critical.vhs_manifests_bucket_arn}",
+      module.critical.vhs_manifests_bucket_arn,
       "${module.critical.vhs_manifests_bucket_arn}/*",
     ]
   }
 }
 
 resource "aws_iam_role_policy" "prevent_deletions" {
-  count = "${length(local.storage_roles)}"
+  count = length(local.storage_roles)
 
-  role   = "${element(local.storage_roles, count.index)}"
-  policy = "${data.aws_iam_policy_document.prevent_writes_to_prod.json}"
+  role   = element(local.storage_roles, count.index)
+  policy = data.aws_iam_policy_document.prevent_writes_to_prod.json
 }
+
