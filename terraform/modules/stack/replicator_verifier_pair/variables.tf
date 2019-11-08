@@ -46,7 +46,7 @@ variable "security_group_ids" {
 variable "cluster_name" {
 }
 
-variable "cluster_id" {
+variable "cluster_arn" {
 }
 
 variable "namespace_id" {

@@ -11,7 +11,7 @@ module "bag_replicator" {
   security_group_ids = var.security_group_ids
 
   cluster_name = var.cluster_name
-  cluster_id   = var.cluster_id
+  cluster_arn  = var.cluster_arn
   namespace_id = var.namespace_id
   subnets      = var.subnets
   service_name = local.bag_replicator_service_name
@@ -31,8 +31,6 @@ module "bag_replicator" {
     JAVA_OPTS               = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_replicator_service_name}"
   }
 
-  env_vars_length = 12
-
   cpu    = 1024
   memory = 2048
 
@@ -40,8 +38,6 @@ module "bag_replicator" {
   max_capacity = var.max_capacity
 
   container_image = var.bag_replicator_image
-
-  secret_env_vars_length = 0
 }
 
 # bag_verifier
@@ -52,7 +48,7 @@ module "bag_verifier" {
   security_group_ids = var.security_group_ids
 
   cluster_name = var.cluster_name
-  cluster_id   = var.cluster_id
+  cluster_arn  = var.cluster_arn
   namespace_id = var.namespace_id
   subnets      = var.subnets
   service_name = local.bag_verifier_service_name
@@ -67,8 +63,6 @@ module "bag_verifier" {
     JAVA_OPTS          = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_verifier_service_name}"
   }
 
-  env_vars_length = 7
-
   cpu    = 2048
   memory = 4096
 
@@ -76,7 +70,5 @@ module "bag_verifier" {
   max_capacity = var.max_capacity
 
   container_image = var.bag_verifier_image
-
-  secret_env_vars_length = 0
 }
 

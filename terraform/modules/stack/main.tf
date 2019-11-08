@@ -13,7 +13,7 @@ module "logstash_transit" {
     aws_security_group.service_egress.id,
   ]
 
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_id   = aws_ecs_cluster.cluster.arn
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
   service_name = local.logstash_transit_service_name
@@ -50,7 +50,7 @@ module "bag_unpacker" {
   ]
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_arn  = aws_ecs_cluster.cluster.arn
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
   service_name = local.bag_unpacker_service_name
@@ -75,8 +75,6 @@ module "bag_unpacker" {
     queue_parallelism = 10
   }
 
-  env_vars_length = 9
-
   cpu    = 2048
   memory = 4096
 
@@ -84,8 +82,6 @@ module "bag_unpacker" {
   max_capacity = var.max_capacity
 
   container_image = local.bag_unpacker_image
-
-  secret_env_vars_length = 0
 }
 
 # bag root finder
@@ -99,7 +95,7 @@ module "bag_root_finder" {
   ]
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_arn  = aws_ecs_cluster.cluster.arn
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
   service_name = local.bag_root_finder_service_name
@@ -114,8 +110,6 @@ module "bag_root_finder" {
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_root_finder_service_name}"
   }
 
-  env_vars_length = 7
-
   cpu    = 512
   memory = 1024
 
@@ -123,8 +117,6 @@ module "bag_root_finder" {
   max_capacity = var.max_capacity
 
   container_image = local.bag_root_finder_image
-
-  secret_env_vars_length = 0
 }
 
 # bag_verifier
@@ -138,7 +130,7 @@ module "bag_verifier_pre_replication" {
   ]
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_arn  = aws_ecs_cluster.cluster.arn
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
   service_name = local.bag_verifier_pre_repl_service_name
@@ -153,8 +145,6 @@ module "bag_verifier_pre_replication" {
     JAVA_OPTS          = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_verifier_pre_repl_service_name}"
   }
 
-  env_vars_length = 7
-
   cpu    = 2048
   memory = 4096
 
@@ -162,8 +152,6 @@ module "bag_verifier_pre_replication" {
   max_capacity = var.max_capacity
 
   container_image = local.bag_verifier_image
-
-  secret_env_vars_length = 0
 }
 
 # bag versioner
@@ -177,7 +165,7 @@ module "bag_versioner" {
   ]
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_arn  = aws_ecs_cluster.cluster.arn
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
   service_name = local.bag_versioner_service_name
@@ -196,8 +184,6 @@ module "bag_versioner" {
     JAVA_OPTS            = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_versioner_service_name}"
   }
 
-  env_vars_length = 11
-
   cpu    = 512
   memory = 1024
 
@@ -205,8 +191,6 @@ module "bag_versioner" {
   max_capacity = var.max_capacity
 
   container_image = local.bag_versioner_image
-
-  secret_env_vars_length = 0
 }
 
 module "replicator_verifier_primary" {
@@ -236,7 +220,7 @@ module "replicator_verifier_primary" {
   ]
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_arn  = aws_ecs_cluster.cluster.arn
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
 
@@ -284,7 +268,7 @@ module "replicator_verifier_glacier" {
   ]
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_arn  = aws_ecs_cluster.cluster.arn
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
 
@@ -311,7 +295,7 @@ module "replica_aggregator" {
   source = "../service/worker"
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_arn  = aws_ecs_cluster.cluster.arn
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
   service_name = "${var.namespace}-replica_aggregator"
@@ -328,14 +312,10 @@ module "replica_aggregator" {
     JAVA_OPTS              = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.replica_aggregator_service_name}"
   }
 
-  env_vars_length = 9
-
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
   container_image = local.replica_aggregator_image
-
-  secret_env_vars_length = 0
 }
 
 # bag_register
@@ -344,7 +324,7 @@ module "bag_register" {
   source = "../service/worker"
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_arn  = aws_ecs_cluster.cluster.arn
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
   service_name = "${var.namespace}-bag_register"
@@ -362,14 +342,10 @@ module "bag_register" {
     JAVA_OPTS         = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_register_service_name}"
   }
 
-  env_vars_length = 10
-
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
   container_image = local.bag_register_image
-
-  secret_env_vars_length = 0
 }
 
 # notifier
@@ -383,7 +359,7 @@ module "notifier" {
   ]
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_arn  = aws_ecs_cluster.cluster.arn
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
   service_name = "${var.namespace}-notifier"
@@ -397,14 +373,10 @@ module "notifier" {
     JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.notifier_service_name}"
   }
 
-  env_vars_length = 6
-
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
   container_image = local.notifier_image
-
-  secret_env_vars_length = 0
 }
 
 # ingests
@@ -413,7 +385,7 @@ module "ingests" {
   source = "../service/worker"
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_id   = aws_ecs_cluster.cluster.id
+  cluster_arn  = aws_ecs_cluster.cluster.arn
 
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
   subnets      = var.private_subnets
@@ -428,14 +400,10 @@ module "ingests" {
     JAVA_OPTS                 = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
   }
 
-  env_vars_length = 6
-
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
   container_image = local.ingests_image
-
-  secret_env_vars_length = 0
 }
 
 # Storage API

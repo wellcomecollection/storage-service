@@ -2,15 +2,9 @@ variable "env_vars" {
   type = map(string)
 }
 
-variable "env_vars_length" {
-}
-
 variable "secret_env_vars" {
   type    = map(string)
   default = {}
-}
-
-variable "secret_env_vars_length" {
 }
 
 variable "subnets" {
@@ -26,7 +20,7 @@ variable "namespace_id" {
 variable "cluster_name" {
 }
 
-variable "cluster_id" {
+variable "cluster_arn" {
 }
 
 variable "service_name" {
