@@ -15,7 +15,7 @@ resource "aws_dynamodb_table" "lock_table" {
   }
 
   global_secondary_index {
-    name            = "${var.index_name}"
+    name            = var.index_name
     hash_key        = "contextId"
     projection_type = "ALL"
   }
@@ -36,7 +36,7 @@ data "aws_iam_policy_document" "lock_table_readwrite" {
     ]
 
     resources = [
-      "${aws_dynamodb_table.lock_table.arn}",
+      aws_dynamodb_table.lock_table.arn,
     ]
   }
 
@@ -50,3 +50,4 @@ data "aws_iam_policy_document" "lock_table_readwrite" {
     ]
   }
 }
+

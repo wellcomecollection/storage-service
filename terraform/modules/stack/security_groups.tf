@@ -1,7 +1,7 @@
 resource "aws_security_group" "service_egress" {
   name        = "${var.namespace}_service_egress"
   description = "Allow traffic between services"
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = var.vpc_id
 
   egress {
     from_port = 0
@@ -13,7 +13,7 @@ resource "aws_security_group" "service_egress" {
     ]
   }
 
-  tags {
+  tags = {
     Name = "${var.namespace}-egress"
   }
 }
@@ -21,7 +21,7 @@ resource "aws_security_group" "service_egress" {
 resource "aws_security_group" "interservice" {
   name        = "${var.namespace}_interservice"
   description = "Allow traffic between services"
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = var.vpc_id
 
   ingress {
     from_port = 0
@@ -30,7 +30,8 @@ resource "aws_security_group" "interservice" {
     self      = true
   }
 
-  tags {
+  tags = {
     Name = "${var.namespace}-interservice"
   }
 }
+

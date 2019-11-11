@@ -10,3 +10,4 @@ resource "aws_s3_bucket" "infra" {
     enabled = true
   }
 }
+

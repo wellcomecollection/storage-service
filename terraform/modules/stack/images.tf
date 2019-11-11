@@ -1,7 +1,7 @@
 module "images" {
   source = "git::https://github.com/wellcometrust/terraform.git//ecs/modules/images?ref=v19.8.0"
 
-  label   = "${var.release_label}"
+  label   = var.release_label
   project = "storage"
 
   services = [
@@ -18,3 +18,4 @@ module "images" {
     "replica_aggregator",
   ]
 }
+

@@ -69,3 +69,4 @@ module "ecr_repository_replica_aggregator" {
   id        = "replica_aggregator"
   namespace = "uk.ac.wellcome"
 }
+

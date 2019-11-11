@@ -1,6 +1,6 @@
-module "nlb" {
-  source = "git::https://github.com/wellcometrust/terraform.git//load_balancer/network?ref=v14.2.0"
-
-  namespace       = "${var.namespace}-api"
-  private_subnets = ["${var.subnets}"]
+resource "aws_lb" "nlb" {
+  name               = "${var.namespace}-api-nlb"
+  internal           = true
+  load_balancer_type = "network"
+  subnets            = var.subnets
 }

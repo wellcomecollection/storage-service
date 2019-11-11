@@ -1,5 +1,5 @@
 data "aws_s3_bucket" "static_content_bucket" {
-  bucket = "${aws_s3_bucket_object.context.bucket}"
+  bucket = aws_s3_bucket_object.context.bucket
 }
 
 data "aws_iam_policy_document" "archive_static_content_get" {
@@ -21,7 +21,8 @@ data "aws_iam_policy_document" "allow_ingests_publish_to_unpacker_topic" {
     ]
 
     resources = [
-      "${var.bag_unpacker_topic_arn}",
+      var.bag_unpacker_topic_arn,
     ]
   }
 }
+

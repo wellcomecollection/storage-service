@@ -1,7 +1,8 @@
 output "name" {
-  value = "${module.topic.name}"
+  value = module.topic.name
 }
 
 output "arn" {
-  value = "${module.topic.arn}"
+  value = module.topic.arn
 }
+

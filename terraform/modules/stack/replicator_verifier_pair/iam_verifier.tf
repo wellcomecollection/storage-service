@@ -21,8 +21,8 @@ data "aws_iam_policy_document" "bucket_read" {
 }
 
 resource "aws_iam_role_policy" "bag_verifier_read" {
-  role   = "${module.bag_verifier.task_role_name}"
-  policy = "${data.aws_iam_policy_document.bucket_read.json}"
+  role   = module.bag_verifier.task_role_name
+  policy = data.aws_iam_policy_document.bucket_read.json
 }
 
 # The fetch.txt entry may refer to locations in the primary bucket, so we need
@@ -42,11 +42,12 @@ data "aws_iam_policy_document" "primary_bucket_read" {
 }
 
 resource "aws_iam_role_policy" "bag_verifier_primary_read" {
-  role   = "${module.bag_verifier.task_role_name}"
-  policy = "${data.aws_iam_policy_document.primary_bucket_read.json}"
+  role   = module.bag_verifier.task_role_name
+  policy = data.aws_iam_policy_document.primary_bucket_read.json
 }
 
 resource "aws_iam_role_policy" "bag_verifier_metrics" {
-  role   = "${module.bag_verifier.task_role_name}"
-  policy = "${var.cloudwatch_metrics_policy_json}"
+  role   = module.bag_verifier.task_role_name
+  policy = var.cloudwatch_metrics_policy_json
 }
+

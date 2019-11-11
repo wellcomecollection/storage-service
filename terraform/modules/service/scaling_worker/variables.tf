@@ -26,6 +26,14 @@ variable "cluster_arn" {
 variable "service_name" {
 }
 
+variable "min_capacity" {
+  default = 1
+}
+
+variable "max_capacity" {
+  default = 1
+}
+
 variable "desired_task_count" {
   default = 1
 }

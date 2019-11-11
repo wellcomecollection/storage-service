@@ -1,31 +1,37 @@
 module "service" {
-  source = "git::https://github.com/wellcometrust/terraform.git//ecs/prebuilt/scaling?ref=v19.13.7"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.0.1"
 
-  service_name    = "${var.service_name}"
-  container_image = "${var.container_image}"
+  service_name = var.service_name
 
-  subnets = "${var.subnets}"
+  cluster_arn = var.cluster_arn
 
-  namespace_id = "${var.namespace_id}"
+  task_definition_arn = module.task_definition.arn
 
-  cluster_id   = "${var.cluster_id}"
-  cluster_name = "${var.cluster_name}"
+  subnets = var.subnets
 
-  cpu    = "${var.cpu}"
-  memory = "${var.memory}"
+  namespace_id = var.namespace_id
 
-  security_group_ids = ["${var.security_group_ids}"]
+  security_group_ids = var.security_group_ids
 
-  env_vars        = "${var.env_vars}"
-  env_vars_length = "${var.env_vars_length}"
+  launch_type = var.launch_type
 
-  secret_env_vars        = "${var.secret_env_vars}"
-  secret_env_vars_length = "${var.secret_env_vars_length}"
+  desired_task_count = var.desired_task_count
+}
 
-  min_capacity = "${var.min_capacity}"
-  max_capacity = "${var.max_capacity}"
+module "task_definition" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/single_container?ref=v1.0.0"
 
-  desired_task_count = "${var.desired_task_count}"
+  task_name = var.service_name
 
-  launch_type = "${var.launch_type}"
+  container_image = var.container_image
+
+  cpu    = var.cpu
+  memory = var.memory
+
+  env_vars        = var.env_vars
+  secret_env_vars = var.secret_env_vars
+
+  launch_type = var.launch_type
+
+  aws_region = "eu-west-1"
 }

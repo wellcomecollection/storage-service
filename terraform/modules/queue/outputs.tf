@@ -1,11 +1,12 @@
 output "url" {
-  value = "${module.queue.id}"
+  value = module.queue.url
 }
 
 output "name" {
-  value = "${module.queue.name}"
+  value = module.queue.name
 }
 
 output "arn" {
-  value = "${module.queue.arn}"
+  value = module.queue.arn
 }
+

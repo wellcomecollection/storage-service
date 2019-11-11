@@ -23,9 +23,7 @@ data "aws_iam_policy_document" "replica_primary_read" {
     principals {
       type = "AWS"
 
-      identifiers = [
-        "${var.replica_primary_read_principals}",
-      ]
+      identifiers = var.replica_primary_read_principals
     }
   }
 

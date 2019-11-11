@@ -7,7 +7,7 @@ data "aws_iam_policy_document" "table_ingests_readwrite" {
     ]
 
     resources = [
-      "${var.ingests_table_arn}",
+      var.ingests_table_arn,
     ]
   }
 }
@@ -21,7 +21,7 @@ data "aws_iam_policy_document" "table_replicas_readwrite" {
     ]
 
     resources = [
-      "${var.replicas_table_arn}",
+      var.replicas_table_arn,
     ]
   }
 }
@@ -47,10 +47,9 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_readonly" {
     ]
 
     resources = [
-      "${aws_s3_bucket.unpacked_bags.arn}",
+      aws_s3_bucket.unpacked_bags.arn,
     ]
   }
-
 
   statement {
     actions = [
@@ -113,12 +112,13 @@ data "aws_iam_policy_document" "cloudwatch_putmetrics" {
 data "aws_iam_policy_document" "s3_large_response_cache" {
   statement {
     actions = [
-      "s3:*"
+      "s3:*",
     ]
 
     resources = [
-      "${aws_s3_bucket.large_response_cache.arn}",
+      aws_s3_bucket.large_response_cache.arn,
       "${aws_s3_bucket.large_response_cache.arn}/*",
     ]
   }
 }
+
