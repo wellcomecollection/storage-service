@@ -30,9 +30,6 @@ variable "security_group_ids" {
   type = list(string)
 }
 
-variable "env_vars_length" {
-}
-
 variable "env_vars" {
   type = map(string)
 }

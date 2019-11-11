@@ -25,8 +25,6 @@ module "ingests" {
 
   env_vars = var.ingests_env_vars
 
-  env_vars_length = var.ingests_env_vars_length
-
   lb_arn        = var.nlb_arn
   listener_port = var.ingests_listener_port
 

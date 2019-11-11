@@ -25,8 +25,6 @@ module "bags" {
 
   env_vars = var.bags_env_vars
 
-  env_vars_length = var.bags_env_vars_length
-
   lb_arn        = var.nlb_arn
   listener_port = var.bags_listener_port
 
