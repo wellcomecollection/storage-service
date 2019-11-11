@@ -18,7 +18,7 @@ module "auth_resource_integration" {
   source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/modules/integration/proxy?ref=v16.1.8"
 
   api_id        = var.api_id
-  resource_id   = aws_api_gateway_method.auth_resource.resource_id
+  resource_id   = aws_api_gateway_resource.auth_resource.id
   connection_id = var.connection_id
 
   hostname    = var.hostname
@@ -30,8 +30,8 @@ module "auth_resource_integration" {
 
 resource "aws_api_gateway_resource" "auth_subresource" {
   rest_api_id = var.api_id
-  parent_id   = aws_api_gateway_method.auth_resource.resource_id
-  path_part   = var.path_part
+  parent_id   = aws_api_gateway_resource.auth_resource.id
+  path_part   = "{proxy+}"
 }
 
 resource "aws_api_gateway_method" "auth_subresource" {
@@ -52,7 +52,7 @@ module "auth_subresource_integration" {
   source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/modules/integration/proxy?ref=v16.1.8"
 
   api_id        = var.api_id
-  resource_id   = aws_api_gateway_method.auth_subresource.resource_id
+  resource_id   = aws_api_gateway_resource.auth_subresource.id
   connection_id = var.connection_id
 
   hostname    = var.hostname

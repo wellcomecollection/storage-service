@@ -75,7 +75,7 @@ locals {
     module.ingests.integration_uris,
   )
 
-  integration_uri_str = join(", ", local.integration_uri_list)
+  integration_uri_str = join("; ", local.integration_uri_list)
 
   integration_uri_variable = replace(
     local.integration_uri_str,
