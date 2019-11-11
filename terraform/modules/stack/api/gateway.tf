@@ -67,26 +67,50 @@ module "domain" {
 
 # Stages
 
-module "v1" {
-  source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/modules/stage?ref=4e68905"
+locals {
+  # We pass the list of integration URIs as a variable to the API Gateway deployment,
+  # but it only supports strings with alphanumeric characters and ' ' and ,-._:/?=,
+  integration_uri_list = concat(
+    module.bags.integration_uris,
+    module.ingests.integration_uris,
+  )
 
-  stage_name = "v1"
+  integration_uri_str = join(", ", local.integration_uri_list)
 
-  api_id = aws_api_gateway_rest_api.api.id
+  integration_uri_variable = replace(
+    local.integration_uri_str,
+    "/[^A-Za-z0-9 ,-._:/?=]+/",
+    "_"
+  )
+}
+
+resource "aws_api_gateway_deployment" "v1" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name  = "v1"
 
   variables = {
-    bags_port    = local.bags_listener_port
-    ingests_port = local.ingests_listener_port
+    bags_port          = local.bags_listener_port
+    ingests_port       = local.ingests_listener_port,
+    static_response_id = aws_api_gateway_integration.root_static_response.id,
+    integration_uris   = local.integration_uri_variable
   }
 
-  # All integrations
-  dependencies = flatten([
-    aws_api_gateway_integration.root_static_response.id,
-    concat(
-      module.bags.integration_uris,
-      module.ingests.integration_uris,
-    ),
-  ])
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_api_gateway_stage" "v1" {
+  stage_name    = "v1"
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  deployment_id = aws_api_gateway_deployment.v1.id
+
+  variables = {
+    bags_port          = local.bags_listener_port
+    ingests_port       = local.ingests_listener_port,
+    static_response_id = aws_api_gateway_integration.root_static_response.id,
+    integration_uris   = local.integration_uri_variable
+  }
 }
 
 # Resources
