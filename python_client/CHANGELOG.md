@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v1.4.0 - 2019-11-11
 
 Improvements to the way compressed bags are downloaded, specifically:
 
