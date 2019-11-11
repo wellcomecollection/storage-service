@@ -1,5 +1,5 @@
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=d514aef3fd576f3e882834efeaf746c5cea47ce8"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.0.0"
 
   service_name = var.namespace
 
@@ -23,7 +23,7 @@ module "service" {
 }
 
 module "task_definition" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/container_with_sidecar?ref=7905873c4a3af5d47b82749a88612f607568e73a"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/container_with_sidecar?ref=v1.0.0"
 
   task_name = var.namespace
 

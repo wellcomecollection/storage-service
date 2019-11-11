@@ -26,7 +26,7 @@ module "worker" {
 }
 
 module "scaling" {
-  source = "git::github.com/wellcometrust/terraform.git//autoscaling/app/ecs?ref=767321864a93e1938c14c71cb6a761f3c80fb68f"
+  source = "git::github.com/wellcometrust/terraform-modules.git//autoscaling/app/ecs?ref=v19.16.2"
 
   name   = var.service_name
 
