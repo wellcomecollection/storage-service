@@ -49,10 +49,7 @@ def should_run_sbt_project(repo, project_name, changed_paths):
         if path.endswith(".tf"):
             continue
 
-        if path.startswith("bagger/") and os.environ.get("TASK") not in {
-            "bagger-publish",
-            "travis-format",
-        }:
+        if path.startswith("python_client/"):
             continue
 
         if path.endswith("Makefile"):

@@ -1,6 +1,8 @@
 # -*- encoding: utf-8
 
+import datetime as dt
 import tarfile
+import time
 
 from botocore.exceptions import ClientError
 import pytest
@@ -57,48 +59,12 @@ class TestS3IADownload(object):
         assert tmpdir.join("manifest-sha256.txt").exists()
         assert tmpdir.join("data/b10002819.xml").exists()
 
-    def test_downloading_compressed_bag(self, tmpdir):
+    def test_downloading_compressed_bag(self, client, tmpdir):
         # This test case is based on a real bag, b11733330, because it's
         # only 1.3MB in size, and we can download the whole thing.
         out_path = tmpdir.join("b11733330.tar.gz")
 
-        bag = {
-            "location": {
-                "bucket": "wellcomecollection-storage",
-                "path": "digitised/b11733330",
-                "provider": {"id": "aws-s3-ia", "type": "Provider"},
-            },
-            "manifest": {
-                "files": [
-                    {
-                        "name": "data/b11733330.xml",
-                        "path": "v1/data/b11733330.xml",
-                        "size": 8132,
-                    },
-                    {
-                        "name": "data/objects/L0008210-LS-CS.jp2",
-                        "path": "v1/data/objects/L0008210-LS-CS.jp2",
-                        "size": 1327244,
-                    },
-                ]
-            },
-            "tagManifest": {
-                "files": [
-                    {
-                        "name": "manifest-sha256.txt",
-                        "path": "v1/manifest-sha256.txt",
-                        "size": 183,
-                    },
-                    {"name": "bagit.txt", "path": "v1/bagit.txt", "size": 55},
-                    {
-                        "name": "manifest-sha512.txt",
-                        "path": "v1/manifest-sha512.txt",
-                        "size": 311,
-                    },
-                    {"name": "bag-info.txt", "path": "v1/bag-info.txt", "size": 331},
-                ]
-            },
-        }
+        bag = client.get_bag("digitised", "b11733330", "v1")
 
         downloader.download_compressed_bag(bag, out_path=str(out_path))
 
@@ -106,21 +72,34 @@ class TestS3IADownload(object):
             "data/b11733330.xml": 8132,
             "data/objects/L0008210-LS-CS.jp2": 1327244,
             "manifest-sha256.txt": 183,
-            "bagit.txt": 55,
             "manifest-sha512.txt": 311,
+            "bagit.txt": 55,
             "bag-info.txt": 331,
+            "tagmanifest-sha256.txt": 323,
+            "tagmanifest-sha512.txt": 579,
         }
+
+        creation_date = dt.datetime(2019, 9, 12, 20, 26, 53)
+        timestamp = time.mktime(creation_date.timetuple())
 
         with tarfile.open(str(out_path), "r:gz") as tf:
             members = tf.getmembers()
             assert len(members) == len(files)
 
             for tarinfo in members:
-                assert files[tarinfo.name] == tarinfo.size
 
-            bagit = tf.getmember("bagit.txt")
+                # All files in the compressed bag are under a directory
+                assert tarinfo.name.startswith("b11733330/")
+
+                inner_name = tarinfo.name[len("b11733330/") :]
+                assert files[inner_name] == tarinfo.size
+
+                # Check the date matches that of the original manifest
+                assert tarinfo.mtime == timestamp
+
+            bagit = tf.getmember("b11733330/bagit.txt")
             tf.extract(bagit, path=str(tmpdir))
-            assert tmpdir.join("bagit.txt").read() == (
+            assert tmpdir.join("b11733330", "bagit.txt").read() == (
                 "BagIt-Version: 0.97\n" "Tag-File-Character-Encoding: UTF-8\n"
             )
 
