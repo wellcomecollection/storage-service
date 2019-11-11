@@ -14,17 +14,39 @@ resource "aws_api_gateway_resource" "resource" {
   path_part   = "context.json"
 }
 
-module "root_resource_method_static" {
-  source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/prebuilt/method/static?ref=d817cd6"
-
-  api_id      = aws_api_gateway_rest_api.api.id
+resource "aws_api_gateway_method" "root_resource_method" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
   resource_id = aws_api_gateway_resource.resource.id
+  http_method = "GET"
 
-  aws_region  = var.aws_region
-  bucket_name = aws_s3_bucket_object.context.bucket
-  s3_key      = aws_s3_bucket_object.context.key
+  authorization = "NONE"
+}
 
-  static_resource_role_arn = aws_iam_role.static_resource_role.arn
+# context.json
+
+resource "aws_api_gateway_integration" "root_static_response" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.resource.id
+  http_method             = "GET"
+  integration_http_method = "GET"
+  type                    = "AWS"
+  uri                     = "arn:aws:apigateway:${var.aws_region}:s3:path//${aws_s3_bucket_object.context.bucket}/${aws_s3_bucket_object.context.key}"
+
+  credentials = aws_iam_role.static_resource_role.arn
+}
+
+resource "aws_api_gateway_method_response" "root_resource_http_200" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.resource.id
+  http_method = "GET"
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "root_resource_http_200" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.resource.id
+  http_method = "GET"
+  status_code = aws_api_gateway_method_response.root_resource_http_200.status_code
 }
 
 resource "aws_api_gateway_authorizer" "cognito" {
@@ -59,7 +81,7 @@ module "v1" {
 
   # All integrations
   dependencies = flatten([
-    module.root_resource_method_static.integration_id,
+    aws_api_gateway_integration.root_static_response.id,
     concat(
       module.bags.integration_uris,
       module.ingests.integration_uris,
