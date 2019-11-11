@@ -7,7 +7,7 @@ resource "aws_s3_bucket" "replica_glacier" {
 
     transition {
       days          = 90
-      storage_class = "GLACIER"
+      storage_class = "DEEP_ARCHIVE"
     }
   }
 }
