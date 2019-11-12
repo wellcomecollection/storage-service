@@ -37,7 +37,7 @@ data "terraform_remote_state" "archivematica_infra" {
   config = {
     role_arn = "arn:aws:iam::299497370133:role/workflow-read_only"
     bucket   = "wellcomecollection-workflow-infra"
-    key      = "terraform/state/archivematica-infra.tfstate"
+    key      = "terraform/archivematica-infra/critical_staging.tfstate"
     region   = "eu-west-1"
   }
 }
