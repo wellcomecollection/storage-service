@@ -3,7 +3,7 @@ locals {
 }
 
 module "queue" {
-  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//queue?ref=v1.1.0"
+  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//queue?ref=v1.1.1"
   queue_name = replace(var.name, "-", "_")
   aws_region = var.aws_region
   topic_arns = var.topic_arns
