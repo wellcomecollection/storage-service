@@ -122,3 +122,14 @@ data "aws_iam_policy_document" "s3_large_response_cache" {
   }
 }
 
+data "aws_iam_policy_document" "archivematica_ingests_get" {
+  statement {
+    actions = [
+      "s3:Get*",
+    ]
+
+    resources = [
+      "${var.archivematica_ingests_bucket}/*",
+    ]
+  }
+}

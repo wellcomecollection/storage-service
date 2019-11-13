@@ -53,6 +53,6 @@ module "stack_prod" {
 
   workflow_bucket_name = local.workflow_bucket_name
 
-  archivematica_ingests_bucket = local.archivematica_ingests_bucket
+  archivematica_ingests_bucket = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
 }
 
