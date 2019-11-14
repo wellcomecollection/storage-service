@@ -78,11 +78,7 @@ class TestS3IADownload(object):
         }
 
         with tarfile.open(str(out_path), "r:gz") as tf:
-            tarred_files = [
-                member
-                for member in tf.getmembers()
-                if member.isfile()
-            ]
+            tarred_files = [member for member in tf.getmembers() if member.isfile()]
 
             assert len(tarred_files) == len(files)
 
@@ -91,7 +87,7 @@ class TestS3IADownload(object):
                 # All files in the compressed bag are under a directory
                 assert tarinfo.name.startswith("b11733330/")
 
-                inner_name = tarinfo.name[len("b11733330/"):]
+                inner_name = tarinfo.name[len("b11733330/") :]
                 assert files[inner_name] == tarinfo.size
 
             bagit = tf.getmember("b11733330/bagit.txt")
@@ -109,17 +105,11 @@ class TestS3IADownload(object):
 
         downloader.download_compressed_bag(bag, out_path=str(out_path))
 
-        directories = {
-            "b11733330",
-            "b11733330/data",
-            "b11733330/data/objects"
-        }
+        directories = {"b11733330", "b11733330/data", "b11733330/data/objects"}
 
         with tarfile.open(str(out_path), "r:gz") as tf:
             tarred_directories = {
-                member.name
-                for member in tf.getmembers()
-                if member.isdir()
+                member.name for member in tf.getmembers() if member.isdir()
             }
 
             assert tarred_directories == directories
