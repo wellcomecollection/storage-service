@@ -1,8 +1,6 @@
 # -*- encoding: utf-8
 
-import datetime as dt
 import tarfile
-import time
 
 from botocore.exceptions import ClientError
 import pytest
@@ -79,29 +77,52 @@ class TestS3IADownload(object):
             "tagmanifest-sha512.txt": 579,
         }
 
-        creation_date = dt.datetime(2019, 9, 12, 20, 26, 53)
-        timestamp = time.mktime(creation_date.timetuple())
-
         with tarfile.open(str(out_path), "r:gz") as tf:
-            members = tf.getmembers()
-            assert len(members) == len(files)
+            tarred_files = [
+                member
+                for member in tf.getmembers()
+                if member.isfile()
+            ]
 
-            for tarinfo in members:
+            assert len(tarred_files) == len(files)
+
+            for tarinfo in tarred_files:
 
                 # All files in the compressed bag are under a directory
                 assert tarinfo.name.startswith("b11733330/")
 
-                inner_name = tarinfo.name[len("b11733330/") :]
+                inner_name = tarinfo.name[len("b11733330/"):]
                 assert files[inner_name] == tarinfo.size
-
-                # Check the date matches that of the original manifest
-                assert tarinfo.mtime == timestamp
 
             bagit = tf.getmember("b11733330/bagit.txt")
             tf.extract(bagit, path=str(tmpdir))
             assert tmpdir.join("b11733330", "bagit.txt").read() == (
                 "BagIt-Version: 0.97\n" "Tag-File-Character-Encoding: UTF-8\n"
             )
+
+    def test_downloading_compressed_bag_gets_dir_entries(self, client, tmpdir):
+        # This test case is based on a real bag, b11733330, because it's
+        # only 1.3MB in size, and we can download the whole thing.
+        out_path = tmpdir.join("b11733330.tar.gz")
+
+        bag = client.get_bag("digitised", "b11733330", "v1")
+
+        downloader.download_compressed_bag(bag, out_path=str(out_path))
+
+        directories = {
+            "b11733330",
+            "b11733330/data",
+            "b11733330/data/objects"
+        }
+
+        with tarfile.open(str(out_path), "r:gz") as tf:
+            tarred_directories = {
+                member.name
+                for member in tf.getmembers()
+                if member.isdir()
+            }
+
+            assert tarred_directories == directories
 
     def test_downloading_from_non_existent_bucket_is_error(self, tmpdir):
         bag = {

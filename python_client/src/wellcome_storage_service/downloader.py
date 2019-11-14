@@ -1,10 +1,9 @@
 # -*- encoding: utf-8
 
 import abc
-import datetime as dt
 import os
 import tarfile
-import time
+import tempfile
 
 try:
     from collections.abc import ABC
@@ -56,29 +55,14 @@ def download_compressed_bag(storage_manifest, out_path):
     :param out_path: The path to download the tar.gz to.
 
     """
-    location = storage_manifest["location"]
-    provider = _choose_provider(location)
-
     ext_identifier = storage_manifest["info"]["externalIdentifier"]
 
+    temp_dir = tempfile.mkdtemp()
+    download_bag(storage_manifest=storage_manifest, out_dir=temp_dir)
+    print(temp_dir)
+
     with tarfile.open(out_path, "w:gz") as tf:
-        for manifest_file in _all_files(storage_manifest):
-            fileobj = provider.get_fileobj(
-                location=location, manifest_file=manifest_file
-            )
-
-            tarinfo = tarfile.TarInfo(
-                name=os.path.join(ext_identifier, manifest_file["name"])
-            )
-            tarinfo.size = manifest_file["size"]
-
-            # Set the modified time to the creation dateb of the storage manifest
-            creation_date = dt.datetime.strptime(
-                storage_manifest["createdDate"], "%Y-%m-%dT%H:%M:%S.%fZ"
-            )
-            tarinfo.mtime = time.mktime(creation_date.timetuple())
-
-            tf.addfile(tarinfo=tarinfo, fileobj=fileobj)
+        tf.add(temp_dir, arcname=ext_identifier)
 
 
 class AbstractProvider(object):
