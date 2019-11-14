@@ -2,6 +2,7 @@
 
 import abc
 import os
+import shutil
 import tarfile
 import tempfile
 
@@ -59,10 +60,11 @@ def download_compressed_bag(storage_manifest, out_path):
 
     temp_dir = tempfile.mkdtemp()
     download_bag(storage_manifest=storage_manifest, out_dir=temp_dir)
-    print(temp_dir)
 
     with tarfile.open(out_path, "w:gz") as tf:
         tf.add(temp_dir, arcname=ext_identifier)
+
+    shutil.rmtree(temp_dir)
 
 
 class AbstractProvider(object):
