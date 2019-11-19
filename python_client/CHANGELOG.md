@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.4.1 - 2019-11-14
+
+Change to the way compressed bags are downloaded, so now the archive includes
+directory entries.
+
 ## v1.4.0 - 2019-11-11
 
 Improvements to the way compressed bags are downloaded, specifically:
