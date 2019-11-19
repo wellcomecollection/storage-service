@@ -1,77 +1,52 @@
-module "ecr_repository_bags_api" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "bags_api"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "bags_api" {
+  name = "uk.ac.wellcome/bags_api"
 }
 
-module "ecr_repository_ingests" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "ingests"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "ingests" {
+  name = "uk.ac.wellcome/ingests"
 }
 
-module "ecr_repository_ingests_api" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "ingests_api"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "ingests_api" {
+  name = "uk.ac.wellcome/ingests_api"
 }
 
-module "ecr_repository_notifier" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "notifier"
-  namespace = "uk.ac.wellcome"
+
+resource "aws_ecr_repository" "notifier" {
+  name = "uk.ac.wellcome/notifier"
 }
 
-module "ecr_repository_bag_replicator" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "bag_replicator"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "bag_replicator" {
+  name = "uk.ac.wellcome/bag_replicator"
 }
 
-module "ecr_repository_bag_root_finder" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "bag_root_finder"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "bag_root_finder" {
+  name = "uk.ac.wellcome/bag_root_finder"
 }
 
-module "ecr_repository_bag_verifier" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "bag_verifier"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "bag_verifier" {
+  name = "uk.ac.wellcome/bag_verifier"
 }
 
-module "ecr_repository_bag_unpacker" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "bag_unpacker"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "bag_unpacker" {
+  name = "uk.ac.wellcome/bag_unpacker"
 }
 
-module "ecr_repository_bag_register" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "bags"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "bag_register" {
+  name = "uk.ac.wellcome/bags"
 }
 
-module "ecr_repository_bag_auditor" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "bag_auditor"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "bag_auditor" {
+  name = "uk.ac.wellcome/bag_auditor"
 }
 
-module "ecr_repository_bag_versioner" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "bag_versioner"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "bag_versioner" {
+  name = "uk.ac.wellcome/bag_versioner"
 }
 
-module "ecr_repository_replica_aggregator" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "replica_aggregator"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "replica_aggregator" {
+  name = "uk.ac.wellcome/replica_aggregator"
 }
 
-module "ecr_repository_nginx" {
-  source    = "git::https://github.com/wellcometrust/terraform.git//ecr?ref=v19.5.1"
-  id        = "nginx"
-  namespace = "uk.ac.wellcome"
+resource "aws_ecr_repository" "nginx" {
+  name = "uk.ac.wellcome/nginx"
 }
