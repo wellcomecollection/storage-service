@@ -49,7 +49,7 @@ def should_run_sbt_project(repo, project_name, changed_paths):
         if path.endswith(".tf"):
             continue
 
-        if path.startswith("python_client/"):
+        if path.startswith(("python_client/", "nginx/")):
             continue
 
         if path.endswith("Makefile"):
