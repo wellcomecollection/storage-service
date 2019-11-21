@@ -170,7 +170,9 @@ class TestS3IADownload(object):
 
         bag = client.get_bag("digitised", "b11733330", "v1")
 
-        downloader.download_compressed_bag(bag, out_path=str(out_path), top_level_dir='custom_dir')
+        downloader.download_compressed_bag(
+            bag, out_path=str(out_path), top_level_dir="custom_dir"
+        )
 
         with tarfile.open(str(out_path), "r:gz") as tf:
             tarred_files = [member for member in tf.getmembers() if member.isfile()]
