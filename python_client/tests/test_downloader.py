@@ -164,3 +164,18 @@ class TestS3IADownload(object):
                 "An error occurred (NoSuchKey) when calling the GetObject operation",
             )
         )
+
+    def test_downloading_compressed_bag_with_custom_directory(self, client, tmpdir):
+        out_path = tmpdir.join("b11733330.tar.gz")
+
+        bag = client.get_bag("digitised", "b11733330", "v1")
+
+        downloader.download_compressed_bag(bag, out_path=str(out_path), top_level_dir='custom_dir')
+
+        with tarfile.open(str(out_path), "r:gz") as tf:
+            tarred_files = [member for member in tf.getmembers() if member.isfile()]
+
+            for tarinfo in tarred_files:
+
+                # All files in the compressed bag are under a directory
+                assert tarinfo.name.startswith("custom_dir/")
