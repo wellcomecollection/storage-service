@@ -72,7 +72,23 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
       // If we get a retryable error when trying to store the replica
       // (for example, a DynamoDB ConditionalUpdate error), we want to retry
       // it rather than failing the entire ingest.
+      //
+      // The first case covers a ConditionalUpdate failure from DynamoDB;
+      // the second a retryable error from inside VersionedStore.upsert().
+      //
       case Left(AggregationFailure(UpdateWriteError(err: RetryableError))) =>
+        IngestShouldRetry(
+          summary = ReplicationAggregationFailed(
+            ingestId = payload.ingestId,
+            e = err.e,
+            replicaPath = replicaPath,
+            startTime = startTime,
+            endTime = Instant.now()
+          ),
+          e = err.e
+        )
+
+      case Left(AggregationFailure(err: RetryableError)) =>
         IngestShouldRetry(
           summary = ReplicationAggregationFailed(
             ingestId = payload.ingestId,
