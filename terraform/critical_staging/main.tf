@@ -9,6 +9,8 @@ module "critical" {
     local.digitisation_mediaconvert_role_arn,
     local.goobi_task_role_arn,
     local.workflow_account_principal,
+    local.catalogue_pipeline_task_role_arn,
+    local.catalogue_pipeline_account_principal,
     "arn:aws:iam::653428163053:user/api",
     "arn:aws:iam::653428163053:user/echo-fs",
   ]
