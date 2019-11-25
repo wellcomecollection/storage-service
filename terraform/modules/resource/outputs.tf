@@ -1,6 +1,6 @@
 output "integration_uris" {
   value = [
-    module.auth_subresource_integration.uri,
-    module.auth_resource_integration.uri,
+    aws_api_gateway_integration.auth_subresource.uri,
+    aws_api_gateway_integration.auth_resource.uri,
   ]
 }

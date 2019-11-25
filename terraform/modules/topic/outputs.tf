@@ -1,8 +1,8 @@
 output "name" {
-  value = module.topic.name
+  value = aws_sns_topic.topic.name
 }
 
 output "arn" {
-  value = module.topic.arn
+  value = aws_sns_topic.topic.arn
 }
 

@@ -3,7 +3,7 @@ locals {
 }
 
 module "queue" {
-  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//queue?ref=v1.1.1"
+  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//queue?ref=v1.1.2"
   queue_name = replace(var.name, "-", "_")
   aws_region = var.aws_region
   topic_arns = var.topic_arns
@@ -15,7 +15,7 @@ module "queue" {
 }
 
 module "scaling_alarm" {
-  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//autoscaling?ref=v1.1.0"
+  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//autoscaling?ref=v1.1.2"
   queue_name = local.queue_name
 
   queue_high_actions = var.queue_high_actions
