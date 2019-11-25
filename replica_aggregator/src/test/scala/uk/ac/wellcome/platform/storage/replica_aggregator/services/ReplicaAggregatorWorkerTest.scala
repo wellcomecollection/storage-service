@@ -225,7 +225,9 @@ class ReplicaAggregatorWorkerTest
             initialEntries = Map.empty
           ) with MemoryMaxima[ReplicaPath, AggregatorInternalRecord]
       ) {
-        override def put(id: Version[ReplicaPath, Int])(t: AggregatorInternalRecord): WriteEither =
+        override def put(
+          id: Version[ReplicaPath, Int]
+        )(t: AggregatorInternalRecord): WriteEither =
           Left(VersionAlreadyExistsError())
       }
 
