@@ -218,8 +218,6 @@ class ReplicaAggregatorWorkerTest
   }
 
   describe("if there's a retryable error in the replica aggregator") {
-    val throwable = new Throwable("Conditional Update failed!")
-
     val brokenStore =
       new MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
         store =
@@ -227,12 +225,8 @@ class ReplicaAggregatorWorkerTest
             initialEntries = Map.empty
           ) with MemoryMaxima[ReplicaPath, AggregatorInternalRecord]
       ) {
-        override def upsert(
-          id: ReplicaPath
-        )(t: AggregatorInternalRecord)(f: UpdateFunction): UpdateEither =
-          Left(
-            UpdateWriteError(new StoreWriteError(throwable) with RetryableError)
-          )
+        override def put(id: Version[ReplicaPath, Int])(t: AggregatorInternalRecord): WriteEither =
+          Left(VersionAlreadyExistsError())
       }
 
     val ingests = new MemoryMessageSender()
@@ -259,14 +253,14 @@ class ReplicaAggregatorWorkerTest
 
       val failure = result.summary.asInstanceOf[ReplicationAggregationFailed]
       failure.replicaPath shouldBe ReplicaPath(payload.bagRoot.path)
-      failure.e shouldBe throwable
+      failure.e shouldBe a[java.lang.Error]
     }
 
     it("does not send an outgoing message") {
       outgoing.messages shouldBe empty
     }
 
-    it("sends nothing to the ingests monitor") {
+    it("sends a retrying message to the ingests monitor") {
       assertTopicReceivesIngestEvents(
         ingestId = payload.ingestId,
         ingests = ingests,
