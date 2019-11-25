@@ -14,18 +14,16 @@ resource "aws_api_gateway_method" "auth_resource" {
   authorization_scopes = var.auth_scopes
 }
 
-module "auth_resource_integration" {
-  source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/modules/integration/proxy?ref=v16.1.8"
-
-  api_id        = var.api_id
-  resource_id   = aws_api_gateway_resource.auth_resource.id
-  connection_id = var.connection_id
-
-  hostname    = var.hostname
+resource "aws_api_gateway_integration" "auth_resource" {
+  rest_api_id = var.api_id
+  resource_id = aws_api_gateway_resource.auth_resource.id
   http_method = aws_api_gateway_method.auth_resource.http_method
 
-  forward_port = var.forward_port
-  forward_path = var.forward_path
+  integration_http_method = "ANY"
+  type                    = "HTTP_PROXY"
+  connection_type         = "VPC_LINK"
+  connection_id           = var.connection_id
+  uri                     = "http://${var.hostname}:${var.forward_port}/${var.forward_path}"
 }
 
 resource "aws_api_gateway_resource" "auth_subresource" {
@@ -48,18 +46,16 @@ resource "aws_api_gateway_method" "auth_subresource" {
   }
 }
 
-module "auth_subresource_integration" {
-  source = "git::https://github.com/wellcometrust/terraform.git//api_gateway/modules/integration/proxy?ref=v16.1.8"
-
-  api_id        = var.api_id
-  resource_id   = aws_api_gateway_resource.auth_subresource.id
-  connection_id = var.connection_id
-
-  hostname    = var.hostname
+resource "aws_api_gateway_integration" "auth_subresource" {
+  rest_api_id = var.api_id
+  resource_id = aws_api_gateway_resource.auth_subresource.id
   http_method = aws_api_gateway_method.auth_subresource.http_method
 
-  forward_port = var.forward_port
-  forward_path = "${var.forward_path}/{proxy}"
+  integration_http_method = "ANY"
+  type                    = "HTTP_PROXY"
+  connection_type         = "VPC_LINK"
+  connection_id           = var.connection_id
+  uri                     = "http://${var.hostname}:${var.forward_port}/${var.forward_path}/{proxy}"
 
   request_parameters = {
     "integration.request.path.proxy" = "method.request.path.proxy"
