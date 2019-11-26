@@ -4,8 +4,8 @@ resource "aws_s3_bucket" "replica_primary" {
 }
 
 resource "aws_s3_bucket_policy" "replica_primary_read" {
-  bucket = "${aws_s3_bucket.replica_primary.id}"
-  policy = "${data.aws_iam_policy_document.replica_primary_read.json}"
+  bucket = aws_s3_bucket.replica_primary.id
+  policy = data.aws_iam_policy_document.replica_primary_read.json
 }
 
 data "aws_iam_policy_document" "replica_primary_read" {

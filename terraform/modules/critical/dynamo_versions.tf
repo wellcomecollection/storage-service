@@ -25,7 +25,7 @@ resource "aws_dynamodb_table" "versioner_versions_table" {
   }
 
   global_secondary_index {
-    name            = "${local.versioner_versions_table_index}"
+    name            = local.versioner_versions_table_index
     hash_key        = "ingestId"
     projection_type = "ALL"
   }

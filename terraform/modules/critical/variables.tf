@@ -6,11 +6,11 @@ variable "billing_mode" {
 }
 
 variable "replica_primary_read_principals" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
 variable "replica_glacier_read_principals" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
