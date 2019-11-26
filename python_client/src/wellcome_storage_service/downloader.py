@@ -47,22 +47,25 @@ def download_bag(storage_manifest, out_dir):
         )
 
 
-def download_compressed_bag(storage_manifest, out_path):
+def download_compressed_bag(storage_manifest, out_path, top_level_dir=None):
     """
     Download all the files in a bag to a compressed archive.
 
     :param storage_manifest: A storage manifest returned from the storage
         service, as retrieved with ``get_bag()``.
     :param out_path: The path to download the tar.gz to.
+    :param top_level_dir: Name of top level directory in archive (defaults to
+        the bag's external identifier).
 
     """
-    ext_identifier = storage_manifest["info"]["externalIdentifier"]
+    if top_level_dir is None:
+        top_level_dir = storage_manifest["info"]["externalIdentifier"]
 
     temp_dir = tempfile.mkdtemp()
     download_bag(storage_manifest=storage_manifest, out_dir=temp_dir)
 
     with tarfile.open(out_path, "w:gz") as tf:
-        tf.add(temp_dir, arcname=ext_identifier)
+        tf.add(temp_dir, arcname=top_level_dir)
 
     shutil.rmtree(temp_dir)
 
