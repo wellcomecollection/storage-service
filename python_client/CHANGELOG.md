@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.5.0 - 2019-11-26
+
+Allow specifying the top-level directory in an archive when downloading a
+compressed bag, by passing `top_level_dir` to `download_compressed_bag`.
+
 ## v1.4.1 - 2019-11-14
 
 Change to the way compressed bags are downloaded, so now the archive includes
