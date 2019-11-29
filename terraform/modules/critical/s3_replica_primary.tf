@@ -27,7 +27,7 @@ data "aws_iam_policy_document" "replica_primary_read" {
     }
   }
 
-  # Created so that Digirati/DDS can read the bucket.
+  # Created so that Digirati/DDS can read both the prod and the staging buckets.
 
   statement {
     actions = [
@@ -51,8 +51,9 @@ data "aws_iam_policy_document" "replica_primary_read" {
         # See https://wellcome.slack.com/archives/CBT40CMKQ/p1569923258424800
         "AROAZQI22QHWUG2I4CBRN:*",
 
-        # For Digirati
+        # For the Tizer engine
         # See https://wellcome.slack.com/archives/CBT40CMKQ/p1570188255112200
+        #     https://wellcome.slack.com/archives/CBT40CMKQ/p1574954471260700
         "AROAZQI22QHWYAPBYZG6U:*",
 
         # For video ingests
