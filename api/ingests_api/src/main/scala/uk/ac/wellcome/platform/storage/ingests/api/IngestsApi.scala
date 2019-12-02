@@ -42,7 +42,6 @@ trait IngestsApi extends Logging {
   val ingests: Route = pathPrefix("ingests") {
     post {
       entity(as[RequestDisplayIngest]) { requestDisplayIngest =>
-
         // We disallow slashes for space/external identifier.
         //
         // In theory there's nothing that means we can't support it, but it's liable
@@ -57,15 +56,18 @@ trait IngestsApi extends Logging {
             StatusCodes.BadRequest -> UserErrorResponse(
               contextURL,
               statusCode = StatusCodes.BadRequest,
-              description = "Invalid value at .space.id: must not contain slashes."
+              description =
+                "Invalid value at .space.id: must not contain slashes."
             )
           )
-        } else if (requestDisplayIngest.bag.info.externalIdentifier.underlying.contains("/")) {
+        } else if (requestDisplayIngest.bag.info.externalIdentifier.underlying
+                     .contains("/")) {
           complete(
             StatusCodes.BadRequest -> UserErrorResponse(
               contextURL,
               statusCode = StatusCodes.BadRequest,
-              description = "Invalid value at .bag.info.externalIdentifier: must not contain slashes."
+              description =
+                "Invalid value at .bag.info.externalIdentifier: must not contain slashes."
             )
           )
         } else {
