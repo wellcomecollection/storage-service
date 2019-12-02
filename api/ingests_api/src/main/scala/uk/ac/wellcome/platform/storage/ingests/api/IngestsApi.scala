@@ -42,7 +42,6 @@ trait IngestsApi extends Logging {
   val ingests: Route = pathPrefix("ingests") {
     post {
       entity(as[RequestDisplayIngest]) { requestDisplayIngest =>
-        // TODO: Do we have a test for the failure case?
         ingestStarter.initialise(requestDisplayIngest.toIngest) match {
           case Success(ingest) =>
             respondWithHeaders(List(createLocationHeader(ingest))) {
@@ -68,7 +67,6 @@ trait IngestsApi extends Logging {
       }
     } ~ path(JavaUUID) { id: UUID =>
       get {
-        // TODO: Do we have a test for the failure case?
         ingestTracker.get(IngestID(id)) match {
           case Right(ingest) =>
             complete(ResponseDisplayIngest(ingest.identifiedT, contextURL))
