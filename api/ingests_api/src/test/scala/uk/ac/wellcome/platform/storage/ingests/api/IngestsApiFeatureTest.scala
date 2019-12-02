@@ -382,6 +382,18 @@ class IngestsApiFeatureTest
               "Invalid value at .space.id: required property not supplied."
           )
         }
+
+        it("if the space contains a slash") {
+          val badJson = root.space.obj.modify {
+            _.add("id", Json.fromString("alfa/bravo"))
+          }
+
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage =
+              "Invalid value at .space.id: must not contain slashes."
+          )
+        }
       }
 
       describe("problems with the bag") {
@@ -418,6 +430,18 @@ class IngestsApiFeatureTest
             badJson(json).noSpaces,
             expectedMessage =
               "Invalid value at .bag.info.externalIdentifier: required property not supplied."
+          )
+        }
+
+        it("if the info.externalIdentifier field contains a slash") {
+          val badJson = root.bag.info.obj.modify {
+            _.add("externalIdentifier", Json.fromString("alfa/bravo"))
+          }
+
+          assertCatchesMalformedRequest(
+            badJson(json).noSpaces,
+            expectedMessage =
+              "Invalid value at .bag.info.externalIdentifier: must not contain slashes."
           )
         }
       }

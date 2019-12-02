@@ -42,27 +42,34 @@ trait IngestsApi extends Logging {
   val ingests: Route = pathPrefix("ingests") {
     post {
       entity(as[RequestDisplayIngest]) { requestDisplayIngest =>
-        ingestStarter.initialise(requestDisplayIngest.toIngest) match {
-          case Success(ingest) =>
-            respondWithHeaders(List(createLocationHeader(ingest))) {
-              complete(
-                StatusCodes.Created -> ResponseDisplayIngest(
-                  ingest,
-                  contextURL
-                )
-              )
-            }
-          case Failure(err) =>
-            error(
-              s"Unexpected error while creating an ingest $requestDisplayIngest",
-              err
+
+        // We disallow slashes for space/external identifier.
+        //
+        // In theory there's nothing that means we can't support it, but it's liable
+        // to cause a bunch of issues (e.g. when we build S3 paths, a slash is a
+        // path separator).  If there's a pressing need, we can go through and check
+        // the pipeline handles slashes correctly -- e.g. URL encoding them where
+        // necessary, ensuring they can't clash -- but for now, we just stop them
+        // ever entering the pipeline.
+        //
+        if (requestDisplayIngest.space.id.contains("/")) {
+          complete(
+            StatusCodes.BadRequest -> UserErrorResponse(
+              contextURL,
+              statusCode = StatusCodes.BadRequest,
+              description = "Invalid value at .space.id: must not contain slashes."
             )
-            complete(
-              StatusCodes.InternalServerError -> InternalServerErrorResponse(
-                contextURL,
-                statusCode = StatusCodes.InternalServerError
-              )
+          )
+        } else if (requestDisplayIngest.bag.info.externalIdentifier.underlying.contains("/")) {
+          complete(
+            StatusCodes.BadRequest -> UserErrorResponse(
+              contextURL,
+              statusCode = StatusCodes.BadRequest,
+              description = "Invalid value at .bag.info.externalIdentifier: must not contain slashes."
             )
+          )
+        } else {
+          createIngest(requestDisplayIngest)
         }
       }
     } ~ path(JavaUUID) { id: UUID =>
@@ -90,6 +97,30 @@ trait IngestsApi extends Logging {
       }
     }
   }
+
+  private def createIngest(requestDisplayIngest: RequestDisplayIngest): Route =
+    ingestStarter.initialise(requestDisplayIngest.toIngest) match {
+      case Success(ingest) =>
+        respondWithHeaders(List(createLocationHeader(ingest))) {
+          complete(
+            StatusCodes.Created -> ResponseDisplayIngest(
+              ingest,
+              contextURL
+            )
+          )
+        }
+      case Failure(err) =>
+        error(
+          s"Unexpected error while creating an ingest $requestDisplayIngest",
+          err
+        )
+        complete(
+          StatusCodes.InternalServerError -> InternalServerErrorResponse(
+            contextURL,
+            statusCode = StatusCodes.InternalServerError
+          )
+        )
+    }
 
   private def createLocationHeader(ingest: Ingest) =
     Location(s"${httpServerConfig.externalBaseURL}/${ingest.id}")
