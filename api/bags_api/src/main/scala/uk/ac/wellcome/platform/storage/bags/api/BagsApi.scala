@@ -40,7 +40,6 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
           }
         }
       },
-
       // Look up a single manifest.
       path(Segment / Remaining) { (space, remaining) =>
         val bagId = BagId(
@@ -57,7 +56,9 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
     )
   }
 
-  private def decodeExternalIdentifier(remaining: String): ExternalIdentifier = {
+  private def decodeExternalIdentifier(
+    remaining: String
+  ): ExternalIdentifier = {
     // Sometimes we have an external identifier with slashes.
     // For maximum flexibility, we want to support both URL-encoded
     // and complete path versions.
@@ -69,7 +70,7 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
     //    /bags/space-id/alfa%2Fbravo
     //
     val underlying =
-    URLDecoder.decode(remaining, StandardCharsets.UTF_8.toString)
+      URLDecoder.decode(remaining, StandardCharsets.UTF_8.toString)
 
     ExternalIdentifier(underlying)
   }
