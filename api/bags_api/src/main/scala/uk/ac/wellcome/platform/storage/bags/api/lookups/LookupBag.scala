@@ -80,6 +80,4 @@ trait LookupBag extends Logging with LookupBase {
         )
     }
   }
-
-
 }
