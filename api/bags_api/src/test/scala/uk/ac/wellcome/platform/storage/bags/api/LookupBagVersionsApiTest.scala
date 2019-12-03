@@ -22,7 +22,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
   *
   */
 class LookupBagVersionsApiTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with BagIdGenerators
     with BagInfoGenerators
@@ -109,25 +109,25 @@ class LookupBagVersionsApiTest
              |  "type": "ResultList",
              |  "results": [
              |    ${expectedVersionJson(
-            multipleManifests(5),
-            expectedVersion = "v5"
-          )},
+               multipleManifests(5),
+               expectedVersion = "v5"
+             )},
              |    ${expectedVersionJson(
-            multipleManifests(4),
-            expectedVersion = "v4"
-          )},
+               multipleManifests(4),
+               expectedVersion = "v4"
+             )},
              |    ${expectedVersionJson(
-            multipleManifests(3),
-            expectedVersion = "v3"
-          )},
+               multipleManifests(3),
+               expectedVersion = "v3"
+             )},
              |    ${expectedVersionJson(
-            multipleManifests(2),
-            expectedVersion = "v2"
-          )},
+               multipleManifests(2),
+               expectedVersion = "v2"
+             )},
              |    ${expectedVersionJson(
-            multipleManifests(1),
-            expectedVersion = "v1"
-          )}
+               multipleManifests(1),
+               expectedVersion = "v1"
+             )}
              |  ]
              |}
             """.stripMargin

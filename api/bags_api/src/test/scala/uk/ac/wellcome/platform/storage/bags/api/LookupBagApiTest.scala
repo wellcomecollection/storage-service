@@ -23,7 +23,7 @@ import uk.ac.wellcome.storage.ObjectLocationPrefix
   *
   */
 class LookupBagApiTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with JsonAssertions
     with DisplayJsonHelpers
@@ -289,8 +289,8 @@ class LookupBagApiTest
          |    ${asList(storageManifest.replicaLocations, location)}
          |  ],
          |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-        storageManifest.createdDate
-      )}",
+           storageManifest.createdDate
+         )}",
          |  "version": "${storageManifest.version}",
          |  "type": "Bag"
          |}
