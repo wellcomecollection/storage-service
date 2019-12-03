@@ -9,7 +9,10 @@ import io.circe.parser._
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   BagInfoGenerators,
@@ -142,6 +145,42 @@ class BagsApiFeatureTest
       }
     }
 
+    val storageManifestWithSlash = createStorageManifestWith(
+      bagInfo = createBagInfoWith(
+        externalIdentifier = ExternalIdentifier("alfa/bravo")
+      )
+    )
+
+    it("finds a bag with a slash in the external identifier (URL-encoded)") {
+      withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
+        case (_, _, baseUrl) =>
+          val url = s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa%2Fbravo"
+
+          whenGetRequestReady(url) { response =>
+            response.status shouldBe StatusCodes.OK
+
+            withStringEntity(response.entity) {
+              assertJsonMatches(_, storageManifestWithSlash)
+            }
+          }
+      }
+    }
+
+    it("finds a bag with a slash in the external identifier (not URL-encoded)") {
+      withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
+        case (_, _, baseUrl) =>
+          val url = s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa/bravo"
+
+          whenGetRequestReady(url) { response =>
+            response.status shouldBe StatusCodes.OK
+
+            withStringEntity(response.entity) {
+              assertJsonMatches(_, storageManifestWithSlash)
+            }
+          }
+      }
+    }
+
     it("does not output null values") {
       val storageManifest = createStorageManifestWith(
         bagInfo = createBagInfoWith(externalDescription = None)
@@ -165,85 +204,87 @@ class BagsApiFeatureTest
       }
     }
 
-    it("returns a 404 NotFound if there are no manifests for this bag ID") {
-      withConfiguredApp() {
-        case (_, metrics, baseUrl) =>
-          val bagId = createBagId
-          whenGetRequestReady(
-            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}"
-          ) { response =>
-            assertIsUserErrorResponse(
-              response,
-              description = s"Storage manifest $bagId not found",
-              statusCode = StatusCodes.NotFound,
-              label = "Not Found"
-            )
-
-            assertMetricSent(metrics, result = HttpMetricResults.UserError)
-          }
-      }
-    }
-
-    it("returns a 404 NotFound if you ask for a bag ID in the wrong space") {
-      val storageManifest = createStorageManifest
-
-      withConfiguredApp(initialManifests = Seq(storageManifest)) {
-        case (_, metrics, baseUrl) =>
-          val badId =
-            s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
-          whenGetRequestReady(s"$baseUrl/bags/$badId") { response =>
-            assertIsUserErrorResponse(
-              response,
-              description = s"Storage manifest $badId not found",
-              statusCode = StatusCodes.NotFound,
-              label = "Not Found"
-            )
-
-            assertMetricSent(metrics, result = HttpMetricResults.UserError)
-          }
-      }
-    }
-
-    it("returns a 404 NotFound if you ask for a version that doesn't exist") {
-      val storageManifest = createStorageManifest
-
-      withConfiguredApp(initialManifests = Seq(storageManifest)) {
-        case (_, metrics, baseUrl) =>
-          whenGetRequestReady(
-            s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=${storageManifest.version.increment}"
-          ) { response =>
-            assertIsUserErrorResponse(
-              response,
-              description =
-                s"Storage manifest ${storageManifest.id} version ${storageManifest.version.increment} not found",
-              statusCode = StatusCodes.NotFound,
-              label = "Not Found"
-            )
-
-            assertMetricSent(metrics, result = HttpMetricResults.UserError)
-          }
-      }
-    }
-
-    it("returns a 404 NotFound if you ask for a non-numeric version") {
-      val badVersion = randomAlphanumeric
-
-      val bagId = createBagId
-
-      withConfiguredApp() {
-        case (_, metrics, baseUrl) =>
-          whenGetRequestReady(s"$baseUrl/bags/$bagId?version=$badVersion") {
-            response =>
+    describe("returns a 404 Not Found for missing bags") {
+      it("if there are no manifests for this bag ID") {
+        withConfiguredApp() {
+          case (_, metrics, baseUrl) =>
+            val bagId = createBagId
+            whenGetRequestReady(
+              s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}"
+            ) { response =>
               assertIsUserErrorResponse(
                 response,
-                description =
-                  s"Storage manifest $bagId version $badVersion not found",
+                description = s"Storage manifest $bagId not found",
                 statusCode = StatusCodes.NotFound,
                 label = "Not Found"
               )
 
               assertMetricSent(metrics, result = HttpMetricResults.UserError)
-          }
+            }
+        }
+      }
+
+      it("if you ask for a bag ID in the wrong space") {
+        val storageManifest = createStorageManifest
+
+        withConfiguredApp(initialManifests = Seq(storageManifest)) {
+          case (_, metrics, baseUrl) =>
+            val badId =
+              s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
+            whenGetRequestReady(s"$baseUrl/bags/$badId") { response =>
+              assertIsUserErrorResponse(
+                response,
+                description = s"Storage manifest $badId not found",
+                statusCode = StatusCodes.NotFound,
+                label = "Not Found"
+              )
+
+              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            }
+        }
+      }
+
+      it("if you ask for a version that doesn't exist") {
+        val storageManifest = createStorageManifest
+
+        withConfiguredApp(initialManifests = Seq(storageManifest)) {
+          case (_, metrics, baseUrl) =>
+            whenGetRequestReady(
+              s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=${storageManifest.version.increment}"
+            ) { response =>
+              assertIsUserErrorResponse(
+                response,
+                description =
+                  s"Storage manifest ${storageManifest.id} version ${storageManifest.version.increment} not found",
+                statusCode = StatusCodes.NotFound,
+                label = "Not Found"
+              )
+
+              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            }
+        }
+      }
+
+      it("if you ask for a non-numeric version") {
+        val badVersion = randomAlphanumeric
+
+        val bagId = createBagId
+
+        withConfiguredApp() {
+          case (_, metrics, baseUrl) =>
+            whenGetRequestReady(s"$baseUrl/bags/$bagId?version=$badVersion") {
+              response =>
+                assertIsUserErrorResponse(
+                  response,
+                  description =
+                    s"Storage manifest $bagId version $badVersion not found",
+                  statusCode = StatusCodes.NotFound,
+                  label = "Not Found"
+                )
+
+                assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            }
+        }
       }
     }
 
@@ -406,26 +447,11 @@ class BagsApiFeatureTest
       withConfiguredApp(initialManifests) {
         case (_, metrics, baseUrl) =>
           val expectedJson =
-            s"""
-             |{
-             |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
-             |  "type": "ResultList",
-             |  "results": [
-             |    ${expectedVersionJson(
-                 multipleManifests(3),
-                 expectedVersion = "v3"
-               )},
-             |    ${expectedVersionJson(
-                 multipleManifests(2),
-                 expectedVersion = "v2"
-               )},
-             |    ${expectedVersionJson(
-                 multipleManifests(1),
-                 expectedVersion = "v1"
-               )}
-             |  ]
-             |}
-              """.stripMargin
+            expectedVersionList(
+              expectedVersionJson(multipleManifests(3), expectedVersion = "v3"),
+              expectedVersionJson(multipleManifests(2), expectedVersion = "v2"),
+              expectedVersionJson(multipleManifests(1), expectedVersion = "v1")
+            )
 
           val url =
             s"$baseUrl/bags/${storageManifest.id.space}/${storageManifest.id.externalIdentifier}/versions?before=v4"
@@ -441,6 +467,50 @@ class BagsApiFeatureTest
               metrics,
               result = HttpMetricResults.Success
             )
+          }
+      }
+    }
+
+    val storageManifestWithSlash = createStorageManifestWith(
+      bagInfo = createBagInfoWith(
+        externalIdentifier = ExternalIdentifier("alfa/bravo")
+      )
+    )
+
+    it("finds versions of a bag with a slash in the external identifier (URL-encoded)") {
+      withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
+        case (_, _, baseUrl) =>
+          val url = s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa%2Fbravo/versions"
+
+          val expectedJson = expectedVersionList(
+            expectedVersionJson(storageManifestWithSlash)
+          )
+
+          whenGetRequestReady(url) { response =>
+            response.status shouldBe StatusCodes.OK
+
+            withStringEntity(response.entity) {
+              assertJsonStringsAreEqual(_, expectedJson)
+            }
+          }
+      }
+    }
+
+    it("finds versions of a bag with a slash in the external identifier (not URL-encoded)") {
+      withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
+        case (_, _, baseUrl) =>
+          val url = s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa/bravo/versions"
+
+          val expectedJson = expectedVersionList(
+            expectedVersionJson(storageManifestWithSlash)
+          )
+
+          whenGetRequestReady(url) { response =>
+            response.status shouldBe StatusCodes.OK
+
+            withStringEntity(response.entity) {
+              assertJsonStringsAreEqual(_, expectedJson)
+            }
           }
       }
     }
@@ -521,6 +591,14 @@ class BagsApiFeatureTest
       storageManifest,
       expectedVersion = Some(expectedVersion)
     )
+
+  private def expectedVersionList(results: String*): String =
+    s"""
+       |{
+       |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+       |  "type": "ResultList",
+       |  "results": [${results.mkString(", ")}]
+       |}""".stripMargin
 
   private def expectedVersionJson(
     storageManifest: StorageManifest,
