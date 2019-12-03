@@ -347,11 +347,26 @@ class BagsApiFeatureTest
              |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
              |  "type": "ResultList",
              |  "results": [
-             |    ${expectedVersionJson(multipleManifests(5), expectedVersion = "v5")},
-             |    ${expectedVersionJson(multipleManifests(4), expectedVersion = "v4")},
-             |    ${expectedVersionJson(multipleManifests(3), expectedVersion = "v3")},
-             |    ${expectedVersionJson(multipleManifests(2), expectedVersion = "v2")},
-             |    ${expectedVersionJson(multipleManifests(1), expectedVersion = "v1")}
+             |    ${expectedVersionJson(
+                 multipleManifests(5),
+                 expectedVersion = "v5"
+               )},
+             |    ${expectedVersionJson(
+                 multipleManifests(4),
+                 expectedVersion = "v4"
+               )},
+             |    ${expectedVersionJson(
+                 multipleManifests(3),
+                 expectedVersion = "v3"
+               )},
+             |    ${expectedVersionJson(
+                 multipleManifests(2),
+                 expectedVersion = "v2"
+               )},
+             |    ${expectedVersionJson(
+                 multipleManifests(1),
+                 expectedVersion = "v1"
+               )}
              |  ]
              |}
               """.stripMargin
@@ -396,9 +411,18 @@ class BagsApiFeatureTest
              |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
              |  "type": "ResultList",
              |  "results": [
-             |    ${expectedVersionJson(multipleManifests(3), expectedVersion = "v3")},
-             |    ${expectedVersionJson(multipleManifests(2), expectedVersion = "v2")},
-             |    ${expectedVersionJson(multipleManifests(1), expectedVersion = "v1")}
+             |    ${expectedVersionJson(
+                 multipleManifests(3),
+                 expectedVersion = "v3"
+               )},
+             |    ${expectedVersionJson(
+                 multipleManifests(2),
+                 expectedVersion = "v2"
+               )},
+             |    ${expectedVersionJson(
+                 multipleManifests(1),
+                 expectedVersion = "v1"
+               )}
              |  ]
              |}
               """.stripMargin
@@ -489,11 +513,21 @@ class BagsApiFeatureTest
     }
   }
 
-  private def expectedVersionJson(storageManifest: StorageManifest, expectedVersion: String): String =
-    expectedVersionJson(storageManifest, expectedVersion = Some(expectedVersion))
+  private def expectedVersionJson(
+    storageManifest: StorageManifest,
+    expectedVersion: String
+  ): String =
+    expectedVersionJson(
+      storageManifest,
+      expectedVersion = Some(expectedVersion)
+    )
 
-  private def expectedVersionJson(storageManifest: StorageManifest, expectedVersion: Option[String] = None): String = {
-    val createdDate = DateTimeFormatter.ISO_INSTANT.format(storageManifest.createdDate)
+  private def expectedVersionJson(
+    storageManifest: StorageManifest,
+    expectedVersion: Option[String] = None
+  ): String = {
+    val createdDate =
+      DateTimeFormatter.ISO_INSTANT.format(storageManifest.createdDate)
 
     s"""
        |{
@@ -505,7 +539,10 @@ class BagsApiFeatureTest
        """.stripMargin
   }
 
-  private def assertJsonMatches(json: String, storageManifest: StorageManifest): Assertion = {
+  private def assertJsonMatches(
+    json: String,
+    storageManifest: StorageManifest
+  ): Assertion = {
     val expectedJson =
       s"""
          |{
@@ -523,8 +560,8 @@ class BagsApiFeatureTest
          |    ${asList(storageManifest.replicaLocations, location)}
          |  ],
          |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-        storageManifest.createdDate
-      )}",
+           storageManifest.createdDate
+         )}",
          |  "version": "${storageManifest.version}",
          |  "type": "Bag"
          |}
