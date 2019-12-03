@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.headers.{ETag, Location}
 import io.circe.optics.JsonPath._
 import io.circe.parser._
 import org.scalatest.concurrent.IntegrationPatience
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
@@ -16,6 +16,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageManifestGenerators
 }
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
 import uk.ac.wellcome.storage.ObjectLocationPrefix
@@ -34,44 +35,19 @@ class BagsApiFeatureTest
     with IntegrationPatience {
 
   describe("GET /bags/:space/:id") {
-
     it("finds the latest version of a bag") {
       val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>
-          val expectedJson =
-            s"""
-              |{
-              |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
-              |  "id": "${storageManifest.id.toString}",
-              |  "space": {
-              |    "id": "${storageManifest.space.underlying}",
-              |    "type": "Space"
-              |  },
-              |  "info": ${bagInfo(storageManifest.info)},
-              |  "manifest": ${manifest(storageManifest.manifest)},
-              |  "tagManifest": ${manifest(storageManifest.tagManifest)},
-              |  "location": ${location(storageManifest.location)},
-              |  "replicaLocations": [
-              |    ${asList(storageManifest.replicaLocations, location)}
-              |  ],
-              |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 storageManifest.createdDate
-               )}",
-              |  "version": "${storageManifest.version}",
-              |  "type": "Bag"
-              |}
-              """.stripMargin
-
           val url =
             s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
 
           whenGetRequestReady(url) { response =>
             response.status shouldBe StatusCodes.OK
 
-            withStringEntity(response.entity) { actualJson =>
-              assertJsonStringsAreEqual(actualJson, expectedJson)
+            withStringEntity(response.entity) {
+              assertJsonMatches(_, storageManifest)
             }
 
             val header: ETag = response.header[ETag].get
@@ -87,9 +63,7 @@ class BagsApiFeatureTest
       }
     }
 
-    it(
-      "redirects to a stored response if that response is greater than the max allowable length"
-    ) {
+    it("can return very large responses") {
       // This is not an exact mechanism!
       // We can experiment to identify a size which exceeds the maxResponseByteLength
       val storageManifest = createStorageManifestWithFileCount(fileCount = 100)
@@ -100,39 +74,9 @@ class BagsApiFeatureTest
         withConfiguredApp(
           initialManifests = Seq(storageManifest),
           locationPrefix = prefix,
-          maxResponseByteLength = 10000
+          maxResponseByteLength = 1000
         ) {
           case (_, metrics, baseUrl) =>
-            val expectedJson =
-              s"""
-                           |{
-                           |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
-                           |  "id": "${storageManifest.id.toString}",
-                           |  "space": {
-                           |    "id": "${storageManifest.space.underlying}",
-                           |    "type": "Space"
-                           |  },
-                           |  "info": ${bagInfo(storageManifest.info)},
-                           |  "manifest": ${manifest(storageManifest.manifest)},
-                           |  "tagManifest": ${manifest(
-                   storageManifest.tagManifest
-                 )},
-                           |  "location": ${location(storageManifest.location)},
-                           |  "replicaLocations": [
-                           |    ${asList(
-                   storageManifest.replicaLocations,
-                   location
-                 )}
-                           |  ],
-                           |  "createdDate": "${DateTimeFormatter.ISO_INSTANT
-                   .format(
-                     storageManifest.createdDate
-                   )}",
-                           |  "version": "${storageManifest.version}",
-                           |  "type": "Bag"
-                           |}
-                          """.stripMargin
-
             val url =
               s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
 
@@ -147,8 +91,8 @@ class BagsApiFeatureTest
               val redirectedUrl = response.header[Location].get.uri.toString()
 
               whenGetRequestReady(redirectedUrl) { redirectedResponse =>
-                withStringEntity(redirectedResponse.entity) { actualJson =>
-                  assertJsonStringsAreEqual(actualJson, expectedJson)
+                withStringEntity(redirectedResponse.entity) {
+                  assertJsonMatches(_, storageManifest)
                 }
               }
             }
@@ -174,38 +118,14 @@ class BagsApiFeatureTest
       withConfiguredApp(initialManifests = manifests) {
         case (_, metrics, baseUrl) =>
           manifests.foreach { storageManifest =>
-            val expectedJson =
-              s"""
-                |{
-                |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
-                |  "id": "${storageManifest.id.toString}",
-                |  "space": {
-                |    "id": "${storageManifest.space.underlying}",
-                |    "type": "Space"
-                |  },
-                |  "info": ${bagInfo(storageManifest.info)},
-                |  "manifest": ${manifest(storageManifest.manifest)},
-                |  "tagManifest": ${manifest(storageManifest.tagManifest)},
-                |  "location": ${location(storageManifest.location)},
-                |  "replicaLocations": [
-                |    ${asList(storageManifest.replicaLocations, location)}
-                |  ],
-                |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                   storageManifest.createdDate
-                 )}",
-                |  "version": "${storageManifest.version}",
-                |  "type": "Bag"
-                |}
-                """.stripMargin
-
             val url =
               s"$baseUrl/bags/${storageSpace.underlying}/${externalIdentifier.underlying}?version=${storageManifest.version}"
 
             whenGetRequestReady(url) { response =>
               response.status shouldBe StatusCodes.OK
 
-              withStringEntity(response.entity) { actualJson =>
-                assertJsonStringsAreEqual(actualJson, expectedJson)
+              withStringEntity(response.entity) {
+                assertJsonMatches(_, storageManifest)
               }
 
               val header: ETag = response.header[ETag].get
@@ -341,7 +261,7 @@ class BagsApiFeatureTest
     it("returns a 500 error if looking up a specific version of a bag fails") {
       withBrokenApp {
         case (metrics, baseUrl) =>
-          whenGetRequestReady(s"$baseUrl/bags/${createBagId}?version=v1") {
+          whenGetRequestReady(s"$baseUrl/bags/$createBagId?version=v1") {
             response =>
               assertIsInternalServerErrorResponse(response)
 
@@ -632,5 +552,33 @@ class BagsApiFeatureTest
           }
       }
     }
+  }
+
+  private def assertJsonMatches(json: String, storageManifest: StorageManifest): Assertion = {
+    val expectedJson =
+      s"""
+         |{
+         |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
+         |  "id": "${storageManifest.id.toString}",
+         |  "space": {
+         |    "id": "${storageManifest.space.underlying}",
+         |    "type": "Space"
+         |  },
+         |  "info": ${bagInfo(storageManifest.info)},
+         |  "manifest": ${manifest(storageManifest.manifest)},
+         |  "tagManifest": ${manifest(storageManifest.tagManifest)},
+         |  "location": ${location(storageManifest.location)},
+         |  "replicaLocations": [
+         |    ${asList(storageManifest.replicaLocations, location)}
+         |  ],
+         |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
+        storageManifest.createdDate
+      )}",
+         |  "version": "${storageManifest.version}",
+         |  "type": "Bag"
+         |}
+       """.stripMargin
+
+    assertJsonStringsAreEqual(json, expectedJson)
   }
 }
