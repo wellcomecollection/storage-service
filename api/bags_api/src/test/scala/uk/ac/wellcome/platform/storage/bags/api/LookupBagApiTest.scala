@@ -26,7 +26,7 @@ import uk.ac.wellcome.storage.ObjectLocationPrefix
   *
   */
 class LookupBagApiTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with JsonAssertions
     with DisplayJsonHelpers
@@ -150,7 +150,8 @@ class LookupBagApiTest
   it("finds a bag with a slash in the external identifier (URL-encoded)") {
     withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
       case (_, _, baseUrl) =>
-        val url = s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa%2Fbravo"
+        val url =
+          s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa%2Fbravo"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK
@@ -165,7 +166,8 @@ class LookupBagApiTest
   it("finds a bag with a slash in the external identifier (not URL-encoded)") {
     withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
       case (_, _, baseUrl) =>
-        val url = s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa/bravo"
+        val url =
+          s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa/bravo"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK
@@ -191,7 +193,8 @@ class LookupBagApiTest
 
     withConfiguredApp(initialManifests = Seq(storageManifest)) {
       case (_, _, baseUrl) =>
-        val url = s"$baseUrl/bags/${storageManifest.id.space.underlying}/alfa%2Fversions"
+        val url =
+          s"$baseUrl/bags/${storageManifest.id.space.underlying}/alfa%2Fversions"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK
@@ -354,8 +357,8 @@ class LookupBagApiTest
          |    ${asList(storageManifest.replicaLocations, location)}
          |  ],
          |  "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-        storageManifest.createdDate
-      )}",
+           storageManifest.createdDate
+         )}",
          |  "version": "${storageManifest.version}",
          |  "type": "Bag"
          |}

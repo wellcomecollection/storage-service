@@ -200,10 +200,13 @@ class LookupBagVersionsApiTest
     )
   )
 
-  it("finds versions of a bag with a slash in the external identifier (URL-encoded)") {
+  it(
+    "finds versions of a bag with a slash in the external identifier (URL-encoded)"
+  ) {
     withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
       case (_, _, baseUrl) =>
-        val url = s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa%2Fbravo/versions"
+        val url =
+          s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa%2Fbravo/versions"
 
         val expectedJson = expectedVersionList(
           expectedVersionJson(storageManifestWithSlash)
@@ -219,10 +222,13 @@ class LookupBagVersionsApiTest
     }
   }
 
-  it("finds versions of a bag with a slash in the external identifier (not URL-encoded)") {
+  it(
+    "finds versions of a bag with a slash in the external identifier (not URL-encoded)"
+  ) {
     withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
       case (_, _, baseUrl) =>
-        val url = s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa/bravo/versions"
+        val url =
+          s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa/bravo/versions"
 
         val expectedJson = expectedVersionList(
           expectedVersionJson(storageManifestWithSlash)
@@ -256,7 +262,8 @@ class LookupBagVersionsApiTest
 
     withConfiguredApp(initialManifests = Seq(storageManifest)) {
       case (_, _, baseUrl) =>
-        val url = s"$baseUrl/bags/${storageManifest.id.space.underlying}/alfa%2Fversions/versions"
+        val url =
+          s"$baseUrl/bags/${storageManifest.id.space.underlying}/alfa%2Fversions/versions"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK
@@ -268,7 +275,9 @@ class LookupBagVersionsApiTest
     }
   }
 
-  it("finds versions a bag whose identifier ends with /versions (not URL-encoded)") {
+  it(
+    "finds versions a bag whose identifier ends with /versions (not URL-encoded)"
+  ) {
     val storageManifest = createStorageManifestWith(
       bagInfo = createBagInfoWith(
         externalIdentifier = ExternalIdentifier("alfa/versions")
@@ -281,7 +290,8 @@ class LookupBagVersionsApiTest
 
     withConfiguredApp(initialManifests = Seq(storageManifest)) {
       case (_, _, baseUrl) =>
-        val url = s"$baseUrl/bags/${storageManifest.id.space.underlying}/alfa/versions/versions"
+        val url =
+          s"$baseUrl/bags/${storageManifest.id.space.underlying}/alfa/versions/versions"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK

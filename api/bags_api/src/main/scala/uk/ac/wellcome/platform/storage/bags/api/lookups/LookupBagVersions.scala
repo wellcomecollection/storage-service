@@ -45,8 +45,7 @@ trait LookupBagVersions extends Logging with LookupBase {
         buildResultsList(
           bagId = bagId,
           storageManifestDao.listVersions(bagId),
-          notFoundMessage =
-            s"No storage manifest versions found for $bagId"
+          notFoundMessage = s"No storage manifest versions found for $bagId"
         )
 
       // Note: if the version is empty, we'll always be able to parse it,
@@ -56,8 +55,7 @@ trait LookupBagVersions extends Logging with LookupBase {
           BadRequest -> UserErrorResponse(
             context = contextURL,
             statusCode = StatusCodes.BadRequest,
-            description =
-              s"Cannot parse version string: ${maybeBefore.get}"
+            description = s"Cannot parse version string: ${maybeBefore.get}"
           )
         )
     }
