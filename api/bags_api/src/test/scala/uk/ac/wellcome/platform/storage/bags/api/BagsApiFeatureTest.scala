@@ -303,16 +303,7 @@ class BagsApiFeatureTest
              |{
              |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
              |  "type": "ResultList",
-             |  "results": [
-             |    {
-             |      "type": "Bag",
-             |      "id": "${storageManifest.id.toString}",
-             |      "version": "${storageManifest.version}",
-             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 storageManifest.createdDate
-               )}"
-             |    }
-             |  ]
+             |  "results": [${expectedVersionJson(storageManifest)}]
              |}
               """.stripMargin
 
@@ -356,46 +347,11 @@ class BagsApiFeatureTest
              |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
              |  "type": "ResultList",
              |  "results": [
-             |    {
-             |      "type": "Bag",
-             |      "id": "${storageManifest.id.toString}",
-             |      "version": "v5",
-             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(5).createdDate
-               )}"
-             |    },
-             |    {
-             |      "type": "Bag",
-             |      "id": "${storageManifest.id.toString}",
-             |      "version": "v4",
-             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(4).createdDate
-               )}"
-             |    },
-             |    {
-             |      "type": "Bag",
-             |      "id": "${storageManifest.id.toString}",
-             |      "version": "v3",
-             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(3).createdDate
-               )}"
-             |    },
-             |    {
-             |      "type": "Bag",
-             |      "id": "${storageManifest.id.toString}",
-             |      "version": "v2",
-             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(2).createdDate
-               )}"
-             |    },
-             |    {
-             |      "type": "Bag",
-             |      "id": "${storageManifest.id.toString}",
-             |      "version": "v1",
-             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(1).createdDate
-               )}"
-             |    }
+             |    ${expectedVersionJson(multipleManifests(5), expectedVersion = "v5")},
+             |    ${expectedVersionJson(multipleManifests(4), expectedVersion = "v4")},
+             |    ${expectedVersionJson(multipleManifests(3), expectedVersion = "v3")},
+             |    ${expectedVersionJson(multipleManifests(2), expectedVersion = "v2")},
+             |    ${expectedVersionJson(multipleManifests(1), expectedVersion = "v1")}
              |  ]
              |}
               """.stripMargin
@@ -440,30 +396,9 @@ class BagsApiFeatureTest
              |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
              |  "type": "ResultList",
              |  "results": [
-             |    {
-             |      "type": "Bag",
-             |      "id": "${storageManifest.id.toString}",
-             |      "version": "v3",
-             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(3).createdDate
-               )}"
-             |    },
-             |    {
-             |      "type": "Bag",
-             |      "id": "${storageManifest.id.toString}",
-             |      "version": "v2",
-             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(2).createdDate
-               )}"
-             |    },
-             |    {
-             |      "type": "Bag",
-             |      "id": "${storageManifest.id.toString}",
-             |      "version": "v1",
-             |      "createdDate": "${DateTimeFormatter.ISO_INSTANT.format(
-                 multipleManifests(1).createdDate
-               )}"
-             |    }
+             |    ${expectedVersionJson(multipleManifests(3), expectedVersion = "v3")},
+             |    ${expectedVersionJson(multipleManifests(2), expectedVersion = "v2")},
+             |    ${expectedVersionJson(multipleManifests(1), expectedVersion = "v1")}
              |  ]
              |}
               """.stripMargin
@@ -552,6 +487,22 @@ class BagsApiFeatureTest
           }
       }
     }
+  }
+
+  private def expectedVersionJson(storageManifest: StorageManifest, expectedVersion: String): String =
+    expectedVersionJson(storageManifest, expectedVersion = Some(expectedVersion))
+
+  private def expectedVersionJson(storageManifest: StorageManifest, expectedVersion: Option[String] = None): String = {
+    val createdDate = DateTimeFormatter.ISO_INSTANT.format(storageManifest.createdDate)
+
+    s"""
+       |{
+       |  "id": "${storageManifest.id.toString}",
+       |  "version": "${expectedVersion.getOrElse(storageManifest.version)}",
+       |  "createdDate": "$createdDate",
+       |  "type": "Bag"
+       |}
+       """.stripMargin
   }
 
   private def assertJsonMatches(json: String, storageManifest: StorageManifest): Assertion = {
