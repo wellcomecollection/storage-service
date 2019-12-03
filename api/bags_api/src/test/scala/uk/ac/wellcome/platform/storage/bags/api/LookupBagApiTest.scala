@@ -177,6 +177,32 @@ class LookupBagApiTest
     }
   }
 
+  // Creating a bag whose external identifier ends with /versions seems unlikely
+  // in practice, but we should be able to support it if you correctly URL-encode
+  // the slash.
+  //
+  // (Do not create bags like this.  It is silly.)
+  it("finds a bag whose identifier ends with /versions") {
+    val storageManifest = createStorageManifestWith(
+      bagInfo = createBagInfoWith(
+        externalIdentifier = ExternalIdentifier("alfa/versions")
+      )
+    )
+
+    withConfiguredApp(initialManifests = Seq(storageManifest)) {
+      case (_, _, baseUrl) =>
+        val url = s"$baseUrl/bags/${storageManifest.id.space.underlying}/alfa%2Fversions"
+
+        whenGetRequestReady(url) { response =>
+          response.status shouldBe StatusCodes.OK
+
+          withStringEntity(response.entity) {
+            assertJsonMatches(_, storageManifest)
+          }
+        }
+    }
+  }
+
   it("does not output null values") {
     val storageManifest = createStorageManifestWith(
       bagInfo = createBagInfoWith(externalDescription = None)

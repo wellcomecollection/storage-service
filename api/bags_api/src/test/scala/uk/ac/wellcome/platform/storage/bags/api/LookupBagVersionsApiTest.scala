@@ -238,6 +238,61 @@ class LookupBagVersionsApiTest
     }
   }
 
+  // Creating a bag whose external identifier ends with /versions seems unlikely
+  // in practice, but we should be able to support it if you correctly URL-encode
+  // the slash.
+  //
+  // (Do not create bags like this.  It is silly.)
+  it("finds versions a bag whose identifier ends with /versions (URL-encoded)") {
+    val storageManifest = createStorageManifestWith(
+      bagInfo = createBagInfoWith(
+        externalIdentifier = ExternalIdentifier("alfa/versions")
+      )
+    )
+
+    val expectedJson = expectedVersionList(
+      expectedVersionJson(storageManifest)
+    )
+
+    withConfiguredApp(initialManifests = Seq(storageManifest)) {
+      case (_, _, baseUrl) =>
+        val url = s"$baseUrl/bags/${storageManifest.id.space.underlying}/alfa%2Fversions/versions"
+
+        whenGetRequestReady(url) { response =>
+          response.status shouldBe StatusCodes.OK
+
+          withStringEntity(response.entity) {
+            assertJsonStringsAreEqual(_, expectedJson)
+          }
+        }
+    }
+  }
+
+  it("finds versions a bag whose identifier ends with /versions (not URL-encoded)") {
+    val storageManifest = createStorageManifestWith(
+      bagInfo = createBagInfoWith(
+        externalIdentifier = ExternalIdentifier("alfa/versions")
+      )
+    )
+
+    val expectedJson = expectedVersionList(
+      expectedVersionJson(storageManifest)
+    )
+
+    withConfiguredApp(initialManifests = Seq(storageManifest)) {
+      case (_, _, baseUrl) =>
+        val url = s"$baseUrl/bags/${storageManifest.id.space.underlying}/alfa/versions/versions"
+
+        whenGetRequestReady(url) { response =>
+          response.status shouldBe StatusCodes.OK
+
+          withStringEntity(response.entity) {
+            assertJsonStringsAreEqual(_, expectedJson)
+          }
+        }
+    }
+  }
+
   it(
     "returns a 404 NotFound if there are no manifests before the specified version"
   ) {
