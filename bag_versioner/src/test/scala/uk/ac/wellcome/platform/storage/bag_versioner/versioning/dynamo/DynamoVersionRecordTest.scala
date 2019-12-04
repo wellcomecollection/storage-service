@@ -1,21 +1,21 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 
-import java.time.Instant
-
-import org.scalatest.{FunSpec, Matchers, TryValues}
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import org.scalatest.{FunSpec, Matchers}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.VersionRecordGenerators
 
 class DynamoVersionRecordTest
     extends FunSpec
     with Matchers
-    with VersionRecordGenerators
-    with TryValues {
+    with VersionRecordGenerators {
   it("converts from a VersionRecord to a DynamoEntry and back") {
     val versionRecord = createVersionRecord
 
-    DynamoVersionRecord(versionRecord).toVersionRecord.success.value shouldBe versionRecord
+    DynamoVersionRecord(versionRecord).toVersionRecord shouldBe versionRecord
   }
 
   it("handles a VersionRecord with a colon in the externalIdentifier") {
@@ -23,7 +23,7 @@ class DynamoVersionRecordTest
       externalIdentifier = ExternalIdentifier("x:y")
     )
 
-    DynamoVersionRecord(versionRecord).toVersionRecord.success.value shouldBe versionRecord
+    DynamoVersionRecord(versionRecord).toVersionRecord shouldBe versionRecord
   }
 
   it("handles a VersionRecord with a colon in the storageSpace") {
@@ -31,7 +31,7 @@ class DynamoVersionRecordTest
       storageSpace = StorageSpace("x:y")
     )
 
-    DynamoVersionRecord(versionRecord).toVersionRecord.success.value shouldBe versionRecord
+    DynamoVersionRecord(versionRecord).toVersionRecord shouldBe versionRecord
   }
 
   it("creates human-readable IDs") {
@@ -40,17 +40,6 @@ class DynamoVersionRecordTest
       storageSpace = StorageSpace("a:b")
     )
 
-    DynamoVersionRecord(versionRecord).id shouldBe "a%3Ab:x%3Ay"
-  }
-
-  it("throws an exception if the ID is malformed") {
-    val entry = DynamoVersionRecord(
-      id = "1234",
-      ingestId = createIngestID,
-      ingestDate = Instant.now(),
-      version = 1
-    )
-
-    entry.toVersionRecord.failure.exception shouldBe a[IllegalArgumentException]
+    DynamoVersionRecord(versionRecord).id shouldBe BagId("a:b/x:y")
   }
 }

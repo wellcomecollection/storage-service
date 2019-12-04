@@ -4,13 +4,12 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.s3.AmazonS3
 import org.scanamo.auto._
 import org.scanamo.{DynamoFormat, DynamoValue, Scanamo, Table => ScanamoTable}
-import org.scanamo.error.{DynamoReadError, TypeCoercionError}
+import org.scanamo.error.DynamoReadError
 import org.scanamo.syntax._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.models.dynamo.DynamoID
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   EmptyMetadata,
   StorageManifestDao
@@ -59,30 +58,6 @@ class DynamoStorageManifestDao(
       override def write(t: EmptyMetadata): DynamoValue =
         DynamoValue.fromMap(Map.empty)
     }
-
-  implicit val bagIdFormat: DynamoFormat[BagId] = new DynamoFormat[BagId] {
-    override def read(av: DynamoValue): scala.Either[DynamoReadError, BagId] =
-      for {
-        bagIdString <- av.as[String]
-
-        externalIdentifier <- DynamoID.getExternalIdentifier(bagIdString) match {
-          case Success(value) => Right(value)
-          case Failure(err)   => Left(TypeCoercionError(err))
-        }
-
-        space <- DynamoID.getStorageSpace(bagIdString) match {
-          case Success(value) => Right(value)
-          case Failure(err)   => Left(TypeCoercionError(err))
-        }
-
-        bagId = BagId(space, externalIdentifier)
-      } yield bagId
-
-    override def write(bagId: BagId): DynamoValue =
-      DynamoValue.fromString(
-        DynamoID.createId(bagId.space, bagId.externalIdentifier)
-      )
-  }
 
   implicit val indexedStore
     : DynamoHashRangeStore[BagId, Int, DynamoStoreEntry] =
@@ -159,15 +134,11 @@ class DynamoStorageManifestDao(
 
     val baseOps = before match {
       case Some(beforeVersion) =>
-        table.descending.from(
-          'id -> DynamoID.createId(bagId.space, bagId.externalIdentifier) and
-            'version -> beforeVersion
-        )
+        table.descending.from('id -> bagId and 'version -> beforeVersion)
       case None => table.descending
     }
 
-    val ops = baseOps
-      .query('id -> DynamoID.createId(bagId.space, bagId.externalIdentifier))
+    val ops = baseOps.query('id -> bagId)
 
     for {
       scanamoResult <- Try {

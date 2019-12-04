@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.security.MessageDigest
 
+import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   BagPath,
@@ -279,7 +280,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
 
 object BagBuilder extends BagBuilderBase
 
-trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
+trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures with Logging {
   def createS3BagWith(
     bucket: Bucket,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
@@ -290,6 +291,18 @@ trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures {
     val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
       payloadFileCount = payloadFileCount
     )
+
+    // This tracing is here to help debug a flaky issue in the
+    // bag verifier tests: https://github.com/wellcometrust/platform/issues/3952
+    //
+    // Specifically, sometimes when Travis creates a bag, it complains that
+    // the Payload-Oxum has one less file than in the bag manifest.  Hopefully
+    // if that is happening, we'll spot it here.
+    //
+    // Once that ticket is closed, this logging can be deleted.
+    debug(s"bagObjects = $bagObjects")
+    debug(s"bagRoot = $bagRoot")
+    debug(s"bagInfo = $bagInfo")
 
     implicit val typedStore: S3TypedStore[String] = S3TypedStore[String]
     uploadBagObjects(bagObjects)
