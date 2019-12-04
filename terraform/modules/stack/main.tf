@@ -397,7 +397,9 @@ module "ingests" {
     JAVA_OPTS                 = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
   }
 
-  min_capacity = var.min_capacity
+  # We always run at least one ingests monitor so messages from other apps are
+  # displayed in the API immediately.
+  min_capacity = max(1, var.min_capacity)
   max_capacity = var.max_capacity
 
   container_image = local.ingests_image
