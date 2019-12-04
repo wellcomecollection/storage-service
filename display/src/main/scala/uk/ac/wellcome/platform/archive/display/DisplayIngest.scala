@@ -5,6 +5,7 @@ import java.time.Instant
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
@@ -27,7 +28,7 @@ case class RequestDisplayIngest(
         callback.map(displayCallback => URI.create(displayCallback.url))
       ),
       space = StorageSpace(space.id),
-      externalIdentifier = bag.info.externalIdentifier,
+      externalIdentifier = ExternalIdentifier(bag.info.externalIdentifier),
       status = Ingest.Accepted,
       createdDate = Instant.now
     )
