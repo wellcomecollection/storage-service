@@ -122,11 +122,7 @@ class DynamoIngestTrackerTest
     }
 
   // TODO: Add tests for handling DynamoDB errors
-
-  // TODO: Add tests that lookupBagId returns a finite list of results
-
-  // TODO: Add tests that failing to store the bag ID lookup don't fail the overall result
-
+  
   override protected def assertIngestsEqual(
     ingest1: Ingest,
     ingest2: Ingest
