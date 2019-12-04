@@ -13,7 +13,7 @@ class StorageSpace(val underlying: String) {
   //
   // We deliberately don't use case classes here so we skip automatic
   // case class derivation for JSON encoding/DynamoDB in Scanamo,
-  // and force callers to use the implicits below.
+  // and force callers to intentionally import the implicits below.
   def canEqual(a: Any): Boolean = a.isInstanceOf[StorageSpace]
 
   override def equals(that: Any): Boolean =
