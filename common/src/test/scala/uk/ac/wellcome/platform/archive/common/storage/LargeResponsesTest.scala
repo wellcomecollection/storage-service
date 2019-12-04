@@ -54,7 +54,6 @@ class LargeResponsesTest
 
                 response.status shouldBe StatusCodes.OK
                 actualByteArray shouldBe expectedByteArray
-
             }
           }
         }
@@ -170,7 +169,7 @@ class LargeResponsesTest
   )(testWith: TestWith[HttpResponse, R])(
     implicit mat: ActorMaterializer,
     as: ActorSystem
-  ) = {
+  ): R = {
 
     val port = 8080
     val interface = "127.0.0.1"
@@ -203,14 +202,16 @@ class LargeResponsesTest
       HttpRequest(uri = s"http://$interface:$port")
     )
 
+    // This can sometimes flake out when running in Travis CI.  The deadline
+    // is somewhat arbitrary, so if it keeps failing, bump this deadline again.
     val madeRequestResult: HttpResponse =
-      Await.result(madeRequest, 1.seconds)
+      Await.result(madeRequest, atMost = 5.seconds)
 
     val result = testWith(madeRequestResult)
 
     Await
-      .result(binding, 1.seconds)
-      .terminate(hardDeadline = 1.seconds)
+      .result(binding, atMost = 5.seconds)
+      .terminate(hardDeadline = 5.seconds)
       .flatMap { _ =>
         as.terminate()
       }
