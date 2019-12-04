@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bags.api.lookups
+package uk.ac.wellcome.platform.storage.bags.api.responses
 
 import java.net.URL
 
@@ -25,7 +25,7 @@ import uk.ac.wellcome.storage.ReadError
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-trait LookupBagVersions extends Logging with LookupBase {
+trait LookupBagVersions extends Logging with ResponseBase {
   val contextURL: URL
   val storageManifestDao: StorageManifestDao
 

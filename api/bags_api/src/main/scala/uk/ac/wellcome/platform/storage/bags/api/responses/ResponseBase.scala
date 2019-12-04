@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bags.api.lookups
+package uk.ac.wellcome.platform.storage.bags.api.responses
 
 import io.circe.Printer
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
@@ -6,7 +6,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
 
-trait LookupBase {
+trait ResponseBase {
   implicit val printer: Printer =
     Printer.noSpaces.copy(dropNullValues = true)
 
