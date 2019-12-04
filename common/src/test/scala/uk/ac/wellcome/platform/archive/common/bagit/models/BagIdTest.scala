@@ -43,7 +43,9 @@ class BagIdTest extends FunSpec with JsonAssertions with BagIdGenerators {
     err.getMessage shouldBe "Cannot create bag ID from no slashes here"
   }
 
-  it("fails if you try to create a BagId from a string with an empty storage space") {
+  it(
+    "fails if you try to create a BagId from a string with an empty storage space"
+  ) {
     val err = intercept[IllegalArgumentException] {
       BagId("/b12345678")
     }
@@ -51,7 +53,9 @@ class BagIdTest extends FunSpec with JsonAssertions with BagIdGenerators {
     err.getMessage shouldBe "requirement failed: Storage space cannot be empty"
   }
 
-  it("fails if you try to create a BagId from a string with an empty external identifier") {
+  it(
+    "fails if you try to create a BagId from a string with an empty external identifier"
+  ) {
     val err = intercept[IllegalArgumentException] {
       BagId("digitised/")
     }

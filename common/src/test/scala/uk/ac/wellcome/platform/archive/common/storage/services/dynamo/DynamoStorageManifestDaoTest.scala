@@ -73,7 +73,10 @@ class DynamoStorageManifestDaoTest
 
           storedIdentifiers shouldBe Seq("abc/123")
 
-          dao.get(bagId, version = storageManifest.version).right.value shouldBe storageManifest
+          dao
+            .get(bagId, version = storageManifest.version)
+            .right
+            .value shouldBe storageManifest
         }
       }
     }
@@ -111,7 +114,10 @@ class DynamoStorageManifestDaoTest
 
           storedIdentifiers shouldBe Seq("born-digital/PP/MIA/1")
 
-          dao.get(bagId, version = storageManifest.version).right.value shouldBe storageManifest
+          dao
+            .get(bagId, version = storageManifest.version)
+            .right
+            .value shouldBe storageManifest
         }
       }
     }
