@@ -470,7 +470,9 @@ class StorageManifestServiceTest
     }
 
     it("sets a recent createdDate") {
-      assertRecent(storageManifest.createdDate)
+      // This test takes longer when running on a Mac, not in CI, so allow some
+      // flex on the definition of "recent".
+      assertRecent(storageManifest.createdDate, recentSeconds = 30)
     }
   }
 
