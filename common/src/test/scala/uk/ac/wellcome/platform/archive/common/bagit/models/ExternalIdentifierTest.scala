@@ -14,4 +14,8 @@ class ExternalIdentifierTest extends FunSpec with Matchers {
 
     err.getMessage shouldBe "requirement failed: External identifier cannot be empty"
   }
+
+  it("allows creating an external identifier with slashes") {
+    ExternalIdentifier("PP/MIA/1")
+  }
 }
