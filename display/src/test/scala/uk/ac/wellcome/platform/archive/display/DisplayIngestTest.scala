@@ -130,7 +130,7 @@ class DisplayIngestTest
         ),
         bag = RequestDisplayBag(
           info = RequestDisplayBagInfo(
-            externalIdentifier = externalIdentifier
+            externalIdentifier = externalIdentifier.underlying
           )
         ),
         ingestType = CreateDisplayIngestType,
@@ -186,10 +186,8 @@ class DisplayIngestTest
       ingestType = ingestType,
       bag = RequestDisplayBag(
         info = RequestDisplayBagInfo(
-          externalIdentifier = createExternalIdentifier,
-          ontologyType = "BagInfo"
-        ),
-        ontologyType = "Bag"
+          externalIdentifier = createExternalIdentifier.underlying
+        )
       ),
       space = space
     )

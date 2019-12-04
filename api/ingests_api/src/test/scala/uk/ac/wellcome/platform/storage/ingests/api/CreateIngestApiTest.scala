@@ -172,6 +172,31 @@ class CreateIngestApiTest
     }
   }
 
+  it("creates an ingest with a slash in the external identifier") {
+    withConfiguredApp() { case (_, _, _, baseUrl) =>
+      val url = s"$baseUrl/ingests"
+
+      val externalIdentifier = ExternalIdentifier("PP/MIA/1")
+
+      val entity = createRequestWith(
+        externalIdentifier = externalIdentifier
+      )
+
+      whenPostRequestReady(url, entity) { response: HttpResponse =>
+        response.status shouldBe StatusCodes.Created
+
+        val ingestFuture =
+          withMaterializer { implicit materializer =>
+            Unmarshal(response.entity).to[ResponseDisplayIngest]
+          }
+
+        whenReady(ingestFuture) {
+          _.bag.info.externalIdentifier shouldBe externalIdentifier
+        }
+      }
+    }
+  }
+
   describe("returns a 400 error for malformed requests") {
     val json = createRequestJson
 
@@ -249,6 +274,18 @@ class CreateIngestApiTest
             "Invalid value at .space.id: must not contain slashes."
         )
       }
+
+      it("if the space is empty") {
+        val badJson = root.space.obj.modify {
+          _.add("id", Json.fromString(""))
+        }
+
+        assertCatchesMalformedRequest(
+          badJson(json).noSpaces,
+          expectedMessage =
+            "Invalid value at .space.id: must not be empty."
+        )
+      }
     }
 
     describe("problems with the bag") {
@@ -288,15 +325,15 @@ class CreateIngestApiTest
         )
       }
 
-      it("if the info.externalIdentifier field contains a slash") {
+      it("if the info.externalIdentifier field is empty") {
         val badJson = root.bag.info.obj.modify {
-          _.add("externalIdentifier", Json.fromString("alfa/bravo"))
+          _.add("externalIdentifier", Json.fromString(""))
         }
 
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
           expectedMessage =
-            "Invalid value at .bag.info.externalIdentifier: must not contain slashes."
+            "Invalid value at .bag.info.externalIdentifier: must not be empty."
         )
       }
     }

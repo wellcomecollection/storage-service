@@ -4,7 +4,7 @@ import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 
 case class RequestDisplayBagInfo(
-  externalIdentifier: ExternalIdentifier,
+  externalIdentifier: String,
   @JsonKey("type") ontologyType: String = "BagInfo"
 )
 

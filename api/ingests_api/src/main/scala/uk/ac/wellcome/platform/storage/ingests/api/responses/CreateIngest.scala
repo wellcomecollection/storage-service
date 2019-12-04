@@ -25,37 +25,29 @@ trait CreateIngest extends ResponseBase with Logging {
   val httpServerConfig: HTTPServerConfig
   val ingestStarter: IngestStarter[_]
 
-  def createIngest(requestDisplayIngest: RequestDisplayIngest): Route =
-    // We disallow slashes for space/external identifier.
-    //
-    // In theory there's nothing that means we can't support it, but it's liable
-    // to cause a bunch of issues (e.g. when we build S3 paths, a slash is a
-    // path separator).  If there's a pressing need, we can go through and check
-    // the pipeline handles slashes correctly -- e.g. URL encoding them where
-    // necessary, ensuring they can't clash -- but for now, we just stop them
-    // ever entering the pipeline.
-    //
-    if (requestDisplayIngest.space.id.contains("/")) {
-      complete(
-        StatusCodes.BadRequest -> UserErrorResponse(
-          contextURL,
-          statusCode = StatusCodes.BadRequest,
-          description = "Invalid value at .space.id: must not contain slashes."
-        )
-      )
-    } else if (requestDisplayIngest.bag.info.externalIdentifier.underlying
-                 .contains("/")) {
-      complete(
-        StatusCodes.BadRequest -> UserErrorResponse(
-          contextURL,
-          statusCode = StatusCodes.BadRequest,
-          description =
-            "Invalid value at .bag.info.externalIdentifier: must not contain slashes."
-        )
-      )
+  def createIngest(requestDisplayIngest: RequestDisplayIngest): Route = {
+    val space = requestDisplayIngest.space.id
+    val externalIdentifier = requestDisplayIngest.bag.info.externalIdentifier
+
+    if (space.contains("/")) {
+      createBadRequestResponse("Invalid value at .space.id: must not contain slashes.")
+    } else if (space == "") {
+      createBadRequestResponse("Invalid value at .space.id: must not be empty.")
+    } else if (externalIdentifier == "") {
+      createBadRequestResponse("Invalid value at .bag.info.externalIdentifier: must not be empty.")
     } else {
       triggerIngestStarter(requestDisplayIngest)
     }
+  }
+
+  private def createBadRequestResponse(description: String): Route =
+    complete(
+      StatusCodes.BadRequest -> UserErrorResponse(
+        contextURL,
+        statusCode = StatusCodes.BadRequest,
+        description = description
+      )
+    )
 
   private def triggerIngestStarter(
     requestDisplayIngest: RequestDisplayIngest
