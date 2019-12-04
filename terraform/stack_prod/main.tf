@@ -13,7 +13,7 @@ module "stack_prod" {
   domain_name      = local.domain_name
   cert_domain_name = local.cert_domain_name
 
-  min_capacity = 1
+  min_capacity = 0
   max_capacity = 10
 
   vpc_id = local.vpc_id

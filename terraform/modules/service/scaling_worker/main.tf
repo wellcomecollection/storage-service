@@ -28,7 +28,7 @@ module "worker" {
 module "scaling" {
   source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//autoscaling?ref=v1.1.0"
 
-  name   = var.service_name
+  name = var.service_name
 
   cluster_name = var.cluster_name
   service_name = var.service_name

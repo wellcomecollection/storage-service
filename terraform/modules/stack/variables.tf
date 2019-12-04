@@ -94,8 +94,6 @@ variable "versioner_versions_table_name" {
 variable "versioner_versions_table_index" {
 }
 
-# The number of api tasks MUST be one per AZ.  This is due to the behaviour of
-# NLBs that seem to increase latency significantly if number of tasks < number of AZs.
 variable "desired_bags_api_count" {
   default = 3
 }
@@ -107,9 +105,5 @@ variable "desired_ingests_api_count" {
 variable "archivematica_ingests_bucket" {
 }
 
-variable "min_capacity" {
-}
-
-variable "max_capacity" {
-}
-
+variable "min_capacity" {}
+variable "max_capacity" {}
