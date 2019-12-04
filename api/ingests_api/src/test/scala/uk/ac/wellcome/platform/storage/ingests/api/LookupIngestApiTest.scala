@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
   *
   */
 class LookupIngestApiTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with IngestsApiFixture
     with IntegrationPatience

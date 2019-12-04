@@ -8,9 +8,15 @@ import akka.http.scaladsl.server.Route
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.http.models.{InternalServerErrorResponse, UserErrorResponse}
+import uk.ac.wellcome.platform.archive.common.http.models.{
+  InternalServerErrorResponse,
+  UserErrorResponse
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestDoesNotExistError, IngestTracker}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestDoesNotExistError,
+  IngestTracker
+}
 import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
 
 trait LookupIngest extends ResponseBase with Logging {
