@@ -30,11 +30,15 @@ trait CreateIngest extends ResponseBase with Logging {
     val externalIdentifier = requestDisplayIngest.bag.info.externalIdentifier
 
     if (space.contains("/")) {
-      createBadRequestResponse("Invalid value at .space.id: must not contain slashes.")
+      createBadRequestResponse(
+        "Invalid value at .space.id: must not contain slashes."
+      )
     } else if (space == "") {
       createBadRequestResponse("Invalid value at .space.id: must not be empty.")
     } else if (externalIdentifier == "") {
-      createBadRequestResponse("Invalid value at .bag.info.externalIdentifier: must not be empty.")
+      createBadRequestResponse(
+        "Invalid value at .bag.info.externalIdentifier: must not be empty."
+      )
     } else {
       triggerIngestStarter(requestDisplayIngest)
     }

@@ -173,27 +173,28 @@ class CreateIngestApiTest
   }
 
   it("creates an ingest with a slash in the external identifier") {
-    withConfiguredApp() { case (_, _, _, baseUrl) =>
-      val url = s"$baseUrl/ingests"
+    withConfiguredApp() {
+      case (_, _, _, baseUrl) =>
+        val url = s"$baseUrl/ingests"
 
-      val externalIdentifier = ExternalIdentifier("PP/MIA/1")
+        val externalIdentifier = ExternalIdentifier("PP/MIA/1")
 
-      val entity = createRequestWith(
-        externalIdentifier = externalIdentifier
-      )
+        val entity = createRequestWith(
+          externalIdentifier = externalIdentifier
+        )
 
-      whenPostRequestReady(url, entity) { response: HttpResponse =>
-        response.status shouldBe StatusCodes.Created
+        whenPostRequestReady(url, entity) { response: HttpResponse =>
+          response.status shouldBe StatusCodes.Created
 
-        val ingestFuture =
-          withMaterializer { implicit materializer =>
-            Unmarshal(response.entity).to[ResponseDisplayIngest]
+          val ingestFuture =
+            withMaterializer { implicit materializer =>
+              Unmarshal(response.entity).to[ResponseDisplayIngest]
+            }
+
+          whenReady(ingestFuture) {
+            _.bag.info.externalIdentifier shouldBe externalIdentifier
           }
-
-        whenReady(ingestFuture) {
-          _.bag.info.externalIdentifier shouldBe externalIdentifier
         }
-      }
     }
   }
 
@@ -282,8 +283,7 @@ class CreateIngestApiTest
 
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
-          expectedMessage =
-            "Invalid value at .space.id: must not be empty."
+          expectedMessage = "Invalid value at .space.id: must not be empty."
         )
       }
     }
