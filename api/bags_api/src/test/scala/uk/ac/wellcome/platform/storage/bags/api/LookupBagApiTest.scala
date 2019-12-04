@@ -8,7 +8,10 @@ import io.circe.optics.JsonPath.root
 import io.circe.parser.parse
 import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   StorageManifestGenerators
@@ -133,6 +136,71 @@ class LookupBagApiTest
               metrics,
               result = HttpMetricResults.Success
             )
+          }
+        }
+    }
+  }
+
+  val storageManifestWithSlash: StorageManifest = createStorageManifestWith(
+    bagInfo = createBagInfoWith(
+      externalIdentifier = ExternalIdentifier("alfa/bravo")
+    )
+  )
+
+  it("finds a bag with a slash in the external identifier (URL-encoded)") {
+    withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
+      case (_, _, baseUrl) =>
+        val url =
+          s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa%2Fbravo"
+
+        whenGetRequestReady(url) { response =>
+          response.status shouldBe StatusCodes.OK
+
+          withStringEntity(response.entity) {
+            assertJsonMatches(_, storageManifestWithSlash)
+          }
+        }
+    }
+  }
+
+  it("finds a bag with a slash in the external identifier (not URL-encoded)") {
+    withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
+      case (_, _, baseUrl) =>
+        val url =
+          s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa/bravo"
+
+        whenGetRequestReady(url) { response =>
+          response.status shouldBe StatusCodes.OK
+
+          withStringEntity(response.entity) {
+            assertJsonMatches(_, storageManifestWithSlash)
+          }
+        }
+    }
+  }
+
+  // Creating a bag whose external identifier ends with /versions seems unlikely
+  // in practice, but we should be able to support it if you correctly URL-encode
+  // the slash.
+  //
+  // (Do not create bags like this.  It is silly.)
+  it("finds a bag whose identifier ends with /versions") {
+    val storageManifest = createStorageManifestWith(
+      bagInfo = createBagInfoWith(
+        externalIdentifier = ExternalIdentifier("alfa/versions")
+      )
+    )
+
+    withConfiguredApp(initialManifests = Seq(storageManifest)) {
+      case (_, _, baseUrl) =>
+        val url =
+          s"$baseUrl/bags/${storageManifest.id.space.underlying}/alfa%2Fversions"
+
+        whenGetRequestReady(url) { response =>
+          response.status shouldBe StatusCodes.OK
+
+          withStringEntity(response.entity) {
+            assertJsonMatches(_, storageManifest)
           }
         }
     }
