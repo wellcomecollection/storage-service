@@ -3,10 +3,25 @@ package uk.ac.wellcome.platform.archive.common.storage.models
 import org.scanamo.DynamoFormat
 import io.circe.{Decoder, Encoder, HCursor, Json}
 
-case class StorageSpace(underlying: String) {
+class StorageSpace(val underlying: String) {
   override def toString: String = underlying
 
   require(!underlying.isEmpty, "Storage space cannot be empty")
+
+  // Normally we use case classes for immutable data, which provide these
+  // methods for us.
+  //
+  // We deliberately don't use case classes here so we skip automatic
+  // case class derivation for JSON encoding/DynamoDB in Scanamo,
+  // and force callers to use the implicits below.
+  def canEqual(a: Any): Boolean = a.isInstanceOf[StorageSpace]
+
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: StorageSpace =>
+        that.canEqual(this) && this.underlying == that.underlying
+      case _ => false
+    }
 
   // At various points in the pipeline, we combine the storage space and
   // the external identifier into a bag ID, for example:
@@ -34,6 +49,9 @@ case class StorageSpace(underlying: String) {
 }
 
 object StorageSpace {
+  def apply(underlying: String): StorageSpace =
+    new StorageSpace(underlying)
+
   implicit val encoder: Encoder[StorageSpace] = (value: StorageSpace) =>
     Json.fromString(value.toString)
 
