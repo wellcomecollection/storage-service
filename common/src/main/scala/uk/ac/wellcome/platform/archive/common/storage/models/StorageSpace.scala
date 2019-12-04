@@ -23,6 +23,8 @@ class StorageSpace(val underlying: String) {
       case _ => false
     }
 
+  override def hashCode: Int = underlying.hashCode
+
   // At various points in the pipeline, we combine the storage space and
   // the external identifier into a bag ID, for example:
   //

@@ -22,6 +22,8 @@ class ExternalIdentifier(val underlying: String) {
         that.canEqual(this) && this.underlying == that.underlying
       case _ => false
     }
+
+  override def hashCode: Int = underlying.hashCode
 }
 
 object ExternalIdentifier {
