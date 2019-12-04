@@ -59,7 +59,7 @@ object StorageSpace {
     cursor.value.as[String].map(StorageSpace(_))
 
   implicit def evidence: DynamoFormat[StorageSpace] =
-    DynamoFormat.iso[StorageSpace, String](
+    DynamoFormat.coercedXmap[StorageSpace, String, IllegalArgumentException](
       StorageSpace(_)
     )(
       _.underlying
