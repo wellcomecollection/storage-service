@@ -4,9 +4,11 @@ import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import org.scanamo.auto._
 import org.scanamo.{Table => ScanamoTable}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.models.dynamo.DynamoID
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestDao,
   StorageManifestDaoTestCases
@@ -40,10 +42,18 @@ class DynamoStorageManifestDaoTest
   }
 
   it("encodes the bag ID as a string to use as a table key") {
+    val space = StorageSpace("abc")
+    val externalIdentifier = ExternalIdentifier("123")
+
+    val bagId = BagId(
+      space = space,
+      externalIdentifier = externalIdentifier
+    )
+
     val storageManifest = createStorageManifestWith(
-      space = StorageSpace("abc"),
+      space = space,
       bagInfo = createBagInfoWith(
-        externalIdentifier = ExternalIdentifier("123")
+        externalIdentifier = externalIdentifier
       )
     )
 
@@ -61,7 +71,47 @@ class DynamoStorageManifestDaoTest
             .map { _.right.value }
             .map { _.id }
 
-          storedIdentifiers shouldBe Seq("abc:123")
+          storedIdentifiers shouldBe Seq("abc/123")
+
+          dao.get(bagId, version = storageManifest.version).right.value shouldBe storageManifest
+        }
+      }
+    }
+  }
+
+  it("allows using slashes in the external ID as a table key") {
+    val space = StorageSpace("born-digital")
+    val externalIdentifier = ExternalIdentifier("PP/MIA/1")
+
+    val bagId = BagId(
+      space = space,
+      externalIdentifier = externalIdentifier
+    )
+
+    val storageManifest = createStorageManifestWith(
+      space = space,
+      bagInfo = createBagInfoWith(
+        externalIdentifier = externalIdentifier
+      )
+    )
+
+    withLocalDynamoDbTable { table =>
+      withLocalS3Bucket { bucket =>
+        implicit val context: (Table, Bucket) = (table, bucket)
+
+        withDao { dao =>
+          dao.put(storageManifest) shouldBe a[Right[_, _]]
+
+          case class Identified(id: String)
+
+          val storedIdentifiers = scanamo
+            .exec(ScanamoTable[Identified](table.name).scan())
+            .map { _.right.value }
+            .map { _.id }
+
+          storedIdentifiers shouldBe Seq("born-digital/PP/MIA/1")
+
+          dao.get(bagId, version = storageManifest.version).right.value shouldBe storageManifest
         }
       }
     }
@@ -77,7 +127,7 @@ class DynamoStorageManifestDaoTest
         scanamo.exec(
           ScanamoTable[BadRow](table.name).put(
             BadRow(
-              id = DynamoID.createId(bagId.space, bagId.externalIdentifier),
+              id = bagId.toString,
               version = randomInt(0, 100),
               data = randomAlphanumeric
             )

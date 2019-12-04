@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
+import org.scanamo.DynamoFormat
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 case class BagId(
@@ -27,4 +28,11 @@ case object BagId {
       case _ =>
         throw new IllegalArgumentException(s"Cannot create bag ID from $value")
     }
+
+  implicit def evidence: DynamoFormat[BagId] =
+    DynamoFormat.coercedXmap[BagId, String, IllegalArgumentException](
+      BagId(_)
+    )(
+      _.toString
+    )
 }

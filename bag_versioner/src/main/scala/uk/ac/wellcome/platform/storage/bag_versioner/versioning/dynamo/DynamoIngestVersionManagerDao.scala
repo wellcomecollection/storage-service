@@ -4,11 +4,13 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import org.scanamo.auto._
 import org.scanamo.syntax._
 import org.scanamo.{DynamoFormat, Scanamo, Table => ScanamoTable}
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.models.dynamo.DynamoID
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManagerDao,
   VersionRecord
@@ -23,7 +25,7 @@ class DynamoIngestVersionManagerDao(
   dynamoClient: AmazonDynamoDB,
   dynamoConfig: DynamoConfig
 )(
-  implicit formatString: DynamoFormat[String],
+  implicit
   formatInt: DynamoFormat[Int],
   formatVersionRecord: DynamoFormat[DynamoVersionRecord]
 ) extends IngestVersionManagerDao {
@@ -32,9 +34,9 @@ class DynamoIngestVersionManagerDao(
     ScanamoTable[DynamoVersionRecord](dynamoConfig.tableName)
   private val index = scanamoTable.index(dynamoConfig.indexName)
 
-  val maxima = new DynamoHashRangeMaxima[String, Int, DynamoVersionRecord] {
-    override protected implicit val formatHashKey: DynamoFormat[String] =
-      formatString
+  val maxima = new DynamoHashRangeMaxima[BagId, Int, DynamoVersionRecord] {
+    override protected implicit val formatHashKey: DynamoFormat[BagId] =
+      BagId.evidence
     override protected implicit val formatRangeKey: DynamoFormat[Int] =
       formatInt
     override protected implicit val format: DynamoFormat[DynamoVersionRecord] =
@@ -52,7 +54,7 @@ class DynamoIngestVersionManagerDao(
 
     Try { Scanamo(dynamoClient).exec(ops) } match {
       case Success(List(Right(record))) =>
-        record.toVersionRecord.map { Some(_) }
+        Success(Some(record.toVersionRecord))
       case Success(Nil) => Success(None)
       case Success(result) =>
         Failure(
@@ -69,17 +71,17 @@ class DynamoIngestVersionManagerDao(
     externalIdentifier: ExternalIdentifier,
     storageSpace: StorageSpace
   ): Either[MaximaError, VersionRecord] = {
-    val id = DynamoID.createId(
-      storageSpace = storageSpace,
+    val bagId = BagId(
+      space = storageSpace,
       externalIdentifier = externalIdentifier
     )
 
     // TODO Because the maxima only returns the version and not the full entry,
     // we go back and make a second GET.  This is daft and we need to sort out
     // the maxima, hence doing this in an icky way.
-    maxima.max(id).map { maxVersion =>
-      val ops = scanamoTable.get('id -> id and 'version -> maxVersion)
-      Scanamo(dynamoClient).exec(ops).get.right.get.toVersionRecord.get
+    maxima.max(bagId).map { maxVersion =>
+      val ops = scanamoTable.get('id -> bagId and 'version -> maxVersion)
+      Scanamo(dynamoClient).exec(ops).get.right.get.toVersionRecord
     }
   }
 
