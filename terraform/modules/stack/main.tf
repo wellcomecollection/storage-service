@@ -464,7 +464,10 @@ module "api" {
   interservice_security_group_id = aws_security_group.interservice.id
   alarm_topic_arn                = var.alarm_topic_arn
   bag_unpacker_topic_arn         = module.bag_unpacker_input_topic.arn
-  desired_bags_api_count         = var.desired_bags_api_count
-  desired_ingests_api_count      = var.desired_ingests_api_count
+
+  # The number of API tasks MUST be one per AZ.  This is due to the behaviour of
+  # NLBs that seem to increase latency significantly if number of tasks < number of AZs.
+  desired_bags_api_count    = max(3, var.desired_bags_api_count)
+  desired_ingests_api_count = max(3, var.desired_ingests_api_count)
 }
 
