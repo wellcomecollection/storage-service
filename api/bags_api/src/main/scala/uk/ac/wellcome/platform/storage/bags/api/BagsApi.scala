@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.LargeResponses
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.storage.bags.api.lookups.{
+import uk.ac.wellcome.platform.storage.bags.api.responses.{
   LookupBag,
   LookupBagVersions
 }
