@@ -122,7 +122,7 @@ class DynamoIngestTrackerTest
     }
 
   // TODO: Add tests for handling DynamoDB errors
-  
+
   override protected def assertIngestsEqual(
     ingest1: Ingest,
     ingest2: Ingest

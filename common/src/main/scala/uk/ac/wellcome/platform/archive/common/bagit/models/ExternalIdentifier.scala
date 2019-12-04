@@ -35,9 +35,10 @@ object ExternalIdentifier {
     cursor.value.as[String].map(ExternalIdentifier(_))
 
   implicit def evidence: DynamoFormat[ExternalIdentifier] =
-    DynamoFormat.coercedXmap[ExternalIdentifier, String, IllegalArgumentException](
-      ExternalIdentifier(_)
-    )(
-      _.underlying
-    )
+    DynamoFormat
+      .coercedXmap[ExternalIdentifier, String, IllegalArgumentException](
+        ExternalIdentifier(_)
+      )(
+        _.underlying
+      )
 }

@@ -12,7 +12,9 @@ class StorageSpaceTest extends FunSpec with Matchers {
       StorageSpace("alfa/bravo")
     }
 
-    err.getMessage should startWith("requirement failed: Storage space cannot contain slashes")
+    err.getMessage should startWith(
+      "requirement failed: Storage space cannot contain slashes"
+    )
   }
 
   it("blocks creating a storage space with an empty string") {
