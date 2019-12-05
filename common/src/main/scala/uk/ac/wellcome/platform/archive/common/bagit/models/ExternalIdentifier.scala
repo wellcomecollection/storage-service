@@ -14,7 +14,10 @@ class ExternalIdentifier(val underlying: String) {
   //
   // To avoid ambiguity, block callers from creating an identifier that
   // ends with /versions.
-  require(!underlying.endsWith("/versions"), "External identifier cannot end with /versions")
+  require(
+    !underlying.endsWith("/versions"),
+    "External identifier cannot end with /versions"
+  )
 
   // When we store a bag in S3, we store different versions of it under the key
   //
@@ -46,9 +49,18 @@ class ExternalIdentifier(val underlying: String) {
   //
   // The S3 Console is liable to do weird things if you have a double slash in
   // the key, so prevent people from putting slashes at the beginning or end.
-  require(!underlying.startsWith("/"), "External identifier cannot start with a slash")
-  require(!underlying.endsWith("/"), "External identifier cannot end with a slash")
-  require(!underlying.contains("//"), "External identifier cannot contain consecutive slashes")
+  require(
+    !underlying.startsWith("/"),
+    "External identifier cannot start with a slash"
+  )
+  require(
+    !underlying.endsWith("/"),
+    "External identifier cannot end with a slash"
+  )
+  require(
+    !underlying.contains("//"),
+    "External identifier cannot contain consecutive slashes"
+  )
 
   // Normally we use case classes for immutable data, which provide these
   // methods for us.

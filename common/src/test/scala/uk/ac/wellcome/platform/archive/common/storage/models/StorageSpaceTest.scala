@@ -43,7 +43,10 @@ class StorageSpaceTest extends FunSpec with Matchers {
     )
   }
 
-  private def assertFailsRequirement(space: String, message: String): Assertion = {
+  private def assertFailsRequirement(
+    space: String,
+    message: String
+  ): Assertion = {
     val err = intercept[IllegalArgumentException] {
       StorageSpace(space)
     }

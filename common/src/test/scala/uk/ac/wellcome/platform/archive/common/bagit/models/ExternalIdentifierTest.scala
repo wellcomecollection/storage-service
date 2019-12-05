@@ -71,7 +71,10 @@ class ExternalIdentifierTest extends FunSpec with Matchers {
     )
   }
 
-  private def assertFailsRequirement(identifier: String, message: String): Assertion = {
+  private def assertFailsRequirement(
+    identifier: String,
+    message: String
+  ): Assertion = {
     val err = intercept[IllegalArgumentException] {
       ExternalIdentifier(identifier)
     }
