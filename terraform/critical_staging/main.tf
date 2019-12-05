@@ -15,11 +15,6 @@ module "critical" {
     "arn:aws:iam::653428163053:user/echo-fs",
   ]
 
-  replica_glacier_read_principals = [
-    local.archivematica_task_role_arn,
-    local.digitisation_account_principal,
-    local.goobi_task_role_arn,
-    local.workflow_account_principal,
-  ]
+  replica_glacier_read_principals = []
 }
 
