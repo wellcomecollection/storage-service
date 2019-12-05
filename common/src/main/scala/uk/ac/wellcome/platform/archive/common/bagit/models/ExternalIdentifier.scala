@@ -48,6 +48,7 @@ class ExternalIdentifier(val underlying: String) {
   // the key, so prevent people from putting slashes at the beginning or end.
   require(!underlying.startsWith("/"), "External identifier cannot start with a slash")
   require(!underlying.endsWith("/"), "External identifier cannot end with a slash")
+  require(!underlying.contains("//"), "External identifier cannot contain consecutive slashes")
 
   // Normally we use case classes for immutable data, which provide these
   // methods for us.

@@ -30,6 +30,13 @@ class ExternalIdentifierTest extends FunSpec with Matchers {
     )
   }
 
+  it("blocks creating an external identifier with consecutive slashes") {
+    assertFailsRequirement(
+      identifier = "PP//MIA",
+      message = "External identifier cannot contain consecutive slashes"
+    )
+  }
+
   it("blocks creating an external identifier that ends with /versions") {
     assertFailsRequirement(
       identifier = "b12345678/versions",
