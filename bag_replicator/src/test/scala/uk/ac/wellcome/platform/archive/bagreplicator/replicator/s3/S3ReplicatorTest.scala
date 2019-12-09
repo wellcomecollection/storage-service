@@ -68,8 +68,10 @@ class S3ReplicatorTest
         contents
       )
 
-      val srcPrefix = ObjectLocationPrefix(namespace = bucket.name, path = "src/")
-      val dstPrefix = ObjectLocationPrefix(namespace = bucket.name, path = "dst/")
+      val srcPrefix =
+        ObjectLocationPrefix(namespace = bucket.name, path = "src/")
+      val dstPrefix =
+        ObjectLocationPrefix(namespace = bucket.name, path = "dst/")
 
       val result = new S3Replicator().replicate(
         ingestId = createIngestID,
