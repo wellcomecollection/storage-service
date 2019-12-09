@@ -32,6 +32,14 @@ module "ingests_input_queue" {
     module.ingests.task_role_name,
   ]
 
+  queue_high_actions = [
+    module.ingests.scale_up_arn,
+  ]
+
+  queue_low_actions = [
+    module.ingests.scale_down_arn,
+  ]
+
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 
@@ -60,6 +68,14 @@ module "notifier_input_queue" {
   topic_arns = [module.ingests_output_topic.arn]
 
   role_names = [module.notifier.task_role_name]
+
+  queue_high_actions = [
+    module.notifier.scale_up_arn,
+  ]
+
+  queue_low_actions = [
+    module.notifier.scale_down_arn,
+  ]
 
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
