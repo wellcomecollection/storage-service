@@ -81,7 +81,7 @@ class BagVerifierFeatureTest
     }
   }
 
-  it("deletes the message if the bag has incorrect checksum values") {
+  it("deletes the message if the bag has the wrong Payload-Oxum") {
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
@@ -129,7 +129,7 @@ class BagVerifierFeatureTest
                       .asInstanceOf[IngestStatusUpdate]
                   ingestFailed.status shouldBe Ingest.Failed
                   ingestFailed.events.head.description should startWith(
-                    "Verification failed"
+                    "Verification failed - Payload-Oxum has the wrong number of payload files"
                   )
               }
 
