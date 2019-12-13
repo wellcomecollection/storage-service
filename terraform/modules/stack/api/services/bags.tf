@@ -28,14 +28,11 @@ module "bags" {
   lb_arn        = var.nlb_arn
   listener_port = var.bags_listener_port
 
-  cpu    = 2048
-  memory = 4096
-
-  sidecar_cpu    = 1024
+  sidecar_cpu    = 128
   sidecar_memory = 256
 
-  app_cpu    = 1024
-  app_memory = 3840
+  app_cpu    = 896
+  app_memory = 1792
 
   desired_task_count = var.desired_bags_api_count
 }

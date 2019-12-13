@@ -40,8 +40,8 @@ module "task_definition" {
     APP_PORT = var.container_port
   }
 
-  cpu    = var.cpu
-  memory = var.memory
+  cpu    = var.app_cpu + var.sidecar_cpu
+  memory = var.app_memory + var.sidecar_memory
 
   sidecar_cpu    = var.sidecar_cpu
   sidecar_memory = var.sidecar_memory

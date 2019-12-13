@@ -28,14 +28,11 @@ module "ingests" {
   lb_arn        = var.nlb_arn
   listener_port = var.ingests_listener_port
 
-  cpu    = 2048
-  memory = 4096
+  sidecar_cpu    = 128
+  sidecar_memory = 256
 
-  sidecar_cpu    = 1024
-  sidecar_memory = 2048
-
-  app_cpu    = 1024
-  app_memory = 2048
+  app_cpu    = 896
+  app_memory = 1792
 
   desired_task_count = var.desired_ingests_api_count
 }

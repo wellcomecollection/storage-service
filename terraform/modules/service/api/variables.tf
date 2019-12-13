@@ -40,28 +40,20 @@ variable "lb_arn" {
 variable "listener_port" {
 }
 
-variable "cpu" {
-  default = 1024
-}
-
-variable "memory" {
-  default = 2048
-}
-
 variable "sidecar_cpu" {
-  default = "512"
+  default = 512
 }
 
 variable "sidecar_memory" {
-  default = "1024"
+  default = 1024
 }
 
 variable "app_cpu" {
-  default = "512"
+  default = 512
 }
 
 variable "app_memory" {
-  default = "1024"
+  default = 1024
 }
 
 variable "aws_region" {
