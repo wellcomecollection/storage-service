@@ -160,7 +160,7 @@ data "aws_iam_policy_document" "register_output_subscribe" {
       variable = "AWS:SourceOwner"
 
       values = [
-        "${data.aws_caller_identity.current.account_id}",
+        data.aws_caller_identity.current.account_id,
       ]
     }
 
