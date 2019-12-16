@@ -107,3 +107,7 @@ variable "archivematica_ingests_bucket" {
 
 variable "min_capacity" {}
 variable "max_capacity" {}
+
+variable "register_output_subscribe_principals" {
+  type = "list"
+}

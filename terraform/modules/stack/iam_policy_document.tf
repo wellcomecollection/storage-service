@@ -133,3 +133,17 @@ data "aws_iam_policy_document" "archivematica_ingests_get" {
     ]
   }
 }
+
+data "aws_iam_policy_document" "register_output_subscribe" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "sns:Subscribe"
+    ]
+    resources = ["${module.bag_register_output_topic.arn}"]
+    principals {
+      identifiers = "${var.register_output_subscribe_principals}"
+      type = "AWS"
+    }
+  }
+}
