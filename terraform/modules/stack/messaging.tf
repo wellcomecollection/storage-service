@@ -315,6 +315,12 @@ module "bag_register_output_topic" {
   ]
 }
 
+resource "aws_sns_topic_policy" "bag_register_topic_subscribe_policy" {
+  arn = module.bag_register_output_topic.arn
+
+  policy = data.aws_iam_policy_document.bag_register_output_subscribe.json
+}
+
 module "bag_register_output_queue" {
   source = "../queue"
 
