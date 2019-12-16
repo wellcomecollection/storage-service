@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 data "aws_iam_policy_document" "table_ingests_readwrite" {
   statement {
     actions = [
@@ -134,7 +136,48 @@ data "aws_iam_policy_document" "archivematica_ingests_get" {
   }
 }
 
+// This is the default policy that gets added to a topic when no policy is supplied
+// plus the statement that allows other principals to subscribe to this topic
 data "aws_iam_policy_document" "register_output_subscribe" {
+  policy_id = "__default_policy_ID"
+
+  // default permissions copied from https://www.terraform.io/docs/providers/aws/r/sns_topic_policy.html
+  statement {
+    actions = [
+      "SNS:Subscribe",
+      "SNS:SetTopicAttributes",
+      "SNS:RemovePermission",
+      "SNS:Receive",
+      "SNS:Publish",
+      "SNS:ListSubscriptionsByTopic",
+      "SNS:GetTopicAttributes",
+      "SNS:DeleteTopic",
+      "SNS:AddPermission",
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceOwner"
+
+      values = [
+        "${data.aws_caller_identity.current.account_id}",
+      ]
+    }
+
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    resources = [
+      "${module.bag_register_output_topic.arn}",
+    ]
+
+    sid = "__default_statement_ID"
+  }
+  // allow subscription to other principals
   statement {
     effect = "Allow"
     actions = [
