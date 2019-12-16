@@ -138,7 +138,7 @@ data "aws_iam_policy_document" "archivematica_ingests_get" {
 
 // This is the default policy that gets added to a topic when no policy is supplied
 // plus the statement that allows other principals to subscribe to this topic
-data "aws_iam_policy_document" "register_output_subscribe" {
+data "aws_iam_policy_document" "bag_register_output_subscribe" {
   policy_id = "__default_policy_ID"
 
   // default permissions copied from https://www.terraform.io/docs/providers/aws/r/sns_topic_policy.html
@@ -185,7 +185,7 @@ data "aws_iam_policy_document" "register_output_subscribe" {
     ]
     resources = ["${module.bag_register_output_topic.arn}"]
     principals {
-      identifiers = "${var.register_output_subscribe_principals}"
+      identifiers = "${var.bag_register_output_subscribe_principals}"
       type = "AWS"
     }
   }
