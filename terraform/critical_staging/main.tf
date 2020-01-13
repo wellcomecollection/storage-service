@@ -9,10 +9,10 @@ module "critical" {
     local.digitisation_mediaconvert_role_arn,
     local.goobi_task_role_arn,
 
-    "${local.shell_server_1_task_role}",
-    "${local.shell_server_2_task_role}",
-    "${local.shell_server_3_task_role}",
-    "${local.shell_server_4_task_role}",
+    local.shell_server_1_task_role,
+    local.shell_server_2_task_role,
+    local.shell_server_3_task_role,
+    local.shell_server_4_task_role,
 
     local.workflow_account_principal,
     local.catalogue_pipeline_task_role_arn,

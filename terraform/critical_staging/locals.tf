@@ -3,10 +3,10 @@ locals {
 
   goobi_task_role_arn         = "arn:aws:iam::299497370133:role/goobi_task_role"
 
-  shell_server_1_task_role = arn:aws:iam::299497370133:role/shell_server_1_task_role
-  shell_server_2_task_role = arn:aws:iam::299497370133:role/shell_server_2_task_role
-  shell_server_3_task_role = arn:aws:iam::299497370133:role/shell_server_3_task_role
-  shell_server_4_task_role = arn:aws:iam::299497370133:role/shell_server_4_task_role
+  shell_server_1_task_role = "arn:aws:iam::299497370133:role/shell_server_1_task_role"
+  shell_server_2_task_role = "arn:aws:iam::299497370133:role/shell_server_2_task_role"
+  shell_server_3_task_role = "arn:aws:iam::299497370133:role/shell_server_3_task_role"
+  shell_server_4_task_role = "arn:aws:iam::299497370133:role/shell_server_4_task_role"
 
   archivematica_task_role_arn = "arn:aws:iam::299497370133:role/am-storage-service_task_role"
 
