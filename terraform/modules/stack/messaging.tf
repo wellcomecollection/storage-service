@@ -315,10 +315,13 @@ module "bag_register_output_topic" {
   ]
 }
 
-resource "aws_sns_topic_policy" "bag_register_topic_subscribe_policy" {
-  arn = module.bag_register_output_topic.arn
+resource "aws_sns_topic_policy" "bag_register_output_topic_cross_account_subscription" {
+  # We only need to create a policy that allows subscriptions to this topic
+  # if there are other accounts that need access.
+  count = length(var.bag_register_output_subscribe_principals) > 0 ? 1 : 0
 
-  policy = data.aws_iam_policy_document.bag_register_output_subscribe.json
+  arn    = module.bag_register_output_topic.arn
+  policy = data.aws_iam_policy_document.bag_register_output_cross_account_subscription.json
 }
 
 module "bag_register_output_queue" {

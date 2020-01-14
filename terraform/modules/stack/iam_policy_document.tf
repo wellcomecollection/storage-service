@@ -136,12 +136,16 @@ data "aws_iam_policy_document" "archivematica_ingests_get" {
   }
 }
 
-// This is the default policy that gets added to a topic when no policy is supplied
-// plus the statement that allows other principals to subscribe to this topic
-data "aws_iam_policy_document" "bag_register_output_subscribe" {
+# This policy document is specifically to allow subscription across account
+# boundaries.  It will only be used if there is a non-empty list of other
+# account principals to grant access to.
+data "aws_iam_policy_document" "bag_register_output_cross_account_subscription" {
   policy_id = "__default_policy_ID"
 
-  // default permissions copied from https://www.terraform.io/docs/providers/aws/r/sns_topic_policy.html
+  # This is the default policy that gets added to a topic when no policy is supplied
+  # plus the statement that allows other principals to subscribe to this topic
+  #
+  # default permissions copied from https://www.terraform.io/docs/providers/aws/r/sns_topic_policy.html
   statement {
     actions = [
       "SNS:Subscribe",
@@ -177,16 +181,20 @@ data "aws_iam_policy_document" "bag_register_output_subscribe" {
 
     sid = "__default_statement_ID"
   }
-  // allow subscription to other principals
+
+  # Allow subscription by other principals
   statement {
     effect = "Allow"
+
     actions = [
       "sns:Subscribe"
     ]
-    resources = ["${module.bag_register_output_topic.arn}"]
+
+    resources = [module.bag_register_output_topic.arn]
+
     principals {
-      identifiers = "${var.bag_register_output_subscribe_principals}"
-      type = "AWS"
+      identifiers = var.bag_register_output_subscribe_principals
+      type        = "AWS"
     }
   }
 }
