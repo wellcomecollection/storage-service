@@ -17,7 +17,6 @@ object BagLocationBuilder {
       namespace = unpackerWorkerConfig.dstNamespace,
       path = Paths
         .get(
-          unpackerWorkerConfig.maybeDstPrefix.getOrElse(""),
           storageSpace.toString,
           ingestId.toString
         )
