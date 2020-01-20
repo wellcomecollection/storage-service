@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 import functools
 import hashlib
 import json
@@ -10,6 +11,9 @@ import termcolor
 
 import tqdm
 from wellcome_storage_service import StorageServiceClient
+
+
+NOW = datetime.datetime.now().isoformat().replace(":", "_")
 
 
 def get_alto_paths(root):
@@ -76,7 +80,7 @@ def warn(s):
 
 
 def log_event(s):
-    with open("alto_cleanup.log", "a") as out_file:
+    with open(f"alto_cleanup_{NOW}.log", "a") as out_file:
         out_file.write(s.rstrip() + "\n")
 
 
@@ -123,3 +127,4 @@ if __name__ == "__main__":
 
         # Uncomment the following line to actually run the deletions:
         # os.unlink(alto_path)
+        # break
