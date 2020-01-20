@@ -108,22 +108,23 @@ if __name__ == "__main__":
             warn(f"Unable to find file in storage manifest for {alto_path!r}")
             continue
 
-
         if size(alto_path) != matching_file["size"]:
             warn(
-                f"Sizes don't match:\nPath       = %s\nMETS share = %10d\nStorage    = %10d" %
-                (alto_path, size(alto_path), matching_file["size"])
+                f"Sizes don't match:\nPath       = %s\nMETS share = %10d\nStorage    = %10d"
+                % (alto_path, size(alto_path), matching_file["size"])
             )
             continue
 
         if checksum(alto_path) != matching_file["checksum"]:
             warn(
-                f"Checksums don't match:\nPath       = %s\nMETS share = %s\nStorage    = %s\n" %
-                (alto_path, checksum(alto_path), matching_file["checksum"])
+                f"Checksums don't match:\nPath       = %s\nMETS share = %s\nStorage    = %s\n"
+                % (alto_path, checksum(alto_path), matching_file["checksum"])
             )
             continue
 
-        log_event(f"Cleaning up: {alto_path}")
+        log_event(
+            json.dumps({"event": "delete", "path": alto_path, "size": size(alto_path)})
+        )
 
         # Uncomment the following line to actually run the deletions:
         # os.unlink(alto_path)
