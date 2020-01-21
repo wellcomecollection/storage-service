@@ -27,9 +27,6 @@ def get_alto_paths(root):
 
             yield (f, os.path.join(dirpath, f))
 
-        # if os.path.listdir(dirpath) == []:
-        #     shutil.rmtree(dirpath)
-
 
 def get_storage_client(api_url):
     creds_path = os.path.join(
@@ -84,16 +81,15 @@ def log_event(s):
         out_file.write(s.rstrip() + "\n")
 
 
-if __name__ == "__main__":
-    root = "/Volumes/LIB_WDL_DDS/LIB_WDL_DDS_METS/"
+# Trying to look for the b number in an ALTO filename, e.g.
+#
+#     b21020000_0001.xml
+#
+B_NUMBER_RE = re.compile(r"^(?P<b_number>b[0-9]{7}[0-9x])")
 
-    # Trying to look for the b number in an ALTO filename, e.g.
-    #
-    #     b21020000_0001.xml
-    #
-    B_NUMBER_RE = re.compile(r"^(?P<b_number>b[0-9]{7}[0-9x])")
 
-    for alto_name, alto_path in tqdm.tqdm(get_alto_paths(root)):
+def get_info_blobs(paths):
+    for alto_name, alto_path in paths:
         try:
             b_number = B_NUMBER_RE.match(alto_name).group("b_number")
         except AttributeError:
@@ -108,23 +104,56 @@ if __name__ == "__main__":
             warn(f"Unable to find file in storage manifest for {alto_path!r}")
             continue
 
-        if size(alto_path) != matching_file["size"]:
+        yield {
+            "name": alto_name,
+            "path": alto_path,
+            "b_number": b_number,
+            "alto_size": size(alto_path),
+            "stored_size": matching_file["size"],
+            "alto_checksum": checksum(alto_path),
+            "stored_checksum": matching_file["checksum"],
+        }
+
+
+def get_paths_for_deletion(info_blobs):
+    for info in info_blobs:
+        if info["alto_size"] != info["stored_size"]:
             warn(
                 f"Sizes don't match:\nPath       = %s\nMETS share = %10d\nStorage    = %10d"
-                % (alto_path, size(alto_path), matching_file["size"])
+                % (info["path"], info["alto_size"], info["stored_size"])
             )
             continue
 
-        if checksum(alto_path) != matching_file["checksum"]:
+        if info["alto_checksum"] != info["alto_checksum"]:
             warn(
                 f"Checksums don't match:\nPath       = %s\nMETS share = %s\nStorage    = %s\n"
-                % (alto_path, checksum(alto_path), matching_file["checksum"])
+                % (info["path"], info["alto_checksum"], info["stored_checksum"])
             )
             continue
 
+        yield info
+
+
+if __name__ == "__main__":
+    root = "/Volumes/Shares/LIB_WDL_DDS/LIB_WDL_DDS_METS/"
+
+    paths = get_alto_paths(root)
+    info_blobs = get_info_blobs(paths)
+    paths_for_deletion = get_paths_for_deletion(info_blobs)
+
+    for info_blob in tqdm.tqdm(paths_for_deletion):
+        print(info_blob)
         log_event(
-            json.dumps({"event": "delete", "path": alto_path, "size": size(alto_path)})
+            json.dumps(
+                {
+                    "event": "delete",
+                    "path": info_blob["path"],
+                    "size": info_blob["alto_size"],
+                }
+            )
         )
+
+        break
 
         # Uncomment the following line to actually run the deletions:
         # os.unlink(alto_path)

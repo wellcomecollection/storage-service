@@ -1,0 +1,15 @@
+[run]
+branch = True
+include =
+    *.py
+omit =
+    **/.virtualenvs/**/*.py
+    /usr/local/**/*.py
+    **/python3.7/**/*.py
+    /opt/python/**/*.py
+
+[report]
+show_missing = true
+fail_under = 100
+exclude_lines =
+    pragma: no cover
