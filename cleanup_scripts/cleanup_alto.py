@@ -149,7 +149,7 @@ def run_deleter(root):
             )
         )
         os.unlink(path)
-        # break
+        break
 
 
 if __name__ == "__main__":  # pragma: no cover
