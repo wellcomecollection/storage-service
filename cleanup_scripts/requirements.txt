@@ -13,6 +13,7 @@ click==7.0                # via black
 coverage==5.0.3           # via pytest-cov
 entrypoints==0.3          # via flake8
 flake8==3.7.9
+humanize==0.5.1
 idna==2.8                 # via requests
 importlib-metadata==1.4.0  # via pluggy, pytest
 mccabe==0.6.1             # via flake8

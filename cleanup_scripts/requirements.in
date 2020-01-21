@@ -1,5 +1,6 @@
 black
 flake8
+humanize
 pytest-cov
 termcolor
 tqdm

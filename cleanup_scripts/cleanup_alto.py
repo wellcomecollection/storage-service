@@ -143,16 +143,24 @@ def run_deleter(root):
     paths_for_deletion = get_paths_for_deletion(info_blobs)
 
     for path, checksum, size in tqdm.tqdm(paths_for_deletion):
+
+        # This allows us to gracefully stop the script, and it will refuse to
+        # run until we start it again.
+        if os.path.exists("stop.txt"):  # pragma: no cover
+            break
+
         log_event(
             json.dumps(
                 {"event": "delete", "path": path, "checksum": checksum, "size": size,}
             )
         )
         os.unlink(path)
-        break
 
 
 if __name__ == "__main__":  # pragma: no cover
-    root = "/Volumes/Shares/LIB_WDL_DDS/LIB_WDL_DDS_METS/"
+    try:
+        root = sys.argv[1]
+    except IndexError:
+        sys.exit(f"Usage: {__file__} <ROOT>")
 
     run_deleter(root)
