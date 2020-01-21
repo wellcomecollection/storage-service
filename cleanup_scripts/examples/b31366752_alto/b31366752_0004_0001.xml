@@ -1,0 +1,50 @@
+Correct size, but wrong checksum !!!!!
+<alto xmlns="http://www.loc.gov/standards/alto/ns-v2#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/alto/ns-v2# http://www.loc.gov/standards/alto/alto.xsd">
+  <Description>
+    <MeasurementUnit>pixel</MeasurementUnit>
+    <sourceImageInformation>
+      <fileName>b31366752_0004_abbyy.xml</fileName>
+    </sourceImageInformation>
+    <OCRProcessing ID="OCR_1">
+      <preProcessingStep>
+        <processingDateTime>2020-01-17T04:11:22</processingDateTime>
+        <processingAgency>intranda GmbH, www.intranda.com</processingAgency>
+        <processingSoftware>
+          <softwareCreator>intranda GmbH, Germany</softwareCreator>
+          <softwareName>intranda OCR Module for TaskManager</softwareName>
+          <softwareVersion>1.0r42</softwareVersion>
+        </processingSoftware>
+      </preProcessingStep>
+      <ocrProcessingStep>
+        <processingSoftware>
+          <softwareCreator>ABBYY (BIT Software), Russia</softwareCreator>
+          <softwareName>FineReader Engine</softwareName>
+          <softwareVersion>10</softwareVersion>
+        </processingSoftware>
+      </ocrProcessingStep>
+    </OCRProcessing>
+  </Description>
+  <Layout>
+    <Page PHYSICAL_IMG_NR="2" ID="PAGE_2" WIDTH="3370" HEIGHT="4612">
+      <PrintSpace ID="PrintSpace_3" HPOS="0" VPOS="0" WIDTH="3370" HEIGHT="4612">
+        <Illustration TYPE="Picture" ID="Illustration_3" HPOS="0" VPOS="0" WIDTH="3370" HEIGHT="4612" />
+        <Illustration TYPE="Picture" ID="Illustration_4" HPOS="2768" VPOS="1683" WIDTH="91" HEIGHT="40" />
+        <Illustration TYPE="Picture" ID="Illustration_5" HPOS="2650" VPOS="2733" WIDTH="116" HEIGHT="107" />
+        <Illustration TYPE="Picture" ID="Illustration_6" HPOS="1082" VPOS="902" WIDTH="219" HEIGHT="34" />
+        <Illustration TYPE="Picture" ID="Illustration_7" HPOS="859" VPOS="1030" WIDTH="156" HEIGHT="30" />
+        <Illustration TYPE="Picture" ID="Illustration_8" HPOS="812" VPOS="1108" WIDTH="180" HEIGHT="39" />
+        <Illustration TYPE="Picture" ID="Illustration_9" HPOS="1391" VPOS="1154" WIDTH="235" HEIGHT="34" />
+        <Illustration TYPE="Picture" ID="Illustration_10" HPOS="2544" VPOS="2184" WIDTH="223" HEIGHT="50" />
+        <Illustration TYPE="Picture" ID="Illustration_11" HPOS="1189" VPOS="2498" WIDTH="182" HEIGHT="41" />
+        <Illustration TYPE="Picture" ID="Illustration_12" HPOS="1830" VPOS="2875" WIDTH="218" HEIGHT="42" />
+        <Illustration TYPE="Picture" ID="Illustration_13" HPOS="2559" VPOS="1526" WIDTH="56" HEIGHT="97" />
+        <Illustration TYPE="Picture" ID="Illustration_14" HPOS="3152" VPOS="1946" WIDTH="32" HEIGHT="141" />
+        <Illustration TYPE="Picture" ID="Illustration_15" HPOS="1798" VPOS="2517" WIDTH="50" HEIGHT="99" />
+        <Illustration TYPE="Picture" ID="Illustration_16" HPOS="3006" VPOS="2527" WIDTH="55" HEIGHT="108" />
+        <Illustration TYPE="Picture" ID="Illustration_17" HPOS="2935" VPOS="3316" WIDTH="43" HEIGHT="110" />
+        <Illustration TYPE="Picture" ID="Illustration_18" HPOS="1156" VPOS="2279" WIDTH="35" HEIGHT="161" />
+        <Illustration TYPE="Picture" ID="Illustration_19" HPOS="1219" VPOS="3158" WIDTH="42" HEIGHT="180" />
+      </PrintSpace>
+    </Page>
+  </Layout>
+</alto>

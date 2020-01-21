@@ -21,7 +21,7 @@ def get_alto_paths(root):
         if not dirpath.endswith("_alto"):
             continue
 
-        for f in filenames:
+        for f in sorted(filenames):
             if not f.endswith(".xml"):
                 continue
 
@@ -50,7 +50,7 @@ def get_bag(b_number):
 
 
 @functools.lru_cache()
-def get_files(b_number):
+def get_xml_files(b_number):
     bag = get_bag(b_number)
 
     return {
@@ -76,7 +76,7 @@ def warn(s):
     print(termcolor.colored(s, "yellow"), file=sys.stderr)
 
 
-def log_event(s):
+def log_event(s):  # pragma: no cover
     with open(f"alto_cleanup_{NOW}.log", "a") as out_file:
         out_file.write(s.rstrip() + "\n")
 
@@ -96,7 +96,7 @@ def get_info_blobs(paths):
             warn(f"Unable to identify b number in {alto_path!r}")
             continue
 
-        files = get_files(b_number)
+        files = get_xml_files(b_number)
 
         try:
             matching_file = files[alto_name]
@@ -124,37 +124,40 @@ def get_paths_for_deletion(info_blobs):
             )
             continue
 
-        if info["alto_checksum"] != info["alto_checksum"]:
+        if info["alto_checksum"] != info["stored_checksum"]:
             warn(
                 f"Checksums don't match:\nPath       = %s\nMETS share = %s\nStorage    = %s\n"
                 % (info["path"], info["alto_checksum"], info["stored_checksum"])
             )
             continue
 
-        yield info
+        yield (info["path"], info["alto_size"])
 
 
-if __name__ == "__main__":
-    root = "/Volumes/Shares/LIB_WDL_DDS/LIB_WDL_DDS_METS/"
-
+def run_deleter(root):
     paths = get_alto_paths(root)
     info_blobs = get_info_blobs(paths)
     paths_for_deletion = get_paths_for_deletion(info_blobs)
 
-    for info_blob in tqdm.tqdm(paths_for_deletion):
-        print(info_blob)
-        log_event(
-            json.dumps(
-                {
-                    "event": "delete",
-                    "path": info_blob["path"],
-                    "size": info_blob["alto_size"],
-                }
-            )
-        )
+    for path, size in tqdm.tqdm(paths_for_deletion):
+        log_event(json.dumps({"event": "delete", "path": path, "size": size,}))
+        os.unlink(path)
 
-        break
 
-        # Uncomment the following line to actually run the deletions:
-        # os.unlink(alto_path)
-        # break
+if __name__ == "__main__":  # pragma: no cover
+    root = "/Volumes/Shares/LIB_WDL_DDS/LIB_WDL_DDS_METS/"
+
+    run_deleter(root)
+    #
+    # paths = get_alto_paths(root)
+    # info_blobs = get_info_blobs(paths)
+    # paths_for_deletion = get_paths_for_deletion(info_blobs)
+    #
+    # for path, size in tqdm.tqdm(paths_for_deletion):
+    #     log_event(json.dumps({"event": "delete", "path": path, "size": size,}))
+    #
+    #     break
+    #
+    #     # Uncomment the following line to actually run the deletions:
+    #     # os.unlink(alto_path)
+    #     # break
