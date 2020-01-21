@@ -41,9 +41,7 @@ def test_get_paths_for_deletion_ignores_mismatched_size(capsys):
 
     for_deletion = list(cleanup_alto.get_paths_for_deletion(info_blobs))
 
-    assert for_deletion == [
-        ("good.xml", "123", 100),
-    ]
+    assert for_deletion == [("good.xml", "123", 100)]
 
     output = capsys.readouterr()
     assert "Sizes don't match:" in output.err

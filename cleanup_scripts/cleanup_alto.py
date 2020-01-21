@@ -83,16 +83,15 @@ def warn(s):
 UUID = str(uuid.uuid4())
 
 with open(f"alto_cleanup_{NOW}.{UUID}.log", "a") as out_file:
+
     def log_event(s):  # pragma: no cover
         out_file.write(s.rstrip() + "\n")
-
 
     # Trying to look for the b number in an ALTO filename, e.g.
     #
     #     b21020000_0001.xml
     #
     B_NUMBER_RE = re.compile(r"^(?P<b_number>b[0-9]{7}[0-9x])")
-
 
     def get_info_blobs(paths):
         for alto_name, alto_path in paths:
@@ -120,7 +119,6 @@ with open(f"alto_cleanup_{NOW}.{UUID}.log", "a") as out_file:
                 "stored_checksum": matching_file["checksum"],
             }
 
-
     def get_paths_for_deletion(info_blobs):
         for info in info_blobs:
             if info["alto_size"] != info["stored_size"]:
@@ -139,7 +137,6 @@ with open(f"alto_cleanup_{NOW}.{UUID}.log", "a") as out_file:
 
             yield (info["path"], info["alto_checksum"], info["alto_size"])
 
-
     def run_deleter(root):
         paths = get_alto_paths(root)
         info_blobs = get_info_blobs(paths)
@@ -154,11 +151,15 @@ with open(f"alto_cleanup_{NOW}.{UUID}.log", "a") as out_file:
 
             log_event(
                 json.dumps(
-                    {"event": "delete", "path": path, "checksum": checksum, "size": size,}
+                    {
+                        "event": "delete",
+                        "path": path,
+                        "checksum": checksum,
+                        "size": size,
+                    }
                 )
             )
             os.unlink(path)
-
 
     if __name__ == "__main__":  # pragma: no cover
         try:
