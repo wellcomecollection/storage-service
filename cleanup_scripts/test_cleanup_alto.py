@@ -6,11 +6,17 @@ import cleanup_alto
 
 def test_getting_alto_paths():
     assert set(cleanup_alto.get_alto_paths("examples")) == {
-        ("b31366752_0004_0003.xml", "examples/b31366752_alt_alto/b31366752_0004_0003.xml"),
+        (
+            "b31366752_0004_0003.xml",
+            "examples/b31366752_alt_alto/b31366752_0004_0003.xml",
+        ),
         ("b31366752_0004_0001.xml", "examples/b31366752_alto/b31366752_0004_0001.xml"),
         ("b31366752_0004_0003.xml", "examples/b31366752_alto/b31366752_0004_0003.xml"),
         ("b31366752_0004_0004.xml", "examples/b31366752_alto/b31366752_0004_0004.xml"),
-        ("b31366752_not_in_manifest.xml", "examples/b31366752_alto/b31366752_not_in_manifest.xml"),
+        (
+            "b31366752_not_in_manifest.xml",
+            "examples/b31366752_alto/b31366752_not_in_manifest.xml",
+        ),
         ("nobnumber.xml", "examples/b31366752_alto/nobnumber.xml"),
     }
 
@@ -36,7 +42,7 @@ def test_get_paths_for_deletion_ignores_mismatched_size(capsys):
     for_deletion = list(cleanup_alto.get_paths_for_deletion(info_blobs))
 
     assert for_deletion == [
-        ("good.xml", 100),
+        ("good.xml", "123", 100),
     ]
 
     output = capsys.readouterr()
@@ -63,7 +69,7 @@ def test_get_paths_for_deletion_ignores_mismatched_checksum(capsys):
 
     for_deletion = list(cleanup_alto.get_paths_for_deletion(info_blobs))
 
-    assert for_deletion == [("good.xml", 100)]
+    assert for_deletion == [("good.xml", "123", 100)]
 
     output = capsys.readouterr()
     assert "Checksums don't match:" in output.err
@@ -162,13 +168,23 @@ def test_deleter(tmpdir):
     cleanup_alto.run_deleter(tmpdir / "examples")
 
     assert (tmpdir / "examples" / "alto" / "b31366752_0004_0003.xml").exists()
-    assert not (tmpdir / "examples" / "b31366752_alto_alt" / "b31366752_0004_0003.xml").exists()
-    assert not os.path.isdir(tmpdir / "examples" / "b31366752_alt_alto")
+    assert not (
+        tmpdir / "examples" / "b31366752_alto_alt" / "b31366752_0004_0003.xml"
+    ).exists()
     assert (tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0001.xml").exists()
-    assert not (tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0003.xml").exists()
+
+    assert not (
+        tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0003.xml"
+    ).exists()
+    assert not os.path.isdir(tmpdir / "examples" / "b31366752_alt_alto")
+
     assert (tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0004.xml").exists()
-    assert (tmpdir / "examples" / "b31366752_alto" / "b31366752_not_in_manifest.xml").exists()
+    assert (
+        tmpdir / "examples" / "b31366752_alto" / "b31366752_not_in_manifest.xml"
+    ).exists()
     assert (tmpdir / "examples" / "b31366752_alto" / "nobnumber.xml").exists()
     assert (tmpdir / "examples" / "b31366752_alto" / "notalto.md").exists()
-    assert not (tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0034.xml").exists()
+    assert not (
+        tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0034.xml"
+    ).exists()
     assert (tmpdir / "examples" / "notalto" / "hello.txt").exists()

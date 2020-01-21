@@ -134,7 +134,7 @@ def get_paths_for_deletion(info_blobs):
             )
             continue
 
-        yield (info["path"], info["alto_size"])
+        yield (info["path"], info["alto_checksum"], info["alto_size"])
 
 
 def run_deleter(root):
@@ -142,25 +142,17 @@ def run_deleter(root):
     info_blobs = get_info_blobs(paths)
     paths_for_deletion = get_paths_for_deletion(info_blobs)
 
-    for path, size in tqdm.tqdm(paths_for_deletion):
-        log_event(json.dumps({"event": "delete", "path": path, "size": size,}))
+    for path, checksum, size in tqdm.tqdm(paths_for_deletion):
+        log_event(
+            json.dumps(
+                {"event": "delete", "path": path, "checksum": checksum, "size": size,}
+            )
+        )
         os.unlink(path)
+        # break
 
 
 if __name__ == "__main__":  # pragma: no cover
     root = "/Volumes/Shares/LIB_WDL_DDS/LIB_WDL_DDS_METS/"
 
     run_deleter(root)
-    #
-    # paths = get_alto_paths(root)
-    # info_blobs = get_info_blobs(paths)
-    # paths_for_deletion = get_paths_for_deletion(info_blobs)
-    #
-    # for path, size in tqdm.tqdm(paths_for_deletion):
-    #     log_event(json.dumps({"event": "delete", "path": path, "size": size,}))
-    #
-    #     break
-    #
-    #     # Uncomment the following line to actually run the deletions:
-    #     # os.unlink(alto_path)
-    #     # break
