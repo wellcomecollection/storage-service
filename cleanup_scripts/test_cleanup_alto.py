@@ -1,16 +1,18 @@
+import os
 import shutil
 
 import cleanup_alto
 
 
 def test_getting_alto_paths():
-    assert list(cleanup_alto.get_alto_paths("examples")) == [
+    assert set(cleanup_alto.get_alto_paths("examples")) == {
+        ("b31366752_0004_0003.xml", "examples/b31366752_alt_alto/b31366752_0004_0003.xml"),
         ("b31366752_0004_0001.xml", "examples/b31366752_alto/b31366752_0004_0001.xml"),
         ("b31366752_0004_0003.xml", "examples/b31366752_alto/b31366752_0004_0003.xml"),
         ("b31366752_0004_0004.xml", "examples/b31366752_alto/b31366752_0004_0004.xml"),
         ("b31366752_not_in_manifest.xml", "examples/b31366752_alto/b31366752_not_in_manifest.xml"),
         ("nobnumber.xml", "examples/b31366752_alto/nobnumber.xml"),
-    ]
+    }
 
 
 def test_get_paths_for_deletion_ignores_mismatched_size(capsys):
@@ -105,6 +107,15 @@ def test_get_alto_blobs(capsys):
 
     assert list(info_blobs) == [
         {
+            "name": "b31366752_0004_0003.xml",
+            "path": "examples/b31366752_alt_alto/b31366752_0004_0003.xml",
+            "b_number": "b31366752",
+            "alto_checksum": "a16be8aa883485cf040cb8876324bd2199f42da91b6d03dba3b3c3eb8c816732",
+            "alto_size": 36367,
+            "stored_checksum": "a16be8aa883485cf040cb8876324bd2199f42da91b6d03dba3b3c3eb8c816732",
+            "stored_size": 36367,
+        },
+        {
             "name": "b31366752_0004_0001.xml",
             "path": "examples/b31366752_alto/b31366752_0004_0001.xml",
             "b_number": "b31366752",
@@ -146,13 +157,18 @@ def test_get_alto_blobs(capsys):
 def test_deleter(tmpdir):
     shutil.copytree("examples", tmpdir / "examples")
 
+    assert os.path.isdir(tmpdir / "examples" / "b31366752_alt_alto")
+
     cleanup_alto.run_deleter(tmpdir / "examples")
 
     assert (tmpdir / "examples" / "alto" / "b31366752_0004_0003.xml").exists()
+    assert not (tmpdir / "examples" / "b31366752_alto_alt" / "b31366752_0004_0003.xml").exists()
+    assert not os.path.isdir(tmpdir / "examples" / "b31366752_alt_alto")
     assert (tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0001.xml").exists()
-    assert not (tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0034.xml").exists()
+    assert not (tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0003.xml").exists()
     assert (tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0004.xml").exists()
     assert (tmpdir / "examples" / "b31366752_alto" / "b31366752_not_in_manifest.xml").exists()
     assert (tmpdir / "examples" / "b31366752_alto" / "nobnumber.xml").exists()
     assert (tmpdir / "examples" / "b31366752_alto" / "notalto.md").exists()
+    assert not (tmpdir / "examples" / "b31366752_alto" / "b31366752_0004_0034.xml").exists()
     assert (tmpdir / "examples" / "notalto" / "hello.txt").exists()

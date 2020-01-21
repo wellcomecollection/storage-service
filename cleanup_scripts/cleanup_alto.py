@@ -27,6 +27,9 @@ def get_alto_paths(root):
 
             yield (f, os.path.join(dirpath, f))
 
+        if os.listdir(dirpath) == []:
+            os.rmdir(dirpath)
+
 
 def get_storage_client(api_url):
     creds_path = os.path.join(

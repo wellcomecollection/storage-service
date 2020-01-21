@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alto xmlns="http://www.loc.gov/standards/alto/ns-v2#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/alto/ns-v2# http://www.loc.gov/standards/alto/alto.xsd">
+  <Description>
+    <MeasurementUnit>pixel</MeasurementUnit>
+    <sourceImageInformation>
+      <fileName>b31366752_0004_abbyy.xml</fileName>
+    </sourceImageInformation>
+    <OCRProcessing ID="OCR_1">
+      <preProcessingStep>
+        <processingDateTime>2020-01-17T04:11:22</processingDateTime>
+        <processingAgency>intranda GmbH, www.intranda.com</processingAgency>
+        <processingSoftware>
+          <softwareCreator>intranda GmbH, Germany</softwareCreator>
+          <softwareName>intranda OCR Module for TaskManager</softwareName>
+          <softwareVersion>1.0r42</softwareVersion>
+        </processingSoftware>
+      </preProcessingStep>
+      <ocrProcessingStep>
+        <processingSoftware>
+          <softwareCreator>ABBYY (BIT Software), Russia</softwareCreator>
+          <softwareName>FineReader Engine</softwareName>
+          <softwareVersion>10</softwareVersion>
+        </processingSoftware>
+      </ocrProcessingStep>
+    </OCRProcessing>
+  </Description>
+  <Layout>
+    <Page PHYSICAL_IMG_NR="4" ID="PAGE_4" WIDTH="7676" HEIGHT="3812">
+      <PrintSpace ID="PrintSpace_5" HPOS="0" VPOS="112" WIDTH="7553" HEIGHT="3595">
+        <TextBlock ID="TextBlock_137" HPOS="877" VPOS="348" WIDTH="435" HEIGHT="328">
+          <TextLine ID="TextLine_113" HPOS="1137" VPOS="348" WIDTH="111" HEIGHT="38">
+            <String CONTENT="INDEX" ID="Word_266" HPOS="1137" VPOS="348" WIDTH="111" HEIGHT="38" />
+          </TextLine>
+          <TextLine ID="TextLine_114" HPOS="1011" VPOS="389" WIDTH="301" HEIGHT="56">
+            <String CONTENT="TOMApSofport(on{" ID="Word_267" HPOS="1011" VPOS="389" WIDTH="301" HEIGHT="56" />
+          </TextLine>
+          <TextLine ID="TextLine_115" HPOS="877" VPOS="430" WIDTH="428" HEIGHT="90">
+            <String CONTENT="'E" ID="Word_268" HPOS="877" VPOS="430" WIDTH="52" HEIGHT="45" />
+            <SP ID="SP_154" HPOS="930" VPOS="430" WIDTH="31" HEIGHT="0" />
+            <String CONTENT="TUrKISTAN" ID="Word_269" HPOS="962" VPOS="439" WIDTH="343" HEIGHT="81" />
+          </TextLine>
+          <TextLine ID="TextLine_116" HPOS="883" VPOS="512" WIDTH="429" HEIGHT="76">
+            <String CONTENT="SUrS" ID="Word_270" HPOS="883" VPOS="512" WIDTH="120" HEIGHT="76" />
+            <SP ID="SP_155" HPOS="1004" VPOS="524" WIDTH="13" HEIGHT="0" />
+            <String CONTENT="MADE" ID="Word_271" HPOS="1018" VPOS="528" WIDTH="72" HEIGHT="25" />
+            <SP ID="SP_156" HPOS="1091" VPOS="534" WIDTH="14" HEIGHT="0" />
+            <String CONTENT="°UR,NG" ID="Word_272" HPOS="1106" VPOS="537" WIDTH="99" HEIGHT="29" />
+            <SP ID="SP_157" HPOS="1206" VPOS="547" WIDTH="79" HEIGHT="0" />
+            <String CONTENT="E&gt;" ID="Word_273" HPOS="1286" VPOS="559" WIDTH="26" HEIGHT="20" />
+          </TextLine>
+          <TextLine ID="TextLine_117" HPOS="914" VPOS="570" WIDTH="398" HEIGHT="70">
+            <String CONTENT="S,R" ID="Word_274" HPOS="914" VPOS="570" WIDTH="59" HEIGHT="31" />
+            <SP ID="SP_158" HPOS="974" VPOS="573" WIDTH="14" HEIGHT="0" />
+            <String CONTENT="aurel" ID="Word_275" HPOS="989" VPOS="579" WIDTH="120" HEIGHT="37" />
+            <SP ID="SP_159" HPOS="1110" VPOS="590" WIDTH="15" HEIGHT="0" />
+            <String CONTENT="ste/n." ID="Word_276" HPOS="1126" VPOS="594" WIDTH="113" HEIGHT="38" />
+            <SP ID="SP_160" HPOS="1240" VPOS="607" WIDTH="14" HEIGHT="0" />
+            <String CONTENT="k." ID="Word_277" HPOS="1255" VPOS="607" WIDTH="29" HEIGHT="29" />
+            <SP ID="SP_161" HPOS="1285" VPOS="615" WIDTH="15" HEIGHT="0" />
+            <String CONTENT="(" ID="Word_278" HPOS="1301" VPOS="615" WIDTH="11" HEIGHT="25" />
+          </TextLine>
+          <TextLine ID="TextLine_118" HPOS="995" VPOS="643" WIDTH="206" HEIGHT="33">
+            <String CONTENT="1900-01." ID="Word_279" HPOS="995" VPOS="643" WIDTH="96" HEIGHT="27" />
+            <SP ID="SP_162" HPOS="1092" VPOS="656" WIDTH="15" HEIGHT="0" />
+            <String CONTENT="1Q0fi.no" ID="Word_280" HPOS="1108" VPOS="656" WIDTH="93" HEIGHT="20" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_138" HPOS="4138" VPOS="428" WIDTH="62" HEIGHT="15">
+          <TextLine ID="TextLine_119" HPOS="4138" VPOS="428" WIDTH="62" HEIGHT="15">
+            <String CONTENT="ICHEN" ID="Word_281" HPOS="4138" VPOS="428" WIDTH="62" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_139" HPOS="1482" VPOS="500" WIDTH="202" HEIGHT="64">
+          <TextLine ID="TextLine_120" HPOS="1482" VPOS="500" WIDTH="202" HEIGHT="64">
+            <String CONTENT="kansu" ID="Word_282" HPOS="1482" VPOS="500" WIDTH="202" HEIGHT="64" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_140" HPOS="4902" VPOS="553" WIDTH="82" HEIGHT="18">
+          <TextLine ID="TextLine_121" HPOS="4902" VPOS="553" WIDTH="82" HEIGHT="18">
+            <String CONTENT="B" ID="Word_283" HPOS="4902" VPOS="557" WIDTH="12" HEIGHT="14" />
+            <SP ID="SP_163" HPOS="4915" VPOS="557" WIDTH="4" HEIGHT="0" />
+            <String CONTENT="kRKUL" ID="Word_284" HPOS="4920" VPOS="553" WIDTH="64" HEIGHT="17" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_141" HPOS="5053" VPOS="606" WIDTH="126" HEIGHT="21">
+          <TextLine ID="TextLine_122" HPOS="5053" VPOS="606" WIDTH="126" HEIGHT="21">
+            <String CONTENT="i-Barkul^/awan)" ID="Word_285" HPOS="5053" VPOS="606" WIDTH="126" HEIGHT="21" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_142" HPOS="2084" VPOS="863" WIDTH="132" HEIGHT="25">
+          <TextLine ID="TextLine_123" HPOS="2084" VPOS="863" WIDTH="132" HEIGHT="25">
+            <String CONTENT="Muz-art-dawan" ID="Word_286" HPOS="2084" VPOS="863" WIDTH="132" HEIGHT="25" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_143" HPOS="2936" VPOS="919" WIDTH="99" HEIGHT="12">
+          <TextLine ID="TextLine_124" HPOS="2936" VPOS="919" WIDTH="99" HEIGHT="12">
+            <String CONTENT=",Kara-dawai" ID="Word_287" HPOS="2936" VPOS="919" WIDTH="99" HEIGHT="12" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_144" HPOS="6973" VPOS="941" WIDTH="68" HEIGHT="18">
+          <TextLine ID="TextLine_125" HPOS="6973" VPOS="941" WIDTH="68" HEIGHT="18">
+            <String CONTENT="■Khotol" ID="Word_288" HPOS="6973" VPOS="941" WIDTH="68" HEIGHT="18" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_145" HPOS="2349" VPOS="1144" WIDTH="129" HEIGHT="21">
+          <TextLine ID="TextLine_126" HPOS="2349" VPOS="1144" WIDTH="129" HEIGHT="21">
+            <String CONTENT="Torpak" ID="Word_289" HPOS="2349" VPOS="1144" WIDTH="70" HEIGHT="19" />
+            <SP ID="SP_164" HPOS="2420" VPOS="1147" WIDTH="10" HEIGHT="0" />
+            <String CONTENT="baza]" ID="Word_290" HPOS="2431" VPOS="1147" WIDTH="47" HEIGHT="18" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_146" HPOS="1935" VPOS="1194" WIDTH="99" HEIGHT="85">
+          <TextLine ID="TextLine_127" HPOS="1977" VPOS="1194" WIDTH="56" HEIGHT="21">
+            <String CONTENT="/OS" ID="Word_291" HPOS="1977" VPOS="1194" WIDTH="56" HEIGHT="21" />
+          </TextLine>
+          <TextLine ID="TextLine_128" HPOS="1936" VPOS="1218" WIDTH="98" HEIGHT="23">
+            <String CONTENT="-su" ID="Word_292" HPOS="1936" VPOS="1227" WIDTH="30" HEIGHT="14" />
+            <SP ID="SP_165" HPOS="1967" VPOS="1218" WIDTH="51" HEIGHT="0" />
+            <String CONTENT="Jl" ID="Word_293" HPOS="2019" VPOS="1218" WIDTH="15" HEIGHT="14" />
+          </TextLine>
+          <TextLine ID="TextLine_129" HPOS="1935" VPOS="1259" WIDTH="90" HEIGHT="20">
+            <String CONTENT="*§I-Shahr" ID="Word_294" HPOS="1935" VPOS="1259" WIDTH="90" HEIGHT="20" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_148" HPOS="741" VPOS="1322" WIDTH="59" HEIGHT="18">
+          <TextLine ID="TextLine_130" HPOS="741" VPOS="1322" WIDTH="59" HEIGHT="18">
+            <String CONTENT="0a»3n," ID="Word_295" HPOS="741" VPOS="1322" WIDTH="59" HEIGHT="18" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_149" HPOS="1916" VPOS="1329" WIDTH="58" HEIGHT="12">
+          <TextLine ID="TextLine_131" HPOS="1916" VPOS="1329" WIDTH="58" HEIGHT="12">
+            <String CONTENT="&gt;Achal" ID="Word_296" HPOS="1916" VPOS="1329" WIDTH="58" HEIGHT="12" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_150" HPOS="1974" VPOS="1427" WIDTH="66" HEIGHT="12">
+          <TextLine ID="TextLine_132" HPOS="1974" VPOS="1427" WIDTH="66" HEIGHT="12">
+            <String CONTENT="“Matan" ID="Word_297" HPOS="1974" VPOS="1427" WIDTH="66" HEIGHT="12" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_151" HPOS="6037" VPOS="1470" WIDTH="51" HEIGHT="14">
+          <TextLine ID="TextLine_133" HPOS="6037" VPOS="1470" WIDTH="51" HEIGHT="14">
+            <String CONTENT="hsien" ID="Word_298" HPOS="6037" VPOS="1470" WIDTH="51" HEIGHT="14" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_152" HPOS="3644" VPOS="1482" WIDTH="69" HEIGHT="15">
+          <TextLine ID="TextLine_134" HPOS="3644" VPOS="1482" WIDTH="69" HEIGHT="15">
+            <String CONTENT="‘Ikenllk" ID="Word_299" HPOS="3644" VPOS="1482" WIDTH="69" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_154" HPOS="1644" VPOS="1609" WIDTH="53" HEIGHT="14">
+          <TextLine ID="TextLine_135" HPOS="1644" VPOS="1609" WIDTH="53" HEIGHT="14">
+            <String CONTENT="imshi" ID="Word_300" HPOS="1644" VPOS="1609" WIDTH="53" HEIGHT="14" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_155" HPOS="1058" VPOS="1623" WIDTH="77" HEIGHT="23">
+          <TextLine ID="TextLine_136" HPOS="1058" VPOS="1623" WIDTH="77" HEIGHT="23">
+            <String CONTENT="'■^ftush" ID="Word_301" HPOS="1058" VPOS="1623" WIDTH="77" HEIGHT="23" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_156" HPOS="1091" VPOS="1688" WIDTH="83" HEIGHT="24">
+          <TextLine ID="TextLine_137" HPOS="1091" VPOS="1688" WIDTH="83" HEIGHT="24">
+            <String CONTENT="ra^3bac»" ID="Word_302" HPOS="1091" VPOS="1688" WIDTH="83" HEIGHT="24" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_157" HPOS="2423" VPOS="1803" WIDTH="92" HEIGHT="40">
+          <TextLine ID="TextLine_138" HPOS="2459" VPOS="1803" WIDTH="23" HEIGHT="15">
+            <String CONTENT="36" ID="Word_303" HPOS="2459" VPOS="1803" WIDTH="23" HEIGHT="15" />
+          </TextLine>
+          <TextLine ID="TextLine_139" HPOS="2423" VPOS="1825" WIDTH="92" HEIGHT="18">
+            <String CONTENT="M" ID="Word_304" HPOS="2423" VPOS="1825" WIDTH="14" HEIGHT="13" />
+            <SP ID="SP_166" HPOS="2438" VPOS="1825" WIDTH="3" HEIGHT="0" />
+            <String CONTENT="delta" ID="Word_305" HPOS="2442" VPOS="1827" WIDTH="49" HEIGHT="16" />
+            <SP ID="SP_167" HPOS="2492" VPOS="1831" WIDTH="5" HEIGHT="0" />
+            <String CONTENT="of" ID="Word_306" HPOS="2498" VPOS="1829" WIDTH="17" HEIGHT="14" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_159" HPOS="6165" VPOS="2106" WIDTH="86" HEIGHT="58">
+          <TextLine ID="TextLine_140" HPOS="6165" VPOS="2106" WIDTH="41" HEIGHT="31">
+            <String CONTENT="41" ID="Word_307" HPOS="6165" VPOS="2106" WIDTH="41" HEIGHT="31" />
+          </TextLine>
+          <TextLine ID="TextLine_141" HPOS="6198" VPOS="2134" WIDTH="53" HEIGHT="30">
+            <String CONTENT="i9" ID="Word_308" HPOS="6198" VPOS="2134" WIDTH="30" HEIGHT="30" />
+            <SP ID="SP_168" HPOS="6229" VPOS="2134" WIDTH="8" HEIGHT="0" />
+            <String CONTENT="*" ID="Word_309" HPOS="6238" VPOS="2142" WIDTH="13" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_160" HPOS="1252" VPOS="2201" WIDTH="71" HEIGHT="19">
+          <TextLine ID="TextLine_142" HPOS="1252" VPOS="2201" WIDTH="71" HEIGHT="19">
+            <String CONTENT="‘'•ghailk" ID="Word_310" HPOS="1252" VPOS="2201" WIDTH="71" HEIGHT="19" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_161" HPOS="3229" VPOS="2255" WIDTH="52" HEIGHT="13">
+          <TextLine ID="TextLine_143" HPOS="3229" VPOS="2255" WIDTH="52" HEIGHT="13">
+            <String CONTENT="'Chan" ID="Word_311" HPOS="3229" VPOS="2255" WIDTH="52" HEIGHT="13" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_162" HPOS="1914" VPOS="2348" WIDTH="85" HEIGHT="21">
+          <TextLine ID="TextLine_144" HPOS="1914" VPOS="2348" WIDTH="85" HEIGHT="21">
+            <String CONTENT="rawakkel" ID="Word_312" HPOS="1914" VPOS="2348" WIDTH="85" HEIGHT="21" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_163" HPOS="4405" VPOS="2438" WIDTH="119" HEIGHT="27">
+          <TextLine ID="TextLine_145" HPOS="4405" VPOS="2438" WIDTH="119" HEIGHT="27">
+            <String CONTENT="\_Balhash" ID="Word_313" HPOS="4405" VPOS="2438" WIDTH="119" HEIGHT="27" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_164" HPOS="6483" VPOS="2446" WIDTH="252" HEIGHT="188">
+          <TextLine ID="TextLine_146" HPOS="6483" VPOS="2446" WIDTH="234" HEIGHT="43">
+            <String CONTENT=",NATION" ID="Word_314" HPOS="6483" VPOS="2465" WIDTH="85" HEIGHT="24" />
+            <SP ID="SP_169" HPOS="6569" VPOS="2461" WIDTH="10" HEIGHT="0" />
+            <String CONTENT="OF" ID="Word_315" HPOS="6580" VPOS="2459" WIDTH="27" HEIGHT="16" />
+            <SP ID="SP_170" HPOS="6608" VPOS="2457" WIDTH="12" HEIGHT="0" />
+            <String CONTENT="SVWFO^" ID="Word_316" HPOS="6621" VPOS="2446" WIDTH="96" HEIGHT="25" />
+          </TextLine>
+          <TextLine ID="TextLine_147" HPOS="6483" VPOS="2497" WIDTH="252" HEIGHT="42">
+            <String CONTENT=",00-01" ID="Word_317" HPOS="6483" VPOS="2516" WIDTH="65" HEIGHT="23" />
+            <SP ID="SP_171" HPOS="6549" VPOS="2516" WIDTH="12" HEIGHT="0" />
+            <String CONTENT="..w*'&quot;™'-*-" ID="Word_318" HPOS="6562" VPOS="2497" WIDTH="173" HEIGHT="34" />
+          </TextLine>
+          <TextLine ID="TextLine_148" HPOS="6483" VPOS="2550" WIDTH="241" HEIGHT="40">
+            <String CONTENT="906-00-" ID="Word_319" HPOS="6483" VPOS="2568" WIDTH="84" HEIGHT="22" />
+            <SP ID="SP_172" HPOS="6568" VPOS="2576" WIDTH="9" HEIGHT="0" />
+            <String CONTENT=".(appF°xlmate)" ID="Word_320" HPOS="6578" VPOS="2550" WIDTH="146" HEIGHT="29" />
+          </TextLine>
+          <TextLine ID="TextLine_149" HPOS="6485" VPOS="2596" WIDTH="250" HEIGHT="38">
+            <String CONTENT="a^...w^'n'a'-ey" ID="Word_321" HPOS="6485" VPOS="2596" WIDTH="250" HEIGHT="38" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_165" HPOS="4740" VPOS="2491" WIDTH="65" HEIGHT="18">
+          <TextLine ID="TextLine_150" HPOS="4740" VPOS="2491" WIDTH="65" HEIGHT="18">
+            <String CONTENT="*mdia" ID="Word_322" HPOS="4740" VPOS="2491" WIDTH="65" HEIGHT="18" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_166" HPOS="4924" VPOS="2505" WIDTH="71" HEIGHT="24">
+          <TextLine ID="TextLine_151" HPOS="4924" VPOS="2505" WIDTH="71" HEIGHT="24">
+            <String CONTENT=",Turl5n" ID="Word_323" HPOS="4924" VPOS="2505" WIDTH="71" HEIGHT="24" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_167" HPOS="6353" VPOS="2531" WIDTH="99" HEIGHT="24">
+          <TextLine ID="TextLine_152" HPOS="6353" VPOS="2531" WIDTH="99" HEIGHT="24">
+            <String CONTENT="irveyed" ID="Word_324" HPOS="6353" VPOS="2532" WIDTH="72" HEIGHT="23" />
+            <SP ID="SP_173" HPOS="6426" VPOS="2531" WIDTH="8" HEIGHT="0" />
+            <String CONTENT="'n" ID="Word_325" HPOS="6435" VPOS="2531" WIDTH="17" HEIGHT="13" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_168" HPOS="4784" VPOS="2559" WIDTH="67" HEIGHT="14">
+          <TextLine ID="TextLine_153" HPOS="4784" VPOS="2559" WIDTH="67" HEIGHT="14">
+            <String CONTENT=".Kucha" ID="Word_326" HPOS="4784" VPOS="2559" WIDTH="67" HEIGHT="14" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_169" HPOS="5001" VPOS="2569" WIDTH="74" HEIGHT="19">
+          <TextLine ID="TextLine_154" HPOS="5001" VPOS="2569" WIDTH="74" HEIGHT="19">
+            <String CONTENT=".buang-" ID="Word_327" HPOS="5001" VPOS="2569" WIDTH="74" HEIGHT="19" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_170" HPOS="6341" VPOS="2589" WIDTH="48" HEIGHT="16">
+          <TextLine ID="TextLine_155" HPOS="6341" VPOS="2589" WIDTH="48" HEIGHT="16">
+            <String CONTENT="surv&lt;" ID="Word_328" HPOS="6341" VPOS="2589" WIDTH="48" HEIGHT="16" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_171" HPOS="6365" VPOS="2623" WIDTH="138" HEIGHT="79">
+          <TextLine ID="TextLine_156" HPOS="6365" VPOS="2623" WIDTH="131" HEIGHT="29">
+            <String CONTENT="irveyed" ID="Word_329" HPOS="6365" VPOS="2631" WIDTH="72" HEIGHT="21" />
+            <SP ID="SP_174" HPOS="6438" VPOS="2630" WIDTH="8" HEIGHT="0" />
+            <String CONTENT="w" ID="Word_330" HPOS="6447" VPOS="2630" WIDTH="17" HEIGHT="12" />
+            <SP ID="SP_175" HPOS="6465" VPOS="2625" WIDTH="8" HEIGHT="0" />
+            <String CONTENT="19" ID="Word_331" HPOS="6474" VPOS="2623" WIDTH="22" HEIGHT="15" />
+          </TextLine>
+          <TextLine ID="TextLine_157" HPOS="6365" VPOS="2674" WIDTH="138" HEIGHT="28">
+            <String CONTENT="NOS." ID="Word_332" HPOS="6365" VPOS="2688" WIDTH="40" HEIGHT="14" />
+            <SP ID="SP_176" HPOS="6406" VPOS="2684" WIDTH="6" HEIGHT="0" />
+            <String CONTENT="ot" ID="Word_333" HPOS="6413" VPOS="2680" WIDTH="16" HEIGHT="16" />
+            <SP ID="SP_177" HPOS="6430" VPOS="2680" WIDTH="11" HEIGHT="0" />
+            <String CONTENT="f^aps." ID="Word_334" HPOS="6442" VPOS="2674" WIDTH="61" HEIGHT="18" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_172" HPOS="4652" VPOS="2670" WIDTH="76" HEIGHT="15">
+          <TextLine ID="TextLine_158" HPOS="4652" VPOS="2670" WIDTH="76" HEIGHT="15">
+            <String CONTENT="Y&amp;rkani" ID="Word_335" HPOS="4652" VPOS="2670" WIDTH="76" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_173" HPOS="6759" VPOS="2686" WIDTH="74" HEIGHT="18">
+          <TextLine ID="TextLine_159" HPOS="6759" VPOS="2686" WIDTH="74" HEIGHT="18">
+            <String CONTENT="4" ID="Word_336" HPOS="6759" VPOS="2691" WIDTH="11" HEIGHT="13" />
+            <SP ID="SP_178" HPOS="6771" VPOS="2691" WIDTH="8" HEIGHT="0" />
+            <String CONTENT="rnties" ID="Word_337" HPOS="6780" VPOS="2686" WIDTH="53" HEIGHT="17" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_175" HPOS="6619" VPOS="2705" WIDTH="56" HEIGHT="21">
+          <TextLine ID="TextLine_160" HPOS="6619" VPOS="2705" WIDTH="56" HEIGHT="21">
+            <String CONTENT=".scale" ID="Word_338" HPOS="6619" VPOS="2705" WIDTH="56" HEIGHT="21" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_176" HPOS="4217" VPOS="2709" WIDTH="75" HEIGHT="22">
+          <TextLine ID="TextLine_161" HPOS="4217" VPOS="2709" WIDTH="75" HEIGHT="22">
+            <String CONTENT="Meshed" ID="Word_339" HPOS="4217" VPOS="2709" WIDTH="75" HEIGHT="22" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_177" HPOS="4720" VPOS="2714" WIDTH="70" HEIGHT="14">
+          <TextLine ID="TextLine_162" HPOS="4720" VPOS="2714" WIDTH="70" HEIGHT="14">
+            <String CONTENT="Khotan" ID="Word_340" HPOS="4720" VPOS="2714" WIDTH="70" HEIGHT="14" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_178" HPOS="6420" VPOS="2725" WIDTH="83" HEIGHT="21">
+          <TextLine ID="TextLine_163" HPOS="6420" VPOS="2725" WIDTH="83" HEIGHT="21">
+            <String CONTENT="ot" ID="Word_341" HPOS="6420" VPOS="2730" WIDTH="16" HEIGHT="16" />
+            <SP ID="SP_179" HPOS="6437" VPOS="2730" WIDTH="11" HEIGHT="0" />
+            <String CONTENT="tr»aP&amp;" ID="Word_342" HPOS="6449" VPOS="2725" WIDTH="54" HEIGHT="18" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_179" HPOS="6302" VPOS="2741" WIDTH="55" HEIGHT="20">
+          <TextLine ID="TextLine_164" HPOS="6302" VPOS="2741" WIDTH="55" HEIGHT="20">
+            <String CONTENT="Seri" ID="Word_343" HPOS="6302" VPOS="2743" WIDTH="37" HEIGHT="18" />
+            <SP ID="SP_180" HPOS="6340" VPOS="2743" WIDTH="1" HEIGHT="0" />
+            <String CONTENT="at" ID="Word_344" HPOS="6341" VPOS="2741" WIDTH="16" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_180" HPOS="4143" VPOS="2751" WIDTH="66" HEIGHT="22">
+          <TextLine ID="TextLine_165" HPOS="4143" VPOS="2751" WIDTH="66" HEIGHT="22">
+            <String CONTENT="Hiring" ID="Word_345" HPOS="4143" VPOS="2751" WIDTH="66" HEIGHT="22" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_181" HPOS="6310" VPOS="2791" WIDTH="71" HEIGHT="17">
+          <TextLine ID="TextLine_166" HPOS="6310" VPOS="2791" WIDTH="71" HEIGHT="17">
+            <String CONTENT="Glacier" ID="Word_346" HPOS="6310" VPOS="2791" WIDTH="71" HEIGHT="17" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_182" HPOS="4527" VPOS="2817" WIDTH="103" HEIGHT="14">
+          <TextLine ID="TextLine_167" HPOS="4527" VPOS="2817" WIDTH="103" HEIGHT="14">
+            <String CONTENT="SRINAGAR" ID="Word_347" HPOS="4527" VPOS="2817" WIDTH="103" HEIGHT="14" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_183" HPOS="6315" VPOS="2839" WIDTH="60" HEIGHT="19">
+          <TextLine ID="TextLine_168" HPOS="6315" VPOS="2839" WIDTH="60" HEIGHT="19">
+            <String CONTENT="Marsh" ID="Word_348" HPOS="6315" VPOS="2839" WIDTH="60" HEIGHT="19" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_184" HPOS="5239" VPOS="2871" WIDTH="70" HEIGHT="21">
+          <TextLine ID="TextLine_169" HPOS="5239" VPOS="2871" WIDTH="70" HEIGHT="21">
+            <String CONTENT="Batang" ID="Word_349" HPOS="5239" VPOS="2871" WIDTH="70" HEIGHT="21" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_185" HPOS="4742" VPOS="2878" WIDTH="67" HEIGHT="14">
+          <TextLine ID="TextLine_170" HPOS="4742" VPOS="2878" WIDTH="67" HEIGHT="14">
+            <String CONTENT="Gartok" ID="Word_350" HPOS="4742" VPOS="2878" WIDTH="67" HEIGHT="14" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_186" HPOS="4649" VPOS="2894" WIDTH="54" HEIGHT="15">
+          <TextLine ID="TextLine_171" HPOS="4649" VPOS="2894" WIDTH="54" HEIGHT="15">
+            <String CONTENT="Simla" ID="Word_351" HPOS="4649" VPOS="2894" WIDTH="54" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_187" HPOS="4488" VPOS="2895" WIDTH="83" HEIGHT="15">
+          <TextLine ID="TextLine_172" HPOS="4488" VPOS="2895" WIDTH="83" HEIGHT="15">
+            <String CONTENT="LAHORE" ID="Word_352" HPOS="4488" VPOS="2895" WIDTH="83" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_188" HPOS="4391" VPOS="2907" WIDTH="67" HEIGHT="19">
+          <TextLine ID="TextLine_173" HPOS="4391" VPOS="2907" WIDTH="67" HEIGHT="19">
+            <String CONTENT="Quetta" ID="Word_353" HPOS="4391" VPOS="2907" WIDTH="67" HEIGHT="19" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_189" HPOS="5019" VPOS="2909" WIDTH="75" HEIGHT="31">
+          <TextLine ID="TextLine_174" HPOS="5019" VPOS="2909" WIDTH="75" HEIGHT="31">
+            <String CONTENT="LHA^" ID="Word_354" HPOS="5019" VPOS="2909" WIDTH="75" HEIGHT="31" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_190" HPOS="4126" VPOS="2914" WIDTH="70" HEIGHT="22">
+          <TextLine ID="TextLine_175" HPOS="4126" VPOS="2914" WIDTH="70" HEIGHT="22">
+            <String CONTENT="Se/stan" ID="Word_355" HPOS="4126" VPOS="2914" WIDTH="70" HEIGHT="22" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_191" HPOS="6326" VPOS="2941" WIDTH="58" HEIGHT="17">
+          <TextLine ID="TextLine_176" HPOS="6326" VPOS="2941" WIDTH="58" HEIGHT="17">
+            <String CONTENT="Route" ID="Word_356" HPOS="6326" VPOS="2941" WIDTH="58" HEIGHT="17" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_192" HPOS="4644" VPOS="2969" WIDTH="66" HEIGHT="15">
+          <TextLine ID="TextLine_177" HPOS="4644" VPOS="2969" WIDTH="66" HEIGHT="15">
+            <String CONTENT="\DELHI" ID="Word_357" HPOS="4644" VPOS="2969" WIDTH="66" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_193" HPOS="6334" VPOS="2981" WIDTH="173" HEIGHT="76">
+          <TextLine ID="TextLine_178" HPOS="6334" VPOS="2981" WIDTH="159" HEIGHT="25">
+            <String CONTENT="watted" ID="Word_358" HPOS="6334" VPOS="2987" WIDTH="66" HEIGHT="19" />
+            <SP ID="SP_181" HPOS="6401" VPOS="2986" WIDTH="10" HEIGHT="0" />
+            <String CONTENT="town" ID="Word_359" HPOS="6412" VPOS="2983" WIDTH="48" HEIGHT="16" />
+            <SP ID="SP_182" HPOS="6461" VPOS="2981" WIDTH="10" HEIGHT="0" />
+            <String CONTENT="or" ID="Word_360" HPOS="6472" VPOS="2981" WIDTH="21" HEIGHT="10" />
+          </TextLine>
+          <TextLine ID="TextLine_179" HPOS="6342" VPOS="3028" WIDTH="165" HEIGHT="29">
+            <String CONTENT="Ancient" ID="Word_361" HPOS="6342" VPOS="3036" WIDTH="77" HEIGHT="21" />
+            <SP ID="SP_183" HPOS="6420" VPOS="3033" WIDTH="10" HEIGHT="0" />
+            <String CONTENT="1ront'®r" ID="Word_362" HPOS="6431" VPOS="3028" WIDTH="76" HEIGHT="19" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_194" HPOS="4954" VPOS="2989" WIDTH="165" HEIGHT="86">
+          <TextLine ID="TextLine_180" HPOS="4954" VPOS="2989" WIDTH="144" HEIGHT="31">
+            <String CONTENT="Oar|eeting" ID="Word_363" HPOS="4954" VPOS="2989" WIDTH="96" HEIGHT="24" />
+            <SP ID="SP_184" HPOS="5051" VPOS="2989" WIDTH="18" HEIGHT="0" />
+            <String CONTENT="^" ID="Word_364" HPOS="5070" VPOS="2989" WIDTH="28" HEIGHT="31" />
+          </TextLine>
+          <TextLine ID="TextLine_181" HPOS="4987" VPOS="3034" WIDTH="33" HEIGHT="7">
+            <String CONTENT="—" ID="Word_365" HPOS="4987" VPOS="3034" WIDTH="33" HEIGHT="7" />
+          </TextLine>
+          <TextLine ID="TextLine_182" HPOS="4973" VPOS="3038" WIDTH="146" HEIGHT="37">
+            <String CONTENT="(" ID="Word_366" HPOS="4973" VPOS="3041" WIDTH="14" HEIGHT="34" />
+            <SP ID="SP_185" HPOS="4988" VPOS="3041" WIDTH="16" HEIGHT="0" />
+            <String CONTENT="®&lt;*°ghlHon4" ID="Word_367" HPOS="5005" VPOS="3038" WIDTH="114" HEIGHT="29" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_195" HPOS="2294" VPOS="3007" WIDTH="101" HEIGHT="18">
+          <TextLine ID="TextLine_183" HPOS="2294" VPOS="3007" WIDTH="101" HEIGHT="18">
+            <String CONTENT="■Hatim" ID="Word_368" HPOS="2294" VPOS="3007" WIDTH="56" HEIGHT="17" />
+            <SP ID="SP_186" HPOS="2351" VPOS="3009" WIDTH="5" HEIGHT="0" />
+            <String CONTENT="Pass" ID="Word_369" HPOS="2357" VPOS="3009" WIDTH="38" HEIGHT="16" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_196" HPOS="4876" VPOS="3047" WIDTH="56" HEIGHT="14">
+          <TextLine ID="TextLine_184" HPOS="4876" VPOS="3047" WIDTH="56" HEIGHT="14">
+            <String CONTENT="Patna" ID="Word_370" HPOS="4876" VPOS="3047" WIDTH="56" HEIGHT="14" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_197" HPOS="4670" VPOS="3081" WIDTH="47" HEIGHT="14">
+          <TextLine ID="TextLine_185" HPOS="4670" VPOS="3081" WIDTH="47" HEIGHT="14">
+            <String CONTENT="Allah" ID="Word_371" HPOS="4670" VPOS="3081" WIDTH="47" HEIGHT="14" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_198" HPOS="6348" VPOS="3083" WIDTH="75" HEIGHT="21">
+          <TextLine ID="TextLine_186" HPOS="6348" VPOS="3083" WIDTH="75" HEIGHT="21">
+            <String CONTENT="Ancient" ID="Word_372" HPOS="6348" VPOS="3083" WIDTH="75" HEIGHT="21" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_199" HPOS="4712" VPOS="3204" WIDTH="62" HEIGHT="17">
+          <TextLine ID="TextLine_187" HPOS="4712" VPOS="3204" WIDTH="62" HEIGHT="17">
+            <String CONTENT="lagpur" ID="Word_373" HPOS="4712" VPOS="3204" WIDTH="62" HEIGHT="17" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_200" HPOS="4528" VPOS="3255" WIDTH="86" HEIGHT="16">
+          <TextLine ID="TextLine_188" HPOS="4528" VPOS="3255" WIDTH="86" HEIGHT="16">
+            <String CONTENT="BOMBAY" ID="Word_374" HPOS="4528" VPOS="3255" WIDTH="86" HEIGHT="16" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_201" HPOS="4725" VPOS="3308" WIDTH="73" HEIGHT="15">
+          <TextLine ID="TextLine_189" HPOS="4725" VPOS="3308" WIDTH="73" HEIGHT="15">
+            <String CONTENT="lerabad" ID="Word_375" HPOS="4725" VPOS="3308" WIDTH="73" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_202" HPOS="293" VPOS="3344" WIDTH="96" HEIGHT="26">
+          <TextLine ID="TextLine_190" HPOS="293" VPOS="3344" WIDTH="96" HEIGHT="26">
+            <String CONTENT="GREENVV/" ID="Word_376" HPOS="293" VPOS="3344" WIDTH="96" HEIGHT="26" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_203" HPOS="7182" VPOS="3424" WIDTH="134" HEIGHT="26">
+          <TextLine ID="TextLine_191" HPOS="7182" VPOS="3424" WIDTH="134" HEIGHT="26">
+            <String CONTENT="Offices," ID="Word_377" HPOS="7182" VPOS="3432" WIDTH="68" HEIGHT="18" />
+            <SP ID="SP_187" HPOS="7251" VPOS="3425" WIDTH="7" HEIGHT="0" />
+            <String CONTENT="Dehra" ID="Word_378" HPOS="7259" VPOS="3424" WIDTH="57" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="TextBlock_204" HPOS="6781" VPOS="3469" WIDTH="147" HEIGHT="31">
+          <TextLine ID="TextLine_192" HPOS="6781" VPOS="3469" WIDTH="147" HEIGHT="31">
+            <String CONTENT="Heliozinc0Brap'" ID="Word_379" HPOS="6781" VPOS="3469" WIDTH="147" HEIGHT="31" />
+          </TextLine>
+        </TextBlock>
+        <ComposedBlock TYPE="Table" ID="TextBlock_205" HPOS="2325" VPOS="1851" WIDTH="85" HEIGHT="142">
+          <TextBlock ID="TextBlock_207" HPOS="2355" VPOS="1851" WIDTH="55" HEIGHT="97">
+            <TextLine ID="TextLine_193" HPOS="2358" VPOS="1851" WIDTH="52" HEIGHT="58">
+              <String CONTENT="n" ID="Word_380" HPOS="2358" VPOS="1851" WIDTH="52" HEIGHT="58" />
+            </TextLine>
+            <TextLine ID="TextLine_194" HPOS="2355" VPOS="1893" WIDTH="55" HEIGHT="55">
+              <String CONTENT="HI" ID="Word_381" HPOS="2355" VPOS="1893" WIDTH="55" HEIGHT="55" />
+            </TextLine>
+          </TextBlock>
+          <TextBlock ID="TextBlock_208" HPOS="2325" VPOS="1943" WIDTH="21" HEIGHT="50">
+            <TextLine ID="TextLine_195" HPOS="2325" VPOS="1943" WIDTH="21" HEIGHT="50">
+              <String CONTENT="1" ID="Word_382" HPOS="2325" VPOS="1943" WIDTH="21" HEIGHT="50" />
+            </TextLine>
+          </TextBlock>
+        </ComposedBlock>
+        <TextBlock ID="TextBlock_214" HPOS="3309" VPOS="3653" WIDTH="929" HEIGHT="54">
+          <TextLine ID="TextLine_196" HPOS="3309" VPOS="3653" WIDTH="929" HEIGHT="22">
+            <String CONTENT="Published" ID="Word_383" HPOS="3309" VPOS="3657" WIDTH="87" HEIGHT="18" />
+            <SP ID="SP_188" HPOS="3397" VPOS="3657" WIDTH="6" HEIGHT="0" />
+            <String CONTENT="under" ID="Word_384" HPOS="3404" VPOS="3657" WIDTH="49" HEIGHT="16" />
+            <SP ID="SP_189" HPOS="3454" VPOS="3658" WIDTH="5" HEIGHT="0" />
+            <String CONTENT="the" ID="Word_385" HPOS="3460" VPOS="3657" WIDTH="25" HEIGHT="16" />
+            <SP ID="SP_190" HPOS="3486" VPOS="3657" WIDTH="5" HEIGHT="0" />
+            <String CONTENT="direction" ID="Word_386" HPOS="3492" VPOS="3657" WIDTH="74" HEIGHT="16" />
+            <SP ID="SP_191" HPOS="3567" VPOS="3660" WIDTH="7" HEIGHT="0" />
+            <String CONTENT="of" ID="Word_387" HPOS="3575" VPOS="3656" WIDTH="17" HEIGHT="17" />
+            <SP ID="SP_192" HPOS="3593" VPOS="3656" WIDTH="6" HEIGHT="0" />
+            <String CONTENT="Colonel" ID="Word_388" HPOS="3600" VPOS="3657" WIDTH="72" HEIGHT="17" />
+            <SP ID="SP_193" HPOS="3673" VPOS="3657" WIDTH="7" HEIGHT="0" />
+            <String CONTENT="C." ID="Word_389" HPOS="3681" VPOS="3657" WIDTH="19" HEIGHT="15" />
+            <SP ID="SP_194" HPOS="3701" VPOS="3656" WIDTH="8" HEIGHT="0" />
+            <String CONTENT="H." ID="Word_390" HPOS="3710" VPOS="3656" WIDTH="18" HEIGHT="15" />
+            <SP ID="SP_195" HPOS="3729" VPOS="3656" WIDTH="7" HEIGHT="0" />
+            <String CONTENT="D." ID="Word_391" HPOS="3737" VPOS="3656" WIDTH="19" HEIGHT="15" />
+            <SP ID="SP_196" HPOS="3757" VPOS="3656" WIDTH="7" HEIGHT="0" />
+            <String CONTENT="Ryder," ID="Word_392" HPOS="3765" VPOS="3656" WIDTH="61" HEIGHT="19" />
+            <SP ID="SP_197" HPOS="3827" VPOS="3656" WIDTH="7" HEIGHT="0" />
+            <String CONTENT="C.I.E.," ID="Word_393" HPOS="3835" VPOS="3656" WIDTH="54" HEIGHT="19" />
+            <SP ID="SP_198" HPOS="3890" VPOS="3656" WIDTH="7" HEIGHT="0" />
+            <String CONTENT="D" ID="Word_394" HPOS="3898" VPOS="3656" WIDTH="13" HEIGHT="15" />
+            <SP ID="SP_199" HPOS="3912" VPOS="3656" WIDTH="6" HEIGHT="0" />
+            <String CONTENT="S" ID="Word_395" HPOS="3919" VPOS="3656" WIDTH="11" HEIGHT="15" />
+            <SP ID="SP_200" HPOS="3931" VPOS="3656" WIDTH="5" HEIGHT="0" />
+            <String CONTENT="O.," ID="Word_396" HPOS="3937" VPOS="3656" WIDTH="26" HEIGHT="18" />
+            <SP ID="SP_201" HPOS="3964" VPOS="3656" WIDTH="7" HEIGHT="0" />
+            <String CONTENT="RE," ID="Word_397" HPOS="3972" VPOS="3655" WIDTH="43" HEIGHT="19" />
+            <SP ID="SP_202" HPOS="4016" VPOS="3654" WIDTH="6" HEIGHT="0" />
+            <String CONTENT="Surveyor" ID="Word_398" HPOS="4023" VPOS="3654" WIDTH="74" HEIGHT="16" />
+            <SP ID="SP_203" HPOS="4098" VPOS="3653" WIDTH="5" HEIGHT="0" />
+            <String CONTENT="General" ID="Word_399" HPOS="4104" VPOS="3653" WIDTH="63" HEIGHT="16" />
+            <SP ID="SP_204" HPOS="4168" VPOS="3653" WIDTH="5" HEIGHT="0" />
+            <String CONTENT="of" ID="Word_400" HPOS="4174" VPOS="3654" WIDTH="17" HEIGHT="15" />
+            <SP ID="SP_205" HPOS="4192" VPOS="3654" WIDTH="3" HEIGHT="0" />
+            <String CONTENT="India" ID="Word_401" HPOS="4196" VPOS="3654" WIDTH="42" HEIGHT="17" />
+          </TextLine>
+          <TextLine ID="TextLine_197" HPOS="3759" VPOS="3692" WIDTH="47" HEIGHT="15">
+            <String CONTENT="1922" ID="Word_402" HPOS="3759" VPOS="3692" WIDTH="47" HEIGHT="15" />
+          </TextLine>
+        </TextBlock>
+        <Illustration TYPE="Picture" ID="Illustration_20" HPOS="0" VPOS="112" WIDTH="7553" HEIGHT="3539" />
+      </PrintSpace>
+    </Page>
+  </Layout>
+</alto>
