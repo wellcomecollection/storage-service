@@ -79,7 +79,7 @@ class BagUnpackerWorkerTest
                 eventDescriptions should have size 2
 
                 eventDescriptions(0) shouldBe "Unpacker started"
-                eventDescriptions(1) should fullyMatch regex """Unpacker succeeded - Unpacked \d+ bytes from \d+ files"""
+                eventDescriptions(1) should fullyMatch regex """Unpacker succeeded - Unpacked \d+ KB from \d+ files"""
             }
           }
         }

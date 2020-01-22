@@ -55,7 +55,7 @@ trait Unpacker extends Logging {
     result match {
       case Right(summary) =>
         val message =
-          s"Unpacked ${summary.bytesUnpacked} bytes from ${summary.fileCount} file${if (summary.fileCount != 1) "s"}"
+          s"Unpacked ${summary.size} from ${summary.fileCount} file${if (summary.fileCount != 1) "s"}"
         Success(
           IngestStepSucceeded(
             summary,
