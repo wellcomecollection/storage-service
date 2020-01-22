@@ -103,7 +103,6 @@ trait Unpacker extends Logging {
         Left(UnpackerUnarchiverError(unarchiverError))
 
       case Right(iterator) =>
-
         // For large bags, the standard Int type can overflow and report a negative
         // number of bytes.  This is silly, so we ensure these are treated as Long.
         // See https://github.com/wellcometrust/platform/issues/3947
