@@ -103,8 +103,11 @@ trait Unpacker extends Logging {
         Left(UnpackerUnarchiverError(unarchiverError))
 
       case Right(iterator) =>
-        var totalFiles = 0
-        var totalBytes = 0
+        // For large bags, the standard Int type can overflow and report a negative
+        // number of bytes.  This is silly, so we ensure these are treated as Long.
+        // See https://github.com/wellcometrust/platform/issues/3947
+        var totalFiles: Long = 0
+        var totalBytes: Long = 0
 
         Try {
           iterator
@@ -119,7 +122,7 @@ trait Unpacker extends Logging {
                 )
 
                 totalFiles += 1
-                totalBytes += uploadedBytes.toInt
+                totalBytes += uploadedBytes
             }
 
           unpackSummary.copy(
