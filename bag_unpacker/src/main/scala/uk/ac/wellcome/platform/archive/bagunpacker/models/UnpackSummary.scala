@@ -19,12 +19,15 @@ case class UnpackSummary(
   def complete: UnpackSummary =
     this.copy(maybeEndTime = Some(Instant.now()))
 
+  def size: String =
+    FileUtils.byteCountToDisplaySize(bytesUnpacked)
+
   override val fieldsToLog: Seq[(String, Any)] =
     Seq(
       ("src", srcLocation),
       ("dst", dstLocation),
       ("files", fileCount),
       ("bytesUnpacked", bytesUnpacked),
-      ("size", FileUtils.byteCountToDisplaySize(bytesUnpacked))
+      ("size", size)
     )
 }
