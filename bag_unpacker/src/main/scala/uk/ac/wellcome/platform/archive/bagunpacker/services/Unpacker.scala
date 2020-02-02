@@ -39,7 +39,8 @@ trait Unpacker extends Logging {
 
   def createMessage(summary: UnpackSummary): String = {
     val displayFileCount = NumberFormat.getInstance().format(summary.fileCount)
-    s"Unpacked ${summary.size} from $displayFileCount file${if (summary.fileCount != 1) "s" else ""}"
+    s"Unpacked ${summary.size} from $displayFileCount file${if (summary.fileCount != 1) "s"
+    else ""}"
   }
 
   def unpack(

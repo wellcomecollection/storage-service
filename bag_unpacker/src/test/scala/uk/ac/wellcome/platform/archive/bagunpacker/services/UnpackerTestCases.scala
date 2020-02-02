@@ -189,7 +189,10 @@ trait UnpackerTestCases[Namespace]
       unpacker.createMessage(summary) should startWith("Unpacked 117 MB")
     }
 
-    def createUnpackSummaryWith(fileCount: Long = Random.nextLong(), bytesUnpacked: Long = Random.nextLong()): UnpackSummary =
+    def createUnpackSummaryWith(
+      fileCount: Long = Random.nextLong(),
+      bytesUnpacked: Long = Random.nextLong()
+    ): UnpackSummary =
       UnpackSummary(
         ingestId = createIngestID,
         srcLocation = createObjectLocation,
