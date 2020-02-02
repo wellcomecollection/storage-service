@@ -177,6 +177,12 @@ trait UnpackerTestCases[Namespace]
       unpacker.createMessage(summary) should endWith("from 5 files")
     }
 
+    it("adds a comma to the file counts if appropriate") {
+      val summary = createUnpackSummaryWith(fileCount = 123456789)
+
+      unpacker.createMessage(summary) should endWith("from 123,456,789 files")
+    }
+
     it("pretty-prints the file size") {
       val summary = createUnpackSummaryWith(bytesUnpacked = 123456789)
 
