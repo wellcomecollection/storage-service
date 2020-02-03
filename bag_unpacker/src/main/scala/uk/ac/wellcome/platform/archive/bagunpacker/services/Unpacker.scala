@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import java.io.InputStream
+import java.text.NumberFormat
 import java.time.Instant
 
 import grizzled.slf4j.Logging
@@ -36,6 +37,12 @@ trait Unpacker extends Logging {
 
   def formatLocation(location: ObjectLocation): String
 
+  def createMessage(summary: UnpackSummary): String = {
+    val displayFileCount = NumberFormat.getInstance().format(summary.fileCount)
+    s"Unpacked ${summary.size} from $displayFileCount file${if (summary.fileCount != 1) "s"
+    else ""}"
+  }
+
   def unpack(
     ingestId: IngestID,
     srcLocation: ObjectLocation,
@@ -54,12 +61,10 @@ trait Unpacker extends Logging {
 
     result match {
       case Right(summary) =>
-        val message =
-          s"Unpacked ${summary.size} from ${summary.fileCount} file${if (summary.fileCount != 1) "s"}"
         Success(
           IngestStepSucceeded(
             summary,
-            maybeUserFacingMessage = Some(message)
+            maybeUserFacingMessage = Some(createMessage(summary))
           )
         )
 
