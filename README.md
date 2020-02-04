@@ -1,6 +1,6 @@
-# storage-service 
+# storage-service
 
-[![Build Status](https://travis-ci.org/wellcometrust/storage-service.svg?branch=master)](https://travis-ci.org/wellcometrust/storage-service)
+[![Build Status](https://travis-ci.org/wellcomecollection/storage-service.svg?branch=master)](https://travis-ci.org/wellcomecollection/storage-service)
 
 ![Storage Service](overview.png)
 
