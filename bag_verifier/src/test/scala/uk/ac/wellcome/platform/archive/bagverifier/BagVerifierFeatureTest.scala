@@ -94,16 +94,15 @@ class BagVerifierFeatureTest
           stepName = "verification"
         ) { _ =>
           withLocalS3Bucket { bucket =>
-            val builder = new S3BagBuilderBase {
+            val badBuilder: S3BagBuilderBase = new S3BagBuilderBase {
               override protected def createPayloadManifest(
                 entries: Seq[PayloadEntry]
               ): Option[String] =
-                super.createPayloadManifest(entries).map { manifest =>
-                  manifest + "\nbadDigest  badName"
-                }
+                super.createPayloadManifest(entries)
+                  .map { _ + "\nbadDigest  badName" }
             }
 
-            val (bagRootLocation, bagInfo) = builder.createS3BagWith(bucket)
+            val (bagRootLocation, bagInfo) = badBuilder.createS3BagWith(bucket)
 
             val payload = createVersionedBagRootPayloadWith(
               context = createPipelineContextWith(
