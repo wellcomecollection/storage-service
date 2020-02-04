@@ -98,7 +98,8 @@ class BagVerifierFeatureTest
               override protected def createPayloadManifest(
                 entries: Seq[PayloadEntry]
               ): Option[String] =
-                super.createPayloadManifest(entries)
+                super
+                  .createPayloadManifest(entries)
                   .map { _ + "\nbadDigest  badName" }
             }
 
