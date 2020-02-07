@@ -20,12 +20,5 @@ locals {
 
   workflow_bucket_name = "wellcomecollection-workflow-export-bagit"
   catalogue_pipeline_account_principal = "arn:aws:iam::760097843905:root"
-
-  subnets_ids = [
-    data.terraform_remote_state.infra_shared.outputs.storage_vpc_private_subnets[0],
-    data.terraform_remote_state.infra_shared.outputs.storage_vpc_private_subnets[2],
-  ]
-
-  service-wt-winnipeg = data.terraform_remote_state.infra_shared.outputs.service-wt-winnipeg
 }
 

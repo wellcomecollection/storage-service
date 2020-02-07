@@ -21,12 +21,5 @@ locals {
   workflow_staging_bucket_name = "wellcomecollection-workflow-export-bagit-stage"
 
   archivematica_ingests_bucket = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
-
-  subnets_ids = [
-    data.terraform_remote_state.infra_shared.outputs.storage_vpc_private_subnets[0],
-    data.terraform_remote_state.infra_shared.outputs.storage_vpc_private_subnets[2],
-  ]
-
-  service-pl-winslow = data.terraform_remote_state.infra_shared.outputs.service-pl-winslow
 }
 
