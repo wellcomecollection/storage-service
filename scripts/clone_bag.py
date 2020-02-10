@@ -21,13 +21,12 @@ def slugify(ustr):
 
     Based on http://www.leancrew.com/all-this/2014/10/asciifying/
     """
-    ustr = re.sub(u'[–—/:;,.]', '-', ustr)   # replace separating punctuation
-    astr = ustr.lower()                      # lowercase
-    astr = re.sub(r'[^a-z0-9 -]', '', astr)  # delete any other characters
-    astr = astr.replace(' ', '-')            # spaces to hyphens
-    astr = re.sub(r'-+', '-', astr)          # condense repeated hyphens
+    ustr = re.sub("[–—/:;,.]", "-", ustr)  # replace separating punctuation
+    astr = ustr.lower()  # lowercase
+    astr = re.sub(r"[^a-z0-9 -]", "", astr)  # delete any other characters
+    astr = astr.replace(" ", "-")  # spaces to hyphens
+    astr = re.sub(r"-+", "-", astr)  # condense repeated hyphens
     return astr
-
 
 
 def clone_bag(api_name, space, external_identifier):
@@ -65,9 +64,7 @@ def clone_bag(api_name, space, external_identifier):
             size = manifest_file["size"]
             name = manifest_file["name"]
 
-            fetch_file.write(
-                f"s3://{bucket}/{path_prefix}/{path}\t{size}\t{name}\n"
-            )
+            fetch_file.write(f"s3://{bucket}/{path_prefix}/{path}\t{size}\t{name}\n")
 
     # Download some of the manifest files from the original bag.
     s3 = get_read_only_aws_resource("s3")
@@ -80,8 +77,7 @@ def clone_bag(api_name, space, external_identifier):
             continue
 
         s3.Bucket(bucket).download_file(
-            Key=f"{path_prefix}/{path}",
-            Filename=os.path.join(bag_dir, name)
+            Key=f"{path_prefix}/{path}", Filename=os.path.join(bag_dir, name)
         )
 
     bag = bagit.Bag(bag_dir)
