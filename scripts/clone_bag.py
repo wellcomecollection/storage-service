@@ -11,6 +11,7 @@ import os
 import re
 
 import bagit
+import inquirer
 
 from common import get_read_only_aws_resource, get_storage_client
 
@@ -50,8 +51,9 @@ def clone_bag(api_name, space, external_identifier):
     try:
         os.makedirs(bag_dir)
     except FileExistsError:
-        # sys.exit("You already have a clone of this bag!")
-        pass
+        sys.exit("You already have a clone of this bag!")
+
+    os.makedirs(os.path.join(bag_dir, "data"))
 
     location = bag["location"]
     bucket = location["bucket"]
@@ -91,4 +93,6 @@ def clone_bag(api_name, space, external_identifier):
 
 
 if __name__ == "__main__":
-    clone_bag("prod", "digitised", "b18031961")
+
+
+    clone_bag("prod", "digitised", sys.argv[1])
