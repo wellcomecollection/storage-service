@@ -9,7 +9,6 @@ you to do a shallow update of the bag.
 
 import os
 import re
-import sys
 
 import bagit
 
@@ -82,8 +81,6 @@ def clone_bag(api_name, space, external_identifier):
 
     bag = bagit.Bag(bag_dir)
     bag.save(manifests=True)
-
-    script_path = os.path.join("_bags", f"{bag_slug}.py")
 
     print(f"✨ Created your new bag at {bag_dir} ✨")
     print("")
