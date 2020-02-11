@@ -8,6 +8,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageManifestGenerators
 }
 import uk.ac.wellcome.storage.{
+  NoMaximaValueError,
   NoVersionExistsError,
   VersionAlreadyExistsError,
   WriteError
@@ -185,6 +186,37 @@ trait StorageManifestDaoTestCases[Context]
       withContext { implicit context =>
         withDao { dao =>
           dao.listVersions(createBagId).right.value shouldBe empty
+        }
+      }
+    }
+
+    it("finds the latest version") {
+      val storageManifest = createStorageManifest
+
+      val manifests = (0 to 5).map { version =>
+        storageManifest.copy(version = BagVersion(version))
+      }
+
+      withContext { implicit context =>
+        withDao { dao =>
+          manifests.foreach { manifest =>
+            dao.put(manifest) shouldBe a[Right[_, _]]
+          }
+
+          dao.getLatestVersion(storageManifest.id).right.value shouldBe BagVersion(5)
+        }
+      }
+    }
+
+    it("returns a NoMaximaValueError() error if there is no latest version") {
+      val bagId = createBagId
+
+      withContext { implicit context =>
+        withDao { dao =>
+          dao
+            .getLatestVersion(bagId)
+            .left
+            .value shouldBe a[NoMaximaValueError]
         }
       }
     }
