@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders._
+import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
@@ -60,6 +61,8 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val router: BagsApi = new BagsApi {
+      override val httpServerConfig: HTTPServerConfig =
+        HTTPServerBuilder.buildHTTPServerConfig(config)
       override implicit val ec: ExecutionContext = ecMain
       override val contextURL: URL = contextURLMain
       override val storageManifestDao: StorageManifestDao =

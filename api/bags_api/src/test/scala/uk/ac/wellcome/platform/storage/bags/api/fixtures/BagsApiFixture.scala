@@ -9,6 +9,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
   StorageManifestVHSFixture,
@@ -64,6 +65,7 @@ trait BagsApiFixture
         )
 
         lazy val router: BagsApi = new BagsApi {
+          override val httpServerConfig: HTTPServerConfig = httpServerConfigTest
           override implicit val ec: ExecutionContext = global
           override val contextURL: URL = contextURLTest
           override val storageManifestDao: StorageManifestDao =
@@ -129,6 +131,9 @@ trait BagsApiFixture
     )
 
     val brokenDao = new MemoryStorageManifestDao(versionedStore) {
+      override def getLatestVersion(id: BagId): Either[ReadError, BagVersion] =
+        Left(StoreReadError(new Throwable("BOOM!")))
+
       override def getLatest(
         id: BagId
       ): scala.Either[ReadError, StorageManifest] =
