@@ -82,6 +82,9 @@ trait LookupBag extends Logging with ResponseBase {
     }
   }
 
+  def createEtag(bagId: BagId, versionString: String): ETag =
+    ETag(s"$bagId/$versionString")
+
   private def lookupVersionOfBag(bagId: BagId, versionString: String): Route = {
     val result = parseVersion(versionString) match {
       case Success(version) =>
@@ -89,10 +92,10 @@ trait LookupBag extends Logging with ResponseBase {
       case Failure(_) => Left(NoVersionExistsError())
     }
 
+    val etag = createEtag(bagId = bagId, versionString = versionString)
+
     result match {
       case Right(storageManifest) =>
-        val etag = ETag(storageManifest.idWithVersion)
-
         respondWithHeaders(etag) {
           complete(
             ResponseDisplayBag(

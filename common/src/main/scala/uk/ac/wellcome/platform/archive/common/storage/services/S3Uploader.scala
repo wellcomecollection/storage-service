@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
   * It's based on an example from the AWS SDK for Java docs:
   * https://docs.aws.amazon.com/AmazonS3/latest/dev/ShareObjectPreSignedURLJavaSDK.html
   */
-class S3Uploader(implicit s3Client: AmazonS3) {
+class S3Uploader(implicit val s3Client: AmazonS3) {
   import S3ObjectExists._
 
   private val s3StreamStore: S3StreamStore = new S3StreamStore()
@@ -62,7 +62,7 @@ class S3Uploader(implicit s3Client: AmazonS3) {
       )
     } yield result
 
-  private def getPresignedGetURL(
+  def getPresignedGetURL(
     location: ObjectLocation,
     expiryLength: Duration
   ): Either[ReadError, URL] = {

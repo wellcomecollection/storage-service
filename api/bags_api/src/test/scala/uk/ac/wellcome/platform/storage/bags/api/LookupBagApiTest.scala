@@ -146,6 +146,43 @@ class LookupBagApiTest
       }
     }
 
+    it("can return cached responses from previous requests") {
+      val storageManifest = createStorageManifestWithFileCount(fileCount = 100)
+
+      // TODO: Ideally this test would do some introspection on the bucket
+      // or the dao, and see that we only did a lookup on the first request.
+      //
+      // For now, this test at least checks the path (cached response exists)
+      // works correctly.
+
+      withLocalS3Bucket { bucket =>
+        withConfiguredApp(
+          initialManifests = Seq(storageManifest),
+          locationPrefix = createObjectLocationPrefixWith(bucket.name),
+          maxResponseByteLength = 1000
+        ) {
+          case (_, metrics, baseUrl) =>
+            val url = s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
+
+            (1 to 3).foreach { _ =>
+              whenGetRequestReady(url) { response =>
+                response.status shouldBe StatusCodes.TemporaryRedirect
+
+                assertMetricSent(metrics, result = HttpMetricResults.Success)
+
+                val redirectedUrl = response.header[Location].get.uri.toString()
+
+                whenGetRequestReady(redirectedUrl) { redirectedResponse =>
+                  withStringEntity(redirectedResponse.entity) {
+                    assertJsonMatches(_, storageManifest)
+                  }
+                }
+              }
+            }
+        }
+      }
+    }
+
     it("finds specific versions") {
       val externalIdentifier = createExternalIdentifier
       val storageSpace = createStorageSpace
