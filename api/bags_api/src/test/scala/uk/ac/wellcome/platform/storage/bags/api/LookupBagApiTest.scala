@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.storage.bags.api
 
 import java.time.format.DateTimeFormatter
 
-import akka.http.scaladsl.model.{StatusCodes, Uri}
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.{ETag, Location}
 import io.circe.optics.JsonPath.root
 import io.circe.parser.parse
@@ -34,7 +34,7 @@ class LookupBagApiTest
     with BagsApiFixture {
 
   describe("finding the latest version of a bag") {
-    it("returns a 302 Redirect to the latest version") {
+    it("returns the latest version") {
       val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
@@ -42,15 +42,8 @@ class LookupBagApiTest
           val url = s"$baseUrl/bags/${storageManifest.id}"
 
           whenGetRequestReady(url) { response =>
-            response.status shouldBe StatusCodes.Found
-
-            val location: Location = response.header[Location].get
-            location.uri shouldBe Uri(s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}")
-
-            whenGetRequestReady(location.uri.toString) { redirectedResponse =>
-              withStringEntity(redirectedResponse.entity) {
-                assertJsonMatches(_, storageManifest)
-              }
+            withStringEntity(response.entity) {
+              assertJsonMatches(_, storageManifest)
             }
           }
       }
