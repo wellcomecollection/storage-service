@@ -57,8 +57,7 @@ class LookupBagApiTest
           whenGetRequestReady(s"$baseUrl/bags/$bagId") { response =>
             assertIsUserErrorResponse(
               response,
-              description =
-                s"Storage manifest $bagId not found",
+              description = s"Storage manifest $bagId not found",
               statusCode = StatusCodes.NotFound,
               label = "Not Found"
             )
@@ -86,7 +85,8 @@ class LookupBagApiTest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>
-          val url = s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
+          val url =
+            s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
 
           whenGetRequestReady(url) { response =>
             response.status shouldBe StatusCodes.OK
@@ -120,7 +120,8 @@ class LookupBagApiTest
           maxResponseByteLength = 1000
         ) {
           case (_, metrics, baseUrl) =>
-            val url = s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
+            val url =
+              s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
 
             whenGetRequestReady(url) { response =>
               response.status shouldBe StatusCodes.TemporaryRedirect
@@ -155,7 +156,8 @@ class LookupBagApiTest
           maxResponseByteLength = 1000
         ) {
           case (_, metrics, baseUrl) =>
-            val url = s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
+            val url =
+              s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
 
             (1 to 3).foreach { _ =>
               whenGetRequestReady(url) { response =>
@@ -284,14 +286,18 @@ class LookupBagApiTest
   describe("returns a 404 Not Found for missing bags") {
     it("if you ask for a bag ID in the wrong space") {
       val storageManifest = createStorageManifest
-      val badId = s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
+      val badId =
+        s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>
-          whenGetRequestReady(s"$baseUrl/bags/$badId?version=${storageManifest.version}") { response =>
+          whenGetRequestReady(
+            s"$baseUrl/bags/$badId?version=${storageManifest.version}"
+          ) { response =>
             assertIsUserErrorResponse(
               response,
-              description = s"Storage manifest $badId ${storageManifest.version} not found",
+              description =
+                s"Storage manifest $badId ${storageManifest.version} not found",
               statusCode = StatusCodes.NotFound,
               label = "Not Found"
             )
@@ -333,8 +339,7 @@ class LookupBagApiTest
             response =>
               assertIsUserErrorResponse(
                 response,
-                description =
-                  s"Storage manifest $bagId $badVersion not found",
+                description = s"Storage manifest $bagId $badVersion not found",
                 statusCode = StatusCodes.NotFound,
                 label = "Not Found"
               )

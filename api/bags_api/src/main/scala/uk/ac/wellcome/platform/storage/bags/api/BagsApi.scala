@@ -52,8 +52,9 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
 
         get {
           parameter('version.as[String] ?) {
-            case None                => getLatestBag(bagId = bagId)
-            case Some(versionString) => getBag(bagId = bagId, versionString = versionString)
+            case None => getLatestBag(bagId = bagId)
+            case Some(versionString) =>
+              getBag(bagId = bagId, versionString = versionString)
           }
         }
       }
@@ -62,8 +63,9 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
 
   private def getLatestBag(bagId: BagId): Route =
     getLatestVersion(bagId) match {
-      case Left(route)          => route
-      case Right(latestVersion) => getBag(bagId, versionString = latestVersion.toString)
+      case Left(route) => route
+      case Right(latestVersion) =>
+        getBag(bagId, versionString = latestVersion.toString)
     }
 
   /** Some of the bags are very large (Chemist & Druggist is ~180MB for the manifest
@@ -94,7 +96,8 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
               redirectionType = StatusCodes.Found
             )
 
-          case Left(_) => lookupBag(bagId = bagId, versionString = versionString)
+          case Left(_) =>
+            lookupBag(bagId = bagId, versionString = versionString)
         }
 
       case _ => lookupBag(bagId = bagId, versionString = versionString)
