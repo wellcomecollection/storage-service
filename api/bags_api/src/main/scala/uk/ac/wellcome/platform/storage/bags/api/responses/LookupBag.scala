@@ -29,15 +29,14 @@ trait LookupBag extends Logging with ResponseBase {
   implicit val ec: ExecutionContext
 
   def lookupBag(bagId: BagId, maybeVersion: Option[String]): Route = {
-    val result = parseVersion(maybeVersion) match {
-      case Success(Some(version)) =>
-        storageManifestDao.get(bagId, version = version)
+    val result = maybeVersion match {
+      case None => storageManifestDao.getLatest(bagId)
 
-      case Success(None) =>
-        storageManifestDao.getLatest(bagId)
-
-      case Failure(_) =>
-        Left(NoVersionExistsError())
+      case Some(versionString) =>
+        parseVersion(versionString) match {
+          case Success(version) => storageManifestDao.get(bagId, version = version)
+          case Failure(_)       => Left(NoVersionExistsError())
+        }
     }
 
     result match {

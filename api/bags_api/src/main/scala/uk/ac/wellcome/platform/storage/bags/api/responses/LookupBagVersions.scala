@@ -32,32 +32,32 @@ trait LookupBagVersions extends Logging with ResponseBase {
   implicit val ec: ExecutionContext
 
   def lookupVersions(bagId: BagId, maybeBefore: Option[String]): StandardRoute =
-    parseVersion(maybeBefore) match {
-      case Success(Some(version)) =>
-        buildResultsList(
-          bagId = bagId,
-          storageManifestDao.listVersions(bagId, before = version),
-          notFoundMessage =
-            s"No storage manifest versions found for $bagId before $version"
-        )
+    maybeBefore match {
+      case None => buildResultsList(
+        bagId = bagId,
+        storageManifestDao.listVersions(bagId),
+        notFoundMessage = s"No storage manifest versions found for $bagId"
+      )
 
-      case Success(None) =>
-        buildResultsList(
-          bagId = bagId,
-          storageManifestDao.listVersions(bagId),
-          notFoundMessage = s"No storage manifest versions found for $bagId"
-        )
+      case Some(versionString) =>
+        parseVersion(versionString) match {
+          case Success(version) =>
+            buildResultsList(
+              bagId = bagId,
+              storageManifestDao.listVersions(bagId, before = version),
+              notFoundMessage =
+                s"No storage manifest versions found for $bagId before $version"
+            )
 
-      // Note: if the version is empty, we'll always be able to parse it,
-      // so the .get here is safe.
-      case Failure(_) =>
-        complete(
-          BadRequest -> UserErrorResponse(
-            context = contextURL,
-            statusCode = StatusCodes.BadRequest,
-            description = s"Cannot parse version string: ${maybeBefore.get}"
-          )
-        )
+          case Failure(_) =>
+            complete(
+              BadRequest -> UserErrorResponse(
+                context = contextURL,
+                statusCode = StatusCodes.BadRequest,
+                description = s"Cannot parse version string: $versionString"
+              )
+            )
+        }
     }
 
   private def buildResultsList(
