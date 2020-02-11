@@ -40,9 +40,7 @@ class LookupBagVersionsApiTest
     withConfiguredApp() {
       case (_, metrics, baseUrl) =>
         val bagId = createBagId
-        whenGetRequestReady(
-          s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}/versions"
-        ) { response =>
+        whenGetRequestReady(s"$baseUrl/bags/$bagId/versions") { response =>
           assertIsUserErrorResponse(
             response,
             description = s"No storage manifest versions found for $bagId",
@@ -71,8 +69,7 @@ class LookupBagVersionsApiTest
              |}
             """.stripMargin
 
-        val url =
-          s"$baseUrl/bags/${storageManifest.id.space}/${storageManifest.id.externalIdentifier}/versions"
+        val url = s"$baseUrl/bags/${storageManifest.id}/versions"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK
@@ -135,8 +132,7 @@ class LookupBagVersionsApiTest
              |}
             """.stripMargin
 
-        val url =
-          s"$baseUrl/bags/${storageManifest.id.space}/${storageManifest.id.externalIdentifier}/versions"
+        val url = s"$baseUrl/bags/${storageManifest.id}/versions"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK
@@ -176,8 +172,7 @@ class LookupBagVersionsApiTest
             expectedVersionJson(multipleManifests(1), expectedVersion = "v1")
           )
 
-        val url =
-          s"$baseUrl/bags/${storageManifest.id.space}/${storageManifest.id.externalIdentifier}/versions?before=v4"
+        val url = s"$baseUrl/bags/${storageManifest.id}/versions?before=v4"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK
@@ -194,7 +189,7 @@ class LookupBagVersionsApiTest
     }
   }
 
-  val storageManifestWithSlash = createStorageManifestWith(
+  val storageManifestWithSlash: StorageManifest = createStorageManifestWith(
     bagInfo = createBagInfoWith(
       externalIdentifier = ExternalIdentifier("alfa/bravo")
     )
@@ -206,7 +201,7 @@ class LookupBagVersionsApiTest
     withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
       case (_, _, baseUrl) =>
         val url =
-          s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa%2Fbravo/versions"
+          s"$baseUrl/bags/${storageManifestWithSlash.id.space}/alfa%2Fbravo/versions"
 
         val expectedJson = expectedVersionList(
           expectedVersionJson(storageManifestWithSlash)
@@ -228,7 +223,7 @@ class LookupBagVersionsApiTest
     withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
       case (_, _, baseUrl) =>
         val url =
-          s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa/bravo/versions"
+          s"$baseUrl/bags/${storageManifestWithSlash.id.space}/alfa/bravo/versions"
 
         val expectedJson = expectedVersionList(
           expectedVersionJson(storageManifestWithSlash)
@@ -337,7 +332,7 @@ class LookupBagVersionsApiTest
 
     s"""
        |{
-       |  "id": "${storageManifest.id.toString}",
+       |  "id": "${storageManifest.id}",
        |  "version": "${expectedVersion.getOrElse(storageManifest.version)}",
        |  "createdDate": "$createdDate",
        |  "type": "Bag"
