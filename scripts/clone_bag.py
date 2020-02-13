@@ -9,9 +9,9 @@ you to do a shallow update of the bag.
 
 import os
 import re
+import sys
 
 import bagit
-import inquirer
 
 from common import get_read_only_aws_resource, get_storage_client
 
