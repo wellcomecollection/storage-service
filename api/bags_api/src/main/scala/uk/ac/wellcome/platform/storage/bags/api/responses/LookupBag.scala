@@ -34,8 +34,9 @@ trait LookupBag extends Logging with ResponseBase {
 
       case Some(versionString) =>
         parseVersion(versionString) match {
-          case Success(version) => storageManifestDao.get(bagId, version = version)
-          case Failure(_)       => Left(NoVersionExistsError())
+          case Success(version) =>
+            storageManifestDao.get(bagId, version = version)
+          case Failure(_) => Left(NoVersionExistsError())
         }
     }
 

@@ -33,11 +33,12 @@ trait LookupBagVersions extends Logging with ResponseBase {
 
   def lookupVersions(bagId: BagId, maybeBefore: Option[String]): StandardRoute =
     maybeBefore match {
-      case None => buildResultsList(
-        bagId = bagId,
-        storageManifestDao.listVersions(bagId),
-        notFoundMessage = s"No storage manifest versions found for $bagId"
-      )
+      case None =>
+        buildResultsList(
+          bagId = bagId,
+          storageManifestDao.listVersions(bagId),
+          notFoundMessage = s"No storage manifest versions found for $bagId"
+        )
 
       case Some(versionString) =>
         parseVersion(versionString) match {
