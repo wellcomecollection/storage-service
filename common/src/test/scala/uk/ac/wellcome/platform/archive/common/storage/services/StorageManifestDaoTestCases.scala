@@ -203,7 +203,10 @@ trait StorageManifestDaoTestCases[Context]
             dao.put(manifest) shouldBe a[Right[_, _]]
           }
 
-          dao.getLatestVersion(storageManifest.id).right.value shouldBe BagVersion(5)
+          dao
+            .getLatestVersion(storageManifest.id)
+            .right
+            .value shouldBe BagVersion(5)
         }
       }
     }
