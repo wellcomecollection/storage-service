@@ -35,7 +35,7 @@ trait StorageManifestGenerators
     ingestId: IngestID = createIngestID,
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
-    version: BagVersion = BagVersion(Random.nextInt),
+    version: BagVersion = createBagVersion,
     fileCount: Int = 3
   ): StorageManifest =
     StorageManifest(
