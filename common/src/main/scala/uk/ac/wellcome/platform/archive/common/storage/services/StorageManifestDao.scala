@@ -14,6 +14,9 @@ trait StorageManifestDao {
     HybridStoreEntry[StorageManifest, EmptyMetadata]
   ]
 
+  def getLatestVersion(id: BagId): Either[ReadError, BagVersion] =
+    vhs.store.max(id).map { BagVersion(_) }
+
   def getLatest(id: BagId): Either[ReadError, StorageManifest] =
     vhs.getLatest(id).map { _.identifiedT.t }
 
