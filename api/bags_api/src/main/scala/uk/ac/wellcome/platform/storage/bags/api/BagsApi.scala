@@ -79,7 +79,7 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
   private def getBag(bagId: BagId, versionString: String): Route = {
     val etag = createEtag(bagId = bagId, versionString = versionString)
 
-    val cacheLocation = prefix.asLocation(etag.value)
+    val cacheLocation = prefix.asLocation(etag.value.replace("\"", ""))
 
     implicit val s3Client: AmazonS3 = s3Uploader.s3Client
     import S3ObjectExists._
