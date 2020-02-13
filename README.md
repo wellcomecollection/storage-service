@@ -126,6 +126,13 @@ We've also written about some of the code used in the storage service:
     A wrapper class that adds a couple of methods to the file-like objects returned by the AWS SDK for Python, allowing you to use it with the zipfile module and the like.
 
 
+
+## Issues
+
+You can see a list of open issues for the storage service [in the wellcomecollection/platform repo](https://github.com/wellcomecollection/platform/issues?q=is%3Aissue%20is%3Aopen%20label%3A%22%F0%9F%93%A6%20Storage%20service%22).
+
+
+
 ## License
 
 All the code in this repo is available under an MIT license.
