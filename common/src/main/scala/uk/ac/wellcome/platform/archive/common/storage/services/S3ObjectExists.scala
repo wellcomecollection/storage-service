@@ -30,6 +30,7 @@ object S3ObjectExists {
   ) {
     val s3ObjectExists = new S3ObjectExists(s3Client)
 
-    def exists = s3ObjectExists.exists(objectLocation)
+    def exists: Either[StoreReadError, Boolean] =
+      s3ObjectExists.exists(objectLocation)
   }
 }

@@ -20,7 +20,6 @@ import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
-import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 /** Tests for GET /bags/:space/:id.
   *
@@ -34,91 +33,60 @@ class LookupBagApiTest
     with StorageManifestGenerators
     with BagsApiFixture {
 
-  it("finds the latest version of a bag") {
-    val storageManifest = createStorageManifest
+  describe("finding the latest version of a bag") {
+    it("returns the latest version") {
+      val storageManifest = createStorageManifest
 
-    withConfiguredApp(initialManifests = Seq(storageManifest)) {
-      case (_, metrics, baseUrl) =>
-        val url =
-          s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
-
-        whenGetRequestReady(url) { response =>
-          response.status shouldBe StatusCodes.OK
-
-          withStringEntity(response.entity) {
-            assertJsonMatches(_, storageManifest)
-          }
-
-          val header: ETag = response.header[ETag].get
-          val etagValue = header.etag.value.replace("\"", "")
-
-          etagValue shouldBe storageManifest.idWithVersion
-
-          assertMetricSent(
-            metrics,
-            result = HttpMetricResults.Success
-          )
-        }
-    }
-  }
-
-  it("can return very large responses") {
-    // This is not an exact mechanism!
-    // We can experiment to identify a size which exceeds the maxResponseByteLength
-    val storageManifest = createStorageManifestWithFileCount(fileCount = 100)
-
-    withLocalS3Bucket { bucket =>
-      val prefix = ObjectLocationPrefix(bucket.name, randomAlphanumeric)
-
-      withConfiguredApp(
-        initialManifests = Seq(storageManifest),
-        locationPrefix = prefix,
-        maxResponseByteLength = 1000
-      ) {
-        case (_, metrics, baseUrl) =>
-          val url =
-            s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
+      withConfiguredApp(initialManifests = Seq(storageManifest)) {
+        case (_, _, baseUrl) =>
+          val url = s"$baseUrl/bags/${storageManifest.id}"
 
           whenGetRequestReady(url) { response =>
-            response.status shouldBe StatusCodes.TemporaryRedirect
-
-            assertMetricSent(
-              metrics,
-              result = HttpMetricResults.Success
-            )
-
-            val redirectedUrl = response.header[Location].get.uri.toString()
-
-            whenGetRequestReady(redirectedUrl) { redirectedResponse =>
-              withStringEntity(redirectedResponse.entity) {
-                assertJsonMatches(_, storageManifest)
-              }
+            withStringEntity(response.entity) {
+              assertJsonMatches(_, storageManifest)
             }
           }
+      }
+    }
 
+    it("returns a 404 if there are no versions of this bag") {
+      val bagId = createBagId
+
+      withConfiguredApp() {
+        case (_, metrics, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/bags/$bagId") { response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"Storage manifest $bagId not found",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
+
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
+      }
+    }
+
+    it("returns a 500 if looking up the latest version fails") {
+      withBrokenApp {
+        case (metrics, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/bags/$createBagId") { response =>
+            assertIsInternalServerErrorResponse(response)
+
+            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          }
       }
     }
   }
 
-  it("finds a specific version of a bag") {
-    val externalIdentifier = createExternalIdentifier
-    val storageSpace = createStorageSpace
+  describe("looking up an exact version of a bag") {
+    it("returns the bag") {
+      val storageManifest = createStorageManifest
 
-    val manifests = (1 to 5).map { version =>
-      createStorageManifestWith(
-        bagInfo = createBagInfoWith(
-          externalIdentifier = externalIdentifier
-        ),
-        space = storageSpace,
-        version = BagVersion(version)
-      )
-    }
-
-    withConfiguredApp(initialManifests = manifests) {
-      case (_, metrics, baseUrl) =>
-        manifests.foreach { storageManifest =>
+      withConfiguredApp(initialManifests = Seq(storageManifest)) {
+        case (_, metrics, baseUrl) =>
           val url =
-            s"$baseUrl/bags/${storageSpace.underlying}/${externalIdentifier.underlying}?version=${storageManifest.version}"
+            s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
 
           whenGetRequestReady(url) { response =>
             response.status shouldBe StatusCodes.OK
@@ -130,52 +98,165 @@ class LookupBagApiTest
             val header: ETag = response.header[ETag].get
             val etagValue = header.etag.value.replace("\"", "")
 
-            etagValue shouldBe s"${storageManifest.space}/${storageManifest.info.externalIdentifier}/${storageManifest.version}"
+            etagValue shouldBe storageManifest.idWithVersion
 
             assertMetricSent(
               metrics,
               result = HttpMetricResults.Success
             )
           }
+      }
+    }
+
+    it("returns large responses") {
+      // This is not an exact mechanism!
+      // We can experiment to identify a size which exceeds the maxResponseByteLength
+      val storageManifest = createStorageManifestWithFileCount(fileCount = 100)
+
+      withLocalS3Bucket { bucket =>
+        withConfiguredApp(
+          initialManifests = Seq(storageManifest),
+          locationPrefix = createObjectLocationPrefixWith(bucket.name),
+          maxResponseByteLength = 1000
+        ) {
+          case (_, metrics, baseUrl) =>
+            val url =
+              s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
+
+            whenGetRequestReady(url) { response =>
+              response.status shouldBe StatusCodes.TemporaryRedirect
+
+              assertMetricSent(metrics, result = HttpMetricResults.Success)
+
+              val redirectedUrl = response.header[Location].get.uri.toString()
+
+              whenGetRequestReady(redirectedUrl) { redirectedResponse =>
+                withStringEntity(redirectedResponse.entity) {
+                  assertJsonMatches(_, storageManifest)
+                }
+              }
+            }
         }
+      }
+    }
+
+    it("can return cached responses from previous requests") {
+      val storageManifest = createStorageManifestWithFileCount(fileCount = 100)
+
+      // TODO: Ideally this test would do some introspection on the bucket
+      // or the dao, and see that we only did a lookup on the first request.
+      //
+      // For now, this test at least checks the path (cached response exists)
+      // works correctly.
+
+      withLocalS3Bucket { bucket =>
+        withConfiguredApp(
+          initialManifests = Seq(storageManifest),
+          locationPrefix = createObjectLocationPrefixWith(bucket.name),
+          maxResponseByteLength = 1000
+        ) {
+          case (_, metrics, baseUrl) =>
+            val url =
+              s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
+
+            (1 to 3).foreach { _ =>
+              whenGetRequestReady(url) { response =>
+                response.status shouldBe StatusCodes.TemporaryRedirect
+
+                assertMetricSent(metrics, result = HttpMetricResults.Success)
+
+                val redirectedUrl = response.header[Location].get.uri.toString()
+
+                whenGetRequestReady(redirectedUrl) { redirectedResponse =>
+                  withStringEntity(redirectedResponse.entity) {
+                    assertJsonMatches(_, storageManifest)
+                  }
+                }
+              }
+            }
+        }
+      }
+    }
+
+    it("finds specific versions") {
+      val externalIdentifier = createExternalIdentifier
+      val storageSpace = createStorageSpace
+
+      val manifests = (1 to 5).map { version =>
+        createStorageManifestWith(
+          bagInfo = createBagInfoWith(
+            externalIdentifier = externalIdentifier
+          ),
+          space = storageSpace,
+          version = BagVersion(version)
+        )
+      }
+
+      withConfiguredApp(initialManifests = manifests) {
+        case (_, metrics, baseUrl) =>
+          manifests.foreach { storageManifest =>
+            val url =
+              s"$baseUrl/bags/$storageSpace/$externalIdentifier?version=${storageManifest.version}"
+
+            whenGetRequestReady(url) { response =>
+              response.status shouldBe StatusCodes.OK
+
+              withStringEntity(response.entity) {
+                assertJsonMatches(_, storageManifest)
+              }
+
+              val header: ETag = response.header[ETag].get
+              val etagValue = header.etag.value.replace("\"", "")
+
+              etagValue shouldBe s"$storageSpace/$externalIdentifier/${storageManifest.version}"
+
+              assertMetricSent(
+                metrics,
+                result = HttpMetricResults.Success
+              )
+            }
+          }
+      }
     }
   }
 
-  val storageManifestWithSlash: StorageManifest = createStorageManifestWith(
-    bagInfo = createBagInfoWith(
-      externalIdentifier = ExternalIdentifier("alfa/bravo")
+  describe("looking up a bag with a slash in the external identifier") {
+    val storageManifestWithSlash: StorageManifest = createStorageManifestWith(
+      bagInfo = createBagInfoWith(
+        externalIdentifier = ExternalIdentifier("alfa/bravo")
+      )
     )
-  )
 
-  it("finds a bag with a slash in the external identifier (URL-encoded)") {
-    withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
-      case (_, _, baseUrl) =>
-        val url =
-          s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa%2Fbravo"
+    it("when the identifier is URL encoded") {
+      withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
+        case (_, _, baseUrl) =>
+          val url =
+            s"$baseUrl/bags/${storageManifestWithSlash.id.space}/alfa%2Fbravo?version=${storageManifestWithSlash.version}"
 
-        whenGetRequestReady(url) { response =>
-          response.status shouldBe StatusCodes.OK
+          whenGetRequestReady(url) { response =>
+            response.status shouldBe StatusCodes.OK
 
-          withStringEntity(response.entity) {
-            assertJsonMatches(_, storageManifestWithSlash)
+            withStringEntity(response.entity) {
+              assertJsonMatches(_, storageManifestWithSlash)
+            }
           }
-        }
+      }
     }
-  }
 
-  it("finds a bag with a slash in the external identifier (not URL-encoded)") {
-    withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
-      case (_, _, baseUrl) =>
-        val url =
-          s"$baseUrl/bags/${storageManifestWithSlash.id.space.underlying}/alfa/bravo"
+    it("when the identifier is not URL-encoded") {
+      withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
+        case (_, _, baseUrl) =>
+          val url =
+            s"$baseUrl/bags/${storageManifestWithSlash.id.space}/alfa/bravo?version=${storageManifestWithSlash.version}"
 
-        whenGetRequestReady(url) { response =>
-          response.status shouldBe StatusCodes.OK
+          whenGetRequestReady(url) { response =>
+            response.status shouldBe StatusCodes.OK
 
-          withStringEntity(response.entity) {
-            assertJsonMatches(_, storageManifestWithSlash)
+            withStringEntity(response.entity) {
+              assertJsonMatches(_, storageManifestWithSlash)
+            }
           }
-        }
+      }
     }
   }
 
@@ -187,7 +268,7 @@ class LookupBagApiTest
     withConfiguredApp(initialManifests = Seq(storageManifest)) {
       case (_, _, baseUrl) =>
         whenGetRequestReady(
-          s"$baseUrl/bags/${storageManifest.id.space.underlying}/${storageManifest.id.externalIdentifier.underlying}"
+          s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
         ) { response =>
           response.status shouldBe StatusCodes.OK
 
@@ -203,36 +284,20 @@ class LookupBagApiTest
   }
 
   describe("returns a 404 Not Found for missing bags") {
-    it("if there are no manifests for this bag ID") {
-      withConfiguredApp() {
-        case (_, metrics, baseUrl) =>
-          val bagId = createBagId
-          whenGetRequestReady(
-            s"$baseUrl/bags/${bagId.space}/${bagId.externalIdentifier}"
-          ) { response =>
-            assertIsUserErrorResponse(
-              response,
-              description = s"Storage manifest $bagId not found",
-              statusCode = StatusCodes.NotFound,
-              label = "Not Found"
-            )
-
-            assertMetricSent(metrics, result = HttpMetricResults.UserError)
-          }
-      }
-    }
-
     it("if you ask for a bag ID in the wrong space") {
       val storageManifest = createStorageManifest
+      val badId =
+        s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>
-          val badId =
-            s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
-          whenGetRequestReady(s"$baseUrl/bags/$badId") { response =>
+          whenGetRequestReady(
+            s"$baseUrl/bags/$badId?version=${storageManifest.version}"
+          ) { response =>
             assertIsUserErrorResponse(
               response,
-              description = s"Storage manifest $badId not found",
+              description =
+                s"Storage manifest $badId ${storageManifest.version} not found",
               statusCode = StatusCodes.NotFound,
               label = "Not Found"
             )
@@ -248,12 +313,12 @@ class LookupBagApiTest
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
         case (_, metrics, baseUrl) =>
           whenGetRequestReady(
-            s"$baseUrl/bags/${storageManifest.space}/${storageManifest.id.externalIdentifier}?version=${storageManifest.version.increment}"
+            s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version.increment}"
           ) { response =>
             assertIsUserErrorResponse(
               response,
               description =
-                s"Storage manifest ${storageManifest.id} version ${storageManifest.version.increment} not found",
+                s"Storage manifest ${storageManifest.id} ${storageManifest.version.increment} not found",
               statusCode = StatusCodes.NotFound,
               label = "Not Found"
             )
@@ -274,8 +339,7 @@ class LookupBagApiTest
             response =>
               assertIsUserErrorResponse(
                 response,
-                description =
-                  s"Storage manifest $bagId version $badVersion not found",
+                description = s"Storage manifest $bagId $badVersion not found",
                 statusCode = StatusCodes.NotFound,
                 label = "Not Found"
               )
