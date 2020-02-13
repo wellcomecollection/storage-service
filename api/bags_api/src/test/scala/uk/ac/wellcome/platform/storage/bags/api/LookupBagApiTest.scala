@@ -124,7 +124,7 @@ class LookupBagApiTest
               s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
 
             whenGetRequestReady(url) { response =>
-              response.status shouldBe StatusCodes.Found
+              response.status shouldBe StatusCodes.TemporaryRedirect
 
               assertMetricSent(metrics, result = HttpMetricResults.Success)
 
@@ -161,7 +161,7 @@ class LookupBagApiTest
 
             (1 to 3).foreach { _ =>
               whenGetRequestReady(url) { response =>
-                response.status shouldBe StatusCodes.Found
+                response.status shouldBe StatusCodes.TemporaryRedirect
 
                 assertMetricSent(metrics, result = HttpMetricResults.Success)
 

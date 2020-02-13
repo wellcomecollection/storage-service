@@ -93,7 +93,7 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
           case Right(url: URL) =>
             redirect(
               uri = Uri(url.toString),
-              redirectionType = StatusCodes.Found
+              redirectionType = StatusCodes.TemporaryRedirect
             )
 
           case Left(_) =>
