@@ -12,7 +12,7 @@ format-terraform:
 	$(ROOT)/docker_run.py --aws -- \
 		--volume $(ROOT):/repo \
 		--workdir /repo \
-		hashicorp/terraform:light fmt
+		hashicorp/terraform:light fmt -recursive
 
 format-python:
 	$(ROOT)/docker_run.py -- \
