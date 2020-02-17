@@ -53,7 +53,7 @@ module "stack_prod" {
 
   workflow_bucket_name = local.workflow_bucket_name
 
-  archivematica_ingests_bucket = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
+  archivematica_ingests_bucket             = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
   bag_register_output_subscribe_principals = ["${local.catalogue_pipeline_account_principal}"]
 }
 

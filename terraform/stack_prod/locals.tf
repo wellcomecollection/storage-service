@@ -18,7 +18,7 @@ locals {
 
   gateway_server_error_alarm_arn = data.terraform_remote_state.infra_shared.outputs.gateway_server_error_alarm_arn
 
-  workflow_bucket_name = "wellcomecollection-workflow-export-bagit"
+  workflow_bucket_name                 = "wellcomecollection-workflow-export-bagit"
   catalogue_pipeline_account_principal = "arn:aws:iam::760097843905:root"
 }
 
