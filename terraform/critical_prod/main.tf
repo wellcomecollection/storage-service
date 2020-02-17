@@ -6,7 +6,6 @@ module "critical" {
   replica_primary_read_principals = [
     local.archivematica_task_role_arn,
     local.digitisation_account_principal,
-    local.digitisation_mediaconvert_role_arn,
     local.goobi_task_role_arn,
 
     local.shell_server_1_task_role,
