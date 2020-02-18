@@ -2,6 +2,10 @@ resource "aws_s3_bucket" "replica_glacier" {
   bucket = "wellcomecollection-${var.namespace}-replica-ireland"
   acl    = "private"
 
+  versioning {
+    enabled = var.enable_s3_versioning
+  }
+
   lifecycle_rule {
     enabled = true
 

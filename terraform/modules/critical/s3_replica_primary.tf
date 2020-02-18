@@ -2,6 +2,10 @@ resource "aws_s3_bucket" "replica_primary" {
   bucket = "wellcomecollection-${var.namespace}"
   acl    = "private"
 
+  versioning {
+    enabled = var.enable_s3_versioning
+  }
+
   # This is a temporary lifecycle rule that will flush all the existing objects
   # from Standard to Standard-IA.
   #
