@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "replica_glacier_readonly" {
     principals {
       type = "AWS"
 
-      identifiers = var.replica_glacier_read_principals
+      identifiers = sort(var.replica_glacier_read_principals)
     }
   }
 }
