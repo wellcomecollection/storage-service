@@ -2,6 +2,10 @@ resource "aws_s3_bucket" "replica_glacier" {
   bucket = "wellcomecollection-${var.namespace}-replica-ireland"
   acl    = "private"
 
+  versioning {
+    enabled = var.enable_s3_versioning
+  }
+
   lifecycle_rule {
     enabled = true
 
@@ -34,7 +38,7 @@ data "aws_iam_policy_document" "replica_glacier_readonly" {
     principals {
       type = "AWS"
 
-      identifiers = var.replica_glacier_read_principals
+      identifiers = sort(var.replica_glacier_read_principals)
     }
   }
 }

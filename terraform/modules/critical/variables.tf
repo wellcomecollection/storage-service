@@ -14,3 +14,7 @@ variable "replica_glacier_read_principals" {
   type    = list(string)
   default = []
 }
+
+variable "enable_s3_versioning" {
+  type = bool
+}
