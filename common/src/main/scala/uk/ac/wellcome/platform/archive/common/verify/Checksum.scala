@@ -7,7 +7,6 @@ import grizzled.slf4j.Logging
 import io.circe.{Decoder, Encoder, HCursor, Json}
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils.{getDigest, updateDigest}
-import org.apache.commons.codec.digest.MessageDigestAlgorithms
 
 import scala.util.Try
 
