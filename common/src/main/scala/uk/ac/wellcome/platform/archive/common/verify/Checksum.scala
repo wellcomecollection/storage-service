@@ -32,22 +32,6 @@ case object Checksum extends Logging {
   }
 }
 
-sealed trait HashingAlgorithm {
-  val value: String
-  val pathRepr: String
-  override def toString: String = value
-}
-
-case object SHA256 extends HashingAlgorithm {
-  val value = MessageDigestAlgorithms.SHA_256
-  val pathRepr = "sha256"
-}
-
-case object MD5 extends HashingAlgorithm {
-  val value = MessageDigestAlgorithms.MD5
-  val pathRepr = "md5"
-}
-
 case class ChecksumValue(value: String) {
   override def toString: String = value
 }
