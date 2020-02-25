@@ -12,7 +12,15 @@ case class HashingResult(
   sha1: ChecksumValue,
   sha256: ChecksumValue,
   sha512: ChecksumValue
-)
+) {
+  def getChecksumValue(algorithm: HashingAlgorithm): ChecksumValue =
+    algorithm match {
+      case MD5    => md5
+      case SHA1   => sha1
+      case SHA256 => sha256
+      case SHA512 => sha512
+    }
+}
 
 object Hasher {
 

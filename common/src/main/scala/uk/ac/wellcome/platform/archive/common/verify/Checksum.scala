@@ -5,8 +5,6 @@ import java.io.InputStream
 import org.scanamo.DynamoFormat
 import grizzled.slf4j.Logging
 import io.circe.{Decoder, Encoder, HCursor, Json}
-import org.apache.commons.codec.binary.Hex
-import org.apache.commons.codec.digest.DigestUtils.{getDigest, updateDigest}
 
 import scala.util.Try
 
@@ -24,8 +22,10 @@ case object Checksum extends Logging {
     algorithm: HashingAlgorithm
   ): Try[Checksum] = {
     debug(s"Creating Checksum for $inputStream with  $algorithm")
-    val checksumValue = ChecksumValue.create(inputStream, algorithm)
-    val checksum = checksumValue.map(Checksum(algorithm, _))
+    val checksum = Hasher.hash(inputStream)
+      .map { _.getChecksumValue(algorithm) }
+      .map { Checksum(algorithm, _) }
+
     debug(s"Got: $checksum")
     checksum
   }
@@ -34,32 +34,10 @@ case object Checksum extends Logging {
 case class ChecksumValue(value: String) {
   override def toString: String = value
 }
+
 object ChecksumValue extends Logging {
-  def create(raw: String) = {
+  def create(raw: String): ChecksumValue =
     ChecksumValue(raw.trim)
-  }
-
-  def create(
-    inputStream: InputStream,
-    algorithm: HashingAlgorithm
-  ): Try[ChecksumValue] = {
-    debug(s"Creating ChecksumValue from $inputStream, $algorithm")
-
-    val checksumValue = Try {
-      ChecksumValue(
-        Hex.encodeHexString(
-          updateDigest(
-            getDigest(algorithm.value),
-            inputStream
-          ).digest
-        )
-      )
-    }
-
-    debug(s"Got: $checksumValue")
-
-    checksumValue
-  }
 
   implicit val encoder: Encoder[ChecksumValue] = (value: ChecksumValue) =>
     Json.fromString(value.toString)
