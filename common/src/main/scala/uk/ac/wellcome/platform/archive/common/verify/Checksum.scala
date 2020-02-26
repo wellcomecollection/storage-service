@@ -22,7 +22,8 @@ case object Checksum extends Logging {
     algorithm: HashingAlgorithm
   ): Try[Checksum] = {
     debug(s"Creating Checksum for $inputStream with  $algorithm")
-    val checksum = Hasher.hash(inputStream)
+    val checksum = Hasher
+      .hash(inputStream)
       .map { _.getChecksumValue(algorithm) }
       .map { Checksum(algorithm, _) }
 

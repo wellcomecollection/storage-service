@@ -55,7 +55,7 @@ object Hasher {
       md5 = asChecksumValue(digest_MD5),
       sha1 = asChecksumValue(digest_SHA1),
       sha256 = asChecksumValue(digest_SHA256),
-      sha512 = asChecksumValue(digest_SHA512),
+      sha512 = asChecksumValue(digest_SHA512)
     )
   }
 

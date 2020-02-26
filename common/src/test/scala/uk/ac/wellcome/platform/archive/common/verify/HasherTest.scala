@@ -5,7 +5,11 @@ import java.io.{FilterInputStream, InputStream}
 import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.storage.streaming.Codec._
 
-class HasherTest extends FunSpec with Matchers with EitherValues with TryValues {
+class HasherTest
+    extends FunSpec
+    with Matchers
+    with EitherValues
+    with TryValues {
   it("correctly hashes a string") {
     val input = "Hello world"
     val inputStream = stringCodec.toStream(input).right.value
@@ -17,8 +21,12 @@ class HasherTest extends FunSpec with Matchers with EitherValues with TryValues 
     result.success.value shouldBe HashingResult(
       md5 = ChecksumValue("3e25960a79dbc69b674cd4ec67a72c62"),
       sha1 = ChecksumValue("7b502c3a1f48c8609ae212cdfb639dee39673f5e"),
-      sha256 = ChecksumValue("64ec88ca00b268e5ba1a35678a1b5316d212f4f366b2477232534a8aeca37f3c"),
-      sha512 = ChecksumValue("b7f783baed8297f0db917462184ff4f08e69c2d5e5f79a942600f9725f58ce1f29c18139bf80b06c0fff2bdd34738452ecf40c488c22a7e3d80cdf6f9c1c0d47")
+      sha256 = ChecksumValue(
+        "64ec88ca00b268e5ba1a35678a1b5316d212f4f366b2477232534a8aeca37f3c"
+      ),
+      sha512 = ChecksumValue(
+        "b7f783baed8297f0db917462184ff4f08e69c2d5e5f79a942600f9725f58ce1f29c18139bf80b06c0fff2bdd34738452ecf40c488c22a7e3d80cdf6f9c1c0d47"
+      )
     )
   }
 
@@ -33,8 +41,12 @@ class HasherTest extends FunSpec with Matchers with EitherValues with TryValues 
     result.success.value shouldBe HashingResult(
       md5 = ChecksumValue("6a2d892099d210d049be9276c2659c17"),
       sha1 = ChecksumValue("dc92fd07cfbfbb450eb0703fdea3ef9154e38db1"),
-      sha256 = ChecksumValue("54395c09aa8014ff92197da81f9d38d091d3674094c3c6890fafd0704670b34d"),
-      sha512 = ChecksumValue("0516df5e826b287ef848c2362c72796475ced84d6bf41eeea920c0c8f053848f16352bed4ef951a7c8af1e7fb2b2525833dcbb538075fdafbb72f9c4627893f2")
+      sha256 = ChecksumValue(
+        "54395c09aa8014ff92197da81f9d38d091d3674094c3c6890fafd0704670b34d"
+      ),
+      sha512 = ChecksumValue(
+        "0516df5e826b287ef848c2362c72796475ced84d6bf41eeea920c0c8f053848f16352bed4ef951a7c8af1e7fb2b2525833dcbb538075fdafbb72f9c4627893f2"
+      )
     )
   }
 
@@ -42,7 +54,8 @@ class HasherTest extends FunSpec with Matchers with EitherValues with TryValues 
     val exception = new Throwable("BOOM!")
 
     class BrokenStream(is: InputStream) extends FilterInputStream(is) {
-      override def read(b: Array[Byte], off: Int, len: Int): Int = throw exception
+      override def read(b: Array[Byte], off: Int, len: Int): Int =
+        throw exception
     }
 
     val inputStream = new BrokenStream(

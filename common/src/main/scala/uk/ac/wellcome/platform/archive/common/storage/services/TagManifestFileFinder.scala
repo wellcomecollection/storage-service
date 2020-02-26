@@ -58,7 +58,8 @@ class TagManifestFileFinder[IS <: InputStream with HasLength](
         // so it happens after the entire bag has been verified.  To verify the bag,
         // we've already had to read the tagmanifest-sha256.txt file, so an error
         // here would be unlikely (but probably not impossible).
-        val checksum = Hasher.hash(is.identifiedT)
+        val checksum = Hasher
+          .hash(is.identifiedT)
           .get
           .getChecksumValue(algorithm)
 

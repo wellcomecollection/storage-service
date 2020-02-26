@@ -15,7 +15,6 @@ sealed trait HashingAlgorithm {
   * See https://tools.ietf.org/html/rfc8493#section-2.4
   *
   */
-
 case object SHA512 extends HashingAlgorithm {
   val value: String = MessageDigestAlgorithms.SHA_512
   val pathRepr = "sha512"
