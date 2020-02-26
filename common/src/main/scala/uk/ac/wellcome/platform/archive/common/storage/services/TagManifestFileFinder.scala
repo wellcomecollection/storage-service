@@ -5,7 +5,7 @@ import java.io.InputStream
 import uk.ac.wellcome.platform.archive.common.bagit.models.UnreferencedFiles
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
 import uk.ac.wellcome.platform.archive.common.verify.{
-  ChecksumValue,
+  Hasher,
   HashingAlgorithm
 }
 import uk.ac.wellcome.storage.store.Readable
@@ -52,10 +52,19 @@ class TagManifestFileFinder[IS <: InputStream with HasLength](
   ): Option[StorageManifestFile] =
     streamReader.get(prefix.asLocation(name)) match {
       case Right(is) =>
+        // TODO: we could handle the checksum more gracefully here, not '.get'
+        //
+        // This method is called in the bag register to create the storage manifest,
+        // so it happens after the entire bag has been verified.  To verify the bag,
+        // we've already had to read the tagmanifest-sha256.txt file, so an error
+        // here would be unlikely (but probably not impossible).
+        val checksum = Hasher.hash(is.identifiedT)
+          .get
+          .getChecksumValue(algorithm)
+
         Some(
           StorageManifestFile(
-            checksum =
-              ChecksumValue.create(is.identifiedT, algorithm = algorithm).get,
+            checksum = checksum,
             name = name,
             path = name,
             size = is.identifiedT.length
