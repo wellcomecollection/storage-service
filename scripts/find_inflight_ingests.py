@@ -28,7 +28,7 @@ def get_inflight_items():
         TableName="storage-ingests",
         FilterExpression="payload.#stat <> :completed and payload.#stat <> :failed",
         ExpressionAttributeNames={"#stat": "status"},
-        ExpressionAttributeValues={":completed": "Completed", ":failed": "Failed",},
+        ExpressionAttributeValues={":completed": "Completed", ":failed": "Failed"},
     ):
         yield from page["Items"]
 
