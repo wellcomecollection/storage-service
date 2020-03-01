@@ -15,11 +15,14 @@ This is useful:
 
 import csv
 import datetime
+import sys
+
+import tqdm
 
 from common import get_read_only_aws_resource
 
 
-def get_inflight_items():
+def get_items():
     dynamodb = get_read_only_aws_resource("dynamodb").meta.client
 
     paginator = dynamodb.get_paginator("scan")
@@ -30,7 +33,15 @@ def get_inflight_items():
         ExpressionAttributeNames={"#stat": "status"},
         ExpressionAttributeValues={":completed": "Completed", ":failed": "Failed"},
     ):
+        for _ in range(page["ScannedCount"] - page["Count"]):
+            yield ()
         yield from page["Items"]
+
+
+def get_inflight_items():
+    for item in tqdm.tqdm(get_items()):
+        if item:
+            yield item
 
 
 if __name__ == "__main__":
