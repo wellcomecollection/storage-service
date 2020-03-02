@@ -141,7 +141,7 @@ class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
               )
 
             assertIsError(result) { maybeMessage =>
-              maybeMessage.get shouldBe s"Access denied while trying to read s3://${archiveLocation.namespace}/${archiveLocation.path}"
+              maybeMessage.get shouldBe s"Error reading s3://${archiveLocation.namespace}/${archiveLocation.path}: either it doesn't exist, or the unpacker doesn't have permission to read it"
             }
           }
         }
