@@ -207,10 +207,23 @@ class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
     error: UnpackerError
   ): Option[String] =
     error match {
+
+      // An Access Denied error from S3 could be (at least) two scenarios:
+      //
+      //    - The object exists, but it's in a bucket we don't have Get* permissions.
+      //
+      //    - The object doesn't exist, and it's in a bucket where we have Get* but not
+      //      List* permissions.  In that case, S3 will give a generic error rather than give
+      //      away information about what's in the bucket.
+      //
+      // In practice, we've seen the latter case a couple of times, so we want the user
+      // to check the object really exists when they get this error, not chalk it up to
+      // an IAM error that devs need to fix.  It *might* be something they can fix themselves.
+      //
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("Access Denied") =>
         Some(
-          s"Access denied while trying to read ${formatLocation(srcLocation)}"
+          s"Error reading ${formatLocation(srcLocation)}: either it doesn't exist, or the unpacker doesn't have permission to read it"
         )
 
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
