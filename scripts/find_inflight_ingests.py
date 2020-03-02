@@ -15,7 +15,6 @@ This is useful:
 
 import csv
 import datetime
-import sys
 
 import tqdm
 
