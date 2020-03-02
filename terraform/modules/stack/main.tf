@@ -1,6 +1,5 @@
 locals {
-  java_opts_metrics_base = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region}"
-  java_opts_heap_size    = "-Xss6M -Xms2G -Xmx3G"
+  java_opts_heap_size = "-Xss6M -Xms2G -Xmx3G"
 }
 
 # logstash_transit
@@ -60,7 +59,7 @@ module "bag_unpacker" {
     metrics_namespace       = local.bag_unpacker_service_name
     operation_name          = "unpacking"
     logstash_host           = local.logstash_host
-    JAVA_OPTS               = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_unpacker_service_name}"
+    JAVA_OPTS               = local.java_opts_heap_size
     # If you run the unpacker with too much parallelism, it gets overwhelmed
     # and tries to open too many HTTP connections.  You get this error:
     #
@@ -104,7 +103,6 @@ module "bag_root_finder" {
     metrics_namespace  = local.bag_root_finder_service_name
     operation_name     = "detecting bag root"
     logstash_host      = local.logstash_host
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_root_finder_service_name}"
   }
 
   cpu    = 512
@@ -139,7 +137,7 @@ module "bag_verifier_pre_replication" {
     metrics_namespace  = local.bag_verifier_pre_repl_service_name
     operation_name     = "verification (pre-replicating to archive storage)"
     logstash_host      = local.logstash_host
-    JAVA_OPTS          = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_verifier_pre_repl_service_name}"
+    JAVA_OPTS          = local.java_opts_heap_size
   }
 
   cpu    = 2048
@@ -178,7 +176,6 @@ module "bag_versioner" {
     locking_table_index  = module.versioner_lock_table.index_name
     versions_table_name  = var.versioner_versions_table_name
     versions_table_index = var.versioner_versions_table_index
-    JAVA_OPTS            = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bag_versioner_service_name}"
   }
 
   cpu    = 512
@@ -306,7 +303,7 @@ module "replica_aggregator" {
     operation_name         = "Aggregating replicas"
     logstash_host          = local.logstash_host
     expected_replica_count = 2
-    JAVA_OPTS              = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.replica_aggregator_service_name}"
+    JAVA_OPTS              = local.java_opts_heap_size
   }
 
   min_capacity = var.min_capacity
@@ -336,7 +333,7 @@ module "bag_register" {
     metrics_namespace = local.bag_register_service_name
     operation_name    = "register"
     logstash_host     = local.logstash_host
-    JAVA_OPTS         = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_register_service_name}"
+    JAVA_OPTS         = local.java_opts_heap_size
   }
 
   min_capacity = var.min_capacity
@@ -367,7 +364,6 @@ module "notifier" {
     ingest_topic_arn   = module.ingests_topic.arn
     metrics_namespace  = local.notifier_service_name
     logstash_host      = local.logstash_host
-    JAVA_OPTS          = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.notifier_service_name}"
   }
 
   min_capacity = var.min_capacity
@@ -394,7 +390,6 @@ module "ingests" {
     archive_ingest_table_name = var.ingests_table_name
     metrics_namespace         = local.ingests_service_name
     logstash_host             = local.logstash_host
-    JAVA_OPTS                 = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_service_name}"
   }
 
   # We always run at least one ingests monitor so messages from other apps are
@@ -440,7 +435,6 @@ module "api" {
     metrics_namespace     = local.bags_api_service_name
     logstash_host         = local.logstash_host
     responses_bucket_name = aws_s3_bucket.large_response_cache.id
-    JAVA_OPTS             = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.bags_api_service_name}"
   }
   bags_env_vars_length       = 8
   bags_nginx_container_image = var.nginx_image
@@ -457,7 +451,6 @@ module "api" {
     archive_ingest_table_name = var.ingests_table_name
     metrics_namespace         = local.ingests_api_service_name
     logstash_host             = local.logstash_host
-    JAVA_OPTS                 = "-Dcom.amazonaws.sdk.enableDefaultMetrics=cloudwatchRegion=${var.aws_region},metricNameSpace=${local.ingests_api_service_name}"
   }
   ingests_env_vars_length        = 7
   ingests_nginx_container_image  = var.nginx_image
