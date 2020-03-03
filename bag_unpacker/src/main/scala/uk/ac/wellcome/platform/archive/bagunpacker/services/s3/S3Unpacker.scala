@@ -19,7 +19,8 @@ import uk.ac.wellcome.storage.streaming.{
 
 class S3Unpacker(
   bufferSize: Long = 128 * FileUtils.ONE_MB
-)(implicit s3Client: AmazonS3) extends Unpacker {
+)(implicit s3Client: AmazonS3)
+    extends Unpacker {
   private val s3StreamStore = new S3StreamStore()
 
   val reader: S3StreamReader = new S3StreamReader(bufferSize = bufferSize)

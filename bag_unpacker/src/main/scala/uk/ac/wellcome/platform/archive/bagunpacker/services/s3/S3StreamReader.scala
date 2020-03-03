@@ -35,7 +35,7 @@ import scala.util.{Failure, Success, Try}
   *
   */
 class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
-  extends Readable[ObjectLocation, InputStreamWithLengthAndMetadata]
+    extends Readable[ObjectLocation, InputStreamWithLengthAndMetadata]
     with Logging {
 
   private class S3StreamEnumeration(
