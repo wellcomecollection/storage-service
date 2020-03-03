@@ -17,32 +17,26 @@ import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
-trait S3StreamReader
+/** If you hold open an S3ObjectInputStream for a long time, eventually the
+  * network times out and you get an error complaining that it hasn't read
+  * all the bytes from the stream.  For example:
+  *
+  *   com.amazonaws.SdkClientException: Data read has a different length than the expected:
+  *   dataLength=1234; expectedLength=56789
+  *
+  * To get around this issue, we read large objects in "chunks", making a
+  * separate GetObject request for each segment.  The individual streams are then
+  * stitched back together in a SequenceInputStream, so to the caller it's
+  * presented as a single continuous stream.
+  *
+  * We're hoping that making regular GetObject requests will keep the
+  * network "fresh", and reduce the risk of a timeout while we're reading
+  * the stream.
+  *
+  */
+class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
     extends Readable[ObjectLocation, InputStreamWithLengthAndMetadata]
     with Logging {
-  implicit val s3Client: AmazonS3
-
-  // If you hold open an S3ObjectInputStream for a long time, eventually the
-  // network times out and you get an error complaining that it hasn't read
-  // all the bytes from the stream.  For example:
-  //
-  //      com.amazonaws.SdkClientException: Data read has a different length than the expected:
-  //      dataLength=1234; expectedLength=56789
-  //
-  // To get around this issue, we read large objects in "chunks", making a
-  // separate GetObject request for each segment.  The individual streams are then
-  // stitched back together in a SequenceInputStream, so to the caller it's
-  // presented as a single continuous stream.
-  //
-  // We're hoping that making regular GetObject requests will keep the
-  // network "fresh", and reduce the risk of a timeout while we're reading
-  // the stream.
-  //
-
-  // 1 KB = 1024 bytes
-  // 1 MB = 1 KB * 1024 = 1024 * 1024
-  // 128 MB = 128 MB * 1024 = 128 * 1024 * 1024
-  protected val bufferSize: Long = 128 * 1024 * 1024
 
   private class S3StreamEnumeration(
     location: ObjectLocation,
@@ -99,22 +93,20 @@ trait S3StreamReader
       //
       // e.g. GetObject will return "The bucket name was invalid" rather than
       // "Bad Request".
-      val getRequest =
-        new GetObjectRequest(location.namespace, location.path)
-          .withRange(0, 0)
+      //
+      val getRequest = new GetObjectRequest(location.namespace, location.path)
 
       val s3Object = s3Client.getObject(getRequest)
       val metadata = s3Object.getObjectMetadata
       val contentLength = metadata.getContentLength
 
-      // Read the (empty) stream to avoid getting a warning:
+      // Abort the stream to avoid getting a warning:
       //
       //    Not all bytes were read from the S3ObjectInputStream, aborting
       //    HTTP connection. This is likely an error and may result in
       //    sub-optimal behavior.
       //
-      IOUtils.toByteArray(s3Object.getObjectContent)
-
+      s3Object.getObjectContent.abort()
       s3Object.getObjectContent.close()
 
       val streams = new S3StreamEnumeration(

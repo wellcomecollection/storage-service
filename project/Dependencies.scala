@@ -68,6 +68,7 @@ object ExternalDependencies {
     val akkaStreamAlpakka = "0.20"
     val commonsCompress = "1.5"
     val commonsIO = "2.6"
+    val mockito = "1.9.5"
     val aws = "1.11.504"
     val circe = "0.9.0"
     val scalatest = "3.0.1"
@@ -108,6 +109,10 @@ object ExternalDependencies {
 
   val cloudwatchMetricsDependencies = Seq[ModuleID](
     "com.amazonaws" % "aws-java-sdk-cloudwatchmetrics" % versions.aws
+  )
+
+  val mockitoDependencies: Seq[ModuleID] = Seq(
+    "org.mockito" % "mockito-core" % versions.mockito % "test"
   )
 
   val wiremockDependencies = Seq[ModuleID](

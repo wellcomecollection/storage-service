@@ -74,7 +74,10 @@ lazy val bag_unpacker = setupProject(
   project,
   "bag_unpacker",
   localDependencies = Seq(common),
-  externalDependencies = ExternalDependencies.commonsCompressDependencies ++ ExternalDependencies.commonsIODependencies
+  externalDependencies =
+    ExternalDependencies.commonsCompressDependencies ++
+      ExternalDependencies.commonsIODependencies ++
+      ExternalDependencies.mockitoDependencies
 )
 
 lazy val ingests_common =
