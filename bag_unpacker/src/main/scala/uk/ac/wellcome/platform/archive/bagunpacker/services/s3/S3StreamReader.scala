@@ -18,7 +18,7 @@ import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 trait S3StreamReader
-  extends Readable[ObjectLocation, InputStreamWithLengthAndMetadata]
+    extends Readable[ObjectLocation, InputStreamWithLengthAndMetadata]
     with Logging {
   implicit val s3Client: AmazonS3
 
@@ -45,10 +45,10 @@ trait S3StreamReader
   protected val bufferSize: Long = 128 * 1024 * 1024
 
   private class S3StreamEnumeration(
-                                     location: ObjectLocation,
-                                     contentLength: Long,
-                                     bufferSize: Long
-                                   ) extends util.Enumeration[InputStream] {
+    location: ObjectLocation,
+    contentLength: Long,
+    bufferSize: Long
+  ) extends util.Enumeration[InputStream] {
     var currentPosition = 0L
     val totalLength: Long = contentLength
 
@@ -64,18 +64,18 @@ trait S3StreamReader
       // For example, if you read (start=0, end=5), you get bytes [0, 1, 2, 3, 4, 5].
       // We never want to read more than bufferSize bytes at a time.
       val requestWithRange =
-      if (currentPosition + bufferSize >= totalLength) {
-        debug(s"Reading $location: $currentPosition-[end] / $contentLength")
-        getRequest.withRange(currentPosition)
-      } else {
-        debug(
-          s"Reading $location: $currentPosition-${currentPosition + bufferSize - 1} / $contentLength"
-        )
-        getRequest.withRange(
-          currentPosition,
-          currentPosition + bufferSize - 1
-        )
-      }
+        if (currentPosition + bufferSize >= totalLength) {
+          debug(s"Reading $location: $currentPosition-[end] / $contentLength")
+          getRequest.withRange(currentPosition)
+        } else {
+          debug(
+            s"Reading $location: $currentPosition-${currentPosition + bufferSize - 1} / $contentLength"
+          )
+          getRequest.withRange(
+            currentPosition,
+            currentPosition + bufferSize - 1
+          )
+        }
 
       currentPosition += bufferSize
 
@@ -100,8 +100,8 @@ trait S3StreamReader
       // e.g. GetObject will return "The bucket name was invalid" rather than
       // "Bad Request".
       val getRequest =
-      new GetObjectRequest(location.namespace, location.path)
-        .withRange(0, 0)
+        new GetObjectRequest(location.namespace, location.path)
+          .withRange(0, 0)
 
       val s3Object = s3Client.getObject(getRequest)
       val metadata = s3Object.getObjectMetadata
@@ -138,13 +138,13 @@ trait S3StreamReader
       case exc: AmazonS3Exception if exc.getMessage.startsWith("Not Found") =>
         DoesNotExistError(exc)
       case exc: AmazonS3Exception
-        if exc.getMessage.startsWith("The specified key does not exist") =>
+          if exc.getMessage.startsWith("The specified key does not exist") =>
         DoesNotExistError(exc)
       case exc: AmazonS3Exception
-        if exc.getMessage.startsWith("The specified bucket does not exist") =>
+          if exc.getMessage.startsWith("The specified bucket does not exist") =>
         DoesNotExistError(exc)
       case exc: AmazonS3Exception
-        if exc.getMessage.startsWith("The specified bucket is not valid") =>
+          if exc.getMessage.startsWith("The specified bucket is not valid") =>
         StoreReadError(exc)
       case _ => StoreReadError(throwable)
     }

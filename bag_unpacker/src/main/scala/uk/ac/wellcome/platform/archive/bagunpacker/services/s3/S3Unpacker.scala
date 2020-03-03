@@ -16,7 +16,6 @@ import uk.ac.wellcome.storage.streaming.{
   InputStreamWithLengthAndMetadata
 }
 
-
 class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
   private val s3StreamStore = new S3StreamStore()
 
