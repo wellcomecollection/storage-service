@@ -4,6 +4,7 @@ import java.io.InputStream
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
+import org.apache.commons.io.FileUtils
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker,
   UnpackerError,
@@ -16,13 +17,18 @@ import uk.ac.wellcome.storage.streaming.{
   InputStreamWithLengthAndMetadata
 }
 
-class S3Unpacker()(implicit s3Client: AmazonS3) extends Unpacker {
+class S3Unpacker(
+  bufferSize: Long = 128 * FileUtils.ONE_MB
+)(implicit s3Client: AmazonS3) extends Unpacker {
   private val s3StreamStore = new S3StreamStore()
 
-  val readerClient = s3Client
+  val readerClient: AmazonS3 = s3Client
+  val readerBufferSize: Long = bufferSize
 
-  val reader = new S3StreamReader {
+  val reader: S3StreamReader = new S3StreamReader {
     override implicit val s3Client: AmazonS3 = readerClient
+
+    override protected val bufferSize: Long = readerBufferSize
   }
 
   override def get(

@@ -39,10 +39,7 @@ trait S3StreamReader
   // the stream.
   //
 
-  // 1 KB = 1024 bytes
-  // 1 MB = 1 KB * 1024 = 1024 * 1024
-  // 128 MB = 128 MB * 1024 = 128 * 1024 * 1024
-  protected val bufferSize: Long = 128 * 1024 * 1024
+  protected val bufferSize: Long
 
   private class S3StreamEnumeration(
     location: ObjectLocation,
