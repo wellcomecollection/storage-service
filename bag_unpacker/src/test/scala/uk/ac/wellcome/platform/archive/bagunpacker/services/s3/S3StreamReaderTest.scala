@@ -17,8 +17,9 @@ class S3StreamReaderTest extends FunSpec with Matchers with S3Fixtures with Mock
       val spyClient = Mockito.spy(s3Client)
       val reader = new S3StreamReader(bufferSize = 500)(s3Client = spyClient)
 
-      val result = reader.get(location)
-      result.right.value.identifiedT.read()
+      // Consume all the bytes from the stream, even if we don't look at them.
+      val inputStream = reader.get(location).right.value.identifiedT
+      stringCodec.fromStream(inputStream).right.value
 
       // We expect to see at least three calls to getObject:
       //
@@ -41,8 +42,6 @@ class S3StreamReaderTest extends FunSpec with Matchers with S3Fixtures with Mock
       val reader = new S3StreamReader(bufferSize = 500)
 
       val inputStream = reader.get(location).right.value.identifiedT
-      val s = stringCodec.fromStream(inputStream)
-      println(s)
       stringCodec.fromStream(inputStream).right.value shouldBe message
     }
   }

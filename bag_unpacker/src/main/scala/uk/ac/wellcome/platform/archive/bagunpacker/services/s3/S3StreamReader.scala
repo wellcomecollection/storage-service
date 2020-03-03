@@ -93,22 +93,20 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
       //
       // e.g. GetObject will return "The bucket name was invalid" rather than
       // "Bad Request".
-      val getRequest =
-        new GetObjectRequest(location.namespace, location.path)
-          .withRange(0, 0)
+      //
+      val getRequest = new GetObjectRequest(location.namespace, location.path)
 
       val s3Object = s3Client.getObject(getRequest)
       val metadata = s3Object.getObjectMetadata
       val contentLength = metadata.getContentLength
 
-      // Read the (empty) stream to avoid getting a warning:
+      // Abort the stream to avoid getting a warning:
       //
       //    Not all bytes were read from the S3ObjectInputStream, aborting
       //    HTTP connection. This is likely an error and may result in
       //    sub-optimal behavior.
       //
-      IOUtils.toByteArray(s3Object.getObjectContent)
-
+      s3Object.getObjectContent.abort()
       s3Object.getObjectContent.close()
 
       val streams = new S3StreamEnumeration(
