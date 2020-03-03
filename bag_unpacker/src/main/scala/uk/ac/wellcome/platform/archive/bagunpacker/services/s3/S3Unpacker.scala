@@ -22,14 +22,7 @@ class S3Unpacker(
 )(implicit s3Client: AmazonS3) extends Unpacker {
   private val s3StreamStore = new S3StreamStore()
 
-  val readerClient: AmazonS3 = s3Client
-  val readerBufferSize: Long = bufferSize
-
-  val reader: S3StreamReader = new S3StreamReader {
-    override implicit val s3Client: AmazonS3 = readerClient
-
-    override protected val bufferSize: Long = readerBufferSize
-  }
+  val reader: S3StreamReader = new S3StreamReader(bufferSize = bufferSize)
 
   override def get(
     location: ObjectLocation
