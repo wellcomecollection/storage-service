@@ -16,6 +16,7 @@ This is useful:
 import csv
 import datetime
 
+from boto3.dynamodb.conditions import Attr
 import tqdm
 
 from common import get_read_only_aws_resource
@@ -28,9 +29,7 @@ def get_items():
 
     for page in paginator.paginate(
         TableName="storage-ingests",
-        FilterExpression="payload.#stat <> :completed and payload.#stat <> :failed",
-        ExpressionAttributeNames={"#stat": "status"},
-        ExpressionAttributeValues={":completed": "Completed", ":failed": "Failed"},
+        FilterExpression=Attr("payload.status").is_in(["Processing", "Accepted"]),
     ):
         for _ in range(page["ScannedCount"] - page["Count"]):
             yield ()
