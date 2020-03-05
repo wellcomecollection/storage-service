@@ -13,34 +13,60 @@ This is useful:
 
 """
 
+import concurrent.futures
 import csv
 import datetime
 
-import tqdm
+from boto3.dynamodb.conditions import Attr
 
 from common import get_read_only_aws_resource
 
 
-def get_items():
-    dynamodb = get_read_only_aws_resource("dynamodb").meta.client
+dynamodb = get_read_only_aws_resource("dynamodb").meta.client
 
+
+def get_inflight_ingests_for_segment(segment, total_segments):
     paginator = dynamodb.get_paginator("scan")
+
+    ingests = []
 
     for page in paginator.paginate(
         TableName="storage-ingests",
-        FilterExpression="payload.#stat <> :completed and payload.#stat <> :failed",
-        ExpressionAttributeNames={"#stat": "status"},
-        ExpressionAttributeValues={":completed": "Completed", ":failed": "Failed"},
+        FilterExpression=Attr("payload.status").is_in(["Processing", "Accepted"]),
+        Segment=segment,
+        TotalSegments=total_segments,
     ):
-        for _ in range(page["ScannedCount"] - page["Count"]):
-            yield ()
-        yield from page["Items"]
+        ingests.extend(page["Items"])
+
+    return ingests
 
 
 def get_inflight_items():
-    for item in tqdm.tqdm(get_items()):
-        if item:
-            yield item
+
+    # See https://alexwlchan.net/2019/10/adventures-with-concurrent-futures/
+    # for an explanation of this code.
+    #
+    # Rather than scanning the DynamoDB table in serial, we run multiple threads
+    # scanning different segments, so we get results faster.
+    #
+    total_segments = 25
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = {
+            executor.submit(
+                get_inflight_ingests_for_segment,
+                segment=segment,
+                total_segments=total_segments,
+            )
+            for segment in range(total_segments)
+        }
+
+        done, _ = concurrent.futures.wait(
+            futures, return_when=concurrent.futures.ALL_COMPLETED
+        )
+
+        for fut in done:
+            yield from fut.result()
 
 
 if __name__ == "__main__":
