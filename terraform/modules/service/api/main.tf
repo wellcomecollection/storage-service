@@ -1,5 +1,5 @@
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=125f1aaf90a1b2469ad129c95e76755b9e71ab76"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.4.0"
 
   service_name = var.namespace
 
