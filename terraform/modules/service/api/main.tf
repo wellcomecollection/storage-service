@@ -1,5 +1,5 @@
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.1.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=125f1aaf90a1b2469ad129c95e76755b9e71ab76"
 
   service_name = var.namespace
 
@@ -20,6 +20,8 @@ module "service" {
   target_group_arn = aws_lb_target_group.tcp.arn
   container_name   = "nginx"
   container_port   = var.nginx_container_port
+
+  use_fargate_spot = var.use_fargate_spot_for_api
 }
 
 module "task_definition" {

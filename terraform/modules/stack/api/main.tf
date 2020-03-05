@@ -34,5 +34,7 @@ module "services" {
   ingests_listener_port                        = local.ingests_listener_port
   interservice_security_group_id               = var.interservice_security_group_id
   allow_ingests_publish_to_unpacker_topic_json = data.aws_iam_policy_document.allow_ingests_publish_to_unpacker_topic.json
+
+  use_fargate_spot_for_api = var.use_fargate_spot_for_api
 }
 

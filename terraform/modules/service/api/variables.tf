@@ -68,3 +68,7 @@ variable "desired_task_count" {
   default = 3
 }
 
+variable "use_fargate_spot_for_api" {
+  type    = bool
+  default = false
+}

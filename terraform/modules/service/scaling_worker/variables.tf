@@ -55,3 +55,7 @@ variable "memory" {
   default = 1024
 }
 
+variable "use_fargate_spot" {
+  type    = bool
+  default = false
+}

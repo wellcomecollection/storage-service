@@ -1,5 +1,5 @@
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.1.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=125f1aaf90a1b2469ad129c95e76755b9e71ab76"
 
   service_name = var.service_name
 
@@ -16,6 +16,8 @@ module "service" {
   launch_type = var.launch_type
 
   desired_task_count = var.desired_task_count
+
+  use_fargate_spot = var.use_fargate_spot
 }
 
 module "task_definition" {

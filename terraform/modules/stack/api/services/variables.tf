@@ -83,3 +83,6 @@ variable "interservice_security_group_id" {
 variable "allow_ingests_publish_to_unpacker_topic_json" {
 }
 
+variable "use_fargate_spot_for_api" {
+  type = bool
+}

@@ -112,6 +112,8 @@ module "bag_root_finder" {
   max_capacity = var.max_capacity
 
   container_image = local.bag_root_finder_image
+
+  use_fargate_spot = true
 }
 
 # bag_verifier
@@ -185,6 +187,8 @@ module "bag_versioner" {
   max_capacity = var.max_capacity
 
   container_image = local.bag_versioner_image
+
+  use_fargate_spot = true
 }
 
 module "replicator_verifier_primary" {
@@ -310,6 +314,8 @@ module "replica_aggregator" {
   max_capacity = var.max_capacity
 
   container_image = local.replica_aggregator_image
+
+  use_fargate_spot = true
 }
 
 # bag_register
@@ -340,6 +346,8 @@ module "bag_register" {
   max_capacity = var.max_capacity
 
   container_image = local.bag_register_image
+
+  use_fargate_spot = true
 }
 
 # notifier
@@ -370,6 +378,8 @@ module "notifier" {
   max_capacity = var.max_capacity
 
   container_image = local.notifier_image
+
+  use_fargate_spot = true
 }
 
 # ingests
@@ -398,6 +408,8 @@ module "ingests" {
   max_capacity = var.max_capacity
 
   container_image = local.ingests_image
+
+  use_fargate_spot = true
 }
 
 # Storage API
@@ -464,5 +476,7 @@ module "api" {
   # NLBs that seem to increase latency significantly if number of tasks < number of AZs.
   desired_bags_api_count    = max(3, var.desired_bags_api_count)
   desired_ingests_api_count = max(3, var.desired_ingests_api_count)
+
+  use_fargate_spot_for_api = var.use_fargate_spot_for_api
 }
 

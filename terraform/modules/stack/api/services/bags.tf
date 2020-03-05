@@ -35,5 +35,7 @@ module "bags" {
   app_memory = 1792
 
   desired_task_count = var.desired_bags_api_count
+
+  use_fargate_spot_for_api = var.use_fargate_spot_for_api
 }
 
