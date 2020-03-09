@@ -6,44 +6,6 @@ resource "aws_s3_bucket" "replica_primary" {
     enabled = var.enable_s3_versioning
   }
 
-  # This is a temporary lifecycle rule that will flush all the existing objects
-  # from Standard to Standard-IA.
-  #
-  # When we first set up the replicators, we were writing everything as the
-  # Standard storage class.  We should actually be writing the primary replica
-  # as Standard-IA, which is more appropriate and cheaper.
-  #
-  # The replicators now write all *new* objects as Standard-IA, but we have
-  # millions of existing objects that are all Standard.  Rather than moving
-  # them manually, we'll get S3 to lifecycle them for us (less risky).
-  #
-  # You can run this Python script to find out if any objects haven't been
-  # lifecycled to Standard-IA yet:
-  #
-  #     import boto3
-  #     import tqdm
-  #
-  #     s3 = boto3.client("s3")
-  #
-  #
-  #     def all_objects():
-  #         paginator = s3.get_paginator("list_objects_v2")
-  #
-  #         for page in paginator.paginate(Bucket="wellcomecollection-storage"):
-  #             yield from page["Contents"]
-  #
-  #
-  #     if any(
-  #         s3_obj["StorageClass"] == "STANDARD"
-  #         for s3_obj in tqdm.tqdm(all_objects())
-  #     ):
-  #         print("Some objects in the bucket are not Standard-IA!")
-  #     else:
-  #         print("Every objects in the bucket is Standard-IA!")
-  #
-  # When this rule is removed, you can close
-  # https://github.com/wellcometrust/platform/issues/4096
-  #
   lifecycle_rule {
     enabled = true
 

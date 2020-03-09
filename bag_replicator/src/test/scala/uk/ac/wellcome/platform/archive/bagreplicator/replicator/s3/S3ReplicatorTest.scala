@@ -56,38 +56,6 @@ class S3ReplicatorTest
     }
   }
 
-  it("stores the objects as Standard-IA") {
-    withLocalS3Bucket { bucket =>
-      val name = randomAlphanumeric
-      val location = createObjectLocationWith(bucket, key = s"src/$name")
-      val contents = randomAlphanumeric
-
-      s3Client.putObject(
-        location.namespace,
-        location.path,
-        contents
-      )
-
-      val srcPrefix =
-        ObjectLocationPrefix(namespace = bucket.name, path = "src/")
-      val dstPrefix =
-        ObjectLocationPrefix(namespace = bucket.name, path = "dst/")
-
-      val result = new S3Replicator().replicate(
-        ingestId = createIngestID,
-        request = ReplicationRequest(
-          srcPrefix = srcPrefix,
-          dstPrefix = dstPrefix
-        )
-      )
-
-      result shouldBe a[ReplicationSucceeded]
-
-      val metadata = s3Client.getObjectMetadata(bucket.name, s"dst/$name")
-      metadata.getStorageClass shouldBe "STANDARD_IA"
-    }
-  }
-
   it("fails if the underlying replication has an error") {
     val result = new S3Replicator().replicate(
       ingestId = createIngestID,
