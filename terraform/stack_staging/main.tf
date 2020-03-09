@@ -55,5 +55,10 @@ module "stack_staging" {
 
   archivematica_ingests_bucket             = local.archivematica_ingests_bucket
   bag_register_output_subscribe_principals = []
+
+  # This means the staging service might be interrupted (unlikely), but the
+  # staging service doesn't make the same guarantees of uptime and this
+  # saves us money.
+  use_fargate_spot_for_api = true
 }
 

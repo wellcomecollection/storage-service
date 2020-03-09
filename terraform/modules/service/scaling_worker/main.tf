@@ -23,6 +23,8 @@ module "worker" {
 
   cpu    = var.cpu
   memory = var.memory
+
+  use_fargate_spot = var.use_fargate_spot
 }
 
 module "scaling" {

@@ -111,3 +111,8 @@ variable "max_capacity" {}
 variable "bag_register_output_subscribe_principals" {
   type = list(string)
 }
+
+variable "use_fargate_spot_for_api" {
+  type    = bool
+  default = false
+}

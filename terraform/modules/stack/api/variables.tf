@@ -87,3 +87,7 @@ variable "desired_bags_api_count" {
 variable "desired_ingests_api_count" {
 }
 
+variable "use_fargate_spot_for_api" {
+  type    = bool
+  default = false
+}
