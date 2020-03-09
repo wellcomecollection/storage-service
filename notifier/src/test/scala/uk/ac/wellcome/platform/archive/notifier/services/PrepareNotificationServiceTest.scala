@@ -41,7 +41,7 @@ class PrepareNotificationServiceTest
       assertPreparedNotificationIsCorrect(
         httpResponse = Success(HttpResponse(responseStatus)),
         expectedCallbackStatus = Callback.Succeeded,
-        expectedDescription = "Callback fulfilled."
+        expectedDescription = "Callback fulfilled"
       )
     }
   }
