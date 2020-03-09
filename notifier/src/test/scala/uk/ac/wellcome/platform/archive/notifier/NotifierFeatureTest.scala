@@ -245,7 +245,7 @@ class NotifierFeatureTest
                       List(ingestEvent)
                       ) =>
                     id shouldBe ingest.id
-                    ingestEvent.description shouldBe "Callback fulfilled."
+                    ingestEvent.description shouldBe "Callback fulfilled"
                     callbackStatus shouldBe Callback.Succeeded
                     assertRecent(ingestEvent.createdDate)
                 }

@@ -27,7 +27,7 @@ object PrepareNotificationService extends Logging {
           IngestCallbackStatusUpdate(
             id = id,
             callbackStatus = Succeeded,
-            description = "Callback fulfilled."
+            description = "Callback fulfilled"
           )
         } else {
           debug(s"Callback failed for: $id, got $status!")
