@@ -22,7 +22,6 @@ jobs:
 
     - env: SBT_PROJECT=notifier
 
-    # - env: TASK=bagger-publish
     # - env: TASK=python_client-test
 
 script:
