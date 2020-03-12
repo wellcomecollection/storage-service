@@ -5,8 +5,9 @@ import java.net.URL
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
+import com.amazonaws.services.sns.AmazonSNS
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.sns.SNSConfig
+import uk.ac.wellcome.messaging.sns.{SNSClientFactory, SNSConfig, SNSMessageSender}
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.HTTPServerBuilder
@@ -18,6 +19,7 @@ import uk.ac.wellcome.platform.archive.common.http.{
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.dynamo.DynamoIngestTracker
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestStarter
+import uk.ac.wellcome.storage.dynamo.DynamoClientFactory
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -33,20 +35,35 @@ object Main extends WellcomeTypesafeApp {
     implicit val materializer: ActorMaterializer =
       AkkaBuilder.buildActorMaterializer()
 
-    implicit val dynamoClient: AmazonDynamoDB =
-      DynamoBuilder.buildDynamoClient(config)
+    implicit val dynamoClient: AmazonDynamoDB = DynamoClientFactory.create(
+      region = "us-east-1",
+      endpoint = "http://localstack:4569",
+      accessKey = "123",
+      secretKey = "abc"
+    )
+
+//    implicit val dynamoClient: AmazonDynamoDB =
+//      DynamoBuilder.buildDynamoClient(config)
 
     val ingestTrackerMain = new DynamoIngestTracker(
       config = DynamoBuilder.buildDynamoConfig(config)
     )
 
+    implicit val snsClient: AmazonSNS = SNSClientFactory.create(
+      region = "us-east-1",
+      endpoint = "http://localstack:4575",
+      accessKey = "123",
+      secretKey = "abc"
+    )
+
     val ingestStarterMain = new IngestStarter[SNSConfig](
       ingestTracker = ingestTrackerMain,
-      unpackerMessageSender = SNSBuilder.buildSNSMessageSender(
-        config,
-        namespace = "unpacker",
-        subject = "Sent from the ingests API"
-      )
+      unpackerMessageSender =
+        new SNSMessageSender(
+          snsClient = snsClient,
+          snsConfig = SNSBuilder.buildSNSConfig(config, namespace = "unpacker"),
+          subject = "Sent from the ingests API"
+        )
     )
 
     val httpServerConfigMain = HTTPServerBuilder.buildHTTPServerConfig(config)

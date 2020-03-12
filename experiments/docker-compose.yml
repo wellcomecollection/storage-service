@@ -1,0 +1,21 @@
+version: "3.7"
+services:
+  localstack:
+    image: "localstack/localstack"
+    ports:
+      - "4567-4599:4567-4599"
+      - "${PORT_WEB_UI-8080}:${PORT_WEB_UI-8080}"
+    volumes:
+      - "./localstack:/tmp/localstack"
+
+  ingests_api:
+    image: "ingests_api"
+    ports:
+      - "9001:9001"
+    environment:
+      - context_url=http://localhost:9001/context.json
+      - app_base_url=http://localhost:9001/ingests
+      - unpacker_topic_arn=arn:aws:sns:us-east-1:000000000000:bag_unpacker_input
+      - archive_ingest_table_name=ingests
+      - metrics_namespace=ingests_api
+      - ECS_CONTAINER_METADATA_URI=https://alexwlchan.net/
