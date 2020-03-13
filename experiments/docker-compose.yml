@@ -7,6 +7,9 @@ services:
       - "${PORT_WEB_UI-8080}:${PORT_WEB_UI-8080}"
     volumes:
       - "./localstack:/tmp/localstack"
+    environment:
+      - SERVICE=dynamodb,sns,sqs
+      - DATA_DIR=/tmp/localstack/data
 
   ingests_api:
     image: "ingests_api"
@@ -19,3 +22,13 @@ services:
       - archive_ingest_table_name=ingests
       - metrics_namespace=ingests_api
       - ECS_CONTAINER_METADATA_URI=https://alexwlchan.net/
+
+      - aws_dynamo_access_key_id=123
+      - aws_dynamo_secret_access_key=abc
+      - aws_dynamo_endpoint=http://localstack:4569
+      - aws_dynamo_region=us-east-1
+
+      - aws_sns_access_key_id=123
+      - aws_sns_secret_access_key=abc
+      - aws_sns_endpoint=http://localstack:4575
+      - aws_sns_region=us-east-1
