@@ -56,6 +56,13 @@ if __name__ == "__main__":
     print(f"bag unpacker topic arn = {underlined(bag_unpacker_topic_arn)}")
     print(f"bag unpacker queue url = {underlined(bag_unpacker_queue_url)}")
 
+    ingests_topic_arn, ingests_queue_url = create_topic_queue_pair(
+        sns_client=sns_client, sqs_client=sqs_client, name="ingests"
+    )
+
+    print(f"ingests topic arn = {underlined(ingests_topic_arn)}")
+    print(f"ingests queue url = {underlined(ingests_queue_url)}")
+
     sqs_messages = sqs_client.receive_message(QueueUrl=bag_unpacker_queue_url)
     print(sqs_messages)
 #
