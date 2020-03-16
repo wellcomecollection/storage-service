@@ -18,8 +18,10 @@ In our case, the messaging layer is Amazon SNS/SQS, but the principles apply to 
 In brief:
 
 *   The user creates and uploads a bag as a tar.gz
-*   They trigger an ingest through the ingests API
-*   The bag unpacker unpacks the tar.gz into a temporary bucket
+*   They trigger an ingest through the **ingests API**
+*   The **bag unpacker** unpacks the tar.gz into a temporary bucket
+*   The **bag root finder** finds the root of the unpacked bag
+*   The **bag verifier** runs a series of checks over the bag, to ensure it's a valid BagIt bag
 
 
 
@@ -129,9 +131,58 @@ The **bag root finder** tries to find the actual root of the bag, and sends that
 
 ## Verifying the bag
 
+At this point, we have the root of an unpacked bag.
+The **bag verifier** runs a number of checks to ensure this is a valid bag, including:
+
+*   Do the checksums in the manifests match the files in the bag?
+*   Does the bag contain any extra files which aren't listed in a manifest?
+*   Does the External-Identifier in `bag-info.txt` match the external identifier given to the ingests API?
+*   Is there a `fetch.txt`?
+    If so, does it refer to any remote resources that might go away?
+    Does it only refer to files in previous versions of the bag?
+    Do the sizes listed in the `fetch.txt` (if any) match the sizes of the remote objects?
+
+We will likely add more checks over time.
+
+If the bag passes all of these checks, then it's okay to copy to the permanent storage.
+The bag verifier sends the location of the verified bag to the next app.
+
+Note: at time of writing, the bag verifier only looks at the SHA-256 manifests.
+
+
+
 ## Assigning a version to the bag
 
-Why assign a version here?
+Now we know we want to store the bag, we need to know where we're going to store it.
+The path to a bag in the bucket is
+
+```
+/:space/:externalIdentifier/:version
+```
+
+where the version is monotonically increasing, e.g. `v1`, `v2`, `v3`.
+
+The **bag versioner** picks a version for the bag based on its (space, external identifier).
+It then sends the location of the bag and its version to the next app.
+
+<details>
+  <summary>Why assign a version here?</summary>
+
+  We don't assign a version until *after* a bag has been verified.
+  This means we're more likely to have a clean set of versions in the permanent storage, because we're only assigning versions for known-good bags.
+
+  If we assigned a version as soon as the user started an ingest, we could:
+
+  -   Assign v1 for the first bag, which stores successfully
+  -   Assign v2 for the second bag, which turns out to have incorrect checksums and doesn't get stored
+  -   Assign v3 for the third bag, which stores successfully
+
+  If you looked in the permanent storage, you'd see v1 and v3, and it wouldn't be clear what had happened to v2.
+  Did it never exist, or did it get deleted?
+  Only assigning versions to known-good bags makes this less likely.
+</details>
+
+
 
 ## Replicating and verifying the bag into permanent storage
 
