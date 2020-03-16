@@ -9,6 +9,12 @@ The archive holds our digital collections, including:
 -   [*Digitised material*](https://en.wikipedia.org/wiki/Digitization): digital reproductions of physical objects, like a scanned pamphlet or a photographed book
 -   Other files that we want to preserve for a long time
 
+Useful reading:
+
+-   [Building Wellcome Collection’s new archival storage service](https://stacks.wellcomecollection.org/building-wellcome-collections-new-archival-storage-service-3f68ff21927e) is a blog post that explains the high-level design of the service, why and how we built it.
+-   [The architecture document](docs/architecture.md) explains the inner workings of the storage service.
+    It is intended for developers who are working on the storage service code.
+
 
 
 ## Principles and requirements
