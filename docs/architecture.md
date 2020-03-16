@@ -186,6 +186,52 @@ It then sends the location of the bag and its version to the next app.
 
 ## Replicating and verifying the bag into permanent storage
 
+The **bag replicator** copies a bag from the temporary storage to the permanent storage.
+Each replicator writes to exactly one location; at time of writing we have two replicas writing to two S3 buckets:
+
+*   One replicator writes to `wellcomecollection-storage`, a warm replica.
+    This bucket that uses Standard-IA storage.
+*   One replicator writes to `wellcomecollection-storage-replica-ireland`, a cold replica.
+    Objects in this bucket get lifecycled to Glacier Deep Archive after 90 days.
+
+When a replicator finishes, it sends a notification to an instance of the **bag verifier**, which re-runs the previous checks.
+This is to detect any corruption or errors introduced by the replicator.
+(At time of writing, we've replicated ~500M objects and never seen an error introduced by the replicator.
+Nonetheless, the cost of an extra verification is minimal, and knowing that everything in permanent storage has been verified is reassuring.)
+
+The verifier then sends a notification of the completed, verified replica to the next app.
+
+
+
+## Aggregating the bag replicas
+
+The **replica aggregator** counts successful replicas of a bag.
+Currently we need *two* replicas before we consider a bag stored successfully.
+
+It tracks the replicas in a DynamoDB table, and only sends a message to the next app when it's counted enough replicas.
+
+
+
 ## Registering the bag
 
+When we have enough replicas, the **bag register** reads the bag one last time to construct the *storage manifest*.
+This is a JSON representation of a bag that includes:
+
+*   A list of every file, its checksum and size
+*   The replica locations of the bag
+*   The date the bag was stored
+
+The storage manifest can be retrieved using the **bags API**.
+
+The bag register sends a notification to an SNS topic to say "this bag was successfully stored"; other apps can tap that event stream to get a list of new bags.
+
+
+
 ## Optional: making a callback to the user
+
+When the user requests a new ingest, they can supply a *callback URL*.
+This is a URL that the storage service can make a request to when a bag finishes processing (successfully or otherwise).
+This means the user is immediately notified of the result, rather than having to poll the ingests API.
+
+When the ingests monitor learns that a bag has finished processing, it sends a message to the **notifier**.
+The notifier is responsible for actually fulfilling the callback; for making a GET request to the callback URL.
