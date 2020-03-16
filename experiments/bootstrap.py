@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     sqs_messages = sqs_client.receive_message(QueueUrl=bag_unpacker_queue_url)
     print(sqs_messages)
-#
+    #
     ingests_table_resp = dynamodb_client.create_table(
         TableName="ingests",
         KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
@@ -74,4 +74,3 @@ if __name__ == "__main__":
     )
     print(f"ingests table name = {underlined('ingests')}")
     # print(dynamodb_client.scan(TableName="ingests"))
-

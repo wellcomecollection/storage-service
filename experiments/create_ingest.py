@@ -18,9 +18,10 @@ resp = requests.post(
             "type": "Bag",
             "info": {"type": "BagInfo", "externalIdentifier": "example123"},
         },
-    }
+    },
 )
 
 from pprint import pprint
+
 pprint(resp)
 print(resp.headers)
