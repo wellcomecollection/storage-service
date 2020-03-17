@@ -16,7 +16,7 @@ import uk.ac.wellcome.storage.{
   ObjectLocationPrefix
 }
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /** The tag manifest files (e.g. tagmanifest-sha256.txt) aren't referred to by
   * any of the other manifests in the bag, but we still want to include them in
@@ -52,16 +52,16 @@ class TagManifestFileFinder[IS <: InputStream with HasLength](
   ): Option[StorageManifestFile] =
     streamReader.get(prefix.asLocation(name)) match {
       case Right(is) =>
-        // TODO: we could handle the checksum more gracefully here, not '.get'
-        //
         // This method is called in the bag register to create the storage manifest,
         // so it happens after the entire bag has been verified.  To verify the bag,
         // we've already had to read the tagmanifest-sha256.txt file, so an error
         // here would be unlikely (but probably not impossible).
-        val checksum = Hasher
-          .hash(is.identifiedT)
-          .get
-          .getChecksumValue(algorithm)
+        val checksum = Hasher.hash(is.identifiedT) match {
+          case Success(hashResult) => hashResult.getChecksumValue(algorithm)
+          case Failure(err)        => throw new RuntimeException(
+            s"Error reading tag manifest: $err"
+          )
+        }
 
         Some(
           StorageManifestFile(
