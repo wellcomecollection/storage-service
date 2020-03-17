@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
+import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA1, SHA256, SHA512}
+
 /** In a bag, we have objects.  Those objects are referred to by a manifest file,
   * which is in turn referred to by a tag manifest file.  But how do we know the
   * tag manifest file is there?
@@ -25,9 +27,9 @@ package uk.ac.wellcome.platform.archive.common.bagit.models
   */
 object UnreferencedFiles {
   val tagManifestFiles: Seq[String] = Seq(
-    "tagmanifest-md5.txt",
-    "tagmanifest-sha1.txt",
-    "tagmanifest-sha256.txt",
-    "tagmanifest-sha512.txt"
+    s"tagmanifest-${MD5.pathRepr}.txt",
+    s"tagmanifest-${SHA1.pathRepr}.txt",
+    s"tagmanifest-${SHA256.pathRepr}.txt",
+    s"tagmanifest-${SHA512.pathRepr}.txt"
   )
 }
