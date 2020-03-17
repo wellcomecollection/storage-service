@@ -4,10 +4,7 @@ import java.io.InputStream
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.UnreferencedFiles
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Hasher,
-  HashingAlgorithm
-}
+import uk.ac.wellcome.platform.archive.common.verify.{Hasher, HashingAlgorithm}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.HasLength
 import uk.ac.wellcome.storage.{
@@ -58,9 +55,10 @@ class TagManifestFileFinder[IS <: InputStream with HasLength](
         // here would be unlikely (but probably not impossible).
         val checksum = Hasher.hash(is.identifiedT) match {
           case Success(hashResult) => hashResult.getChecksumValue(algorithm)
-          case Failure(err)        => throw new RuntimeException(
-            s"Error reading tag manifest: $err"
-          )
+          case Failure(err) =>
+            throw new RuntimeException(
+              s"Error reading tag manifest: $err"
+            )
         }
 
         Some(
