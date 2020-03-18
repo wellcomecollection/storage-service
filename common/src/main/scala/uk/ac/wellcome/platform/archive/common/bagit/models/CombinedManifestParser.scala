@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 import java.io.{BufferedReader, InputStream, InputStreamReader}
 
-import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, VerifiableChecksum}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  ChecksumValue,
+  VerifiableChecksum
+}
 
 import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
@@ -32,23 +35,24 @@ object CombinedManifestParser {
     sha512: Option[InputStream] = None
   ): Try[Map[BagPath, VerifiableChecksum]] =
     for {
-      filesMD5    <- maybeReadManifestFile(md5)
-      filesSHA1   <- maybeReadManifestFile(sha1)
+      filesMD5 <- maybeReadManifestFile(md5)
+      filesSHA1 <- maybeReadManifestFile(sha1)
       filesSHA256 <- readSingleManifestFile(sha256)
       filesSHA512 <- maybeReadManifestFile(sha512)
 
       // Now check the manifest files all refer to the same list of files -- for example,
       // in case the MD5 manifest refers to {file1, file2, file3} but the SHA1 manifest
       // only refers to {file1, file2}.
-      paths = List(filesMD5, filesSHA1, Some(filesSHA256), filesSHA512)
-        .flatten
+      paths = List(filesMD5, filesSHA1, Some(filesSHA256), filesSHA512).flatten
         .map { _.keys.toSet }
 
       _ <- if (paths.distinct.size == 1) {
         Success(())
       } else {
         Failure(
-          new RuntimeException("Different manifests refer to different lists of files!")
+          new RuntimeException(
+            "Different manifests refer to different lists of files!"
+          )
         )
       }
 
@@ -58,27 +62,29 @@ object CombinedManifestParser {
       // Note: because we know each manifest contains the same list of files, we can
       // pull the key out of the map without checking if it's present (`_(bagPath)`) --
       // we know it is, or this function will already have failed.
-      result =
-      paths.distinct.head
-        .map { bagPath =>
-          bagPath -> VerifiableChecksum(
-            md5 = filesMD5.map { _(bagPath) },
-            sha1 = filesSHA1.map { _(bagPath) },
-            sha256 = filesSHA256(bagPath),
-            sha512 = filesSHA512.map { _(bagPath) }
-          )
-        }
-        .toMap
+      result = paths.distinct.head.map { bagPath =>
+        bagPath -> VerifiableChecksum(
+          md5 = filesMD5.map { _(bagPath) },
+          sha1 = filesSHA1.map { _(bagPath) },
+          sha256 = filesSHA256(bagPath),
+          sha512 = filesSHA512.map { _(bagPath) }
+        )
+      }.toMap
     } yield result
 
-  private def maybeReadManifestFile(maybeInputStream: Option[InputStream]): Try[Option[Map[BagPath, ChecksumValue]]] =
+  private def maybeReadManifestFile(
+    maybeInputStream: Option[InputStream]
+  ): Try[Option[Map[BagPath, ChecksumValue]]] =
     maybeInputStream match {
-      case Some(inputStream) => readSingleManifestFile(inputStream).map { Some(_) }
-      case None              => Success(None)
+      case Some(inputStream) =>
+        readSingleManifestFile(inputStream).map { Some(_) }
+      case None => Success(None)
     }
 
   // Parses a single manifest file.
-  private def readSingleManifestFile(inputStream: InputStream): Try[Map[BagPath, ChecksumValue]] = {
+  private def readSingleManifestFile(
+    inputStream: InputStream
+  ): Try[Map[BagPath, ChecksumValue]] = {
     val bufferedReader = new BufferedReader(
       new InputStreamReader(inputStream)
     )
@@ -126,9 +132,17 @@ object CombinedManifestParser {
       .reduce { _ ++ _ }
 
     if (unparseableLines.nonEmpty) {
-      Failure(new RuntimeException(s"Failed to parse the following lines: $unparseableLines"))
+      Failure(
+        new RuntimeException(
+          s"Failed to parse the following lines: $unparseableLines"
+        )
+      )
     } else if (duplicatePaths.nonEmpty) {
-      Failure(new RuntimeException(s"Manifest contains duplicate paths: $duplicatePaths"))
+      Failure(
+        new RuntimeException(
+          s"Manifest contains duplicate paths: $duplicatePaths"
+        )
+      )
     } else {
       Success(associations)
     }
@@ -142,7 +156,9 @@ object CombinedManifestParser {
   //
   private val LINE_REGEX: Regex = """([0-9a-fA-F]+?)\s+(.+)""".r
 
-  private def parseSingleLine(line: String): Either[String, Map[BagPath, ChecksumValue]] = line match {
+  private def parseSingleLine(
+    line: String
+  ): Either[String, Map[BagPath, ChecksumValue]] = line match {
     case LINE_REGEX(checksum, filepath) =>
       Right(Map(BagPath.create(filepath) -> ChecksumValue.create(checksum)))
     case _ => Left(line)

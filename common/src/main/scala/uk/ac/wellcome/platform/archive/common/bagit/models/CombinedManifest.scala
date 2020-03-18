@@ -30,7 +30,10 @@ case object PayloadManifest {
   ): Try[PayloadManifest] =
     for {
       files <- CombinedManifestParser.createFileLists(
-        md5 = md5, sha1 = sha1, sha256 = sha256, sha512 = sha512
+        md5 = md5,
+        sha1 = sha1,
+        sha256 = sha256,
+        sha512 = sha512
       )
     } yield PayloadManifest(files)
 }
@@ -48,7 +51,10 @@ case object TagManifest {
   ): Try[TagManifest] =
     for {
       files <- CombinedManifestParser.createFileLists(
-        md5 = md5, sha1 = sha1, sha256 = sha256, sha512 = sha512
+        md5 = md5,
+        sha1 = sha1,
+        sha256 = sha256,
+        sha512 = sha512
       )
     } yield TagManifest(files)
 }

@@ -2,7 +2,11 @@ package uk.ac.wellcome.platform.archive.common.bagit.models
 
 import java.io.InputStream
 
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, HashingAlgorithm, SHA256}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  HashingAlgorithm,
+  SHA256
+}
 
 import scala.util.Try
 
@@ -24,18 +28,18 @@ object BagManifest {
     CombinedManifestParser
       .createFileLists(sha256 = inputStream)
       .map { fileMap =>
-          val files = fileMap.map {
-            case (bagPath, verifiableChecksum) =>
-              BagFile(
-                checksum = Checksum(
-                  algorithm = algorithm,
-                  value = verifiableChecksum.sha256
-                ),
-                path = bagPath
-              )
-          }.toList
+        val files = fileMap.map {
+          case (bagPath, verifiableChecksum) =>
+            BagFile(
+              checksum = Checksum(
+                algorithm = algorithm,
+                value = verifiableChecksum.sha256
+              ),
+              path = bagPath
+            )
+        }.toList
 
-          BagManifest(checksumAlgorithm = algorithm, files = files)
+        BagManifest(checksumAlgorithm = algorithm, files = files)
       }
   }
 }
