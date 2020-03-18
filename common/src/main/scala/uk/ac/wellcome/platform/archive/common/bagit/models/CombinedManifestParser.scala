@@ -24,7 +24,7 @@ import scala.util.matching.Regex
   *     https://tools.ietf.org/html/rfc8493#section-2.2.1
   *
   */
-object ManifestFileParser {
+object CombinedManifestParser {
   def createFileLists(
     md5: Option[InputStream] = None,
     sha1: Option[InputStream] = None,

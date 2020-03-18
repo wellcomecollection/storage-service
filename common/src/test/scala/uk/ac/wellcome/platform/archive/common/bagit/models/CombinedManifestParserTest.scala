@@ -6,7 +6,7 @@ import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, VerifiableChecksum}
 import uk.ac.wellcome.storage.streaming.Codec._
 
-class ManifestFileParserTest extends FunSpec with Matchers with EitherValues with TryValues {
+class CombinedManifestParserTest extends FunSpec with Matchers with EitherValues with TryValues {
   it("parses a single SHA256 manifest") {
     val sha256 = asStream(
       """
@@ -14,7 +14,7 @@ class ManifestFileParserTest extends FunSpec with Matchers with EitherValues wit
         |def456   file2.txt
         |""".stripMargin)
 
-    val files = ManifestFileParser.createFileLists(sha256 = sha256)
+    val files = CombinedManifestParser.createFileLists(sha256 = sha256)
 
     files.success.value shouldBe Map(
       BagPath("file1.txt") -> VerifiableChecksum(sha256 = ChecksumValue("abc123")),
@@ -35,7 +35,7 @@ class ManifestFileParserTest extends FunSpec with Matchers with EitherValues wit
         |bbb222   file2.txt
         |""".stripMargin)
 
-    val files = ManifestFileParser.createFileLists(md5 = Some(md5), sha256 = sha256)
+    val files = CombinedManifestParser.createFileLists(md5 = Some(md5), sha256 = sha256)
 
     files.success.value shouldBe Map(
       BagPath("file1.txt") -> VerifiableChecksum(
@@ -62,7 +62,7 @@ class ManifestFileParserTest extends FunSpec with Matchers with EitherValues wit
         |bbb222   file2.txt
         |""".stripMargin)
 
-    val files = ManifestFileParser.createFileLists(sha1 = Some(sha1), sha256 = sha256)
+    val files = CombinedManifestParser.createFileLists(sha1 = Some(sha1), sha256 = sha256)
 
     files.success.value shouldBe Map(
       BagPath("file1.txt") -> VerifiableChecksum(
@@ -89,7 +89,7 @@ class ManifestFileParserTest extends FunSpec with Matchers with EitherValues wit
         |bbb222   file2.txt
         |""".stripMargin)
 
-    val files = ManifestFileParser.createFileLists(sha512 = Some(sha512), sha256 = sha256)
+    val files = CombinedManifestParser.createFileLists(sha512 = Some(sha512), sha256 = sha256)
 
     files.success.value shouldBe Map(
       BagPath("file1.txt") -> VerifiableChecksum(
@@ -118,7 +118,7 @@ class ManifestFileParserTest extends FunSpec with Matchers with EitherValues wit
         |bbb111   file1.txt
         |""".stripMargin)
 
-    val files = ManifestFileParser.createFileLists(md5 = Some(md5), sha256 = sha256)
+    val files = CombinedManifestParser.createFileLists(md5 = Some(md5), sha256 = sha256)
 
     files.success.value shouldBe Map(
       BagPath("file1.txt") -> VerifiableChecksum(
@@ -151,7 +151,7 @@ class ManifestFileParserTest extends FunSpec with Matchers with EitherValues wit
           |bbb555   file5.txt
           |""".stripMargin)
 
-      val result = ManifestFileParser.createFileLists(md5 = Some(md5), sha256 = sha256)
+      val result = CombinedManifestParser.createFileLists(md5 = Some(md5), sha256 = sha256)
 
       val err = result.failure.exception
 
@@ -167,7 +167,7 @@ class ManifestFileParserTest extends FunSpec with Matchers with EitherValues wit
           |aaa222   file2.txt
           |""".stripMargin)
 
-      val result = ManifestFileParser.createFileLists(sha256 = sha256)
+      val result = CombinedManifestParser.createFileLists(sha256 = sha256)
 
       val err = result.failure.exception
 
@@ -182,7 +182,7 @@ class ManifestFileParserTest extends FunSpec with Matchers with EitherValues wit
           |aaa111   file1.txt
           |""".stripMargin)
 
-      val result = ManifestFileParser.createFileLists(sha256 = sha256)
+      val result = CombinedManifestParser.createFileLists(sha256 = sha256)
 
       val err = result.failure.exception
 
@@ -197,7 +197,7 @@ class ManifestFileParserTest extends FunSpec with Matchers with EitherValues wit
           |aaa111   file1.txt
           |""".stripMargin)
 
-      val result = ManifestFileParser.createFileLists(sha256 = sha256)
+      val result = CombinedManifestParser.createFileLists(sha256 = sha256)
 
       val err = result.failure.exception
 

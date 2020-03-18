@@ -21,7 +21,7 @@ object BagManifest {
     // entire codebase at once.
     assert(algorithm == SHA256)
 
-    ManifestFileParser
+    CombinedManifestParser
       .createFileLists(sha256 = inputStream)
       .map { fileMap =>
           val files = fileMap.map {
