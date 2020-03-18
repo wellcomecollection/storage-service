@@ -38,7 +38,7 @@ object BagManifest {
       .filter { _.nonEmpty }
       .toList
 
-    val eitherFiles = lines.map(createBagFile(_, None, algorithm))
+    val eitherFiles = lines.map(createBagFile(_, algorithm))
 
     val errorStrings = eitherFiles.collect {
       case Left(errorString) => errorString
@@ -57,7 +57,6 @@ object BagManifest {
 
   private def createBagFile(
     line: String,
-    maybeRoot: Option[String],
     algorithm: HashingAlgorithm
   ): Either[String, BagFile] = line match {
     case LINE_REGEX(checksumString, itemPathString) =>
