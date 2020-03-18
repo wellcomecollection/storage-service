@@ -1,15 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
-import java.io.{BufferedReader, InputStream, InputStreamReader}
+import java.io.InputStream
 
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Checksum,
-  ChecksumValue,
-  HashingAlgorithm
-}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, HashingAlgorithm, SHA256}
 
-import scala.util.matching.Regex
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 case class BagManifest(
   checksumAlgorithm: HashingAlgorithm,
@@ -17,58 +12,30 @@ case class BagManifest(
 )
 
 object BagManifest {
-
-  // Intended to match BagIt `manifest-algorithm.txt` file format:
-  // https://tools.ietf.org/html/draft-kunze-bagit-17#section-2.1.3
-
-  val LINE_REGEX: Regex = """(.+?)\s+(.+)""".r
-
   def create(
     inputStream: InputStream,
     algorithm: HashingAlgorithm
   ): Try[BagManifest] = {
+    // Eventually calls to this method should be replaced by direct calls into
+    // ManifestFileParser; we keep it here for now so we don't have to change the
+    // entire codebase at once.
+    assert(algorithm == SHA256)
 
-    val bufferedReader = new BufferedReader(
-      new InputStreamReader(inputStream)
-    )
+    ManifestFileParser
+      .createFileLists(sha256 = inputStream)
+      .map { fileMap =>
+          val files = fileMap.map {
+            case (bagPath, verifiableChecksum) =>
+              BagFile(
+                checksum = Checksum(
+                  algorithm = algorithm,
+                  value = verifiableChecksum.sha256
+                ),
+                path = bagPath
+              )
+          }.toList
 
-    val lines = Iterator
-      .continually(bufferedReader.readLine())
-      .takeWhile { _ != null }
-      .filter { _.nonEmpty }
-      .toList
-
-    val eitherFiles = lines.map(createBagFile(_, algorithm))
-
-    val errorStrings = eitherFiles.collect {
-      case Left(errorString) => errorString
-    }
-
-    val files = eitherFiles.collect {
-      case Right(bagFile) => bagFile
-    }
-
-    if (errorStrings.isEmpty) {
-      Success(BagManifest(algorithm, files))
-    } else {
-      Failure(new RuntimeException(s"Failed to parse: $lines"))
-    }
-  }
-
-  private def createBagFile(
-    line: String,
-    algorithm: HashingAlgorithm
-  ): Either[String, BagFile] = line match {
-    case LINE_REGEX(checksumString, itemPathString) =>
-      Right(
-        BagFile(
-          Checksum(
-            algorithm,
-            ChecksumValue.create(checksumString)
-          ),
-          BagPath.create(itemPathString)
-        )
-      )
-    case l => Left(l)
+          BagManifest(checksumAlgorithm = algorithm, files = files)
+      }
   }
 }
