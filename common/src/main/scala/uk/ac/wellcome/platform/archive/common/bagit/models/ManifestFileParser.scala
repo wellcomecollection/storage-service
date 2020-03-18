@@ -25,15 +25,6 @@ import scala.util.matching.Regex
   *
   */
 object ManifestFileParser {
-
-  // Represents a single line in a manifest file, e.g.
-  //
-  //    3532b221585eaa6d2520068ec1938928a1069a72fc50a8df9f3472da3f458037  data/b12345678.xml
-  //
-  // Note: checksums can be upper or lowercase.
-  //
-  protected val LINE_REGEX: Regex = new Regex("""(0-9a-fA-F+?)\s+(.+)""", "checksum", "filepath")
-
   def createFileLists(
     md5: Option[InputStream] = None,
     sha1: Option[InputStream] = None,
@@ -43,13 +34,13 @@ object ManifestFileParser {
     for {
       filesMD5    <- maybeReadManifestFile(md5)
       filesSHA1   <- maybeReadManifestFile(sha1)
-      filesSHA256 <- maybeReadManifestFile(Some(sha256))
+      filesSHA256 <- readSingleManifestFile(sha256)
       filesSHA512 <- maybeReadManifestFile(sha512)
 
       // Now check the manifest files all refer to the same list of files -- for example,
       // in case the MD5 manifest refers to {file1, file2, file3} but the SHA1 manifest
       // only refers to {file1, file2}.
-      paths = List(filesMD5, filesSHA1, filesSHA256, filesSHA512)
+      paths = List(filesMD5, filesSHA1, Some(filesSHA256), filesSHA512)
         .flatten
         .map { _.keys.toSet }
 
@@ -128,6 +119,8 @@ object ManifestFileParser {
     // checksums, this will only keep the last one.  Strictly speaking, it's an
     // error for a manifest file to refer to the same file twice, and we should
     // fail parsing here if that occurs.
+    println(parsedLines)
+
     val associations: Map[BagPath, ChecksumValue] = parsedLines
       .collect { case Right(assoc) => assoc }
       .reduce { _ ++ _ }
@@ -140,6 +133,14 @@ object ManifestFileParser {
       Success(associations)
     }
   }
+
+  // Represents a single line in a manifest file, e.g.
+  //
+  //    3532b221585eaa6d2520068ec1938928a1069a72fc50a8df9f3472da3f458037  data/b12345678.xml
+  //
+  // Note: checksums can be upper or lowercase.
+  //
+  private val LINE_REGEX: Regex = """([0-9a-fA-F]+?)\s+(.+)""".r
 
   private def parseSingleLine(line: String): Either[String, Map[BagPath, ChecksumValue]] = line match {
     case LINE_REGEX(checksum, filepath) =>
