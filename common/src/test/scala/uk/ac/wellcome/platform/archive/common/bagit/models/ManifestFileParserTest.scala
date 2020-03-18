@@ -103,6 +103,109 @@ class ManifestFileParserTest extends FunSpec with Matchers with EitherValues wit
     )
   }
 
+  it("parses multiple manifests, even if the files are in different orders") {
+    val md5 = asStream(
+      """
+        |aaa333   file3.txt
+        |aaa111   file1.txt
+        |aaa222   file2.txt
+        |""".stripMargin)
+
+    val sha256 = asStream(
+      """
+        |bbb222   file2.txt
+        |bbb333   file3.txt
+        |bbb111   file1.txt
+        |""".stripMargin)
+
+    val files = ManifestFileParser.createFileLists(md5 = Some(md5), sha256 = sha256)
+
+    files.success.value shouldBe Map(
+      BagPath("file1.txt") -> VerifiableChecksum(
+        md5 = Some(ChecksumValue("aaa111")),
+        sha256 = ChecksumValue("bbb111")
+      ),
+      BagPath("file2.txt") -> VerifiableChecksum(
+        md5 = Some(ChecksumValue("aaa222")),
+        sha256 = ChecksumValue("bbb222")
+      ),
+      BagPath("file3.txt") -> VerifiableChecksum(
+        md5 = Some(ChecksumValue("aaa333")),
+        sha256 = ChecksumValue("bbb333")
+      ),
+    )
+  }
+
+  describe("handles errors correctly") {
+    it("if multiple manifests have different lists of files") {
+      val md5 = asStream(
+        """
+          |aaa111   file1.txt
+          |aaa222   file2.txt
+          |aaa333   file3.txt
+          |""".stripMargin)
+
+      val sha256 = asStream(
+        """
+          |bbb444   file4.txt
+          |bbb555   file5.txt
+          |""".stripMargin)
+
+      val result = ManifestFileParser.createFileLists(md5 = Some(md5), sha256 = sha256)
+
+      val err = result.failure.exception
+
+      err shouldBe a[RuntimeException]
+      err.getMessage shouldBe "Different manifests refer to different lists of files!"
+    }
+
+    it("if a manifest has duplicate entries") {
+      val sha256 = asStream(
+        """
+          |aaa111   file1.txt
+          |aaa111   file1.txt
+          |aaa222   file2.txt
+          |""".stripMargin)
+
+      val result = ManifestFileParser.createFileLists(sha256 = sha256)
+
+      val err = result.failure.exception
+
+      err shouldBe a[RuntimeException]
+      err.getMessage should startWith("Manifest contains duplicate paths:")
+    }
+
+    it("if a manifest has a line which isn't `checksum filepath`") {
+      val sha256 = asStream(
+        """
+          |notavalidline
+          |aaa111   file1.txt
+          |""".stripMargin)
+
+      val result = ManifestFileParser.createFileLists(sha256 = sha256)
+
+      val err = result.failure.exception
+
+      err shouldBe a[RuntimeException]
+      err.getMessage should startWith("Failed to parse the following lines:")
+    }
+
+    it("if the checksum is not hex-encoded") {
+      val sha256 = asStream(
+        """
+          |nothex   badfile.txt
+          |aaa111   file1.txt
+          |""".stripMargin)
+
+      val result = ManifestFileParser.createFileLists(sha256 = sha256)
+
+      val err = result.failure.exception
+
+      err shouldBe a[RuntimeException]
+      err.getMessage should startWith("Failed to parse the following lines:")
+    }
+  }
+
   private def asStream(s: String): InputStream =
     stringCodec.toStream(s).right.value
 }
