@@ -7,64 +7,6 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.FetchEntryGenerators
 
 class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
-
-  describe("write") {
-    it("writes the lines of a fetch.txt") {
-      val entries = Seq(
-        createBagFetchEntryWith(
-          uri = "http://example.org/",
-          length = 25,
-          path = "example.txt"
-        ),
-        createBagFetchEntryWith(
-          uri = "https://wellcome.ac.uk/",
-          path = "logo.png"
-        )
-      )
-
-      val expected =
-        s"""
-           |http://example.org/ 25 example.txt
-           |https://wellcome.ac.uk/ - logo.png
-       """.stripMargin.trim
-
-      BagFetch.write(entries) shouldBe expected
-    }
-
-    it("percent-encodes a CR, LF or CRLF in the filename") {
-      val entries = Seq(
-        "example\rnumber\r1.txt",
-        "example\nnumber\n2.txt",
-        "example\r\nnumber\r\n3.txt"
-      ).map { path =>
-        createBagFetchEntryWith(
-          uri = "http://example.org/",
-          path = path
-        )
-      }
-
-      Seq(
-        createBagFetchEntryWith(
-          uri = "http://example.org/",
-          path = "example.txt"
-        ),
-        createBagFetchEntryWith(
-          uri = "https://wellcome.ac.uk/",
-          path = "logo.png"
-        )
-      )
-
-      val expected =
-        s"""
-           |http://example.org/ - example%0Dnumber%0D1.txt
-           |http://example.org/ - example%0Anumber%0A2.txt
-           |http://example.org/ - example%0D%0Anumber%0D%0A3.txt
-       """.stripMargin.trim
-
-      BagFetch.write(entries) shouldBe expected
-    }
-  }
-
   describe("read") {
     it("reads the contents of a fetch.txt") {
       val contents = toInputStream(s"""

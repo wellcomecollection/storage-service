@@ -64,24 +64,8 @@ object BagFetch {
     BagFetch(entries)
   }
 
-  def write(entries: Seq[BagFetchEntry]): String =
-    entries
-      .map { e =>
-        s"${e.uri} ${encodeLength(e.length)} ${encodeFilepath(e.path.value)}"
-      }
-      .mkString("\n")
-
-  private def encodeLength(length: Option[Long]): String =
-    length match {
-      case Some(i) => i.toString
-      case None    => "-"
-    }
-
   private def decodeLength(ls: String): Option[Long] =
     if (ls == "-") None else Some(ls.toLong)
-
-  private def encodeFilepath(path: String): String =
-    path.replaceAll("\n", "%0A").replaceAll("\r", "%0D")
 
   private def decodeFilepath(path: String): String =
     path.replaceAll("%0A", "\n").replaceAll("%0D", "\r")
