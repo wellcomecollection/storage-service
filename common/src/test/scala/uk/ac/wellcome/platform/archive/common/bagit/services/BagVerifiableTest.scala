@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 import java.net.URI
 
 import org.scalatest.{FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchMetadata, BagPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFetchMetadata,
+  BagPath
+}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagGenerators,
   FetchMetadataGenerators
@@ -117,9 +120,9 @@ class BagVerifiableTest
         BagPath("cat.jpg") -> randomChecksumValue
       )
 
-      val fetchEntries = fetchedManifestEntries.keys
-        .map { _ -> createFetchMetadata }
-        .toMap
+      val fetchEntries = fetchedManifestEntries.keys.map {
+        _ -> createFetchMetadata
+      }.toMap
 
       val manifestChecksumAlgorithm = randomHashingAlgorithm
 
@@ -184,19 +187,21 @@ class BagVerifiableTest
 
   def getExpectedLocations(
     manifestEntries: Map[BagPath, ChecksumValue],
-    checksumAlgorithm: HashingAlgorithm): Seq[VerifiableLocation] =
-    manifestEntries.map { case (bagPath, checksumValue) =>
-      VerifiableLocation(
-        path = bagPath,
-        uri = new URI(
-          s"example://${root.namespace}/${root.path}/$bagPath"
-        ),
-        checksum = Checksum(
-          algorithm = checksumAlgorithm,
-          value = checksumValue
-        ),
-        length = None
-      )
+    checksumAlgorithm: HashingAlgorithm
+  ): Seq[VerifiableLocation] =
+    manifestEntries.map {
+      case (bagPath, checksumValue) =>
+        VerifiableLocation(
+          path = bagPath,
+          uri = new URI(
+            s"example://${root.namespace}/${root.path}/$bagPath"
+          ),
+          checksum = Checksum(
+            algorithm = checksumAlgorithm,
+            value = checksumValue
+          ),
+          length = None
+        )
     }.toSeq
 
   def getExpectedLocations(
@@ -204,17 +209,18 @@ class BagVerifiableTest
     checksumAlgorithm: HashingAlgorithm,
     fetchEntries: Map[BagPath, BagFetchMetadata]
   ): Seq[VerifiableLocation] =
-    manifestEntries.map { case (bagPath, checksumValue) =>
-      val fetchMetadata = fetchEntries(bagPath)
+    manifestEntries.map {
+      case (bagPath, checksumValue) =>
+        val fetchMetadata = fetchEntries(bagPath)
 
-      VerifiableLocation(
-        uri = fetchMetadata.uri,
-        path = bagPath,
-        checksum = Checksum(
-          algorithm = checksumAlgorithm,
-          value = checksumValue
-        ),
-        length = fetchMetadata.length
-      )
+        VerifiableLocation(
+          uri = fetchMetadata.uri,
+          path = bagPath,
+          checksum = Checksum(
+            algorithm = checksumAlgorithm,
+            value = checksumValue
+          ),
+          length = fetchMetadata.length
+        )
     }.toSeq
 }

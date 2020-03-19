@@ -35,7 +35,7 @@ class BagMatcherTest
       val manifestEntries = Map(
         createBagPath -> randomChecksumValue,
         createBagPath -> randomChecksumValue,
-        createBagPath -> randomChecksumValue,
+        createBagPath -> randomChecksumValue
       )
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
@@ -46,22 +46,23 @@ class BagMatcherTest
         fetchEntries = Map.empty
       )
 
-      result.right.value shouldBe manifestEntries.map { case (bagPath, checksumValue) =>
-        MatchedLocation(
-          bagPath = bagPath,
-          checksum = Checksum(
-            algorithm = SHA256,
-            value = checksumValue
-          ),
-          fetchMetadata = None
-        )
+      result.right.value shouldBe manifestEntries.map {
+        case (bagPath, checksumValue) =>
+          MatchedLocation(
+            bagPath = bagPath,
+            checksum = Checksum(
+              algorithm = SHA256,
+              value = checksumValue
+            ),
+            fetchMetadata = None
+          )
       }
     }
 
     it("uses the hashing algorithm from the manifest") {
       val manifestEntries = Map(
         createBagPath -> randomChecksumValue,
-        createBagPath -> randomChecksumValue,
+        createBagPath -> randomChecksumValue
       )
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
@@ -72,15 +73,16 @@ class BagMatcherTest
         fetchEntries = Map.empty
       )
 
-      result.right.value shouldBe manifestEntries.map { case (bagPath, checksumValue) =>
-        MatchedLocation(
-          bagPath = bagPath,
-          checksum = Checksum(
-            algorithm = MD5,
-            value = checksumValue
-          ),
-          fetchMetadata = None
-        )
+      result.right.value shouldBe manifestEntries.map {
+        case (bagPath, checksumValue) =>
+          MatchedLocation(
+            bagPath = bagPath,
+            checksum = Checksum(
+              algorithm = MD5,
+              value = checksumValue
+            ),
+            fetchMetadata = None
+          )
       }
     }
 
@@ -88,7 +90,7 @@ class BagMatcherTest
       val manifestEntries = Map(
         createBagPath -> randomChecksumValue,
         createBagPath -> randomChecksumValue,
-        createBagPath -> randomChecksumValue,
+        createBagPath -> randomChecksumValue
       )
 
       val fetchMetadata = createFetchMetadata
@@ -105,15 +107,16 @@ class BagMatcherTest
         fetchEntries = Map(fetchPath -> fetchMetadata)
       )
 
-      val expectedLocations = manifestEntries.map { case (bagPath, checksumValue) =>
-        MatchedLocation(
-          bagPath = bagPath,
-          checksum = Checksum(
-            algorithm = checksumAlgorithm,
-            value = checksumValue
-          ),
-          fetchMetadata = None
-        )
+      val expectedLocations = manifestEntries.map {
+        case (bagPath, checksumValue) =>
+          MatchedLocation(
+            bagPath = bagPath,
+            checksum = Checksum(
+              algorithm = checksumAlgorithm,
+              value = checksumValue
+            ),
+            fetchMetadata = None
+          )
       }.toSeq :+ MatchedLocation(
         bagPath = fetchPath,
         checksum = Checksum(

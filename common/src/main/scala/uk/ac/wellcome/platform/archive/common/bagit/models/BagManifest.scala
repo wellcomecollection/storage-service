@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.common.bagit.models
 import java.io.InputStream
 
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagManifestParser
-import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, HashingAlgorithm}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  ChecksumValue,
+  HashingAlgorithm
+}
 
 import scala.util.Try
 
@@ -49,4 +52,3 @@ case object TagManifest {
       )
     }
 }
-

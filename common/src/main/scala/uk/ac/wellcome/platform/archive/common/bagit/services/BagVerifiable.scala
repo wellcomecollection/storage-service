@@ -40,7 +40,11 @@ class BagVerifiable(root: ObjectLocation)(
     matched: MatchedLocation
   ): Either[Throwable, VerifiableLocation] =
     matched match {
-      case MatchedLocation(bagPath: BagPath, checksum: Checksum, Some(fetchEntry)) =>
+      case MatchedLocation(
+          bagPath: BagPath,
+          checksum: Checksum,
+          Some(fetchEntry)
+          ) =>
         Right(
           VerifiableLocation(
             uri = fetchEntry.uri,

@@ -204,7 +204,9 @@ class BagVerifier()(
         val bagFetchLocations = bag.fetch match {
           case Some(bagFetch) =>
             bagFetch.paths
-              .map { path: BagPath => root.asLocation(path.value) }
+              .map { path: BagPath =>
+                root.asLocation(path.value)
+              }
 
           case None => Seq.empty
         }

@@ -205,35 +205,34 @@ class StorageManifestService[IS <: InputStream with HasLength](
     entries: Map[BagPath, (ObjectLocation, Option[Long])],
     bagRoot: ObjectLocationPrefix
   ): Try[Seq[StorageManifestFile]] = Try {
-    manifest
-      .entries
-      .map { case (bagPath, checksumValue) =>
-      // This lookup should never file -- the BagMatcher populates the
-      // entries from the original manifests in the bag.
-      //
-      // We wrap it in a Try block just in case, but this should never
-      // throw in practice.
-      val (location, maybeSize) = entries(bagPath)
-      val path = location.path.stripPrefix(bagRoot.path + "/")
+    manifest.entries.map {
+      case (bagPath, checksumValue) =>
+        // This lookup should never file -- the BagMatcher populates the
+        // entries from the original manifests in the bag.
+        //
+        // We wrap it in a Try block just in case, but this should never
+        // throw in practice.
+        val (location, maybeSize) = entries(bagPath)
+        val path = location.path.stripPrefix(bagRoot.path + "/")
 
-      val size = maybeSize match {
-        case Some(s) => s
-        case None =>
-          sizeFinder.getSize(location) match {
-            case Success(value) => value
-            case Failure(err) =>
-              throw new StorageManifestException(
-                s"Error getting size of $location: $err"
-              )
-          }
-      }
+        val size = maybeSize match {
+          case Some(s) => s
+          case None =>
+            sizeFinder.getSize(location) match {
+              case Success(value) => value
+              case Failure(err) =>
+                throw new StorageManifestException(
+                  s"Error getting size of $location: $err"
+                )
+            }
+        }
 
-      StorageManifestFile(
-        checksum = checksumValue,
-        name = bagPath.value,
-        path = path,
-        size = size
-      )
+        StorageManifestFile(
+          checksum = checksumValue,
+          name = bagPath.value,
+          path = path,
+          size = size
+        )
     }.toSeq
   }
 

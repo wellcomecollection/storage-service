@@ -75,10 +75,13 @@ object BagFetch {
 
     // The BagIt spec says the fetch.txt must not list any tag files; that is, metadata
     // files in the top-level of the bag.  It must only contain payload files.
-    val tagFilesInFetch = entries.filterNot { case (path, _) => path.value.startsWith("data/") }
+    val tagFilesInFetch = entries.filterNot {
+      case (path, _) => path.value.startsWith("data/")
+    }
 
     if (tagFilesInFetch.nonEmpty) {
-      val pathList = tagFilesInFetch.map { case (path, _) => path.value }.mkString(", ")
+      val pathList =
+        tagFilesInFetch.map { case (path, _) => path.value }.mkString(", ")
       throw new RuntimeException(
         s"fetch.txt should not contain tag files: $pathList"
       )

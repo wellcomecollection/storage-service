@@ -7,7 +7,11 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.platform.archive.common.verify.ChecksumValue
 import uk.ac.wellcome.storage.streaming.Codec._
 
-class BagManifestParserTest extends FunSpec with Matchers with EitherValues with TryValues {
+class BagManifestParserTest
+    extends FunSpec
+    with Matchers
+    with EitherValues
+    with TryValues {
   it("parses a valid manifest") {
     val inputStream = toInputStream("""
       |abc123   file1.txt
@@ -18,7 +22,7 @@ class BagManifestParserTest extends FunSpec with Matchers with EitherValues with
 
     manifest.success.value shouldBe Map(
       BagPath("file1.txt") -> ChecksumValue("abc123"),
-      BagPath("file2.txt") -> ChecksumValue("def456"),
+      BagPath("file2.txt") -> ChecksumValue("def456")
     )
   }
 

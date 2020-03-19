@@ -44,15 +44,16 @@ object BagMatcher {
     // we either have a fetch.txt entry or we don't.
     val matchedLocations =
       manifest.entries
-        .map { case (bagPath, checksumValue) =>
-          MatchedLocation(
-            bagPath = bagPath,
-            checksum = Checksum(
-              algorithm = manifest.checksumAlgorithm,
-              value = checksumValue
-            ),
-            fetchMetadata = fetchEntries.get(bagPath)
-          )
+        .map {
+          case (bagPath, checksumValue) =>
+            MatchedLocation(
+              bagPath = bagPath,
+              checksum = Checksum(
+                algorithm = manifest.checksumAlgorithm,
+                value = checksumValue
+              ),
+              fetchMetadata = fetchEntries.get(bagPath)
+            )
         }
 
     // We also need to check whether there are any fetch entries which don't appear in

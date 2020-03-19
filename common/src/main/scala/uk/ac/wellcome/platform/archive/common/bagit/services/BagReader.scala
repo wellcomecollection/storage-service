@@ -37,7 +37,9 @@ trait BagReader[IS <: InputStreamWithLength] {
     for {
       bagInfo <- loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfo.create)
 
-      fileManifest <- loadRequired[PayloadManifest](bagRoot)(fileManifest(SHA256))(
+      fileManifest <- loadRequired[PayloadManifest](bagRoot)(
+        fileManifest(SHA256)
+      )(
         PayloadManifest.create(_, SHA256)
       )
 

@@ -10,7 +10,7 @@ import scala.util.Random
 trait FetchMetadataGenerators extends RandomThings {
   def createFetchMetadataWith(
     uri: String = s"http://example.org/$randomAlphanumeric",
-    length: Option[Long] = createLength,
+    length: Option[Long] = createLength
   ): BagFetchMetadata =
     BagFetchMetadata(uri = new URI(uri), length = length)
 

@@ -92,8 +92,8 @@ object BagManifestParser {
   private val LINE_REGEX: Regex = """([0-9a-fA-F]+?)\s+(.+)""".r
 
   private def parseSingleLine(
-                               line: String
-                             ): Either[String, Map[BagPath, ChecksumValue]] = line match {
+    line: String
+  ): Either[String, Map[BagPath, ChecksumValue]] = line match {
     case LINE_REGEX(checksum, filepath) =>
       Right(Map(BagPath.create(filepath) -> ChecksumValue.create(checksum)))
     case _ => Left(line)

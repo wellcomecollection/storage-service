@@ -217,7 +217,9 @@ class StorageManifestServiceTest
 
     it("puts fetched entries under a versioned path") {
       val fetchedFiles = storageManifest.manifest.files
-        .filter { file => bagFetchEntries.contains(BagPath(file.name)) }
+        .filter { file =>
+          bagFetchEntries.contains(BagPath(file.name))
+        }
 
       fetchedFiles should not be empty
 
@@ -419,9 +421,7 @@ class StorageManifestServiceTest
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
       val bag = createBagWith(
-        manifestEntries = files
-          .map { BagPath(_) -> randomChecksumValue }
-          .toMap
+        manifestEntries = files.map { BagPath(_) -> randomChecksumValue }.toMap
       )
 
       val err = new Throwable("BOOM!")
