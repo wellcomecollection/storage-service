@@ -222,21 +222,17 @@ class StorageManifestServiceTest
       version = version
     )
 
-    val bagFetchFiles = bag.fetch.get.files.map { entry =>
-      entry.path -> entry
-    }.toMap
+    val bagFetchEntries = bag.fetch.get.entries
 
     it("puts fetched entries under a versioned path") {
       val fetchedFiles = storageManifest.manifest.files
-        .filter { file =>
-          bagFetchFiles.contains(BagPath(file.name))
-        }
+        .filter { file => bagFetchEntries.contains(BagPath(file.name)) }
 
-      fetchedFiles.isEmpty shouldBe false
+      fetchedFiles should not be empty
 
       fetchedFiles
         .foreach { file =>
-          val fetchEntry = bagFetchFiles(BagPath(file.name))
+          val fetchEntry = bagFetchEntries(BagPath(file.name))
 
           // The fetch entry URI is of the form
           //
@@ -254,7 +250,7 @@ class StorageManifestServiceTest
     it("puts non-fetched entries under the current version") {
       storageManifest.manifest.files
         .filterNot { file =>
-          bagFetchFiles.contains(BagPath(file.name))
+          bagFetchEntries.contains(BagPath(file.name))
         }
         .foreach { file =>
           file.path shouldBe s"$version/${file.name}"
@@ -378,7 +374,7 @@ class StorageManifestServiceTest
         err shouldBe a[StorageManifestException]
         err.getMessage should startWith("Unable to resolve fetch entries:")
         err.getMessage should include(
-          s"Fetch entry refers to a path that isn't in the bag manifest: ${fetchEntries.head.path}"
+          s"fetch.txt refers to paths that aren't in the bag manifest: ${fetchEntries.head.path}"
         )
       }
     }
@@ -613,10 +609,10 @@ class StorageManifestServiceTest
           file.name -> file.size
         }.toMap
 
-      val bagSizes =
-        bag.fetch.get.files.map { file =>
-          file.path.value -> file.length.get
-        }.toMap
+      val bagSizes = bag.fetch.get.entries.map {
+        case (bagPath, fetchMetadata) =>
+          bagPath.value -> fetchMetadata.length.get
+      }
 
       manifestSizes shouldBe bagSizes
     }

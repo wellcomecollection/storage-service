@@ -21,6 +21,9 @@ trait FetchEntryGenerators extends RandomThings {
   def createFetchMetadataWith(uri: String, length: Long): BagFetchMetadata =
     createFetchMetadataWith(uri = uri, length = Some(length))
 
+  def createFetchMetadata: BagFetchMetadata =
+    createFetchMetadataWith()
+
   def createFetchEntryWith(
     uri: String = s"http://example.org/$randomAlphanumeric",
     length: Option[Long] = createLength,

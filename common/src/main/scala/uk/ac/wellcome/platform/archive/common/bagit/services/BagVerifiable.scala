@@ -24,9 +24,9 @@ class BagVerifiable(root: ObjectLocation)(
     debug(s"Attempting to create Seq[VerifiableLocation] for $bag")
 
     BagMatcher.correlateFetchEntries(bag) match {
-      case Left(errors) =>
-        debug(s"Left: $errors")
-        Left(combine(errors))
+      case Left(error) =>
+        debug(s"Left: $error")
+        Left(combine(Seq(error)))
       case Right(matched) =>
         debug(s"Right: $matched")
 

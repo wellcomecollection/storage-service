@@ -185,9 +185,7 @@ class BagVerifiableTest
 
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith(
-        "Fetch entry refers to a path that isn't in the bag"
-      )
+      result.left.get.msg shouldBe "fetch.txt refers to paths that aren't in the bag manifest: example.txt"
     }
 
     it("there's are multiple fetch entries for a file that isn't in the bag") {
@@ -207,7 +205,7 @@ class BagVerifiableTest
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
       result.left.get.msg shouldBe
-        "Fetch entry refers to a path that isn't in the bag manifest: example.txt"
+        "fetch.txt refers to paths that aren't in the bag manifest: example.txt"
     }
 
     it("has multiple references to the same file with different checksums") {
@@ -217,34 +215,6 @@ class BagVerifiableTest
       )
 
       val bag = createBagWith(manifestFiles = manifestFiles)
-
-      val result = bagVerifiable.create(bag)
-      result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith(
-        "Multiple, ambiguous entries for the same path"
-      )
-    }
-
-    it("has multiple, differing fetch entries for the same file") {
-      val manifestFiles = List(
-        createBagFileWith("example.txt", checksum = "123")
-      )
-
-      val fetchEntries = Seq(
-        createFetchEntryWith(
-          uri = "s3://example/example.txt",
-          path = BagPath("example.txt")
-        ),
-        createFetchEntryWith(
-          uri = "https://example.net/example.txt",
-          path = BagPath("example.txt")
-        )
-      )
-
-      val bag = createBagWith(
-        manifestFiles = manifestFiles,
-        fetchEntries = fetchEntries
-      )
 
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]

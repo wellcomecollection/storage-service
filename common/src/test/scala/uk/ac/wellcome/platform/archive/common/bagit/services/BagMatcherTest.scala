@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFetchEntry,
   BagPath,
   MatchedLocation
 }
@@ -22,7 +23,7 @@ class BagMatcherTest
       BagMatcher
         .correlateFetchEntryToBagFile(
           bagFiles = Seq.empty,
-          fetchEntries = Seq.empty
+          fetchEntries = Map.empty
         )
         .right
         .value shouldBe Seq.empty
@@ -37,7 +38,7 @@ class BagMatcherTest
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
         bagFiles = bagFiles,
-        fetchEntries = Seq.empty
+        fetchEntries = Map.empty
       )
 
       result.right.value shouldBe bagFiles.map { bagFile =>
@@ -52,14 +53,21 @@ class BagMatcherTest
         createBagFile
       )
 
-      val fetchEntry = createFetchEntry
+      val fetchMetadata = createFetchMetadata
+      val fetchPath = BagPath(randomAlphanumeric)
+
+      val fetchEntry = BagFetchEntry(
+        uri = fetchMetadata.uri,
+        length = fetchMetadata.length,
+        path = fetchPath
+      )
       val fetchBagFile = createBagFileWith(
-        path = fetchEntry.path.value
+        path = fetchPath.value
       )
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
         bagFiles = bagFiles :+ fetchBagFile,
-        fetchEntries = Seq(fetchEntry)
+        fetchEntries = Map(fetchPath -> fetchMetadata)
       )
 
       val expectedLocations = bagFiles.map { bagFile =>
@@ -69,31 +77,22 @@ class BagMatcherTest
       result.right.value should contain theSameElementsAs expectedLocations
     }
 
-    it("for a bag with a repeated (but identical) fetch entry") {
-      val fetchEntry = createFetchEntry
-      val bagFile = createBagFileWith(
-        path = fetchEntry.path.value
-      )
-
-      val result = BagMatcher.correlateFetchEntryToBagFile(
-        bagFiles = Seq(bagFile),
-        fetchEntries = Seq(fetchEntry, fetchEntry)
-      )
-
-      result.right.value shouldBe Seq(
-        MatchedLocation(bagFile, fetchEntry = Some(fetchEntry))
-      )
-    }
-
     it("for a bag with a repeated (but identical) bag file") {
-      val fetchEntry = createFetchEntry
+      val fetchMetadata = createFetchMetadata
+      val fetchPath = BagPath(randomAlphanumeric)
+      val fetchEntry = BagFetchEntry(
+        uri = fetchMetadata.uri,
+        length = fetchMetadata.length,
+        path = fetchPath
+      )
+
       val bagFile = createBagFileWith(
-        path = fetchEntry.path.value
+        path = fetchPath.value
       )
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
         bagFiles = Seq(bagFile, bagFile),
-        fetchEntries = Seq(fetchEntry)
+        fetchEntries = Map(fetchPath -> fetchMetadata)
       )
 
       result.right.value shouldBe Seq(
@@ -104,48 +103,30 @@ class BagMatcherTest
 
   describe("error cases") {
     it("there's a fetch entry for a file that isn't in the bag") {
-      val fetchEntries = Seq(createFetchEntry)
+      val fetchPath = BagPath(randomAlphanumeric)
+      val fetchEntries = Map(fetchPath -> createFetchMetadata)
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
         bagFiles = Seq.empty,
         fetchEntries = fetchEntries
       )
 
-      result.left.value.head.getMessage shouldBe
-        s"Fetch entry refers to a path that isn't in the bag manifest: ${fetchEntries.head.path}"
+      result.left.value.getMessage shouldBe
+        s"fetch.txt refers to paths that aren't in the bag manifest: $fetchPath"
     }
 
     it("there are multiple fetch entries for files that aren't in the bag") {
-      val bagPath = BagPath(randomAlphanumeric)
       val fetchEntries = (1 to 3).map { _ =>
-        createFetchEntryWith(path = bagPath)
-      }
+        BagPath(randomAlphanumeric) -> createFetchMetadata
+      }.toMap
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
         bagFiles = Seq.empty,
         fetchEntries = fetchEntries
       )
 
-      result.left.value.head.getMessage shouldBe
-        s"Fetch entry refers to a path that isn't in the bag manifest: $bagPath"
-    }
-
-    it("has multiple, differing fetch entries for the same file") {
-      val bagFile = createBagFile
-
-      val fetchEntries = (1 to 3).map { _ =>
-        createFetchEntryWith(
-          path = bagFile.path
-        )
-      }
-
-      val result = BagMatcher.correlateFetchEntryToBagFile(
-        bagFiles = Seq(bagFile),
-        fetchEntries = fetchEntries
-      )
-
-      result.left.value.head.getMessage should startWith(
-        "Multiple, ambiguous entries for the same path"
+      result.left.value.getMessage should startWith(
+        s"fetch.txt refers to paths that aren't in the bag manifest:"
       )
     }
   }

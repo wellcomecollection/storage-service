@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetchEntry,
+  BagFetchMetadata,
   BagFile,
   BagPath,
   MatchedLocation
@@ -18,69 +19,83 @@ object BagMatcher {
 
   def correlateFetchEntries(
     bag: Bag
-  ): Either[Seq[Throwable], Seq[MatchedLocation]] =
+  ): Either[Throwable, Seq[MatchedLocation]] =
     correlateFetchEntryToBagFile(
       bagFiles = bag.manifest.files ++ bag.tagManifest.files,
       fetchEntries = bag.fetch match {
-        case Some(fetchEntry) => fetchEntry.files
-        case None             => Seq.empty
+        case Some(fetchEntry) => fetchEntry.entries
+        case None             => Map.empty
       }
     )
 
   def correlateFetchEntryToBagFile(
     bagFiles: Seq[BagFile],
-    fetchEntries: Seq[BagFetchEntry]
-  ): Either[Seq[Throwable], Seq[MatchedLocation]] = {
-    case class PathInfo(
-      bagFiles: Seq[BagFile] = Seq.empty,
-      fetchEntries: Seq[BagFetchEntry] = Seq.empty
-    )
+    fetchEntries: Map[BagPath, BagFetchMetadata]
+  ): Either[Throwable, Seq[MatchedLocation]] = {
+    // Each path should only appear once in the list of BagPaths; when that list
+    // is a Map, that will be enforced by the time system.  Until then, we have to
+    // look for duplicates manually.
+    // TODO: Remove this line.
+    val duplicateBagFiles: Map[BagPath, Seq[BagFile]] = bagFiles
+      .groupBy { _.path }
+      .filter { case (_, files) => files.distinct.size > 1 }
 
-    var paths: Map[BagPath, PathInfo] = Map.empty.withDefault { _ =>
-      PathInfo()
-    }
+    // First construct the list of matched locations -- for every file in the bag,
+    // we either have a fetch.txt entry or we don't.
+    val matchedLocations =
+      bagFiles
+        .distinct
+        .map { bagFile =>
+          fetchEntries.get(bagFile.path) match {
+            case Some(fetchMetadata) =>
+              MatchedLocation(
+                bagFile = bagFile,
+                fetchEntry = Some(
+                  BagFetchEntry(
+                    uri = fetchMetadata.uri,
+                    length = fetchMetadata.length,
+                    path = bagFile.path
+                  )
+                )
+              )
 
-    bagFiles.foreach { file =>
-      val existing = paths(file.path)
-      paths = paths ++ Map(
-        file.path -> existing.copy(bagFiles = existing.bagFiles :+ file)
-      )
-    }
-
-    fetchEntries.foreach { fetchEntry =>
-      val existing = paths(fetchEntry.path)
-      paths = paths ++ Map(
-        fetchEntry.path -> existing
-          .copy(fetchEntries = existing.fetchEntries :+ fetchEntry)
-      )
-    }
-
-    val matchedLocations = paths.map {
-      case (path, pathInfo) =>
-        (pathInfo.bagFiles.distinct, pathInfo.fetchEntries.distinct) match {
-          case (Seq(bagFile), Seq()) =>
-            Right(MatchedLocation(bagFile = bagFile, fetchEntry = None))
-          case (Seq(bagFile), Seq(fetchEntry)) =>
-            Right(
-              MatchedLocation(bagFile = bagFile, fetchEntry = Some(fetchEntry))
-            )
-
-          case (Seq(), fetchEntriesForPath) if fetchEntriesForPath.nonEmpty =>
-            Left(
-              s"Fetch entry refers to a path that isn't in the bag manifest: $path"
-            )
-
-          case _ =>
-            Left(s"Multiple, ambiguous entries for the same path: $pathInfo")
+            case None => MatchedLocation(bagFile = bagFile, fetchEntry = None)
+          }
         }
+
+    // We also need to check whether there are any fetch entries which don't appear in
+    // the list of BagFiles (i.e., the manifest).
+    //
+    // If they are, we should throw an error.
+    val manifestPaths = bagFiles.map { _.path }.toSet
+    val fetchPaths = fetchEntries.collect { case (bagPath, _) => bagPath }.toSet
+
+    val unexpectedFetchPaths = fetchPaths.diff(manifestPaths)
+
+    if (unexpectedFetchPaths.nonEmpty) {
+      val pathString = unexpectedFetchPaths
+        .map { _.value }
+        .toList
+        .sorted
+        .mkString(", ")
+
+      Left(
+        new RuntimeException(
+          s"fetch.txt refers to paths that aren't in the bag manifest: $pathString"
+        )
+      )
+    } else if (duplicateBagFiles.nonEmpty) {
+      val pathString = duplicateBagFiles
+        .map { case (bagPath, _) => bagPath.value }
+        .toList
+        .sorted
+        .mkString(", ")
+
+      Left(
+        new RuntimeException(s"Multiple, ambiguous entries for the same path: $pathString")
+      )
+    } else {
+      Right(matchedLocations)
     }
-
-    val successes = matchedLocations.collect { case Right(t) => t }.toSeq
-
-    val failures = matchedLocations.collect {
-      case Left(err) => new Throwable(err)
-    }.toSeq
-
-    Either.cond(failures.isEmpty, successes, failures)
   }
 }
