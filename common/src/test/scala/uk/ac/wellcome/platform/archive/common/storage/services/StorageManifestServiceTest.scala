@@ -1,11 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import java.net.URI
-
 import org.scalatest._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
-  BagFetchEntry,
   BagPath,
   BagVersion,
   ExternalIdentifier
@@ -15,12 +12,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagBuilder,
   BagBuilderBase
 }
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagFileGenerators,
-  BagGenerators,
-  StorageLocationGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -40,6 +32,7 @@ class StorageManifestServiceTest
     with Matchers
     with BagGenerators
     with BagFileGenerators
+    with FetchEntryGenerators
     with StorageLocationGenerators
     with StorageSpaceGenerators
     with TimeTestFixture
@@ -358,12 +351,8 @@ class StorageManifestServiceTest
 
   describe("fails if the fetch.txt is wrong") {
     it("refers to files that aren't in the manifest") {
-      val fetchEntries = Seq(
-        BagFetchEntry(
-          uri = new URI("https://example.org/file1.txt"),
-          length = None,
-          path = BagPath(randomAlphanumeric)
-        )
+      val fetchEntries = Map(
+        BagPath(randomAlphanumeric) -> createFetchMetadata
       )
 
       val bag = createBagWith(
@@ -374,17 +363,15 @@ class StorageManifestServiceTest
         err shouldBe a[StorageManifestException]
         err.getMessage should startWith("Unable to resolve fetch entries:")
         err.getMessage should include(
-          s"fetch.txt refers to paths that aren't in the bag manifest: ${fetchEntries.head.path}"
+          s"fetch.txt refers to paths that aren't in the bag manifest:"
         )
       }
     }
 
     it("refers to a file in the wrong namespace") {
-      val fetchEntries = Seq(
-        BagFetchEntry(
-          uri = new URI("s3://not-the-replica-bucket/file1.txt"),
-          length = None,
-          path = BagPath("data/file1.txt")
+      val fetchEntries = Map(
+        BagPath("data/file1.txt") -> createFetchMetadataWith(
+          uri = "s3://not-the-replica-bucket/file1.txt"
         )
       )
 
@@ -410,11 +397,9 @@ class StorageManifestServiceTest
         version = version
       )
 
-      val fetchEntries = Seq(
-        BagFetchEntry(
-          uri = new URI(s"s3://${location.prefix.namespace}/file1.txt"),
-          length = None,
-          path = BagPath("data/file1.txt")
+      val fetchEntries = Map(
+        BagPath("data/file1.txt") -> createFetchMetadataWith(
+          uri = s"s3://${location.prefix.namespace}/file1.txt"
         )
       )
 

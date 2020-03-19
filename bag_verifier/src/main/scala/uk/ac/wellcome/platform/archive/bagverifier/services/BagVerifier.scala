@@ -202,12 +202,9 @@ class BagVerifier()(
     verificationResult match {
       case VerificationSuccess(_) =>
         val bagFetchLocations = bag.fetch match {
-          case Some(fetchEntry) =>
-            fetchEntry.files
-              .map { _.path }
-              .map { path =>
-                root.asLocation(path.value)
-              }
+          case Some(bagFetch) =>
+            bagFetch.paths
+              .map { path: BagPath => root.asLocation(path.value) }
 
           case None => Seq.empty
         }

@@ -511,7 +511,7 @@ class BagVerifierTest
         val bag = new S3BagReader().get(bagRoot).right.value
 
         // Write one of the fetch.txt entries as a concrete file
-        val badFetchEntry = bag.fetch.get.files.head
+        val badFetchEntry = bag.fetch.get.paths.head
         val badFetchLocation = bagRoot.asLocation(badFetchEntry.path.value)
 
         s3Client.putObject(

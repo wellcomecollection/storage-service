@@ -3,9 +3,10 @@ package uk.ac.wellcome.platform.archive.common.generators
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetch,
-  BagFetchEntry,
+  BagFetchMetadata,
   BagFile,
-  BagManifest
+  BagManifest,
+  BagPath
 }
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 
@@ -15,7 +16,7 @@ trait BagGenerators extends BagInfoGenerators {
     manifestChecksumAlgorithm: HashingAlgorithm = SHA256,
     tagManifestFiles: Seq[BagFile] = List.empty,
     tagManifestChecksumAlgorithm: HashingAlgorithm = SHA256,
-    fetchEntries: Seq[BagFetchEntry] = List.empty
+    fetchEntries: Map[BagPath, BagFetchMetadata] = Map.empty
   ): Bag =
     Bag(
       info = createBagInfo,

@@ -12,13 +12,8 @@ case class BagFetchMetadata(
 )
 
 case class BagFetch(
-  files: Seq[BagFetchEntry]
+  entries: Map[BagPath, BagFetchMetadata]
 ) {
-  def entries: Map[BagPath, BagFetchMetadata] =
-    files
-      .map { entry => entry.path -> BagFetchMetadata(entry.uri, entry.length) }
-      .toMap
-
   def paths: Seq[BagPath] = entries.keys.toSeq
 }
 
@@ -64,11 +59,13 @@ object BagFetch {
       .map { line: String =>
         FETCH_LINE_REGEX.findFirstMatchIn(line) match {
           case Some(m) =>
-            BagFetchEntry(
+            val path = BagPath(decodeFilepath(m.group("filepath")))
+            val metadata = BagFetchMetadata(
               uri = new URI(m.group("url")),
-              length = decodeLength(m.group("length")),
-              path = BagPath(decodeFilepath(m.group("filepath")))
+              length = decodeLength(m.group("length"))
             )
+
+            path -> metadata
           case None =>
             throw new RuntimeException(
               s"Line <<$line>> is incorrectly formatted!"
@@ -78,10 +75,10 @@ object BagFetch {
 
     // The BagIt spec says the fetch.txt must not list any tag files; that is, metadata
     // files in the top-level of the bag.  It must only contain payload files.
-    val tagFilesInFetch = entries.filterNot { _.path.value.startsWith("data/") }
+    val tagFilesInFetch = entries.filterNot { case (path, _) => path.value.startsWith("data/") }
 
     if (tagFilesInFetch.nonEmpty) {
-      val pathList = tagFilesInFetch.map { _.path.value }.mkString(", ")
+      val pathList = tagFilesInFetch.map { case (path, _) => path.value }.mkString(", ")
       throw new RuntimeException(
         s"fetch.txt should not contain tag files: $pathList"
       )
@@ -92,11 +89,11 @@ object BagFetch {
     // multiple times, it is ambiguous where we should get the file from, so throw an error.
     val duplicatePaths =
       entries
-        .map { _.path.value }
+        .map { case (path, _) => path }
         .groupBy { identity }
         .mapValues { _.size }
         .filter { case (_, count) => count > 1 }
-        .collect { case (bagPath, _) => bagPath }
+        .collect { case (bagPath, _) => bagPath.value }
         .toList
         .sorted
 
@@ -106,7 +103,7 @@ object BagFetch {
       )
     }
 
-    BagFetch(entries)
+    BagFetch(entries.toMap)
   }
 
   private def decodeLength(ls: String): Option[Long] =

@@ -4,7 +4,7 @@ import java.net.URI
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFetchEntry,
+  BagFetchMetadata,
   BagFile,
   BagPath
 }
@@ -96,9 +96,8 @@ class BagVerifiableTest
       )
 
       val fetchEntries = fetchedManifestFiles
-        .map { bf =>
-          createFetchEntryWith(uri = s"s3://example/${bf.path}", path = bf.path)
-        }
+        .map { _.path -> createFetchMetadata }
+        .toMap
 
       val bag = createBagWith(
         manifestFiles = manifestFiles ++ fetchedManifestFiles,
@@ -125,41 +124,11 @@ class BagVerifiableTest
       )
 
       val fetchEntries = fetchedManifestFiles
-        .map { bf =>
-          createFetchEntryWith(uri = s"s3://example/${bf.path}", path = bf.path)
-        }
+        .map { _.path -> createFetchMetadata }
+        .toMap
 
       val bag = createBagWith(
         manifestFiles = manifestFiles ++ fetchedManifestFiles,
-        fetchEntries = fetchEntries ++ fetchEntries
-      )
-
-      val expectedLocations =
-        getExpectedLocations(manifestFiles) ++
-          getExpectedLocations(fetchedManifestFiles, fetchEntries)
-
-      bagVerifiable.create(bag).right.get should contain theSameElementsAs
-        expectedLocations
-    }
-
-    it("for a bag with a repeated (but identical) bag file") {
-      val manifestFiles = List(
-        createBagFileWith("example.txt"),
-        createBagFileWith("names.txt")
-      )
-
-      val fetchedManifestFiles = List(
-        createBagFileWith("random.txt"),
-        createBagFileWith("cat.jpg")
-      )
-
-      val fetchEntries = fetchedManifestFiles
-        .map { bf =>
-          createFetchEntryWith(uri = s"s3://example/${bf.path}", path = bf.path)
-        }
-
-      val bag = createBagWith(
-        manifestFiles = manifestFiles ++ manifestFiles ++ fetchedManifestFiles,
         fetchEntries = fetchEntries ++ fetchEntries
       )
 
@@ -174,10 +143,9 @@ class BagVerifiableTest
 
   describe("error cases") {
     it("there's a fetch entry for a file that isn't in the bag") {
-      val fetchEntries = Seq(
-        createFetchEntryWith(
-          uri = "s3://example/example.txt",
-          path = BagPath("example.txt")
+      val fetchEntries = Map(
+        BagPath("example.txt") -> createFetchMetadataWith(
+          uri = "s3://example/example.txt"
         )
       )
 
@@ -189,14 +157,12 @@ class BagVerifiableTest
     }
 
     it("there's are multiple fetch entries for a file that isn't in the bag") {
-      val fetchEntries = Seq(
-        createFetchEntryWith(
-          uri = "s3://example/example.txt",
-          path = BagPath("example.txt")
+      val fetchEntries = Map(
+        BagPath("example.txt") -> createFetchMetadataWith(
+          uri = "s3://example/example.txt"
         ),
-        createFetchEntryWith(
-          uri = "s3://example/red.txt",
-          path = BagPath("example.txt")
+        BagPath("example.txt") -> createFetchMetadataWith(
+          uri = "s3://example/red.txt"
         )
       )
 
@@ -241,15 +207,17 @@ class BagVerifiableTest
 
   def getExpectedLocations(
     bagFiles: Seq[BagFile],
-    fetchEntries: Seq[BagFetchEntry]
+    fetchEntries: Map[BagPath, BagFetchMetadata]
   ): Seq[VerifiableLocation] =
-    bagFiles.zip(fetchEntries).map {
-      case (bagFile, fetchEntry) =>
-        VerifiableLocation(
-          uri = fetchEntry.uri,
-          path = bagFile.path,
-          checksum = bagFile.checksum,
-          length = fetchEntry.length
-        )
+    bagFiles.map { bagFile =>
+      val fetchMetadata = fetchEntries(bagFile.path)
+
+      VerifiableLocation(
+        uri = fetchMetadata.uri,
+        path = bagFile.path,
+        checksum = bagFile.checksum,
+        length = fetchMetadata.length
+      )
     }
+
 }
