@@ -283,9 +283,8 @@ class StorageManifestServiceTest
         }.toMap
 
       val bagChecksums =
-        bag.manifest.files.map { file =>
-          file.path.value -> file.checksum.value.value
-        }.toMap
+        bag.manifest.entries
+          .map { case (bagPath, checksum) => bagPath.value -> checksum.value.value }
 
       storageManifestChecksums shouldBe bagChecksums
     }
@@ -297,9 +296,8 @@ class StorageManifestServiceTest
         }.toMap
 
       val bagChecksums =
-        bag.tagManifest.files.map { file =>
-          file.path.value -> file.checksum.value.value
-        }.toMap
+        bag.tagManifest.entries
+          .map { case (bagPath, checksum) => bagPath.value -> checksum.value.value }
 
       storageManifestChecksums.filterKeys { _ != "tagmanifest-sha256.txt" } shouldBe bagChecksums
     }

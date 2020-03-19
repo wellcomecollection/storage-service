@@ -208,22 +208,24 @@ class StorageManifestService[IS <: InputStream with HasLength](
     entries: Map[BagPath, (ObjectLocation, Option[Long])],
     bagRoot: ObjectLocationPrefix
   ): Try[Seq[StorageManifestFile]] = Try {
-    manifest.files.map { bagFile =>
+    manifest
+      .entries
+      .map { case (bagPath, checksum) =>
       // This lookup should never file -- the BagMatcher populates the
       // entries from the original manifests in the bag.
       //
       // We wrap it in a Try block just in case, but this should never
       // throw in practice.
-      val (location, maybeSize) = entries(bagFile.path)
+      val (location, maybeSize) = entries(bagPath)
       val path = location.path.stripPrefix(bagRoot.path + "/")
 
       // If this happens it indicates an error in the pipeline -- we only
       // support bags with a single manifest, so we should only ever see
       // a single algorithm.
-      if (bagFile.checksum.algorithm != manifest.checksumAlgorithm) {
+      if (checksum.algorithm != manifest.checksumAlgorithm) {
         throw new StorageManifestException(
           "Mismatched checksum algorithms in manifest: " +
-            s"entry ${bagFile.path} has algorithm ${bagFile.checksum.algorithm}, " +
+            s"entry $bagPath has algorithm ${checksum.algorithm}, " +
             s"but manifest uses ${manifest.checksumAlgorithm}"
         )
       }
@@ -241,12 +243,12 @@ class StorageManifestService[IS <: InputStream with HasLength](
       }
 
       StorageManifestFile(
-        checksum = bagFile.checksum.value,
-        name = bagFile.path.value,
+        checksum = checksum.value,
+        name = bagPath.value,
         path = path,
         size = size
       )
-    }
+    }.toSeq
   }
 
   // Get StorageManifestFile entries for everything not listed in either the manifest

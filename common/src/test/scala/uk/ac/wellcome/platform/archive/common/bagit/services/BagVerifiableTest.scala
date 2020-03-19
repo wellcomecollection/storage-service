@@ -173,21 +173,6 @@ class BagVerifiableTest
       result.left.get.msg shouldBe
         "fetch.txt refers to paths that aren't in the bag manifest: example.txt"
     }
-
-    it("has multiple references to the same file with different checksums") {
-      val manifestFiles = List(
-        createBagFileWith("example.txt", checksum = "123"),
-        createBagFileWith("example.txt", checksum = "456")
-      )
-
-      val bag = createBagWith(manifestFiles = manifestFiles)
-
-      val result = bagVerifiable.create(bag)
-      result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith(
-        "Multiple, ambiguous entries for the same path"
-      )
-    }
   }
 
   def createObjectLocationWith(root: ObjectLocation): ObjectLocation =

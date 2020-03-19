@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFile,
   BagPath,
   MatchedLocation
 }
@@ -21,7 +22,7 @@ class BagMatcherTest
     it("for an empty bag") {
       BagMatcher
         .correlateFetchEntryToBagFile(
-          bagFiles = Seq.empty,
+          manifestEntries = Map.empty,
           fetchEntries = Map.empty
         )
         .right
@@ -29,27 +30,27 @@ class BagMatcherTest
     }
 
     it("for a bag that doesn't have any fetch entries") {
-      val bagFiles = Seq(
-        createBagFile,
-        createBagFile,
-        createBagFile
+      val manifestEntries = Map(
+        createBagPath -> createChecksum,
+        createBagPath -> createChecksum,
+        createBagPath -> createChecksum,
       )
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        bagFiles = bagFiles,
+        manifestEntries = manifestEntries,
         fetchEntries = Map.empty
       )
 
-      result.right.value shouldBe bagFiles.map { bagFile =>
-        MatchedLocation(bagFile, fetchMetadata = None)
+      result.right.value shouldBe manifestEntries.map { case (path, checksum) =>
+        MatchedLocation(bagFile = BagFile(checksum = checksum, path = path), fetchMetadata = None)
       }
     }
 
     it("for a bag with fetch entries") {
-      val bagFiles = Seq(
-        createBagFile,
-        createBagFile,
-        createBagFile
+      val manifestEntries = Map(
+        createBagPath -> createChecksum,
+        createBagPath -> createChecksum,
+        createBagPath -> createChecksum,
       )
 
       val fetchMetadata = createFetchMetadata
@@ -60,33 +61,15 @@ class BagMatcherTest
       )
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        bagFiles = bagFiles :+ fetchBagFile,
+        manifestEntries = manifestEntries ++ Map(fetchPath -> fetchBagFile.checksum),
         fetchEntries = Map(fetchPath -> fetchMetadata)
       )
 
-      val expectedLocations = bagFiles.map { bagFile =>
-        MatchedLocation(bagFile, fetchMetadata = None)
-      } :+ MatchedLocation(fetchBagFile, fetchMetadata = Some(fetchMetadata))
+      val expectedLocations = manifestEntries.map { case (path, checksum) =>
+        MatchedLocation(bagFile = BagFile(checksum = checksum, path = path), fetchMetadata = None)
+      }.toSeq :+ MatchedLocation(fetchBagFile, fetchMetadata = Some(fetchMetadata))
 
       result.right.value should contain theSameElementsAs expectedLocations
-    }
-
-    it("for a bag with a repeated (but identical) bag file") {
-      val fetchMetadata = createFetchMetadata
-      val fetchPath = BagPath(randomAlphanumeric)
-
-      val bagFile = createBagFileWith(
-        path = fetchPath.value
-      )
-
-      val result = BagMatcher.correlateFetchEntryToBagFile(
-        bagFiles = Seq(bagFile, bagFile),
-        fetchEntries = Map(fetchPath -> fetchMetadata)
-      )
-
-      result.right.value shouldBe Seq(
-        MatchedLocation(bagFile, fetchMetadata = Some(fetchMetadata))
-      )
     }
   }
 
@@ -96,7 +79,7 @@ class BagMatcherTest
       val fetchEntries = Map(fetchPath -> createFetchMetadata)
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        bagFiles = Seq.empty,
+        manifestEntries = Map.empty,
         fetchEntries = fetchEntries
       )
 
@@ -110,7 +93,7 @@ class BagMatcherTest
       }.toMap
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        bagFiles = Seq.empty,
+        manifestEntries = Map.empty,
         fetchEntries = fetchEntries
       )
 

@@ -14,7 +14,14 @@ import scala.util.{Failure, Success, Try}
 case class BagManifest(
   checksumAlgorithm: HashingAlgorithm,
   files: Seq[BagFile]
-)
+) {
+  def entries: Map[BagPath, Checksum] =
+    files
+      .map { bagFile => bagFile.path -> bagFile.checksum }
+      .toMap
+
+  def paths: Seq[BagPath] = entries.keys.toSeq
+}
 
 object BagManifest {
 
