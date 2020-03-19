@@ -13,6 +13,7 @@ case class BagFetch(
 object BagFetch {
 
   /** Read/write the contents of a Fetch File as defined by RFC 8493 § 2.2.3.
+    * See https://tools.ietf.org/html/rfc8493#section-2.2.3
     *
     * Relevant notes:
     *
@@ -20,11 +21,14 @@ object BagFetch {
     *
     *         url length filepath
     *
-    *   - `url` must be an absolute URI, and whitespace characters must be
+    *     `url` must be an absolute URI, and whitespace characters must be
     *     percent encoded
-    *   - `length` is the number of octets in the file, or "-" if unspecified
-    *   - `filename` is the path to the file.  Line break characters (LR, CF, LRCF)
+    *     `length` is the number of octets in the file, or "-" if unspecified
+    *     `filename` is the path to the file.  Line break characters (LR, CF, LRCF)
     *     and *only* those characters must be percent-encoded.
+    *
+    *   - A fetch file must not list any tag files (everything in the fetch file
+    *     must be in the payload; that is, in the data/ directory).
     *
     */
   val FETCH_LINE_REGEX: Regex = new Regex(
@@ -58,8 +62,18 @@ object BagFetch {
               s"Line <<$line>> is incorrectly formatted!"
             )
         }
-
       }
+
+    // The BagIt spec says the fetch.txt must not list any tag files; that is, metadata
+    // files in the top-level of the bag.  It must only contain payload files.
+    val tagFilesInFetch = entries.filterNot { _.path.value.startsWith("data/") }
+
+    if (tagFilesInFetch.nonEmpty) {
+      val pathList = tagFilesInFetch.map { _.path.value }.mkString(", ")
+      throw new RuntimeException(
+        s"fetch.txt should not contain tag files: $pathList"
+      )
+    }
 
     BagFetch(entries)
   }
