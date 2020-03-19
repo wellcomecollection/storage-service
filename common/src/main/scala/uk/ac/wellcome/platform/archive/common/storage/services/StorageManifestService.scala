@@ -141,7 +141,7 @@ class StorageManifestService[IS <: InputStream with HasLength](
     bagRoot: ObjectLocationPrefix,
     version: BagVersion
   ): (ObjectLocation, Option[Long]) =
-    matchedLocation.fetchEntry match {
+    matchedLocation.fetchMetadata match {
       // This is a concrete file inside the replicated bag,
       // so it's inside the versioned replica directory.
       case None =>
@@ -156,10 +156,10 @@ class StorageManifestService[IS <: InputStream with HasLength](
       // This is referring to a fetch file somewhere else.
       // We need to check it's in another versioned directory
       // for this bag.
-      case Some(fetchEntry) =>
+      case Some(fetchMetadata) =>
         val fetchLocation = ObjectLocation(
-          namespace = fetchEntry.uri.getHost,
-          path = fetchEntry.uri.getPath.stripPrefix("/")
+          namespace = fetchMetadata.uri.getHost,
+          path = fetchMetadata.uri.getPath.stripPrefix("/")
         )
 
         if (fetchLocation.namespace != bagRoot.namespace) {
@@ -175,7 +175,7 @@ class StorageManifestService[IS <: InputStream with HasLength](
           )
         }
 
-        (fetchLocation, fetchEntry.length)
+        (fetchLocation, fetchMetadata.length)
     }
 
   /** Every entry in the bag manifest will be either a:

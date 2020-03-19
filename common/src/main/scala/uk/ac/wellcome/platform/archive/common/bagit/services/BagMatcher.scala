@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
-  BagFetchEntry,
   BagFetchMetadata,
   BagFile,
   BagPath,
@@ -46,21 +45,10 @@ object BagMatcher {
       bagFiles
         .distinct
         .map { bagFile =>
-          fetchEntries.get(bagFile.path) match {
-            case Some(fetchMetadata) =>
-              MatchedLocation(
-                bagFile = bagFile,
-                fetchEntry = Some(
-                  BagFetchEntry(
-                    uri = fetchMetadata.uri,
-                    length = fetchMetadata.length,
-                    path = bagFile.path
-                  )
-                )
-              )
-
-            case None => MatchedLocation(bagFile = bagFile, fetchEntry = None)
-          }
+          MatchedLocation(
+            bagFile = bagFile,
+            fetchMetadata = fetchEntries.get(bagFile.path)
+          )
         }
 
     // We also need to check whether there are any fetch entries which don't appear in

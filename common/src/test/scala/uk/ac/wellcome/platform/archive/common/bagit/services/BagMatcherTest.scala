@@ -2,20 +2,19 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFetchEntry,
   BagPath,
   MatchedLocation
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagFileGenerators,
-  FetchEntryGenerators
+  FetchMetadataGenerators
 }
 
 class BagMatcherTest
     extends FunSpec
     with Matchers
     with EitherValues
-    with FetchEntryGenerators
+    with FetchMetadataGenerators
     with BagFileGenerators {
 
   describe("creates the correct list of MatchedLocations") {
@@ -42,7 +41,7 @@ class BagMatcherTest
       )
 
       result.right.value shouldBe bagFiles.map { bagFile =>
-        MatchedLocation(bagFile, fetchEntry = None)
+        MatchedLocation(bagFile, fetchMetadata = None)
       }
     }
 
@@ -56,11 +55,6 @@ class BagMatcherTest
       val fetchMetadata = createFetchMetadata
       val fetchPath = BagPath(randomAlphanumeric)
 
-      val fetchEntry = BagFetchEntry(
-        uri = fetchMetadata.uri,
-        length = fetchMetadata.length,
-        path = fetchPath
-      )
       val fetchBagFile = createBagFileWith(
         path = fetchPath.value
       )
@@ -71,8 +65,8 @@ class BagMatcherTest
       )
 
       val expectedLocations = bagFiles.map { bagFile =>
-        MatchedLocation(bagFile, fetchEntry = None)
-      } :+ MatchedLocation(fetchBagFile, fetchEntry = Some(fetchEntry))
+        MatchedLocation(bagFile, fetchMetadata = None)
+      } :+ MatchedLocation(fetchBagFile, fetchMetadata = Some(fetchMetadata))
 
       result.right.value should contain theSameElementsAs expectedLocations
     }
@@ -80,11 +74,6 @@ class BagMatcherTest
     it("for a bag with a repeated (but identical) bag file") {
       val fetchMetadata = createFetchMetadata
       val fetchPath = BagPath(randomAlphanumeric)
-      val fetchEntry = BagFetchEntry(
-        uri = fetchMetadata.uri,
-        length = fetchMetadata.length,
-        path = fetchPath
-      )
 
       val bagFile = createBagFileWith(
         path = fetchPath.value
@@ -96,7 +85,7 @@ class BagMatcherTest
       )
 
       result.right.value shouldBe Seq(
-        MatchedLocation(bagFile, fetchEntry = Some(fetchEntry))
+        MatchedLocation(bagFile, fetchMetadata = Some(fetchMetadata))
       )
     }
   }

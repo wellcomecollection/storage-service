@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagFileGenerators,
   BagGenerators,
-  FetchEntryGenerators
+  FetchMetadataGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.verify.VerifiableLocation
@@ -23,7 +23,7 @@ class BagVerifiableTest
     with Matchers
     with BagGenerators
     with BagFileGenerators
-    with FetchEntryGenerators
+    with FetchMetadataGenerators
     with ObjectLocationGenerators {
   implicit val resolvable: Resolvable[ObjectLocation] =
     (t: ObjectLocation) => new URI(s"example://${t.namespace}/${t.path}")
