@@ -105,6 +105,20 @@ class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
       exc shouldBe a[RuntimeException]
       exc.getMessage shouldBe "fetch.txt should not contain tag files: manifest-sha256.txt, tagmanifest-sha256.txt"
     }
+
+    it("throws an exception if a fetch.txt contains duplicate paths") {
+      val contents = toInputStream(s"""
+        |http://example.org/file1 - data/example1.txt
+        |http://example.org/file1 - data/example1.txt
+        |http://example.org/file2 - data/example2.txt
+        |http://example.org/file2 - data/example2.txt
+        |http://example.org/file3 - data/example3.txt
+       """.stripMargin)
+
+      val exc = BagFetch.create(contents).failed.get
+      exc shouldBe a[RuntimeException]
+      exc.getMessage shouldBe "fetch.txt contains duplicate paths: data/example1.txt, data/example2.txt"
+    }
   }
 
   def createBagFetchEntryWith(uri: String, path: String): BagFetchEntry =

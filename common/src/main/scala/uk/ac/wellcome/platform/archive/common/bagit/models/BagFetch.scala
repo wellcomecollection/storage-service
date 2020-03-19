@@ -75,6 +75,25 @@ object BagFetch {
       )
     }
 
+    // Although the BagIt spec doesn't say this explicitly, it seems reasonable to expect
+    // that each bag path is listed *at most once* in a fetch.txt.  If a path is listed
+    // multiple times, it is ambiguous where we should get the file from, so throw an error.
+    val duplicatePaths =
+      entries
+        .map { _.path.value }
+        .groupBy { identity }
+        .mapValues { _.size }
+        .filter { case (_, count) => count > 1 }
+        .collect { case (bagPath, _) => bagPath }
+        .toList
+        .sorted
+
+    if (duplicatePaths.nonEmpty) {
+      throw new RuntimeException(
+        s"fetch.txt contains duplicate paths: ${duplicatePaths.mkString(", ")}"
+      )
+    }
+
     BagFetch(entries)
   }
 
