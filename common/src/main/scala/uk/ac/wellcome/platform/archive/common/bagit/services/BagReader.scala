@@ -6,8 +6,9 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetch,
   BagInfo,
-  BagManifest,
-  BagPath
+  BagPath,
+  PayloadManifest,
+  TagManifest
 }
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import uk.ac.wellcome.storage.{
@@ -36,12 +37,12 @@ trait BagReader[IS <: InputStreamWithLength] {
     for {
       bagInfo <- loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfo.create)
 
-      fileManifest <- loadRequired[BagManifest](bagRoot)(fileManifest(SHA256))(
-        BagManifest.create(_, SHA256)
+      fileManifest <- loadRequired[PayloadManifest](bagRoot)(fileManifest(SHA256))(
+        PayloadManifest.create(_, SHA256)
       )
 
-      tagManifest <- loadRequired[BagManifest](bagRoot)(tagManifest(SHA256))(
-        BagManifest.create(_, SHA256)
+      tagManifest <- loadRequired[TagManifest](bagRoot)(tagManifest(SHA256))(
+        TagManifest.create(_, SHA256)
       )
 
       bagFetch <- loadOptional[BagFetch](bagRoot)(bagFetch)(BagFetch.create)

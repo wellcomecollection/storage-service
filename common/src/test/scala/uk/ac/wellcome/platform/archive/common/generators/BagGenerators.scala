@@ -4,14 +4,11 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetch,
   BagFetchMetadata,
-  BagManifest,
-  BagPath
+  BagPath,
+  PayloadManifest,
+  TagManifest
 }
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Checksum,
-  HashingAlgorithm,
-  SHA256
-}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, HashingAlgorithm, SHA256}
 
 trait BagGenerators extends BagInfoGenerators {
   def createBagWith(
@@ -23,11 +20,11 @@ trait BagGenerators extends BagInfoGenerators {
   ): Bag =
     Bag(
       info = createBagInfo,
-      manifest = BagManifest(
+      manifest = PayloadManifest(
         checksumAlgorithm = manifestChecksumAlgorithm,
         entries = manifestEntries
       ),
-      tagManifest = BagManifest(
+      tagManifest = TagManifest(
         checksumAlgorithm = tagManifestChecksumAlgorithm,
         entries = tagManifestEntries
       ),
