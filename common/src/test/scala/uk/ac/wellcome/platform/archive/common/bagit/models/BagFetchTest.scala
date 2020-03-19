@@ -14,19 +14,18 @@ class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
                                       |https://wellcome.ac.uk/ -\tdata/logo.png
        """.stripMargin)
 
-      val expected = Seq(
-        createBagFetchEntryWith(
+      val expected = Map(
+        BagPath("data/example.txt") -> createFetchMetadataWith(
           uri = "http://example.org/",
-          length = 25,
-          path = "data/example.txt"
+          length = 25
         ),
-        createBagFetchEntryWith(
+        BagPath("data/logo.png") -> createFetchMetadataWith(
           uri = "https://wellcome.ac.uk/",
-          path = "data/logo.png"
+          length = None
         )
       )
 
-      BagFetch.create(contents).get.files shouldBe expected
+      BagFetch.create(contents).get.entries shouldBe expected
     }
 
     it("handles an empty line in the fetch.txt") {
@@ -36,19 +35,18 @@ class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
            |https://wellcome.ac.uk/ -\tdata/logo.png
        """.stripMargin)
 
-      val expected = Seq(
-        createBagFetchEntryWith(
+      val expected = Map(
+        BagPath("data/example.txt") -> createFetchMetadataWith(
           uri = "http://example.org/",
-          length = 25,
-          path = "data/example.txt"
+          length = 25
         ),
-        createBagFetchEntryWith(
+        BagPath("data/logo.png") -> createFetchMetadataWith(
           uri = "https://wellcome.ac.uk/",
-          path = "data/logo.png"
+          length = None
         )
       )
 
-      BagFetch.create(contents).get.files shouldBe expected
+      BagFetch.create(contents).get.entries shouldBe expected
     }
 
     it("handles a file whose size is >Int.MaxValue") {
@@ -56,15 +54,14 @@ class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
            |http://example.org/ ${Int.MaxValue}0 data/example.txt
        """.stripMargin)
 
-      val expected = Seq(
-        createBagFetchEntryWith(
+      val expected = Map(
+        BagPath("data/example.txt") -> createFetchMetadataWith(
           uri = "http://example.org/",
-          length = Int.MaxValue.toLong * 10,
-          path = "data/example.txt"
+          length = Int.MaxValue.toLong * 10
         )
       )
 
-      BagFetch.create(contents).get.files shouldBe expected
+      BagFetch.create(contents).get.entries shouldBe expected
     }
 
     it("correctly decodes a percent-encoded CR/LF/CRLF in the file path") {
@@ -74,7 +71,7 @@ class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
                                       |http://example.org/abc - data/example%0D%0A3%0D%0A.txt
        """.stripMargin)
 
-      BagFetch.create(contents).get.files.map { _.path.toString } shouldBe Seq(
+      BagFetch.create(contents).get.paths.map { _.toString } shouldBe Seq(
         "data/example\r1\r.txt",
         "data/example\n2\n.txt",
         "data/example\r\n3\r\n.txt"
@@ -120,24 +117,6 @@ class BagFetchTest extends FunSpec with Matchers with FetchEntryGenerators {
       exc.getMessage shouldBe "fetch.txt contains duplicate paths: data/example1.txt, data/example2.txt"
     }
   }
-
-  def createBagFetchEntryWith(uri: String, path: String): BagFetchEntry =
-    createFetchEntryWith(
-      uri = uri,
-      length = None,
-      path = BagPath(path)
-    )
-
-  def createBagFetchEntryWith(
-    uri: String,
-    length: Long,
-    path: String
-  ): BagFetchEntry =
-    createFetchEntryWith(
-      uri = uri,
-      length = Some(length),
-      path = BagPath(path)
-    )
 
   private def toInputStream(s: String): InputStream =
     IOUtils.toInputStream(s.trim, "UTF-8")

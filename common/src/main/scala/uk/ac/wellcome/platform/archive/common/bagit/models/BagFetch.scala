@@ -6,9 +6,21 @@ import java.net.URI
 import scala.util.Try
 import scala.util.matching.Regex
 
+case class BagFetchMetadata(
+  uri: URI,
+  length: Option[Long]
+)
+
 case class BagFetch(
   files: Seq[BagFetchEntry]
-)
+) {
+  def entries: Map[BagPath, BagFetchMetadata] =
+    files
+      .map { entry => entry.path -> BagFetchMetadata(entry.uri, entry.length) }
+      .toMap
+
+  def paths: Seq[BagPath] = entries.keys.toSeq
+}
 
 object BagFetch {
 
