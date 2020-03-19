@@ -100,7 +100,7 @@ class BagVerifierFeatureTest
               ): Option[String] =
                 super
                   .createPayloadManifest(entries)
-                  .map { _ + "\nbadDigest  badName" }
+                  .map { _ + "\nbad123  badName" }
             }
 
             val (bagRootLocation, bagInfo) = badBuilder.createS3BagWith(bucket)
