@@ -175,4 +175,12 @@ trait StorageRandomThings extends RandomThings {
 
     algorithms(Random.nextInt(algorithms.length))
   }
+
+  def createBagPath: BagPath = BagPath(randomAlphanumeric)
+
+  def createChecksumWith(algorithm: HashingAlgorithm = SHA256): Checksum =
+    Checksum(algorithm = algorithm, value = randomChecksumValue)
+
+  def createChecksum: Checksum =
+    createChecksumWith()
 }

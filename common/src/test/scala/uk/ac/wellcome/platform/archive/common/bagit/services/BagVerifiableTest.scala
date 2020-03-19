@@ -4,9 +4,17 @@ import java.net.URI
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchMetadata, BagPath}
-import uk.ac.wellcome.platform.archive.common.generators.{BagFileGenerators, BagGenerators, FetchMetadataGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagGenerators,
+  FetchMetadataGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, HashingAlgorithm, VerifiableLocation}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  HashingAlgorithm,
+  VerifiableLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -14,7 +22,6 @@ class BagVerifiableTest
     extends FunSpec
     with Matchers
     with BagGenerators
-    with BagFileGenerators
     with FetchMetadataGenerators
     with ObjectLocationGenerators {
   implicit val resolvable: Resolvable[ObjectLocation] =
@@ -22,9 +29,6 @@ class BagVerifiableTest
 
   val root: ObjectLocation = createObjectLocation
   val bagVerifiable = new BagVerifiable(root)
-
-
-
 
   describe("creates the correct list of VerifiableLocation") {
     it("for an empty bag") {

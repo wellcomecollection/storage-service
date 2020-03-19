@@ -6,10 +6,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   MatchedLocation,
   PayloadManifest
 }
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagFileGenerators,
-  FetchMetadataGenerators
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.platform.archive.common.generators.FetchMetadataGenerators
 import uk.ac.wellcome.platform.archive.common.verify.{Checksum, MD5, SHA256}
 
 class BagMatcherTest
@@ -17,7 +15,7 @@ class BagMatcherTest
     with Matchers
     with EitherValues
     with FetchMetadataGenerators
-    with BagFileGenerators {
+    with StorageRandomThings {
 
   describe("creates the correct list of MatchedLocations") {
     it("for an empty bag") {
@@ -95,17 +93,14 @@ class BagMatcherTest
 
       val fetchMetadata = createFetchMetadata
       val fetchPath = BagPath(randomAlphanumeric)
-
-      val fetchBagFile = createBagFileWith(
-        path = fetchPath.value
-      )
+      val fetchChecksumValue = randomChecksumValue
 
       val checksumAlgorithm = randomHashingAlgorithm
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
         manifest = PayloadManifest(
           checksumAlgorithm = checksumAlgorithm,
-          entries = manifestEntries ++ Map(fetchPath -> fetchBagFile.checksum.value)
+          entries = manifestEntries ++ Map(fetchPath -> fetchChecksumValue)
         ),
         fetchEntries = Map(fetchPath -> fetchMetadata)
       )
@@ -121,7 +116,10 @@ class BagMatcherTest
         )
       }.toSeq :+ MatchedLocation(
         bagPath = fetchPath,
-        checksum = fetchBagFile.checksum,
+        checksum = Checksum(
+          algorithm = checksumAlgorithm,
+          value = fetchChecksumValue
+        ),
         fetchMetadata = Some(fetchMetadata)
       )
 

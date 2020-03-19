@@ -30,7 +30,6 @@ class StorageManifestServiceTest
     extends FunSpec
     with Matchers
     with BagGenerators
-    with BagFileGenerators
     with FetchMetadataGenerators
     with StorageLocationGenerators
     with StorageSpaceGenerators
