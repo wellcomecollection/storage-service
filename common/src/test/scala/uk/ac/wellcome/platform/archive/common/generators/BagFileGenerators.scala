@@ -27,9 +27,12 @@ trait BagFileGenerators extends RandomThings {
 
   def createBagPath: BagPath = BagPath(randomAlphanumeric)
 
-  def createChecksum: Checksum =
+  def createChecksumWith(algorithm: HashingAlgorithm = SHA256): Checksum =
     Checksum(
-      algorithm = SHA256,
+      algorithm = algorithm,
       value = ChecksumValue(randomAlphanumeric)
     )
+
+  def createChecksum: Checksum =
+    createChecksumWith()
 }

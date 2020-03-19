@@ -305,16 +305,13 @@ class StorageManifestServiceTest
     it(
       "fails if one of the file manifest entries has the wrong hashing algorithm"
     ) {
-      val badPath = randomAlphanumeric
-      val manifestFiles = Seq(
-        createBagFileWith(
-          path = badPath,
-          checksumAlgorithm = MD5
-        )
+      val badPath = createBagPath
+      val manifestEntries = Map(
+        badPath -> createChecksumWith(algorithm = MD5)
       )
 
       val bag = createBagWith(
-        manifestFiles = manifestFiles,
+        manifestEntries = manifestEntries,
         manifestChecksumAlgorithm = SHA256
       )
 
@@ -327,16 +324,13 @@ class StorageManifestServiceTest
       "fails if one of the tag manifest entries has the wrong hashing algorithm"
     ) {
       // TODO: Rewrite this to use generators
-      val badPath = randomAlphanumeric
-      val tagManifestFiles = Seq(
-        createBagFileWith(
-          path = badPath,
-          checksumAlgorithm = MD5
-        )
+      val badPath = createBagPath
+      val tagManifestEntries = Map(
+        badPath -> createChecksumWith(algorithm = MD5)
       )
 
       val bag = createBagWith(
-        tagManifestFiles = tagManifestFiles,
+        tagManifestEntries = tagManifestEntries,
         tagManifestChecksumAlgorithm = SHA256
       )
 
@@ -374,8 +368,8 @@ class StorageManifestServiceTest
       )
 
       val bag = createBagWith(
-        manifestFiles = Seq(
-          createBagFileWith("data/file1.txt")
+        manifestEntries = Map(
+          BagPath("data/file1.txt") -> createChecksum
         ),
         fetchEntries = fetchEntries
       )
@@ -402,8 +396,8 @@ class StorageManifestServiceTest
       )
 
       val bag = createBagWith(
-        manifestFiles = Seq(
-          createBagFileWith("data/file1.txt")
+        manifestEntries = Map(
+          BagPath("data/file1.txt") -> createChecksum
         ),
         fetchEntries = fetchEntries
       )
@@ -465,9 +459,9 @@ class StorageManifestServiceTest
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
       val bag = createBagWith(
-        manifestFiles = files.map { path =>
-          createBagFileWith(path)
-        }
+        manifestEntries = files
+          .map { BagPath(_) -> createChecksum }
+          .toMap
       )
 
       val err = new Throwable("BOOM!")
@@ -526,7 +520,7 @@ class StorageManifestServiceTest
 
       val storageManifest = createManifest(
         bag = bag.copy(
-          tagManifest = bag.tagManifest.copy(files = Seq.empty)
+          tagManifest = bag.tagManifest.copy(entries = Map.empty)
         ),
         location = location,
         version = version,
@@ -580,7 +574,7 @@ class StorageManifestServiceTest
 
       val storageManifest = createManifest(
         bag = bag.copy(
-          tagManifest = bag.tagManifest.copy(files = Seq.empty)
+          tagManifest = bag.tagManifest.copy(entries = Map.empty)
         ),
         location = location,
         version = version,

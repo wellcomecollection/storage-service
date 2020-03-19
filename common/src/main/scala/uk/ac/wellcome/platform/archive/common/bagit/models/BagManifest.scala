@@ -13,13 +13,8 @@ import scala.util.{Failure, Success, Try}
 
 case class BagManifest(
   checksumAlgorithm: HashingAlgorithm,
-  files: Seq[BagFile]
+  entries: Map[BagPath, Checksum]
 ) {
-  def entries: Map[BagPath, Checksum] =
-    files
-      .map { bagFile => bagFile.path -> bagFile.checksum }
-      .toMap
-
   def paths: Seq[BagPath] = entries.keys.toSeq
 }
 
@@ -97,16 +92,14 @@ object BagManifest {
         )
       )
     } else {
-      val bagFiles = associations.map { case (path, checksumValue) =>
-        BagFile(
-          checksum = Checksum(
-            algorithm = algorithm,
-            value = checksumValue
-          ),
-          path = path
+      val entries = associations.map { case (bagPath, checksumValue) =>
+        bagPath -> Checksum(
+          algorithm = algorithm,
+          value = checksumValue
         )
       }
-      Success(BagManifest(checksumAlgorithm = algorithm, files = bagFiles.toSeq))
+
+      Success(BagManifest(checksumAlgorithm = algorithm, entries = entries))
     }
   }
 
@@ -119,8 +112,8 @@ object BagManifest {
   private val LINE_REGEX: Regex = """([0-9a-fA-F]+?)\s+(.+)""".r
 
   private def parseSingleLine(
-                               line: String
-                             ): Either[String, Map[BagPath, ChecksumValue]] = line match {
+    line: String
+  ): Either[String, Map[BagPath, ChecksumValue]] = line match {
     case LINE_REGEX(checksum, filepath) =>
       Right(Map(BagPath.create(filepath) -> ChecksumValue.create(checksum)))
     case _ => Left(line)

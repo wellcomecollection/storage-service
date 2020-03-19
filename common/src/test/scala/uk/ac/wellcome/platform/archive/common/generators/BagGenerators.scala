@@ -4,17 +4,20 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetch,
   BagFetchMetadata,
-  BagFile,
   BagManifest,
   BagPath
 }
-import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  HashingAlgorithm,
+  SHA256
+}
 
 trait BagGenerators extends BagInfoGenerators {
   def createBagWith(
-    manifestFiles: Seq[BagFile] = List.empty,
+    manifestEntries: Map[BagPath, Checksum] = Map.empty,
     manifestChecksumAlgorithm: HashingAlgorithm = SHA256,
-    tagManifestFiles: Seq[BagFile] = List.empty,
+    tagManifestEntries: Map[BagPath, Checksum] = Map.empty,
     tagManifestChecksumAlgorithm: HashingAlgorithm = SHA256,
     fetchEntries: Map[BagPath, BagFetchMetadata] = Map.empty
   ): Bag =
@@ -22,11 +25,11 @@ trait BagGenerators extends BagInfoGenerators {
       info = createBagInfo,
       manifest = BagManifest(
         checksumAlgorithm = manifestChecksumAlgorithm,
-        files = manifestFiles
+        entries = manifestEntries
       ),
       tagManifest = BagManifest(
         checksumAlgorithm = tagManifestChecksumAlgorithm,
-        files = tagManifestFiles
+        entries = tagManifestEntries
       ),
       fetch = if (fetchEntries.isEmpty) None else Some(BagFetch(fetchEntries))
     )

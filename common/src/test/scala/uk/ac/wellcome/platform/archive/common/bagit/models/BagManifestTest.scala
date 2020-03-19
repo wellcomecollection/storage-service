@@ -17,15 +17,9 @@ class BagManifestTest extends FunSpec with Matchers with EitherValues with TryVa
 
     manifest.success.value shouldBe BagManifest(
       checksumAlgorithm = SHA256,
-      files = Seq(
-        BagFile(
-          checksum = Checksum(algorithm = SHA256, value = ChecksumValue("abc123")),
-          path = BagPath("file1.txt")
-        ),
-        BagFile(
-          checksum = Checksum(algorithm = SHA256, value = ChecksumValue("def456")),
-          path = BagPath("file2.txt")
-        )
+      entries = Map(
+        BagPath("file1.txt") -> Checksum(algorithm = SHA256, value = ChecksumValue("abc123")),
+        BagPath("file2.txt") -> Checksum(algorithm = SHA256, value = ChecksumValue("def456")),
       )
     )
   }
@@ -40,15 +34,9 @@ class BagManifestTest extends FunSpec with Matchers with EitherValues with TryVa
 
     manifest.success.value shouldBe BagManifest(
       checksumAlgorithm = MD5,
-      files = Seq(
-        BagFile(
-          checksum = Checksum(algorithm = MD5, value = ChecksumValue("abc123")),
-          path = BagPath("file1.txt")
-        ),
-        BagFile(
-          checksum = Checksum(algorithm = MD5, value = ChecksumValue("def456")),
-          path = BagPath("file2.txt")
-        )
+      entries = Map(
+        BagPath("file1.txt") -> Checksum(algorithm = MD5, value = ChecksumValue("abc123")),
+        BagPath("file2.txt") -> Checksum(algorithm = MD5, value = ChecksumValue("def456"))
       )
     )
   }
