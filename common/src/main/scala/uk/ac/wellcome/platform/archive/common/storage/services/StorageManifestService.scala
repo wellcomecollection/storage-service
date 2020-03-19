@@ -146,10 +146,7 @@ class StorageManifestService[IS <: InputStream with HasLength](
       // so it's inside the versioned replica directory.
       case None =>
         (
-          bagRoot.asLocation(
-            version.toString,
-            matchedLocation.bagFile.path.value
-          ),
+          bagRoot.asLocation(version.toString, matchedLocation.bagPath.value),
           None
         )
 
@@ -164,14 +161,14 @@ class StorageManifestService[IS <: InputStream with HasLength](
 
         if (fetchLocation.namespace != bagRoot.namespace) {
           throw new BadFetchLocationException(
-            s"Fetch entry for ${matchedLocation.bagFile.path.value} refers to a file in the wrong namespace: ${fetchLocation.namespace}"
+            s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong namespace: ${fetchLocation.namespace}"
           )
         }
 
         // TODO: This check could actually look for a /v1, /v2, etc.
         if (!fetchLocation.path.startsWith(bagRoot.path + "/")) {
           throw new BadFetchLocationException(
-            s"Fetch entry for ${matchedLocation.bagFile.path.value} refers to a file in the wrong path: /${fetchLocation.path}"
+            s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong path: /${fetchLocation.path}"
           )
         }
 
@@ -197,7 +194,7 @@ class StorageManifestService[IS <: InputStream with HasLength](
     Try {
       matchedLocations.map { matchedLoc =>
         (
-          matchedLoc.bagFile.path,
+          matchedLoc.bagPath,
           getSizeAndLocation(matchedLoc, bagRoot, version)
         )
       }.toMap
@@ -210,7 +207,7 @@ class StorageManifestService[IS <: InputStream with HasLength](
   ): Try[Seq[StorageManifestFile]] = Try {
     manifest
       .entries
-      .map { case (bagPath, checksum) =>
+      .map { case (bagPath, checksumValue) =>
       // This lookup should never file -- the BagMatcher populates the
       // entries from the original manifests in the bag.
       //
@@ -218,17 +215,6 @@ class StorageManifestService[IS <: InputStream with HasLength](
       // throw in practice.
       val (location, maybeSize) = entries(bagPath)
       val path = location.path.stripPrefix(bagRoot.path + "/")
-
-      // If this happens it indicates an error in the pipeline -- we only
-      // support bags with a single manifest, so we should only ever see
-      // a single algorithm.
-      if (checksum.algorithm != manifest.checksumAlgorithm) {
-        throw new StorageManifestException(
-          "Mismatched checksum algorithms in manifest: " +
-            s"entry $bagPath has algorithm ${checksum.algorithm}, " +
-            s"but manifest uses ${manifest.checksumAlgorithm}"
-        )
-      }
 
       val size = maybeSize match {
         case Some(s) => s
@@ -243,7 +229,7 @@ class StorageManifestService[IS <: InputStream with HasLength](
       }
 
       StorageManifestFile(
-        checksum = checksum.value,
+        checksum = checksumValue,
         name = bagPath.value,
         path = path,
         size = size

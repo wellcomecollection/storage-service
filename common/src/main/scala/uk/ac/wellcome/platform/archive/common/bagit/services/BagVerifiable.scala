@@ -3,12 +3,7 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, Resolvable}
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Verifiable,
-  VerifiableGenerationFailed,
-  VerifiableGenerationFailure,
-  VerifiableLocation
-}
+import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 
 class BagVerifiable(root: ObjectLocation)(
@@ -45,25 +40,25 @@ class BagVerifiable(root: ObjectLocation)(
     matched: MatchedLocation
   ): Either[Throwable, VerifiableLocation] =
     matched match {
-      case MatchedLocation(bagFile: BagFile, Some(fetchEntry)) =>
+      case MatchedLocation(bagPath: BagPath, checksum: Checksum, Some(fetchEntry)) =>
         Right(
           VerifiableLocation(
             uri = fetchEntry.uri,
-            path = bagFile.path,
-            checksum = bagFile.checksum,
+            path = bagPath,
+            checksum = checksum,
             length = fetchEntry.length
           )
         )
 
-      case MatchedLocation(bagFile: BagFile, None) =>
-        bagFile.locateWith(root) match {
+      case MatchedLocation(bagPath: BagPath, checksum: Checksum, None) =>
+        bagPath.locateWith(root) match {
           case Left(e) => Left(VerifiableGenerationFailed(e.msg))
           case Right(location) =>
             Right(
               VerifiableLocation(
                 uri = resolvable.resolve(location),
-                path = bagFile.path,
-                checksum = bagFile.checksum,
+                path = bagPath,
+                checksum = checksum,
                 length = None
               )
             )

@@ -3,10 +3,10 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 import java.io.{BufferedReader, InputStream, InputStreamReader}
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, HashingAlgorithm}
+import uk.ac.wellcome.platform.archive.common.verify.ChecksumValue
 
-import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
+import scala.util.{Failure, Success, Try}
 
 /** Each line in a manifest file _manifest-algorithm.txt_ is of the form
   *
@@ -25,10 +25,7 @@ import scala.util.matching.Regex
   */
 object BagManifestParser {
 
-  def parse(
-    inputStream: InputStream,
-    algorithm: HashingAlgorithm
-  ): Try[Map[BagPath, Checksum]] = {
+  def parse(inputStream: InputStream): Try[Map[BagPath, ChecksumValue]] = {
     val bufferedReader = new BufferedReader(
       new InputStreamReader(inputStream)
     )
@@ -65,7 +62,7 @@ object BagManifestParser {
       .map { case (bagPath, _) => bagPath }
       .toList
 
-    val associations: Map[BagPath, ChecksumValue] = parsedLines
+    val entries: Map[BagPath, ChecksumValue] = parsedLines
       .collect { case Right(assoc) => assoc }
       .foldLeft(Map[BagPath, ChecksumValue]()) { _ ++ _ }
 
@@ -82,13 +79,6 @@ object BagManifestParser {
         )
       )
     } else {
-      val entries = associations.map { case (bagPath, checksumValue) =>
-        bagPath -> Checksum(
-          algorithm = algorithm,
-          value = checksumValue
-        )
-      }
-
       Success(entries)
     }
   }

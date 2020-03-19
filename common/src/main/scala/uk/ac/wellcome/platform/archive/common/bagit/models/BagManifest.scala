@@ -3,20 +3,20 @@ package uk.ac.wellcome.platform.archive.common.bagit.models
 import java.io.InputStream
 
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagManifestParser
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, HashingAlgorithm}
+import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, HashingAlgorithm}
 
 import scala.util.Try
 
 sealed trait BagManifest {
   val checksumAlgorithm: HashingAlgorithm
-  val entries: Map[BagPath, Checksum]
+  val entries: Map[BagPath, ChecksumValue]
 
   def paths: Seq[BagPath] = entries.keys.toSeq
 }
 
 case class PayloadManifest(
   checksumAlgorithm: HashingAlgorithm,
-  entries: Map[BagPath, Checksum]
+  entries: Map[BagPath, ChecksumValue]
 ) extends BagManifest
 
 case object PayloadManifest {
@@ -24,7 +24,7 @@ case object PayloadManifest {
     inputStream: InputStream,
     checksumAlgorithm: HashingAlgorithm
   ): Try[PayloadManifest] =
-    BagManifestParser.parse(inputStream, checksumAlgorithm).map { entries =>
+    BagManifestParser.parse(inputStream).map { entries =>
       PayloadManifest(
         checksumAlgorithm = checksumAlgorithm,
         entries = entries
@@ -34,7 +34,7 @@ case object PayloadManifest {
 
 case class TagManifest(
   checksumAlgorithm: HashingAlgorithm,
-  entries: Map[BagPath, Checksum]
+  entries: Map[BagPath, ChecksumValue]
 ) extends BagManifest
 
 case object TagManifest {
@@ -42,7 +42,7 @@ case object TagManifest {
     inputStream: InputStream,
     checksumAlgorithm: HashingAlgorithm
   ): Try[TagManifest] =
-    BagManifestParser.parse(inputStream, checksumAlgorithm).map { entries =>
+    BagManifestParser.parse(inputStream).map { entries =>
       TagManifest(
         checksumAlgorithm = checksumAlgorithm,
         entries = entries

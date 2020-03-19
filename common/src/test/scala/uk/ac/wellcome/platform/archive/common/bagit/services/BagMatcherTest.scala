@@ -2,14 +2,15 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFile,
   BagPath,
-  MatchedLocation
+  MatchedLocation,
+  PayloadManifest
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagFileGenerators,
   FetchMetadataGenerators
 }
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, MD5, SHA256}
 
 class BagMatcherTest
     extends FunSpec
@@ -22,7 +23,10 @@ class BagMatcherTest
     it("for an empty bag") {
       BagMatcher
         .correlateFetchEntryToBagFile(
-          manifestEntries = Map.empty,
+          manifest = PayloadManifest(
+            checksumAlgorithm = SHA256,
+            entries = Map.empty
+          ),
           fetchEntries = Map.empty
         )
         .right
@@ -31,26 +35,62 @@ class BagMatcherTest
 
     it("for a bag that doesn't have any fetch entries") {
       val manifestEntries = Map(
-        createBagPath -> createChecksum,
-        createBagPath -> createChecksum,
-        createBagPath -> createChecksum,
+        createBagPath -> randomChecksumValue,
+        createBagPath -> randomChecksumValue,
+        createBagPath -> randomChecksumValue,
       )
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        manifestEntries = manifestEntries,
+        manifest = PayloadManifest(
+          checksumAlgorithm = SHA256,
+          entries = manifestEntries
+        ),
         fetchEntries = Map.empty
       )
 
-      result.right.value shouldBe manifestEntries.map { case (path, checksum) =>
-        MatchedLocation(bagFile = BagFile(checksum = checksum, path = path), fetchMetadata = None)
+      result.right.value shouldBe manifestEntries.map { case (bagPath, checksumValue) =>
+        MatchedLocation(
+          bagPath = bagPath,
+          checksum = Checksum(
+            algorithm = SHA256,
+            value = checksumValue
+          ),
+          fetchMetadata = None
+        )
+      }
+    }
+
+    it("uses the hashing algorithm from the manifest") {
+      val manifestEntries = Map(
+        createBagPath -> randomChecksumValue,
+        createBagPath -> randomChecksumValue,
+      )
+
+      val result = BagMatcher.correlateFetchEntryToBagFile(
+        manifest = PayloadManifest(
+          checksumAlgorithm = MD5,
+          entries = manifestEntries
+        ),
+        fetchEntries = Map.empty
+      )
+
+      result.right.value shouldBe manifestEntries.map { case (bagPath, checksumValue) =>
+        MatchedLocation(
+          bagPath = bagPath,
+          checksum = Checksum(
+            algorithm = MD5,
+            value = checksumValue
+          ),
+          fetchMetadata = None
+        )
       }
     }
 
     it("for a bag with fetch entries") {
       val manifestEntries = Map(
-        createBagPath -> createChecksum,
-        createBagPath -> createChecksum,
-        createBagPath -> createChecksum,
+        createBagPath -> randomChecksumValue,
+        createBagPath -> randomChecksumValue,
+        createBagPath -> randomChecksumValue,
       )
 
       val fetchMetadata = createFetchMetadata
@@ -60,14 +100,30 @@ class BagMatcherTest
         path = fetchPath.value
       )
 
+      val checksumAlgorithm = randomHashingAlgorithm
+
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        manifestEntries = manifestEntries ++ Map(fetchPath -> fetchBagFile.checksum),
+        manifest = PayloadManifest(
+          checksumAlgorithm = checksumAlgorithm,
+          entries = manifestEntries ++ Map(fetchPath -> fetchBagFile.checksum.value)
+        ),
         fetchEntries = Map(fetchPath -> fetchMetadata)
       )
 
-      val expectedLocations = manifestEntries.map { case (path, checksum) =>
-        MatchedLocation(bagFile = BagFile(checksum = checksum, path = path), fetchMetadata = None)
-      }.toSeq :+ MatchedLocation(fetchBagFile, fetchMetadata = Some(fetchMetadata))
+      val expectedLocations = manifestEntries.map { case (bagPath, checksumValue) =>
+        MatchedLocation(
+          bagPath = bagPath,
+          checksum = Checksum(
+            algorithm = checksumAlgorithm,
+            value = checksumValue
+          ),
+          fetchMetadata = None
+        )
+      }.toSeq :+ MatchedLocation(
+        bagPath = fetchPath,
+        checksum = fetchBagFile.checksum,
+        fetchMetadata = Some(fetchMetadata)
+      )
 
       result.right.value should contain theSameElementsAs expectedLocations
     }
@@ -79,7 +135,10 @@ class BagMatcherTest
       val fetchEntries = Map(fetchPath -> createFetchMetadata)
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        manifestEntries = Map.empty,
+        manifest = PayloadManifest(
+          checksumAlgorithm = SHA256,
+          entries = Map.empty
+        ),
         fetchEntries = fetchEntries
       )
 
@@ -93,7 +152,10 @@ class BagMatcherTest
       }.toMap
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        manifestEntries = Map.empty,
+        manifest = PayloadManifest(
+          checksumAlgorithm = SHA256,
+          entries = Map.empty
+        ),
         fetchEntries = fetchEntries
       )
 

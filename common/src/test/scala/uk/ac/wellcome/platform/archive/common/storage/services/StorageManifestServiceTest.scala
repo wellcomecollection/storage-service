@@ -21,9 +21,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA256}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Random, Success, Try}
 
@@ -284,7 +283,7 @@ class StorageManifestServiceTest
 
       val bagChecksums =
         bag.manifest.entries
-          .map { case (bagPath, checksum) => bagPath.value -> checksum.value.value }
+          .map { case (bagPath, checksum) => bagPath.value -> checksum.value }
 
       storageManifestChecksums shouldBe bagChecksums
     }
@@ -297,47 +296,9 @@ class StorageManifestServiceTest
 
       val bagChecksums =
         bag.tagManifest.entries
-          .map { case (bagPath, checksum) => bagPath.value -> checksum.value.value }
+          .map { case (bagPath, checksum) => bagPath.value -> checksum.value }
 
       storageManifestChecksums.filterKeys { _ != "tagmanifest-sha256.txt" } shouldBe bagChecksums
-    }
-
-    it(
-      "fails if one of the file manifest entries has the wrong hashing algorithm"
-    ) {
-      val badPath = createBagPath
-      val manifestEntries = Map(
-        badPath -> createChecksumWith(algorithm = MD5)
-      )
-
-      val bag = createBagWith(
-        manifestEntries = manifestEntries,
-        manifestChecksumAlgorithm = SHA256
-      )
-
-      assertIsError(bag = bag) { err =>
-        err.getMessage shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
-      }
-    }
-
-    it(
-      "fails if one of the tag manifest entries has the wrong hashing algorithm"
-    ) {
-      // TODO: Rewrite this to use generators
-      val badPath = createBagPath
-      val tagManifestEntries = Map(
-        badPath -> createChecksumWith(algorithm = MD5)
-      )
-
-      val bag = createBagWith(
-        tagManifestEntries = tagManifestEntries,
-        tagManifestChecksumAlgorithm = SHA256
-      )
-
-      assertIsError(bag = bag) { err =>
-        err shouldBe a[StorageManifestException]
-        err.getMessage shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
-      }
     }
   }
 
@@ -369,7 +330,7 @@ class StorageManifestServiceTest
 
       val bag = createBagWith(
         manifestEntries = Map(
-          BagPath("data/file1.txt") -> createChecksum
+          BagPath("data/file1.txt") -> randomChecksumValue
         ),
         fetchEntries = fetchEntries
       )
@@ -397,7 +358,7 @@ class StorageManifestServiceTest
 
       val bag = createBagWith(
         manifestEntries = Map(
-          BagPath("data/file1.txt") -> createChecksum
+          BagPath("data/file1.txt") -> randomChecksumValue
         ),
         fetchEntries = fetchEntries
       )
@@ -460,7 +421,7 @@ class StorageManifestServiceTest
 
       val bag = createBagWith(
         manifestEntries = files
-          .map { BagPath(_) -> createChecksum }
+          .map { BagPath(_) -> randomChecksumValue }
           .toMap
       )
 

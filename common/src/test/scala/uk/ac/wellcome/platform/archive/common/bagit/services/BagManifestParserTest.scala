@@ -4,7 +4,7 @@ import java.io.InputStream
 
 import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5, SHA256}
+import uk.ac.wellcome.platform.archive.common.verify.ChecksumValue
 import uk.ac.wellcome.storage.streaming.Codec._
 
 class BagManifestParserTest extends FunSpec with Matchers with EitherValues with TryValues {
@@ -14,25 +14,11 @@ class BagManifestParserTest extends FunSpec with Matchers with EitherValues with
       |def456   file2.txt
       |""".stripMargin)
 
-    val manifest = BagManifestParser.parse(inputStream, algorithm = SHA256)
+    val manifest = BagManifestParser.parse(inputStream)
 
     manifest.success.value shouldBe Map(
-      BagPath("file1.txt") -> Checksum(algorithm = SHA256, value = ChecksumValue("abc123")),
-      BagPath("file2.txt") -> Checksum(algorithm = SHA256, value = ChecksumValue("def456")),
-    )
-  }
-
-  it("sets the checksum algorithm correctly") {
-    val inputStream = toInputStream("""
-                                      |abc123   file1.txt
-                                      |def456   file2.txt
-                                      |""".stripMargin)
-
-    val manifest = BagManifestParser.parse(inputStream, algorithm = MD5)
-
-    manifest.success.value shouldBe Map(
-      BagPath("file1.txt") -> Checksum(algorithm = MD5, value = ChecksumValue("abc123")),
-      BagPath("file2.txt") -> Checksum(algorithm = MD5, value = ChecksumValue("def456"))
+      BagPath("file1.txt") -> ChecksumValue("abc123"),
+      BagPath("file2.txt") -> ChecksumValue("def456"),
     )
   }
 
@@ -44,7 +30,7 @@ class BagManifestParserTest extends FunSpec with Matchers with EitherValues with
                               |aaa222   file2.txt
                               |""".stripMargin)
 
-      val result = BagManifestParser.parse(inputStream, algorithm = SHA256)
+      val result = BagManifestParser.parse(inputStream)
 
       val err = result.failure.exception
 
@@ -58,7 +44,7 @@ class BagManifestParserTest extends FunSpec with Matchers with EitherValues with
                               |aaa111   file1.txt
                               |""".stripMargin)
 
-      val result = BagManifestParser.parse(inputStream, algorithm = SHA256)
+      val result = BagManifestParser.parse(inputStream)
 
       val err = result.failure.exception
 
@@ -72,7 +58,7 @@ class BagManifestParserTest extends FunSpec with Matchers with EitherValues with
                               |aaa111   file1.txt
                               |""".stripMargin)
 
-      val result = BagManifestParser.parse(inputStream, algorithm = SHA256)
+      val result = BagManifestParser.parse(inputStream)
 
       val err = result.failure.exception
 
@@ -83,7 +69,7 @@ class BagManifestParserTest extends FunSpec with Matchers with EitherValues with
     it("if the manifest does not contain any valid entries") {
       val inputStream = toInputStream("neroifuighsdfiug")
 
-      val result = BagManifestParser.parse(inputStream, algorithm = SHA256)
+      val result = BagManifestParser.parse(inputStream)
 
       val err = result.failure.exception
 

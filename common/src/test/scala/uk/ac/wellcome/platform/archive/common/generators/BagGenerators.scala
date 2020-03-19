@@ -8,13 +8,13 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   PayloadManifest,
   TagManifest
 }
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, HashingAlgorithm, SHA256}
+import uk.ac.wellcome.platform.archive.common.verify._
 
 trait BagGenerators extends BagInfoGenerators {
   def createBagWith(
-    manifestEntries: Map[BagPath, Checksum] = Map.empty,
+    manifestEntries: Map[BagPath, ChecksumValue] = Map.empty,
     manifestChecksumAlgorithm: HashingAlgorithm = SHA256,
-    tagManifestEntries: Map[BagPath, Checksum] = Map.empty,
+    tagManifestEntries: Map[BagPath, ChecksumValue] = Map.empty,
     tagManifestChecksumAlgorithm: HashingAlgorithm = SHA256,
     fetchEntries: Map[BagPath, BagFetchMetadata] = Map.empty
   ): Bag =

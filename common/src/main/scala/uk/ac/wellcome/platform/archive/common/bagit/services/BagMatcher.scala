@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetchMetadata,
-  BagFile,
+  BagManifest,
   BagPath,
   MatchedLocation
 }
@@ -20,28 +20,38 @@ object BagMatcher {
   def correlateFetchEntries(
     bag: Bag
   ): Either[Throwable, Seq[MatchedLocation]] =
-    correlateFetchEntryToBagFile(
-      manifestEntries = bag.manifest.entries ++ bag.tagManifest.entries,
-      fetchEntries = bag.fetch match {
-        case Some(fetchEntry) => fetchEntry.entries
-        case None             => Map.empty
-      }
-    )
+    for {
+      payloadMatchedLocations <- correlateFetchEntryToBagFile(
+        manifest = bag.manifest,
+        fetchEntries = bag.fetch match {
+          case Some(fetchEntry) => fetchEntry.entries
+          case None             => Map.empty
+        }
+      )
+
+      // The fetch.txt should never refer to tag files
+      tagMatchedLocations <- correlateFetchEntryToBagFile(
+        manifest = bag.tagManifest,
+        fetchEntries = Map.empty
+      )
+    } yield payloadMatchedLocations ++ tagMatchedLocations
 
   def correlateFetchEntryToBagFile(
-    manifestEntries: Map[BagPath, Checksum],
+    manifest: BagManifest,
     fetchEntries: Map[BagPath, BagFetchMetadata]
   ): Either[Throwable, Seq[MatchedLocation]] = {
     // First construct the list of matched locations -- for every file in the bag,
     // we either have a fetch.txt entry or we don't.
     val matchedLocations =
-      manifestEntries
-        .map { case (path, checksum) =>
+      manifest.entries
+        .map { case (bagPath, checksumValue) =>
           MatchedLocation(
-            bagFile = BagFile(
-              checksum = checksum, path = path
+            bagPath = bagPath,
+            checksum = Checksum(
+              algorithm = manifest.checksumAlgorithm,
+              value = checksumValue
             ),
-            fetchMetadata = fetchEntries.get(path)
+            fetchMetadata = fetchEntries.get(bagPath)
           )
         }
 
@@ -49,7 +59,7 @@ object BagMatcher {
     // the list of BagFiles (i.e., the manifest).
     //
     // If they are, we should throw an error.
-    val manifestPaths = manifestEntries.keys.toSet
+    val manifestPaths = manifest.entries.keys.toSet
     val fetchPaths = fetchEntries.collect { case (bagPath, _) => bagPath }.toSet
 
     val unexpectedFetchPaths = fetchPaths.diff(manifestPaths)
