@@ -7,6 +7,7 @@ import java.util.UUID
 
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.generators.RandomThings
 
 import scala.util.Random
@@ -14,6 +15,8 @@ import scala.util.Random
 trait StorageRandomThings extends RandomThings {
   def randomAlphanumericWithLength(length: Int = 8): String =
     Random.alphanumeric take length mkString
+
+  def randomChecksumValue = ChecksumValue(randomAlphanumeric)
 
   def randomInstant: Instant =
     Instant.now().plusSeconds(Random.nextInt())
@@ -166,4 +169,18 @@ trait StorageRandomThings extends RandomThings {
 
   def createBagVersion: BagVersion =
     BagVersion(randomInt(from = 1, to = 100000))
+
+  def randomHashingAlgorithm: HashingAlgorithm = {
+    val algorithms = List(MD5, SHA1, SHA256, SHA512)
+
+    algorithms(Random.nextInt(algorithms.length))
+  }
+
+  def createBagPath: BagPath = BagPath(randomAlphanumeric)
+
+  def createChecksumWith(algorithm: HashingAlgorithm = SHA256): Checksum =
+    Checksum(algorithm = algorithm, value = randomChecksumValue)
+
+  def createChecksum: Checksum =
+    createChecksumWith()
 }

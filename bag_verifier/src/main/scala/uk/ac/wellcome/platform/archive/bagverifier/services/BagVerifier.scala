@@ -141,9 +141,9 @@ class BagVerifier()(
 
   private def verifyPayloadOxumFileCount(bag: Bag): InternalResult[Unit] = {
     val payloadOxumCount = bag.info.payloadOxum.numberOfPayloadFiles
-    val manifestCount = bag.manifest.files.size
+    val manifestCount = bag.manifest.entries.size
 
-    if (payloadOxumCount != bag.manifest.files.size) {
+    if (payloadOxumCount != bag.manifest.entries.size) {
       val message =
         s"Payload-Oxum has the wrong number of payload files: $payloadOxumCount, but bag manifest has $manifestCount"
       Left(
@@ -163,7 +163,7 @@ class BagVerifier()(
         // The Payload-Oxum octetstream sum only counts the size of files in the payload,
         // not manifest files such as the bag-info.txt file.
         // We need to filter those out.
-        val dataFilePaths = bag.manifest.files.map { _.path }
+        val dataFilePaths = bag.manifest.paths
 
         val actualSize =
           locations
@@ -202,10 +202,9 @@ class BagVerifier()(
     verificationResult match {
       case VerificationSuccess(_) =>
         val bagFetchLocations = bag.fetch match {
-          case Some(fetchEntry) =>
-            fetchEntry.files
-              .map { _.path }
-              .map { path =>
+          case Some(bagFetch) =>
+            bagFetch.paths
+              .map { path: BagPath =>
                 root.asLocation(path.value)
               }
 

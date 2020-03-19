@@ -417,10 +417,10 @@ class BagVerifierTest
         val ingestFailed = result.asInstanceOf[IngestFailed[_]]
 
         ingestFailed.e.getMessage shouldBe
-          "Fetch entry refers to a path that isn't in the bag manifest: data/doesnotexist"
+          "fetch.txt refers to paths that aren't in the bag manifest: data/doesnotexist"
 
         ingestFailed.maybeUserFacingMessage.get shouldBe
-          "Fetch entry refers to a path that isn't in the bag manifest: data/doesnotexist"
+          "fetch.txt refers to paths that aren't in the bag manifest: data/doesnotexist"
       }
     }
   }
@@ -511,8 +511,8 @@ class BagVerifierTest
         val bag = new S3BagReader().get(bagRoot).right.value
 
         // Write one of the fetch.txt entries as a concrete file
-        val badFetchEntry = bag.fetch.get.files.head
-        val badFetchLocation = bagRoot.asLocation(badFetchEntry.path.value)
+        val badFetchPath: BagPath = bag.fetch.get.paths.head
+        val badFetchLocation = bagRoot.asLocation(badFetchPath.value)
 
         s3Client.putObject(
           badFetchLocation.namespace,
@@ -536,10 +536,10 @@ class BagVerifierTest
 
         ingestFailed.e.getMessage shouldBe
           s"Files referred to in the fetch.txt also appear in the bag: ${bagRoot
-            .asLocation(badFetchEntry.path.value)}"
+            .asLocation(badFetchPath.value)}"
 
         ingestFailed.maybeUserFacingMessage.get shouldBe
-          s"Files referred to in the fetch.txt also appear in the bag: ${badFetchEntry.path}"
+          s"Files referred to in the fetch.txt also appear in the bag: $badFetchPath"
       }
     }
 

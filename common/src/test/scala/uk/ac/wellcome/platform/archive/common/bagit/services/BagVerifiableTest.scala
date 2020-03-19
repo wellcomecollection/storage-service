@@ -4,17 +4,20 @@ import java.net.URI
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFetchEntry,
-  BagFile,
+  BagFetchMetadata,
   BagPath
 }
 import uk.ac.wellcome.platform.archive.common.generators.{
-  BagFileGenerators,
   BagGenerators,
-  FetchEntryGenerators
+  FetchMetadataGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.verify.VerifiableLocation
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  HashingAlgorithm,
+  VerifiableLocation
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
@@ -22,8 +25,7 @@ class BagVerifiableTest
     extends FunSpec
     with Matchers
     with BagGenerators
-    with BagFileGenerators
-    with FetchEntryGenerators
+    with FetchMetadataGenerators
     with ObjectLocationGenerators {
   implicit val resolvable: Resolvable[ObjectLocation] =
     (t: ObjectLocation) => new URI(s"example://${t.namespace}/${t.path}")
@@ -41,131 +43,105 @@ class BagVerifiableTest
     }
 
     it("for a bag that just has manifest files") {
-      val manifestFiles = List(
-        createBagFileWith("example.txt"),
-        createBagFileWith("names.txt")
+      val manifestEntries = Map(
+        BagPath("example.txt") -> randomChecksumValue,
+        BagPath("names.txt") -> randomChecksumValue
       )
 
-      val bag = createBagWith(manifestFiles = manifestFiles)
+      val manifestChecksumAlgorithm = randomHashingAlgorithm
+
+      val bag = createBagWith(
+        manifestEntries = manifestEntries,
+        manifestChecksumAlgorithm = manifestChecksumAlgorithm
+      )
 
       bagVerifiable.create(bag).right.get should contain theSameElementsAs
-        getExpectedLocations(manifestFiles)
+        getExpectedLocations(
+          manifestEntries = manifestEntries,
+          checksumAlgorithm = manifestChecksumAlgorithm
+        )
     }
 
     it("for a bag that just has tag manifest files") {
-      val tagManifestFiles = List(
-        createBagFileWith("tag-manifest-sha256.txt"),
-        createBagFileWith("manifest-sha256.txt")
+      val tagManifestEntries = Map(
+        BagPath("tagmanifest-sha256.txt") -> randomChecksumValue,
+        BagPath("manifest-sha256.txt") -> randomChecksumValue
       )
 
-      val bag = createBagWith(tagManifestFiles = tagManifestFiles)
+      val tagManifestChecksumAlgorithm = randomHashingAlgorithm
+
+      val bag = createBagWith(
+        tagManifestEntries = tagManifestEntries,
+        tagManifestChecksumAlgorithm = tagManifestChecksumAlgorithm
+      )
 
       bagVerifiable.create(bag).right.get should contain theSameElementsAs
-        getExpectedLocations(tagManifestFiles)
+        getExpectedLocations(
+          manifestEntries = tagManifestEntries,
+          checksumAlgorithm = tagManifestChecksumAlgorithm
+        )
     }
 
     it("for a bag that has both file manifest and tag manifest files") {
-      val manifestFiles = List(
-        createBagFileWith("example.txt"),
-        createBagFileWith("names.txt")
+      val manifestEntries = Map(
+        BagPath("example.txt") -> randomChecksumValue,
+        BagPath("names.txt") -> randomChecksumValue
       )
 
-      val tagManifestFiles = List(
-        createBagFileWith("tag-manifest-sha256.txt"),
-        createBagFileWith("manifest-sha256.txt")
+      val tagManifestEntries = Map(
+        BagPath("tagmanifest-sha256.txt") -> randomChecksumValue,
+        BagPath("manifest-sha256.txt") -> randomChecksumValue
       )
+
+      val checksumAlgorithm = randomHashingAlgorithm
 
       val bag = createBagWith(
-        manifestFiles = manifestFiles,
-        tagManifestFiles = tagManifestFiles
+        manifestEntries = manifestEntries,
+        manifestChecksumAlgorithm = checksumAlgorithm,
+        tagManifestEntries = tagManifestEntries,
+        tagManifestChecksumAlgorithm = checksumAlgorithm
       )
 
       bagVerifiable.create(bag).right.get should contain theSameElementsAs
-        getExpectedLocations(manifestFiles ++ tagManifestFiles)
+        getExpectedLocations(
+          manifestEntries = manifestEntries ++ tagManifestEntries,
+          checksumAlgorithm = checksumAlgorithm
+        )
     }
 
     it("for a bag with fetch entries") {
-      val manifestFiles = List(
-        createBagFileWith("example.txt"),
-        createBagFileWith("names.txt")
+      val manifestEntries = Map(
+        BagPath("example.txt") -> randomChecksumValue,
+        BagPath("names.txt") -> randomChecksumValue
       )
 
-      val fetchedManifestFiles = List(
-        createBagFileWith("random.txt"),
-        createBagFileWith("cat.jpg")
+      val fetchedManifestEntries = Map(
+        BagPath("random.txt") -> randomChecksumValue,
+        BagPath("cat.jpg") -> randomChecksumValue
       )
 
-      val fetchEntries = fetchedManifestFiles
-        .map { bf =>
-          createFetchEntryWith(uri = s"s3://example/${bf.path}", path = bf.path)
-        }
+      val fetchEntries = fetchedManifestEntries.keys.map {
+        _ -> createFetchMetadata
+      }.toMap
+
+      val manifestChecksumAlgorithm = randomHashingAlgorithm
 
       val bag = createBagWith(
-        manifestFiles = manifestFiles ++ fetchedManifestFiles,
+        manifestEntries = manifestEntries ++ fetchedManifestEntries,
+        manifestChecksumAlgorithm = manifestChecksumAlgorithm,
         fetchEntries = fetchEntries
       )
 
       val expectedLocations =
-        getExpectedLocations(manifestFiles) ++
-          getExpectedLocations(fetchedManifestFiles, fetchEntries)
-
-      bagVerifiable.create(bag).right.get should contain theSameElementsAs
-        expectedLocations
-    }
-
-    it("for a bag with a repeated (but identical) fetch entry") {
-      val manifestFiles = List(
-        createBagFileWith("example.txt"),
-        createBagFileWith("names.txt")
-      )
-
-      val fetchedManifestFiles = List(
-        createBagFileWith("random.txt"),
-        createBagFileWith("cat.jpg")
-      )
-
-      val fetchEntries = fetchedManifestFiles
-        .map { bf =>
-          createFetchEntryWith(uri = s"s3://example/${bf.path}", path = bf.path)
-        }
-
-      val bag = createBagWith(
-        manifestFiles = manifestFiles ++ fetchedManifestFiles,
-        fetchEntries = fetchEntries ++ fetchEntries
-      )
-
-      val expectedLocations =
-        getExpectedLocations(manifestFiles) ++
-          getExpectedLocations(fetchedManifestFiles, fetchEntries)
-
-      bagVerifiable.create(bag).right.get should contain theSameElementsAs
-        expectedLocations
-    }
-
-    it("for a bag with a repeated (but identical) bag file") {
-      val manifestFiles = List(
-        createBagFileWith("example.txt"),
-        createBagFileWith("names.txt")
-      )
-
-      val fetchedManifestFiles = List(
-        createBagFileWith("random.txt"),
-        createBagFileWith("cat.jpg")
-      )
-
-      val fetchEntries = fetchedManifestFiles
-        .map { bf =>
-          createFetchEntryWith(uri = s"s3://example/${bf.path}", path = bf.path)
-        }
-
-      val bag = createBagWith(
-        manifestFiles = manifestFiles ++ manifestFiles ++ fetchedManifestFiles,
-        fetchEntries = fetchEntries ++ fetchEntries
-      )
-
-      val expectedLocations =
-        getExpectedLocations(manifestFiles) ++
-          getExpectedLocations(fetchedManifestFiles, fetchEntries)
+        getExpectedLocations(
+          manifestEntries = manifestEntries,
+          checksumAlgorithm = manifestChecksumAlgorithm
+        ) ++
+          getExpectedLocations(
+            manifestEntries = fetchedManifestEntries,
+            checksumAlgorithm = manifestChecksumAlgorithm,
+            fetchEntries = fetchEntries
+          )
 
       bagVerifiable.create(bag).right.get should contain theSameElementsAs
         expectedLocations
@@ -174,10 +150,9 @@ class BagVerifiableTest
 
   describe("error cases") {
     it("there's a fetch entry for a file that isn't in the bag") {
-      val fetchEntries = Seq(
-        createFetchEntryWith(
-          uri = "s3://example/example.txt",
-          path = BagPath("example.txt")
+      val fetchEntries = Map(
+        BagPath("example.txt") -> createFetchMetadataWith(
+          uri = "s3://example/example.txt"
         )
       )
 
@@ -185,20 +160,16 @@ class BagVerifiableTest
 
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith(
-        "Fetch entry refers to a path that isn't in the bag"
-      )
+      result.left.get.msg shouldBe "fetch.txt refers to paths that aren't in the bag manifest: example.txt"
     }
 
     it("there's are multiple fetch entries for a file that isn't in the bag") {
-      val fetchEntries = Seq(
-        createFetchEntryWith(
-          uri = "s3://example/example.txt",
-          path = BagPath("example.txt")
+      val fetchEntries = Map(
+        BagPath("example.txt") -> createFetchMetadataWith(
+          uri = "s3://example/example.txt"
         ),
-        createFetchEntryWith(
-          uri = "s3://example/red.txt",
-          path = BagPath("example.txt")
+        BagPath("example.txt") -> createFetchMetadataWith(
+          uri = "s3://example/red.txt"
         )
       )
 
@@ -207,79 +178,49 @@ class BagVerifiableTest
       val result = bagVerifiable.create(bag)
       result shouldBe a[Left[_, _]]
       result.left.get.msg shouldBe
-        "Fetch entry refers to a path that isn't in the bag manifest: example.txt"
-    }
-
-    it("has multiple references to the same file with different checksums") {
-      val manifestFiles = List(
-        createBagFileWith("example.txt", checksum = "123"),
-        createBagFileWith("example.txt", checksum = "456")
-      )
-
-      val bag = createBagWith(manifestFiles = manifestFiles)
-
-      val result = bagVerifiable.create(bag)
-      result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith(
-        "Multiple, ambiguous entries for the same path"
-      )
-    }
-
-    it("has multiple, differing fetch entries for the same file") {
-      val manifestFiles = List(
-        createBagFileWith("example.txt", checksum = "123")
-      )
-
-      val fetchEntries = Seq(
-        createFetchEntryWith(
-          uri = "s3://example/example.txt",
-          path = BagPath("example.txt")
-        ),
-        createFetchEntryWith(
-          uri = "https://example.net/example.txt",
-          path = BagPath("example.txt")
-        )
-      )
-
-      val bag = createBagWith(
-        manifestFiles = manifestFiles,
-        fetchEntries = fetchEntries
-      )
-
-      val result = bagVerifiable.create(bag)
-      result shouldBe a[Left[_, _]]
-      result.left.get.msg should startWith(
-        "Multiple, ambiguous entries for the same path"
-      )
+        "fetch.txt refers to paths that aren't in the bag manifest: example.txt"
     }
   }
 
   def createObjectLocationWith(root: ObjectLocation): ObjectLocation =
     root.join(randomAlphanumericWithLength(), randomAlphanumericWithLength())
 
-  def getExpectedLocations(bagFiles: Seq[BagFile]): Seq[VerifiableLocation] =
-    bagFiles.map { bagFile =>
-      VerifiableLocation(
-        path = bagFile.path,
-        uri = new URI(
-          s"example://${root.namespace}/${root.path}/${bagFile.path.toString}"
-        ),
-        checksum = bagFile.checksum,
-        length = None
-      )
-    }
+  def getExpectedLocations(
+    manifestEntries: Map[BagPath, ChecksumValue],
+    checksumAlgorithm: HashingAlgorithm
+  ): Seq[VerifiableLocation] =
+    manifestEntries.map {
+      case (bagPath, checksumValue) =>
+        VerifiableLocation(
+          path = bagPath,
+          uri = new URI(
+            s"example://${root.namespace}/${root.path}/$bagPath"
+          ),
+          checksum = Checksum(
+            algorithm = checksumAlgorithm,
+            value = checksumValue
+          ),
+          length = None
+        )
+    }.toSeq
 
   def getExpectedLocations(
-    bagFiles: Seq[BagFile],
-    fetchEntries: Seq[BagFetchEntry]
+    manifestEntries: Map[BagPath, ChecksumValue],
+    checksumAlgorithm: HashingAlgorithm,
+    fetchEntries: Map[BagPath, BagFetchMetadata]
   ): Seq[VerifiableLocation] =
-    bagFiles.zip(fetchEntries).map {
-      case (bagFile, fetchEntry) =>
+    manifestEntries.map {
+      case (bagPath, checksumValue) =>
+        val fetchMetadata = fetchEntries(bagPath)
+
         VerifiableLocation(
-          uri = fetchEntry.uri,
-          path = bagFile.path,
-          checksum = bagFile.checksum,
-          length = fetchEntry.length
+          uri = fetchMetadata.uri,
+          path = bagPath,
+          checksum = Checksum(
+            algorithm = checksumAlgorithm,
+            value = checksumValue
+          ),
+          length = fetchMetadata.length
         )
-    }
+    }.toSeq
 }

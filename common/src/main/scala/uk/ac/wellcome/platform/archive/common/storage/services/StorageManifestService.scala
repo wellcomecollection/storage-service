@@ -141,41 +141,38 @@ class StorageManifestService[IS <: InputStream with HasLength](
     bagRoot: ObjectLocationPrefix,
     version: BagVersion
   ): (ObjectLocation, Option[Long]) =
-    matchedLocation.fetchEntry match {
+    matchedLocation.fetchMetadata match {
       // This is a concrete file inside the replicated bag,
       // so it's inside the versioned replica directory.
       case None =>
         (
-          bagRoot.asLocation(
-            version.toString,
-            matchedLocation.bagFile.path.value
-          ),
+          bagRoot.asLocation(version.toString, matchedLocation.bagPath.value),
           None
         )
 
       // This is referring to a fetch file somewhere else.
       // We need to check it's in another versioned directory
       // for this bag.
-      case Some(fetchEntry) =>
+      case Some(fetchMetadata) =>
         val fetchLocation = ObjectLocation(
-          namespace = fetchEntry.uri.getHost,
-          path = fetchEntry.uri.getPath.stripPrefix("/")
+          namespace = fetchMetadata.uri.getHost,
+          path = fetchMetadata.uri.getPath.stripPrefix("/")
         )
 
         if (fetchLocation.namespace != bagRoot.namespace) {
           throw new BadFetchLocationException(
-            s"Fetch entry for ${matchedLocation.bagFile.path.value} refers to a file in the wrong namespace: ${fetchLocation.namespace}"
+            s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong namespace: ${fetchLocation.namespace}"
           )
         }
 
         // TODO: This check could actually look for a /v1, /v2, etc.
         if (!fetchLocation.path.startsWith(bagRoot.path + "/")) {
           throw new BadFetchLocationException(
-            s"Fetch entry for ${matchedLocation.bagFile.path.value} refers to a file in the wrong path: /${fetchLocation.path}"
+            s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong path: /${fetchLocation.path}"
           )
         }
 
-        (fetchLocation, fetchEntry.length)
+        (fetchLocation, fetchMetadata.length)
     }
 
   /** Every entry in the bag manifest will be either a:
@@ -197,7 +194,7 @@ class StorageManifestService[IS <: InputStream with HasLength](
     Try {
       matchedLocations.map { matchedLoc =>
         (
-          matchedLoc.bagFile.path,
+          matchedLoc.bagPath,
           getSizeAndLocation(matchedLoc, bagRoot, version)
         )
       }.toMap
@@ -208,45 +205,35 @@ class StorageManifestService[IS <: InputStream with HasLength](
     entries: Map[BagPath, (ObjectLocation, Option[Long])],
     bagRoot: ObjectLocationPrefix
   ): Try[Seq[StorageManifestFile]] = Try {
-    manifest.files.map { bagFile =>
-      // This lookup should never file -- the BagMatcher populates the
-      // entries from the original manifests in the bag.
-      //
-      // We wrap it in a Try block just in case, but this should never
-      // throw in practice.
-      val (location, maybeSize) = entries(bagFile.path)
-      val path = location.path.stripPrefix(bagRoot.path + "/")
+    manifest.entries.map {
+      case (bagPath, checksumValue) =>
+        // This lookup should never file -- the BagMatcher populates the
+        // entries from the original manifests in the bag.
+        //
+        // We wrap it in a Try block just in case, but this should never
+        // throw in practice.
+        val (location, maybeSize) = entries(bagPath)
+        val path = location.path.stripPrefix(bagRoot.path + "/")
 
-      // If this happens it indicates an error in the pipeline -- we only
-      // support bags with a single manifest, so we should only ever see
-      // a single algorithm.
-      if (bagFile.checksum.algorithm != manifest.checksumAlgorithm) {
-        throw new StorageManifestException(
-          "Mismatched checksum algorithms in manifest: " +
-            s"entry ${bagFile.path} has algorithm ${bagFile.checksum.algorithm}, " +
-            s"but manifest uses ${manifest.checksumAlgorithm}"
+        val size = maybeSize match {
+          case Some(s) => s
+          case None =>
+            sizeFinder.getSize(location) match {
+              case Success(value) => value
+              case Failure(err) =>
+                throw new StorageManifestException(
+                  s"Error getting size of $location: $err"
+                )
+            }
+        }
+
+        StorageManifestFile(
+          checksum = checksumValue,
+          name = bagPath.value,
+          path = path,
+          size = size
         )
-      }
-
-      val size = maybeSize match {
-        case Some(s) => s
-        case None =>
-          sizeFinder.getSize(location) match {
-            case Success(value) => value
-            case Failure(err) =>
-              throw new StorageManifestException(
-                s"Error getting size of $location: $err"
-              )
-          }
-      }
-
-      StorageManifestFile(
-        checksum = bagFile.checksum.value,
-        name = bagFile.path.value,
-        path = path,
-        size = size
-      )
-    }
+    }.toSeq
   }
 
   // Get StorageManifestFile entries for everything not listed in either the manifest

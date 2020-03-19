@@ -15,7 +15,8 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
-  PrimaryStorageLocation
+  PrimaryStorageLocation,
+  StorageManifest
 }
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
@@ -78,33 +79,32 @@ class BagRegisterFeatureTest
       ) { _ =>
         sendNotificationToSQS(queue, payload)
 
-        eventually {
-          val storageManifest =
-            storageManifestDao.getLatest(bagId).right.value
-
-          storageManifest.space shouldBe bagId.space
-          storageManifest.info shouldBe bagInfo
-          storageManifest.manifest.files should have size dataFileCount
-
-          storageManifest.location shouldBe PrimaryStorageLocation(
-            provider = primaryLocation.provider,
-            prefix = bagRoot
-              .copy(
-                path = bagRoot.path.stripSuffix(s"/$version")
-              )
-          )
-
-          storageManifest.replicaLocations shouldBe empty
-
-          storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
-
-          assertBagRegisterSucceeded(
-            ingestId = payload.ingestId,
-            ingests = ingests
-          )
-
-          assertQueueEmpty(queue)
+        val storageManifest: StorageManifest = eventually {
+          storageManifestDao.getLatest(bagId).right.value
         }
+
+        storageManifest.space shouldBe bagId.space
+        storageManifest.info shouldBe bagInfo
+        storageManifest.manifest.files should have size dataFileCount
+
+        storageManifest.location shouldBe PrimaryStorageLocation(
+          provider = primaryLocation.provider,
+          prefix = bagRoot
+            .copy(
+              path = bagRoot.path.stripSuffix(s"/$version")
+            )
+        )
+
+        storageManifest.replicaLocations shouldBe empty
+
+        storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+
+        assertBagRegisterSucceeded(
+          ingestId = payload.ingestId,
+          ingests = ingests
+        )
+
+        assertQueueEmpty(queue)
       }
     }
   }

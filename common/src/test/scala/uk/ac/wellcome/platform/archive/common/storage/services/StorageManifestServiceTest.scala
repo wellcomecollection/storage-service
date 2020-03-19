@@ -1,11 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import java.net.URI
-
 import org.scalatest._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
-  BagFetchEntry,
   BagPath,
   BagVersion,
   ExternalIdentifier
@@ -15,12 +12,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagBuilder,
   BagBuilderBase
 }
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagFileGenerators,
-  BagGenerators,
-  StorageLocationGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -29,9 +21,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA256}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Random, Success, Try}
 
@@ -39,7 +30,7 @@ class StorageManifestServiceTest
     extends FunSpec
     with Matchers
     with BagGenerators
-    with BagFileGenerators
+    with FetchMetadataGenerators
     with StorageLocationGenerators
     with StorageSpaceGenerators
     with TimeTestFixture
@@ -222,21 +213,19 @@ class StorageManifestServiceTest
       version = version
     )
 
-    val bagFetchFiles = bag.fetch.get.files.map { entry =>
-      entry.path -> entry
-    }.toMap
+    val bagFetchEntries = bag.fetch.get.entries
 
     it("puts fetched entries under a versioned path") {
       val fetchedFiles = storageManifest.manifest.files
         .filter { file =>
-          bagFetchFiles.contains(BagPath(file.name))
+          bagFetchEntries.contains(BagPath(file.name))
         }
 
-      fetchedFiles.isEmpty shouldBe false
+      fetchedFiles should not be empty
 
       fetchedFiles
         .foreach { file =>
-          val fetchEntry = bagFetchFiles(BagPath(file.name))
+          val fetchEntry = bagFetchEntries(BagPath(file.name))
 
           // The fetch entry URI is of the form
           //
@@ -254,7 +243,7 @@ class StorageManifestServiceTest
     it("puts non-fetched entries under the current version") {
       storageManifest.manifest.files
         .filterNot { file =>
-          bagFetchFiles.contains(BagPath(file.name))
+          bagFetchEntries.contains(BagPath(file.name))
         }
         .foreach { file =>
           file.path shouldBe s"$version/${file.name}"
@@ -294,9 +283,8 @@ class StorageManifestServiceTest
         }.toMap
 
       val bagChecksums =
-        bag.manifest.files.map { file =>
-          file.path.value -> file.checksum.value.value
-        }.toMap
+        bag.manifest.entries
+          .map { case (bagPath, checksum) => bagPath.value -> checksum.value }
 
       storageManifestChecksums shouldBe bagChecksums
     }
@@ -308,66 +296,17 @@ class StorageManifestServiceTest
         }.toMap
 
       val bagChecksums =
-        bag.tagManifest.files.map { file =>
-          file.path.value -> file.checksum.value.value
-        }.toMap
+        bag.tagManifest.entries
+          .map { case (bagPath, checksum) => bagPath.value -> checksum.value }
 
       storageManifestChecksums.filterKeys { _ != "tagmanifest-sha256.txt" } shouldBe bagChecksums
-    }
-
-    it(
-      "fails if one of the file manifest entries has the wrong hashing algorithm"
-    ) {
-      val badPath = randomAlphanumeric
-      val manifestFiles = Seq(
-        createBagFileWith(
-          path = badPath,
-          checksumAlgorithm = MD5
-        )
-      )
-
-      val bag = createBagWith(
-        manifestFiles = manifestFiles,
-        manifestChecksumAlgorithm = SHA256
-      )
-
-      assertIsError(bag = bag) { err =>
-        err.getMessage shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
-      }
-    }
-
-    it(
-      "fails if one of the tag manifest entries has the wrong hashing algorithm"
-    ) {
-      // TODO: Rewrite this to use generators
-      val badPath = randomAlphanumeric
-      val tagManifestFiles = Seq(
-        createBagFileWith(
-          path = badPath,
-          checksumAlgorithm = MD5
-        )
-      )
-
-      val bag = createBagWith(
-        tagManifestFiles = tagManifestFiles,
-        tagManifestChecksumAlgorithm = SHA256
-      )
-
-      assertIsError(bag = bag) { err =>
-        err shouldBe a[StorageManifestException]
-        err.getMessage shouldBe s"Mismatched checksum algorithms in manifest: entry $badPath has algorithm MD5, but manifest uses SHA-256"
-      }
     }
   }
 
   describe("fails if the fetch.txt is wrong") {
     it("refers to files that aren't in the manifest") {
-      val fetchEntries = Seq(
-        BagFetchEntry(
-          uri = new URI("https://example.org/file1.txt"),
-          length = None,
-          path = BagPath(randomAlphanumeric)
-        )
+      val fetchEntries = Map(
+        BagPath(randomAlphanumeric) -> createFetchMetadata
       )
 
       val bag = createBagWith(
@@ -378,23 +317,21 @@ class StorageManifestServiceTest
         err shouldBe a[StorageManifestException]
         err.getMessage should startWith("Unable to resolve fetch entries:")
         err.getMessage should include(
-          s"Fetch entry refers to a path that isn't in the bag manifest: ${fetchEntries.head.path}"
+          s"fetch.txt refers to paths that aren't in the bag manifest:"
         )
       }
     }
 
     it("refers to a file in the wrong namespace") {
-      val fetchEntries = Seq(
-        BagFetchEntry(
-          uri = new URI("s3://not-the-replica-bucket/file1.txt"),
-          length = None,
-          path = BagPath("data/file1.txt")
+      val fetchEntries = Map(
+        BagPath("data/file1.txt") -> createFetchMetadataWith(
+          uri = "s3://not-the-replica-bucket/file1.txt"
         )
       )
 
       val bag = createBagWith(
-        manifestFiles = Seq(
-          createBagFileWith("data/file1.txt")
+        manifestEntries = Map(
+          BagPath("data/file1.txt") -> randomChecksumValue
         ),
         fetchEntries = fetchEntries
       )
@@ -414,17 +351,15 @@ class StorageManifestServiceTest
         version = version
       )
 
-      val fetchEntries = Seq(
-        BagFetchEntry(
-          uri = new URI(s"s3://${location.prefix.namespace}/file1.txt"),
-          length = None,
-          path = BagPath("data/file1.txt")
+      val fetchEntries = Map(
+        BagPath("data/file1.txt") -> createFetchMetadataWith(
+          uri = s"s3://${location.prefix.namespace}/file1.txt"
         )
       )
 
       val bag = createBagWith(
-        manifestFiles = Seq(
-          createBagFileWith("data/file1.txt")
+        manifestEntries = Map(
+          BagPath("data/file1.txt") -> randomChecksumValue
         ),
         fetchEntries = fetchEntries
       )
@@ -486,9 +421,7 @@ class StorageManifestServiceTest
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
       val bag = createBagWith(
-        manifestFiles = files.map { path =>
-          createBagFileWith(path)
-        }
+        manifestEntries = files.map { BagPath(_) -> randomChecksumValue }.toMap
       )
 
       val err = new Throwable("BOOM!")
@@ -547,7 +480,7 @@ class StorageManifestServiceTest
 
       val storageManifest = createManifest(
         bag = bag.copy(
-          tagManifest = bag.tagManifest.copy(files = Seq.empty)
+          tagManifest = bag.tagManifest.copy(entries = Map.empty)
         ),
         location = location,
         version = version,
@@ -601,7 +534,7 @@ class StorageManifestServiceTest
 
       val storageManifest = createManifest(
         bag = bag.copy(
-          tagManifest = bag.tagManifest.copy(files = Seq.empty)
+          tagManifest = bag.tagManifest.copy(entries = Map.empty)
         ),
         location = location,
         version = version,
@@ -613,10 +546,10 @@ class StorageManifestServiceTest
           file.name -> file.size
         }.toMap
 
-      val bagSizes =
-        bag.fetch.get.files.map { file =>
-          file.path.value -> file.length.get
-        }.toMap
+      val bagSizes = bag.fetch.get.entries.map {
+        case (bagPath, fetchMetadata) =>
+          bagPath.value -> fetchMetadata.length.get
+      }
 
       manifestSizes shouldBe bagSizes
     }

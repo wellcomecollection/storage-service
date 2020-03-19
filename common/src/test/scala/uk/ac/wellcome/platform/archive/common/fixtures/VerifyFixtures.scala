@@ -8,7 +8,6 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 trait VerifyFixtures extends StorageRandomThings with ObjectLocationGenerators {
-  def randomChecksumValue = ChecksumValue(randomAlphanumericWithLength())
   def randomChecksum = Checksum(SHA256, randomChecksumValue)
   def badChecksum = Checksum(MD5, randomChecksumValue)
 

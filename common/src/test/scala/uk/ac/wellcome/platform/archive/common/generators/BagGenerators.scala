@@ -3,29 +3,30 @@ package uk.ac.wellcome.platform.archive.common.generators
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagFetch,
-  BagFetchEntry,
-  BagFile,
-  BagManifest
+  BagFetchMetadata,
+  BagPath,
+  PayloadManifest,
+  TagManifest
 }
-import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
+import uk.ac.wellcome.platform.archive.common.verify._
 
 trait BagGenerators extends BagInfoGenerators {
   def createBagWith(
-    manifestFiles: Seq[BagFile] = List.empty,
+    manifestEntries: Map[BagPath, ChecksumValue] = Map.empty,
     manifestChecksumAlgorithm: HashingAlgorithm = SHA256,
-    tagManifestFiles: Seq[BagFile] = List.empty,
+    tagManifestEntries: Map[BagPath, ChecksumValue] = Map.empty,
     tagManifestChecksumAlgorithm: HashingAlgorithm = SHA256,
-    fetchEntries: Seq[BagFetchEntry] = List.empty
+    fetchEntries: Map[BagPath, BagFetchMetadata] = Map.empty
   ): Bag =
     Bag(
       info = createBagInfo,
-      manifest = BagManifest(
+      manifest = PayloadManifest(
         checksumAlgorithm = manifestChecksumAlgorithm,
-        files = manifestFiles
+        entries = manifestEntries
       ),
-      tagManifest = BagManifest(
+      tagManifest = TagManifest(
         checksumAlgorithm = tagManifestChecksumAlgorithm,
-        files = tagManifestFiles
+        entries = tagManifestEntries
       ),
       fetch = if (fetchEntries.isEmpty) None else Some(BagFetch(fetchEntries))
     )

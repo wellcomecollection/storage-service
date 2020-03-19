@@ -15,18 +15,17 @@ import scala.util.Random
 
 trait StorageManifestGenerators
     extends BagInfoGenerators
-    with BagFileGenerators
     with StorageSpaceGenerators
     with ObjectLocationGenerators {
 
   val checksumAlgorithm: HashingAlgorithm = SHA256
 
   private def createStorageManifestFile: StorageManifestFile = {
-    val bagFile = createBagFile
+    val path = createBagPath
     StorageManifestFile(
-      checksum = bagFile.checksum.value,
-      name = bagFile.path.value,
-      path = bagFile.path.value,
+      checksum = randomChecksumValue,
+      name = path.value,
+      path = path.value,
       size = Random.nextLong().abs
     )
   }

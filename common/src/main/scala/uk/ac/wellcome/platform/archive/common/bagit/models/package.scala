@@ -22,14 +22,4 @@ package object models {
         case Some(root) => Right(locateBagPath(root)(bagPath))
       }
   }
-
-  implicit val bagFileLocator: Locatable[BagFile] = new Locatable[BagFile] {
-    override def locate(bagFile: BagFile)(
-      maybeRoot: Option[ObjectLocation]
-    ): Either[LocateFailure[BagFile], ObjectLocation] =
-      maybeRoot match {
-        case None       => Left(LocationNotFound(bagFile, s"No root specified!"))
-        case Some(root) => Right(locateBagPath(root)(bagFile.path))
-      }
-  }
 }
