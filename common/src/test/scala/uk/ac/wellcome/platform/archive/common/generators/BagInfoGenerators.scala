@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
-import uk.ac.wellcome.platform.archive.common.bagit.models
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   ExternalDescription,
@@ -19,7 +18,7 @@ trait BagInfoGenerators
       randomExternalDescription
     )
   ): BagInfo =
-    models.BagInfo(
+    BagInfo(
       externalIdentifier = externalIdentifier,
       payloadOxum = payloadOxum,
       baggingDate = randomLocalDate,

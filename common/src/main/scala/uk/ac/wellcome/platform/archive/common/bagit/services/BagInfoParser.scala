@@ -97,7 +97,7 @@ object BagInfoParser extends Logging {
       }
 
   private def extractSourceOrganisation(metadata: BagInfoMetadata): Try[Option[SourceOrganisation]] =
-    getSingleOptionalValue(metadata, label = "Source-Organisation")
+    getSingleOptionalValue(metadata, label = "Source-Organization")
       .map { _.map(SourceOrganisation) }
 
   private def extractExternalDescription(metadata: BagInfoMetadata): Try[Option[ExternalDescription]] =
