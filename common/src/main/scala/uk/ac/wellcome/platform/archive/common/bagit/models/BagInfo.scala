@@ -72,14 +72,10 @@ object BagInfo {
     validated
   }
 
-  def parseBagInfo[T](
-    t: T,
-    inputStream: InputStream
-  ): Either[InvalidBagInfo[T], BagInfo] = {
-
+  def parseBagInfo(inputStream: InputStream): Either[InvalidBagInfo, BagInfo] = {
     val validated = validate(inputStream)
 
-    validated.toEither.leftMap(list => InvalidBagInfo(t, list.toList))
+    validated.toEither.leftMap(list => InvalidBagInfo(list.toList))
   }
 
   private def extractExternalIdentifier(bagInfoLines: Array[String]) =
