@@ -5,7 +5,6 @@ import java.time.LocalDate
 
 import cats.data.ValidatedNel
 import cats.implicits._
-import uk.ac.wellcome.platform.archive.common.bagit.models.error.InvalidBagInfo
 
 import scala.util.Try
 
@@ -86,12 +85,6 @@ object BagInfo {
     )
 
     validated
-  }
-
-  def parseBagInfo(inputStream: InputStream): Either[InvalidBagInfo, BagInfo] = {
-    val validated = validate(inputStream)
-
-    validated.toEither.leftMap(list => InvalidBagInfo(list.toList))
   }
 
   private def extractExternalIdentifier(bagInfoLines: Array[String]) =
