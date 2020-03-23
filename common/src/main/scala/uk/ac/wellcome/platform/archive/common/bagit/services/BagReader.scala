@@ -35,7 +35,7 @@ trait BagReader[IS <: InputStreamWithLength] {
 
   def get(bagRoot: ObjectLocationPrefix): Either[BagUnavailable, Bag] =
     for {
-      bagInfo <- loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfo.create)
+      bagInfo <- loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfoParser.create)
 
       fileManifest <- loadRequired[PayloadManifest](bagRoot)(
         fileManifest(SHA256)
