@@ -22,7 +22,23 @@ case class BagInfo(
 object BagInfo {
 
   // Intended to match BagIt `bag-info` file format:
-  // https://tools.ietf.org/html/draft-kunze-bagit-17#section-2.2.2
+  // https://tools.ietf.org/html/rfc8493#section-2.2.2
+  //
+  // According to the BagIt spec, the format of a metadata line is:
+  //
+  //      A metadata element MUST consist of a label, a colon ":", a single
+  //      linear whitespace character (space or tab), and a value that is
+  //      terminated with an LF, a CR, or a CRLF.
+  //
+  // Some examples:
+  //
+  //      Source-Organization: FOO University
+  //      Organization-Address: 1 Main St., Cupertino, California, 11111
+  //      Contact-Name: Jane Doe
+  //
+  // The spec notes that ordering is important and must be preserved, because this
+  // is a human-readable file.  Because we are only reading a bag-info.txt and
+  // not writing one, it is okay for us to ignore the ordering.
 
   private val BAG_INFO_FIELD_REGEX = """(.*?)\s*:\s*(.*)\s*""".r
   private val PAYLOAD_OXUM_REGEX =
@@ -34,7 +50,7 @@ object BagInfo {
       .toTry
   }
 
-  private def validate(inputStream: InputStream) = {
+  private def validate(inputStream: InputStream): ValidatedNel[String, BagInfo] = {
     val bagInfoLines = scala.io.Source
       .fromInputStream(inputStream, "UTF-8")
       .mkString
