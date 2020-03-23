@@ -1,0 +1,198 @@
+package uk.ac.wellcome.platform.archive.common.bagit.services
+
+import java.io.{BufferedReader, InputStream, InputStreamReader}
+import java.time.LocalDate
+
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
+  ExternalDescription,
+  ExternalIdentifier,
+  InternalSenderDescription,
+  InternalSenderIdentifier,
+  PayloadOxum,
+  SourceOrganisation
+}
+
+import scala.util.{Failure, Success, Try}
+
+object BagInfoParser {
+
+  // Intended to match BagIt `bag-info` file format:
+  // https://tools.ietf.org/html/rfc8493#section-2.2.2
+  //
+  // According to the BagIt spec, the format of a metadata line is:
+  //
+  //      A metadata element MUST consist of a label, a colon ":", a single
+  //      linear whitespace character (space or tab), and a value that is
+  //      terminated with an LF, a CR, or a CRLF.
+  //
+  // Some examples:
+  //
+  //      Source-Organization: FOO University
+  //      Organization-Address: 1 Main St., Cupertino, California, 11111
+  //      Contact-Name: Jane Doe
+  //
+  // The spec notes that ordering is important and must be preserved, because this
+  // is a human-readable file.  Because we are only reading a bag-info.txt and
+  // not writing one, it is okay for us to ignore the ordering.
+
+  private val BAG_INFO_FIELD_REGEX = """(.*?)\s*:\s*(.*)\s*""".r
+
+  type BagInfoMetadata = Map[String, Seq[String]]
+
+  def create(inputStream: InputStream): Try[BagInfo] =
+    for {
+      bagInfoMetadata <- parse(inputStream)
+
+      // Extract required fields
+      externalIdentifier <- extractExternalIdentifier(bagInfoMetadata)
+      payloadOxum <- extractPayloadOxum(bagInfoMetadata)
+      baggingDate <- extractBaggingDate(bagInfoMetadata)
+
+      // Extract optional fields
+      sourceOrganisation <- extractSourceOrganisation(bagInfoMetadata)
+      externalDescription <- extractExternalDescription(bagInfoMetadata)
+      internalSenderIdentifier <- extractInternalSenderIdentifier(bagInfoMetadata)
+      internalSenderDescription <- extractInternalSenderDescription(bagInfoMetadata)
+
+      bagInfo = BagInfo(
+        externalIdentifier = externalIdentifier,
+        payloadOxum = payloadOxum,
+        baggingDate = baggingDate,
+        sourceOrganisation = sourceOrganisation,
+        externalDescription = externalDescription,
+        internalSenderIdentifier = internalSenderIdentifier,
+        internalSenderDescription = internalSenderDescription
+      )
+    } yield bagInfo
+
+  private def extractExternalIdentifier(metadata: BagInfoMetadata): Try[ExternalIdentifier] =
+    getSingleRequiredValue(metadata, label = "External-Identifier")
+      .flatMap {
+        externalIdentifier => Try { ExternalIdentifier(externalIdentifier) }
+          .failed.flatMap { e =>
+            Failure(new RuntimeException(s"Unable to parse External-Identifier in bag-info.txt: ${e.getMessage}"))
+          }
+      }
+
+  // Matches the Payload-Oxum line, which is of the form "_OctetCount_._StreamCount_",
+  // for example:
+  //
+  //      Payload-Oxum: 279164409832.1198
+  //
+  private val PAYLOAD_OXUM_REGEX =
+    s"""Payload-Oxum:\\s([0-9]+)\\.([0-9]+)\\s*""".r
+
+  private def extractPayloadOxum(metadata: BagInfoMetadata): Try[PayloadOxum] =
+    getSingleRequiredValue(metadata, label = "Payload-Oxum")
+      .flatMap {
+        case PAYLOAD_OXUM_REGEX(payloadBytes, numberOfPayloadFiles) =>
+          Success(PayloadOxum(payloadBytes.toLong, numberOfPayloadFiles.toInt))
+        case line =>
+          Failure(
+            new RuntimeException(s"Unable to parse Payload-Oxum in bag-info.txt: $line")
+          )
+      }
+
+  private def extractBaggingDate(metadata: BagInfoMetadata): Try[LocalDate] =
+    getSingleRequiredValue(metadata, label = "Bagging-Date")
+      .flatMap {
+        dateString => Try { LocalDate.parse(dateString) }
+          .failed.flatMap { e =>
+            Failure(new RuntimeException(s"Unable to parse Bagging-Date in bag-info.txt: ${e.getMessage}"))
+          }
+      }
+
+  private def extractSourceOrganisation(metadata: BagInfoMetadata): Try[Option[SourceOrganisation]] =
+    getSingleOptionalValue(metadata, label = "Source-Organisation")
+      .map { _.map(SourceOrganisation) }
+
+  private def extractExternalDescription(metadata: BagInfoMetadata): Try[Option[ExternalDescription]] =
+    getSingleOptionalValue(metadata, label = "External-Description")
+      .map { _.map(ExternalDescription) }
+
+  private def extractInternalSenderIdentifier(metadata: BagInfoMetadata): Try[Option[InternalSenderIdentifier]] =
+    getSingleOptionalValue(metadata, label = "Internal-Sender-Identifier")
+      .map { _.map(InternalSenderIdentifier) }
+
+  private def extractInternalSenderDescription(metadata: BagInfoMetadata): Try[Option[InternalSenderDescription]] =
+    getSingleOptionalValue(metadata, label = "Internal-Sender-Description")
+      .map { _.map(InternalSenderDescription) }
+
+  private def getSingleOptionalValue(metadata: BagInfoMetadata, label: String): Try[Option[String]] =
+    metadata.get(label) match {
+      case Some(Seq(value)) => Success(Some(value))
+      case None             => Success(None)
+      case Some(values)     => Failure(new RuntimeException(s"Multiple values for $label in bag-info.txt: ${values.mkString(", ")}"))
+    }
+
+  private def getSingleRequiredValue(metadata: BagInfoMetadata, label: String): Try[String] =
+    getSingleOptionalValue(metadata, label).flatMap {
+      case Some(value) => Success(value)
+      case None        => Failure(new RuntimeException(s"Missing key in bag-info.txt: $label"))
+    }
+
+  private def parse(inputStream: InputStream): Try[BagInfoMetadata] = {
+    val bufferedReader = new BufferedReader(
+      new InputStreamReader(inputStream)
+    )
+
+    // Read the lines one by one, either getting a (label -> value) association,
+    // or returning the line if it doesn't parse correctly.
+    val lines = Iterator
+      .continually(bufferedReader.readLine())
+      .takeWhile { _ != null }
+      .filter { _.nonEmpty }
+      .toList
+
+    val parsedLines = lines.map { parseSingleLine }
+
+    val unparseableLines = parsedLines.collect {
+      case Left(line) => line
+    }
+
+    if (unparseableLines.nonEmpty) {
+      Failure(
+        new RuntimeException(s"Unable to parse the following lines in bag-info.txt: ${unparseableLines.mkString(", ")}")
+      )
+    } else {
+      Success(
+        constructSummary(
+          parsedLines.collect {
+            case Right(entry) => entry
+          }
+        )
+      )
+    }
+  }
+
+  // It is possible for lines in the bag-info.txt to be repeated; how much we
+  // care about this depends on the key in question.
+  //
+  // Each line is a map (label) -> (value).
+  //
+  // This method assembles a map (label) -> (all values) from the entire bag-info.txt.
+  //
+  private def constructSummary(parsedLines: Seq[(String, String)]): BagInfoMetadata =
+    parsedLines
+      .foldLeft(Map[String, Set[String]]())(
+        (summary: Map[String, Set[String]], line: (String, String)) =>
+          line match { case (label, value) =>
+
+            // If this label is already in the map, add the new value.
+            // If not, create a new entry in the map.
+            summary.get(label) {
+              case Some(existingValue: Set[String]) => summary ++ Map(label -> existingValue +: value)
+              case None                             => summary ++ Map(label -> Set(value))
+            }
+          }
+      )
+      .map { case (label, values: Set[String]) => label -> Seq(values) }
+
+
+  private def parseSingleLine(line: String): Either[String, (String, String)] =
+    line match {
+      case BAG_INFO_FIELD_REGEX(label, value) => Right(label, value)
+      case _ => Left(line)
+    }
+}
