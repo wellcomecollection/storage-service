@@ -31,4 +31,3 @@ case class SourceOrganisation(underlying: String) extends AnyVal {
 case class PayloadOxum(payloadBytes: Long, numberOfPayloadFiles: Int) {
   override def toString = s"$payloadBytes.$numberOfPayloadFiles"
 }
-

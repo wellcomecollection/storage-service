@@ -4,13 +4,16 @@ import java.io.InputStream
 
 import org.scalatest._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, PayloadOxumGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  PayloadOxumGenerators
+}
 import uk.ac.wellcome.storage.streaming.Codec._
 
 import scala.util.Success
 
 class BagInfoParserTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with EitherValues
     with TryValues
@@ -85,7 +88,8 @@ class BagInfoParserTest
             |Bagging-Date: $randomLocalDate
             |""".stripMargin
 
-      val bagInfo = BagInfoParser.create(toInputStream(bagInfoString)).success.value
+      val bagInfo =
+        BagInfoParser.create(toInputStream(bagInfoString)).success.value
       bagInfo.externalIdentifier shouldBe externalIdentifier
     }
   }
@@ -136,7 +140,8 @@ class BagInfoParserTest
 
       assertIsError(
         bagInfoString,
-        errorMessage = "Unable to parse the following lines in bag-info.txt: : value"
+        errorMessage =
+          "Unable to parse the following lines in bag-info.txt: : value"
       )
     }
 
@@ -147,7 +152,8 @@ class BagInfoParserTest
 
       assertIsError(
         bagInfoString,
-        errorMessage = "Unable to parse the following lines in bag-info.txt: label:"
+        errorMessage =
+          "Unable to parse the following lines in bag-info.txt: label:"
       )
     }
 
@@ -161,7 +167,8 @@ class BagInfoParserTest
 
       assertIsError(
         bagInfoString,
-        errorMessage = "Unable to parse External-Identifier in bag-info.txt: External identifier cannot start with a slash"
+        errorMessage =
+          "Unable to parse External-Identifier in bag-info.txt: External identifier cannot start with a slash"
       )
     }
 
@@ -187,7 +194,8 @@ class BagInfoParserTest
 
       assertIsError(
         bagInfoString,
-        errorMessage = "Unable to parse Bagging-Date in bag-info.txt: Text 'not_a_real_date' could not be parsed at index 0"
+        errorMessage =
+          "Unable to parse Bagging-Date in bag-info.txt: Text 'not_a_real_date' could not be parsed at index 0"
       )
     }
   }
@@ -202,11 +210,15 @@ class BagInfoParserTest
 
     assertIsError(
       bagInfoString,
-      errorMessage = "Multiple values for External-Identifier in bag-info.txt: 1, 2"
+      errorMessage =
+        "Multiple values for External-Identifier in bag-info.txt: 1, 2"
     )
   }
 
-  private def assertIsError(bagInfoString: String, errorMessage: String): Assertion = {
+  private def assertIsError(
+    bagInfoString: String,
+    errorMessage: String
+  ): Assertion = {
     val err = BagInfoParser.create(toInputStream(bagInfoString)).failed.get
     err shouldBe a[RuntimeException]
     err.getMessage shouldBe errorMessage
