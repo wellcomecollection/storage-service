@@ -35,7 +35,9 @@ trait StorageManifestGenerators
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
     version: BagVersion = createBagVersion,
-    fileCount: Int = 3
+    manifestFiles: Seq[StorageManifestFile] = (1 to 3).map {
+      _ => createStorageManifestFile
+    }
   ): StorageManifest =
     StorageManifest(
       space = space,
@@ -43,8 +45,7 @@ trait StorageManifestGenerators
       version = version,
       manifest = FileManifest(
         checksumAlgorithm,
-        files = (1 to fileCount)
-          .map(_ => createStorageManifestFile)
+        files = manifestFiles
       ),
       tagManifest = FileManifest(
         checksumAlgorithm,
@@ -70,7 +71,11 @@ trait StorageManifestGenerators
     )
 
   def createStorageManifestWithFileCount(fileCount: Int): StorageManifest =
-    createStorageManifestWith(fileCount = fileCount)
+    createStorageManifestWith(
+      manifestFiles = (1 to fileCount).map { _ =>
+        createStorageManifestFile
+      }
+    )
 
   def createStorageManifest: StorageManifest =
     createStorageManifestWith()

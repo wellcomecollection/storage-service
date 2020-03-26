@@ -55,12 +55,6 @@ case object ManifestIndexConfig extends IndexConfig {
       )
     )
 
-//  private val spaceFields: ObjectField =
-//    objectField("space").fields(
-//      keywordField("id"),
-//      keywordField("type")
-//    )
-
   val mapping: MappingDefinition = properties(
     keywordField("space"),
     infoFields,
