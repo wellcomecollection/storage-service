@@ -52,7 +52,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: AmazonSQSAsync =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val storageManifestVHS = StorageManifestDaoBuilder.build(config)
+    val storageManifestDao = StorageManifestDaoBuilder.build(config)
 
     val operationName = OperationNameBuilder.getName(config)
 
@@ -61,7 +61,7 @@ object Main extends WellcomeTypesafeApp {
       operationName
     )
 
-    implicit val s3StreamStore = new S3StreamStore()
+    implicit val s3StreamStore: S3StreamStore = new S3StreamStore()
 
     val storageManifestService = new StorageManifestService(
       sizeFinder = new S3SizeFinder()
@@ -69,7 +69,7 @@ object Main extends WellcomeTypesafeApp {
 
     val register = new Register(
       bagReader = new S3BagReader(),
-      storageManifestDao = storageManifestVHS,
+      storageManifestDao = storageManifestDao,
       storageManifestService = storageManifestService
     )
 
