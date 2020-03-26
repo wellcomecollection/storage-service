@@ -91,19 +91,18 @@ class IngestUpdater[Destination](
     messageSender.sendT[IngestUpdate](update)
 
   val descriptionMaxLength = 250
+
   private def eventDescription(
-    main: String,
-    maybeInformation: Option[String] = None
-  ): String = {
-    val separator: String = " - "
+    requiredMessage: String,
+    optionalMessage: Option[String]
+  ): String =
     truncate(
-      Seq(
-        Some(main),
-        maybeInformation
-      ).flatten.mkString(separator),
+      optionalMessage match {
+        case Some(message) => s"$requiredMessage - $message"
+        case None          => requiredMessage
+      },
       descriptionMaxLength
     )
-  }
 
   private def truncate(text: String, maxLength: Int): String = {
     if (text.length > maxLength) {
