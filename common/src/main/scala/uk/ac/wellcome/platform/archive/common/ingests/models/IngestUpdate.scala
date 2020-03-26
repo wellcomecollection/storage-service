@@ -22,19 +22,6 @@ case class IngestCallbackStatusUpdate(
   events: Seq[IngestEvent]
 ) extends IngestUpdate
 
-case object IngestCallbackStatusUpdate {
-  def apply(
-    id: IngestID,
-    callbackStatus: Callback.CallbackStatus,
-    description: String
-  ): IngestCallbackStatusUpdate =
-    IngestCallbackStatusUpdate(
-      id = id,
-      callbackStatus = callbackStatus,
-      events = List(IngestEvent(description))
-    )
-}
-
 case class IngestVersionUpdate(
   id: IngestID,
   events: Seq[IngestEvent],

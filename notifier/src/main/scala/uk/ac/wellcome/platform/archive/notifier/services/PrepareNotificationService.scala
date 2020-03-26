@@ -6,9 +6,9 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.Callback.{
   Failed,
   Succeeded
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestCallbackStatusUpdate
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestCallbackStatusUpdate,
+  IngestEvent,
   IngestID
 }
 
@@ -27,7 +27,7 @@ object PrepareNotificationService extends Logging {
           IngestCallbackStatusUpdate(
             id = id,
             callbackStatus = Succeeded,
-            description = "Callback fulfilled"
+            events = Seq(IngestEvent("Callback fulfilled"))
           )
         } else {
           debug(s"Callback failed for: $id, got $status!")
@@ -35,7 +35,7 @@ object PrepareNotificationService extends Logging {
           IngestCallbackStatusUpdate(
             id = id,
             callbackStatus = Failed,
-            description = s"Callback failed for: $id, got $status!"
+            events = Seq(IngestEvent(s"Callback failed for: $id, got $status!"))
           )
         }
       case Failure(e) =>
@@ -44,7 +44,7 @@ object PrepareNotificationService extends Logging {
         IngestCallbackStatusUpdate(
           id = id,
           callbackStatus = Failed,
-          description = s"Callback failed for: $id (${e.getMessage})"
+          events = Seq(IngestEvent(s"Callback failed for: $id (${e.getMessage})"))
         )
     }
 }
