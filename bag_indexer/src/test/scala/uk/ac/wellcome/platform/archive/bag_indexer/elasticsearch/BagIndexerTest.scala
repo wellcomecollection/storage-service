@@ -39,6 +39,21 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
     }
   }
 
+  it("fails if something goes wrong with indexing") {
+    withIndexes { case (manifestsIndex, filesIndex) =>
+
+      // Get the index names wrong, so the mappings will reject the manifest.
+      val future =
+        withBagIndexer(filesIndex, manifestsIndex) {
+          _.index(createStorageManifest)
+        }
+
+      whenReady(future.failed) {
+        _ shouldBe a[RuntimeException]
+      }
+    }
+  }
+
   private def withBagIndexer[R](manifestsIndex: Index, filesIndex: Index)(testWith: TestWith[BagIndexer, R]): R =
     testWith(
       new BagIndexer(
