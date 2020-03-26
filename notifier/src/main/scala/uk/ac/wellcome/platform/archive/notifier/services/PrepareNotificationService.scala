@@ -44,7 +44,8 @@ object PrepareNotificationService extends Logging {
         IngestCallbackStatusUpdate(
           id = id,
           callbackStatus = Failed,
-          events = Seq(IngestEvent(s"Callback failed for: $id (${e.getMessage})"))
+          events =
+            Seq(IngestEvent(s"Callback failed for: $id (${e.getMessage})"))
         )
     }
 }
