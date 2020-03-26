@@ -10,7 +10,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Assertion, Matchers, Suite}
 import uk.ac.wellcome.fixtures._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.bag_indexer.elasticsearch.{ElasticClientBuilder, ElasticsearchIndexCreator, IndexConfig}
+import uk.ac.wellcome.platform.archive.bag_indexer.elasticsearch._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
@@ -70,6 +70,13 @@ trait ElasticsearchFixtures
       elasticClient.execute(deleteIndex(index.name))
     }
   )
+
+  def withIndexes[R](testWith: TestWith[(Index, Index), R]): R =
+    withLocalElasticsearchIndex(config = ManifestIndexConfig) { manifestsIndex =>
+      withLocalElasticsearchIndex(config = FilesIndexConfig) { filesIndex =>
+        testWith((manifestsIndex, filesIndex))
+      }
+    }
 
   def eventuallyIndexExists(index: Index): Assertion =
     eventually {

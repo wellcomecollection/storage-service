@@ -4,69 +4,92 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.mappings.{KeywordField, MappingDefinition, ObjectField}
 
 trait IndexConfig {
+  protected def keywordFieldWithText(name: String): KeywordField =
+    keywordField(name).fields(textField("text"))
+
+
   val mapping: MappingDefinition
 }
 
 case object ManifestIndexConfig extends IndexConfig {
-  def keywordFieldWithText(name: String): KeywordField =
-    keywordField(name).fields(textField("text"))
+  private def bagInfoField(name: String): ObjectField =
+    objectField(name).fields(textField("underlying"))
 
   private val infoFields: ObjectField =
     objectField("info").fields(
-      dateField("baggingDate"),
-      textField("externalDescription"),
       keywordFieldWithText("externalIdentifier"),
-      textField("internalSenderDescription"),
-      keywordFieldWithText("internalSenderIdentifier"),
-
-      // It seems unlikely that anybody would want to search on the Payload-Oxum field,
-      // but we include it for completeness.
-      keywordField("payloadOxum"),
-
-      keywordField("type")
+      objectField("payloadOxum").fields(
+        intField("numberOfPayloadFiles"),
+        longField("payloadBytes")
+      ),
+      dateField("baggingDate"),
+      bagInfoField("sourceOrganisation"),
+      bagInfoField("externalDescription"),
+      bagInfoField("internalSenderIdentifier"),
+      bagInfoField("internalSenderDescription")
     )
 
   private def locationFields(name: String): ObjectField =
     objectField(name).fields(
-      keywordField("bucket"),
-      keywordField("path"),
       objectField("provider").fields(
         keywordField("id"),
         keywordField("type")
+      ),
+      objectField("prefix").fields(
+        keywordField("namespace"),
+        keywordField("path")
       ),
       keywordField("type")
     )
 
   private def manifestFields(name: String): ObjectField =
     objectField(name).fields(
-      keywordField("checksumAlgorithm"),
+      objectField("checksumAlgorithm").fields(
+        keywordField("type")
+      ),
       nestedField("files").fields(
         keywordField("checksum"),
         keywordFieldWithText("name"),
         keywordField("path"),
-        intField("size"),
-        keywordField("type")
-      ),
-      keywordField("type")
+        longField("size")
+      )
     )
 
-  private val spaceFields: ObjectField =
-    objectField("space").fields(
-      keywordField("id"),
-      keywordField("type")
-    )
+//  private val spaceFields: ObjectField =
+//    objectField("space").fields(
+//      keywordField("id"),
+//      keywordField("type")
+//    )
 
   val mapping: MappingDefinition = properties(
-    keywordField("@context"),
-    dateField("createdDate"),
-    keywordField("id"),
+    keywordField("space"),
     infoFields,
-    locationFields("location"),
+    intField("version"),
     manifestFields("manifest"),
-    locationFields("replicaLocations"),
-    spaceFields,
     manifestFields("tagManifest"),
-    keywordField("type"),
-    keywordField("version")
+    locationFields("location"),
+    locationFields("replicaLocations"),
+    dateField("createdDate"),
+    keywordField("ingestId")
+  )
+}
+
+case object FilesIndexConfig extends IndexConfig {
+  val mapping: MappingDefinition = properties(
+    keywordField("bucket"),
+    keywordFieldWithText("path"),
+    objectField("checksum").fields(
+      keywordField("algorithm"),
+      keywordField("value")
+    ),
+    longField("size"),
+
+    // A single file will always be in the same space/externalIdentifier, but
+    // might appear in multiple versions of that bag.
+    objectField("bag").fields(
+      keywordField("space"),
+      keywordFieldWithText("externalIdentifier"),
+      keywordField("versions")
+    )
   )
 }
