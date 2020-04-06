@@ -119,6 +119,6 @@ lazy val indexer_common = setupProject(
   "indexer/common",
   externalDependencies =
     ExternalDependencies.elasticsearchDependencies ++
-    WellcomeDependencies.fixturesLibrary ++
-    WellcomeDependencies.jsonLibrary
+      WellcomeDependencies.fixturesLibrary ++
+      WellcomeDependencies.jsonLibrary
 )

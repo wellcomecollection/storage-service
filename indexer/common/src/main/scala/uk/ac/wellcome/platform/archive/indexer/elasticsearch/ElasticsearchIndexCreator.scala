@@ -44,7 +44,8 @@ class ElasticsearchIndexCreator(elasticClient: ElasticClient)(
 
   private def update(
     index: Index,
-    mappingDefinition: MappingDefinition): Future[Unit] =
+    mappingDefinition: MappingDefinition
+  ): Future[Unit] =
     elasticClient
       .execute {
         putMapping(index.name)

@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ElasticsearchIndexCreatorTest
-  extends FunSpec
+    extends FunSpec
     with ElasticsearchFixtures
     with Matchers {
 
@@ -69,38 +69,45 @@ class ElasticsearchIndexCreatorTest
     )
 
     withLocalElasticsearchIndex(placeMapping) { index =>
-      withLocalElasticsearchIndex(placeWithCountryMapping, index = index) { modifiedIndex =>
-        val indexFuture =
-          elasticClient
-            .execute {
-              indexInto(modifiedIndex)
-                .doc(
-                  """
+      withLocalElasticsearchIndex(placeWithCountryMapping, index = index) {
+        modifiedIndex =>
+          val indexFuture =
+            elasticClient
+              .execute {
+                indexInto(modifiedIndex)
+                  .doc(
+                    """
                     |{
                     |  "name": "Blacksod Point",
                     |  "country": "Republic of Ireland"
                     |}""".stripMargin
+                  )
+              }
+
+          whenReady(indexFuture) { indexResponse: Response[IndexResponse] =>
+            assertIsSuccess(indexResponse)
+
+            eventually {
+              val results = searchT[Map[String, String]](
+                index = index,
+                query = matchAllQuery()
+              )
+
+              results shouldBe Seq(
+                Map(
+                  "name" -> "Blacksod Point",
+                  "country" -> "Republic of Ireland"
                 )
+              )
             }
-
-        whenReady(indexFuture) { indexResponse: Response[IndexResponse] =>
-          assertIsSuccess(indexResponse)
-
-          eventually {
-            val results = searchT[Map[String, String]](
-              index = index, query = matchAllQuery()
-            )
-
-            results shouldBe Seq(
-              Map("name" -> "Blacksod Point", "country" -> "Republic of Ireland")
-            )
           }
-        }
       }
     }
   }
 
-  private def assertIsSuccess(indexResponse: Response[IndexResponse]): Assertion = {
+  private def assertIsSuccess(
+    indexResponse: Response[IndexResponse]
+  ): Assertion = {
     if (indexResponse.isError) {
       throw indexResponse.error.asException
     }

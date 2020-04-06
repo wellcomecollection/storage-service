@@ -17,13 +17,16 @@ import org.scalatest.{Assertion, Matchers, Suite}
 import uk.ac.wellcome.fixtures._
 import uk.ac.wellcome.json.JsonUtil.fromJson
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{ElasticClientBuilder, ElasticsearchIndexCreator}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  ElasticClientBuilder,
+  ElasticsearchIndexCreator
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success}
 
 trait ElasticsearchFixtures
-  extends Eventually
+    extends Eventually
     with ScalaFutures
     with Matchers
     with JsonAssertions
@@ -121,5 +124,7 @@ trait ElasticsearchFixtures
   }
 
   private def createIndexWith(prefix: String): Index =
-    Index(name = s"$prefix-${(Random.alphanumeric take 10 mkString).toLowerCase}")
+    Index(
+      name = s"$prefix-${(Random.alphanumeric take 10 mkString).toLowerCase}"
+    )
 }
