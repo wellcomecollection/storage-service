@@ -57,6 +57,7 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
   }
 
   it("we can query the bags on the properties of files") {
+    // TODO: Explain what these two examples are
     val manifest1 = createStorageManifestWith(
       manifestFiles = Seq(
         StorageManifestFile(
@@ -95,7 +96,7 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
 
       whenReady(Future.sequence(futures)) { _ =>
         eventually {
-          val response: Response[SearchResponse] = elasticClient.execute {
+          val response1: Response[SearchResponse] = elasticClient.execute {
             search(manifestsIndex)
               .query {
                 nestedQuery(
@@ -108,12 +109,32 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
               }
           }.await
 
-          val searchResponse = response.result
-          searchResponse.totalHits shouldBe 1
+          val searchResponse1 = response1.result
+          searchResponse1.totalHits shouldBe 1
 
-          searchResponse
+          searchResponse1
             .hits.hits
             .map { hit => fromJson[StorageManifest](hit.sourceAsString).get } shouldBe Seq(manifest1)
+
+          val response2: Response[SearchResponse] = elasticClient.execute {
+            search(manifestsIndex)
+              .query {
+                nestedQuery(
+                  "manifest.files",
+                  must(
+                    termQuery("manifest.files.name", "alice.txt"),
+                    termQuery("manifest.files.size", 200),
+                  )
+                )
+              }
+          }.await
+
+          val searchResponse2 = response2.result
+          searchResponse2.totalHits shouldBe 1
+
+          searchResponse2
+            .hits.hits
+            .map { hit => fromJson[StorageManifest](hit.sourceAsString).get } shouldBe Seq(manifest2)
         }
       }
     }
