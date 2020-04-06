@@ -66,8 +66,10 @@ object ExternalDependencies {
     val akkaHttp = "10.1.5"
     val akkaHttpCirce = "1.21.1"
     val akkaStreamAlpakka = "0.20"
+    val apacheLogging = "2.8.2"
     val commonsCompress = "1.5"
     val commonsIO = "2.6"
+    val elastic4s = "7.3.0"
     val mockito = "1.9.5"
     val aws = "1.11.504"
     val circe = "0.9.0"
@@ -109,6 +111,15 @@ object ExternalDependencies {
 
   val cloudwatchMetricsDependencies = Seq[ModuleID](
     "com.amazonaws" % "aws-java-sdk-cloudwatchmetrics" % versions.aws
+  )
+
+  val elasticsearchDependencies: Seq[ModuleID] = Seq(
+    "org.apache.logging.log4j" % "log4j-core" % versions.apacheLogging,
+    "org.apache.logging.log4j" % "log4j-api" % versions.apacheLogging,
+    "com.sksamuel.elastic4s" %% "elastic4s-core" % versions.elastic4s,
+    "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % versions.elastic4s,
+    "com.sksamuel.elastic4s" %% "elastic4s-http-streams" % versions.elastic4s,
+    "com.sksamuel.elastic4s" %% "elastic4s-testkit" % versions.elastic4s % "test"
   )
 
   val mockitoDependencies: Seq[ModuleID] = Seq(
