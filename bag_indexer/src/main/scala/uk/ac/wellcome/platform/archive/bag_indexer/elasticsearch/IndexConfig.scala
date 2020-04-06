@@ -72,6 +72,7 @@ case object FilesIndexConfig extends IndexConfig {
   val mapping: MappingDefinition = properties(
     keywordField("bucket"),
     keywordFieldWithText("path"),
+    keywordFieldWithText("name"),
     objectField("checksum").fields(
       keywordField("algorithm"),
       keywordField("value")

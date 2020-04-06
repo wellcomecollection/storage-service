@@ -20,15 +20,19 @@ trait StorageManifestGenerators
 
   val checksumAlgorithm: HashingAlgorithm = SHA256
 
-  private def createStorageManifestFile: StorageManifestFile = {
-    val path = createBagPath
+  def createStorageManifestFileWith(
+    name: String = randomAlphanumeric,
+    size: Long = Random.nextLong().abs
+  ): StorageManifestFile =
     StorageManifestFile(
       checksum = randomChecksumValue,
-      name = path.value,
-      path = path.value,
-      size = Random.nextLong().abs
+      name = name,
+      path = name,
+      size = size
     )
-  }
+
+  private def createStorageManifestFile: StorageManifestFile =
+    createStorageManifestFileWith()
 
   def createStorageManifestWith(
     ingestId: IngestID = createIngestID,

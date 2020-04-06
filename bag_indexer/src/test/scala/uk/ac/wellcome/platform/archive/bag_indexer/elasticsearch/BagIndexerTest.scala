@@ -40,7 +40,7 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
           }
 
         whenReady(future.failed) {
-          _ shouldBe a[RuntimeException]
+          _ shouldBe a[Throwable]
         }
       }
     }
