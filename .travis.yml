@@ -6,6 +6,7 @@ jobs:
     - stage: libraries
       env: SBT_PROJECT=common
     - env: SBT_PROJECT=display
+    - env: SBT_PROJECT=indexer_common
     - env: SBT_PROJECT=ingests_common
 
     - stage: services
@@ -48,6 +49,8 @@ cache:
     - ingests_common/target
     - notifier/target
     - replica_aggregator/target
+
+    - indexer/common/target
 
     - python_client/.tox
 
