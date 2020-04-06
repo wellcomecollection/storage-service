@@ -1,12 +1,12 @@
 package uk.ac.wellcome.platform.archive.bag_indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.requests.bulk.BulkResponse
+import com.sksamuel.elastic4s.requests.bulk.{BulkCompatibleRequest, BulkResponse}
 import com.sksamuel.elastic4s.requests.indexes.IndexRequest
-import com.sksamuel.elastic4s.requests.update.UpdateRequest
 import com.sksamuel.elastic4s.{ElasticClient, Index, Indexable, Response}
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.bag_indexer.models.IndexedFile
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,9 +18,14 @@ class BagIndexer(
 )(
   implicit ec: ExecutionContext
 ) extends Logging {
-  implicit object IdentifiedWorkIndexable extends Indexable[StorageManifest] {
-    override def json(t: StorageManifest): String =
-      toJson(t).get
+  implicit object StorageManifestIndexable extends Indexable[StorageManifest] {
+    override def json(manifest: StorageManifest): String =
+      toJson(manifest).get
+  }
+
+  implicit object IndexedFileIndexable extends Indexable[IndexedFile] {
+    override def json(indexedFile: IndexedFile): String =
+      toJson(indexedFile).get
   }
 
   def index(manifest: StorageManifest): Future[Unit] = {
@@ -29,34 +34,25 @@ class BagIndexer(
         .id(manifest.idWithVersion)
         .doc(manifest)
 
-    val fileIndexRequests: Seq[UpdateRequest] =
-      manifest.manifest.files.flatMap { file =>
-        val bucket = manifest.location.prefix.namespace
-        val path = manifest.location.prefix.asLocation(file.path).path
+    val fileIndexRequests: Seq[BulkCompatibleRequest] =
+      manifest.manifest.files.map { file =>
+        val indexedFile = IndexedFile(manifest, file)
 
-        val upsertRequest =
-          update(s"s3://$bucket/$path")
-            .in(filesIndex)
-            .docAsUpsert(
-              "bucket" -> bucket,
-              "path" -> path,
-              "name" -> file.name,
-              "checksum.algorithm" -> manifest.manifest.checksumAlgorithm.toString,
-              "checksum.value" -> file.checksum.value,
-              "bag.space" -> manifest.space.toString,
-              "bag.externalIdentifier" -> manifest.info.externalIdentifier.toString
-            )
-
-        val addVersionRequest =
-          update(s"s3://$bucket/$path")
+        if (file.path.startsWith(s"${manifest.version.toString}")) {
+          indexInto(filesIndex)
+            .id(indexedFile.id)
+            .doc(indexedFile)
+        } else {
+          update(indexedFile.id)
             .in(filesIndex)
             .script {
-              // TODO: What if the value is already in the array?
-              script("ctx._source.bag.versions += version")
-                .params(Map("version" -> manifest.version.toString))
+              s"""
+                 |if (!ctx._source.bag.versions.contains('${manifest.version.toString}')) {
+                 |  ctx._source.bag.versions.add('${manifest.version.toString}');
+                 |}
+               """.stripMargin
             }
-
-        Seq(upsertRequest, addVersionRequest)
+        }
       }
 
     elasticClient

@@ -21,13 +21,13 @@ trait StorageManifestGenerators
   val checksumAlgorithm: HashingAlgorithm = SHA256
 
   def createStorageManifestFileWith(
-    name: String = randomAlphanumeric,
+    path: String = randomAlphanumeric,
     size: Long = Random.nextLong().abs
   ): StorageManifestFile =
     StorageManifestFile(
       checksum = randomChecksumValue,
-      name = name,
-      path = name,
+      name = randomAlphanumeric,
+      path = path,
       size = size
     )
 
@@ -41,7 +41,11 @@ trait StorageManifestGenerators
     version: BagVersion = createBagVersion,
     manifestFiles: Seq[StorageManifestFile] = (1 to 3).map {
       _ => createStorageManifestFile
-    }
+    },
+    location: StorageLocation = PrimaryStorageLocation(
+      provider = StandardStorageProvider,
+      prefix = createObjectLocationPrefix
+    )
   ): StorageManifest =
     StorageManifest(
       space = space,
@@ -59,10 +63,7 @@ trait StorageManifestGenerators
           createStorageManifestFile
         )
       ),
-      location = PrimaryStorageLocation(
-        provider = StandardStorageProvider,
-        prefix = createObjectLocationPrefix
-      ),
+      location = location,
       replicaLocations = (1 to randomInt(0, 5))
         .map { _ =>
           SecondaryStorageLocation(

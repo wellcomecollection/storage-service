@@ -73,6 +73,7 @@ case object FilesIndexConfig extends IndexConfig {
     keywordField("bucket"),
     keywordFieldWithText("path"),
     keywordFieldWithText("name"),
+    dateField("createdDate"),
     objectField("checksum").fields(
       keywordField("algorithm"),
       keywordField("value")

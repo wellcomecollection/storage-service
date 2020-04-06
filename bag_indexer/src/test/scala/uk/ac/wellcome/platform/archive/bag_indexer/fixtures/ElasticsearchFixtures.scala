@@ -18,7 +18,7 @@ import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.bag_indexer.elasticsearch._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Random
+import scala.util.{Failure, Random, Success}
 
 trait ElasticsearchFixtures
     extends Eventually
@@ -77,10 +77,16 @@ trait ElasticsearchFixtures
   )
 
   def withIndexes[R](testWith: TestWith[(Index, Index), R]): R =
-    withLocalElasticsearchIndex(config = ManifestIndexConfig) { manifestsIndex =>
-      withLocalElasticsearchIndex(config = FilesIndexConfig) { filesIndex =>
-        testWith((manifestsIndex, filesIndex))
-      }
+    withLocalElasticsearchIndex(
+      config = ManifestIndexConfig,
+      index = Index(s"manifests-${createIndex.name}")
+    ) { manifestsIndex =>
+        withLocalElasticsearchIndex(
+          config = FilesIndexConfig,
+          index = Index(s"files-${createIndex.name}")
+        ) { filesIndex =>
+            testWith((manifestsIndex, filesIndex))
+        }
     }
 
   def eventuallyIndexExists(index: Index): Assertion =
@@ -102,7 +108,12 @@ trait ElasticsearchFixtures
     val getResponse = response.result
     getResponse.exists shouldBe true
 
-    fromJson[T](getResponse.sourceAsString).get
+    fromJson[T](getResponse.sourceAsString) match {
+      case Success(t)   => t
+      case Failure(err) => throw new Throwable(
+        s"Unable to parse source string ($err): ${getResponse.sourceAsString}"
+      )
+    }
   }
 
   protected def searchT[T](index: Index, query: Query)(implicit decoder: Decoder[T]): Seq[T] = {

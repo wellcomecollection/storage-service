@@ -7,6 +7,8 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_indexer.fixtures.ElasticsearchFixtures
+import uk.ac.wellcome.platform.archive.bag_indexer.models.IndexedFile
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 
@@ -16,7 +18,14 @@ import scala.concurrent.Future
 class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventually with IntegrationPatience with ElasticsearchFixtures with StorageManifestGenerators {
   describe("indexing storage manifests") {
     it("indexes a single manifest") {
-      val manifest = createStorageManifest
+      val manifest = createStorageManifestWith(
+        manifestFiles = Seq(
+          createStorageManifestFileWith(path = "v1/alice.txt"),
+          createStorageManifestFileWith(path = "v1/bob.txt"),
+          createStorageManifestFileWith(path = "v1/carol.txt"),
+        ),
+        version = BagVersion(1),
+      )
 
       withIndexes { case (manifestsIndex, filesIndex) =>
         val future =
@@ -60,15 +69,17 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
 
       val manifest1 = createStorageManifestWith(
         manifestFiles = Seq(
-          createStorageManifestFileWith(name = "alice.txt", size = 100)
-        )
+          createStorageManifestFileWith(path = "v1/alice.txt", size = 100)
+        ),
+        version = BagVersion(1)
       )
 
       val manifest2 = createStorageManifestWith(
         manifestFiles = Seq(
-          createStorageManifestFileWith(name = "alice.txt", size = 200),
-          createStorageManifestFileWith(name = "bob.txt", size = 100),
-        )
+          createStorageManifestFileWith(path = "v1/alice.txt", size = 200),
+          createStorageManifestFileWith(path = "v1/bob.txt", size = 100),
+        ),
+        version = BagVersion(1)
       )
 
       withIndexes { case (manifestsIndex, filesIndex) =>
@@ -86,7 +97,7 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
               query = nestedQuery(
                 "manifest.files",
                 must(
-                  termQuery("manifest.files.name", "alice.txt")
+                  termQuery("manifest.files.path", "v1/alice.txt")
                 )
               )
             )
@@ -98,13 +109,97 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
               query = nestedQuery(
                 "manifest.files",
                 must(
-                  termQuery("manifest.files.name", "alice.txt"),
+                  termQuery("manifest.files.path", "v1/alice.txt"),
                   termQuery("manifest.files.size", 100),
                 )
               )
             )
 
             searchResult2 shouldBe Seq(manifest1)
+          }
+        }
+      }
+    }
+  }
+
+  describe("indexing individual files") {
+    val fileA = createStorageManifestFileWith(path = "v1/alice.txt")
+    val fileB = createStorageManifestFileWith(path = "v1/bob.txt")
+    val fileC = createStorageManifestFileWith(path = "v1/carol.txt")
+
+    val manifest = createStorageManifestWith(
+      manifestFiles = Seq(fileA, fileB, fileC),
+      version = BagVersion(1),
+    )
+
+    val manifestAtV2 = createStorageManifestWith(
+      manifestFiles = Seq(fileA, fileB, fileC),
+      location = manifest.location,
+      version = BagVersion(2),
+    )
+
+    it("indexes the individual files") {
+      withIndexes { case (manifestsIndex, filesIndex) =>
+        val future =
+          withBagIndexer(manifestsIndex, filesIndex) {
+            _.index(manifest)
+          }
+
+        whenReady(future) { _ =>
+          val storedFile = getT[IndexedFile](
+            filesIndex, id = s"s3://${manifest.location.prefix}/${fileA.path}"
+          )
+
+          storedFile shouldBe IndexedFile(manifest, fileA)
+        }
+      }
+    }
+
+    describe("tracks the versions of a bag that a file appears in") {
+      val indexedFile = IndexedFile(manifest, fileA)
+      val expectedIndexedFile =
+        indexedFile
+          .copy(bag = indexedFile.bag.copy(versions = Seq("v1", "v2")))
+
+      it("a single version") {
+        withIndexes { case (manifestsIndex, filesIndex) =>
+          val future =
+            withBagIndexer(manifestsIndex, filesIndex) { bagIndexer =>
+              bagIndexer.index(manifest)
+                .flatMap { _ =>
+                  bagIndexer.index(manifestAtV2)
+                }
+            }
+
+          whenReady(future) { _ =>
+            val storedFile = getT[IndexedFile](
+              filesIndex, id = s"s3://${manifest.location.prefix}/${fileA.path}"
+            )
+
+            storedFile shouldBe expectedIndexedFile
+          }
+        }
+      }
+
+      it("de-duplicates versions")  {
+        withIndexes { case (manifestsIndex, filesIndex) =>
+          // Suppose that, for some reason, we indexed the same bag three times.
+          // We should only record "v2" once in the versions list.
+          val future =
+            withBagIndexer(manifestsIndex, filesIndex) { bagIndexer =>
+              bagIndexer.index(manifest)
+                .flatMap { _ => bagIndexer.index(manifestAtV2) }
+                .flatMap { _ => bagIndexer.index(manifestAtV2) }
+                .flatMap { _ => bagIndexer.index(manifestAtV2) }
+            }
+
+
+          whenReady(future) { _ =>
+            val storedFile = getT[IndexedFile](
+              filesIndex, id = s"s3://${manifest.location.prefix}/${fileA.path}"
+            )
+
+            storedFile shouldBe expectedIndexedFile
           }
         }
       }
