@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.bag_indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.requests.bulk.{BulkCompatibleRequest, BulkResponse}
+import com.sksamuel.elastic4s.requests.bulk.{
+  BulkCompatibleRequest,
+  BulkResponse
+}
 import com.sksamuel.elastic4s.requests.indexes.IndexRequest
 import com.sksamuel.elastic4s.{ElasticClient, Index, Indexable, Response}
 import grizzled.slf4j.Logging

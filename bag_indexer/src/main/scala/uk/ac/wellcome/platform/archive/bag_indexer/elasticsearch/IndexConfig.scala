@@ -1,12 +1,15 @@
 package uk.ac.wellcome.platform.archive.bag_indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.requests.mappings.{KeywordField, MappingDefinition, ObjectField}
+import com.sksamuel.elastic4s.requests.mappings.{
+  KeywordField,
+  MappingDefinition,
+  ObjectField
+}
 
 trait IndexConfig {
   protected def keywordFieldWithText(name: String): KeywordField =
     keywordField(name).fields(textField("text"))
-
 
   val mapping: MappingDefinition
 }
@@ -79,7 +82,6 @@ case object FilesIndexConfig extends IndexConfig {
       keywordField("value")
     ),
     longField("size"),
-
     // A single file will always be in the same space/externalIdentifier, but
     // might appear in multiple versions of that bag.
     objectField("bag").fields(

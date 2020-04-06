@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.bag_indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.indexes.IndexResponse
-import com.sksamuel.elastic4s.requests.mappings.{FieldDefinition, MappingDefinition}
+import com.sksamuel.elastic4s.requests.mappings.{
+  FieldDefinition,
+  MappingDefinition
+}
 import com.sksamuel.elastic4s.requests.searches.SearchResponse
 import com.sksamuel.elastic4s.{RequestFailure, Response}
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
@@ -14,14 +17,19 @@ import uk.ac.wellcome.platform.archive.bag_indexer.fixtures.ElasticsearchFixture
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-case class TestObject(id: String,  description: String, visible: Boolean)
+case class TestObject(id: String, description: String, visible: Boolean)
 
-case class CompatibleTestObject(id: String, description: String, visible: Boolean, count: Int)
+case class CompatibleTestObject(
+  id: String,
+  description: String,
+  visible: Boolean,
+  count: Int
+)
 
 case class BadTestObject(id: String, weight: Int)
 
 class ElasticsearchIndexCreatorTest
-  extends FunSpec
+    extends FunSpec
     with ElasticsearchFixtures
     with ScalaFutures
     with Eventually
@@ -41,7 +49,8 @@ class ElasticsearchIndexCreatorTest
         keywordField("id"),
         textField("description"),
         booleanField("visible")
-      ))
+      )
+    )
   }
 
   object CompatibleTestIndexConfig extends IndexConfig {
@@ -51,12 +60,14 @@ class ElasticsearchIndexCreatorTest
         textField("description"),
         booleanField("visible"),
         intField("count")
-      ))
+      )
+    )
   }
 
   it("creates an index into which doc of the expected type can be put") {
     withLocalElasticsearchIndex(TestIndexConfig) { index =>
-      val testObject = TestObject(id = "id", description = "description", visible = true)
+      val testObject =
+        TestObject(id = "id", description = "description", visible = true)
       val testObjectJson = toJson(testObject).get
 
       eventually {
@@ -119,7 +130,9 @@ class ElasticsearchIndexCreatorTest
               }
 
           whenReady(futureInsert) { response =>
-            if (response.isError) { println(response) }
+            if (response.isError) {
+              println(response)
+            }
             response.isError shouldBe false
 
             eventually {

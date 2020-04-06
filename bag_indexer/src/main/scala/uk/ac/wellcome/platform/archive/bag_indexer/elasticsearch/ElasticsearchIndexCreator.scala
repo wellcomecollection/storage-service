@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.bag_indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.requests.indexes.{CreateIndexResponse, PutMappingResponse}
+import com.sksamuel.elastic4s.requests.indexes.{
+  CreateIndexResponse,
+  PutMappingResponse
+}
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
 import com.sksamuel.elastic4s.{ElasticClient, Index, Response}
@@ -10,8 +13,8 @@ import grizzled.slf4j.Logging
 import scala.concurrent.{ExecutionContext, Future}
 
 class ElasticsearchIndexCreator(elasticClient: ElasticClient)(
-  implicit ec: ExecutionContext)
-  extends Logging {
+  implicit ec: ExecutionContext
+) extends Logging {
   def create(index: Index, config: IndexConfig): Future[Unit] =
     elasticClient
       .execute {
@@ -51,8 +54,10 @@ class ElasticsearchIndexCreator(elasticClient: ElasticClient)(
         info("Index updated successfully")
       }
 
-  private def update(index: Index,
-                     mappingDefinition: MappingDefinition): Future[Unit] =
+  private def update(
+    index: Index,
+    mappingDefinition: MappingDefinition
+  ): Future[Unit] =
     elasticClient
       .execute {
         putMapping(index.name)

@@ -39,8 +39,8 @@ trait StorageManifestGenerators
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
     version: BagVersion = createBagVersion,
-    manifestFiles: Seq[StorageManifestFile] = (1 to 3).map {
-      _ => createStorageManifestFile
+    manifestFiles: Seq[StorageManifestFile] = (1 to 3).map { _ =>
+      createStorageManifestFile
     },
     location: StorageLocation = PrimaryStorageLocation(
       provider = StandardStorageProvider,

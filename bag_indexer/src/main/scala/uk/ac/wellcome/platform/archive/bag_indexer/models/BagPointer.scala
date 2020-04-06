@@ -1,6 +1,9 @@
 package uk.ac.wellcome.platform.archive.bag_indexer.models
 
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageManifestFile
+}
 
 case class IndexedChecksum(
   algorithm: String,

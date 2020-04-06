@@ -10,23 +10,26 @@ import org.elasticsearch.client.RestClient
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback
 
 class ElasticCredentials(username: String, password: String)
-  extends HttpClientConfigCallback {
+    extends HttpClientConfigCallback {
   val credentials = new UsernamePasswordCredentials(username, password)
   val credentialsProvider = new BasicCredentialsProvider()
   credentialsProvider.setCredentials(AuthScope.ANY, credentials)
 
   override def customizeHttpClient(
-                                    httpClientBuilder: HttpAsyncClientBuilder): HttpAsyncClientBuilder = {
+    httpClientBuilder: HttpAsyncClientBuilder
+  ): HttpAsyncClientBuilder = {
     httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)
   }
 }
 
 object ElasticClientBuilder {
-  def create(hostname: String,
-             port: Int,
-             protocol: String,
-             username: String,
-             password: String): ElasticClient = {
+  def create(
+    hostname: String,
+    port: Int,
+    protocol: String,
+    username: String,
+    password: String
+  ): ElasticClient = {
     val restClient = RestClient
       .builder(new HttpHost(hostname, port, protocol))
       .setHttpClientConfigCallback(new ElasticCredentials(username, password))

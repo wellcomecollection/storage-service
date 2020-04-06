@@ -51,7 +51,8 @@ trait ElasticsearchFixtures
       timeout = scaled(Span(40, Seconds)),
       interval = scaled(Span(150, Millis))
     ),
-    implicitly[Position])
+    implicitly[Position]
+  )
 
   private val elasticsearchIndexCreator = new ElasticsearchIndexCreator(
     elasticClient = elasticClient
@@ -59,7 +60,8 @@ trait ElasticsearchFixtures
 
   def withLocalElasticsearchIndex[R](
     config: IndexConfig,
-    index: Index = createIndex): Fixture[Index, R] = fixture[Index, R](
+    index: Index = createIndex
+  ): Fixture[Index, R] = fixture[Index, R](
     create = {
       elasticsearchIndexCreator
         .create(index = index, config = config)
@@ -81,12 +83,12 @@ trait ElasticsearchFixtures
       config = ManifestIndexConfig,
       index = Index(s"manifests-${createIndex.name}")
     ) { manifestsIndex =>
-        withLocalElasticsearchIndex(
-          config = FilesIndexConfig,
-          index = Index(s"files-${createIndex.name}")
-        ) { filesIndex =>
-            testWith((manifestsIndex, filesIndex))
-        }
+      withLocalElasticsearchIndex(
+        config = FilesIndexConfig,
+        index = Index(s"files-${createIndex.name}")
+      ) { filesIndex =>
+        testWith((manifestsIndex, filesIndex))
+      }
     }
 
   def eventuallyIndexExists(index: Index): Assertion =
@@ -99,32 +101,34 @@ trait ElasticsearchFixtures
       response.result.isExists shouldBe true
     }
 
-  protected def getT[T](index: Index, id: String)(implicit decoder: Decoder[T]): T = {
+  protected def getT[T](index: Index, id: String)(
+    implicit decoder: Decoder[T]
+  ): T = {
     val response: Response[GetResponse] =
-      elasticClient
-        .execute { get(id).from(index) }
-        .await
+      elasticClient.execute { get(id).from(index) }.await
 
     val getResponse = response.result
     getResponse.exists shouldBe true
 
     fromJson[T](getResponse.sourceAsString) match {
-      case Success(t)   => t
-      case Failure(err) => throw new Throwable(
-        s"Unable to parse source string ($err): ${getResponse.sourceAsString}"
-      )
+      case Success(t) => t
+      case Failure(err) =>
+        throw new Throwable(
+          s"Unable to parse source string ($err): ${getResponse.sourceAsString}"
+        )
     }
   }
 
-  protected def searchT[T](index: Index, query: Query)(implicit decoder: Decoder[T]): Seq[T] = {
+  protected def searchT[T](index: Index, query: Query)(
+    implicit decoder: Decoder[T]
+  ): Seq[T] = {
     val response: Response[SearchResponse] =
-      elasticClient
-        .execute { search(index).query(query) }
-        .await
+      elasticClient.execute { search(index).query(query) }.await
 
-    response.result
-      .hits.hits
-      .map { hit => fromJson[T](hit.sourceAsString).get }
+    response.result.hits.hits
+      .map { hit =>
+        fromJson[T](hit.sourceAsString).get
+      }
   }
 
   private def createIndex: Index =

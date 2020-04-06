@@ -15,42 +15,53 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventually with IntegrationPatience with ElasticsearchFixtures with StorageManifestGenerators {
+class BagIndexerTest
+    extends FunSpec
+    with Matchers
+    with ScalaFutures
+    with Eventually
+    with IntegrationPatience
+    with ElasticsearchFixtures
+    with StorageManifestGenerators {
   describe("indexing storage manifests") {
     it("indexes a single manifest") {
       val manifest = createStorageManifestWith(
         manifestFiles = Seq(
           createStorageManifestFileWith(path = "v1/alice.txt"),
           createStorageManifestFileWith(path = "v1/bob.txt"),
-          createStorageManifestFileWith(path = "v1/carol.txt"),
+          createStorageManifestFileWith(path = "v1/carol.txt")
         ),
-        version = BagVersion(1),
+        version = BagVersion(1)
       )
 
-      withIndexes { case (manifestsIndex, filesIndex) =>
-        val future =
-          withBagIndexer(manifestsIndex, filesIndex) {
-            _.index(manifest)
-          }
+      withIndexes {
+        case (manifestsIndex, filesIndex) =>
+          val future =
+            withBagIndexer(manifestsIndex, filesIndex) {
+              _.index(manifest)
+            }
 
-        whenReady(future) { _ =>
-          getT[StorageManifest](manifestsIndex, id = manifest.idWithVersion) shouldBe manifest
-        }
+          whenReady(future) { _ =>
+            getT[StorageManifest](manifestsIndex, id = manifest.idWithVersion) shouldBe manifest
+          }
       }
     }
 
     it("fails if something goes wrong with indexing") {
-      withIndexes { case (manifestsIndex, filesIndex) =>
+      withIndexes {
+        case (manifestsIndex, filesIndex) =>
+          // Get the index names wrong, so the mappings will reject the manifest.
+          val future =
+            withBagIndexer(
+              manifestsIndex = filesIndex,
+              filesIndex = manifestsIndex
+            ) {
+              _.index(createStorageManifest)
+            }
 
-        // Get the index names wrong, so the mappings will reject the manifest.
-        val future =
-          withBagIndexer(manifestsIndex = filesIndex, filesIndex = manifestsIndex) {
-            _.index(createStorageManifest)
+          whenReady(future.failed) {
+            _ shouldBe a[Throwable]
           }
-
-        whenReady(future.failed) {
-          _ shouldBe a[Throwable]
-        }
       }
     }
 
@@ -77,47 +88,51 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
       val manifest2 = createStorageManifestWith(
         manifestFiles = Seq(
           createStorageManifestFileWith(path = "v1/alice.txt", size = 200),
-          createStorageManifestFileWith(path = "v1/bob.txt", size = 100),
+          createStorageManifestFileWith(path = "v1/bob.txt", size = 100)
         ),
         version = BagVersion(1)
       )
 
-      withIndexes { case (manifestsIndex, filesIndex) =>
-        val futures =
-          Seq(manifest1, manifest2).map { manifest =>
-            withBagIndexer(manifestsIndex, filesIndex) {
-              _.index(manifest)
+      withIndexes {
+        case (manifestsIndex, filesIndex) =>
+          val futures =
+            Seq(manifest1, manifest2).map { manifest =>
+              withBagIndexer(manifestsIndex, filesIndex) {
+                _.index(manifest)
+              }
+            }
+
+          whenReady(Future.sequence(futures)) { _ =>
+            eventually {
+              val searchResult1 = searchT[StorageManifest](
+                index = manifestsIndex,
+                query = nestedQuery(
+                  "manifest.files",
+                  must(
+                    termQuery("manifest.files.path", "v1/alice.txt")
+                  )
+                )
+              )
+
+              searchResult1 should contain theSameElementsAs Seq(
+                manifest1,
+                manifest2
+              )
+
+              val searchResult2 = searchT[StorageManifest](
+                index = manifestsIndex,
+                query = nestedQuery(
+                  "manifest.files",
+                  must(
+                    termQuery("manifest.files.path", "v1/alice.txt"),
+                    termQuery("manifest.files.size", 100)
+                  )
+                )
+              )
+
+              searchResult2 shouldBe Seq(manifest1)
             }
           }
-
-        whenReady(Future.sequence(futures)) { _ =>
-          eventually {
-            val searchResult1 = searchT[StorageManifest](
-              index = manifestsIndex,
-              query = nestedQuery(
-                "manifest.files",
-                must(
-                  termQuery("manifest.files.path", "v1/alice.txt")
-                )
-              )
-            )
-
-            searchResult1 should contain theSameElementsAs Seq(manifest1, manifest2)
-
-            val searchResult2 = searchT[StorageManifest](
-              index = manifestsIndex,
-              query = nestedQuery(
-                "manifest.files",
-                must(
-                  termQuery("manifest.files.path", "v1/alice.txt"),
-                  termQuery("manifest.files.size", 100),
-                )
-              )
-            )
-
-            searchResult2 shouldBe Seq(manifest1)
-          }
-        }
       }
     }
   }
@@ -129,29 +144,31 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
 
     val manifest = createStorageManifestWith(
       manifestFiles = Seq(fileA, fileB, fileC),
-      version = BagVersion(1),
+      version = BagVersion(1)
     )
 
     val manifestAtV2 = createStorageManifestWith(
       manifestFiles = Seq(fileA, fileB, fileC),
       location = manifest.location,
-      version = BagVersion(2),
+      version = BagVersion(2)
     )
 
     it("indexes the individual files") {
-      withIndexes { case (manifestsIndex, filesIndex) =>
-        val future =
-          withBagIndexer(manifestsIndex, filesIndex) {
-            _.index(manifest)
+      withIndexes {
+        case (manifestsIndex, filesIndex) =>
+          val future =
+            withBagIndexer(manifestsIndex, filesIndex) {
+              _.index(manifest)
+            }
+
+          whenReady(future) { _ =>
+            val storedFile = getT[IndexedFile](
+              filesIndex,
+              id = s"s3://${manifest.location.prefix}/${fileA.path}"
+            )
+
+            storedFile shouldBe IndexedFile(manifest, fileA)
           }
-
-        whenReady(future) { _ =>
-          val storedFile = getT[IndexedFile](
-            filesIndex, id = s"s3://${manifest.location.prefix}/${fileA.path}"
-          )
-
-          storedFile shouldBe IndexedFile(manifest, fileA)
-        }
       }
     }
 
@@ -162,51 +179,64 @@ class BagIndexerTest extends FunSpec with Matchers with ScalaFutures with Eventu
           .copy(bag = indexedFile.bag.copy(versions = Seq("v1", "v2")))
 
       it("a single version") {
-        withIndexes { case (manifestsIndex, filesIndex) =>
-          val future =
-            withBagIndexer(manifestsIndex, filesIndex) { bagIndexer =>
-              bagIndexer.index(manifest)
-                .flatMap { _ =>
-                  bagIndexer.index(manifestAtV2)
-                }
+        withIndexes {
+          case (manifestsIndex, filesIndex) =>
+            val future =
+              withBagIndexer(manifestsIndex, filesIndex) { bagIndexer =>
+                bagIndexer
+                  .index(manifest)
+                  .flatMap { _ =>
+                    bagIndexer.index(manifestAtV2)
+                  }
+              }
+
+            whenReady(future) { _ =>
+              val storedFile = getT[IndexedFile](
+                filesIndex,
+                id = s"s3://${manifest.location.prefix}/${fileA.path}"
+              )
+
+              storedFile shouldBe expectedIndexedFile
             }
-
-          whenReady(future) { _ =>
-            val storedFile = getT[IndexedFile](
-              filesIndex, id = s"s3://${manifest.location.prefix}/${fileA.path}"
-            )
-
-            storedFile shouldBe expectedIndexedFile
-          }
         }
       }
 
-      it("de-duplicates versions")  {
-        withIndexes { case (manifestsIndex, filesIndex) =>
-          // Suppose that, for some reason, we indexed the same bag three times.
-          // We should only record "v2" once in the versions list.
-          val future =
-            withBagIndexer(manifestsIndex, filesIndex) { bagIndexer =>
-              bagIndexer.index(manifest)
-                .flatMap { _ => bagIndexer.index(manifestAtV2) }
-                .flatMap { _ => bagIndexer.index(manifestAtV2) }
-                .flatMap { _ => bagIndexer.index(manifestAtV2) }
+      it("de-duplicates versions") {
+        withIndexes {
+          case (manifestsIndex, filesIndex) =>
+            // Suppose that, for some reason, we indexed the same bag three times.
+            // We should only record "v2" once in the versions list.
+            val future =
+              withBagIndexer(manifestsIndex, filesIndex) { bagIndexer =>
+                bagIndexer
+                  .index(manifest)
+                  .flatMap { _ =>
+                    bagIndexer.index(manifestAtV2)
+                  }
+                  .flatMap { _ =>
+                    bagIndexer.index(manifestAtV2)
+                  }
+                  .flatMap { _ =>
+                    bagIndexer.index(manifestAtV2)
+                  }
+              }
+
+            whenReady(future) { _ =>
+              val storedFile = getT[IndexedFile](
+                filesIndex,
+                id = s"s3://${manifest.location.prefix}/${fileA.path}"
+              )
+
+              storedFile shouldBe expectedIndexedFile
             }
-
-
-          whenReady(future) { _ =>
-            val storedFile = getT[IndexedFile](
-              filesIndex, id = s"s3://${manifest.location.prefix}/${fileA.path}"
-            )
-
-            storedFile shouldBe expectedIndexedFile
-          }
         }
       }
     }
   }
 
-  private def withBagIndexer[R](manifestsIndex: Index, filesIndex: Index)(testWith: TestWith[BagIndexer, R]): R =
+  private def withBagIndexer[R](manifestsIndex: Index, filesIndex: Index)(
+    testWith: TestWith[BagIndexer, R]
+  ): R =
     testWith(
       new BagIndexer(
         elasticClient = elasticClient,
