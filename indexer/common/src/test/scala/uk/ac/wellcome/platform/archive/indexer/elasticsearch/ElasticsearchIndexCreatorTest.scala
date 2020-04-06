@@ -37,13 +37,13 @@ class ElasticsearchIndexCreatorTest
 
   val shapeMapping: MappingDefinition = properties(
     Seq(
-      textField("description"),
+      textField("name"),
     )
   )
 
   val shapeMappingWithCount: MappingDefinition = properties(
     Seq(
-      textField("description"),
+      textField("name"),
       intField("sides")
     )
   )
