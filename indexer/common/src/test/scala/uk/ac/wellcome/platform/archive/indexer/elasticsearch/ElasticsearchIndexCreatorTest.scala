@@ -2,81 +2,54 @@ package uk.ac.wellcome.platform.archive.indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.indexes.IndexResponse
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
-import com.sksamuel.elastic4s.{Indexable, RequestFailure, Response}
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatest.{Assertion, BeforeAndAfterEach, FunSpec, Matchers}
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.json.utils.JsonAssertions
+import com.sksamuel.elastic4s.{RequestFailure, Response}
+import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-case class TestObject(id: String, description: String, visible: Boolean)
-
 class ElasticsearchIndexCreatorTest
   extends FunSpec
     with ElasticsearchFixtures
-    with ScalaFutures
-    with Eventually
-    with Matchers
-    with JsonAssertions
-    with BeforeAndAfterEach {
-
-  case class Shape(name: String, sides: Int)
-  case class Crate(weight: Int)
-
-  implicit object ShapeIndexable extends Indexable[Shape] {
-    override def json(shape: Shape): String =
-      toJson(shape).get
-  }
-
-  implicit object CrateIndexable extends Indexable[Crate] {
-    override def json(crate: Crate): String =
-      toJson(crate).get
-  }
-
-  val shapeMapping: MappingDefinition = properties(
-    Seq(
-      textField("name"),
-    )
-  )
-
-  val shapeMappingWithCount: MappingDefinition = properties(
-    Seq(
-      textField("name"),
-      intField("sides")
-    )
-  )
+    with Matchers {
 
   it("allows you to index an object that matches the mapping") {
-    val square = Shape(name = "square", sides = 4)
+    val nameMapping = properties(
+      Seq(textField("name"))
+    )
 
-    withLocalElasticsearchIndex(shapeMapping) { index =>
+    withLocalElasticsearchIndex(nameMapping) { index =>
       val indexFuture =
         elasticClient
           .execute {
-            indexInto(index).doc(square)
+            indexInto(index).doc("""{"name": "James Stagg"}""")
           }
 
       whenReady(indexFuture) { indexResponse =>
         assertIsSuccess(indexResponse)
 
-        val results = searchT[Shape](index = index, query = matchAllQuery())
+        eventually {
+          val results = searchT[Map[String, String]](
+            index = index,
+            query = matchAllQuery()
+          )
 
-        results shouldBe Seq(square)
+          results shouldBe Seq(Map("name" -> "James Stagg"))
+        }
       }
     }
   }
 
   it("stops you from indexing an object that doesn't match the mapping") {
-    val crate = Crate(weight = 5)
+    val nameMapping = properties(
+      Seq(textField("name"))
+    )
 
-    withLocalElasticsearchIndex(shapeMapping) { index =>
+    withLocalElasticsearchIndex(nameMapping) { index =>
       val indexFuture =
         elasticClient
           .execute {
-            indexInto(index).doc(crate)
+            indexInto(index).doc("""{"profession": "meterologist"}""")
           }
 
       whenReady(indexFuture) { response =>
@@ -87,22 +60,41 @@ class ElasticsearchIndexCreatorTest
   }
 
   it("updates an index with a compatible mapping") {
-    val triangle = Shape(name = "triangle", sides = 3)
+    val placeMapping = properties(
+      Seq(textField("name"))
+    )
 
-    withLocalElasticsearchIndex(shapeMapping) { index =>
-      withLocalElasticsearchIndex(shapeMappingWithCount, index = index) { modifiedIndex =>
+    val placeWithCountryMapping = properties(
+      Seq(textField("name"), textField("country"))
+    )
+
+    withLocalElasticsearchIndex(placeMapping) { index =>
+      withLocalElasticsearchIndex(placeWithCountryMapping, index = index) { modifiedIndex =>
         val indexFuture =
           elasticClient
             .execute {
-              indexInto(modifiedIndex).doc(triangle)
+              indexInto(modifiedIndex)
+                .doc(
+                  """
+                    |{
+                    |  "name": "Blacksod Point",
+                    |  "country": "Republic of Ireland"
+                    |}""".stripMargin
+                )
             }
 
         whenReady(indexFuture) { indexResponse: Response[IndexResponse] =>
           assertIsSuccess(indexResponse)
 
-          val results = searchT[Shape](index = index, query = matchAllQuery())
+          eventually {
+            val results = searchT[Map[String, String]](
+              index = index, query = matchAllQuery()
+            )
 
-          results shouldBe Seq(triangle)
+            results shouldBe Seq(
+              Map("name" -> "Blacksod Point", "country" -> "Republic of Ireland")
+            )
+          }
         }
       }
     }
