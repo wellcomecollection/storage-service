@@ -2,13 +2,18 @@ package uk.ac.wellcome.platform.archive.bag_indexer.fixtures
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.cluster.ClusterHealthResponse
+import com.sksamuel.elastic4s.requests.get.GetResponse
 import com.sksamuel.elastic4s.requests.indexes.admin.IndexExistsResponse
+import com.sksamuel.elastic4s.requests.searches.SearchResponse
+import com.sksamuel.elastic4s.requests.searches.queries.Query
 import com.sksamuel.elastic4s.{ElasticClient, Index, Response}
+import io.circe.Decoder
 import org.scalactic.source.Position
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Assertion, Matchers, Suite}
 import uk.ac.wellcome.fixtures._
+import uk.ac.wellcome.json.JsonUtil.fromJson
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.bag_indexer.elasticsearch._
 
@@ -87,6 +92,29 @@ trait ElasticsearchFixtures
 
       response.result.isExists shouldBe true
     }
+
+  protected def getT[T](index: Index, id: String)(implicit decoder: Decoder[T]): T = {
+    val response: Response[GetResponse] =
+      elasticClient
+        .execute { get(id).from(index) }
+        .await
+
+    val getResponse = response.result
+    getResponse.exists shouldBe true
+
+    fromJson[T](getResponse.sourceAsString).get
+  }
+
+  protected def searchT[T](index: Index, query: Query)(implicit decoder: Decoder[T]): Seq[T] = {
+    val response: Response[SearchResponse] =
+      elasticClient
+        .execute { search(index).query(query) }
+        .await
+
+    response.result
+      .hits.hits
+      .map { hit => fromJson[T](hit.sourceAsString).get }
+  }
 
   private def createIndex: Index =
     Index(name = (Random.alphanumeric take 10 mkString) toLowerCase)
