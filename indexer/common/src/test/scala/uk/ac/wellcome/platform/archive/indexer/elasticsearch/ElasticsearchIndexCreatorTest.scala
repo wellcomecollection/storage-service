@@ -1,10 +1,11 @@
 package uk.ac.wellcome.platform.archive.indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.requests.indexes.IndexResponse
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
-import com.sksamuel.elastic4s.{Indexable, RequestFailure}
+import com.sksamuel.elastic4s.{Indexable, RequestFailure, Response}
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatest.{BeforeAndAfterEach, FunSpec, Matchers}
+import org.scalatest.{Assertion, BeforeAndAfterEach, FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
@@ -59,7 +60,7 @@ class ElasticsearchIndexCreatorTest
           }
 
       whenReady(indexFuture) { indexResponse =>
-        indexResponse.isSuccess shouldBe true
+        assertIsSuccess(indexResponse)
 
         val results = searchT[Shape](index = index, query = matchAllQuery())
 
@@ -96,8 +97,8 @@ class ElasticsearchIndexCreatorTest
               indexInto(modifiedIndex).doc(triangle)
             }
 
-        whenReady(indexFuture) { indexResponse =>
-          indexResponse.isSuccess shouldBe true
+        whenReady(indexFuture) { indexResponse: Response[IndexResponse] =>
+          assertIsSuccess(indexResponse)
 
           val results = searchT[Shape](index = index, query = matchAllQuery())
 
@@ -105,5 +106,13 @@ class ElasticsearchIndexCreatorTest
         }
       }
     }
+  }
+
+  private def assertIsSuccess(indexResponse: Response[IndexResponse]): Assertion = {
+    if (indexResponse.isError) {
+      throw indexResponse.error.asException
+    }
+
+    indexResponse.isSuccess shouldBe true
   }
 }
