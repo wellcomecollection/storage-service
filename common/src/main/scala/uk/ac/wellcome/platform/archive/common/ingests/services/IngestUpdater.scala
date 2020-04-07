@@ -28,7 +28,7 @@ class IngestUpdater[Destination](
       case IngestCompleted(_) =>
         IngestStatusUpdate(
           id = ingestId,
-          status = Ingest.Completed,
+          status = Ingest.Succeeded,
           events = List(
             IngestEvent(
               s"${stepName.capitalize} succeeded (completed)"

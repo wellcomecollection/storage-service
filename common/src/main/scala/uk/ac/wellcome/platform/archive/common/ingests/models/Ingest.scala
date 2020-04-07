@@ -32,25 +32,21 @@ case class Ingest(
 
 case object Ingest {
   sealed trait Status
-
-  private val acceptedString = "accepted"
-  private val processingString = "processing"
-  private val succeededString = "succeeded"
-  private val failedString = "failed"
+  sealed trait Completed extends Status
 
   case object Accepted extends Status {
-    override def toString: String = acceptedString
+    override def toString: String = "accepted"
   }
 
   case object Processing extends Status {
-    override def toString: String = processingString
+    override def toString: String = "processing"
   }
 
-  case object Completed extends Status {
-    override def toString: String = succeededString
+  case object Succeeded extends Completed {
+    override def toString: String = "succeeded"
   }
 
-  case object Failed extends Status {
-    override def toString: String = failedString
+  case object Failed extends Completed {
+    override def toString: String = "failed"
   }
 }

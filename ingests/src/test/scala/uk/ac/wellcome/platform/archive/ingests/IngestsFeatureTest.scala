@@ -7,7 +7,7 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Completed
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   CallbackNotification,
   IngestUpdate
@@ -31,11 +31,11 @@ class IngestsFeatureTest
     val ingestStatusUpdate =
       createIngestStatusUpdateWith(
         id = ingest.id,
-        status = Completed
+        status = Succeeded
       )
 
     val expectedIngest = ingest.copy(
-      status = Completed,
+      status = Succeeded,
       events = ingestStatusUpdate.events
     )
 
@@ -73,7 +73,7 @@ class IngestsFeatureTest
 
     it("updates the ingest tracker") {
       val storedIngest = ingestTracker.get(ingest.id).right.value.identifiedT
-      storedIngest.status shouldBe Completed
+      storedIngest.status shouldBe Succeeded
     }
 
     it("records the events in the ingest tracker") {

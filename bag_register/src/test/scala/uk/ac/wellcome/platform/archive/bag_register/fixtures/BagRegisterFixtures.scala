@@ -108,7 +108,7 @@ trait BagRegisterFixtures
 
       val ingestCompleted =
         ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-      ingestCompleted.status shouldBe Ingest.Completed
+      ingestCompleted.status shouldBe Ingest.Succeeded
       ingestCompleted.events.head.description shouldBe "Register succeeded (completed)"
     }
 
