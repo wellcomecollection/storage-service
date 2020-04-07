@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.indexer.ingests
 
 import java.util.UUID
 
+import com.sksamuel.elastic4s.ElasticDsl.matchAllQuery
 import com.sksamuel.elastic4s.http.JavaClientExceptionWrapper
 import io.circe.Json
 import org.scalatest.{EitherValues, FunSpec, Matchers}
@@ -20,7 +21,7 @@ class IngestIndexerTest
     with IngestGenerators
     with ElasticsearchFixtures {
 
-  it("indexes an ingest") {
+  it("indexes a single ingest") {
     withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
       val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
 
@@ -44,6 +45,32 @@ class IngestIndexerTest
             .toMap("externalIdentifier").asString.get
         )
         storedExternalIdentifier shouldBe ingest.externalIdentifier
+      }
+    }
+  }
+
+  it("indexes multiple ingests") {
+    withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
+      val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
+
+      val ingestCount = 10
+      val ingests = (1 to ingestCount).map { _ => createIngest }
+
+      whenReady(ingestsIndexer.index(ingests)) { result =>
+        result.right.value shouldBe ingests
+
+        eventually {
+          val storedIngests = searchT[Json](index, query = matchAllQuery())
+
+          storedIngests should have size ingestCount
+
+          val storedIds =
+            storedIngests
+              .map { _.as[Map[String, Json]].right.value }
+              .map { _("id").asString.get }
+
+          storedIds shouldBe ingests.map { _.id.toString }
+        }
       }
     }
   }
