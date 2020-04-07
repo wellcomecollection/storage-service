@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
 import org.scalatest.prop.TableDrivenPropertyChecks._
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.{Assertion, FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
@@ -16,70 +16,60 @@ import scala.util.Success
 class CallbackNotificationServiceTest
     extends FunSpec
     with Matchers
-    with IngestGenerators
-    with TryValues {
+    with IngestGenerators {
 
-  val sendsCallbackStatus = Table(
-    ("ingest-status", "callback-status"),
-    (Ingest.Failed, Callback.Pending),
-    (Ingest.Completed, Callback.Pending)
-  )
+  it("sends a notification if the ingest is complete and the callback pending") {
+    val completedIngestStatus = Table(
+      "ingest-status",
+      Ingest.Completed,
+      Ingest.Failed
+    )
 
-  it(
-    "sends a notification if there's a pending callback and the ingest is complete"
-  ) {
-    forAll(sendsCallbackStatus) { (ingestStatus, callbackStatus) =>
-      val messageSender = new MemoryMessageSender()
-      val service = new CallbackNotificationService(messageSender)
-
-      val ingest = createIngestWith(
-        status = ingestStatus,
-        callback = Some(
-          createCallbackWith(status = callbackStatus)
-        )
-      )
-
-      service.sendNotification(ingest) shouldBe Success(())
-
-      val expectedNotification = CallbackNotification(
-        ingestId = ingest.id,
-        callbackUri = ingest.callback.get.uri,
-        payload = ingest
-      )
-
-      messageSender.getMessages[CallbackNotification] shouldBe Seq(
-        expectedNotification
+    forAll(completedIngestStatus) { ingestStatus =>
+      assertNotificationSent(
+        ingestStatus = ingestStatus,
+        callbackStatus = Callback.Pending
       )
     }
   }
 
-  val doesNotSendCallbackStatus = Table(
-    ("ingest-status", "callback-status"),
-    (Ingest.Accepted, Callback.Pending),
-    (Ingest.Accepted, Callback.Succeeded),
-    (Ingest.Accepted, Callback.Failed),
-    (Ingest.Processing, Callback.Pending),
-    (Ingest.Processing, Callback.Succeeded),
-    (Ingest.Processing, Callback.Failed),
-    (Ingest.Failed, Callback.Succeeded),
-    (Ingest.Failed, Callback.Failed),
-    (Ingest.Completed, Callback.Succeeded),
-    (Ingest.Completed, Callback.Failed)
-  )
+  it("does not send a notification if the ingest is not complete") {
+    val incompleteIngestStatus = Table(
+      "ingest-status",
+      Ingest.Processing,
+      Ingest.Accepted
+    )
 
-  it("doesn't send a notification if the callback has already been sent") {
-    forAll(doesNotSendCallbackStatus) { (ingestStatus, callbackStatus) =>
-      val messageSender = new MemoryMessageSender()
-      val service = new CallbackNotificationService(messageSender)
-
-      val ingest = createIngestWith(
-        status = ingestStatus,
-        callback = Some(createCallbackWith(status = callbackStatus))
+    forAll(incompleteIngestStatus) { ingestStatus =>
+      assertNothingSent(
+        ingestStatus = ingestStatus,
+        callbackStatus = Callback.Pending
       )
+    }
+  }
 
-      service.sendNotification(ingest) shouldBe Success(())
+  it("doesn't send a notification if the callback has already completed") {
+    val ingestStatusTable = Table(
+      "ingest-status",
+      Ingest.Processing,
+      Ingest.Accepted,
+      Ingest.Completed,
+      Ingest.Failed
+    )
 
-      messageSender.messages shouldBe empty
+    val completedCallbackStatusTable = Table(
+      "callback-status",
+      Callback.Failed,
+      Callback.Succeeded
+    )
+
+    forAll(ingestStatusTable) { ingestStatus =>
+      forAll(completedCallbackStatusTable) { callbackStatus =>
+        assertNothingSent(
+          ingestStatus = ingestStatus,
+          callbackStatus = callbackStatus
+        )
+      }
     }
   }
 
@@ -87,8 +77,44 @@ class CallbackNotificationServiceTest
     val messageSender = new MemoryMessageSender()
     val service = new CallbackNotificationService(messageSender)
 
+    val ingest = createIngestWith(callback = None)
+
+    service.sendNotification(ingest) shouldBe Success(())
+
+    messageSender.messages shouldBe empty
+  }
+
+  private def assertNotificationSent(ingestStatus: Ingest.Status, callbackStatus: Callback.CallbackStatus): Assertion = {
+    debug(s"ingestStatus = $ingestStatus, callbackStatus = $callbackStatus")
+    val messageSender = new MemoryMessageSender()
+    val service = new CallbackNotificationService(messageSender)
+
     val ingest = createIngestWith(
-      callback = None
+      status = ingestStatus,
+      callback = Some(createCallbackWith(status = callbackStatus))
+    )
+
+    service.sendNotification(ingest) shouldBe Success(())
+
+    val expectedNotification = CallbackNotification(
+      ingestId = ingest.id,
+      callbackUri = ingest.callback.get.uri,
+      payload = ingest
+    )
+
+    messageSender.getMessages[CallbackNotification] shouldBe Seq(
+      expectedNotification
+    )
+  }
+
+  private def assertNothingSent(ingestStatus: Ingest.Status, callbackStatus: Callback.CallbackStatus): Assertion = {
+    debug(s"ingestStatus = $ingestStatus, callbackStatus = $callbackStatus")
+    val messageSender = new MemoryMessageSender()
+    val service = new CallbackNotificationService(messageSender)
+
+    val ingest = createIngestWith(
+      status = ingestStatus,
+      callback = Some(createCallbackWith(status = callbackStatus))
     )
 
     service.sendNotification(ingest) shouldBe Success(())
