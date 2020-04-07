@@ -37,7 +37,13 @@ object IngestsIndexConfig extends IndexConfig {
       keywordField("type")
     )
 
-  protected val fields: Seq[FieldDefinition] =
+  private val bagFields: Seq[FieldDefinition] =
+    Seq(
+      objectField("info").fields(displayBagInfoFields),
+      keywordField("type")
+    )
+
+  override protected val fields: Seq[FieldDefinition] =
     Seq(
       keywordField("id"),
       objectField("sourceLocation").fields(displayLocationFields),
@@ -45,7 +51,7 @@ object IngestsIndexConfig extends IndexConfig {
       objectField("ingestType").fields(displayIngestTypeFields),
       objectField("space").fields(displaySpaceFields),
       objectField("status").fields(displayStatusFields),
-      objectField("bag").fields(displayBagInfoFields),
+      objectField("bag").fields(bagFields),
       objectField("events").fields(displayIngestEventFields),
       dateField("createdDate"),
       dateField("lastModifiedDate"),

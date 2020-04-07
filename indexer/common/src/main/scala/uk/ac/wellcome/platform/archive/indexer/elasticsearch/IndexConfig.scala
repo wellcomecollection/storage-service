@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
-import com.sksamuel.elastic4s.requests.mappings.{FieldDefinition, KeywordField}
+import com.sksamuel.elastic4s.requests.mappings.{FieldDefinition, KeywordField, MappingDefinition}
 
 /** Helpers for creating Elasticsearch index definitions based on
   * the display models.
@@ -32,5 +32,5 @@ trait IndexConfig {
 
   protected val fields: Seq[FieldDefinition]
 
-  val mapping = properties(fields).dynamic(DynamicMapping.Strict)
+  def mapping: MappingDefinition = properties(fields).dynamic(DynamicMapping.Strict)
 }

@@ -32,8 +32,8 @@ trait ElasticsearchFixtures
     with JsonAssertions
     with IntegrationPatience { this: Suite =>
 
-  private val esHost = "localhost"
-  private val esPort = 9200
+  protected val esHost = "localhost"
+  protected val esPort = 9200
 
   val elasticClient: ElasticClient = ElasticClientFactory.create(
     hostname = esHost,
@@ -65,7 +65,7 @@ trait ElasticsearchFixtures
 
   def withLocalElasticsearchIndex[R](
     mappingDefinition: MappingDefinition,
-    index: Index = createIndexWith(prefix = "index")
+    index: Index = createIndex
   ): Fixture[Index, R] = fixture[Index, R](
     create = {
       elasticsearchIndexCreator
@@ -123,7 +123,9 @@ trait ElasticsearchFixtures
       }
   }
 
-  private def createIndexWith(prefix: String): Index =
+  def createIndex: Index = createIndexWith()
+
+  private def createIndexWith(prefix: String = "index"): Index =
     Index(
       name = s"$prefix-${(Random.alphanumeric take 10 mkString).toLowerCase}"
     )
