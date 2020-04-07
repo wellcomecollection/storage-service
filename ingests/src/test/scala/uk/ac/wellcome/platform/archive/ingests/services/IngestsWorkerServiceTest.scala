@@ -9,7 +9,10 @@ import uk.ac.wellcome.messaging.worker.models.{
   Successful
 }
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CallbackNotification,
+  Ingest
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
   Processing,
   Succeeded
@@ -36,16 +39,19 @@ class IngestsWorkerServiceTest
         status = Succeeded
       )
 
+    val expectedIngest = ingest.copy(
+      status = Succeeded,
+      events = ingestStatusUpdate.events
+    )
+
     val callbackNotification = CallbackNotification(
       ingestId = ingest.id,
       callbackUri = ingest.callback.get.uri,
-      payload = ingest.copy(
-        status = Succeeded,
-        events = ingestStatusUpdate.events
-      )
+      payload = expectedIngest
     )
 
     val callbackNotificationMessageSender = new MemoryMessageSender()
+    val updatedIngestsMessageSender = new MemoryMessageSender()
 
     implicit val ingestTracker: MemoryIngestTracker =
       createMemoryIngestTrackerWith(initialIngests = Seq(ingest))
@@ -76,6 +82,10 @@ class IngestsWorkerServiceTest
         }
       )
     }
+
+    it("sends a message with the updated ingest") {
+      updatedIngestsMessageSender.getMessages[Ingest] shouldBe Seq(expectedIngest)
+    }
   }
 
   describe("adding multiple events to an ingest") {
@@ -100,6 +110,7 @@ class IngestsWorkerServiceTest
     )
 
     val callbackNotificationMessageSender = new MemoryMessageSender()
+    val updatedIngestsMessageSender = new MemoryMessageSender()
 
     implicit val ingestTracker: MemoryIngestTracker =
       createMemoryIngestTrackerWith(initialIngests = Seq(ingest))
@@ -131,6 +142,18 @@ class IngestsWorkerServiceTest
 
     it("does not send a notification for ingests that are still processing") {
       callbackNotificationMessageSender.messages shouldBe empty
+    }
+
+    it("sends a message with the updated ingests") {
+      val expectedIngest1 = ingest.copy(
+        events = ingestStatusUpdate1.events
+      )
+
+      val expectedIngest2 = ingest.copy(
+        events = ingestStatusUpdate1.events ++ ingestStatusUpdate2.events
+      )
+
+      updatedIngestsMessageSender.getMessages[Ingest] shouldBe Seq(expectedIngest1, expectedIngest2)
     }
   }
 
