@@ -11,14 +11,14 @@ import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback
 
 object ElasticClientFactory {
   private class ElasticCredentials(username: String, password: String)
-    extends HttpClientConfigCallback {
+      extends HttpClientConfigCallback {
     val credentials = new UsernamePasswordCredentials(username, password)
     val credentialsProvider = new BasicCredentialsProvider()
     credentialsProvider.setCredentials(AuthScope.ANY, credentials)
 
     override def customizeHttpClient(
-                                      httpClientBuilder: HttpAsyncClientBuilder
-                                    ): HttpAsyncClientBuilder =
+      httpClientBuilder: HttpAsyncClientBuilder
+    ): HttpAsyncClientBuilder =
       httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)
   }
 
