@@ -65,6 +65,17 @@ module "ingests_monitor_callback_notifications_topic" {
   role_names = [module.ingests.task_role_name]
 }
 
+module "updated_ingests_queue" {
+  source = "../queue"
+
+  name = "${var.namespace}_updated_ingests"
+
+  topic_arns = [module.updated_ingests_topic.arn]
+
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
+}
+
 # notifier
 
 module "notifier_input_queue" {
