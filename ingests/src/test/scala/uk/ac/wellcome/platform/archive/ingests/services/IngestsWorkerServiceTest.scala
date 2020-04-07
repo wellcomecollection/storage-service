@@ -203,7 +203,9 @@ class IngestsWorkerServiceTest
       status = Succeeded
     )
 
-    val callbackNotificationMessageSender = createBrokenSender
+    val throwable = new Throwable("Callback go BOOM!")
+    val callbackNotificationMessageSender = createBrokenSender(throwable)
+
     val updatedIngestsMessageSender = new MemoryMessageSender()
 
     val ingestTracker: MemoryIngestTracker =
@@ -220,12 +222,9 @@ class IngestsWorkerServiceTest
 
       result.success.value shouldBe a[NonDeterministicFailure[_]]
 
-      val err = result.success.value
+      result.success.value
         .asInstanceOf[NonDeterministicFailure[_]]
-        .failure
-
-      err shouldBe a[Throwable]
-      err.getMessage shouldBe "One or both of the ongoing messages failed to send correctly"
+        .failure shouldBe throwable
     }
 
     it("sends the updated ingest body") {
@@ -242,7 +241,44 @@ class IngestsWorkerServiceTest
     )
 
     val callbackNotificationMessageSender = new MemoryMessageSender()
-    val updatedIngestsMessageSender = createBrokenSender
+
+    val throwable = new Throwable("Updated ingests topic go BOOM!")
+    val updatedIngestsMessageSender = createBrokenSender(throwable)
+
+    val ingestTracker: MemoryIngestTracker =
+      createMemoryIngestTrackerWith(initialIngests = Seq(ingest))
+
+    it("does not process the message successfully") {
+      val result = withIngestWorker(
+        ingestTracker = ingestTracker,
+        callbackNotificationMessageSender = callbackNotificationMessageSender,
+        updatedIngestsMessageSender = updatedIngestsMessageSender
+      ) {
+        _.processMessage(ingestStatusUpdate)
+      }
+
+      result.success.value shouldBe a[NonDeterministicFailure[_]]
+
+      result.success.value
+        .asInstanceOf[NonDeterministicFailure[_]]
+        .failure shouldBe throwable
+    }
+
+    it("sends the callback notification") {
+      callbackNotificationMessageSender.messages should not be empty
+    }
+  }
+
+  describe("fails if it cannot send any messages") {
+    val ingest = createIngest
+
+    val ingestStatusUpdate = createIngestStatusUpdateWith(
+      id = ingest.id,
+      status = Succeeded
+    )
+
+    val callbackNotificationMessageSender = createBrokenSender()
+    val updatedIngestsMessageSender = createBrokenSender()
 
     val ingestTracker: MemoryIngestTracker =
       createMemoryIngestTrackerWith(initialIngests = Seq(ingest))
@@ -263,17 +299,18 @@ class IngestsWorkerServiceTest
         .failure
 
       err shouldBe a[Throwable]
-      err.getMessage shouldBe "One or both of the ongoing messages failed to send correctly"
+      err.getMessage shouldBe "Both of the ongoing messages failed to send correctly!"
     }
 
-    it("sends the callback notification") {
-      callbackNotificationMessageSender.messages should not be empty
+    it("doesn't send any messages") {
+      callbackNotificationMessageSender.messages shouldBe empty
+      updatedIngestsMessageSender.messages shouldBe empty
     }
   }
   
-  private def createBrokenSender: MemoryMessageSender =
+  private def createBrokenSender(throwable: Throwable = new Throwable("BOOM!")): MemoryMessageSender =
     new MemoryMessageSender() {
       override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
-        Failure(new Throwable("BOOM!"))
+        Failure(throwable)
     }
 }

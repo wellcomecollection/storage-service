@@ -71,7 +71,7 @@ class IngestsWorker[CallbackDestination, UpdatedIngestsDestination](
   //    a callback to the user
   //  - it sends the updated ingest to an SNS topic
   //
-  // These two messages are independent, and so should succeed/fail independently.
+  // These two messages are independent, and so can succeed/fail independently.
   //
   private def sendOngoingMessages(ingest: Ingest): Try[Unit] = {
     val callbackResult = callbackNotificationService.sendNotification(ingest)
@@ -79,11 +79,19 @@ class IngestsWorker[CallbackDestination, UpdatedIngestsDestination](
 
     (callbackResult, updatedIngestResult) match {
       case (Success(_), Success(_))   => Success(())
-      case _ =>
-        warn(s"One or both of the ongoing messages failed to send correctly:")
-        warn(s"Callback notification: $callbackResult")
-        warn(s"Updated ingest: $updatedIngestResult")
-        Failure(new Throwable("One or both of the ongoing messages failed to send correctly"))
+
+      case (Failure(callbackErr), Success(_)) =>
+        warn(s"Failed to send the callback notification: $callbackErr")
+        Failure(callbackErr)
+
+      case (Success(_), Failure(updatedIngestErr)) =>
+        warn(s"Failed to send the updated ingest: $updatedIngestErr")
+        Failure(updatedIngestErr)
+
+      case (Failure(callbackErr), Failure(updatedIngestErr)) =>
+        warn(s"Failed to send the callback notification: $callbackErr")
+        warn(s"Failed to send the updated ingest: $updatedIngestErr")
+        Failure(new Throwable("Both of the ongoing messages failed to send correctly!"))
     }
   }
 
