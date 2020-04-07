@@ -59,7 +59,8 @@ class IngestsWorkerServiceTest
     it("processes the message") {
       withIngestWorker(
         ingestTracker = ingestTracker,
-        callbackNotificationMessageSender = callbackNotificationMessageSender
+        callbackNotificationMessageSender = callbackNotificationMessageSender,
+        updatedIngestsMessageSender = updatedIngestsMessageSender
       ) {
         _.processMessage(ingestStatusUpdate).success.value shouldBe a[
           Successful[_]
@@ -118,7 +119,8 @@ class IngestsWorkerServiceTest
     it("processes both messages") {
       withIngestWorker(
         ingestTracker = ingestTracker,
-        callbackNotificationMessageSender = callbackNotificationMessageSender
+        callbackNotificationMessageSender = callbackNotificationMessageSender,
+        updatedIngestsMessageSender = updatedIngestsMessageSender
       ) { service =>
         service
           .processMessage(ingestStatusUpdate1)
