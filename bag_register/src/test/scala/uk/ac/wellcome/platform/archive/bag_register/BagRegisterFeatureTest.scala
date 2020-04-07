@@ -79,32 +79,33 @@ class BagRegisterFeatureTest
       ) { _ =>
         sendNotificationToSQS(queue, payload)
 
-        val storageManifest: StorageManifest = eventually {
-          storageManifestDao.getLatest(bagId).right.value
+        eventually {
+          val storageManifest: StorageManifest =
+            storageManifestDao.getLatest(bagId).right.value
+
+          storageManifest.space shouldBe bagId.space
+          storageManifest.info shouldBe bagInfo
+          storageManifest.manifest.files should have size dataFileCount
+
+          storageManifest.location shouldBe PrimaryStorageLocation(
+            provider = primaryLocation.provider,
+            prefix = bagRoot
+              .copy(
+                path = bagRoot.path.stripSuffix(s"/$version")
+              )
+          )
+
+          storageManifest.replicaLocations shouldBe empty
+
+          storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+
+          assertBagRegisterSucceeded(
+            ingestId = payload.ingestId,
+            ingests = ingests
+          )
+
+          assertQueueEmpty(queue)
         }
-
-        storageManifest.space shouldBe bagId.space
-        storageManifest.info shouldBe bagInfo
-        storageManifest.manifest.files should have size dataFileCount
-
-        storageManifest.location shouldBe PrimaryStorageLocation(
-          provider = primaryLocation.provider,
-          prefix = bagRoot
-            .copy(
-              path = bagRoot.path.stripSuffix(s"/$version")
-            )
-        )
-
-        storageManifest.replicaLocations shouldBe empty
-
-        storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
-
-        assertBagRegisterSucceeded(
-          ingestId = payload.ingestId,
-          ingests = ingests
-        )
-
-        assertQueueEmpty(queue)
       }
     }
   }
