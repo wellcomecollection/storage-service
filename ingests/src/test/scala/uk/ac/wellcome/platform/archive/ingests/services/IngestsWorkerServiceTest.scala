@@ -203,9 +203,7 @@ class IngestsWorkerServiceTest
       status = Succeeded
     )
 
-    val throwable = new Throwable("BOOM!")
-    val callbackNotificationMessageSender = createBrokenSender(throwable)
-
+    val callbackNotificationMessageSender = createBrokenSender
     val updatedIngestsMessageSender = new MemoryMessageSender()
 
     val ingestTracker: MemoryIngestTracker =
@@ -222,9 +220,12 @@ class IngestsWorkerServiceTest
 
       result.success.value shouldBe a[NonDeterministicFailure[_]]
 
-      result.success.value
+      val err = result.success.value
         .asInstanceOf[NonDeterministicFailure[_]]
-        .failure shouldBe throwable
+        .failure
+
+      err shouldBe a[Throwable]
+      err.getMessage shouldBe "One or both of the ongoing messages failed to send correctly"
     }
 
     it("sends the updated ingest body") {
@@ -241,9 +242,7 @@ class IngestsWorkerServiceTest
     )
 
     val callbackNotificationMessageSender = new MemoryMessageSender()
-
-    val throwable = new Throwable("BOOM!")
-    val updatedIngestsMessageSender = createBrokenSender(throwable)
+    val updatedIngestsMessageSender = createBrokenSender
 
     val ingestTracker: MemoryIngestTracker =
       createMemoryIngestTrackerWith(initialIngests = Seq(ingest))
@@ -259,9 +258,12 @@ class IngestsWorkerServiceTest
 
       result.success.value shouldBe a[NonDeterministicFailure[_]]
 
-      result.success.value
+      val err = result.success.value
         .asInstanceOf[NonDeterministicFailure[_]]
-        .failure shouldBe throwable
+        .failure
+
+      err shouldBe a[Throwable]
+      err.getMessage shouldBe "One or both of the ongoing messages failed to send correctly"
     }
 
     it("sends the callback notification") {
@@ -269,9 +271,9 @@ class IngestsWorkerServiceTest
     }
   }
   
-  private def createBrokenSender(throwable: Throwable): MemoryMessageSender =
+  private def createBrokenSender: MemoryMessageSender =
     new MemoryMessageSender() {
       override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
-        Failure(throwable)
+        Failure(new Throwable("BOOM!"))
     }
 }

@@ -48,7 +48,7 @@ class IngestsWorker[CallbackDestination, UpdatedIngestsDestination](
             new Throwable(s"Error from the ingest tracker: $err")
           )
       }
-      _ <- callbackNotificationService.sendNotification(ingest)
+      _ <- sendOngoingMessages(ingest)
     } yield ingest
 
     result match {
@@ -62,6 +62,28 @@ class IngestsWorker[CallbackDestination, UpdatedIngestsDestination](
       case Failure(err) =>
         warn(s"Error trying to apply update $ingestUpdate: $err")
         Success(NonDeterministicFailure(err, summary = None))
+    }
+  }
+
+  // The ingests monitor needs to send up to two messages:
+  //
+  //  - if the ingest is complete, it sends a message to the notifier to trigger
+  //    a callback to the user
+  //  - it sends the updated ingest to an SNS topic
+  //
+  // These two messages are independent, and so should succeed/fail independently.
+  //
+  private def sendOngoingMessages(ingest: Ingest): Try[Unit] = {
+    val callbackResult = callbackNotificationService.sendNotification(ingest)
+    val updatedIngestResult = updatedIngestsMessageSender.sendT(ingest)
+
+    (callbackResult, updatedIngestResult) match {
+      case (Success(_), Success(_))   => Success(())
+      case _ =>
+        warn(s"One or both of the ongoing messages failed to send correctly:")
+        warn(s"Callback notification: $callbackResult")
+        warn(s"Updated ingest: $updatedIngestResult")
+        Failure(new Throwable("One or both of the ongoing messages failed to send correctly"))
     }
   }
 
