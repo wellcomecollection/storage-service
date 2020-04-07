@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class IngestIndexerTest
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with EitherValues
     with IngestGenerators
@@ -33,16 +33,20 @@ class IngestIndexerTest
         val storedIngest =
           getT[Json](index, id = ingest.id.toString)
             .as[Map[String, Json]]
-            .right.value
+            .right
+            .value
 
         val storedIngestId = UUID.fromString(storedIngest("id").asString.get)
         storedIngestId shouldBe ingest.id.underlying
 
         val storedExternalIdentifier = ExternalIdentifier(
-          storedIngest("bag")
-            .asObject.get
-            .toMap("info").asObject.get
-            .toMap("externalIdentifier").asString.get
+          storedIngest("bag").asObject.get
+            .toMap("info")
+            .asObject
+            .get
+            .toMap("externalIdentifier")
+            .asString
+            .get
         )
         storedExternalIdentifier shouldBe ingest.externalIdentifier
       }
@@ -54,7 +58,9 @@ class IngestIndexerTest
       val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
 
       val ingestCount = 10
-      val ingests = (1 to ingestCount).map { _ => createIngest }
+      val ingests = (1 to ingestCount).map { _ =>
+        createIngest
+      }
 
       whenReady(ingestsIndexer.index(ingests)) { result =>
         result.right.value shouldBe ingests

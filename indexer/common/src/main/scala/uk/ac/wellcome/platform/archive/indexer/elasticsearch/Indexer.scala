@@ -20,7 +20,9 @@ trait Indexer[Document, DisplayDocument] extends Logging {
   protected def id(doc: Document): String
   protected def toDisplay(doc: Document): DisplayDocument
 
-  final def index(documents: Seq[Document]): Future[Either[Seq[Document], Seq[Document]]] = {
+  final def index(
+    documents: Seq[Document]
+  ): Future[Either[Seq[Document], Seq[Document]]] = {
     debug(s"Indexing documents: ${documents.map { id }.mkString(", ")}")
 
     val inserts = documents.map { doc =>
@@ -36,15 +38,14 @@ trait Indexer[Document, DisplayDocument] extends Logging {
           error(s"Error from Elasticsearch: $response")
           Left(documents)
         } else {
-          val failedIds = response.result
-            .failures
-            .map { _.id }
-            .toSet
+          val failedIds = response.result.failures.map { _.id }.toSet
 
           if (failedIds.isEmpty) {
             Right(documents)
           } else {
-            val failedDocuments = documents.filter { doc => failedIds.contains(id(doc)) }
+            val failedDocuments = documents.filter { doc =>
+              failedIds.contains(id(doc))
+            }
 
             Right(failedDocuments)
           }
@@ -64,14 +65,15 @@ trait Indexer[Document, DisplayDocument] extends Logging {
   // If we can't find a context URL, just return the original string.
   private def removeContextUrl(jsonString: String): String = {
     parse(jsonString) match {
-      case Right(value) => value.asObject match {
-        case Some(jsonObject: JsonObject) =>
-          Json
-            .fromJsonObject(jsonObject.remove("@context"))
-            .noSpaces
+      case Right(value) =>
+        value.asObject match {
+          case Some(jsonObject: JsonObject) =>
+            Json
+              .fromJsonObject(jsonObject.remove("@context"))
+              .noSpaces
 
-        case None => jsonString
-      }
+          case None => jsonString
+        }
 
       case Left(_) => jsonString
     }

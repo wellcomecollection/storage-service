@@ -10,15 +10,14 @@ import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 
 import scala.concurrent.ExecutionContext
 
-class IngestIndexer(
-  val client: ElasticClient,
-  val index: Index)(
+class IngestIndexer(val client: ElasticClient, val index: Index)(
   implicit
   val ec: ExecutionContext,
   val encoder: Encoder[ResponseDisplayIngest]
 ) extends Indexer[Ingest, ResponseDisplayIngest] {
 
-  override protected def id(ingest: Ingest): String = ingest.id.underlying.toString
+  override protected def id(ingest: Ingest): String =
+    ingest.id.underlying.toString
 
   override protected def toDisplay(ingest: Ingest): ResponseDisplayIngest =
     ResponseDisplayIngest(
