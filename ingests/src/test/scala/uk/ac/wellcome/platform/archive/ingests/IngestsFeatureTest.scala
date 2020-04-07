@@ -52,11 +52,16 @@ class IngestsFeatureTest
 
     it("reads messages from the queue") {
       withLocalSqsQueue { queue =>
-        withIngestWorker(queue, ingestTracker, callbackNotificationMessageSender) { _ =>
+        withIngestWorker(
+          queue,
+          ingestTracker,
+          callbackNotificationMessageSender
+        ) { _ =>
           sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
           eventually {
-            callbackNotificationMessageSender.getMessages[CallbackNotification] shouldBe Seq(
+            callbackNotificationMessageSender
+              .getMessages[CallbackNotification] shouldBe Seq(
               expectedCallbackNotification
             )
 

@@ -84,7 +84,10 @@ class CallbackNotificationServiceTest
     messageSender.messages shouldBe empty
   }
 
-  private def assertNotificationSent(ingestStatus: Ingest.Status, callbackStatus: Callback.CallbackStatus): Assertion = {
+  private def assertNotificationSent(
+    ingestStatus: Ingest.Status,
+    callbackStatus: Callback.CallbackStatus
+  ): Assertion = {
     debug(s"ingestStatus = $ingestStatus, callbackStatus = $callbackStatus")
     val messageSender = new MemoryMessageSender()
     val service = new CallbackNotificationService(messageSender)
@@ -107,7 +110,10 @@ class CallbackNotificationServiceTest
     )
   }
 
-  private def assertNothingSent(ingestStatus: Ingest.Status, callbackStatus: Callback.CallbackStatus): Assertion = {
+  private def assertNothingSent(
+    ingestStatus: Ingest.Status,
+    callbackStatus: Callback.CallbackStatus
+  ): Assertion = {
     debug(s"ingestStatus = $ingestStatus, callbackStatus = $callbackStatus")
     val messageSender = new MemoryMessageSender()
     val service = new CallbackNotificationService(messageSender)

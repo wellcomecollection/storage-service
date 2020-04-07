@@ -53,16 +53,17 @@ class IngestsWorkerServiceTest
     it("processes the message") {
       withIngestWorker(
         ingestTracker = ingestTracker,
-        callbackNotificationMessageSender = callbackNotificationMessageSender) {
-          _
-            .processMessage(ingestStatusUpdate)
-            .success
-            .value shouldBe a[Successful[_]]
+        callbackNotificationMessageSender = callbackNotificationMessageSender
+      ) {
+        _.processMessage(ingestStatusUpdate).success.value shouldBe a[
+          Successful[_]
+        ]
       }
     }
 
     it("sends a callback notification message") {
-      callbackNotificationMessageSender.getMessages[CallbackNotification] shouldBe Seq(
+      callbackNotificationMessageSender
+        .getMessages[CallbackNotification] shouldBe Seq(
         callbackNotification
       )
     }
@@ -106,9 +107,10 @@ class IngestsWorkerServiceTest
     it("processes both messages") {
       withIngestWorker(
         ingestTracker = ingestTracker,
-        callbackNotificationMessageSender = callbackNotificationMessageSender) { service =>
+        callbackNotificationMessageSender = callbackNotificationMessageSender
+      ) { service =>
         service
-        .processMessage(ingestStatusUpdate1)
+          .processMessage(ingestStatusUpdate1)
           .success
           .value shouldBe a[Successful[_]]
 
@@ -120,7 +122,11 @@ class IngestsWorkerServiceTest
     }
 
     it("adds the events to the ingest tracker") {
-      ingestTracker.get(ingest.id).right.value.identifiedT shouldBe expectedIngest
+      ingestTracker
+        .get(ingest.id)
+        .right
+        .value
+        .identifiedT shouldBe expectedIngest
     }
 
     it("does not send a notification for ingests that are still processing") {

@@ -59,7 +59,8 @@ trait IngestTrackerFixtures extends EitherValues with TimeTestFixture {
     )
 
   def createMemoryIngestTrackerWith(initialIngests: Seq[Ingest])(
-    implicit store: MemoryVersionedStore[IngestID, Ingest] = createMemoryVersionedStore
+    implicit store: MemoryVersionedStore[IngestID, Ingest] =
+      createMemoryVersionedStore
   ): MemoryIngestTracker = {
     initialIngests
       .map { ingest =>
