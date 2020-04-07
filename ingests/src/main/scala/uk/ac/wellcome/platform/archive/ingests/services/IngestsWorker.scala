@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
@@ -24,10 +25,11 @@ import uk.ac.wellcome.typesafe.Runnable
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-class IngestsWorker[CallbackDestination](
+class IngestsWorker[CallbackDestination, UpdatedIngestsDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   ingestTracker: IngestTracker,
-  callbackNotificationService: CallbackNotificationService[CallbackDestination]
+  callbackNotificationService: CallbackNotificationService[CallbackDestination],
+  updatedIngestsMessageSender: MessageSender[UpdatedIngestsDestination]
 )(implicit actorSystem: ActorSystem, mc: MonitoringClient, sc: AmazonSQSAsync)
     extends Runnable
     with Logging {

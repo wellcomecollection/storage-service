@@ -36,7 +36,8 @@ trait IngestsFixtures
           val service = new IngestsWorker(
             alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
             ingestTracker = ingestTracker,
-            callbackNotificationService = callbackNotificationService
+            callbackNotificationService = callbackNotificationService,
+            updatedIngestsMessageSender = updatedIngestsMessageSender
           )
 
           service.run()

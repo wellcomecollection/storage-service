@@ -51,10 +51,17 @@ module "ingests_input_queue" {
   max_receive_count = 10
 }
 
-module "ingests_output_topic" {
+module "updated_ingests_topic" {
   source = "../topic"
 
-  name       = "${var.namespace}_ingests_output"
+  name       = "${var.namespace}_updated_ingests"
+  role_names = [module.ingests.task_role_name]
+}
+
+module "ingests_monitor_callback_notifications_topic" {
+  source = "../topic"
+
+  name       = "${var.namespace}_ingests_monitor_callback_notifications"
   role_names = [module.ingests.task_role_name]
 }
 
@@ -65,7 +72,7 @@ module "notifier_input_queue" {
 
   name = "${var.namespace}_notifier"
 
-  topic_arns = [module.ingests_output_topic.arn]
+  topic_arns = [module.ingests_monitor_callback_notifications_topic.arn]
 
   role_names = [module.notifier.task_role_name]
 

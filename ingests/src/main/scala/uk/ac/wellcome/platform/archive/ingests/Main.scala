@@ -48,14 +48,22 @@ object Main extends WellcomeTypesafeApp {
     val callbackNotificationService = new CallbackNotificationService(
       messageSender = SNSBuilder.buildSNSMessageSender(
         config,
+        namespace = "callbackNotifications",
         subject = "Sent from the ingests service"
       )
+    )
+
+    val updatedIngestsMessageSender = SNSBuilder.buildSNSMessageSender(
+      config,
+      namespace = "updatedIngests",
+      subject = "Updated ingests sent by the ingests monitor"
     )
 
     new IngestsWorker(
       alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestTracker = ingestTracker,
-      callbackNotificationService = callbackNotificationService
+      callbackNotificationService = callbackNotificationService,
+      updatedIngestsMessageSender = updatedIngestsMessageSender
     )
   }
 }
