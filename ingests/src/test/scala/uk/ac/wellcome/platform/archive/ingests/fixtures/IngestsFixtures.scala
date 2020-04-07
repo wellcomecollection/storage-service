@@ -24,15 +24,15 @@ trait IngestsFixtures
     with IngestTrackerFixtures {
 
   def withIngestWorker[R](
-    queue: Queue,
+    queue: Queue = Queue(url = "queue://test", arn = "arn::queue"),
     ingestTracker: IngestTracker,
-    messageSender: MemoryMessageSender
+    callbackNotificationMessageSender: MemoryMessageSender
   )(testWith: TestWith[IngestsWorker[String], R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         withMaterializer { implicit materializer =>
           val callbackNotificationService =
-            new CallbackNotificationService(messageSender)
+            new CallbackNotificationService(callbackNotificationMessageSender)
 
           val service = new IngestsWorker(
             alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
