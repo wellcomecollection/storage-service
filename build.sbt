@@ -123,3 +123,9 @@ lazy val indexer_common = setupProject(
       WellcomeDependencies.jsonLibrary ++
       WellcomeDependencies.typesafeLibrary
 )
+
+lazy val ingests_indexer = setupProject(
+  project,
+  folder = "indexer/ingests_indexer",
+  localDependencies = Seq(display, indexer_common)
+)
