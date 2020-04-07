@@ -78,7 +78,7 @@ class IngestsWorker[CallbackDestination, UpdatedIngestsDestination](
     val updatedIngestResult = updatedIngestsMessageSender.sendT(ingest)
 
     (callbackResult, updatedIngestResult) match {
-      case (Success(_), Success(_))   => Success(())
+      case (Success(_), Success(_)) => Success(())
 
       case (Failure(callbackErr), Success(_)) =>
         warn(s"Failed to send the callback notification: $callbackErr")
@@ -91,7 +91,11 @@ class IngestsWorker[CallbackDestination, UpdatedIngestsDestination](
       case (Failure(callbackErr), Failure(updatedIngestErr)) =>
         warn(s"Failed to send the callback notification: $callbackErr")
         warn(s"Failed to send the updated ingest: $updatedIngestErr")
-        Failure(new Throwable("Both of the ongoing messages failed to send correctly!"))
+        Failure(
+          new Throwable(
+            "Both of the ongoing messages failed to send correctly!"
+          )
+        )
     }
   }
 

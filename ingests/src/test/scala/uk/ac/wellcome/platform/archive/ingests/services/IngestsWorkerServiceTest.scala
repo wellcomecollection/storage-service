@@ -86,7 +86,9 @@ class IngestsWorkerServiceTest
     }
 
     it("sends a message with the updated ingest") {
-      updatedIngestsMessageSender.getMessages[Ingest] shouldBe Seq(expectedIngest)
+      updatedIngestsMessageSender.getMessages[Ingest] shouldBe Seq(
+        expectedIngest
+      )
     }
   }
 
@@ -156,7 +158,8 @@ class IngestsWorkerServiceTest
         events = ingestStatusUpdate1.events ++ ingestStatusUpdate2.events
       )
 
-      updatedIngestsMessageSender.getMessages[Ingest] shouldBe Seq(expectedIngest1, expectedIngest2)
+      updatedIngestsMessageSender
+        .getMessages[Ingest] shouldBe Seq(expectedIngest1, expectedIngest2)
     }
   }
 
@@ -186,7 +189,10 @@ class IngestsWorkerServiceTest
     }
 
     it("does not update the ingest tracker") {
-      ingestTracker.get(ingestUpdate.id).left.value shouldBe a[IngestDoesNotExistError]
+      ingestTracker
+        .get(ingestUpdate.id)
+        .left
+        .value shouldBe a[IngestDoesNotExistError]
     }
 
     it("does not send any messages") {
@@ -307,8 +313,10 @@ class IngestsWorkerServiceTest
       updatedIngestsMessageSender.messages shouldBe empty
     }
   }
-  
-  private def createBrokenSender(throwable: Throwable = new Throwable("BOOM!")): MemoryMessageSender =
+
+  private def createBrokenSender(
+    throwable: Throwable = new Throwable("BOOM!")
+  ): MemoryMessageSender =
     new MemoryMessageSender() {
       override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
         Failure(throwable)

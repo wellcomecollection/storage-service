@@ -87,7 +87,9 @@ class IngestsFeatureTest
     }
 
     it("sends a message with the updated ingest") {
-      updatedIngestsMessageSender.getMessages[Ingest] shouldBe Seq(expectedIngest)
+      updatedIngestsMessageSender.getMessages[Ingest] shouldBe Seq(
+        expectedIngest
+      )
     }
   }
 }
