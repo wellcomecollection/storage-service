@@ -11,8 +11,8 @@ import uk.ac.wellcome.messaging.worker.models.{
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
-  Succeeded,
-  Processing
+  Processing,
+  Succeeded
 }
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
