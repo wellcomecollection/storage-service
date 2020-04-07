@@ -395,11 +395,12 @@ module "ingests" {
   service_name = "${var.namespace}-ingests"
 
   env_vars = {
-    queue_url                 = module.ingests_input_queue.url
-    topic_arn                 = module.ingests_output_topic.arn
-    archive_ingest_table_name = var.ingests_table_name
-    metrics_namespace         = local.ingests_service_name
-    logstash_host             = local.logstash_host
+    queue_url                        = module.ingests_input_queue.url
+    callback_notifications_topic_arn = module.ingests_monitor_callback_notifications_topic.arn
+    updated_ingests_topic_arn        = module.updated_ingests_topic.arn
+    ingests_table_name               = var.ingests_table_name
+    metrics_namespace                = local.ingests_service_name
+    logstash_host                    = local.logstash_host
   }
 
   # We always run at least one ingests monitor so messages from other apps are

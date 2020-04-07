@@ -24,8 +24,9 @@ trait IngestsFixtures
   def withIngestWorker[R](
     queue: Queue = Queue(url = "queue://test", arn = "arn::queue"),
     ingestTracker: IngestTracker,
-    callbackNotificationMessageSender: MemoryMessageSender
-  )(testWith: TestWith[IngestsWorker[String], R]): R =
+    callbackNotificationMessageSender: MemoryMessageSender,
+    updatedIngestsMessageSender: MemoryMessageSender = new MemoryMessageSender()
+  )(testWith: TestWith[IngestsWorker[String, String], R]): R =
     withMonitoringClient { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         withMaterializer { implicit materializer =>
@@ -35,7 +36,8 @@ trait IngestsFixtures
           val service = new IngestsWorker(
             alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
             ingestTracker = ingestTracker,
-            callbackNotificationService = callbackNotificationService
+            callbackNotificationService = callbackNotificationService,
+            updatedIngestsMessageSender = updatedIngestsMessageSender
           )
 
           service.run()

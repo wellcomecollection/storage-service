@@ -10,6 +10,7 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   CallbackNotification,
+  Ingest,
   IngestUpdate
 }
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
@@ -49,13 +50,15 @@ class IngestsFeatureTest
       createMemoryIngestTrackerWith(initialIngests = Seq(ingest))
 
     val callbackNotificationMessageSender = new MemoryMessageSender()
+    val updatedIngestsMessageSender = new MemoryMessageSender()
 
     it("reads messages from the queue") {
       withLocalSqsQueue { queue =>
         withIngestWorker(
-          queue,
-          ingestTracker,
-          callbackNotificationMessageSender
+          queue = queue,
+          ingestTracker = ingestTracker,
+          callbackNotificationMessageSender = callbackNotificationMessageSender,
+          updatedIngestsMessageSender = updatedIngestsMessageSender
         ) { _ =>
           sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
@@ -80,6 +83,12 @@ class IngestsFeatureTest
       assertIngestRecordedRecentEvents(
         ingestStatusUpdate.id,
         ingestStatusUpdate.events.map { _.description }
+      )
+    }
+
+    it("sends a message with the updated ingest") {
+      updatedIngestsMessageSender.getMessages[Ingest] shouldBe Seq(
+        expectedIngest
       )
     }
   }
