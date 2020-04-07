@@ -21,7 +21,7 @@ class CallbackNotificationServiceTest
   it("sends a notification if the ingest is complete and the callback pending") {
     val completedIngestStatus = Table(
       "ingest-status",
-      Ingest.Completed,
+      Ingest.Succeeded,
       Ingest.Failed
     )
 
@@ -53,7 +53,7 @@ class CallbackNotificationServiceTest
       "ingest-status",
       Ingest.Processing,
       Ingest.Accepted,
-      Ingest.Completed,
+      Ingest.Succeeded,
       Ingest.Failed
     )
 

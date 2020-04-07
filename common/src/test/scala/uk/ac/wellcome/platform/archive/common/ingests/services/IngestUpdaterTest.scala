@@ -60,7 +60,7 @@ class IngestUpdaterTest
     assertTopicReceivesIngestStatus(
       ingestId = ingestId,
       ingests = messageSender,
-      status = Ingest.Completed
+      status = Ingest.Succeeded
     ) { events =>
       events should have size 1
       events.head.description shouldBe s"${stepName.capitalize} succeeded (completed)"

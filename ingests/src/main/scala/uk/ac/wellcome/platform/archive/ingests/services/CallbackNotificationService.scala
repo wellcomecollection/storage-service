@@ -20,7 +20,7 @@ class CallbackNotificationService[Destination](
     ingest.callback match {
       case Some(Callback(callbackUri, Pending)) =>
         ingest.status match {
-          case Ingest.Completed | Ingest.Failed =>
+          case Ingest.Succeeded | Ingest.Failed =>
             sendSnsMessage(callbackUri, ingest = ingest)
           case _ => Success(())
         }

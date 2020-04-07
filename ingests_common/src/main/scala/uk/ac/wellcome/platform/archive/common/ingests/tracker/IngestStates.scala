@@ -122,7 +122,7 @@ object IngestStates {
 
       case Ingest.Accepted   => true
       case Ingest.Processing => update != Ingest.Accepted
-      case Ingest.Completed  => false
+      case Ingest.Succeeded  => false
       case Ingest.Failed     => false
     }
 

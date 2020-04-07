@@ -11,7 +11,7 @@ import uk.ac.wellcome.messaging.worker.models.{
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.CallbackNotification
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
-  Completed,
+  Succeeded,
   Processing
 }
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
@@ -33,14 +33,14 @@ class IngestsWorkerServiceTest
     val ingestStatusUpdate =
       createIngestStatusUpdateWith(
         id = ingest.id,
-        status = Completed
+        status = Succeeded
       )
 
     val callbackNotification = CallbackNotification(
       ingestId = ingest.id,
       callbackUri = ingest.callback.get.uri,
       payload = ingest.copy(
-        status = Completed,
+        status = Succeeded,
         events = ingestStatusUpdate.events
       )
     )
@@ -141,7 +141,7 @@ class IngestsWorkerServiceTest
         withIngestWorker(queue, ingestTracker, messageSender) { service =>
           val ingestStatusUpdate =
             createIngestStatusUpdateWith(
-              status = Completed
+              status = Succeeded
             )
 
           val result = service.processMessage(ingestStatusUpdate)
@@ -174,7 +174,7 @@ class IngestsWorkerServiceTest
             val ingestStatusUpdate =
               createIngestStatusUpdateWith(
                 id = ingest.id,
-                status = Completed
+                status = Succeeded
               )
 
             val result = service.processMessage(ingestStatusUpdate)

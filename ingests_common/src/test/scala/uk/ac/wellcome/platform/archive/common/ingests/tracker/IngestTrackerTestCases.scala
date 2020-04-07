@@ -287,11 +287,11 @@ trait IngestTrackerTestCases[Context]
           ("initial", "update"),
           (Ingest.Accepted, Ingest.Accepted),
           (Ingest.Accepted, Ingest.Processing),
-          (Ingest.Accepted, Ingest.Completed),
+          (Ingest.Accepted, Ingest.Succeeded),
           (Ingest.Accepted, Ingest.Failed),
-          (Ingest.Processing, Ingest.Completed),
+          (Ingest.Processing, Ingest.Succeeded),
           (Ingest.Processing, Ingest.Failed),
-          (Ingest.Completed, Ingest.Completed),
+          (Ingest.Succeeded, Ingest.Succeeded),
           (Ingest.Failed, Ingest.Failed)
         )
 
@@ -315,12 +315,12 @@ trait IngestTrackerTestCases[Context]
 
         val disallowedStatusUpdates = Table(
           ("initial", "update"),
-          (Ingest.Failed, Ingest.Completed),
+          (Ingest.Failed, Ingest.Succeeded),
           (Ingest.Failed, Ingest.Processing),
           (Ingest.Failed, Ingest.Accepted),
-          (Ingest.Completed, Ingest.Failed),
-          (Ingest.Completed, Ingest.Processing),
-          (Ingest.Completed, Ingest.Accepted),
+          (Ingest.Succeeded, Ingest.Failed),
+          (Ingest.Succeeded, Ingest.Processing),
+          (Ingest.Succeeded, Ingest.Accepted),
           (Ingest.Processing, Ingest.Accepted)
         )
 
