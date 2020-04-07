@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
-import java.time.Instant
-
 import io.circe.Encoder
 import org.scalatest.{FunSpec, TryValues}
 import uk.ac.wellcome.json.JsonUtil._
@@ -17,6 +15,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
   Processing
 }
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.archive.ingests.fixtures.IngestsFixtures
 
 import scala.util.{Failure, Try}
@@ -28,105 +27,110 @@ class IngestsWorkerServiceTest
     with IngestTrackerFixtures
     with TryValues {
 
-  it("updates an existing ingest to Completed") {
-    val ingest = createIngestWith(
-      createdDate = Instant.now
+  describe("marking an ingest as completed") {
+    val ingest = createIngest
+
+    val ingestStatusUpdate =
+      createIngestStatusUpdateWith(
+        id = ingest.id,
+        status = Completed
+      )
+
+    val callbackNotification = CallbackNotification(
+      ingestId = ingest.id,
+      callbackUri = ingest.callback.get.uri,
+      payload = ingest.copy(
+        status = Completed,
+        events = ingestStatusUpdate.events
+      )
     )
 
-    withLocalSqsQueue { queue =>
-      withMemoryIngestTracker(initialIngests = Seq(ingest)) {
-        implicit ingestTracker =>
-          val messageSender = new MemoryMessageSender()
-          withIngestWorker(queue, ingestTracker, messageSender) { service =>
-            val ingestStatusUpdate =
-              createIngestStatusUpdateWith(
-                id = ingest.id,
-                status = Completed
-              )
+    val callbackNotificationMessageSender = new MemoryMessageSender()
 
-            service
-              .processMessage(ingestStatusUpdate)
-              .success
-              .value shouldBe a[Successful[_]]
+    implicit val ingestTracker: MemoryIngestTracker =
+      createMemoryIngestTrackerWith(initialIngests = Seq(ingest))
 
-            val expectedIngest = ingest.copy(
-              status = Completed,
-              events = ingestStatusUpdate.events
-            )
-
-            val callbackNotification = CallbackNotification(
-              ingestId = ingest.id,
-              callbackUri = ingest.callback.get.uri,
-              payload = expectedIngest
-            )
-
-            messageSender.getMessages[CallbackNotification] shouldBe Seq(
-              callbackNotification
-            )
-
-            assertIngestCreated(expectedIngest)
-
-            assertIngestRecordedRecentEvents(
-              id = ingestStatusUpdate.id,
-              expectedEventDescriptions = ingestStatusUpdate.events.map {
-                _.description
-              }
-            )
-          }
+    it("processes the message") {
+      withIngestWorker(
+        ingestTracker = ingestTracker,
+        callbackNotificationMessageSender = callbackNotificationMessageSender
+      ) {
+        _.processMessage(ingestStatusUpdate).success.value shouldBe a[
+          Successful[_]
+        ]
       }
+    }
+
+    it("sends a callback notification message") {
+      callbackNotificationMessageSender
+        .getMessages[CallbackNotification] shouldBe Seq(
+        callbackNotification
+      )
+    }
+
+    it("records the ingest update in the tracker") {
+      assertIngestRecordedRecentEvents(
+        id = ingestStatusUpdate.id,
+        expectedEventDescriptions = ingestStatusUpdate.events.map {
+          _.description
+        }
+      )
     }
   }
 
-  it("adds multiple events to an ingest") {
+  describe("adding multiple events to an ingest") {
     val ingest = createIngestWith(
-      createdDate = Instant.now()
+      status = Processing
     )
 
-    withLocalSqsQueue { queue =>
-      withMemoryIngestTracker(initialIngests = Seq(ingest)) {
-        implicit ingestTracker =>
-          val messageSender = new MemoryMessageSender()
-          withIngestWorker(queue, ingestTracker, messageSender) { service =>
-            val ingestStatusUpdate1 =
-              createIngestStatusUpdateWith(
-                id = ingest.id,
-                status = Processing
-              )
+    val ingestStatusUpdate1 =
+      createIngestStatusUpdateWith(
+        id = ingest.id,
+        status = Processing
+      )
 
-            val ingestStatusUpdate2 =
-              createIngestStatusUpdateWith(
-                id = ingest.id,
-                status = Processing
-              )
+    val ingestStatusUpdate2 =
+      createIngestStatusUpdateWith(
+        id = ingest.id,
+        status = Processing
+      )
 
-            val expectedIngest = ingest.copy(
-              status = Completed,
-              events = ingestStatusUpdate1.events ++ ingestStatusUpdate2.events
-            )
+    val expectedIngest = ingest.copy(
+      events = ingestStatusUpdate1.events ++ ingestStatusUpdate2.events
+    )
 
-            service
-              .processMessage(ingestStatusUpdate1)
-              .success
-              .value shouldBe a[Successful[_]]
-            service
-              .processMessage(ingestStatusUpdate2)
-              .success
-              .value shouldBe a[Successful[_]]
+    val callbackNotificationMessageSender = new MemoryMessageSender()
 
-            assertIngestCreated(expectedIngest)
+    implicit val ingestTracker: MemoryIngestTracker =
+      createMemoryIngestTrackerWith(initialIngests = Seq(ingest))
 
-            val expectedEventDescriptions =
-              (ingestStatusUpdate1.events ++ ingestStatusUpdate2.events)
-                .map {
-                  _.description
-                }
+    it("processes both messages") {
+      withIngestWorker(
+        ingestTracker = ingestTracker,
+        callbackNotificationMessageSender = callbackNotificationMessageSender
+      ) { service =>
+        service
+          .processMessage(ingestStatusUpdate1)
+          .success
+          .value shouldBe a[Successful[_]]
 
-            assertIngestRecordedRecentEvents(
-              id = ingestStatusUpdate1.id,
-              expectedEventDescriptions = expectedEventDescriptions
-            )
-          }
+        service
+          .processMessage(ingestStatusUpdate2)
+          .success
+          .value shouldBe a[Successful[_]]
       }
+    }
+
+    it("adds the events to the ingest tracker") {
+      ingestTracker
+        .get(ingest.id)
+        .right
+        .value
+        .identifiedT shouldBe expectedIngest
+    }
+
+    it("does not send a notification for ingests that are still processing") {
+      callbackNotificationMessageSender.messages shouldBe empty
     }
   }
 
