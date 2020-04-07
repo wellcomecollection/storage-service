@@ -398,7 +398,7 @@ module "ingests" {
     queue_url                        = module.ingests_input_queue.url
     callback_notifications_topic_arn = module.ingests_monitor_callback_notifications_topic.arn
     updated_ingests_topic_arn        = module.updated_ingests_topic.arn
-    archive_ingest_table_name        = var.ingests_table_name
+    ingests_table_name               = var.ingests_table_name
     metrics_namespace                = local.ingests_service_name
     logstash_host                    = local.logstash_host
   }
