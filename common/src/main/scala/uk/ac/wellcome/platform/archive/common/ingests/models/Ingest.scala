@@ -32,6 +32,7 @@ case class Ingest(
 
 case object Ingest {
   sealed trait Status
+  sealed trait Completed extends Status
 
   case object Accepted extends Status {
     override def toString: String = "accepted"

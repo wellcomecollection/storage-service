@@ -25,7 +25,7 @@ class CallbackNotificationServiceTest
       Ingest.Failed
     )
 
-    forAll(completedIngestStatus) { ingestStatus =>
+    forAll(completedIngestStatus) { ingestStatus: Ingest.Completed =>
       assertNotificationSent(
         ingestStatus = ingestStatus,
         callbackStatus = Callback.Pending
