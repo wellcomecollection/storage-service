@@ -18,7 +18,7 @@ import uk.ac.wellcome.fixtures._
 import uk.ac.wellcome.json.JsonUtil.fromJson
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
-  ElasticClientBuilder,
+  ElasticClientFactory,
   ElasticsearchIndexCreator
 }
 
@@ -35,7 +35,7 @@ trait ElasticsearchFixtures
   private val esHost = "localhost"
   private val esPort = 9200
 
-  val elasticClient: ElasticClient = ElasticClientBuilder.create(
+  val elasticClient: ElasticClient = ElasticClientFactory.create(
     hostname = esHost,
     port = esPort,
     protocol = "http",
