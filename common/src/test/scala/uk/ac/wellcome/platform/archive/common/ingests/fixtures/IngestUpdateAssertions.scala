@@ -40,8 +40,11 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
   def assertTopicReceivesIngestUpdates(
     ingestId: IngestID,
     ingests: MemoryMessageSender
-  )(assert: Seq[IngestUpdate] => Assertion): Assertion =
-    assert(ingests.getMessages[IngestUpdate])
+  )(assert: Seq[IngestUpdate] => Assertion): Assertion = {
+    val updates = ingests.getMessages[IngestUpdate]
+    debug(s"Received ingest updates: $updates")
+    assert(updates)
+  }
 
   def assertTopicReceivesIngestEvents(
     ingestId: IngestID,
