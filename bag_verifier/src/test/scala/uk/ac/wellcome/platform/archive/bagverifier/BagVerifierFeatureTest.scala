@@ -36,7 +36,15 @@ class BagVerifierFeatureTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    withLocalSqsQueueAndDlq {
+    // The default visibility timeout is 1 second, which turns out to be a little short
+    // depending on the size of the bag being verified.
+    //
+    // If the verification doesn't succeed within 1 second, it gets retried 3 times until
+    // SQS sends the message to the DLQ, at which point the test fails.
+    //
+    // This was a cause of significant flakiness!  You can see the issue by turning down
+    // the timeout and turning up the payload file count in `createS3BagWith()`.
+    withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 10) {
       case QueuePair(queue, dlq) =>
         withBagVerifierWorker(
           ingests,
@@ -67,8 +75,6 @@ class BagVerifierFeatureTest
                 )
               )
 
-              // This test seems especially flaky -- sometimes the same payload will be
-              // received two or even three times!
               outgoing
                 .getMessages[VersionedBagRootPayload]
                 .toSet shouldBe Set(payload)
