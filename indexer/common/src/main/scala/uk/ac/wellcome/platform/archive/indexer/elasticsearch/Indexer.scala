@@ -43,19 +43,16 @@ trait Indexer[Document, DisplayDocument] extends Logging {
           Left(documents)
         } else {
           val actualFailures =
-            response.result
-              .failures
+            response.result.failures
               .filterNot { isVersionConflictException }
 
           if (actualFailures.isEmpty) {
             Right(documents)
           } else {
-            val failedIds = actualFailures
-              .map { failure =>
-                error(s"Error ingesting ${failure.id}: ${failure.error}")
-                failure.id
-              }
-              .toSet
+            val failedIds = actualFailures.map { failure =>
+              error(s"Error ingesting ${failure.id}: ${failure.error}")
+              failure.id
+            }.toSet
 
             val failedDocuments = documents.filter { doc =>
               failedIds.contains(id(doc))
@@ -93,16 +90,21 @@ trait Indexer[Document, DisplayDocument] extends Logging {
     }
   }
 
-  private def isVersionConflictException(bulkResponseItem: BulkResponseItem): Boolean = {
+  private def isVersionConflictException(
+    bulkResponseItem: BulkResponseItem
+  ): Boolean = {
     // This error is returned by Elasticsearch when we try to PUT a document
     // with a lower version than the existing version.
     val alreadyIndexedHasHigherVersion = bulkResponseItem.error
-      .exists(bulkError =>
-        bulkError.`type`.contains("version_conflict_engine_exception"))
+      .exists(
+        bulkError =>
+          bulkError.`type`.contains("version_conflict_engine_exception")
+      )
 
     if (alreadyIndexedHasHigherVersion) {
       info(
-        s"Skipping ${bulkResponseItem.id} because already indexed item has a higher version (${bulkResponseItem.error}")
+        s"Skipping ${bulkResponseItem.id} because already indexed item has a higher version (${bulkResponseItem.error}"
+      )
     }
 
     alreadyIndexedHasHigherVersion

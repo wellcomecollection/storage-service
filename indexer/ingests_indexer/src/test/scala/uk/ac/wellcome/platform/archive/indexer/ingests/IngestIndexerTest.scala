@@ -109,20 +109,32 @@ class IngestIndexerTest
       val olderIngest = createIngestWith(
         id = ingestId,
         events = Seq(
-          IngestEvent(description = "event 1", createdDate = Instant.ofEpochMilli(101))
+          IngestEvent(
+            description = "event 1",
+            createdDate = Instant.ofEpochMilli(101)
+          )
         ),
         createdDate = Instant.ofEpochMilli(1)
       )
 
       val newerIngest = olderIngest.copy(
         events = Seq(
-          IngestEvent(description = "event 1", createdDate = Instant.ofEpochMilli(101)),
-          IngestEvent(description = "event 2", createdDate = Instant.ofEpochMilli(102))
+          IngestEvent(
+            description = "event 1",
+            createdDate = Instant.ofEpochMilli(101)
+          ),
+          IngestEvent(
+            description = "event 2",
+            createdDate = Instant.ofEpochMilli(102)
+          )
         ),
         createdDate = Instant.ofEpochMilli(2)
       )
 
-      assert(olderIngest.lastModifiedDate.get.isBefore(newerIngest.lastModifiedDate.get))
+      assert(
+        olderIngest.lastModifiedDate.get
+          .isBefore(newerIngest.lastModifiedDate.get)
+      )
 
       it("a newer ingest replaces an older ingest") {
         withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
@@ -130,7 +142,9 @@ class IngestIndexerTest
 
           val future = ingestsIndexer
             .index(Seq(olderIngest))
-            .flatMap { _ => ingestsIndexer.index(Seq(newerIngest)) }
+            .flatMap { _ =>
+              ingestsIndexer.index(Seq(newerIngest))
+            }
 
           whenReady(future) { result =>
             result.right.value shouldBe Seq(newerIngest)
@@ -152,7 +166,9 @@ class IngestIndexerTest
 
           val future = ingestsIndexer
             .index(Seq(newerIngest))
-            .flatMap { _ => ingestsIndexer.index(Seq(olderIngest)) }
+            .flatMap { _ =>
+              ingestsIndexer.index(Seq(olderIngest))
+            }
 
           whenReady(future) { result =>
             result.right.value shouldBe Seq(olderIngest)
@@ -180,8 +196,14 @@ class IngestIndexerTest
 
       val newerIngest = olderIngest.copy(
         events = Seq(
-          IngestEvent(description = "event 1", createdDate = Instant.ofEpochMilli(101)),
-          IngestEvent(description = "event 2", createdDate = Instant.ofEpochMilli(102))
+          IngestEvent(
+            description = "event 1",
+            createdDate = Instant.ofEpochMilli(101)
+          ),
+          IngestEvent(
+            description = "event 2",
+            createdDate = Instant.ofEpochMilli(102)
+          )
         ),
         createdDate = Instant.ofEpochMilli(2)
       )
@@ -195,7 +217,9 @@ class IngestIndexerTest
 
           val future = ingestsIndexer
             .index(Seq(olderIngest))
-            .flatMap { _ => ingestsIndexer.index(Seq(newerIngest)) }
+            .flatMap { _ =>
+              ingestsIndexer.index(Seq(newerIngest))
+            }
 
           whenReady(future) { result =>
             result.right.value shouldBe Seq(newerIngest)
@@ -217,7 +241,9 @@ class IngestIndexerTest
 
           val future = ingestsIndexer
             .index(Seq(newerIngest))
-            .flatMap { _ => ingestsIndexer.index(Seq(olderIngest)) }
+            .flatMap { _ =>
+              ingestsIndexer.index(Seq(olderIngest))
+            }
 
           whenReady(future) { result =>
             result.right.value shouldBe Seq(olderIngest)
