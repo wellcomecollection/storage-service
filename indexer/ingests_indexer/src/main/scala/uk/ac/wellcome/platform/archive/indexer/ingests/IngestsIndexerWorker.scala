@@ -32,9 +32,13 @@ class IngestsIndexerWorker(
     ingestIndexer
       .index(Seq(ingest)).map {
         case Right(_) =>
-          info(s"Successfully indexed ${ingest.id}")
+          debug(
+            s"Successfully indexed ${ingest.id} " +
+            s"(modified ${ingest.lastModifiedDate.getOrElse(ingest.createdDate)})")
           Successful(None)
 
+        // We can't be sure what the error is here.  The cost of retrying it is
+        // very cheap, so assume it's a flaky error and let it land on the DLQ if not.
         case Left(ingests) =>
           warn(s"Unable to index ${ingest.id}")
           NonDeterministicFailure(
