@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.indexer.ingests
 import java.time.Instant
 import java.util.UUID
 
-import com.sksamuel.elastic4s.ElasticDsl.matchAllQuery
+import com.sksamuel.elastic4s.ElasticDsl.{matchAllQuery, properties, textField}
 import com.sksamuel.elastic4s.http.JavaClientExceptionWrapper
 import io.circe.Json
 import org.scalatest.{EitherValues, FunSpec, Matchers}
@@ -79,6 +79,22 @@ class IngestIndexerTest
 
           storedIds shouldBe ingests.map { _.id.toString }
         }
+      }
+    }
+  }
+
+  it("returns a Left if the document can't be indexed correctly") {
+    val ingest = createIngest
+
+    val badMapping = properties(
+      Seq(textField("name"))
+    )
+
+    withLocalElasticsearchIndex(badMapping) { index =>
+      val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
+
+      whenReady(ingestsIndexer.index(Seq(ingest))) {
+        _.left.value shouldBe Seq(ingest)
       }
     }
   }
