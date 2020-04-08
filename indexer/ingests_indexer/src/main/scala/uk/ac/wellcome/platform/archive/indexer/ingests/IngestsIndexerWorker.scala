@@ -7,8 +7,15 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.amazonaws.services.sqs.model.Message
 import grizzled.slf4j.Logging
 import io.circe.Decoder
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
 import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.typesafe.Runnable
@@ -24,17 +31,20 @@ class IngestsIndexerWorker(
   val actorSystem: ActorSystem,
   val sqsAsync: AmazonSQSAsync,
   decoder: Decoder[Ingest]
-) extends Runnable with Logging {
+) extends Runnable
+    with Logging {
 
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
   def process(ingest: Ingest): Future[Result[Unit]] =
     ingestIndexer
-      .index(Seq(ingest)).map {
+      .index(Seq(ingest))
+      .map {
         case Right(_) =>
           debug(
             s"Successfully indexed ${ingest.id} " +
-            s"(modified ${ingest.lastModifiedDate.getOrElse(ingest.createdDate)})")
+              s"(modified ${ingest.lastModifiedDate.getOrElse(ingest.createdDate)})"
+          )
           Successful(None)
 
         // We can't be sure what the error is here.  The cost of retrying it is
@@ -42,7 +52,8 @@ class IngestsIndexerWorker(
         case Left(ingests) =>
           warn(s"Unable to index ${ingest.id}")
           NonDeterministicFailure(
-            new Throwable(s"Error indexing ${ingest.id}"), summary = None
+            new Throwable(s"Error indexing ${ingest.id}"),
+            summary = None
           )
       }
 

@@ -5,11 +5,19 @@ import java.util.UUID
 import com.sksamuel.elastic4s.ElasticDsl.{properties, textField}
 import io.circe.Json
 import org.scalatest.{EitherValues, FunSpec, Matchers}
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.indexer.ingests.fixtures.IngestsIndexerFixtures
 
-class IngestsIndexerWorkerTest extends FunSpec with Matchers with EitherValues with IngestsIndexerFixtures with IngestGenerators {
+class IngestsIndexerWorkerTest
+    extends FunSpec
+    with Matchers
+    with EitherValues
+    with IngestsIndexerFixtures
+    with IngestGenerators {
   it("processes a single message") {
     val ingest = createIngest
 

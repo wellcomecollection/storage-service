@@ -7,7 +7,12 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.indexer.ingests.fixtures.IngestsIndexerFixtures
 
-class IngestsIndexerFeatureTest extends FunSpec with Matchers with EitherValues with IngestsIndexerFixtures with IngestGenerators {
+class IngestsIndexerFeatureTest
+    extends FunSpec
+    with Matchers
+    with EitherValues
+    with IngestsIndexerFixtures
+    with IngestGenerators {
   it("processes a single message") {
     val ingest = createIngest
 
@@ -25,7 +30,8 @@ class IngestsIndexerFeatureTest extends FunSpec with Matchers with EitherValues 
                 .right
                 .value
 
-            val storedIngestId = UUID.fromString(storedIngest("id").asString.get)
+            val storedIngestId =
+              UUID.fromString(storedIngest("id").asString.get)
             storedIngestId shouldBe ingest.id.underlying
           }
         }

@@ -9,11 +9,18 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.MonitoringClientFixture
 import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
-import uk.ac.wellcome.platform.archive.indexer.ingests.{IngestIndexer, IngestsIndexerWorker}
+import uk.ac.wellcome.platform.archive.indexer.ingests.{
+  IngestIndexer,
+  IngestsIndexerWorker
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait IngestsIndexerFixtures extends ElasticsearchFixtures with Akka with AlpakkaSQSWorkerFixtures with MonitoringClientFixture { this: Suite =>
+trait IngestsIndexerFixtures
+    extends ElasticsearchFixtures
+    with Akka
+    with AlpakkaSQSWorkerFixtures
+    with MonitoringClientFixture { this: Suite =>
   def withIngestsIndexerWorker[R](
     queue: Queue = Queue("queue://test", "arn::test"),
     index: Index

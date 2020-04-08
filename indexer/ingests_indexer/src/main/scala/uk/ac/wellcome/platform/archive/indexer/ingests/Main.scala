@@ -9,7 +9,11 @@ import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.sksamuel.elastic4s.Index
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticsearchIndexCreator
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.config.ElasticClientBuilder
@@ -62,7 +66,8 @@ object Main extends WellcomeTypesafeApp {
     )
 
     indexCreator.create(
-      index = index, mappingDefinition = IngestsIndexConfig.mapping
+      index = index,
+      mappingDefinition = IngestsIndexConfig.mapping
     )
 
     val ingestIndexer = new IngestIndexer(
