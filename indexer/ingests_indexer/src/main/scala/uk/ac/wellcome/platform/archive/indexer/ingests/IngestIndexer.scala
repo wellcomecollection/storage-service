@@ -24,4 +24,10 @@ class IngestIndexer(val client: ElasticClient, val index: Index)(
       ingest = ingest,
       contextUrl = new URL("http://localhost:9200")
     )
+
+  override protected def version(ingest: Ingest): Long =
+    ingest.lastModifiedDate match {
+      case Some(modifiedDate) => modifiedDate.getEpochSecond
+      case None               => ingest.createdDate.getEpochSecond
+    }
 }
