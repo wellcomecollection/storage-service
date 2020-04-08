@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.indexer.ingests
 
+import java.time.Instant
 import java.util.UUID
 
 import com.sksamuel.elastic4s.ElasticDsl.matchAllQuery
@@ -9,6 +10,7 @@ import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestEvent
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticClientFactory
 import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 
@@ -97,6 +99,139 @@ class IngestIndexerTest
 
     whenReady(ingestsIndexer.index(Seq(ingest)).failed) {
       _ shouldBe a[JavaClientExceptionWrapper]
+    }
+  }
+
+  describe("orders updates correctly") {
+    describe("when both ingests have a modified date") {
+      val ingestId = createIngestID
+
+      val olderIngest = createIngestWith(
+        id = ingestId,
+        events = Seq(
+          IngestEvent(description = "event 1", createdDate = Instant.ofEpochSecond(101))
+        ),
+        createdDate = Instant.ofEpochSecond(1)
+      )
+
+      val newerIngest = olderIngest.copy(
+        events = Seq(
+          IngestEvent(description = "event 1", createdDate = Instant.ofEpochSecond(101)),
+          IngestEvent(description = "event 2", createdDate = Instant.ofEpochSecond(102))
+        ),
+        createdDate = Instant.ofEpochSecond(2)
+      )
+
+      assert(olderIngest.lastModifiedDate.get.isBefore(newerIngest.lastModifiedDate.get))
+
+      it("a newer ingest replaces an older ingest") {
+        withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
+          val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
+
+          val future = ingestsIndexer
+            .index(Seq(olderIngest))
+            .flatMap { _ => ingestsIndexer.index(Seq(newerIngest)) }
+
+          whenReady(future) { result =>
+            result.right.value shouldBe Seq(newerIngest)
+
+            val storedIngest =
+              getT[Json](index, id = ingestId.toString)
+                .as[Map[String, Json]]
+                .right
+                .value
+
+            storedIngest("events").asArray.get.size shouldBe 2
+          }
+        }
+      }
+
+      it("an older ingest does not replace a newer ingest") {
+        withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
+          val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
+
+          val future = ingestsIndexer
+            .index(Seq(newerIngest))
+            .flatMap { _ => ingestsIndexer.index(Seq(olderIngest)) }
+
+          whenReady(future) { result =>
+            result.right.value shouldBe Seq(olderIngest)
+
+            val storedIngest =
+              getT[Json](index, id = ingestId.toString)
+                .as[Map[String, Json]]
+                .right
+                .value
+
+            storedIngest("events").asArray.get.size shouldBe 2
+          }
+        }
+      }
+    }
+
+    describe("when one ingest does not have a modified date") {
+      val ingestId = createIngestID
+
+      val olderIngest = createIngestWith(
+        id = ingestId,
+        events = Seq.empty,
+        createdDate = Instant.ofEpochSecond(1)
+      )
+
+      val newerIngest = olderIngest.copy(
+        events = Seq(
+          IngestEvent(description = "event 1", createdDate = Instant.ofEpochSecond(101)),
+          IngestEvent(description = "event 2", createdDate = Instant.ofEpochSecond(102))
+        ),
+        createdDate = Instant.ofEpochSecond(2)
+      )
+
+      assert(olderIngest.lastModifiedDate.isEmpty)
+      assert(newerIngest.lastModifiedDate.isDefined)
+
+      it("a newer ingest replaces an older ingest") {
+        withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
+          val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
+
+          val future = ingestsIndexer
+            .index(Seq(olderIngest))
+            .flatMap { _ => ingestsIndexer.index(Seq(newerIngest)) }
+
+          whenReady(future) { result =>
+            result.right.value shouldBe Seq(newerIngest)
+
+            val storedIngest =
+              getT[Json](index, id = ingestId.toString)
+                .as[Map[String, Json]]
+                .right
+                .value
+
+            storedIngest("events").asArray.get.size shouldBe 2
+          }
+        }
+      }
+
+      it("an older ingest does not replace a newer ingest") {
+        withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
+          val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
+
+          val future = ingestsIndexer
+            .index(Seq(newerIngest))
+            .flatMap { _ => ingestsIndexer.index(Seq(olderIngest)) }
+
+          whenReady(future) { result =>
+            result.right.value shouldBe Seq(olderIngest)
+
+            val storedIngest =
+              getT[Json](index, id = ingestId.toString)
+                .as[Map[String, Json]]
+                .right
+                .value
+
+            storedIngest("events").asArray.get.size shouldBe 2
+          }
+        }
+      }
     }
   }
 }
