@@ -19,7 +19,7 @@ trait StorageRandomThings extends RandomThings {
   def randomChecksumValue = ChecksumValue(randomAlphanumeric)
 
   def randomInstant: Instant =
-    Instant.now().plusSeconds(Random.nextInt())
+    Instant.now().plusSeconds(Random.nextInt().abs)
 
   private val collectionMax = 10
 
