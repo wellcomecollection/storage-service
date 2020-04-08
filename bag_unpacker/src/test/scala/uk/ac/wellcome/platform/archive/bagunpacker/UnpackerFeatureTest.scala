@@ -54,9 +54,9 @@ class UnpackerFeatureTest
                   )
                 )
 
-                outgoing.getMessages[UnpackedBagLocationPayload] shouldBe Seq(
-                  expectedPayload
-                )
+                outgoing
+                  .getMessages[UnpackedBagLocationPayload]
+                  .distinct shouldBe Seq(expectedPayload)
 
                 assertTopicReceivesIngestUpdates(
                   sourceLocationPayload.ingestId,
