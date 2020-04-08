@@ -94,8 +94,8 @@ object ExternalDependencies {
     "commons-io" % "commons-io" % versions.commonsIO
   )
 
-  val circeOpticsDependencies = Seq[ModuleID](
-    "io.circe" %% "circe-optics" % versions.circe % "test"
+  val circeOpticsDependencies: Seq[sbt.ModuleID] = Seq[ModuleID](
+    "io.circe" %% "circe-optics" % versions.circe
   )
 
   val scalatestDependencies = Seq[ModuleID](

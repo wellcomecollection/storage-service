@@ -1,0 +1,8 @@
+{
+  "id" : "ingests_indexer",
+  "folder" : "indexer/ingests_indexer",
+  "dependencyIds" : [
+    "display",
+    "indexer_common"
+  ]
+}
