@@ -109,17 +109,17 @@ class IngestIndexerTest
       val olderIngest = createIngestWith(
         id = ingestId,
         events = Seq(
-          IngestEvent(description = "event 1", createdDate = Instant.ofEpochSecond(101))
+          IngestEvent(description = "event 1", createdDate = Instant.ofEpochMilli(101))
         ),
-        createdDate = Instant.ofEpochSecond(1)
+        createdDate = Instant.ofEpochMilli(1)
       )
 
       val newerIngest = olderIngest.copy(
         events = Seq(
-          IngestEvent(description = "event 1", createdDate = Instant.ofEpochSecond(101)),
-          IngestEvent(description = "event 2", createdDate = Instant.ofEpochSecond(102))
+          IngestEvent(description = "event 1", createdDate = Instant.ofEpochMilli(101)),
+          IngestEvent(description = "event 2", createdDate = Instant.ofEpochMilli(102))
         ),
-        createdDate = Instant.ofEpochSecond(2)
+        createdDate = Instant.ofEpochMilli(2)
       )
 
       assert(olderIngest.lastModifiedDate.get.isBefore(newerIngest.lastModifiedDate.get))
@@ -175,15 +175,15 @@ class IngestIndexerTest
       val olderIngest = createIngestWith(
         id = ingestId,
         events = Seq.empty,
-        createdDate = Instant.ofEpochSecond(1)
+        createdDate = Instant.ofEpochMilli(1)
       )
 
       val newerIngest = olderIngest.copy(
         events = Seq(
-          IngestEvent(description = "event 1", createdDate = Instant.ofEpochSecond(101)),
-          IngestEvent(description = "event 2", createdDate = Instant.ofEpochSecond(102))
+          IngestEvent(description = "event 1", createdDate = Instant.ofEpochMilli(101)),
+          IngestEvent(description = "event 2", createdDate = Instant.ofEpochMilli(102))
         ),
-        createdDate = Instant.ofEpochSecond(2)
+        createdDate = Instant.ofEpochMilli(2)
       )
 
       assert(olderIngest.lastModifiedDate.isEmpty)

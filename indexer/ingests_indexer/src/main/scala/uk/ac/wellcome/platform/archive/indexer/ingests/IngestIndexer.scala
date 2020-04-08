@@ -27,7 +27,7 @@ class IngestIndexer(val client: ElasticClient, val index: Index)(
 
   override protected def version(ingest: Ingest): Long =
     ingest.lastModifiedDate match {
-      case Some(modifiedDate) => modifiedDate.getEpochSecond
-      case None               => ingest.createdDate.getEpochSecond
+      case Some(modifiedDate) => modifiedDate.toEpochMilli
+      case None               => ingest.createdDate.toEpochMilli
     }
 }
