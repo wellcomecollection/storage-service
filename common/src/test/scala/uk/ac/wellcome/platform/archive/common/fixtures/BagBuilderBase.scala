@@ -292,18 +292,6 @@ trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures with Logging {
       payloadFileCount = payloadFileCount
     )
 
-    // This tracing is here to help debug a flaky issue in the
-    // bag verifier tests: https://github.com/wellcometrust/platform/issues/3952
-    //
-    // Specifically, sometimes when Travis creates a bag, it complains that
-    // the Payload-Oxum has one less file than in the bag manifest.  Hopefully
-    // if that is happening, we'll spot it here.
-    //
-    // Once that ticket is closed, this logging can be deleted.
-    debug(s"bagObjects = $bagObjects")
-    debug(s"bagRoot = $bagRoot")
-    debug(s"bagInfo = $bagInfo")
-
     implicit val typedStore: S3TypedStore[String] = S3TypedStore[String]
     uploadBagObjects(bagObjects)
 
