@@ -13,9 +13,8 @@ object DisplayFileManifest {
   def apply(fileManifest: FileManifest): DisplayFileManifest =
     DisplayFileManifest(
       checksumAlgorithm = fileManifest.checksumAlgorithm.value,
-      files =
-        fileManifest.files
-          .sortBy { _.name }
-          .map { DisplayFile.apply }
+      files = fileManifest.files
+        .sortBy { _.name }
+        .map { DisplayFile.apply }
     )
 }

@@ -2,10 +2,16 @@ package uk.ac.wellcome.platform.storage.bags.api.models
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.{FileManifest, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  FileManifest,
+  StorageManifestFile
+}
 import uk.ac.wellcome.platform.archive.common.verify._
 
-class DisplayFileManifestTest extends FunSpec with Matchers with StorageManifestGenerators {
+class DisplayFileManifestTest
+    extends FunSpec
+    with Matchers
+    with StorageManifestGenerators {
   it("converts a manifest to a DisplayManifest") {
     val manifest = createFileManifestWith(
       files = Seq(
@@ -36,15 +42,18 @@ class DisplayFileManifestTest extends FunSpec with Matchers with StorageManifest
       files = Seq(
         createStorageManifestFileWith("data/bob.txt"),
         createStorageManifestFileWith("data/alice.txt"),
-        createStorageManifestFileWith("data/carol.txt"),
+        createStorageManifestFileWith("data/carol.txt")
       )
     )
 
     val displayFileManifest = DisplayFileManifest(manifest)
 
-    displayFileManifest
-      .files
-      .map { _.name } shouldBe Seq("data/alice.txt", "data/bob.txt", "data/carol.txt")
+    displayFileManifest.files
+      .map { _.name } shouldBe Seq(
+      "data/alice.txt",
+      "data/bob.txt",
+      "data/carol.txt"
+    )
   }
 
   private def createStorageManifestFileWith(name: String): StorageManifestFile =
