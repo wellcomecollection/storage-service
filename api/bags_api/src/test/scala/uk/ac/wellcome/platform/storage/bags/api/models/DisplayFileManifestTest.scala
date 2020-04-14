@@ -2,13 +2,12 @@ package uk.ac.wellcome.platform.storage.bags.api.models
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.FileManifest
-import uk.ac.wellcome.platform.archive.common.verify.{MD5, SHA1, SHA256, SHA512}
+import uk.ac.wellcome.platform.archive.common.storage.models.{FileManifest, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.verify._
 
 class DisplayFileManifestTest extends FunSpec with Matchers with StorageManifestGenerators {
   it("converts a manifest to a DisplayManifest") {
-    val manifest = FileManifest(
-      checksumAlgorithm = chooseFrom(Seq(MD5, SHA1, SHA256, SHA512)),
+    val manifest = createFileManifestWith(
       files = Seq(
         createStorageManifestFile,
         createStorageManifestFile,
@@ -16,9 +15,9 @@ class DisplayFileManifestTest extends FunSpec with Matchers with StorageManifest
       )
     )
 
-    val displayManifest = DisplayFileManifest(manifest)
+    val displayFileManifest = DisplayFileManifest(manifest)
 
-    displayManifest.checksumAlgorithm shouldBe manifest.checksumAlgorithm.toString
+    displayFileManifest.checksumAlgorithm shouldBe manifest.checksumAlgorithm.toString
 
     val expectedFiles = manifest.files.map { file =>
       DisplayFile(
@@ -29,6 +28,33 @@ class DisplayFileManifestTest extends FunSpec with Matchers with StorageManifest
       )
     }
 
-    displayManifest.files should contain theSameElementsAs expectedFiles
+    displayFileManifest.files should contain theSameElementsAs expectedFiles
   }
+
+  it("sorts the files in the manifest by name order") {
+    val manifest = createFileManifestWith(
+      files = Seq(
+        createStorageManifestFileWith("data/bob.txt"),
+        createStorageManifestFileWith("data/alice.txt"),
+        createStorageManifestFileWith("data/carol.txt"),
+      )
+    )
+
+    val displayFileManifest = DisplayFileManifest(manifest)
+
+    displayFileManifest
+      .files
+      .map { _.name } shouldBe Seq("data/alice.txt", "data/bob.txt", "data/carol.txt")
+  }
+
+  private def createStorageManifestFileWith(name: String): StorageManifestFile =
+    createStorageManifestFile.copy(name = name)
+
+  private def createFileManifestWith(
+    files: Seq[StorageManifestFile]
+  ): FileManifest =
+    FileManifest(
+      checksumAlgorithm = chooseFrom(Seq(MD5, SHA1, SHA256, SHA512)),
+      files = files
+    )
 }
