@@ -76,7 +76,7 @@ trait DisplayJsonHelpers {
        |{
        |  "type": "BagManifest",
        |  "checksumAlgorithm": "${fm.checksumAlgorithm.value}",
-       |  "files": [ ${asList(fm.files, file)} ]
+       |  "files": [ ${asList(fm.files.sortBy { _.name }, file)} ]
        |}
      """.stripMargin
 
