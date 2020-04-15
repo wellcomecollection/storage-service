@@ -20,7 +20,7 @@ trait StorageManifestGenerators
 
   val checksumAlgorithm: HashingAlgorithm = SHA256
 
-  private def createStorageManifestFile: StorageManifestFile = {
+  def createStorageManifestFile: StorageManifestFile = {
     val path = createBagPath
     StorageManifestFile(
       checksum = randomChecksumValue,

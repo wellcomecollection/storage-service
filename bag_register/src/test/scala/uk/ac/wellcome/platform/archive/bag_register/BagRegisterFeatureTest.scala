@@ -121,7 +121,7 @@ class BagRegisterFeatureTest
     // in this payload.
     val payload = createKnownReplicasPayload
 
-    withLocalSqsQueueAndDlq {
+    withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
       case QueuePair(queue, dlq) =>
         withBagRegisterWorker(queue = queue, ingests = ingests) { _ =>
           sendNotificationToSQS(queue, payload)
