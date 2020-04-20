@@ -50,7 +50,7 @@ trait Indexer[Document, DisplayDocument] extends Logging {
             Right(documents)
           } else {
             val failedIds = actualFailures.map { failure =>
-              error(s"Error ingesting ${failure.id}: ${failure.error}")
+              error(s"Error indexing ${failure.id}: ${failure.error}")
               failure.id
             }.toSet
 
@@ -58,7 +58,7 @@ trait Indexer[Document, DisplayDocument] extends Logging {
               failedIds.contains(id(doc))
             }
 
-            Right(failedDocuments)
+            Left(failedDocuments)
           }
         }
       }
