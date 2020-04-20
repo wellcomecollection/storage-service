@@ -74,11 +74,7 @@ def prepare_bag(bag_dir):
 
             payload_paths.add(os.path.relpath(os.path.join(dirpath, f), bag_dir))
 
-
-    payload_oxum = {
-        "count": 0,
-        "size": 0,
-    }
+    payload_oxum = {"count": 0, "size": 0}
 
     # Update entries for the new payload files
     for manifest_path in glob.glob(f"{bag_dir}/manifest-*.txt"):
@@ -96,13 +92,14 @@ def prepare_bag(bag_dir):
                     payload_oxum["count"] += 1
                     payload_oxum["size"] += os.stat(os.path.join(bag_dir, path)).st_size
 
-                    hasher.update(open(
-                        os.path.join(bag_dir, path), "rb").read()
-                    )
+                    hasher.update(open(os.path.join(bag_dir, path), "rb").read())
 
                     out_file.write(
                         # TODO: This will explode with out-of-memory on big files
-                        hasher.hexdigest() + "  " + path + "\n"
+                        hasher.hexdigest()
+                        + "  "
+                        + path
+                        + "\n"
                     )
                 else:
                     out_file.write(line)
@@ -189,18 +186,16 @@ def main(space, external_identifier):
     changed_files = prepare_bag(bag_dir)
 
     click.confirm(
-        "Ready to upload a new bag with %d replaced file%s?" %
-        (changed_files, "s" if changed_files != 1 else ""),
-        abort=True
+        "Ready to upload a new bag with %d replaced file%s?"
+        % (changed_files, "s" if changed_files != 1 else ""),
+        abort=True,
     )
 
-    tar_path = os.path.join(
-        os.path.dirname(bag_dir), f"{external_identifier}.tar.gz"
-    )
+    tar_path = os.path.join(os.path.dirname(bag_dir), f"{external_identifier}.tar.gz")
 
     subprocess.check_call(
         ["python3", "-m", "tarfile", "-c", tar_path, os.path.basename(bag_dir)],
-        cwd=os.path.dirname(bag_dir)
+        cwd=os.path.dirname(bag_dir),
     )
 
     bucket = "wellcomecollection-storage-prod-unpacked-bags"
@@ -217,8 +212,8 @@ def main(space, external_identifier):
         space_id="digitised",
         s3_bucket=bucket,
         s3_key=key,
-        external_identifier = external_identifier,
-        ingest_type = "update"
+        external_identifier=external_identifier,
+        ingest_type="update",
     ).split("/")[-1]
 
     inspector_url = f"https://wellcome-ingest-inspector.glitch.me/ingests/{ingest_id}"
