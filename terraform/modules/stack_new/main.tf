@@ -27,7 +27,7 @@ module "replicator_verifier_primary" {
   cluster_name = aws_ecs_cluster.cluster.name
   cluster_arn  = aws_ecs_cluster.cluster.arn
 
-  subnets      = var.private_subnets
+  subnets = var.private_subnets
 
   ingests_topic_arn = module.ingests_topic.arn
 
@@ -76,7 +76,7 @@ module "replicator_verifier_glacier" {
   cluster_name = aws_ecs_cluster.cluster.name
   cluster_arn  = aws_ecs_cluster.cluster.arn
 
-  subnets      = var.private_subnets
+  subnets = var.private_subnets
 
   ingests_topic_arn = module.ingests_topic.arn
 
