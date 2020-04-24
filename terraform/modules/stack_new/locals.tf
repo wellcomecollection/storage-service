@@ -25,8 +25,8 @@ locals {
   bag_unpacker_image       = local.image_ids["bag_unpacker"]
   replica_aggregator_image = local.image_ids["replica_aggregator"]
 
-  java_opts_heap_size = "-Xss6M -Xms2G -Xmx3G"
-
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  logstash_transit_service_name = "${var.namespace}_logstash_transit"
+  logstash_transit_image        = "wellcome/logstash_transit:edgelord"
+  logstash_host                 = "${local.logstash_transit_service_name}.${var.namespace}"
 }
 
