@@ -5,7 +5,7 @@ resource "aws_api_gateway_base_path_mapping" "mapping_staging" {
 }
 
 module "stack_staging" {
-  source = "../modules/stack"
+  source = "../modules/stack_new"
 
   namespace = "${local.namespace}-staging"
 
