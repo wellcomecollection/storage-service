@@ -10,26 +10,35 @@ import org.scalatest.Assertion
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestEvent}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestEvent
+}
 import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
 import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class IngestIndexerTest
-  extends IndexerTestCases[Ingest, ResponseDisplayIngest]
+    extends IndexerTestCases[Ingest, ResponseDisplayIngest]
     with IngestGenerators {
 
   override val mapping: MappingDefinition = IngestsIndexConfig.mapping
 
-  override def createIndexer(client: ElasticClient, index: Index): IngestIndexer =
+  override def createIndexer(
+    client: ElasticClient,
+    index: Index
+  ): IngestIndexer =
     new IngestIndexer(client, index = index)
 
   override def createDocument: Ingest = createIngest
 
   override def id(ingest: Ingest): String = ingest.id.toString
 
-  override def assertMatch(storedIngest: Map[String, Json], ingest: Ingest): Assertion = {
+  override def assertMatch(
+    storedIngest: Map[String, Json],
+    ingest: Ingest
+  ): Assertion = {
     val storedIngestId = UUID.fromString(storedIngest("id").asString.get)
     storedIngestId shouldBe ingest.id.underlying
 

@@ -6,24 +6,33 @@ import com.sksamuel.elastic4s.http.JavaClientExceptionWrapper
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import io.circe.Json
 import org.scalatest.{Assertion, EitherValues, FunSpec, Matchers}
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{ElasticClientFactory, Indexer}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  ElasticClientFactory,
+  Indexer
+}
 import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IndexerTestCases[Document, DisplayDocument]
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with EitherValues
     with ElasticsearchFixtures {
   val mapping: MappingDefinition
 
-  def createIndexer(client: ElasticClient, index: Index): Indexer[Document, DisplayDocument]
+  def createIndexer(
+    client: ElasticClient,
+    index: Index
+  ): Indexer[Document, DisplayDocument]
 
   def createDocument: Document
   def id(document: Document): String
 
-  def assertMatch(storedDocument: Map[String, Json], expectedDocument: Document): Assertion
+  def assertMatch(
+    storedDocument: Map[String, Json],
+    expectedDocument: Document
+  ): Assertion
 
   // Create a pair of documents: one older, one newer
   def createDocumentPair: (Document, Document)

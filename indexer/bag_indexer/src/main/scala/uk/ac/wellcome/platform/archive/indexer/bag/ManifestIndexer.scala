@@ -19,7 +19,9 @@ class ManifestIndexer(val client: ElasticClient, val index: Index)(
   override protected def id(storageManifest: StorageManifest): String =
     storageManifest.idWithVersion
 
-  override protected def toDisplay(storageManifest: StorageManifest): DisplayStorageManifest =
+  override protected def toDisplay(
+    storageManifest: StorageManifest
+  ): DisplayStorageManifest =
     DisplayStorageManifest(
       storageManifest = storageManifest,
       contextUrl = new URL("http://localhost:9200")
