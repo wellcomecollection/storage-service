@@ -28,13 +28,13 @@ class ManifestIndexerTest
   override def id(storageManifest: StorageManifest): String = storageManifest.idWithVersion
 
   override def assertMatch(
-    storedDocument: Map[String, Json],
-    storageManifest: StorageManifest): Assertion = {
-    val storedId = storedDocument("id").asString.get
-    storedId shouldBe storageManifest.id.toString
+    storedManifest: Map[String, Json],
+    manifest: StorageManifest): Assertion = {
+    val storedId = storedManifest("id").asString.get
+    storedId shouldBe manifest.id.toString
 
     val fileManifest =
-      storedDocument("manifest")
+      storedManifest("manifest")
         .as[Map[String, Json]].right.get
 
     val filenames =
@@ -43,7 +43,7 @@ class ManifestIndexerTest
         .map { _.as[Map[String, Json]].right.get }
         .map { _("name").asString.get }
 
-    filenames should contain theSameElementsAs storageManifest.manifest.files.map { _.name }
+    filenames should contain theSameElementsAs manifest.manifest.files.map { _.name }
   }
 
   override def createDocumentPair: (StorageManifest, StorageManifest) = {
