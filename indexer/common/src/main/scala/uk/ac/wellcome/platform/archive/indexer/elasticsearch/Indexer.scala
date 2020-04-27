@@ -90,6 +90,13 @@ trait Indexer[Document, DisplayDocument] extends Logging {
     }
   }
 
+  final def index(document: Document): Future[Either[Document, Document]] =
+    index(Seq(document))
+      .map {
+        case Right(Seq(doc)) => Right(doc)
+        case Left(Seq(doc))  => Left(doc)
+      }
+
   private def isVersionConflictException(
     bulkResponseItem: BulkResponseItem
   ): Boolean = {

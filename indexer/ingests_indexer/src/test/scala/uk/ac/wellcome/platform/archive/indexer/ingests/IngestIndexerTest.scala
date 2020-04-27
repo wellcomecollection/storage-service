@@ -29,8 +29,8 @@ class IngestIndexerTest
 
       val ingest = createIngest
 
-      whenReady(ingestsIndexer.index(Seq(ingest))) { result =>
-        result.right.value shouldBe Seq(ingest)
+      whenReady(ingestsIndexer.index(ingest)) { result =>
+        result.right.value shouldBe ingest
 
         val storedIngest =
           getT[Json](index, id = ingest.id.toString)
@@ -93,8 +93,8 @@ class IngestIndexerTest
     withLocalElasticsearchIndex(badMapping) { index =>
       val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
 
-      whenReady(ingestsIndexer.index(Seq(ingest))) {
-        _.left.value shouldBe Seq(ingest)
+      whenReady(ingestsIndexer.index(ingest)) {
+        _.left.value shouldBe ingest
       }
     }
   }
@@ -113,7 +113,7 @@ class IngestIndexerTest
 
     val ingest = createIngest
 
-    whenReady(ingestsIndexer.index(Seq(ingest)).failed) {
+    whenReady(ingestsIndexer.index(ingest).failed) {
       _ shouldBe a[JavaClientExceptionWrapper]
     }
   }
@@ -157,13 +157,13 @@ class IngestIndexerTest
           val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
 
           val future = ingestsIndexer
-            .index(Seq(olderIngest))
+            .index(olderIngest)
             .flatMap { _ =>
-              ingestsIndexer.index(Seq(newerIngest))
+              ingestsIndexer.index(newerIngest)
             }
 
           whenReady(future) { result =>
-            result.right.value shouldBe Seq(newerIngest)
+            result.right.value shouldBe newerIngest
 
             val storedIngest =
               getT[Json](index, id = ingestId.toString)
@@ -181,13 +181,13 @@ class IngestIndexerTest
           val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
 
           val future = ingestsIndexer
-            .index(Seq(newerIngest))
+            .index(newerIngest)
             .flatMap { _ =>
-              ingestsIndexer.index(Seq(olderIngest))
+              ingestsIndexer.index(olderIngest)
             }
 
           whenReady(future) { result =>
-            result.right.value shouldBe Seq(olderIngest)
+            result.right.value shouldBe olderIngest
 
             val storedIngest =
               getT[Json](index, id = ingestId.toString)
@@ -232,13 +232,13 @@ class IngestIndexerTest
           val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
 
           val future = ingestsIndexer
-            .index(Seq(olderIngest))
+            .index(olderIngest)
             .flatMap { _ =>
-              ingestsIndexer.index(Seq(newerIngest))
+              ingestsIndexer.index(newerIngest)
             }
 
           whenReady(future) { result =>
-            result.right.value shouldBe Seq(newerIngest)
+            result.right.value shouldBe newerIngest
 
             val storedIngest =
               getT[Json](index, id = ingestId.toString)
@@ -256,13 +256,13 @@ class IngestIndexerTest
           val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
 
           val future = ingestsIndexer
-            .index(Seq(newerIngest))
+            .index(newerIngest)
             .flatMap { _ =>
-              ingestsIndexer.index(Seq(olderIngest))
+              ingestsIndexer.index(olderIngest)
             }
 
           whenReady(future) { result =>
-            result.right.value shouldBe Seq(olderIngest)
+            result.right.value shouldBe olderIngest
 
             val storedIngest =
               getT[Json](index, id = ingestId.toString)
