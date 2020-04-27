@@ -1,16 +1,16 @@
 module "log_router_container" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=c4dad2c"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=v2.2.1"
   namespace = var.service_name
 }
 
 module "log_router_container_secrets_permissions" {
-  source              = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=c4dad2c"
+  source              = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v2.2.1"
   secrets             = module.log_router_container.shared_secrets_logging
-  execution_role_name = module.task_definition.task_execution_role_name
+  role_name = module.task_definition.task_execution_role_name
 }
 
 module "app_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=c4dad2c"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v2.2.1"
   name   = "app"
 
   image = var.container_image
@@ -18,17 +18,17 @@ module "app_container" {
   environment = var.environment
   secrets     = var.secrets
 
-  log_configuration = module.log_router_container.container_log_configuration
+  log_configuration = module.log_router_container.debug_container_log_configuration
 }
 
 module "app_container_secrets_permissions" {
-  source              = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=c4dad2c"
+  source              = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v2.2.1"
   secrets             = var.secrets
-  execution_role_name = module.task_definition.task_execution_role_name
+  role_name = module.task_definition.task_execution_role_name
 }
 
 module "task_definition" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/task_definition?ref=c4dad2c"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/task_definition?ref=v2.2.1"
 
   cpu    = var.cpu
   memory = var.memory
@@ -42,7 +42,7 @@ module "task_definition" {
 }
 
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/service?ref=c4dad2c"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/service?ref=v2.2.1"
 
   cluster_arn  = var.cluster_arn
   service_name = var.service_name
@@ -59,7 +59,7 @@ module "service" {
 }
 
 module "scaling" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/autoscaling?ref=c4dad2c"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/autoscaling?ref=v2.2.1"
 
   name = var.service_name
 

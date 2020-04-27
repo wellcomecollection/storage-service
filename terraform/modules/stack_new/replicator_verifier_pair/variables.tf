@@ -49,7 +49,8 @@ variable "cluster_name" {
 variable "cluster_arn" {
 }
 
-variable "namespace_id" {
+variable "service_discovery_namespace_id" {
+  type = string
 }
 
 variable "subnets" {
