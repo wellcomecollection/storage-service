@@ -125,6 +125,12 @@ lazy val indexer_common = setupProject(
       WellcomeDependencies.typesafeLibrary
 )
 
+lazy val bag_indexer = setupProject(
+  project,
+  folder = "indexer/bag_indexer",
+  localDependencies = Seq(display, indexer_common)
+)
+
 lazy val ingests_indexer = setupProject(
   project,
   folder = "indexer/ingests_indexer",

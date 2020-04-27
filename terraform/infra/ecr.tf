@@ -10,7 +10,6 @@ resource "aws_ecr_repository" "ingests_api" {
   name = "uk.ac.wellcome/ingests_api"
 }
 
-
 resource "aws_ecr_repository" "notifier" {
   name = "uk.ac.wellcome/notifier"
 }
@@ -39,8 +38,16 @@ resource "aws_ecr_repository" "bag_auditor" {
   name = "uk.ac.wellcome/bag_auditor"
 }
 
+resource "aws_ecr_repository" "bag_indexer" {
+  name = "uk.ac.wellcome/bag_indexer"
+}
+
 resource "aws_ecr_repository" "bag_versioner" {
   name = "uk.ac.wellcome/bag_versioner"
+}
+
+resource "aws_ecr_repository" "ingests_indexer" {
+  name = "uk.ac.wellcome/ingests_indexer"
 }
 
 resource "aws_ecr_repository" "replica_aggregator" {
