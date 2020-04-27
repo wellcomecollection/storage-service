@@ -1,5 +1,5 @@
 variable "environment" {
-  type = map(string)
+  type    = map(string)
   default = {}
 }
 
@@ -33,22 +33,22 @@ variable "service_name" {
 }
 
 variable "desired_task_count" {
-  type = number
+  type    = number
   default = 1
 }
 
 variable "min_capacity" {
-  type = number
+  type    = number
   default = 1
 }
 
 variable "max_capacity" {
-  type = number
+  type    = number
   default = 1
 }
 
 variable "launch_type" {
-  type = string
+  type    = string
   default = "FARGATE"
 }
 
@@ -58,12 +58,12 @@ variable "security_group_ids" {
 }
 
 variable "cpu" {
-  type = number
+  type    = number
   default = 512
 }
 
 variable "memory" {
-  type = number
+  type    = number
   default = 1024
 }
 

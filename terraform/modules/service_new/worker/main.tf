@@ -38,7 +38,7 @@ module "task_definition" {
     module.app_container.container_definition
   ]
 
-  task_name    = var.service_name
+  task_name = var.service_name
 }
 
 module "service" {
