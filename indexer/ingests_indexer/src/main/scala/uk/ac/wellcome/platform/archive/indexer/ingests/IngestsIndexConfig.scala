@@ -24,12 +24,6 @@ object IngestsIndexConfig extends IndexConfig {
       keywordField("type")
     )
 
-  private val displaySpaceFields: Seq[FieldDefinition] =
-    Seq(
-      keywordField("id"),
-      keywordField("type")
-    )
-
   private val displayIngestEventFields: Seq[FieldDefinition] =
     Seq(
       textField("description"),
