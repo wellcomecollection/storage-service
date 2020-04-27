@@ -2,243 +2,73 @@ package uk.ac.wellcome.platform.archive.indexer.bag
 
 import java.time.Instant
 
-import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.http.JavaClientExceptionWrapper
+import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
+import com.sksamuel.elastic4s.{ElasticClient, Index}
 import io.circe.Json
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.Assertion
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticClientFactory
-import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import uk.ac.wellcome.platform.archive.display.manifests.DisplayStorageManifest
+import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ManifestIndexerTest extends FunSpec with Matchers with EitherValues with ElasticsearchFixtures with StorageManifestGenerators {
-  it("indexes a single manifest") {
-    withLocalElasticsearchIndex(ManifestsIndexConfig.mapping) { index =>
-      val manifestIndexer = new ManifestIndexer(elasticClient, index = index)
+class ManifestIndexerTest
+  extends IndexerTestCases[StorageManifest, DisplayStorageManifest]
+    with StorageManifestGenerators {
 
-      val manifest = createStorageManifest
+  override val mapping: MappingDefinition = ManifestsIndexConfig.mapping
 
-      whenReady(manifestIndexer.index(manifest)) { result =>
-        result.right.value shouldBe manifest
+  override def createIndexer(client: ElasticClient, index: Index): ManifestIndexer =
+    new ManifestIndexer(client, index = index)
 
-        val storedManifest =
-          getT[Json](index, id = manifest.idWithVersion)
-            .as[Map[String, Json]]
-            .right
-            .value
+  override def createDocument: StorageManifest = createStorageManifest
 
-        val storedId = storedManifest("id").asString.get
-        storedId shouldBe manifest.id.toString
-      }
-    }
+  override def id(storageManifest: StorageManifest): String = storageManifest.idWithVersion
+
+  override def assertMatch(
+    storedDocument: Map[String, Json],
+    storageManifest: StorageManifest): Assertion = {
+    val storedId = storedDocument("id").asString.get
+    storedId shouldBe storageManifest.id.toString
+
+    val fileManifest =
+      storedDocument("manifest")
+        .as[Map[String, Json]].right.get
+
+    val filenames =
+      fileManifest("files")
+        .asArray.get
+        .map { _.as[Map[String, Json]].right.get }
+        .map { _("name").asString.get }
+
+    filenames should contain theSameElementsAs storageManifest.manifest.files.map { _.name }
   }
 
-  it("indexes multiple manifests") {
-    withLocalElasticsearchIndex(ManifestsIndexConfig.mapping) { index =>
-      val manifestIndexer = new ManifestIndexer(elasticClient, index = index)
+  override def createDocumentPair: (StorageManifest, StorageManifest) = {
+    val space = createStorageSpace
+    val externalIdentifier = createExternalIdentifier
+    val version = createBagVersion
 
-      val manifestCount = 10
-      val manifests = (1 to manifestCount).map { _ =>
-        createStorageManifest
-      }
-
-      whenReady(manifestIndexer.index(manifests)) { result =>
-        result.right.value shouldBe manifests
-
-        eventually {
-          val storedManifests = searchT[Json](index, query = matchAllQuery())
-
-          storedManifests should have size manifestCount
-
-          val storedIds =
-            storedManifests
-              .map { _.as[Map[String, Json]].right.value }
-              .map { _("id").asString.get }
-
-          storedIds shouldBe manifests.map { _.id.toString }
-        }
-      }
-    }
-  }
-
-  it("returns a Left if the document can't be indexed correctly") {
-    val manifest = createStorageManifest
-
-    val badMapping = properties(
-      Seq(textField("name"))
+    val olderManifest = createStorageManifestWith(
+      space = space,
+      bagInfo = createBagInfoWith(
+        externalIdentifier = externalIdentifier
+      ),
+      createdDate = Instant.ofEpochMilli(1),
+      version = version
     )
 
-    withLocalElasticsearchIndex(badMapping) { index =>
-      val manifestIndexer = new ManifestIndexer(elasticClient, index = index)
-
-      whenReady(manifestIndexer.index(manifest)) {
-        _.left.value shouldBe manifest
-      }
-    }
-  }
-
-  it("fails if Elasticsearch doesn't respond") {
-    val badClient = ElasticClientFactory.create(
-      hostname = esHost,
-      port = esPort + 1,
-      protocol = "http",
-      username = "elastic",
-      password = "changeme"
+    val newerManifest = createStorageManifestWith(
+      space = space,
+      bagInfo = createBagInfoWith(
+        externalIdentifier = externalIdentifier
+      ),
+      createdDate = Instant.ofEpochMilli(2),
+      version = version
     )
 
-    val index = createIndex
-    val manifestIndexer = new ManifestIndexer(badClient, index = index)
-
-    val manifest = createStorageManifest
-
-    whenReady(manifestIndexer.index(manifest).failed) {
-      _ shouldBe a[JavaClientExceptionWrapper]
-    }
-  }
-
-  describe("orders updates correctly") {
-    describe("when both manifests have a modified date") {
-      val space = createStorageSpace
-      val externalIdentifier = createExternalIdentifier
-
-      val olderManifest = createStorageManifestWith(
-        space = space,
-        bagInfo = createBagInfoWith(
-          externalIdentifier = externalIdentifier
-        ),
-        createdDate = Instant.ofEpochMilli(1)
-      )
-
-      val newerManifest = createStorageManifestWith(
-        space = space,
-        bagInfo = createBagInfoWith(
-          externalIdentifier = externalIdentifier
-        ),
-        createdDate = Instant.ofEpochMilli(2)
-      )
-
-      it("a newer ingest replaces an older ingest") {
-        withLocalElasticsearchIndex(ManifestsIndexConfig.mapping) { index =>
-          val manifestIndexer = new ManifestIndexer(elasticClient, index = index)
-
-          val future = manifestIndexer
-            .index(olderManifest)
-            .flatMap { _ =>
-              manifestIndexer.index(newerManifest)
-            }
-
-          whenReady(future) { result =>
-            result.right.value shouldBe newerManifest
-
-            val storedManifest =
-              getT[Json](index, id = olderManifest.idWithVersion)
-                .as[Map[String, Json]]
-                .right
-                .value
-
-            val storedId = storedManifest("id").asString.get
-            storedId shouldBe olderManifest.id.toString
-          }
-        }
-      }
-
-      it("an older ingest does not replace a newer ingest") {
-        withLocalElasticsearchIndex(ManifestsIndexConfig.mapping) { index =>
-          val manifestIndexer = new ManifestIndexer(elasticClient, index = index)
-
-          val future = manifestIndexer
-            .index(newerManifest)
-            .flatMap { _ =>
-              manifestIndexer.index(olderManifest)
-            }
-
-          whenReady(future) { result =>
-            result.right.value shouldBe olderManifest
-
-            val storedManifest =
-              getT[Json](index, id = olderManifest.idWithVersion)
-                .as[Map[String, Json]]
-                .right
-                .value
-
-            val storedId = storedManifest("id").asString.get
-            storedId shouldBe olderManifest.id.toString
-          }
-        }
-      }
-    }
-
-    describe("when one ingest does not have a modified date") {
-      val space = createStorageSpace
-      val externalIdentifier = createExternalIdentifier
-
-      val olderManifest = createStorageManifestWith(
-        space = space,
-        bagInfo = createBagInfoWith(
-          externalIdentifier = externalIdentifier
-        ),
-        createdDate = Instant.ofEpochMilli(1)
-      )
-
-      val newerManifest = createStorageManifestWith(
-        space = space,
-        bagInfo = createBagInfoWith(
-          externalIdentifier = externalIdentifier
-        ),
-        createdDate = Instant.ofEpochMilli(2)
-      )
-
-      it("a newer ingest replaces an older ingest") {
-        withLocalElasticsearchIndex(ManifestsIndexConfig.mapping) { index =>
-          val manifestIndexer = new ManifestIndexer(elasticClient, index = index)
-
-          val future = manifestIndexer
-            .index(olderManifest)
-            .flatMap { _ =>
-              manifestIndexer.index(newerManifest)
-            }
-
-          whenReady(future) { result =>
-            result.right.value shouldBe newerManifest
-
-            val storedManifest =
-              getT[Json](index, id = olderManifest.idWithVersion)
-                .as[Map[String, Json]]
-                .right
-                .value
-
-            val storedId = storedManifest("id").asString.get
-            storedId shouldBe olderManifest.id.toString
-          }
-        }
-      }
-
-      it("an older ingest does not replace a newer ingest") {
-        withLocalElasticsearchIndex(ManifestsIndexConfig.mapping) { index =>
-          val manifestIndexer = new ManifestIndexer(elasticClient, index = index)
-
-          val future = manifestIndexer
-            .index(newerManifest)
-            .flatMap { _ =>
-              manifestIndexer.index(olderManifest)
-            }
-
-          whenReady(future) { result =>
-            result.right.value shouldBe olderManifest
-
-            val storedManifest =
-              getT[Json](index, id = olderManifest.idWithVersion)
-                .as[Map[String, Json]]
-                .right
-                .value
-
-            val storedId = storedManifest("id").asString.get
-            storedId shouldBe olderManifest.id.toString
-          }
-        }
-      }
-    }
+    (olderManifest, newerManifest)
   }
 }
