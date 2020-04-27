@@ -34,6 +34,12 @@ trait IndexConfig {
       keywordField("type")
     )
 
+  protected val displaySpaceFields: Seq[FieldDefinition] =
+    Seq(
+      keywordField("id"),
+      keywordField("type")
+    )
+
   protected val fields: Seq[FieldDefinition]
 
   def mapping: MappingDefinition =

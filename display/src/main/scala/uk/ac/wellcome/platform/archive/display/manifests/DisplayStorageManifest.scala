@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bags.api.models
+package uk.ac.wellcome.platform.archive.display.manifests
 
 import java.net.URL
 
@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.display.{
   DisplayStorageSpace
 }
 
-case class ResponseDisplayBag(
+case class DisplayStorageManifest(
   @JsonKey("@context") context: String,
   id: String,
   space: DisplayStorageSpace,
@@ -23,12 +23,12 @@ case class ResponseDisplayBag(
   @JsonKey("type") ontologyType: String = "Bag"
 )
 
-object ResponseDisplayBag {
+object DisplayStorageManifest {
   def apply(
     storageManifest: StorageManifest,
     contextUrl: URL
-  ): ResponseDisplayBag =
-    ResponseDisplayBag(
+  ): DisplayStorageManifest =
+    DisplayStorageManifest(
       context = contextUrl.toString,
       id = storageManifest.id.toString,
       space = DisplayStorageSpace(storageManifest.space.underlying),

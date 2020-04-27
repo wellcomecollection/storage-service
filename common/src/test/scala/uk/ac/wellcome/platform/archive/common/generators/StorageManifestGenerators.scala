@@ -35,7 +35,8 @@ trait StorageManifestGenerators
     space: StorageSpace = createStorageSpace,
     bagInfo: BagInfo = createBagInfo,
     version: BagVersion = createBagVersion,
-    fileCount: Int = 3
+    fileCount: Int = 3,
+    createdDate: Instant = Instant.now
   ): StorageManifest =
     StorageManifest(
       space = space,
@@ -65,7 +66,7 @@ trait StorageManifestGenerators
             prefix = createObjectLocationPrefix
           )
         },
-      createdDate = Instant.now,
+      createdDate = createdDate,
       ingestId = ingestId
     )
 

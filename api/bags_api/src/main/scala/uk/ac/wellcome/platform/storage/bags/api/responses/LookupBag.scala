@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   UserErrorResponse
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.storage.bags.api.models.ResponseDisplayBag
+import uk.ac.wellcome.platform.archive.display.manifests.DisplayStorageManifest
 import uk.ac.wellcome.storage.{NoMaximaValueError, NoVersionExistsError}
 
 import scala.concurrent.ExecutionContext
@@ -44,7 +44,7 @@ trait LookupBag extends Logging with ResponseBase {
       case Right(storageManifest) =>
         respondWithHeaders(etag) {
           complete(
-            ResponseDisplayBag(
+            DisplayStorageManifest(
               storageManifest = storageManifest,
               contextUrl = contextURL
             )
