@@ -1,11 +1,11 @@
-package uk.ac.wellcome.platform.storage.bags.api.models
+package uk.ac.wellcome.platform.archive.display.manifests
 
 import java.time.format.DateTimeFormatter
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 
-class ResponseDisplayBagInfoTest
+class DisplayStorageManifestInfoTest
     extends FunSpec
     with Matchers
     with BagInfoGenerators {
