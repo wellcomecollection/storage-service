@@ -35,10 +35,6 @@ module "bag_unpacker" {
     # If you start seeing this error, consider turning this down.
     #
     queue_parallelism = 10
-
-
-    //TODO: remove application reference, then this
-    logstash_host = local.logstash_host
   }
 
   cpu    = 2048
@@ -74,9 +70,6 @@ module "bag_root_finder" {
     outgoing_topic_arn = module.bag_root_finder_output_topic.arn
     metrics_namespace  = local.bag_root_finder_service_name
     operation_name     = "detecting bag root"
-
-    //TODO: remove application reference, then this
-    logstash_host = local.logstash_host
   }
 
   cpu    = 512
@@ -115,9 +108,6 @@ module "bag_verifier_pre_replication" {
     metrics_namespace  = local.bag_verifier_pre_repl_service_name
     operation_name     = "verification (pre-replicating to archive storage)"
     JAVA_OPTS          = local.java_opts_heap_size
-
-    //TODO: remove application reference, then this
-    logstash_host = local.logstash_host
   }
 
   cpu    = 2048
@@ -157,10 +147,6 @@ module "bag_versioner" {
     locking_table_index  = module.versioner_lock_table.index_name
     versions_table_name  = var.versioner_versions_table_name
     versions_table_index = var.versioner_versions_table_index
-
-
-    //TODO: remove application reference, then this
-    logstash_host = local.logstash_host
   }
 
   cpu    = 512
@@ -294,9 +280,6 @@ module "replica_aggregator" {
     operation_name         = "Aggregating replicas"
     expected_replica_count = 2
     JAVA_OPTS              = local.java_opts_heap_size
-
-    //TODO: remove application reference, then this
-    logstash_host = local.logstash_host
   }
 
   min_capacity = var.min_capacity
@@ -330,9 +313,6 @@ module "bag_register" {
     metrics_namespace = local.bag_register_service_name
     operation_name    = "register"
     JAVA_OPTS         = local.java_opts_heap_size
-
-    //TODO: remove application reference, then this
-    logstash_host = local.logstash_host
   }
 
   min_capacity = var.min_capacity
@@ -366,9 +346,6 @@ module "notifier" {
     notifier_queue_url = module.notifier_input_queue.url
     ingest_topic_arn   = module.ingests_topic.arn
     metrics_namespace  = local.notifier_service_name
-
-    //TODO: remove application reference, then this
-    logstash_host = local.logstash_host
   }
 
   min_capacity = var.min_capacity
@@ -400,9 +377,6 @@ module "ingests" {
     updated_ingests_topic_arn        = module.updated_ingests_topic.arn
     ingests_table_name               = var.ingests_table_name
     metrics_namespace                = local.ingests_service_name
-
-    //TODO: remove application reference, then this
-    logstash_host = local.logstash_host
   }
 
   security_group_ids = [
@@ -441,9 +415,6 @@ module "api" {
     vhs_table_name        = var.vhs_manifests_table_name
     metrics_namespace     = local.bags_api_service_name
     responses_bucket_name = aws_s3_bucket.large_response_cache.id
-
-    //TODO: remove application reference, then this
-    logstash_host = local.logstash_host
   }
 
   ingests_container_image = local.ingests_api_image
@@ -453,9 +424,6 @@ module "api" {
     unpacker_topic_arn        = module.bag_unpacker_input_topic.arn
     archive_ingest_table_name = var.ingests_table_name
     metrics_namespace         = local.ingests_api_service_name
-
-    //TODO: remove application reference, then this
-    logstash_host = local.logstash_host
   }
 
   bag_unpacker_topic_arn = module.bag_unpacker_input_topic.arn

@@ -28,9 +28,6 @@ module "bag_replicator" {
     storage_provider        = var.storage_provider
     replica_type            = var.replica_type
     JAVA_OPTS               = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_replicator_service_name}"
-
-    //TODO: remove application reference, then this
-    logstash_host = var.logstash_host
   }
 
   cpu    = 1024
@@ -64,9 +61,6 @@ module "bag_verifier" {
     metrics_namespace  = local.bag_verifier_service_name
     operation_name     = "verification (${var.replica_display_name})"
     JAVA_OPTS          = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_verifier_service_name}"
-
-    //TODO: remove application reference, then this
-    logstash_host = var.logstash_host
   }
 
   cpu    = 2048
