@@ -53,7 +53,7 @@ object Main extends WellcomeTypesafeApp {
     //
     val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
     val currentWeek = dateFormatter.format(LocalDate.now())
-    val indexPrefix: String = config.required[String]("es.ingests.indexPrefix")
+    val indexPrefix: String = config.required[String]("es.ingests.index-prefix")
     val indexName = s"$indexPrefix--$currentWeek"
     val index = Index(indexName)
 
