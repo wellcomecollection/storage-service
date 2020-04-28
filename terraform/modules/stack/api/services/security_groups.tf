@@ -32,3 +32,6 @@ resource "aws_security_group" "service_lb_ingress_security_group" {
   }
 }
 
+data "aws_vpc" "vpc" {
+  id = var.vpc_id
+}

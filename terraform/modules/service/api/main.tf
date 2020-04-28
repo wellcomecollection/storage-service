@@ -1,55 +1,72 @@
-module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.4.0"
+module "log_router_container" {
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=v2.4.0"
+  namespace = var.service_name
+}
 
-  service_name = var.namespace
+module "log_router_container_secrets_permissions" {
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v2.4.0"
+  secrets   = module.log_router_container.shared_secrets_logging
+  role_name = module.task_definition.task_execution_role_name
+}
 
-  cluster_arn = var.cluster_arn
+module "nginx_container" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/nginx/apigw?ref=v2.4.0"
 
-  task_definition_arn = module.task_definition.arn
+  forward_port      = var.container_port
+  log_configuration = module.log_router_container.container_log_configuration
+}
 
-  subnets = var.subnets
+module "app_container" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v2.4.0"
+  name   = "app"
 
-  namespace_id = var.namespace_id
+  image = var.container_image
 
-  security_group_ids = var.security_group_ids
+  environment = var.environment
+  secrets     = var.secrets
 
-  launch_type = var.launch_type
+  log_configuration = module.log_router_container.container_log_configuration
+}
 
-  desired_task_count = var.desired_task_count
-
-  target_group_arn = aws_lb_target_group.tcp.arn
-  container_name   = "nginx"
-  container_port   = var.nginx_container_port
-
-  use_fargate_spot = var.use_fargate_spot_for_api
+module "app_container_secrets_permissions" {
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v2.4.0"
+  secrets   = var.secrets
+  role_name = module.task_definition.task_execution_role_name
 }
 
 module "task_definition" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/container_with_sidecar?ref=v1.1.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/task_definition?ref=v2.4.0"
 
-  task_name = var.namespace
+  cpu    = var.cpu
+  memory = var.memory
 
-  app_container_image = var.container_image
-  app_container_port  = var.container_port
+  container_definitions = [
+    module.log_router_container.container_definition,
+    module.app_container.container_definition,
+    module.nginx_container.container_definition
+  ]
 
-  sidecar_container_image = var.nginx_container_image
-  sidecar_container_port  = var.nginx_container_port
+  task_name = var.service_name
+}
 
-  app_env_vars = var.env_vars
+module "service" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/service?ref=v2.4.0"
 
-  sidecar_env_vars = {
-    APP_HOST = "localhost"
-    APP_PORT = var.container_port
-  }
+  cluster_arn  = var.cluster_arn
+  service_name = var.service_name
 
-  cpu    = var.app_cpu + var.sidecar_cpu
-  memory = var.app_memory + var.sidecar_memory
+  service_discovery_namespace_id = var.service_discovery_namespace_id
 
-  sidecar_cpu    = var.sidecar_cpu
-  sidecar_memory = var.sidecar_memory
+  task_definition_arn = module.task_definition.arn
 
-  app_cpu    = var.app_cpu
-  app_memory = var.app_memory
+  subnets            = var.subnets
+  security_group_ids = var.security_group_ids
 
-  aws_region = var.aws_region
+  desired_task_count = var.desired_task_count
+  use_fargate_spot   = var.use_fargate_spot
+
+  target_group_arn = aws_lb_target_group.tcp.arn
+
+  container_name = module.nginx_container.container_name
+  container_port = module.nginx_container.container_port
 }

@@ -1,8 +1,9 @@
-variable "env_vars" {
-  type = map(string)
+variable "environment" {
+  type    = map(string)
+  default = {}
 }
 
-variable "secret_env_vars" {
+variable "secrets" {
   type    = map(string)
   default = {}
 }
@@ -12,25 +13,42 @@ variable "subnets" {
 }
 
 variable "container_image" {
+  type = string
 }
 
-variable "namespace_id" {
+variable "service_discovery_namespace_id" {
+  type = string
 }
 
 variable "cluster_name" {
+  type = string
 }
 
 variable "cluster_arn" {
+  type = string
 }
 
 variable "service_name" {
+  type = string
 }
 
 variable "desired_task_count" {
+  type    = number
+  default = 1
+}
+
+variable "min_capacity" {
+  type    = number
+  default = 1
+}
+
+variable "max_capacity" {
+  type    = number
   default = 1
 }
 
 variable "launch_type" {
+  type    = string
   default = "FARGATE"
 }
 
@@ -40,10 +58,12 @@ variable "security_group_ids" {
 }
 
 variable "cpu" {
+  type    = number
   default = 512
 }
 
 variable "memory" {
+  type    = number
   default = 1024
 }
 

@@ -74,6 +74,8 @@ module "updated_ingests_queue" {
 
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
+
+  role_names = []
 }
 
 # notifier
