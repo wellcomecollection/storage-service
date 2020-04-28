@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.display.manifests
+package uk.ac.wellcome.platform.archive.display.bags
 
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators

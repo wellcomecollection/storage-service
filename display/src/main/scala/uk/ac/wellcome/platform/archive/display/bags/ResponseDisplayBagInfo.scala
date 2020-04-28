@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.display.manifests
+package uk.ac.wellcome.platform.archive.display.bags
 
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo

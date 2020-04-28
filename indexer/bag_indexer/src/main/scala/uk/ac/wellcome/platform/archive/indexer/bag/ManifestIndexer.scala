@@ -5,7 +5,7 @@ import java.net.URL
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import io.circe._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.display.manifests.DisplayStorageManifest
+import uk.ac.wellcome.platform.archive.display.bags.DisplayStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 
 import scala.concurrent.ExecutionContext

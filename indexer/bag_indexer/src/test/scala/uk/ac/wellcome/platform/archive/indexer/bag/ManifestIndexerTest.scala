@@ -9,7 +9,7 @@ import org.scalatest.Assertion
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.display.manifests.DisplayStorageManifest
+import uk.ac.wellcome.platform.archive.display.bags.DisplayStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
 
 import scala.concurrent.ExecutionContext.Implicits.global
