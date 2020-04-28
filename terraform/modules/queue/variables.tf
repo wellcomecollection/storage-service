@@ -12,7 +12,8 @@ variable "dlq_alarm_arn" {
 }
 
 variable "role_names" {
-  type = list(string)
+  type    = list(string)
+  default = []
 }
 
 variable "visibility_timeout_seconds" {

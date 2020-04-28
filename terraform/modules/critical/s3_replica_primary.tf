@@ -16,12 +16,63 @@ resource "aws_s3_bucket" "replica_primary" {
   }
 }
 
-resource "aws_s3_bucket_policy" "replica_primary_read" {
+resource "aws_s3_bucket_policy" "replica_primary_access" {
   bucket = aws_s3_bucket.replica_primary.id
-  policy = data.aws_iam_policy_document.replica_primary_read.json
+  policy = data.aws_iam_policy_document.replica_primary_access.json
 }
 
-data "aws_iam_policy_document" "replica_primary_read" {
+data "aws_iam_policy_document" "replica_primary_access" {
+  # By default, we don't allow anybody to write or delete objects in the bucket.
+  #
+  # We only allow write permissions to certain, pre-approved IAM roles.  This is
+  # enforced at the bucket level, so even creating a role with "S3 full access" will
+  # not allow you to modify bucket objects.
+
+  statement {
+    effect = "Deny"
+
+    actions = [
+      "s3:Put*",
+      "s3:Delete*",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.replica_primary.arn}",
+      "${aws_s3_bucket.replica_primary.arn}/*",
+    ]
+
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        "*",
+      ]
+    }
+  }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "s3:PutObject*",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.replica_primary.arn}",
+      "${aws_s3_bucket.replica_primary.arn}/*",
+    ]
+
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        var.replicator_primary_task_role_arn
+      ]
+    }
+  }
+
+  # Give certain read permissions to the bucket
+
   statement {
     actions = [
       "s3:List*",

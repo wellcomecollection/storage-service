@@ -5,12 +5,10 @@ variable "billing_mode" {
   description = "Should be either PAY_PER_REQUEST or PROVISIONED"
 }
 
-variable "replica_primary_read_principals" {
-  type    = list(string)
-  default = []
-}
+variable "replicator_primary_task_role_arn" {}
+variable "replicator_glacier_task_role_arn" {}
 
-variable "replica_glacier_read_principals" {
+variable "replica_primary_read_principals" {
   type    = list(string)
   default = []
 }

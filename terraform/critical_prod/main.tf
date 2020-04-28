@@ -21,7 +21,8 @@ module "critical" {
     "arn:aws:iam::653428163053:user/echo-fs",
   ]
 
-  replica_glacier_read_principals = []
+  replicator_primary_task_role_arn = "arn:aws:iam::975596993436:role/storage-prod-bag-replicator_primary_task_role"
+  replicator_glacier_task_role_arn = "arn:aws:iam::975596993436:role/storage-prod-bag-replicator_glacier_task_role"
 
   # This gives us another layer of protection for the S3 buckets.
   #

@@ -10,6 +10,14 @@ output "unpacker_task_role_arn" {
   value = module.bag_unpacker.task_role_arn
 }
 
+output "replicator_primary_task_role_arn" {
+  value = module.replicator_verifier_primary.replicator_task_role_arn
+}
+
+output "replicator_glacier_task_role_arn" {
+  value = module.replicator_verifier_glacier.replicator_task_role_arn
+}
+
 output "api_domain_name" {
   value = module.api.gateway_domain_name
 }
@@ -17,4 +25,3 @@ output "api_domain_name" {
 output "bag_register_output_topic_arn" {
   value = module.bag_register_output_topic.arn
 }
-

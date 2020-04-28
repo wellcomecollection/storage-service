@@ -16,18 +16,23 @@ resource "aws_s3_bucket" "replica_glacier" {
   }
 }
 
-resource "aws_s3_bucket_policy" "replica_glacier_read" {
-  count = length(var.replica_glacier_read_principals) == 0 ? 0 : 1
-
+resource "aws_s3_bucket_policy" "replica_glacier_access" {
   bucket = aws_s3_bucket.replica_glacier.id
-  policy = data.aws_iam_policy_document.replica_glacier_readonly.json
+  policy = data.aws_iam_policy_document.replica_glacier_access.json
 }
 
-data "aws_iam_policy_document" "replica_glacier_readonly" {
+data "aws_iam_policy_document" "replica_glacier_access" {
+  # By default, we don't allow anybody to write or delete objects in the bucket.
+  #
+  # We only allow write permissions to certain, pre-approved IAM roles.  This is
+  # enforced at the bucket level, so even creating a role with "S3 full access" will
+  # not allow you to modify bucket objects.
+
   statement {
+    effect = "Deny"
+
     actions = [
-      "s3:List*",
-      "s3:Get*",
+      "s3:Delete*",
     ]
 
     resources = [
@@ -38,7 +43,30 @@ data "aws_iam_policy_document" "replica_glacier_readonly" {
     principals {
       type = "AWS"
 
-      identifiers = sort(var.replica_glacier_read_principals)
+      identifiers = [
+        "*",
+      ]
+    }
+  }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "s3:PutObject*",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.replica_glacier.arn}",
+      "${aws_s3_bucket.replica_glacier.arn}/*",
+    ]
+
+    principals {
+      type = "AWS"
+
+      identifiers = [
+        var.replicator_glacier_task_role_arn
+      ]
     }
   }
 }
