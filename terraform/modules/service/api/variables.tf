@@ -1,74 +1,70 @@
-variable "subnets" {
-  type = list(string)
-}
-
-variable "cluster_arn" {
-}
-
-variable "namespace" {
-}
-
-variable "namespace_id" {
-}
-
-variable "vpc_id" {
-}
-
 variable "container_image" {
+  type = string
+}
+
+variable "service_name" {
+  type = string
+}
+
+variable "environment" {
+  type    = map(string)
+  default = {}
+}
+
+variable "secrets" {
+  type    = map(string)
+  default = {}
+}
+
+variable "cpu" {
+  type    = number
+  default = 1024
+}
+
+variable "memory" {
+  type    = number
+  default = 2048
 }
 
 variable "container_port" {
+  type    = number
+  default = 9001
 }
 
-variable "nginx_container_image" {
+variable "service_discovery_namespace_id" {
+  type = string
 }
 
-variable "nginx_container_port" {
+variable "use_fargate_spot" {
+  type    = bool
+  default = false
+}
+
+variable "cluster_arn" {
+  type = string
+}
+
+variable "subnets" {
+  type = list(string)
 }
 
 variable "security_group_ids" {
   type = list(string)
 }
 
-variable "env_vars" {
-  type = map(string)
-}
-
-variable "lb_arn" {
-}
-
-variable "listener_port" {
-}
-
-variable "sidecar_cpu" {
-  default = 512
-}
-
-variable "sidecar_memory" {
-  default = 1024
-}
-
-variable "app_cpu" {
-  default = 512
-}
-
-variable "app_memory" {
-  default = 1024
-}
-
-variable "aws_region" {
-  default = "eu-west-1"
-}
-
-variable "launch_type" {
-  default = "FARGATE"
-}
-
 variable "desired_task_count" {
+  type    = number
   default = 3
 }
 
-variable "use_fargate_spot_for_api" {
-  type    = bool
-  default = false
+variable "vpc_id" {
+  type = string
+}
+
+variable "load_balancer_arn" {
+  type = string
+}
+
+variable "load_balancer_listener_port" {
+  type = number
 }

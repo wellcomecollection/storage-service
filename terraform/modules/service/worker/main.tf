@@ -1,39 +1,71 @@
-module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//service?ref=v1.4.0"
+module "log_router_container" {
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=v2.3.0"
+  namespace = var.service_name
+}
 
-  service_name = var.service_name
+module "log_router_container_secrets_permissions" {
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v2.3.0"
+  secrets   = module.log_router_container.shared_secrets_logging
+  role_name = module.task_definition.task_execution_role_name
+}
 
-  cluster_arn = var.cluster_arn
+module "app_container" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v2.3.0"
+  name   = "app"
 
-  task_definition_arn = module.task_definition.arn
+  image = var.container_image
 
-  subnets = var.subnets
+  environment = var.environment
+  secrets     = var.secrets
 
-  namespace_id = var.namespace_id
+  log_configuration = module.log_router_container.container_log_configuration
+}
 
-  security_group_ids = var.security_group_ids
-
-  launch_type = var.launch_type
-
-  desired_task_count = var.desired_task_count
-
-  use_fargate_spot = var.use_fargate_spot
+module "app_container_secrets_permissions" {
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v2.3.0"
+  secrets   = var.secrets
+  role_name = module.task_definition.task_execution_role_name
 }
 
 module "task_definition" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//task_definition/single_container?ref=v1.1.0"
-
-  task_name = var.service_name
-
-  container_image = var.container_image
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/task_definition?ref=v2.3.0"
 
   cpu    = var.cpu
   memory = var.memory
 
-  env_vars        = var.env_vars
-  secret_env_vars = var.secret_env_vars
+  container_definitions = [
+    module.log_router_container.container_definition,
+    module.app_container.container_definition
+  ]
 
-  launch_type = var.launch_type
+  task_name = var.service_name
+}
 
-  aws_region = "eu-west-1"
+module "service" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/service?ref=v2.3.0"
+
+  cluster_arn  = var.cluster_arn
+  service_name = var.service_name
+
+  service_discovery_namespace_id = var.service_discovery_namespace_id
+
+  task_definition_arn = module.task_definition.arn
+
+  subnets            = var.subnets
+  security_group_ids = var.security_group_ids
+
+  desired_task_count = var.desired_task_count
+  use_fargate_spot   = var.use_fargate_spot
+}
+
+module "scaling" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/autoscaling?ref=v2.3.0"
+
+  name = var.service_name
+
+  cluster_name = var.cluster_name
+  service_name = var.service_name
+
+  min_capacity = var.min_capacity
+  max_capacity = var.max_capacity
 }

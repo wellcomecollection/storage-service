@@ -1,5 +1,5 @@
 module "bags" {
-  source = "../../../service_new/api"
+  source = "../../../service/api"
 
   service_name = "${var.namespace}-bags-api"
 
@@ -26,7 +26,7 @@ module "bags" {
 }
 
 module "ingests" {
-  source = "../../../service_new/api"
+  source = "../../../service/api"
 
   service_name = "${var.namespace}-ingests-api"
 
