@@ -67,6 +67,6 @@ module "service" {
 
   target_group_arn = aws_lb_target_group.tcp.arn
 
-  container_name = "nginx"
+  container_name = module.nginx_container.container_name
   container_port = module.nginx_container.container_port
 }
