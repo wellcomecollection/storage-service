@@ -19,6 +19,7 @@ import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticsearchIndexC
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.config.ElasticClientBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -52,7 +53,7 @@ object Main extends WellcomeTypesafeApp {
     //
     val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
     val currentWeek = dateFormatter.format(LocalDate.now())
-    val indexPrefix: String = config.getString("es.ingests.indexPrefix")
+    val indexPrefix: String = config.required[String]("es.ingests.indexPrefix")
     val indexName = s"$indexPrefix--$currentWeek"
     val index = Index(indexName)
 
