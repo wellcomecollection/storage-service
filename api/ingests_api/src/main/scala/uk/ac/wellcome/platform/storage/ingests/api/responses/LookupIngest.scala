@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
   IngestDoesNotExistError,
   IngestTracker
 }
-import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
+import uk.ac.wellcome.platform.archive.display.ingests.ResponseDisplayIngest
 
 trait LookupIngest extends ResponseBase with Logging {
   val ingestTracker: IngestTracker

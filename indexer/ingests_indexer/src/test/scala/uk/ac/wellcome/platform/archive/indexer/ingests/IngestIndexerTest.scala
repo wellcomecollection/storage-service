@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestEvent
 }
-import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
+import uk.ac.wellcome.platform.archive.display.ingests.ResponseDisplayIngest
 import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
 
 import scala.concurrent.ExecutionContext.Implicits.global

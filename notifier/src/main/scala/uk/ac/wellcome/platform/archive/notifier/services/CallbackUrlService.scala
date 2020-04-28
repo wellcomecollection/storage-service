@@ -10,7 +10,7 @@ import io.circe.Printer
 import io.circe.syntax._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.display.ResponseDisplayIngest
+import uk.ac.wellcome.platform.archive.display.ingests.ResponseDisplayIngest
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
