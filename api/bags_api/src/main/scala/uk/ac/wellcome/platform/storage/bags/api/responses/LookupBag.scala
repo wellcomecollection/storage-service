@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   UserErrorResponse
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.archive.display.manifests.DisplayStorageManifest
+import uk.ac.wellcome.platform.archive.display.bags.DisplayStorageManifest
 import uk.ac.wellcome.storage.{NoMaximaValueError, NoVersionExistsError}
 
 import scala.concurrent.ExecutionContext

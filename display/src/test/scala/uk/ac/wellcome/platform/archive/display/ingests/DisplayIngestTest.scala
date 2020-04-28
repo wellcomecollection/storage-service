@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.display
+package uk.ac.wellcome.platform.archive.display.ingests
 
 import java.net.{URI, URL}
 import java.time.Instant
@@ -11,6 +11,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
