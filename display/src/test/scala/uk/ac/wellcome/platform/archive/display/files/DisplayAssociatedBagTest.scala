@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.display.files
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 
-class DisplayAssociatedBagTest extends FunSpec with Matchers with StorageManifestGenerators {
+class DisplayAssociatedBagTest
+    extends FunSpec
+    with Matchers
+    with StorageManifestGenerators {
   it("creates an associated bag from a storage manifest") {
     val manifest = createStorageManifest
 

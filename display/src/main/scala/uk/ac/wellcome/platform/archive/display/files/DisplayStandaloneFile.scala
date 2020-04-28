@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.display.files
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageManifestFile
+}
 
 // We index individual files into their own index in Elasticsearch.
 //
@@ -40,18 +43,22 @@ case class DisplayStandaloneFile(
 )
 
 case object DisplayStandaloneFile {
-  def apply(file: StorageManifestFile, storageManifest: StorageManifest): DisplayStandaloneFile = {
+  def apply(
+    file: StorageManifestFile,
+    storageManifest: StorageManifest
+  ): DisplayStandaloneFile = {
     require(
       storageManifest.manifest.files.contains(file),
       s"File ${file.name} is not part of storage manifest ${storageManifest.idWithVersion}"
     )
 
     DisplayStandaloneFile(
-      checksum = s"${storageManifest.manifest.checksumAlgorithm.pathRepr}:${file.checksum.value}",
+      checksum =
+        s"${storageManifest.manifest.checksumAlgorithm.pathRepr}:${file.checksum.value}",
       name = file.name,
       path = file.path,
       size = file.size,
       bag = DisplayAssociatedBag(storageManifest)
     )
-   }
+  }
 }

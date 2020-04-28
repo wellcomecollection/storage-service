@@ -4,13 +4,17 @@ import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.verify.MD5
 
-class DisplayStandaloneFileTest extends FunSpec with Matchers with StorageManifestGenerators {
+class DisplayStandaloneFileTest
+    extends FunSpec
+    with Matchers
+    with StorageManifestGenerators {
   it("creates a DisplayStandaloneFile from a storage manifest and file") {
     val storageManifest = createStorageManifestWithFileCount(fileCount = 1)
 
     val file = storageManifest.manifest.files.head
 
-    val displayFile = DisplayStandaloneFile(file = file, storageManifest = storageManifest)
+    val displayFile =
+      DisplayStandaloneFile(file = file, storageManifest = storageManifest)
 
     displayFile.checksum shouldBe s"sha256:${file.checksum}"
     displayFile.name shouldBe file.name
@@ -31,7 +35,8 @@ class DisplayStandaloneFileTest extends FunSpec with Matchers with StorageManife
 
     val file = storageManifest.manifest.files.head
 
-    val displayFile = DisplayStandaloneFile(file = file, storageManifest = md5Manifest)
+    val displayFile =
+      DisplayStandaloneFile(file = file, storageManifest = md5Manifest)
 
     displayFile.checksum shouldBe s"md5:${file.checksum}"
   }
