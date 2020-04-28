@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.display
+package uk.ac.wellcome.platform.archive.display.ingests
 
 import java.net.{URI, URL}
 import java.time.Instant
@@ -8,6 +8,10 @@ import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.display.{
+  DisplayLocation,
+  DisplayStorageSpace
+}
 
 sealed trait DisplayIngest
 

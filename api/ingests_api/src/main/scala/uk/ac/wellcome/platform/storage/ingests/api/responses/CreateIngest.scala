@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   UserErrorResponse
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.display.{
+import uk.ac.wellcome.platform.archive.display.ingests.{
   RequestDisplayIngest,
   ResponseDisplayIngest
 }

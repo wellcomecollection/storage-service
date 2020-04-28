@@ -4,7 +4,7 @@ PROJECT_ID = storage
 
 STACK_ROOT 	= indexer
 
-SBT_APPS = ingests_indexer
+SBT_APPS = bag_indexer ingests_indexer
 SBT_NO_DOCKER_APPS =
 
 SBT_DOCKER_LIBRARIES    = indexer_common
