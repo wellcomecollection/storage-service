@@ -56,7 +56,7 @@ class IngestsTrackerApiFeatureTest
 
           val getIngest = ingestTracker.get(ingest.id)
 
-          getIngest shouldBe a[Right[_,_]]
+          getIngest shouldBe a[Right[_, _]]
           getIngest.right.get.identifiedT shouldBe ingest
         }
       }
