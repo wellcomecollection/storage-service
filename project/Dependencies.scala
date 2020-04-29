@@ -2,12 +2,12 @@ import sbt._
 
 object WellcomeDependencies {
   lazy val versions = new {
-    val fixtures = "1.0.0"
-    val json = "1.1.1"
-    val messaging = "5.3.1"
-    val monitoring = "2.3.0"
-    val storage = "7.25.1"
-    val typesafe = "1.0.0"
+    val fixtures = "1.2.0"
+    val json = "2.0.1"
+    val messaging = "9.0.0"
+    val monitoring = "4.0.0"
+    val storage = "8.0.0"
+    val typesafe = "2.0.0"
   }
 
   val jsonLibrary: Seq[ModuleID] = library(
