@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker
 
 import akka.actor.ActorSystem
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestDoesNotExistError, IngestTracker}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestDoesNotExistError,
+  IngestTracker
+}
 import uk.ac.wellcome.typesafe.Runnable
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives.{get, _}
@@ -35,7 +38,7 @@ trait IngestsTrackerApi extends Runnable with Logging {
           ingestTracker.get(IngestID(id)) match {
             case Left(IngestDoesNotExistError(_)) =>
               complete(StatusCodes.NotFound)
-            case Left(_)  =>
+            case Left(_) =>
               complete(StatusCodes.InternalServerError)
             case Right(Identified(_, ingest)) =>
               complete(ingest)

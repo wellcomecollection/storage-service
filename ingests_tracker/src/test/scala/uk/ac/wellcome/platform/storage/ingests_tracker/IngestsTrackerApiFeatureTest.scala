@@ -6,7 +6,10 @@ import akka.http.scaladsl.model.StatusCodes
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.{FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageRandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  HttpFixtures,
+  StorageRandomThings
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
