@@ -53,7 +53,7 @@ module "stack_staging" {
 
   es_ingests_index_prefix = "storage_stage_ingests"
 
-  ingests_indexer_secrets =  {
+  ingests_indexer_secrets = {
     es_host     = "stage/ingests_indexer/es_host"
     es_port     = "stage/ingests_indexer/es_port"
     es_protocol = "stage/ingests_indexer/es_protocol"

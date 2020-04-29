@@ -53,7 +53,7 @@ module "stack_prod" {
 
   es_ingests_index_prefix = "storage_ingests"
 
-  ingests_indexer_secrets =  {
+  ingests_indexer_secrets = {
     es_host     = "prod/ingests_indexer/es_host"
     es_port     = "prod/ingests_indexer/es_port"
     es_protocol = "prod/ingests_indexer/es_protocol"
