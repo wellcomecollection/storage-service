@@ -30,7 +30,8 @@ trait IngestsTrackerApiFixture
         val app = new IngestsTrackerApi() {
           override val ingestTracker: IngestTracker = ingestTrackerTest
           override implicit lazy protected val sys: ActorSystem = actorSystem
-          override implicit lazy protected val mat: ActorMaterializer = materializer
+          override implicit lazy protected val mat: ActorMaterializer =
+            materializer
         }
 
         app.run()
