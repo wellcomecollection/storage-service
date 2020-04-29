@@ -38,11 +38,11 @@ trait IngestsApiFixture
     with MetricsSenderFixture
     with IngestTrackerFixtures {
 
-  val contextURLTest = new URL(
+  override val contextURLTest = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json"
   )
 
-  val metricsName = "IngestsApiFixture"
+  override val metricsName = "IngestsApiFixture"
 
   private def withApp[R](
     ingestTrackerTest: MemoryIngestTracker,

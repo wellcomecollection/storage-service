@@ -44,9 +44,9 @@ trait BagsApiFixture
     with HttpFixtures
     with MetricsSenderFixture {
 
-  val metricsName = "BagsApiFixture"
+  override val metricsName = "BagsApiFixture"
 
-  val contextURLTest = new URL(
+  override val contextURLTest = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json"
   )
 
