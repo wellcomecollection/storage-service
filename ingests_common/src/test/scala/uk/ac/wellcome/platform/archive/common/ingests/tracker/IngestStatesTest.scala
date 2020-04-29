@@ -3,13 +3,15 @@ package uk.ac.wellcome.platform.archive.common.ingests.tracker
 import java.net.URI
 
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with IngestGenerators
     with EitherValues {
