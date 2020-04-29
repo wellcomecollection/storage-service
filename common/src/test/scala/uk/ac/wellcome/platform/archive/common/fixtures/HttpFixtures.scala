@@ -96,7 +96,7 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
 
   val httpServerConfigTest: HTTPServerConfig = createHTTPServerConfig
 
-  val metricsName: String
+  val metricsName: String = "unset"
 
   def assertMetricSent(
     metrics: MemoryMetrics[_],
@@ -106,7 +106,7 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
       s"${metricsName}_HttpResponse_$result"
     )
 
-  val contextURLTest: URL
+  val contextURLTest: URL = new URL("http://example.com")
 
   def assertIsUserErrorResponse(
     response: HttpResponse,
