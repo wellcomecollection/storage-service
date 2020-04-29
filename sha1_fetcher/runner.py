@@ -23,16 +23,13 @@ def get_messages(sqs_client, queue_url):
     """
     while True:
         resp = sqs_client.receive_message(
-            QueueUrl=queue_url,
-            AttributeNames=["All"],
-            MaxNumberOfMessages=1
+            QueueUrl=queue_url, AttributeNames=["All"], MaxNumberOfMessages=1
         )
 
         # If there's nothing available, the queue is empty.  Abort!
         try:
             print(
-                "Received %d new messages from %s" %
-                (len(resp["Messages"]), queue_url)
+                "Received %d new messages from %s" % (len(resp["Messages"]), queue_url)
             )
         except KeyError:
             print("No messages received from %s; waiting" % queue_url)
@@ -47,18 +44,14 @@ def get_messages(sqs_client, queue_url):
 
         # Now delete the messages from the queue, so they won't be read
         # on the next GET call.
-        print(
-            "Deleting %d messages from %s" %
-            (len(resp["Messages"]), queue_url)
-        )
+        print("Deleting %d messages from %s" % (len(resp["Messages"]), queue_url))
         sqs_client.delete_message_batch(
             QueueUrl=queue_url,
             Entries=[
                 {"Id": m["MessageId"], "ReceiptHandle": m["ReceiptHandle"]}
                 for m in resp["Messages"]
-            ]
+            ],
         )
-
 
 
 def sha1(f):
@@ -73,7 +66,6 @@ def sha1(f):
     return hasher.hexdigest()
 
 
-
 def get_sha1_checksum(bucket, key):
     s3_obj = s3.get_object(Bucket=bucket, Key=key)
     return sha1(s3_obj["Body"])
@@ -84,10 +76,7 @@ def get_cache_for_bag(space, externalIdentifier, version):
 
     bag_pointer = dynamodb.get_item(
         TableName="vhs-storage-manifests",
-        Key={
-            "id": f"{space}/{externalIdentifier}",
-            "version": version
-        }
+        Key={"id": f"{space}/{externalIdentifier}", "version": version},
     )
 
     bag = json.load(
@@ -104,17 +93,11 @@ def get_cache_for_bag(space, externalIdentifier, version):
     for bag_file in bag["manifest"]["files"]:
 
         # Skip all the auto-generated files created by Archivematica
-        if (
-            bag["space"] == "born-digital" and
-            bag_file["name"].startswith("data/logs")
-        ):
+        if bag["space"] == "born-digital" and bag_file["name"].startswith("data/logs"):
             continue
 
         # Skip all the ALTO files, we got those separately
-        if (
-            bag["space"] == "digitised" and
-            bag_file["name"].startswith("data/alto")
-        ):
+        if bag["space"] == "digitised" and bag_file["name"].startswith("data/alto"):
             continue
 
         # Skip files from a previous version
@@ -123,11 +106,13 @@ def get_cache_for_bag(space, externalIdentifier, version):
 
         key = os.path.join(bag["location"]["prefix"]["path"], bag_file["path"])
 
-        file_checksums.append({
-            "key": key,
-            "size": bag_file["size"],
-            "checksum": f"sha1:{get_sha1_checksum(bucket, key)}"
-        })
+        file_checksums.append(
+            {
+                "key": key,
+                "size": bag_file["size"],
+                "checksum": f"sha1:{get_sha1_checksum(bucket, key)}",
+            }
+        )
 
     payload = {
         "space": bag["space"],
@@ -140,13 +125,14 @@ def get_cache_for_bag(space, externalIdentifier, version):
     s3.put_object(
         Bucket=f"wellcomecollection-storage-infra",
         Key=f"sha1/{space}/{externalIdentifier[:4]}/{externalIdentifier}/v{version}.json",
-        Body=json.dumps(payload)
+        Body=json.dumps(payload),
     )
 
 
 if __name__ == "__main__":
     for msg in get_messages(
-        sqs_client, queue_url="https://sqs.eu-west-1.amazonaws.com/975596993436/sha1_fetcher_input"
+        sqs_client,
+        queue_url="https://sqs.eu-west-1.amazonaws.com/975596993436/sha1_fetcher_input",
     ):
         bag_id = json.loads(msg["Body"])
         get_cache_for_bag(**bag_id)

@@ -77,7 +77,7 @@ module "worker" {
   namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
 
   cluster_name = aws_ecs_cluster.cluster.name
-  cluster_arn = aws_ecs_cluster.cluster.arn
+  cluster_arn  = aws_ecs_cluster.cluster.arn
 
   service_name = "sha1_fetcher"
 
@@ -86,7 +86,7 @@ module "worker" {
 
   security_group_ids = []
 
-  cpu = 1024
+  cpu    = 1024
   memory = 2048
 
   use_fargate_spot = true
