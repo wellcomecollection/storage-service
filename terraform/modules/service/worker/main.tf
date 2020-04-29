@@ -1,5 +1,5 @@
 module "log_router_container" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=v2.4.0"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=v2.4.1"
   namespace = var.service_name
 }
 
