@@ -1,13 +1,15 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.generators.RandomThings
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 import uk.ac.wellcome.storage.{ObjectLocation, StorageError}
 
 class S3ObjectExistsTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with S3Fixtures
     with EitherValues

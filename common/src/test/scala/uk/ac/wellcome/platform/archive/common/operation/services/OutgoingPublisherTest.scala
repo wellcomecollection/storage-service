@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.operation.services
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import scala.util.Success
 
 class OutgoingPublisherTest
-    extends FunSpec
+    extends AnyFunSpec
     with IngestUpdateAssertions
     with OperationFixtures
     with IngestOperationGenerators

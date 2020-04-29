@@ -1,8 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class BagItemPathTest extends FunSpec with Matchers {
+class BagItemPathTest extends AnyFunSpec with Matchers {
 
   it("can be created") {
     BagPath("bag-info.txt").value shouldBe "bag-info.txt"

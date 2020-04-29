@@ -8,7 +8,7 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.DebuggingDirectives
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.typesafe.Runnable
@@ -25,7 +25,7 @@ class WellcomeHttpApp(
   implicit
   val as: ActorSystem,
   val ec: ExecutionContext,
-  mt: ActorMaterializer
+  mt: Materializer
 ) extends Runnable
     with WellcomeExceptionHandler
     with WellcomeRejectionHandler

@@ -1,8 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
-import org.scalatest.{Assertion, FunSpec, Matchers}
+import org.scalatest.Assertion
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class ExternalIdentifierTest extends FunSpec with Matchers {
+class ExternalIdentifierTest extends AnyFunSpec with Matchers {
   it("allows creating an external identifier") {
     ExternalIdentifier("b12345678")
   }

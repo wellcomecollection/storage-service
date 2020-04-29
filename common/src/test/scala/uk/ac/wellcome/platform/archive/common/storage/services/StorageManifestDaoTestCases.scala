@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
@@ -15,7 +17,7 @@ import uk.ac.wellcome.storage.{
 }
 
 trait StorageManifestDaoTestCases[Context]
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with BagIdGenerators

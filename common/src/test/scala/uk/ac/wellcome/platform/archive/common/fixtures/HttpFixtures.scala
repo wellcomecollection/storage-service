@@ -8,7 +8,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.Sink
 import io.circe.Decoder
-import org.scalatest.{Assertion, Matchers}
+import org.scalatest.Assertion
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith

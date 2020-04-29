@@ -12,12 +12,12 @@ import akka.http.scaladsl.model.{
   StatusCodes
 }
 import akka.http.scaladsl.server.Directives._
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import akka.stream.scaladsl.StreamConverters
 import org.apache.commons.io.IOUtils
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.fixtures.{TestWith}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Uploader
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -29,7 +29,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
 class LargeResponsesTest
-    extends FunSpec
+    extends AnyFunSpec
     with S3Fixtures
     with RandomThings
     with Akka {
@@ -167,7 +167,7 @@ class LargeResponsesTest
     prefix: String = randomAlphanumeric,
     headers: List[HttpHeader] = Nil
   )(testWith: TestWith[HttpResponse, R])(
-    implicit mat: ActorMaterializer,
+    implicit mat: Materializer,
     as: ActorSystem
   ): R = {
 
@@ -186,7 +186,7 @@ class LargeResponsesTest
       override val maximumResponseByteLength: Long = maxBytes
       override val prefix: ObjectLocationPrefix = objectLocationPrefix
       override val cacheDuration: Duration = duration
-      override implicit val materializer: ActorMaterializer = mat
+      override implicit val materializer: Materializer = mat
     }
 
     val routes = largeResponder.wrapLargeResponses(get {
