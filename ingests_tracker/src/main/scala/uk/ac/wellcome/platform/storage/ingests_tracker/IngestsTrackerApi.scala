@@ -1,18 +1,18 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker
 
 import akka.actor.ActorSystem
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestAlreadyExistsError, IngestDoesNotExistError, IngestTracker}
-import uk.ac.wellcome.typesafe.Runnable
+import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives.{get, _}
-import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
-import uk.ac.wellcome.storage.Identified
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
+import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestAlreadyExistsError, IngestDoesNotExistError, IngestTracker}
+import uk.ac.wellcome.storage.Identified
+import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.Future
 
@@ -44,13 +44,21 @@ trait IngestsTrackerApi extends Runnable with Logging {
           }
         }
       },
+      patch {
+        pathPrefix("ingest" / JavaUUID) { id =>
+          entity(as[IngestUpdate]) { ingestUpdate =>
+            info(s"${id}: ${ingestUpdate}")
+            complete(StatusCodes.InternalServerError)
+          }
+        }
+      },
       get {
         pathPrefix("ingest" / JavaUUID) { id =>
           ingestTracker.get(IngestID(id)) match {
             case Left(IngestDoesNotExistError(_)) =>
               info(s"Could not find ingest: ${id}")
               complete(StatusCodes.NotFound)
-            case Left(e)  =>
+            case Left(e) =>
               error("Failed to get ingest!", e)
               complete(StatusCodes.InternalServerError)
             case Right(Identified(_, ingest)) =>

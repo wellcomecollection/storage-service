@@ -2,22 +2,25 @@ package uk.ac.wellcome.platform.storage.ingests_tracker
 
 import java.time.Instant
 
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.HttpMethods._
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest, HttpResponse, RequestEntity, StatusCodes}
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  HttpFixtures,
-  StorageRandomThings
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageRandomThings}
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.json.JsonUtil._
 import io.circe.syntax._
+import uk.ac.wellcome.akka.fixtures.Akka
+import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
 
 class IngestsTrackerApiFeatureTest
     extends FunSpec
     with Matchers
+    with Akka
     with IngestsTrackerApiFixture
     with JsonAssertions
     with HttpFixtures
@@ -91,6 +94,43 @@ class IngestsTrackerApiFeatureTest
     }
   }
 
+  describe("PATCH /ingest/:id") {
+    val ingest = createIngestWith(
+      createdDate = Instant.now(),
+      events = Seq(createIngestEvent, createIngestEvent).sortBy {
+        _.createdDate
+      },
+      version = None
+    )
+
+    val ingestStatusUpdate =
+      createIngestStatusUpdateWith(
+        id = ingest.id,
+        status = Succeeded
+      )
+
+    // Cases:
+    // - Updating existing ingest 200
+    // - Updating existing ingest with bad data 500
+    // - Updating non-existent ingest 500
+    // - Broken app 500
+
+    it("FAILS") {
+      withConfiguredApp(Seq(ingest)) { _ =>
+        val path = s"http://localhost:8080/ingest/${ingest.id}"
+
+        val entity = HttpEntity(
+          ContentTypes.`application/json`,
+          ingestStatusUpdate.asJson.noSpaces
+        )
+
+        whenPatchRequestReady(path, entity) { result =>
+          result.status shouldBe StatusCodes.InternalServerError
+        }
+      }
+    }
+  }
+
   describe("GET /ingest/:id") {
     val ingest = createIngestWith(
       createdDate = Instant.now(),
@@ -136,6 +176,27 @@ class IngestsTrackerApiFeatureTest
         whenGetRequestReady(path) { response =>
           response.status shouldBe StatusCodes.InternalServerError
         }
+      }
+    }
+  }
+
+  // Required as not yet provided by HTTP Fixtures
+  def whenPatchRequestReady[R](url: String, entity: RequestEntity)(
+    testWith: TestWith[HttpResponse, R]
+  ): R = {
+    withActorSystem { implicit actorSystem =>
+
+      val r = HttpRequest(
+        method = PATCH,
+        uri = url,
+        headers = Nil,
+        entity = entity
+      )
+
+      val request = Http().singleRequest(r)
+
+      whenReady(request) { response: HttpResponse =>
+        testWith(response)
       }
     }
   }
