@@ -27,7 +27,6 @@ trait IngestsTrackerApi extends Runnable with Logging {
     concat(
       get {
         pathPrefix("ingest" / JavaUUID) { id =>
-
           // val result: ingestTracker.Result = ingestTracker.get(IngestID(id))
 
           complete(StatusCodes.NotFound)

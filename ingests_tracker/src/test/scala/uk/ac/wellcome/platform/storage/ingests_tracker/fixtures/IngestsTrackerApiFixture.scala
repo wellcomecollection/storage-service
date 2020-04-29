@@ -8,23 +8,25 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestStoreUnexpectedError, IngestTracker}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestStoreUnexpectedError,
+  IngestTracker
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.IngestsTrackerApi
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 trait IngestsTrackerApiFixture
-  extends IngestTrackerFixtures
+    extends IngestTrackerFixtures
     with IngestGenerators
     with MetricsSenderFixture {
 
   private def withApp[R](
-                          ingestTrackerTest: MemoryIngestTracker
-                        )(testWith: TestWith[IngestsTrackerApi, R]): R =
+    ingestTrackerTest: MemoryIngestTracker
+  )(testWith: TestWith[IngestsTrackerApi, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
-
         val app = new IngestsTrackerApi() {
           override val ingestTracker: IngestTracker = ingestTrackerTest
           override implicit lazy protected val sys: ActorSystem = actorSystem
@@ -61,8 +63,8 @@ trait IngestsTrackerApiFixture
   def withConfiguredApp[R](initialIngests: Seq[Ingest] = Seq.empty)(
     testWith: TestWith[MemoryIngestTracker, R]
   ): R = withMemoryIngestTracker(initialIngests) { ingestTracker =>
-      withApp(ingestTracker) { _ =>
-        testWith(ingestTracker)
-      }
+    withApp(ingestTracker) { _ =>
+      testWith(ingestTracker)
     }
+  }
 }
