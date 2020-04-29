@@ -3,6 +3,7 @@ locals {
     "bags_api",
     "ingests",
     "ingests_api",
+    "ingests_indexer",
     "notifier",
     "bag_versioner",
     "bag_register",

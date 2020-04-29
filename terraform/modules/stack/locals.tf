@@ -11,6 +11,7 @@ locals {
   bag_register_service_name           = "${var.namespace}-bag-register"
   bag_verifier_post_repl_service_name = "${var.namespace}-bag-verifier-post-replication"
   bag_verifier_pre_repl_service_name  = "${var.namespace}-bag-verifier-pre-replication"
+  ingests_indexer_service_name        = "${var.namespace}-ingests_indexer"
   replica_aggregator_service_name     = "${var.namespace}-replica_aggregator"
 
   bag_versioner_image      = local.image_ids["bag_versioner"]
@@ -19,6 +20,7 @@ locals {
   bags_api_image           = local.image_ids["bags_api"]
   ingests_image            = local.image_ids["ingests"]
   ingests_api_image        = local.image_ids["ingests_api"]
+  ingests_indexer_image    = local.image_ids["ingests_indexer"]
   notifier_image           = local.image_ids["notifier"]
   bag_replicator_image     = local.image_ids["bag_replicator"]
   bag_verifier_image       = local.image_ids["bag_verifier"]

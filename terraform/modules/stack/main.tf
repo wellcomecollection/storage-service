@@ -393,6 +393,46 @@ module "ingests" {
   service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
 }
 
+# ingests indexer
+
+module "ingests_indexer" {
+  source = "../service/worker"
+
+  container_image = local.ingests_indexer_image
+
+  cluster_name = aws_ecs_cluster.cluster.name
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+
+  subnets      = var.private_subnets
+  service_name = "${var.namespace}-ingests-indexer"
+
+  environment = {
+    queue_url         = module.updated_ingests_queue.url
+    metrics_namespace = local.ingests_indexer_service_name
+
+    es_ingests_index_prefix = "storage_stage_ingests"
+  }
+
+  secrets = {
+    es_host     = "stage/ingests_indexer/es_host"
+    es_port     = "stage/ingests_indexer/es_port"
+    es_protocol = "stage/ingests_indexer/es_protocol"
+    es_username = "stage/ingests_indexer/es_username"
+    es_password = "stage/ingests_indexer/es_password"
+  }
+
+  security_group_ids = [
+    aws_security_group.service_egress.id
+  ]
+
+  min_capacity = 0
+  max_capacity = var.max_capacity
+
+  use_fargate_spot = true
+
+  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+}
+
 # storage API
 
 module "api" {
