@@ -69,7 +69,7 @@ object ExternalDependencies {
     val apacheLogging = "2.8.2"
     val commonsCompress = "1.5"
     val commonsIO = "2.6"
-    val elastic4s = "7.3.0"
+    val elastic4s = "7.6.1"
     val mockito = "1.9.5"
     val aws = "1.11.504"
     val scalatest = "3.1.1"
