@@ -410,16 +410,10 @@ module "ingests_indexer" {
     queue_url         = module.updated_ingests_queue.url
     metrics_namespace = local.ingests_indexer_service_name
 
-    es_ingests_index_prefix = "storage_stage_ingests"
+    es_ingests_index_prefix = var.es_ingests_index_prefix
   }
 
-  secrets = {
-    es_host     = "stage/ingests_indexer/es_host"
-    es_port     = "stage/ingests_indexer/es_port"
-    es_protocol = "stage/ingests_indexer/es_protocol"
-    es_username = "stage/ingests_indexer/es_username"
-    es_password = "stage/ingests_indexer/es_password"
-  }
+  secrets = var.ingests_indexer_secrets
 
   security_group_ids = [
     aws_security_group.service_egress.id
