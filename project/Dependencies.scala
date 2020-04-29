@@ -4,7 +4,7 @@ object WellcomeDependencies {
   lazy val versions = new {
     val fixtures = "1.2.0"
     val json = "2.0.1"
-    val messaging = "9.0.0"
+    val messaging = "9.0.1"
     val monitoring = "4.0.0"
     val storage = "8.0.0"
     val typesafe = "2.0.0"
@@ -72,11 +72,14 @@ object ExternalDependencies {
     val elastic4s = "7.3.0"
     val mockito = "1.9.5"
     val aws = "1.11.504"
-    val circe = "0.9.0"
-    val scalatest = "3.0.1"
+    val scalatest = "3.1.1"
     val wiremock = "2.18.0"
     val logback = "1.2.3"
     val logstashLogback = "6.1"
+
+    // This should match the version of circe used in scala-json; see
+    // https://github.com/wellcomecollection/scala-json/blob/master/project/Dependencies.scala
+    val circeOptics = "0.11.0"
   }
 
   val logbackDependencies = Seq(
@@ -95,7 +98,7 @@ object ExternalDependencies {
   )
 
   val circeOpticsDependencies: Seq[sbt.ModuleID] = Seq[ModuleID](
-    "io.circe" %% "circe-optics" % versions.circe
+    "io.circe" %% "circe-optics" % versions.circeOptics
   )
 
   val scalatestDependencies = Seq[ModuleID](
