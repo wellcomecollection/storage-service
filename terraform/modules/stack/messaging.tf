@@ -72,10 +72,20 @@ module "updated_ingests_queue" {
 
   topic_arns = [module.updated_ingests_topic.arn]
 
+  role_names = [
+    module.ingests_indexer.task_role_name,
+  ]
+
+  queue_high_actions = [
+    module.ingests_indexer.scale_up_arn,
+  ]
+
+  queue_low_actions = [
+    module.ingests_indexer.scale_down_arn,
+  ]
+
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
-
-  role_names = []
 }
 
 # notifier

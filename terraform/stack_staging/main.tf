@@ -51,6 +51,16 @@ module "stack_staging" {
   replicas_table_arn  = data.terraform_remote_state.critical_staging.outputs.replicas_table_arn
   replicas_table_name = data.terraform_remote_state.critical_staging.outputs.replicas_table_name
 
+  es_ingests_index_prefix = "storage_stage_ingests"
+
+  ingests_indexer_secrets = {
+    es_host     = "stage/ingests_indexer/es_host"
+    es_port     = "stage/ingests_indexer/es_port"
+    es_protocol = "stage/ingests_indexer/es_protocol"
+    es_username = "stage/ingests_indexer/es_username"
+    es_password = "stage/ingests_indexer/es_password"
+  }
+
   workflow_bucket_name = local.workflow_staging_bucket_name
 
   archivematica_ingests_bucket             = local.archivematica_ingests_bucket

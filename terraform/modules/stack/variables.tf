@@ -105,6 +105,14 @@ variable "desired_ingests_api_count" {
 variable "archivematica_ingests_bucket" {
 }
 
+variable "es_ingests_index_prefix" {
+  type = string
+}
+
+variable "ingests_indexer_secrets" {
+  type = map(string)
+}
+
 variable "min_capacity" {}
 variable "max_capacity" {}
 

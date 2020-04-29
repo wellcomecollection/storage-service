@@ -19,6 +19,7 @@ import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticsearchIndexC
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.config.ElasticClientBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -41,18 +42,18 @@ object Main extends WellcomeTypesafeApp {
     // Ingests will be written a lot when they're initially processing, then never written
     // again once the ingest completes.  Lots of writes upfront, then read-only.
     //
-    // For this reason, we do initial writes into per-week indexes, and then aggregate them
+    // For this reason, we do initial writes into per-day indexes, and then aggregate them
     // into a single index with a rollup job (https://www.elastic.co/guide/en/kibana/current/data-rollups.html)
     //
-    // The per-week indexes are small and handle the intensive writes; the long-term index
+    // The per-day indexes are small and handle the intensive writes; the long-term index
     // only gets written to by the rollup job.
     //
-    // Because the app will scale to zero when it's not running, it's okay to let the
-    // index name be recomputed at startup.
+    // Because the app will scale to zero when it's not running, it's okay if the
+    // index name only changes when the app starts.
     //
-    val dateFormatter = DateTimeFormatter.ofPattern("%Y-week%U")
+    val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
     val currentWeek = dateFormatter.format(LocalDate.now())
-    val indexPrefix: String = config.getString("es.ingests.indexPrefix")
+    val indexPrefix: String = config.required[String]("es.ingests.index-prefix")
     val indexName = s"$indexPrefix--$currentWeek"
     val index = Index(indexName)
 

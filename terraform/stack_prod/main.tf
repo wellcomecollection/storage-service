@@ -51,6 +51,16 @@ module "stack_prod" {
   replicas_table_arn  = data.terraform_remote_state.critical_prod.outputs.replicas_table_arn
   replicas_table_name = data.terraform_remote_state.critical_prod.outputs.replicas_table_name
 
+  es_ingests_index_prefix = "storage_ingests"
+
+  ingests_indexer_secrets = {
+    es_host     = "prod/ingests_indexer/es_host"
+    es_port     = "prod/ingests_indexer/es_port"
+    es_protocol = "prod/ingests_indexer/es_protocol"
+    es_username = "prod/ingests_indexer/es_username"
+    es_password = "prod/ingests_indexer/es_password"
+  }
+
   workflow_bucket_name = local.workflow_bucket_name
 
   archivematica_ingests_bucket             = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
