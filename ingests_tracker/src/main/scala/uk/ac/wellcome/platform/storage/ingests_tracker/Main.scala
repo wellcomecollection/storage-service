@@ -10,23 +10,22 @@ import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 
-
 object Main extends WellcomeTypesafeApp {
-    runWithConfig { config: Config =>
-      implicit val actorSystem: ActorSystem =
-        AkkaBuilder.buildActorSystem()
-      implicit val materializer: ActorMaterializer =
-        AkkaBuilder.buildActorMaterializer()
+  runWithConfig { config: Config =>
+    implicit val actorSystem: ActorSystem =
+      AkkaBuilder.buildActorSystem()
+    implicit val materializer: ActorMaterializer =
+      AkkaBuilder.buildActorMaterializer()
 
-      implicit val dynamoClient: AmazonDynamoDB =
-        DynamoBuilder.buildDynamoClient(config)
+    implicit val dynamoClient: AmazonDynamoDB =
+      DynamoBuilder.buildDynamoClient(config)
 
-      new IngestsTrackerApi {
-        override val ingestTracker: IngestTracker = new DynamoIngestTracker(
-          config = DynamoBuilder.buildDynamoConfig(config)
-        )
-        override implicit protected val sys: ActorSystem = actorSystem
-        override implicit protected val mat: ActorMaterializer = materializer
-      }
+    new IngestsTrackerApi {
+      override val ingestTracker: IngestTracker = new DynamoIngestTracker(
+        config = DynamoBuilder.buildDynamoConfig(config)
+      )
+      override implicit protected val sys: ActorSystem = actorSystem
+      override implicit protected val mat: ActorMaterializer = materializer
     }
+  }
 }
