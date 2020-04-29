@@ -8,3 +8,31 @@ For example, we might ask questions like:
 *   How big are the files we're storing?
 
 The indexer apps record manifests, files and ingests in Elasticsearch.
+
+
+
+## Setting up the indexer users in Elasticsearch
+
+1.  Log in to Kibana in the reporting cluster.
+2.  In the left-hand sidebar, select "Management" (the gear icon).
+3.  Under "Security", select "Roles".
+4.  Click "Create role", and create a new role:
+
+    -   Role name: typically prefixed with `storage_`, e.g. `storage_ingests_write`
+    -   Index privileges, indices: an index pattern to match on, e.g. `storage_ingests*`
+    -   Index privileges, privileges: `create`, `create_index`, `write`
+
+5.  Under "Security", select "Users".
+    Click "Create user", and create a new user:
+
+    -   Username: typically prefixed with `storage_`, e.g. `storage_ingests_indexer`
+    -   Password: use your favourite technique of choice
+    -   Roles: add the role you created in step 4
+
+6.  Put the following variables in Elasticsearch:
+
+    -   `${label}/ingests_indexer/es_host`
+    -   `${label}/ingests_indexer/es_port`
+    -   `${label}/ingests_indexer/es_protocol`
+    -   `${label}/ingests_indexer/es_username`
+    -   `${label}/ingests_indexer/es_password`
