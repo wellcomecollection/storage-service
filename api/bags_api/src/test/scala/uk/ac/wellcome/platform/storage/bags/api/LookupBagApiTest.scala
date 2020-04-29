@@ -6,7 +6,9 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.{ETag, Location}
 import io.circe.optics.JsonPath.root
 import io.circe.parser.parse
-import org.scalatest.{Assertion, FunSpec, Matchers}
+import org.scalatest.Assertion
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
@@ -25,7 +27,7 @@ import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
   *
   */
 class LookupBagApiTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with JsonAssertions
     with DisplayJsonHelpers
