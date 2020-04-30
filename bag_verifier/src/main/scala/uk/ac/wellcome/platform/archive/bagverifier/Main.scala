@@ -1,38 +1,28 @@
 package uk.ac.wellcome.platform.archive.bagverifier
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
-import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifier,
-  BagVerifierWorker
-}
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
-import uk.ac.wellcome.storage.typesafe.S3Builder
-import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-
-import scala.concurrent.ExecutionContext
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.verify.s3.S3ObjectVerifier
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
+import uk.ac.wellcome.storage.typesafe.S3Builder
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
+import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+
+import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -42,16 +32,16 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
 
-    implicit val mat: ActorMaterializer =
-      AkkaBuilder.buildActorMaterializer()
+    implicit val mat: Materializer =
+      AkkaBuilder.buildMaterializer()
 
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
 
-    implicit val monitoringClient: MonitoringClient =
+    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
 
-    implicit val sqsClient: AmazonSQSAsync =
+    implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
     implicit val s3ObjectVerifier: S3ObjectVerifier =
@@ -60,7 +50,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val bagReader: BagReader[_] =
       new S3BagReader()
 
-    implicit val s3Resolvable =
+    implicit val s3Resolvable: S3Resolvable =
       new S3Resolvable()
 
     implicit val s3Listing: Listing[ObjectLocationPrefix, ObjectLocation] =
@@ -82,7 +72,8 @@ object Main extends WellcomeTypesafeApp {
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
-      verifier = verifier
+      verifier = verifier,
+      metricsNamespace = config.required[String]("aws.metrics.namespace")
     )
   }
 }

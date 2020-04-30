@@ -1,36 +1,21 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
+import org.scalatest.{Assertion, OptionValues, TryValues}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  VerificationFailureSummary,
-  VerificationIncompleteSummary,
-  VerificationSuccessSummary
-}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagPath,
-  ExternalIdentifier,
-  PayloadOxum
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagPath, ExternalIdentifier, PayloadOxum}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  S3BagBuilder,
-  S3BagBuilderBase
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{S3BagBuilder, S3BagBuilderBase}
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepSucceeded
-}
-import uk.ac.wellcome.platform.archive.common.verify.{
-  FailedChecksumNoMatch,
-  VerifiedSuccess
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.common.verify.{FailedChecksumNoMatch, VerifiedSuccess}
 
 class BagVerifierTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with ScalaFutures
     with TryValues
