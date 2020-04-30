@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.storage.ingests_tracker
 
 import java.time.Instant
 
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import org.scalatest.concurrent.IntegrationPatience
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
@@ -12,6 +12,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.json.JsonUtil._
+import io.circe.syntax._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 
 class IngestsTrackerApiFeatureTest
@@ -21,6 +22,7 @@ class IngestsTrackerApiFeatureTest
     with JsonAssertions
     with HttpFixtures
     with IntegrationPatience
+    with EitherValues
     with StorageRandomThings {
 
   describe("GET /healthcheck") {
@@ -35,8 +37,61 @@ class IngestsTrackerApiFeatureTest
     }
   }
 
-  describe("GET /ingest/:id") {
+  describe("POST /ingest") {
+    val ingest = createIngestWith(
+      createdDate = Instant.now(),
+      version = None
+    )
 
+    it("responds with Created when successful") {
+      withConfiguredApp() { ingestTracker =>
+        val path = "http://localhost:8080/ingest"
+        val entity = HttpEntity(
+          ContentTypes.`application/json`,
+          ingest.asJson.noSpaces
+        )
+
+        whenPostRequestReady(path, entity) { response =>
+          response.status shouldBe StatusCodes.Created
+
+          val getIngest = ingestTracker.get(ingest.id)
+
+          getIngest shouldBe a[Right[_, _]]
+          getIngest.right.get.identifiedT shouldBe ingest
+        }
+      }
+    }
+
+    it("responds with Conflict when the ingest exists") {
+      withConfiguredApp(Seq(ingest)) { _ =>
+        val path = "http://localhost:8080/ingest"
+        val entity = HttpEntity(
+          ContentTypes.`application/json`,
+          ingest.asJson.noSpaces
+        )
+
+        whenPostRequestReady(path, entity) { response =>
+          response.status shouldBe StatusCodes.Conflict
+        }
+      }
+    }
+
+    it("responds with InternalServerError when broken") {
+      withBrokenApp { _ =>
+        val path = "http://localhost:8080/ingest"
+        val entity = HttpEntity(
+          ContentTypes.`application/json`,
+          ingest.asJson.noSpaces
+        )
+
+        whenPostRequestReady(path, entity) { response =>
+          response.status shouldBe StatusCodes.InternalServerError
+        }
+      }
+    }
+  }
+
+  describe("GET /ingest/:id") {
     val ingest = createIngestWith(
       createdDate = Instant.now(),
       events = Seq(createIngestEvent, createIngestEvent).sortBy {
@@ -51,8 +106,8 @@ class IngestsTrackerApiFeatureTest
       withConfiguredApp(Seq(ingest)) { _ =>
         val path = s"http://localhost:8080/ingest/${notRecordedIngestId}"
 
-        whenGetRequestReady(path) { result =>
-          result.status shouldBe StatusCodes.NotFound
+        whenGetRequestReady(path) { response =>
+          response.status shouldBe StatusCodes.NotFound
         }
       }
     }
@@ -61,15 +116,25 @@ class IngestsTrackerApiFeatureTest
       withConfiguredApp(Seq(ingest)) { _ =>
         val path = s"http://localhost:8080/ingest/${ingest.id}"
 
-        whenGetRequestReady(path) { result =>
-          result.status shouldBe StatusCodes.OK
+        whenGetRequestReady(path) { response =>
+          response.status shouldBe StatusCodes.OK
 
           // We are interested in whether we can serialise/de-serialise
           // what the JSON looks like is not interesting, so we
           // do not need to test in detail as with the external API
-          withStringEntity(result.entity) { jsonString =>
+          withStringEntity(response.entity) { jsonString =>
             fromJson[Ingest](jsonString).get shouldBe ingest
           }
+        }
+      }
+    }
+
+    it("responds InternalServerError when broken") {
+      withBrokenApp { _ =>
+        val path = s"http://localhost:8080/ingest/${ingest.id}"
+
+        whenGetRequestReady(path) { response =>
+          response.status shouldBe StatusCodes.InternalServerError
         }
       }
     }
