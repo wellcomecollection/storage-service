@@ -10,7 +10,7 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestUpdate}
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestAlreadyExistsError, IngestDoesNotExistError, IngestTracker}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker._
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -38,6 +38,9 @@ trait IngestsTrackerApi extends Runnable with Logging {
             case Left(e@IngestAlreadyExistsError(_)) =>
               error(s"Ingest already exists: ${ingest.id}", e)
               complete(StatusCodes.Conflict)
+            case Left(e: NoCallbackOnIngestError) =>
+              error(s"Missing callback on ingest: ${ingest}", e)
+              complete(StatusCodes.Conflict)
             case Left(e) =>
               error("Failed to create ingest!", e)
               complete(StatusCodes.InternalServerError)
@@ -47,8 +50,19 @@ trait IngestsTrackerApi extends Runnable with Logging {
       patch {
         pathPrefix("ingest" / JavaUUID) { id =>
           entity(as[IngestUpdate]) { ingestUpdate =>
-            info(s"$id: $ingestUpdate")
-            complete(StatusCodes.InternalServerError)
+            info(s"Updating $id: $ingestUpdate")
+            
+            ingestTracker.update(ingestUpdate) match {
+              case Left(e: StateConflictError) =>
+                error(s"Ingest ${id} can not be updated", e)
+                complete(StatusCodes.Conflict)
+              case Left(e) =>
+                error(s"Failed to update ingest: ${id}", e)
+                complete(StatusCodes.InternalServerError)
+              case Right(Identified(_,ingest)) =>
+                info(s"Updated ingest: $ingest")
+                complete(StatusCodes.OK -> ingest)
+            }
           }
         }
       },

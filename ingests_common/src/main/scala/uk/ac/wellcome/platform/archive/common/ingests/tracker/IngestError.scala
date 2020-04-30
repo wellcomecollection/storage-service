@@ -8,34 +8,38 @@ import uk.ac.wellcome.storage.{
 }
 
 sealed trait IngestStoreError extends Throwable
+sealed trait StateConflictError extends IngestStoreError
 
 case class IngestAlreadyExistsError(storageError: VersionAlreadyExistsError)
-    extends IngestStoreError
+    extends StateConflictError
 
 case class IngestDoesNotExistError(storageError: NotFoundError)
-    extends IngestStoreError
+    extends StateConflictError
 
 case class UpdateNonExistentIngestError(storageError: UpdateNoSourceError)
-    extends IngestStoreError
+    extends StateConflictError
 
 case class IngestStatusGoingBackwardsError(
   stored: Ingest.Status,
   update: Ingest.Status
-) extends IngestStoreError
+) extends StateConflictError
 
 case class IngestCallbackStatusGoingBackwardsError(
   stored: Callback.CallbackStatus,
   update: Callback.CallbackStatus
-) extends IngestStoreError
+) extends StateConflictError
 
 case class MismatchedVersionUpdateError(
   stored: BagVersion,
   update: BagVersion
-) extends IngestStoreError
+) extends StateConflictError
 
-case class NoCallbackOnIngestError() extends IngestStoreError
+case class NoCallbackOnIngestError()
+  extends IngestStoreError
 
-case class IngestStoreUnexpectedError(e: Throwable) extends IngestStoreError {
+case class IngestStoreUnexpectedError(e: Throwable)
+  extends IngestStoreError {
+
   override def toString: String = {
     s"IngestStoreUnexpectedError: ${e.toString}"
   }
