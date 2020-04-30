@@ -1,50 +1,43 @@
 package uk.ac.wellcome.platform.archive.bagunpacker
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.SQSBuilder.buildSQSAsyncClient
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder
-}
-import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder}
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.UnpackerWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorker
 import uk.ac.wellcome.platform.archive.bagunpacker.services.s3.S3Unpacker
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import uk.ac.wellcome.storage.typesafe.S3Builder._
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder._
+import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContext
-
-import uk.ac.wellcome.json.JsonUtil._
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
-      buildActorSystem()
+      AkkaBuilder.buildActorSystem()
 
-    implicit val materializer: ActorMaterializer =
-      buildActorMaterializer()
+    implicit val materializer: Materializer =
+      AkkaBuilder.buildMaterializer()
 
     implicit val executionContext: ExecutionContext =
-      buildExecutionContext()
+      AkkaBuilder.buildExecutionContext()
 
     implicit val s3Client: AmazonS3 =
       buildS3Client(config)
 
-    implicit val monitoringClient: CloudwatchMonitoringClient =
+    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
 
-    implicit val sqsClient: AmazonSQSAsync =
+    implicit val sqsClient: SqsAsyncClient =
       buildSQSAsyncClient(config)
 
     val alpakkaSQSWorkerConfig =
@@ -66,7 +59,8 @@ object Main extends WellcomeTypesafeApp {
       bagUnpackerWorkerConfig = unpackerWorkerConfig,
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
-      unpacker = new S3Unpacker()
+      unpacker = new S3Unpacker(),
+      metricsNamespace = config.required[String]("aws.metrics.namespace")
     )
   }
 }
