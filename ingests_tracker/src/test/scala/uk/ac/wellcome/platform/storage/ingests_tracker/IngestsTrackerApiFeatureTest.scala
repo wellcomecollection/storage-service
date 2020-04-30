@@ -14,13 +14,19 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageRandomThings}
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Failed, Succeeded}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  HttpFixtures,
+  StorageRandomThings
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+  Failed,
+  Succeeded
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 
 class IngestsTrackerApiFeatureTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with Akka
     with IngestsTrackerApiFixture
@@ -148,7 +154,8 @@ class IngestsTrackerApiFeatureTest
             updatedIngestResponse.events should contain allElementsOf (ingestEvent.events)
           }
 
-          val ingestFromTracker = ingestTracker.get(ingest.id).right.get.identifiedT
+          val ingestFromTracker =
+            ingestTracker.get(ingest.id).right.get.identifiedT
           ingestFromTracker.events should contain allElementsOf (ingestEvent.events)
         }
       }
@@ -172,7 +179,8 @@ class IngestsTrackerApiFeatureTest
             updatedIngestResponse.events should contain allElementsOf (ingestStatusUpdateSucceeded.events)
           }
 
-          val ingestFromTracker = ingestTracker.get(ingest.id).right.get.identifiedT
+          val ingestFromTracker =
+            ingestTracker.get(ingest.id).right.get.identifiedT
           ingestFromTracker.status shouldBe ingestStatusUpdateSucceeded.status
           ingestFromTracker.events should contain allElementsOf (ingestStatusUpdateSucceeded.events)
         }
@@ -302,7 +310,6 @@ class IngestsTrackerApiFeatureTest
     testWith: TestWith[HttpResponse, R]
   ): R = {
     withActorSystem { implicit actorSystem =>
-
       val r = HttpRequest(
         method = PATCH,
         uri = url,
