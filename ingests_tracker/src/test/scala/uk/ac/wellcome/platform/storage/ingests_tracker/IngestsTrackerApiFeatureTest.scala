@@ -111,8 +111,9 @@ class IngestsTrackerApiFeatureTest
 
     // Cases:
     // - Updating existing ingest 200
-    // - Updating existing ingest with bad data 500
-    // - Updating non-existent ingest 500
+    // - Updating existing ingest with bad json 400
+    // - Updating existing ingest to incorrect state 409
+    // - Updating non-existent ingest 409
     // - Broken app 500
 
     it("FAILS") {

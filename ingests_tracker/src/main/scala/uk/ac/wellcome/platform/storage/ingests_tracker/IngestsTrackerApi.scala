@@ -47,7 +47,7 @@ trait IngestsTrackerApi extends Runnable with Logging {
       patch {
         pathPrefix("ingest" / JavaUUID) { id =>
           entity(as[IngestUpdate]) { ingestUpdate =>
-            info(s"${id}: ${ingestUpdate}")
+            info(s"$id: $ingestUpdate")
             complete(StatusCodes.InternalServerError)
           }
         }
