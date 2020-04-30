@@ -9,9 +9,9 @@ import uk.ac.wellcome.json.JsonUtil._
 import scala.util.{Failure, Success, Try}
 
 class MessagingService[UpdatedIngestsDestination, CallbackDestination](
-                        callbackNotificationService: CallbackNotificationService[CallbackDestination],
-                        updatedIngestsMessageSender: MessageSender[UpdatedIngestsDestination]
-                      ) extends Logging {
+  callbackNotificationService: CallbackNotificationService[CallbackDestination],
+  updatedIngestsMessageSender: MessageSender[UpdatedIngestsDestination]
+) extends Logging {
 
   def sendOngoingMessages(ingest: Ingest): Try[Unit] = {
     val callbackResult = callbackNotificationService.sendNotification(ingest)

@@ -6,7 +6,11 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.platform.archive.common.ingests.models.Callback.Pending
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, CallbackNotification, Ingest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Callback,
+  CallbackNotification,
+  Ingest
+}
 
 import scala.util.{Success, Try}
 
@@ -34,5 +38,3 @@ class CallbackNotificationService[Destination](
     messageSender.sendT(callbackNotification)
   }
 }
-
-

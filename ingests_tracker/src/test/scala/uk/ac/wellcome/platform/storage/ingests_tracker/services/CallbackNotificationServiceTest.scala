@@ -7,13 +7,16 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, CallbackNotification, Ingest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Callback,
+  CallbackNotification,
+  Ingest
+}
 
 import scala.util.Success
 
-
 class CallbackNotificationServiceTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with IngestGenerators {
 
@@ -84,9 +87,9 @@ class CallbackNotificationServiceTest
   }
 
   private def assertNotificationSent(
-                                      ingestStatus: Ingest.Status,
-                                      callbackStatus: Callback.CallbackStatus
-                                    ): Assertion = {
+    ingestStatus: Ingest.Status,
+    callbackStatus: Callback.CallbackStatus
+  ): Assertion = {
     debug(s"ingestStatus = $ingestStatus, callbackStatus = $callbackStatus")
     val messageSender = new MemoryMessageSender()
     val service = new CallbackNotificationService(messageSender)
@@ -110,9 +113,9 @@ class CallbackNotificationServiceTest
   }
 
   private def assertNothingSent(
-                                 ingestStatus: Ingest.Status,
-                                 callbackStatus: Callback.CallbackStatus
-                               ): Assertion = {
+    ingestStatus: Ingest.Status,
+    callbackStatus: Callback.CallbackStatus
+  ): Assertion = {
     debug(s"ingestStatus = $ingestStatus, callbackStatus = $callbackStatus")
     val messageSender = new MemoryMessageSender()
     val service = new CallbackNotificationService(messageSender)
@@ -127,4 +130,3 @@ class CallbackNotificationServiceTest
     messageSender.messages shouldBe empty
   }
 }
-

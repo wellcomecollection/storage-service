@@ -9,7 +9,11 @@ import akka.stream.Materializer
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker._
 import uk.ac.wellcome.platform.storage.ingests_tracker.services.MessagingService
 import uk.ac.wellcome.storage.Identified
@@ -17,10 +21,15 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination] extends Runnable with Logging {
+trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination]
+    extends Runnable
+    with Logging {
 
   val ingestTracker: IngestTracker
-  val messagingService: MessagingService[CallbackDestination, UpdatedIngestsDestination]
+  val messagingService: MessagingService[
+    CallbackDestination,
+    UpdatedIngestsDestination
+  ]
 
   implicit protected val sys: ActorSystem
   implicit protected val mat: Materializer
@@ -32,18 +41,19 @@ trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination] extends 
   val route: Route =
     concat(
       post {
-        entity(as[Ingest]) { ingest =>
-          ingestTracker.init(ingest) match {
-            case Right(_) =>
-              info(s"Created ingest: ${ingest}")
-              complete(StatusCodes.Created)
-            case Left(e: StateConflictError) =>
-              error(s"Ingest could not be created: ${ingest.id}", e)
-              complete(StatusCodes.Conflict)
-            case Left(e) =>
-              error("Failed to create ingest!", e)
-              complete(StatusCodes.InternalServerError)
-          }
+        entity(as[Ingest]) {
+          ingest =>
+            ingestTracker.init(ingest) match {
+              case Right(_) =>
+                info(s"Created ingest: ${ingest}")
+                complete(StatusCodes.Created)
+              case Left(e: StateConflictError) =>
+                error(s"Ingest could not be created: ${ingest.id}", e)
+                complete(StatusCodes.Conflict)
+              case Left(e) =>
+                error("Failed to create ingest!", e)
+                complete(StatusCodes.InternalServerError)
+            }
         }
       },
       patch {
@@ -68,18 +78,19 @@ trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination] extends 
         }
       },
       get {
-        pathPrefix("ingest" / JavaUUID) { id =>
-          ingestTracker.get(IngestID(id)) match {
-            case Left(IngestDoesNotExistError(_)) =>
-              info(s"Could not find ingest: ${id}")
-              complete(StatusCodes.NotFound)
-            case Left(e) =>
-              error("Failed to get ingest!", e)
-              complete(StatusCodes.InternalServerError)
-            case Right(Identified(_, ingest)) =>
-              info(s"Retrieved ingest: ${ingest}")
-              complete(ingest)
-          }
+        pathPrefix("ingest" / JavaUUID) {
+          id =>
+            ingestTracker.get(IngestID(id)) match {
+              case Left(IngestDoesNotExistError(_)) =>
+                info(s"Could not find ingest: ${id}")
+                complete(StatusCodes.NotFound)
+              case Left(e) =>
+                error("Failed to get ingest!", e)
+                complete(StatusCodes.InternalServerError)
+              case Right(Identified(_, ingest)) =>
+                info(s"Retrieved ingest: ${ingest}")
+                complete(ingest)
+            }
         }
       },
       get {
