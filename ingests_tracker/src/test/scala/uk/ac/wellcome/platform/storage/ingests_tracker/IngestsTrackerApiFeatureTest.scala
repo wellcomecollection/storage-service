@@ -4,7 +4,9 @@ import java.time.Instant
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import org.scalatest.concurrent.IntegrationPatience
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
@@ -16,7 +18,7 @@ import io.circe.syntax._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 
 class IngestsTrackerApiFeatureTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with IngestsTrackerApiFixture
     with JsonAssertions

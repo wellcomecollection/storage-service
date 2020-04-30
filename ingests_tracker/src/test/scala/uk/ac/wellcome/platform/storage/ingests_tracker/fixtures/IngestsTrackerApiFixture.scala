@@ -1,17 +1,14 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.fixtures
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
+import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
-  IngestStoreUnexpectedError,
-  IngestTracker
-}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestStoreUnexpectedError, IngestTracker}
 import uk.ac.wellcome.platform.storage.ingests_tracker.IngestsTrackerApi
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
@@ -20,7 +17,7 @@ import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 trait IngestsTrackerApiFixture
     extends IngestTrackerFixtures
     with IngestGenerators
-    with MetricsSenderFixture {
+    with Akka {
 
   private def withApp[R](
     ingestTrackerTest: MemoryIngestTracker
@@ -30,7 +27,7 @@ trait IngestsTrackerApiFixture
         val app = new IngestsTrackerApi() {
           override val ingestTracker: IngestTracker = ingestTrackerTest
           override implicit lazy protected val sys: ActorSystem = actorSystem
-          override implicit lazy protected val mat: ActorMaterializer =
+          override implicit lazy protected val mat: Materializer =
             materializer
         }
 

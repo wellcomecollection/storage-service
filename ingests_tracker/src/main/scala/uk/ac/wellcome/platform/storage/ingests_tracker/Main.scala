@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.typesafe.config.Config
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
@@ -14,8 +14,8 @@ object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
       AkkaBuilder.buildActorSystem()
-    implicit val materializer: ActorMaterializer =
-      AkkaBuilder.buildActorMaterializer()
+    implicit val materializer: Materializer =
+      AkkaBuilder.buildMaterializer()
 
     implicit val dynamoClient: AmazonDynamoDB =
       DynamoBuilder.buildDynamoClient(config)
@@ -25,7 +25,7 @@ object Main extends WellcomeTypesafeApp {
         config = DynamoBuilder.buildDynamoConfig(config)
       )
       override implicit protected val sys: ActorSystem = actorSystem
-      override implicit protected val mat: ActorMaterializer = materializer
+      override implicit protected val mat: Materializer = materializer
     }
   }
 }
