@@ -7,8 +7,10 @@ sealed trait IngestUpdate {
   val events: Seq[IngestEvent]
 }
 
-case class IngestEventUpdate(id: IngestID, events: Seq[IngestEvent])
-    extends IngestUpdate
+case class IngestEventUpdate(
+  id: IngestID,
+  events: Seq[IngestEvent]
+) extends IngestUpdate
 
 case class IngestStatusUpdate(
   id: IngestID,
