@@ -5,27 +5,23 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 sealed trait IngestUpdate {
   val id: IngestID
   val events: Seq[IngestEvent]
-  val `type`: String
 }
 
 case class IngestEventUpdate(
   id: IngestID,
-  events: Seq[IngestEvent],
-  `type`: String = "IngestEventUpdate"
+  events: Seq[IngestEvent]
 ) extends IngestUpdate
 
 case class IngestStatusUpdate(
   id: IngestID,
   status: Ingest.Status,
-  events: Seq[IngestEvent] = Seq.empty,
-  `type`: String = "IngestStatusUpdate"
+  events: Seq[IngestEvent] = Seq.empty
 ) extends IngestUpdate
 
 case class IngestCallbackStatusUpdate(
   id: IngestID,
   callbackStatus: Callback.CallbackStatus,
-  events: Seq[IngestEvent],
-  `type`: String = "IngestCallbackStatusUpdate"
+  events: Seq[IngestEvent]
 ) extends IngestUpdate
 
 case object IngestCallbackStatusUpdate {
@@ -44,6 +40,5 @@ case object IngestCallbackStatusUpdate {
 case class IngestVersionUpdate(
   id: IngestID,
   events: Seq[IngestEvent],
-  version: BagVersion,
-  `type`: String = "IngestVersionUpdate"
+  version: BagVersion
 ) extends IngestUpdate

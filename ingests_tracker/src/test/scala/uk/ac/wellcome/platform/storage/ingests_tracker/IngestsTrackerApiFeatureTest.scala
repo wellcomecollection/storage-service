@@ -5,16 +5,16 @@ import java.time.Instant
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
-import io.circe.syntax._
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.{EitherValues, FunSpec, Matchers}
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
+import io.circe.syntax._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageRandomThings}
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest._
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Failed, Succeeded}
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 
 class IngestsTrackerApiFeatureTest
@@ -111,9 +111,7 @@ class IngestsTrackerApiFeatureTest
   describe("PATCH /ingest/:id") {
     val ingest = createIngestWith(
       createdDate = Instant.now(),
-      events = Seq(createIngestEvent, createIngestEvent).sortBy {
-        _.createdDate
-      },
+      events = Seq(createIngestEvent, createIngestEvent),
       version = None
     )
 
@@ -137,7 +135,7 @@ class IngestsTrackerApiFeatureTest
 
         val entity = HttpEntity(
           ContentTypes.`application/json`,
-          toJson(ingestEvent).get
+          toJson[IngestUpdate](ingestEvent).get
         )
 
         whenPatchRequestReady(path, entity) { response =>
@@ -160,7 +158,7 @@ class IngestsTrackerApiFeatureTest
 
         val entity = HttpEntity(
           ContentTypes.`application/json`,
-          toJson(ingestStatusUpdateSucceeded).get
+          toJson[IngestUpdate](ingestStatusUpdateSucceeded).get
         )
 
         whenPatchRequestReady(path, entity) { response =>
@@ -180,17 +178,17 @@ class IngestsTrackerApiFeatureTest
     }
 
     it("responds Conflict when updating to an invalid Status") {
-      withConfiguredApp(Seq(ingest)) { ingestTracker =>
+      withConfiguredApp(Seq(ingest)) { _ =>
         val path = s"http://localhost:8080/ingest/${ingest.id}"
 
         val updateSucceededEntity = HttpEntity(
           ContentTypes.`application/json`,
-          toJson(ingestStatusUpdateSucceeded).get
+          toJson[IngestUpdate](ingestStatusUpdateSucceeded).get
         )
 
         val updateFailedEntity = HttpEntity(
           ContentTypes.`application/json`,
-          toJson(ingestStatusUpdateFailed).get
+          toJson[IngestUpdate](ingestStatusUpdateFailed).get
         )
 
         whenPatchRequestReady(path, updateSucceededEntity) { response =>
@@ -203,12 +201,14 @@ class IngestsTrackerApiFeatureTest
     }
 
     it("responds Conflict when updating a non existent ingest") {
-      withConfiguredApp() { ingestTracker =>
+      val succeededIngest = ingest.copy(status = Succeeded)
+
+      withConfiguredApp() { _ =>
         val path = s"http://localhost:8080/ingest/${ingest.id}"
 
         val entity = HttpEntity(
           ContentTypes.`application/json`,
-          toJson(ingestEvent).get
+          toJson[IngestUpdate](ingestEvent).get
         )
 
         whenPatchRequestReady(path, entity) { response =>
@@ -223,7 +223,7 @@ class IngestsTrackerApiFeatureTest
 
         val entity = HttpEntity(
           ContentTypes.`application/json`,
-          toJson(ingestEvent).get
+          toJson[IngestUpdate](ingestEvent).get
         )
 
         whenPatchRequestReady(path, entity) { response =>
@@ -233,7 +233,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     it("responds BadRequest when updating with invalid json") {
-      withConfiguredApp(Seq(ingest)) { ingestTracker =>
+      withConfiguredApp(Seq(ingest)) { _ =>
         val path = s"http://localhost:8080/ingest/${ingest.id}"
 
         val entity = HttpEntity(
@@ -251,9 +251,7 @@ class IngestsTrackerApiFeatureTest
   describe("GET /ingest/:id") {
     val ingest = createIngestWith(
       createdDate = Instant.now(),
-      events = Seq(createIngestEvent, createIngestEvent).sortBy {
-        _.createdDate
-      },
+      events = Seq(createIngestEvent, createIngestEvent),
       version = None
     )
 
