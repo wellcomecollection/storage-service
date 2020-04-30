@@ -4,7 +4,9 @@ import java.io.{File, FileInputStream}
 import java.nio.file.Paths
 import java.time.Instant
 
-import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
+import org.scalatest.{Assertion, TryValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
@@ -23,7 +25,7 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import scala.util.Random
 
 trait UnpackerTestCases[Namespace]
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with TryValues
     with CompressFixture[Namespace]

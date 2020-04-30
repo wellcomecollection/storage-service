@@ -4,7 +4,9 @@ import java.io.IOException
 import java.net.URL
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
@@ -12,7 +14,7 @@ import scala.concurrent.duration._
 import scala.io.Source
 
 class S3UploaderTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with S3Fixtures
     with EitherValues {

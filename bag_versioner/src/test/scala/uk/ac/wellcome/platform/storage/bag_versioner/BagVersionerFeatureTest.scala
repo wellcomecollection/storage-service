@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.storage.bag_versioner
 
 import java.time.Instant
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.concurrent.Eventually
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -20,7 +20,7 @@ import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.BagVersionerFixtur
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class BagVersionerFeatureTest
-    extends FunSpec
+    extends AnyFunSpec
     with BagVersionerFixtures
     with IngestUpdateAssertions
     with PayloadGenerators

@@ -2,11 +2,12 @@ package uk.ac.wellcome.platform.archive.display.bags
 
 import java.time.format.DateTimeFormatter
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
 
 class DisplayStorageManifestInfoTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with BagInfoGenerators {
 

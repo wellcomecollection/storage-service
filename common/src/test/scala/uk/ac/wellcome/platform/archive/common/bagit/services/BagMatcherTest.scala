@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagPath,
   MatchedLocation,
@@ -11,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.generators.FetchMetadataGenerators
 import uk.ac.wellcome.platform.archive.common.verify.{Checksum, MD5, SHA256}
 
 class BagMatcherTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with FetchMetadataGenerators

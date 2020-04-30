@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import org.scalatest._
+import org.scalatest.{Assertion, EitherValues, TryValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagPath,
@@ -27,7 +29,7 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import scala.util.{Failure, Random, Success, Try}
 
 class StorageManifestServiceTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with BagGenerators
     with FetchMetadataGenerators

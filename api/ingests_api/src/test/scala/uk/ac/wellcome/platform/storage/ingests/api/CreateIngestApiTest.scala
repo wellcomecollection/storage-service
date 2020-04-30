@@ -10,7 +10,8 @@ import io.circe.Json
 import io.circe.optics.JsonPath.root
 import io.circe.parser._
 import org.scalatest.concurrent.IntegrationPatience
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
@@ -28,7 +29,7 @@ import uk.ac.wellcome.storage.ObjectLocation
   *
   */
 class CreateIngestApiTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with IngestsApiFixture
     with IntegrationPatience
@@ -393,7 +394,7 @@ class CreateIngestApiTest
       assertCatchesMalformedRequest(
         requestBody = "hgjh",
         expectedMessage =
-          "The request content was malformed:\nexpected json value got h (line 1, column 1)"
+          "The request content was malformed:\nexpected json value got 'hgjh' (line 1, column 1)"
       )
     }
 
@@ -402,7 +403,7 @@ class CreateIngestApiTest
         contentType = ContentTypes.`text/plain(UTF-8)`,
         expectedStatusCode = StatusCodes.UnsupportedMediaType,
         expectedMessage =
-          "The request's Content-Type is not supported. Expected:\napplication/json",
+          "The request's Content-Type [Some(Some(text/plain; charset=UTF-8))] is not supported. Expected:\napplication/json",
         expectedLabel = "Unsupported Media Type"
       )
     }

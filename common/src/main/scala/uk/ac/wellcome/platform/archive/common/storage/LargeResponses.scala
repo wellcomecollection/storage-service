@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.headers.{ETag, Location}
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives.mapResponse
 import akka.http.scaladsl.server.Route
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Uploader
 import uk.ac.wellcome.storage.ObjectLocationPrefix
@@ -27,7 +27,7 @@ trait LargeResponses extends Logging {
 
   private val converter = StreamConverters.asInputStream()
 
-  implicit val materializer: ActorMaterializer
+  implicit val materializer: Materializer
 
   def wrapLargeResponses(route: Route): Route =
     mapResponse(storeAndRedirect)(route)

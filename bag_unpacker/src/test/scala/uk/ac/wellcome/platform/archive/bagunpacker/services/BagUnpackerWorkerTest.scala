@@ -3,7 +3,9 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 import java.nio.file.Paths
 
 import com.amazonaws.services.s3.model.ObjectMetadata
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.TryValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
@@ -23,7 +25,7 @@ import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 class BagUnpackerWorkerTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with BagUnpackerFixtures
     with CompressFixture[Bucket]

@@ -1,12 +1,14 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
+import java.time.Instant
+
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction
-import com.amazonaws.services.sqs.AmazonSQSAsync
-import com.amazonaws.services.sqs.model.Message
 import grizzled.slf4j.Logging
 import io.circe.Decoder
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import software.amazon.awssdk.services.sqs.model.Message
 import uk.ac.wellcome.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
@@ -17,12 +19,15 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
+  MetricsMonitoringClient,
+  MetricsMonitoringProcessor
+}
 import uk.ac.wellcome.platform.archive.common.PipelinePayload
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 sealed trait IngestStep[+T]
@@ -67,10 +72,12 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
   val config: AlpakkaSQSWorkerConfig
   val visibilityTimeout = 0
 
-  implicit val mc: MonitoringClient
+  implicit val mc: MetricsMonitoringClient
   implicit val as: ActorSystem
   implicit val wd: Decoder[Work]
-  implicit val sc: AmazonSQSAsync
+  implicit val sc: SqsAsyncClient
+
+  implicit val metricsNamespace: String
 
   def processMessage(payload: Work): Try[IngestStepResult[Summary]]
 
@@ -79,9 +86,14 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
   }
 
   val worker =
-    new AlpakkaSQSWorker[Work, Summary, MonitoringClient](config)(process) {
-      override val retryAction: Message => (Message, sqs.MessageAction) =
-        (_, MessageAction.changeMessageVisibility(visibilityTimeout))
+    new AlpakkaSQSWorker[Work, Instant, Instant, Summary](
+      config,
+      monitoringProcessorBuilder = (ec: ExecutionContext) =>
+        new MetricsMonitoringProcessor[Work](metricsNamespace)(mc, ec)
+    )(process) {
+      override val retryAction: Message => sqs.MessageAction =
+        (message: Message) =>
+          MessageAction.changeMessageVisibility(message, visibilityTimeout)
     }
 
   def run(): Future[Any] = worker.start

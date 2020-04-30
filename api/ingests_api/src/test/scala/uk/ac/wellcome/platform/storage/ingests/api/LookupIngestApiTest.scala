@@ -6,7 +6,8 @@ import akka.http.scaladsl.model._
 import io.circe.optics.JsonPath.root
 import io.circe.parser._
 import org.scalatest.concurrent.IntegrationPatience
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
@@ -16,7 +17,7 @@ import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
   *
   */
 class LookupIngestApiTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with IngestsApiFixture
     with IntegrationPatience

@@ -1,8 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import org.scalatest.{Assertion, FunSpec, Matchers}
+import org.scalatest.Assertion
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class StorageSpaceTest extends FunSpec with Matchers {
+class StorageSpaceTest extends AnyFunSpec with Matchers {
   it("allows creating a storage space") {
     StorageSpace("digitised")
   }

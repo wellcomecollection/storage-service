@@ -3,7 +3,9 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.io.InputStream
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.verify.{
   Checksum,
@@ -15,7 +17,7 @@ import uk.ac.wellcome.storage.streaming.Codec._
 import scala.util.Success
 
 class ChecksumTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with ScalaFutures

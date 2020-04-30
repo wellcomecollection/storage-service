@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.bag_register.services
 
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.TryValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
@@ -24,7 +26,7 @@ import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 class RegisterTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with BagRegisterFixtures
     with StorageSpaceGenerators

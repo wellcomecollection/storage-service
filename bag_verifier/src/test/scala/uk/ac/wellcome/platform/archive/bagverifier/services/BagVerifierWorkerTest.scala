@@ -2,7 +2,8 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 
 import io.circe.Encoder
 import org.scalatest.concurrent.IntegrationPatience
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
@@ -22,7 +23,7 @@ import uk.ac.wellcome.platform.archive.common.{
 import scala.util.{Failure, Success, Try}
 
 class BagVerifierWorkerTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with IngestUpdateAssertions
     with IntegrationPatience

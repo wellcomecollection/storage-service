@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.ingests.services
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.{
@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepStarted
 import scala.util.Success
 
 class IngestUpdaterTest
-    extends FunSpec
+    extends AnyFunSpec
     with IngestUpdateAssertions
     with OperationFixtures
     with IngestOperationGenerators

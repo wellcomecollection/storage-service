@@ -2,7 +2,8 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import java.net.URI
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagFetchMetadata,
   BagPath
@@ -22,7 +23,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class BagVerifiableTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with BagGenerators
     with FetchMetadataGenerators

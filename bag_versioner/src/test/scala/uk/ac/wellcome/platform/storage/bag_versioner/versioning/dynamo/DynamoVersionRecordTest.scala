@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
   ExternalIdentifier
@@ -9,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.VersionRecordGenerators
 
 class DynamoVersionRecordTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with VersionRecordGenerators {
   it("converts from a VersionRecord to a DynamoEntry and back") {

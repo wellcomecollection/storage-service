@@ -1,7 +1,8 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
 import io.circe.Encoder
-import org.scalatest.{FunSpec, TryValues}
+import org.scalatest.TryValues
+import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.worker.models.{
@@ -25,7 +26,7 @@ import uk.ac.wellcome.platform.archive.ingests.fixtures.IngestsFixtures
 import scala.util.{Failure, Try}
 
 class IngestsWorkerServiceTest
-    extends FunSpec
+    extends AnyFunSpec
     with IngestGenerators
     with IngestsFixtures
     with IngestTrackerFixtures

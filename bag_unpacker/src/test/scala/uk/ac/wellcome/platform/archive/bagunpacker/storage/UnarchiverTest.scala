@@ -3,7 +3,9 @@ package uk.ac.wellcome.platform.archive.bagunpacker.storage
 import java.io.FilterInputStream
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage.streaming.Codec._
 
 /** The archive files used in these tests were deliberately created
@@ -11,7 +13,7 @@ import uk.ac.wellcome.storage.streaming.Codec._
   * and because they're simpler than doing it with Scala!
   *
   */
-class UnarchiverTest extends FunSpec with Matchers with EitherValues {
+class UnarchiverTest extends AnyFunSpec with Matchers with EitherValues {
 
   /** The package for this test was created with the bash script:
     *

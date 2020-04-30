@@ -4,7 +4,8 @@ import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.model._
 import org.scalatest.concurrent.IntegrationPatience
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
@@ -25,7 +26,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
   *
   */
 class LookupBagVersionsApiTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with BagIdGenerators
     with BagInfoGenerators

@@ -2,5 +2,6 @@
   "id" : "indexer_common",
   "folder" : "indexer/common",
   "dependencyIds" : [
+    "common"
   ]
 }

@@ -5,7 +5,9 @@ import com.sksamuel.elastic4s.{ElasticClient, Index}
 import com.sksamuel.elastic4s.http.JavaClientExceptionWrapper
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import io.circe.Json
-import org.scalatest.{Assertion, EitherValues, FunSpec, Matchers}
+import org.scalatest.{Assertion, EitherValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   ElasticClientFactory,
   Indexer
@@ -15,7 +17,7 @@ import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IndexerTestCases[Document, DisplayDocument]
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with ElasticsearchFixtures {

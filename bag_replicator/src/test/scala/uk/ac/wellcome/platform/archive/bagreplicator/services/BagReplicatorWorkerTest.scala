@@ -4,7 +4,13 @@ import java.nio.file.Paths
 import java.util.UUID
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.TryValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
+import software.amazon.awssdk.services.sqs.model.{
+  GetQueueAttributesRequest,
+  QueueAttributeName
+}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -35,12 +41,11 @@ import uk.ac.wellcome.storage.transfer.{
   TransferSuccess
 }
 
-import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class BagReplicatorWorkerTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with BagReplicatorFixtures
     with IngestUpdateAssertions
@@ -290,19 +295,24 @@ class BagReplicatorWorkerTest
             Thread.sleep(2000)
 
             eventually {
-              val queueAttributes =
-                sqsClient
-                  .getQueueAttributes(
-                    queue.url,
-                    List(
-                      "ApproximateNumberOfMessagesNotVisible",
-                      "ApproximateNumberOfMessages"
-                    ).asJava
-                  )
-                  .getAttributes
+              val queueAttributes = sqsClient
+                .getQueueAttributes {
+                  builder: GetQueueAttributesRequest.Builder =>
+                    builder
+                      .queueUrl(queue.url)
+                      .attributeNames(
+                        QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE,
+                        QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
+                      )
+                }
+                .attributes()
 
-              queueAttributes.get("ApproximateNumberOfMessagesNotVisible") shouldBe "1"
-              queueAttributes.get("ApproximateNumberOfMessages") shouldBe "0"
+              queueAttributes.get(
+                QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE
+              ) shouldBe "1"
+              queueAttributes.get(
+                QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
+              ) shouldBe "0"
             }
           }
         }
@@ -330,7 +340,7 @@ class BagReplicatorWorkerTest
           withActorSystem { implicit actorSystem =>
             val ingestUpdater = createIngestUpdaterWith(ingests)
             val outgoingPublisher = createOutgoingPublisherWith(outgoing)
-            withMonitoringClient { implicit monitoringClient =>
+            withFakeMonitoringClient() { implicit monitoringClient =>
               val lockingService = createLockingService
 
               val replicatorDestinationConfig =
@@ -378,7 +388,8 @@ class BagReplicatorWorkerTest
                 outgoingPublisher = outgoingPublisher,
                 lockingService = lockingService,
                 destinationConfig = replicatorDestinationConfig,
-                bagReplicator = bagReplicator
+                bagReplicator = bagReplicator,
+                metricsNamespace = "bag_replicator"
               )
 
               val result = service.processMessage(payload).success.value

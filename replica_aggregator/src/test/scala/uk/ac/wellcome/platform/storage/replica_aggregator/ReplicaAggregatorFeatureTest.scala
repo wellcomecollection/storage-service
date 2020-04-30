@@ -1,7 +1,9 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator
 
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
@@ -20,7 +22,7 @@ import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 class ReplicaAggregatorFeatureTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with ReplicaAggregatorFixtures
     with IngestUpdateAssertions

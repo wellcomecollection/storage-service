@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.display.bags
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   FileManifest,
@@ -9,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.platform.archive.common.verify._
 
 class DisplayFileManifestTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with StorageManifestGenerators {
   it("converts a manifest to a DisplayManifest") {

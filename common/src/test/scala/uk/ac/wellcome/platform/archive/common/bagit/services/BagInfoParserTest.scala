@@ -2,7 +2,9 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import java.io.InputStream
 
-import org.scalatest._
+import org.scalatest.{Assertion, EitherValues, TryValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
@@ -13,7 +15,7 @@ import uk.ac.wellcome.storage.streaming.Codec._
 import scala.util.Success
 
 class BagInfoParserTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with TryValues

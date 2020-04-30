@@ -2,7 +2,9 @@ package uk.ac.wellcome.platform.archive.notifier.services
 
 import akka.http.scaladsl.model.HttpResponse
 import org.scalatest.prop.TableDrivenPropertyChecks._
-import org.scalatest.{Assertion, FunSpec, Matchers}
+import org.scalatest.Assertion
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
@@ -14,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import scala.util.{Failure, Success, Try}
 
 class PrepareNotificationServiceTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with Akka
     with TimeTestFixture

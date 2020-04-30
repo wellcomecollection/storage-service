@@ -1,17 +1,17 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 
-import org.mockito.{Matchers => MockitoMatchers, Mockito}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.mockito.{Mockito, Matchers => MockitoMatchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.streaming.Codec._
 
 class S3StreamReaderTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with S3Fixtures
-    with MockitoSugar
     with StorageRandomThings
     with EitherValues {
   it("makes multiple GetObject requests") {
