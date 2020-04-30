@@ -7,7 +7,6 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.platform.archive.common.fixtures.MonitoringClientFixture
 import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 import uk.ac.wellcome.platform.archive.indexer.ingests.{
   IngestIndexer,
@@ -19,8 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 trait IngestsIndexerFixtures
     extends ElasticsearchFixtures
     with Akka
-    with AlpakkaSQSWorkerFixtures
-    with MonitoringClientFixture { this: Suite =>
+    with AlpakkaSQSWorkerFixtures { this: Suite =>
   def withIngestsIndexerWorker[R](
     queue: Queue = Queue("queue://test", "arn::test"),
     index: Index
@@ -31,10 +29,11 @@ trait IngestsIndexerFixtures
     )
 
     withActorSystem { implicit actorSystem =>
-      withMonitoringClient { implicit monitoringClient =>
+      withFakeMonitoringClient() { implicit monitoringClient =>
         val worker = new IngestsIndexerWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
-          ingestIndexer = ingestIndexer
+          ingestIndexer = ingestIndexer,
+          metricsNamespace = "ingests_indexer"
         )
 
         testWith(worker)

@@ -4,7 +4,9 @@ import java.util.UUID
 
 import com.sksamuel.elastic4s.ElasticDsl.{properties, textField}
 import io.circe.Json
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.messaging.worker.models.{
   NonDeterministicFailure,
   Successful
@@ -13,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.indexer.ingests.fixtures.IngestsIndexerFixtures
 
 class IngestsIndexerWorkerTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with IngestsIndexerFixtures

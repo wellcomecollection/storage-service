@@ -1,20 +1,16 @@
 package uk.ac.wellcome.platform.archive.indexer.ingests
 
-import java.time.format.DateTimeFormatter
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import com.amazonaws.services.sqs.AmazonSQSAsync
+import akka.stream.Materializer
 import com.sksamuel.elastic4s.Index
 import com.typesafe.config.Config
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
-import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticsearchIndexCreator
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.config.ElasticClientBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -30,13 +26,13 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
 
-    implicit val materializer: ActorMaterializer =
-      AkkaBuilder.buildActorMaterializer()
+    implicit val materializer: Materializer =
+      AkkaBuilder.buildMaterializer()
 
-    implicit val monitoringClient: CloudwatchMonitoringClient =
+    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
 
-    implicit val sqsClient: AmazonSQSAsync =
+    implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
     // Ingests will be written a lot when they're initially processing, then never written
@@ -78,7 +74,8 @@ object Main extends WellcomeTypesafeApp {
 
     new IngestsIndexerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
-      ingestIndexer = ingestIndexer
+      ingestIndexer = ingestIndexer,
+      metricsNamespace = config.required[String]("aws.metrics.namespace")
     )
   }
 }
