@@ -12,7 +12,9 @@ import akka.stream.scaladsl.Sink
 import io.circe.optics.JsonPath.root
 import io.circe.parser.parse
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{Assertion, EitherValues, FunSpec, Matchers}
+import org.scalatest.{Assertion, EitherValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
@@ -23,7 +25,7 @@ import uk.ac.wellcome.platform.archive.notifier.fixtures.{
 }
 
 class CallbackUrlServiceTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with ScalaFutures
     with EitherValues

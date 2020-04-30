@@ -1,23 +1,16 @@
 package uk.ac.wellcome.platform.archive.notifier
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import com.amazonaws.services.sqs.AmazonSQSAsync
+import akka.stream.Materializer
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SNSBuilder,
-  SQSBuilder
-}
-import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SNSBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.common.config.builders.HTTPServerBuilder
-import uk.ac.wellcome.platform.archive.notifier.services.{
-  CallbackUrlService,
-  NotifierWorker
-}
+import uk.ac.wellcome.platform.archive.notifier.services.{CallbackUrlService, NotifierWorker}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContext
 
@@ -27,13 +20,13 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildActorSystem()
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
-    implicit val materializer: ActorMaterializer =
-      AkkaBuilder.buildActorMaterializer()
+    implicit val materializer: Materializer =
+      AkkaBuilder.buildMaterializer()
 
-    implicit val monitoringClient: CloudwatchMonitoringClient =
+    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
 
-    implicit val sqsClient: AmazonSQSAsync =
+    implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
     val callbackUrlService = new CallbackUrlService(
@@ -46,7 +39,8 @@ object Main extends WellcomeTypesafeApp {
       messageSender = SNSBuilder.buildSNSMessageSender(
         config,
         subject = "Sent from the notifier"
-      )
+      ),
+      metricsNamespace = config.required[String]("aws.metrics.namespace")
     )
   }
 }
