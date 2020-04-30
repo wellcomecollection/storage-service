@@ -3,7 +3,8 @@ package uk.ac.wellcome.platform.archive.ingests
 import java.time.Instant
 
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
@@ -17,7 +18,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryInges
 import uk.ac.wellcome.platform.archive.ingests.fixtures._
 
 class IngestsFeatureTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with Eventually
     with IngestsFixtures
