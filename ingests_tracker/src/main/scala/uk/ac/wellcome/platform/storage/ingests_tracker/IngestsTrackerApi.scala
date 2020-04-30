@@ -11,14 +11,16 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestUpdate}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker._
+import uk.ac.wellcome.platform.storage.ingests_tracker.services.MessagingService
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-trait IngestsTrackerApi extends Runnable with Logging {
+trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination] extends Runnable with Logging {
 
   val ingestTracker: IngestTracker
+  val messagingService: MessagingService[CallbackDestination, UpdatedIngestsDestination]
 
   implicit protected val sys: ActorSystem
   implicit protected val mat: Materializer

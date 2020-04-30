@@ -203,8 +203,6 @@ class IngestsTrackerApiFeatureTest
     }
 
     it("responds Conflict when updating a non existent ingest") {
-      val succeededIngest = ingest.copy(status = Succeeded)
-
       withConfiguredApp() { _ =>
         val path = s"http://localhost:8080/ingest/${ingest.id}"
 
