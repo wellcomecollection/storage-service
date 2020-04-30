@@ -49,11 +49,10 @@ class NotifierWorker[Destination](
       IngestCallbackStatusUpdate
     ](
       alpakkaSQSWorkerConfig,
-      monitoringProcessorBuilder =
-        (ec: ExecutionContext) =>
-          new MetricsMonitoringProcessor[CallbackNotification](
-            metricsNamespace
-          )(mc, ec)
+      monitoringProcessorBuilder = (ec: ExecutionContext) =>
+        new MetricsMonitoringProcessor[CallbackNotification](
+          metricsNamespace
+        )(mc, ec)
     ) {
       processMessage
     }
