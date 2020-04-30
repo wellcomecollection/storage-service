@@ -2,7 +2,9 @@ package uk.ac.wellcome.platform.storage.bag_versioner.versioning
 
 import java.time.Instant
 
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
@@ -16,7 +18,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.storage.NoMaximaValueError
 
 trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with ExternalIdentifierGenerators

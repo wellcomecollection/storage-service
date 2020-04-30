@@ -2,7 +2,9 @@ package uk.ac.wellcome.platform.storage.bag_versioner.services
 
 import java.time.Instant
 
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.TryValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
@@ -21,7 +23,7 @@ import uk.ac.wellcome.platform.storage.bag_versioner.models.{
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class BagVersionerTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with TryValues
     with BagVersionerFixtures

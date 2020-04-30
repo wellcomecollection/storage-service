@@ -3,7 +3,9 @@ package uk.ac.wellcome.platform.storage.bag_versioner.versioning
 import java.time.Instant
 import java.util.UUID
 
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
   ExternalIdentifier
@@ -21,7 +23,7 @@ import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.VersionPickerFixtu
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure, UnlockFailure}
 
 class VersionPickerTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with ExternalIdentifierGenerators
     with VersionPickerFixtures

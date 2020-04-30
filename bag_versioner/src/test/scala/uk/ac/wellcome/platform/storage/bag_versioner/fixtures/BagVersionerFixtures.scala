@@ -2,25 +2,22 @@ package uk.ac.wellcome.platform.storage.bag_versioner.fixtures
 
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.storage.bag_versioner.services.{
   BagVersioner,
   BagVersionerWorker
 }
 
-import uk.ac.wellcome.json.JsonUtil._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagVersionerFixtures
     extends OperationFixtures
     with Akka
     with AlpakkaSQSWorkerFixtures
-    with MonitoringClientFixture
     with VersionPickerFixtures {
 
   private val defaultQueue = Queue(
@@ -42,13 +39,14 @@ trait BagVersionerFixtures
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
-      withMonitoringClient { implicit monitoringClient =>
+      withFakeMonitoringClient() { implicit monitoringClient =>
         withBagVersioner { bagVersioner =>
           val worker = new BagVersionerWorker(
             config = createAlpakkaSQSWorkerConfig(queue),
             bagVersioner = bagVersioner,
             ingestUpdater = ingestUpdater,
-            outgoingPublisher = outgoingPublisher
+            outgoingPublisher = outgoingPublisher,
+            metricsNamespace = "bag_versioner"
           )
 
           worker.run()
