@@ -5,11 +5,11 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import cats.instances.try_._
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
 import org.apache.commons.io.IOUtils
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
@@ -18,15 +18,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.{
-  ReplicaResultPayload,
-  VersionedBagRootPayload
-}
-import uk.ac.wellcome.storage.locking.{
-  FailedLockingServiceOp,
-  LockDao,
-  LockingService
-}
+import uk.ac.wellcome.platform.archive.common.{ReplicaResultPayload, VersionedBagRootPayload}
+import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
@@ -45,12 +38,13 @@ class BagReplicatorWorker[
     UUID
   ]],
   destinationConfig: ReplicatorDestinationConfig,
-  bagReplicator: BagReplicator
+  bagReplicator: BagReplicator,
+  val metricsNamespace: String
 )(
   implicit
-  val mc: MonitoringClient,
+  val mc: MetricsMonitoringClient,
   val as: ActorSystem,
-  val sc: AmazonSQSAsync,
+  val sc: SqsAsyncClient,
   val wd: Decoder[VersionedBagRootPayload],
   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) extends IngestStepWorker[

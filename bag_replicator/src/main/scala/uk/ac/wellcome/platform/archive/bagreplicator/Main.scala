@@ -1,38 +1,28 @@
 package uk.ac.wellcome.platform.archive.bagreplicator
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
-import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.BagReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.locking.dynamo.{
-  DynamoLockDao,
-  DynamoLockingService
-}
+import uk.ac.wellcome.storage.locking.dynamo.{DynamoLockDao, DynamoLockingService}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.Try
@@ -45,8 +35,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
 
-    implicit val mat: ActorMaterializer =
-      AkkaBuilder.buildActorMaterializer()
+    implicit val mat: Materializer =
+      AkkaBuilder.buildMaterializer()
 
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
@@ -54,10 +44,10 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3StreamStore: S3StreamStore =
       new S3StreamStore()
 
-    implicit val monitoringClient: CloudwatchMonitoringClient =
+    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
 
-    implicit val sqsClient: AmazonSQSAsync =
+    implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
     implicit val lockDao: DynamoLockDao =
@@ -82,7 +72,8 @@ object Main extends WellcomeTypesafeApp {
       lockingService = lockingService,
       destinationConfig = ReplicatorDestinationConfig
         .buildDestinationConfig(config),
-      bagReplicator = new BagReplicator(replicator)
+      bagReplicator = new BagReplicator(replicator),
+      metricsNamespace = config.required[String]("aws.metrics.namespace")
     )
   }
 }

@@ -4,22 +4,19 @@ import java.nio.file.Paths
 import java.util.UUID
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.TryValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
+import software.amazon.awssdk.services.sqs.model.{GetQueueAttributesRequest, QueueAttributeName}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
-  PrimaryBagReplicationRequest,
-  SecondaryBagReplicationRequest
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{PrimaryBagReplicationRequest, SecondaryBagReplicationRequest}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.ReplicaResultPayload
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  S3BagBuilder,
-  S3BagBuilderBase
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{S3BagBuilder, S3BagBuilderBase}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.storage.models._
@@ -29,18 +26,13 @@ import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.transfer.s3.{S3PrefixTransfer, S3Transfer}
-import uk.ac.wellcome.storage.transfer.{
-  TransferFailure,
-  TransferPerformed,
-  TransferSuccess
-}
+import uk.ac.wellcome.storage.transfer.{TransferFailure, TransferPerformed, TransferSuccess}
 
-import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class BagReplicatorWorkerTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with BagReplicatorFixtures
     with IngestUpdateAssertions
@@ -290,19 +282,19 @@ class BagReplicatorWorkerTest
             Thread.sleep(2000)
 
             eventually {
-              val queueAttributes =
-                sqsClient
-                  .getQueueAttributes(
-                    queue.url,
-                    List(
-                      "ApproximateNumberOfMessagesNotVisible",
-                      "ApproximateNumberOfMessages"
-                    ).asJava
-                  )
-                  .getAttributes
+              val queueAttributes = sqsClient
+                .getQueueAttributes { builder: GetQueueAttributesRequest.Builder =>
+                  builder
+                    .queueUrl(queue.url)
+                    .attributeNames(
+                      QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE,
+                      QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
+                    )
+                }
+                .attributes()
 
-              queueAttributes.get("ApproximateNumberOfMessagesNotVisible") shouldBe "1"
-              queueAttributes.get("ApproximateNumberOfMessages") shouldBe "0"
+              queueAttributes.get(QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE) shouldBe "1"
+              queueAttributes.get(QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES) shouldBe "0"
             }
           }
         }
@@ -330,7 +322,7 @@ class BagReplicatorWorkerTest
           withActorSystem { implicit actorSystem =>
             val ingestUpdater = createIngestUpdaterWith(ingests)
             val outgoingPublisher = createOutgoingPublisherWith(outgoing)
-            withMonitoringClient { implicit monitoringClient =>
+            withFakeMonitoringClient() { implicit monitoringClient =>
               val lockingService = createLockingService
 
               val replicatorDestinationConfig =
@@ -378,7 +370,8 @@ class BagReplicatorWorkerTest
                 outgoingPublisher = outgoingPublisher,
                 lockingService = lockingService,
                 destinationConfig = replicatorDestinationConfig,
-                bagReplicator = bagReplicator
+                bagReplicator = bagReplicator,
+                metricsNamespace = "bag_replicator"
               )
 
               val result = service.processMessage(payload).success.value

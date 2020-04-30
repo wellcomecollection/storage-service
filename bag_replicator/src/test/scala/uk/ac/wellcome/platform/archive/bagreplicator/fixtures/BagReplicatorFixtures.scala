@@ -20,10 +20,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinatio
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
@@ -38,13 +35,13 @@ import uk.ac.wellcome.storage.locking.memory.{
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
 trait BagReplicatorFixtures
     extends Akka
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
-    with MonitoringClientFixture
     with MemoryLockDaoFixtures
     with StorageLocationGenerators
     with S3Fixtures {
@@ -79,11 +76,12 @@ trait BagReplicatorFixtures
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
     stepName: String = randomAlphanumericWithLength(),
-    requestBuilder: ReplicationRequest => BagReplicationRequest = chooseFrom(
-      Seq(
-        PrimaryBagReplicationRequest.apply,
-        SecondaryBagReplicationRequest.apply
-      )
+    requestBuilder: ReplicationRequest => BagReplicationRequest =
+      (request: ReplicationRequest) => chooseFrom(
+        Seq(
+          PrimaryBagReplicationRequest(request),
+          SecondaryBagReplicationRequest.apply(request)
+        )
     )
   )(
     testWith: TestWith[
@@ -94,7 +92,7 @@ trait BagReplicatorFixtures
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
-      withMonitoringClient { implicit monitoringClient =>
+      withFakeMonitoringClient() { implicit monitoringClient =>
         val lockingService = createLockingServiceWith(lockServiceDao)
 
         val replicatorDestinationConfig =
@@ -118,7 +116,8 @@ trait BagReplicatorFixtures
           outgoingPublisher = outgoingPublisher,
           lockingService = lockingService,
           destinationConfig = replicatorDestinationConfig,
-          bagReplicator = bagReplicator
+          bagReplicator = bagReplicator,
+          metricsNamespace = "bag_replicator"
         )
 
         service.run()
@@ -130,11 +129,12 @@ trait BagReplicatorFixtures
   def createReplicatorDestinationConfigWith(
     bucket: Bucket,
     provider: StorageProvider = createProvider,
-    requestBuilder: ReplicationRequest => BagReplicationRequest = chooseFrom(
-      Seq(
-        PrimaryBagReplicationRequest.apply,
-        SecondaryBagReplicationRequest.apply
-      )
+    requestBuilder: ReplicationRequest => BagReplicationRequest =
+      (request: ReplicationRequest) => chooseFrom(
+        Seq(
+          PrimaryBagReplicationRequest(request),
+          SecondaryBagReplicationRequest.apply(request)
+        )
     )
   ): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
