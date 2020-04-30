@@ -5,13 +5,10 @@ import akka.stream.ActorMaterializer
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestUpdate}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
-  IngestStoreUnexpectedError,
-  IngestTracker
-}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestStoreUnexpectedError, IngestTracker}
 import uk.ac.wellcome.platform.storage.ingests_tracker.IngestsTrackerApi
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
@@ -53,6 +50,9 @@ trait IngestsTrackerApiFixture
         Left(IngestStoreUnexpectedError(new Throwable("BOOM!")))
 
       override def init(ingest: Ingest): Result =
+        Left(IngestStoreUnexpectedError(new Throwable("BOOM!")))
+
+      override def update(update: IngestUpdate): Result =
         Left(IngestStoreUnexpectedError(new Throwable("BOOM!")))
     }
 

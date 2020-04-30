@@ -22,7 +22,7 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
         .map { ingestUpdate =>
           debug(s"Received IngestUpdate: $ingestUpdate")
           Try(inside(ingestUpdate) {
-            case IngestStatusUpdate(id, actualStatus, events) =>
+            case IngestStatusUpdate(id, actualStatus, events, _) =>
               id shouldBe ingestId
               actualStatus shouldBe status
               assert(events)
@@ -73,7 +73,7 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
         .map { ingestUpdate =>
           debug(s"Received IngestUpdate: $ingestUpdate")
           Try(inside(ingestUpdate) {
-            case IngestEventUpdate(id, events) =>
+            case IngestEventUpdate(id, events, _) =>
               id shouldBe ingestId
 
               assert(events)

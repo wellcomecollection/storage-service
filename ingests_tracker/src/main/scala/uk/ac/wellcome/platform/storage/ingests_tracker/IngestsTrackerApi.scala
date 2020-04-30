@@ -35,11 +35,8 @@ trait IngestsTrackerApi extends Runnable with Logging {
             case Right(_) =>
               info(s"Created ingest: ${ingest}")
               complete(StatusCodes.Created)
-            case Left(e@IngestAlreadyExistsError(_)) =>
-              error(s"Ingest already exists: ${ingest.id}", e)
-              complete(StatusCodes.Conflict)
-            case Left(e: NoCallbackOnIngestError) =>
-              error(s"Missing callback on ingest: ${ingest}", e)
+            case Left(e: StateConflictError) =>
+              error(s"Ingest could not be created: ${ingest.id}", e)
               complete(StatusCodes.Conflict)
             case Left(e) =>
               error("Failed to create ingest!", e)
@@ -51,7 +48,7 @@ trait IngestsTrackerApi extends Runnable with Logging {
         pathPrefix("ingest" / JavaUUID) { id =>
           entity(as[IngestUpdate]) { ingestUpdate =>
             info(s"Updating $id: $ingestUpdate")
-            
+
             ingestTracker.update(ingestUpdate) match {
               case Left(e: StateConflictError) =>
                 error(s"Ingest ${id} can not be updated", e)
