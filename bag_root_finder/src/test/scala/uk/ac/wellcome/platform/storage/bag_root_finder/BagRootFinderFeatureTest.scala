@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.storage.bag_root_finder
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.BagRootPayload
@@ -22,7 +22,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_root_finder.fixtures.BagRootFinderFixtures
 
 class BagRootFinderFeatureTest
-    extends FunSpec
+    extends AnyFunSpec
     with BagRootFinderFixtures
     with IngestUpdateAssertions
     with PayloadGenerators {
