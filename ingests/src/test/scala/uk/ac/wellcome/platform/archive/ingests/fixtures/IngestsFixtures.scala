@@ -29,22 +29,20 @@ trait IngestsFixtures
   )(testWith: TestWith[IngestsWorker[String, String], R]): R =
     withFakeMonitoringClient() { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
-        withMaterializer { implicit materializer =>
-          val callbackNotificationService =
-            new CallbackNotificationService(callbackNotificationMessageSender)
+        val callbackNotificationService =
+          new CallbackNotificationService(callbackNotificationMessageSender)
 
-          val service = new IngestsWorker(
-            alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-            ingestTracker = ingestTracker,
-            callbackNotificationService = callbackNotificationService,
-            updatedIngestsMessageSender = updatedIngestsMessageSender,
-            metricsNamespace = "ingests_monitor"
-          )
+        val service = new IngestsWorker(
+          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          ingestTracker = ingestTracker,
+          callbackNotificationService = callbackNotificationService,
+          updatedIngestsMessageSender = updatedIngestsMessageSender,
+          metricsNamespace = "ingests_monitor"
+        )
 
-          service.run()
+        service.run()
 
-          testWith(service)
-        }
+        testWith(service)
       }
     }
 }

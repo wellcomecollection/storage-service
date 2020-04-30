@@ -35,26 +35,23 @@ trait BagVerifierFixtures
   )(testWith: TestWith[BagVerifierWorker[String, String], R]): R =
     withFakeMonitoringClient() { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
-        withMaterializer(actorSystem) { implicit mat =>
-          withVerifier { verifier =>
-            val ingestUpdater =
-              createIngestUpdaterWith(ingests, stepName = stepName)
+        withVerifier { verifier =>
+          val ingestUpdater =
+            createIngestUpdaterWith(ingests, stepName = stepName)
 
-            val outgoingPublisher =
-              createOutgoingPublisherWith(outgoing)
+          val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
-            val service = new BagVerifierWorker(
-              config = createAlpakkaSQSWorkerConfig(queue),
-              ingestUpdater = ingestUpdater,
-              outgoingPublisher = outgoingPublisher,
-              verifier = verifier,
-              metricsNamespace = "bag_verifier"
-            )
+          val service = new BagVerifierWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            ingestUpdater = ingestUpdater,
+            outgoingPublisher = outgoingPublisher,
+            verifier = verifier,
+            metricsNamespace = "bag_verifier"
+          )
 
-            service.run()
+          service.run()
 
-            testWith(service)
-          }
+          testWith(service)
         }
       }
     }

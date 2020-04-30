@@ -30,19 +30,17 @@ trait NotifierFixtures
   ): R =
     withFakeMonitoringClient() { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
-        withMaterializer(actorSystem) { implicit materializer =>
-          withCallbackUrlService { callbackUrlService =>
-            val workerService = new NotifierWorker(
-              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-              callbackUrlService = callbackUrlService,
-              messageSender = messageSender,
-              metricsNamespace = "notifier"
-            )
+        withCallbackUrlService { callbackUrlService =>
+          val workerService = new NotifierWorker(
+            alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+            callbackUrlService = callbackUrlService,
+            messageSender = messageSender,
+            metricsNamespace = "notifier"
+          )
 
-            workerService.run()
+          workerService.run()
 
-            testWith(workerService)
-          }
+          testWith(workerService)
         }
       }
     }
