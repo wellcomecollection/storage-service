@@ -34,11 +34,9 @@ case class MismatchedVersionUpdateError(
   update: BagVersion
 ) extends StateConflictError
 
-case class NoCallbackOnIngestError()
-  extends IngestStoreError
+case class NoCallbackOnIngestError() extends IngestStoreError
 
-case class IngestStoreUnexpectedError(e: Throwable)
-  extends IngestStoreError {
+case class IngestStoreUnexpectedError(e: Throwable) extends IngestStoreError {
 
   override def toString: String = {
     s"IngestStoreUnexpectedError: ${e.toString}"

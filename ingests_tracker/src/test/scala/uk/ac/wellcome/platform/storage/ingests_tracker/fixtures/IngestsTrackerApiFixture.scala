@@ -6,7 +6,11 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestStoreUnexpectedError, IngestTracker}

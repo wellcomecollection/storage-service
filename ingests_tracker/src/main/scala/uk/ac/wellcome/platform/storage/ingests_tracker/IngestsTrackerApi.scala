@@ -47,22 +47,24 @@ trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination] extends 
         }
       },
       patch {
-        pathPrefix("ingest" / JavaUUID) { id =>
-          entity(as[IngestUpdate]) { ingestUpdate =>
-            info(s"Updating $id: $ingestUpdate")
+        pathPrefix("ingest" / JavaUUID) {
+          id =>
+            entity(as[IngestUpdate]) {
+              ingestUpdate =>
+                info(s"Updating $id: $ingestUpdate")
 
-            ingestTracker.update(ingestUpdate) match {
-              case Left(e: StateConflictError) =>
-                error(s"Ingest ${id} can not be updated", e)
-                complete(StatusCodes.Conflict)
-              case Left(e) =>
-                error(s"Failed to update ingest: ${id}", e)
-                complete(StatusCodes.InternalServerError)
-              case Right(Identified(_, ingest)) =>
-                info(s"Updated ingest: $ingest")
-                complete(StatusCodes.OK -> ingest)
+                ingestTracker.update(ingestUpdate) match {
+                  case Left(e: StateConflictError) =>
+                    error(s"Ingest ${id} can not be updated", e)
+                    complete(StatusCodes.Conflict)
+                  case Left(e) =>
+                    error(s"Failed to update ingest: ${id}", e)
+                    complete(StatusCodes.InternalServerError)
+                  case Right(Identified(_, ingest)) =>
+                    info(s"Updated ingest: $ingest")
+                    complete(StatusCodes.OK -> ingest)
+                }
             }
-          }
         }
       },
       get {

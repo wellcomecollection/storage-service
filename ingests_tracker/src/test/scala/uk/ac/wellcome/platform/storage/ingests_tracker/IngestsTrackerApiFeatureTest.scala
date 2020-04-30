@@ -14,8 +14,14 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageRandomThings}
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Failed, Succeeded}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  HttpFixtures,
+  StorageRandomThings
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+  Failed,
+  Succeeded
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 
