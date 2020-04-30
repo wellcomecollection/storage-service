@@ -1,12 +1,14 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.EitherValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.storage.models.KnownReplicas
 import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.AggregatorInternalRecord
 
 class ReplicaCounterTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with StorageLocationGenerators {

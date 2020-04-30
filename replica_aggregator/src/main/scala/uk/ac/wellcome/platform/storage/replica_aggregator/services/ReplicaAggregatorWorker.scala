@@ -3,19 +3,15 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 import java.time.Instant
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.{
-  KnownReplicasPayload,
-  PipelineContext,
-  ReplicaResultPayload
-}
+import uk.ac.wellcome.platform.archive.common.{KnownReplicasPayload, PipelineContext, ReplicaResultPayload}
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.{RetryableError, UpdateError, UpdateWriteError}
 
@@ -26,11 +22,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   replicaAggregator: ReplicaAggregator,
   replicaCounter: ReplicaCounter,
   ingestUpdater: IngestUpdater[IngestDestination],
-  outgoingPublisher: OutgoingPublisher[OutgoingDestination]
+  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
+  val metricsNamespace: String
 )(
-  implicit val mc: MonitoringClient,
+  implicit val mc: MetricsMonitoringClient,
   val as: ActorSystem,
-  val sc: AmazonSQSAsync,
+  val sc: SqsAsyncClient,
   val wd: Decoder[ReplicaResultPayload]
 ) extends IngestStepWorker[
       ReplicaResultPayload,

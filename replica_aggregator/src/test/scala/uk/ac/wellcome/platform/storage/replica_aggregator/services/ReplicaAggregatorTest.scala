@@ -2,7 +2,9 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
 import java.time.Instant
 
-import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
+import org.scalatest.{EitherValues, TryValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
@@ -18,7 +20,7 @@ import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 import uk.ac.wellcome.storage.{StoreWriteError, UpdateWriteError, Version}
 
 class ReplicaAggregatorTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with TryValues
