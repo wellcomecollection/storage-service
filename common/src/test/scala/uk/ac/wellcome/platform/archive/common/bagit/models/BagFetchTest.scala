@@ -7,7 +7,10 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.FetchMetadataGenerators
 
-class BagFetchTest extends AnyFunSpec with Matchers with FetchMetadataGenerators {
+class BagFetchTest
+    extends AnyFunSpec
+    with Matchers
+    with FetchMetadataGenerators {
   describe("read") {
     it("reads the contents of a fetch.txt") {
       val contents = toInputStream(s"""

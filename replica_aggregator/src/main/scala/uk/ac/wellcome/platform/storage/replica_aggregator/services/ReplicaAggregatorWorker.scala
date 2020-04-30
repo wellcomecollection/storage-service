@@ -11,7 +11,11 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.{KnownReplicasPayload, PipelineContext, ReplicaResultPayload}
+import uk.ac.wellcome.platform.archive.common.{
+  KnownReplicasPayload,
+  PipelineContext,
+  ReplicaResultPayload
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.{RetryableError, UpdateError, UpdateWriteError}
 

@@ -7,7 +7,10 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.storage.bag_root_finder.services.{BagRootFinder, BagRootFinderWorker}
+import uk.ac.wellcome.platform.storage.bag_root_finder.services.{
+  BagRootFinder,
+  BagRootFinderWorker
+}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global

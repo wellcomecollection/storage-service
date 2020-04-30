@@ -9,9 +9,19 @@ import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{MetricsMonitoringClient, MetricsMonitoringProcessor}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
+  MetricsMonitoringClient,
+  MetricsMonitoringProcessor
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -57,10 +67,14 @@ class IngestsIndexerWorker(
     new AlpakkaSQSWorker[Ingest, Instant, Instant, Unit](
       config,
       monitoringProcessorBuilder = (ec: ExecutionContext) =>
-        new MetricsMonitoringProcessor[Ingest](metricsNamespace)(monitoringClient, ec)
+        new MetricsMonitoringProcessor[Ingest](metricsNamespace)(
+          monitoringClient,
+          ec
+        )
     )(process) {
       override val retryAction: Message => sqs.MessageAction =
-        (message: Message) => MessageAction.changeMessageVisibility(message, visibilityTimeout = 0)
+        (message: Message) =>
+          MessageAction.changeMessageVisibility(message, visibilityTimeout = 0)
     }
 
   def run(): Future[Any] = worker.start

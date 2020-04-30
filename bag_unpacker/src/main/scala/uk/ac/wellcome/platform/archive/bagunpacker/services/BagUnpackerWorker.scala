@@ -10,8 +10,14 @@ import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWork
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepWorker}
-import uk.ac.wellcome.platform.archive.common.{SourceLocationPayload, UnpackedBagLocationPayload}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestStepResult,
+  IngestStepWorker
+}
+import uk.ac.wellcome.platform.archive.common.{
+  SourceLocationPayload,
+  UnpackedBagLocationPayload
+}
 
 import scala.util.Try
 

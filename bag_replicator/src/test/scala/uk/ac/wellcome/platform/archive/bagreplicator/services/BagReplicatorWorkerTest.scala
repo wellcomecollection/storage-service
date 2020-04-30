@@ -7,16 +7,25 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import software.amazon.awssdk.services.sqs.model.{GetQueueAttributesRequest, QueueAttributeName}
+import software.amazon.awssdk.services.sqs.model.{
+  GetQueueAttributesRequest,
+  QueueAttributeName
+}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{PrimaryBagReplicationRequest, SecondaryBagReplicationRequest}
+import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+  PrimaryBagReplicationRequest,
+  SecondaryBagReplicationRequest
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.ReplicaResultPayload
-import uk.ac.wellcome.platform.archive.common.fixtures.{S3BagBuilder, S3BagBuilderBase}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  S3BagBuilder,
+  S3BagBuilderBase
+}
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.storage.models._
@@ -26,7 +35,11 @@ import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.transfer.s3.{S3PrefixTransfer, S3Transfer}
-import uk.ac.wellcome.storage.transfer.{TransferFailure, TransferPerformed, TransferSuccess}
+import uk.ac.wellcome.storage.transfer.{
+  TransferFailure,
+  TransferPerformed,
+  TransferSuccess
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -283,18 +296,23 @@ class BagReplicatorWorkerTest
 
             eventually {
               val queueAttributes = sqsClient
-                .getQueueAttributes { builder: GetQueueAttributesRequest.Builder =>
-                  builder
-                    .queueUrl(queue.url)
-                    .attributeNames(
-                      QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE,
-                      QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
-                    )
+                .getQueueAttributes {
+                  builder: GetQueueAttributesRequest.Builder =>
+                    builder
+                      .queueUrl(queue.url)
+                      .attributeNames(
+                        QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE,
+                        QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
+                      )
                 }
                 .attributes()
 
-              queueAttributes.get(QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE) shouldBe "1"
-              queueAttributes.get(QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES) shouldBe "0"
+              queueAttributes.get(
+                QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE
+              ) shouldBe "1"
+              queueAttributes.get(
+                QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
+              ) shouldBe "0"
             }
           }
         }

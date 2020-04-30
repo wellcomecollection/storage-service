@@ -7,10 +7,24 @@ import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.MessageSender
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
-import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, Result, Successful}
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{MetricsMonitoringClient, MetricsMonitoringProcessor}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, IngestCallbackStatusUpdate, IngestUpdate}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.{
+  DeterministicFailure,
+  Result,
+  Successful
+}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
+  MetricsMonitoringClient,
+  MetricsMonitoringProcessor
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CallbackNotification,
+  IngestCallbackStatusUpdate,
+  IngestUpdate
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,10 +42,18 @@ class NotifierWorker[Destination](
 ) extends Runnable
     with Logging {
   private val worker =
-    AlpakkaSQSWorker[CallbackNotification, Instant, Instant, IngestCallbackStatusUpdate](
+    AlpakkaSQSWorker[
+      CallbackNotification,
+      Instant,
+      Instant,
+      IngestCallbackStatusUpdate
+    ](
       alpakkaSQSWorkerConfig,
-      monitoringProcessorBuilder = (ec: ExecutionContext) =>
-        new MetricsMonitoringProcessor[CallbackNotification](metricsNamespace)(mc, ec)
+      monitoringProcessorBuilder =
+        (ec: ExecutionContext) =>
+          new MetricsMonitoringProcessor[CallbackNotification](
+            metricsNamespace
+          )(mc, ec)
     ) {
       processMessage
     }

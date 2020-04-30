@@ -92,7 +92,8 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
         new MetricsMonitoringProcessor[Work](metricsNamespace)(mc, ec)
     )(process) {
       override val retryAction: Message => sqs.MessageAction =
-        (message: Message) => MessageAction.changeMessageVisibility(message, visibilityTimeout)
+        (message: Message) =>
+          MessageAction.changeMessageVisibility(message, visibilityTimeout)
     }
 
   def run(): Future[Any] = worker.start

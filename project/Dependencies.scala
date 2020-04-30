@@ -64,8 +64,6 @@ object WellcomeDependencies {
 object ExternalDependencies {
   lazy val versions = new {
 
-
-
     val apacheLogging = "2.8.2"
     val commonsCompress = "1.5"
     val commonsIO = "2.6"
@@ -137,7 +135,6 @@ object ExternalDependencies {
   val akkaDependencies: Seq[sbt.ModuleID] = Seq[ModuleID](
     "com.typesafe.akka" %% "akka-http" % versions.akkaHttp,
     "de.heikoseeberger" %% "akka-http-circe" % versions.akkaHttpCirce,
-
     // We need to exclude these two HTTP clients, or we get errors from the tests:
     //
     //    An exception or error caused a run to abort: Multiple HTTP implementations
@@ -148,9 +145,9 @@ object ExternalDependencies {
     //    from the classpath
     //
     "com.lightbend.akka" %% "akka-stream-alpakka-s3" % versions.akkaStreamAlpakka
-      exclude("com.github.matsluni", "aws-spi-akka-http_2.12"),
+      exclude ("com.github.matsluni", "aws-spi-akka-http_2.12"),
     "com.lightbend.akka" %% "akka-stream-alpakka-sns" % versions.akkaStreamAlpakka
-      exclude("com.github.matsluni", "aws-spi-akka-http_2.12"),
+      exclude ("com.github.matsluni", "aws-spi-akka-http_2.12")
   )
 
   val cloudwatchMetricsDependencies = Seq[ModuleID](
