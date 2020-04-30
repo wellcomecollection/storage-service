@@ -3,7 +3,9 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import java.time.Instant
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.TryValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
@@ -24,7 +26,7 @@ import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import scala.util.Success
 
 class BagRegisterWorkerTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with ScalaFutures
     with BagInfoGenerators

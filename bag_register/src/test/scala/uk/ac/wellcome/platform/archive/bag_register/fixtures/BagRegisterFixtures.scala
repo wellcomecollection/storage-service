@@ -1,39 +1,28 @@
 package uk.ac.wellcome.platform.archive.bag_register.fixtures
 
 import org.scalatest.Assertion
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bag_register.services.{
-  BagRegisterWorker,
-  Register
-}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.messaging.sqs.SQSClientFactory
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestStatusUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestStatusUpdate}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  MemorySizeFinder,
-  StorageManifestDao,
-  StorageManifestService
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.{MemorySizeFinder, StorageManifestDao, StorageManifestService}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagRegisterFixtures
     extends StorageRandomThings
@@ -41,10 +30,17 @@ trait BagRegisterFixtures
     with AlpakkaSQSWorkerFixtures
     with OperationFixtures
     with StorageManifestVHSFixture
-    with MonitoringClientFixture
     with IngestUpdateAssertions
     with ExternalIdentifierGenerators
     with StringNamespaceFixtures {
+
+  override implicit val asyncSqsClient: SqsAsyncClient =
+    SQSClientFactory.createAsyncClient(
+      region = "localhost",
+      endpoint = "http://localhost:9324",
+      accessKey = "access",
+      secretKey = "secret"
+    )
 
   type Fixtures = (
     BagRegisterWorker[String, String],
@@ -67,7 +63,7 @@ trait BagRegisterFixtures
     testWith: TestWith[BagRegisterWorker[String, String], R]
   )(implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
     withActorSystem { implicit actorSystem =>
-      withMonitoringClient { implicit monitoringClient =>
+      withFakeMonitoringClient() { implicit monitoringClient =>
         val outgoing = new MemoryMessageSender()
 
         val bagReader = new MemoryBagReader()
@@ -87,7 +83,8 @@ trait BagRegisterFixtures
           ingestUpdater =
             createIngestUpdaterWith(ingests, stepName = "register"),
           outgoingPublisher = createOutgoingPublisherWith(outgoing),
-          register = register
+          register = register,
+          metricsNamespace = "bag_register"
         )
 
         service.run()
