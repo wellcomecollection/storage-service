@@ -2,10 +2,11 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.time.Instant
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 
-class IngestTest extends FunSpec with Matchers with IngestGenerators {
+class IngestTest extends AnyFunSpec with Matchers with IngestGenerators {
   describe("sets the last modified date correctly") {
     it("if there are no events, last modified date is None") {
       val ingest = createIngestWith(events = Seq.empty)

@@ -6,7 +6,6 @@ import com.amazonaws.services.cloudwatch.model.StandardUnit
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.monitoring.Metrics
-import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
@@ -35,7 +34,6 @@ trait IngestsApiFixture
     extends IngestStarterFixture
     with IngestGenerators
     with HttpFixtures
-    with MetricsSenderFixture
     with IngestTrackerFixtures {
 
   override val contextURLTest = new URL(

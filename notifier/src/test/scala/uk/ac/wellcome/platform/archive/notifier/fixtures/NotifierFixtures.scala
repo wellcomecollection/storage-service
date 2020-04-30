@@ -8,7 +8,6 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.MonitoringClientFixture
 import uk.ac.wellcome.platform.archive.notifier.services.{
   CallbackUrlService,
   NotifierWorker
@@ -16,10 +15,7 @@ import uk.ac.wellcome.platform.archive.notifier.services.{
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait NotifierFixtures
-    extends Akka
-    with AlpakkaSQSWorkerFixtures
-    with MonitoringClientFixture {
+trait NotifierFixtures extends Akka with AlpakkaSQSWorkerFixtures {
 
   def withCallbackUrlService[R](
     testWith: TestWith[CallbackUrlService, R]
@@ -33,20 +29,19 @@ trait NotifierFixtures
   private def withApp[R](queue: Queue, messageSender: MemoryMessageSender)(
     testWith: TestWith[NotifierWorker[String], R]
   ): R =
-    withMonitoringClient { implicit monitoringClient =>
+    withFakeMonitoringClient() { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
-        withMaterializer(actorSystem) { implicit materializer =>
-          withCallbackUrlService { callbackUrlService =>
-            val workerService = new NotifierWorker(
-              alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-              callbackUrlService = callbackUrlService,
-              messageSender = messageSender
-            )
+        withCallbackUrlService { callbackUrlService =>
+          val workerService = new NotifierWorker(
+            alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+            callbackUrlService = callbackUrlService,
+            messageSender = messageSender,
+            metricsNamespace = "notifier"
+          )
 
-            workerService.run()
+          workerService.run()
 
-            testWith(workerService)
-          }
+          testWith(workerService)
         }
       }
     }

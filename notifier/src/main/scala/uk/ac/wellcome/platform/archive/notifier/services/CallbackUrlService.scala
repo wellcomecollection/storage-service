@@ -28,7 +28,7 @@ class CallbackUrlService(contextUrl: URL)(
     val jsonString =
       Printer.noSpaces
         .copy(dropNullValues = true)
-        .pretty(json)
+        .print(json)
 
     val entity = HttpEntity(
       contentType = ContentTypes.`application/json`,

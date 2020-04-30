@@ -1,7 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
+import org.scalatest.{EitherValues, TryValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -14,7 +16,7 @@ import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 import scala.util.Failure
 
 trait SizeFinderTestCases[Context]
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with TryValues {
   def withContext[R](testWith: TestWith[Context, R]): R

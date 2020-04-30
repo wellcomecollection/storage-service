@@ -3,10 +3,10 @@ package uk.ac.wellcome.platform.storage.bags.api
 import java.net.URL
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
-import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
+import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders._
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.http.{
@@ -39,8 +39,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val ecMain: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
 
-    implicit val amMain: ActorMaterializer =
-      AkkaBuilder.buildActorMaterializer()
+    implicit val matMain: Materializer =
+      AkkaBuilder.buildMaterializer()
 
     val contextURLMain: URL =
       HTTPServerBuilder.buildContextURL(config)
@@ -72,7 +72,7 @@ object Main extends WellcomeTypesafeApp {
       override val maximumResponseByteLength: Long = defaultMaxByteLength
       override val prefix: ObjectLocationPrefix = locationPrefix
       override val cacheDuration: Duration = defaultCacheDuration
-      override implicit val materializer: ActorMaterializer = amMain
+      override implicit val materializer: Materializer = matMain
     }
 
     val appName = "BagsApi"
@@ -81,7 +81,7 @@ object Main extends WellcomeTypesafeApp {
       routes = router.bags,
       httpMetrics = new HttpMetrics(
         name = appName,
-        metrics = MetricsBuilder.buildMetricsSender(config)
+        metrics = CloudWatchBuilder.buildCloudWatchMetrics(config)
       ),
       httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
       contextURL = contextURLMain,

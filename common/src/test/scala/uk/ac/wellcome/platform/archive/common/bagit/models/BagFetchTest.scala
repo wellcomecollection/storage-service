@@ -3,10 +3,14 @@ package uk.ac.wellcome.platform.archive.common.bagit.models
 import java.io.InputStream
 
 import org.apache.commons.io.IOUtils
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.FetchMetadataGenerators
 
-class BagFetchTest extends FunSpec with Matchers with FetchMetadataGenerators {
+class BagFetchTest
+    extends AnyFunSpec
+    with Matchers
+    with FetchMetadataGenerators {
   describe("read") {
     it("reads the contents of a fetch.txt") {
       val contents = toInputStream(s"""

@@ -2,7 +2,9 @@ package uk.ac.wellcome.platform.archive.bagreplicator.bags
 
 import java.time.Instant
 
-import org.scalatest.{Assertion, FunSpec, Matchers, TryValues}
+import org.scalatest.{Assertion, TryValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
   BagReplicationFailed,
   BagReplicationSucceeded,
@@ -30,7 +32,7 @@ import uk.ac.wellcome.storage.transfer.{
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 class BagReplicatorTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with S3Fixtures
     with BagReplicatorFixtures

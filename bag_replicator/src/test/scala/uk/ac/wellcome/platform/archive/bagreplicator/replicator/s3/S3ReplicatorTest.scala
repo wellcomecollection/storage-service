@@ -1,7 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationFailed,
   ReplicationRequest,
@@ -12,7 +13,7 @@ import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 class S3ReplicatorTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with S3Fixtures
     with StorageRandomThings {

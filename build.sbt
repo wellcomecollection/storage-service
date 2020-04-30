@@ -124,12 +124,10 @@ lazy val bags_api = setupProject(
 lazy val indexer_common = setupProject(
   project,
   "indexer/common",
+  localDependencies = Seq(common),
   externalDependencies =
     ExternalDependencies.circeOpticsDependencies ++
-      ExternalDependencies.elasticsearchDependencies ++
-      WellcomeDependencies.fixturesLibrary ++
-      WellcomeDependencies.jsonLibrary ++
-      WellcomeDependencies.typesafeLibrary
+      ExternalDependencies.elasticsearchDependencies
 )
 
 lazy val bag_indexer = setupProject(

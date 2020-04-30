@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.services
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
@@ -9,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 class DestinationBuilderTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with ExternalIdentifierGenerators
     with StorageSpaceGenerators {

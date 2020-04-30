@@ -2,9 +2,10 @@ package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import java.net.URI
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
-class CallbackTest extends FunSpec with Matchers {
+class CallbackTest extends AnyFunSpec with Matchers {
   val callbackUri = new URI("http://www.wellcomecollection.org/callback/ok")
 
   it("is created with status pending") {

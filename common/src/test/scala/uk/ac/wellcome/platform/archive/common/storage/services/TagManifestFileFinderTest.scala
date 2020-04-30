@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
+import org.scalatest.{EitherValues, TryValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
 import uk.ac.wellcome.platform.archive.common.verify.{
@@ -19,7 +21,7 @@ import uk.ac.wellcome.storage.streaming.{
 }
 
 class TagManifestFileFinderTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with TryValues

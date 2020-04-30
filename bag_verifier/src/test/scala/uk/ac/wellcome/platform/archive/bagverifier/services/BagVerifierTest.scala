@@ -1,7 +1,9 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
+import org.scalatest.{Assertion, OptionValues, TryValues}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   VerificationFailureSummary,
@@ -30,7 +32,7 @@ import uk.ac.wellcome.platform.archive.common.verify.{
 }
 
 class BagVerifierTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with ScalaFutures
     with TryValues

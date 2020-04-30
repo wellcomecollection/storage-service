@@ -1,8 +1,10 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
+import java.time.Instant
+
 import akka.actor.ActorSystem
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import grizzled.slf4j.Logging
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.sqsworker.alpakka.{
@@ -14,7 +16,10 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
+  MetricsMonitoringClient,
+  MetricsMonitoringProcessor
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestUpdate
@@ -22,20 +27,28 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class IngestsWorker[CallbackDestination, UpdatedIngestsDestination](
   alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
   ingestTracker: IngestTracker,
   callbackNotificationService: CallbackNotificationService[CallbackDestination],
-  updatedIngestsMessageSender: MessageSender[UpdatedIngestsDestination]
-)(implicit actorSystem: ActorSystem, mc: MonitoringClient, sc: AmazonSQSAsync)
-    extends Runnable
+  updatedIngestsMessageSender: MessageSender[UpdatedIngestsDestination],
+  val metricsNamespace: String
+)(
+  implicit actorSystem: ActorSystem,
+  mc: MetricsMonitoringClient,
+  sc: SqsAsyncClient
+) extends Runnable
     with Logging {
 
   private val worker =
-    AlpakkaSQSWorker[IngestUpdate, Ingest](alpakkaSQSWorkerConfig) { payload =>
+    AlpakkaSQSWorker[IngestUpdate, Instant, Instant, Ingest](
+      alpakkaSQSWorkerConfig,
+      monitoringProcessorBuilder = (ec: ExecutionContext) =>
+        new MetricsMonitoringProcessor[IngestUpdate](metricsNamespace)(mc, ec)
+    ) { payload =>
       Future.fromTry { processMessage(payload) }
     }
 

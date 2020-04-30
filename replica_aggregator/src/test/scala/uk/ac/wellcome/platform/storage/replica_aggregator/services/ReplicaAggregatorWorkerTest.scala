@@ -4,7 +4,9 @@ import java.time.Instant
 
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.TryValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import org.scanamo.auto._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -29,7 +31,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class ReplicaAggregatorWorkerTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with PayloadGenerators
     with IngestUpdateAssertions

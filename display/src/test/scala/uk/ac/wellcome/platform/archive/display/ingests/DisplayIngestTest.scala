@@ -3,7 +3,8 @@ package uk.ac.wellcome.platform.archive.display.ingests
 import java.net.{URI, URL}
 import java.time.Instant
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   IngestGenerators
@@ -16,7 +17,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class DisplayIngestTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with BagIdGenerators
     with TimeTestFixture

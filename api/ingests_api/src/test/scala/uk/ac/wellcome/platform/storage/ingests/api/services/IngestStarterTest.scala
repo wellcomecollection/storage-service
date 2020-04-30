@@ -1,7 +1,9 @@
 package uk.ac.wellcome.platform.storage.ingests.api.services
 
 import io.circe.Encoder
-import org.scalatest.{FunSpec, Matchers, TryValues}
+import org.scalatest.TryValues
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
@@ -17,7 +19,7 @@ import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 import scala.util.{Failure, Success, Try}
 
 class IngestStarterTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with IngestStarterFixture
     with IngestGenerators

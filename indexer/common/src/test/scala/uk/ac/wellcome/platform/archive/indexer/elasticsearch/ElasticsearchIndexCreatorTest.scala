@@ -3,15 +3,17 @@ package uk.ac.wellcome.platform.archive.indexer.elasticsearch
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.indexes.IndexResponse
 import com.sksamuel.elastic4s.{RequestFailure, Response}
-import org.scalatest.{Assertion, FunSpec, Matchers}
+import org.scalatest.Assertion
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ElasticsearchIndexCreatorTest
-    extends FunSpec
-    with ElasticsearchFixtures
-    with Matchers {
+    extends AnyFunSpec
+    with Matchers
+    with ElasticsearchFixtures {
 
   it("allows you to index an object that matches the mapping") {
     val nameMapping = properties(

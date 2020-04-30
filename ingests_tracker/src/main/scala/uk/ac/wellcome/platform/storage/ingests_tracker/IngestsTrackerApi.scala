@@ -5,7 +5,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives.{get, _}
 import akka.http.scaladsl.server.Route
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
@@ -14,18 +14,18 @@ import uk.ac.wellcome.platform.archive.common.ingests.tracker._
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.typesafe.Runnable
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 trait IngestsTrackerApi extends Runnable with Logging {
 
   val ingestTracker: IngestTracker
 
   implicit protected val sys: ActorSystem
-  implicit protected val mat: ActorMaterializer
-  implicit protected val exc = sys.dispatcher
+  implicit protected val mat: Materializer
+  implicit protected val exc: ExecutionContextExecutor = sys.dispatcher
 
-  implicit protected val host = "localhost"
-  implicit protected val port = 8080
+  implicit protected val host: String = "localhost"
+  implicit protected val port: Int = 8080
 
   val route: Route =
     concat(
@@ -56,7 +56,7 @@ trait IngestsTrackerApi extends Runnable with Logging {
               case Left(e) =>
                 error(s"Failed to update ingest: ${id}", e)
                 complete(StatusCodes.InternalServerError)
-              case Right(Identified(_,ingest)) =>
+              case Right(Identified(_, ingest)) =>
                 info(s"Updated ingest: $ingest")
                 complete(StatusCodes.OK -> ingest)
             }
@@ -93,9 +93,9 @@ trait IngestsTrackerApi extends Runnable with Logging {
         port = port
       )
 
-      _ = info(s"Listening: ${host}:${port}")
+      _ = info(s"Listening: $host:$port")
       _ <- server.whenTerminated
-      _ = info(s"Terminating: ${host}:${port}")
+      _ = info(s"Terminating: $host:$port")
     } yield server
   }
 }

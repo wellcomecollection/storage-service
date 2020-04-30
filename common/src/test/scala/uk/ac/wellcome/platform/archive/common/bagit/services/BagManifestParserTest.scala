@@ -2,13 +2,15 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import java.io.InputStream
 
-import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
+import org.scalatest.{EitherValues, TryValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.platform.archive.common.verify.ChecksumValue
 import uk.ac.wellcome.storage.streaming.Codec._
 
 class BagManifestParserTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with TryValues {

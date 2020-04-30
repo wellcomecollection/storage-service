@@ -6,10 +6,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
   AggregatorInternalRecord,
   ReplicaPath
@@ -22,11 +19,12 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 trait ReplicaAggregatorFixtures
     extends OperationFixtures
     with Akka
-    with AlpakkaSQSWorkerFixtures
-    with MonitoringClientFixture {
+    with AlpakkaSQSWorkerFixtures {
 
   private val defaultQueue = Queue(
     url = "default_q",
@@ -48,14 +46,15 @@ trait ReplicaAggregatorFixtures
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
-      withMonitoringClient { implicit monitoringClient =>
+      withFakeMonitoringClient() { implicit monitoringClient =>
         val worker = new ReplicaAggregatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           replicaAggregator = new ReplicaAggregator(versionedStore),
           replicaCounter =
             new ReplicaCounter(expectedReplicaCount = expectedReplicaCount),
           ingestUpdater = ingestUpdater,
-          outgoingPublisher = outgoingPublisher
+          outgoingPublisher = outgoingPublisher,
+          metricsNamespace = "replica_aggregator"
         )
 
         worker.run()

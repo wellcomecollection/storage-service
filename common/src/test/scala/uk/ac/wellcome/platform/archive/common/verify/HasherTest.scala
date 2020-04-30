@@ -2,11 +2,13 @@ package uk.ac.wellcome.platform.archive.common.verify
 
 import java.io.{FilterInputStream, InputStream}
 
-import org.scalatest.{EitherValues, FunSpec, Matchers, TryValues}
+import org.scalatest.{EitherValues, TryValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage.streaming.Codec._
 
 class HasherTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with TryValues {

@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
-import org.scalatest.{Assertion, EitherValues, FunSpec, Matchers}
+import org.scalatest.{Assertion, EitherValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.fixtures.{
@@ -11,7 +13,7 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.{TypedStore, TypedStoreEntry}
 
 trait BagReaderTestCases[Context, Namespace]
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with StorageRandomThings {

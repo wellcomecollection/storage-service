@@ -1,12 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.generators.BagIdGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
-class BagIdTest extends FunSpec with JsonAssertions with BagIdGenerators {
+class BagIdTest extends AnyFunSpec with JsonAssertions with BagIdGenerators {
   it("serialises space and external identifier as strings") {
     val bagId =
       BagId(StorageSpace("digitised"), ExternalIdentifier("b1234567x"))

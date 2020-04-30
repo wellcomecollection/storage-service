@@ -1,17 +1,17 @@
 package uk.ac.wellcome.platform.archive.bag_register
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.typesafe.config.Config
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   CloudwatchMonitoringClientBuilder,
   SQSBuilder
 }
-import uk.ac.wellcome.messaging.worker.monitoring.CloudwatchMonitoringClient
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
@@ -31,6 +31,7 @@ import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContext
 
@@ -40,16 +41,16 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildActorSystem()
     implicit val ec: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
-    implicit val mat: ActorMaterializer =
-      AkkaBuilder.buildActorMaterializer()
+    implicit val mat: Materializer =
+      AkkaBuilder.buildMaterializer()
 
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
 
-    implicit val monitoringClient: CloudwatchMonitoringClient =
+    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
 
-    implicit val sqsClient: AmazonSQSAsync =
+    implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
     val storageManifestDao = StorageManifestDaoBuilder.build(config)
@@ -82,7 +83,8 @@ object Main extends WellcomeTypesafeApp {
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
-      register = register
+      register = register,
+      metricsNamespace = config.required[String]("aws.metrics.namespace")
     )
   }
 }

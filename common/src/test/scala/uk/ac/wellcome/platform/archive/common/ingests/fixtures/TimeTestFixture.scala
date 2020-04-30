@@ -2,7 +2,8 @@ package uk.ac.wellcome.platform.archive.common.ingests.fixtures
 
 import java.time.{Duration, Instant}
 
-import org.scalatest.{Assertion, Matchers}
+import org.scalatest.Assertion
+import org.scalatest.matchers.should.Matchers
 
 trait TimeTestFixture extends Matchers {
   def assertRecent(instant: Instant, recentSeconds: Int = 1): Assertion =

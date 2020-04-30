@@ -2,7 +2,8 @@ package uk.ac.wellcome.platform.archive.common
 
 import java.time.Instant
 
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
@@ -11,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class SourceLocationPayloadTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with ExternalIdentifierGenerators
     with ObjectLocationGenerators

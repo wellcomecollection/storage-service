@@ -3,7 +3,9 @@ package uk.ac.wellcome.platform.archive.common.ingests.tracker
 import java.net.URI
 
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.{Assertion, EitherValues, FunSpec, Matchers}
+import org.scalatest.{Assertion, EitherValues}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -14,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.storage._
 
 trait IngestTrackerTestCases[Context]
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with IngestGenerators

@@ -5,12 +5,14 @@ import java.time.Instant
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
+import io.circe.syntax._
+import org.scalatest.EitherValues
 import org.scalatest.concurrent.IntegrationPatience
-import org.scalatest.{EitherValues, FunSpec, Matchers}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import io.circe.syntax._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageRandomThings}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Failed, Succeeded}
@@ -18,7 +20,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 
 class IngestsTrackerApiFeatureTest
-    extends FunSpec
+  extends AnyFunSpec
     with Matchers
     with Akka
     with IngestsTrackerApiFixture
@@ -59,7 +61,7 @@ class IngestsTrackerApiFeatureTest
 
           val getIngest = ingestTracker.get(ingest.id)
 
-          getIngest shouldBe a[Right[_,_]]
+          getIngest shouldBe a[Right[_, _]]
           getIngest.right.get.identifiedT shouldBe ingest
         }
       }
@@ -143,11 +145,11 @@ class IngestsTrackerApiFeatureTest
 
           withStringEntity(response.entity) { jsonString =>
             val updatedIngestResponse = fromJson[Ingest](jsonString).get
-            updatedIngestResponse.events should contain allElementsOf(ingestEvent.events)
+            updatedIngestResponse.events should contain allElementsOf (ingestEvent.events)
           }
 
           val ingestFromTracker = ingestTracker.get(ingest.id).right.get.identifiedT
-          ingestFromTracker.events should contain allElementsOf(ingestEvent.events)
+          ingestFromTracker.events should contain allElementsOf (ingestEvent.events)
         }
       }
     }
@@ -167,12 +169,12 @@ class IngestsTrackerApiFeatureTest
           withStringEntity(response.entity) { jsonString =>
             val updatedIngestResponse = fromJson[Ingest](jsonString).get
             updatedIngestResponse.status shouldBe ingestStatusUpdateSucceeded.status
-            updatedIngestResponse.events should contain allElementsOf(ingestStatusUpdateSucceeded.events)
+            updatedIngestResponse.events should contain allElementsOf (ingestStatusUpdateSucceeded.events)
           }
 
           val ingestFromTracker = ingestTracker.get(ingest.id).right.get.identifiedT
           ingestFromTracker.status shouldBe ingestStatusUpdateSucceeded.status
-          ingestFromTracker.events should contain allElementsOf(ingestStatusUpdateSucceeded.events)
+          ingestFromTracker.events should contain allElementsOf (ingestStatusUpdateSucceeded.events)
         }
       }
     }

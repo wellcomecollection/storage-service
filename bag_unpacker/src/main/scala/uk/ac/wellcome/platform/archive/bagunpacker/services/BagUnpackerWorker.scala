@@ -1,10 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagunpacker.builders.BagLocationBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
@@ -26,11 +26,12 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  unpacker: Unpacker
+  unpacker: Unpacker,
+  val metricsNamespace: String
 )(
-  implicit val mc: MonitoringClient,
+  implicit val mc: MetricsMonitoringClient,
   val as: ActorSystem,
-  val sc: AmazonSQSAsync,
+  val sc: SqsAsyncClient,
   val wd: Decoder[SourceLocationPayload]
 ) extends IngestStepWorker[SourceLocationPayload, UnpackSummary] {
 

@@ -10,10 +10,7 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorker
 import uk.ac.wellcome.platform.archive.bagunpacker.services.s3.S3Unpacker
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  MonitoringClientFixture,
-  OperationFixtures
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore
@@ -24,12 +21,13 @@ import uk.ac.wellcome.storage.streaming.{
 }
 import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 trait BagUnpackerFixtures
     extends SQS
     with OperationFixtures
     with Akka
     with AlpakkaSQSWorkerFixtures
-    with MonitoringClientFixture
     with S3Fixtures {
 
   def withBagUnpackerWorker[R](
@@ -42,13 +40,14 @@ trait BagUnpackerFixtures
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
-      withMonitoringClient { implicit monitoringClient =>
+      withFakeMonitoringClient() { implicit monitoringClient =>
         val bagUnpackerWorker = new BagUnpackerWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher,
-          unpacker = new S3Unpacker()
+          unpacker = new S3Unpacker(),
+          metricsNamespace = "bag_unpacker"
         )
 
         bagUnpackerWorker.run()

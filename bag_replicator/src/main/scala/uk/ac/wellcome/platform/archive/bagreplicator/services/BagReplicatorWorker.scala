@@ -5,11 +5,11 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import cats.instances.try_._
-import com.amazonaws.services.sqs.AmazonSQSAsync
 import io.circe.Decoder
 import org.apache.commons.io.IOUtils
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
@@ -45,12 +45,13 @@ class BagReplicatorWorker[
     UUID
   ]],
   destinationConfig: ReplicatorDestinationConfig,
-  bagReplicator: BagReplicator
+  bagReplicator: BagReplicator,
+  val metricsNamespace: String
 )(
   implicit
-  val mc: MonitoringClient,
+  val mc: MetricsMonitoringClient,
   val as: ActorSystem,
-  val sc: AmazonSQSAsync,
+  val sc: SqsAsyncClient,
   val wd: Decoder[VersionedBagRootPayload],
   streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
 ) extends IngestStepWorker[

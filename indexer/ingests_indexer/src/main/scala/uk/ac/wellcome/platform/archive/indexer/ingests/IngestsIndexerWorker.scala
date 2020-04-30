@@ -1,12 +1,14 @@
 package uk.ac.wellcome.platform.archive.indexer.ingests
 
+import java.time.Instant
+
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction
-import com.amazonaws.services.sqs.AmazonSQSAsync
-import com.amazonaws.services.sqs.model.Message
 import grizzled.slf4j.Logging
 import io.circe.Decoder
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import software.amazon.awssdk.services.sqs.model.Message
 import uk.ac.wellcome.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
@@ -16,7 +18,10 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.MonitoringClient
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
+  MetricsMonitoringClient,
+  MetricsMonitoringProcessor
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -24,12 +29,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class IngestsIndexerWorker(
   val config: AlpakkaSQSWorkerConfig,
-  ingestIndexer: IngestIndexer
+  ingestIndexer: IngestIndexer,
+  metricsNamespace: String
 )(
   implicit
-  val monitoringClient: MonitoringClient,
+  val monitoringClient: MetricsMonitoringClient,
   val actorSystem: ActorSystem,
-  val sqsAsync: AmazonSQSAsync,
+  val sqsAsync: SqsAsyncClient,
   decoder: Decoder[Ingest]
 ) extends Runnable
     with Logging {
@@ -57,10 +63,18 @@ class IngestsIndexerWorker(
           )
       }
 
-  val worker: AlpakkaSQSWorker[Ingest, Unit, MonitoringClient] =
-    new AlpakkaSQSWorker[Ingest, Unit, MonitoringClient](config)(process) {
-      override val retryAction: Message => (Message, sqs.MessageAction) =
-        (_, MessageAction.changeMessageVisibility(0))
+  val worker: AlpakkaSQSWorker[Ingest, Instant, Instant, Unit] =
+    new AlpakkaSQSWorker[Ingest, Instant, Instant, Unit](
+      config,
+      monitoringProcessorBuilder = (ec: ExecutionContext) =>
+        new MetricsMonitoringProcessor[Ingest](metricsNamespace)(
+          monitoringClient,
+          ec
+        )
+    )(process) {
+      override val retryAction: Message => sqs.MessageAction =
+        (message: Message) =>
+          MessageAction.changeMessageVisibility(message, visibilityTimeout = 0)
     }
 
   def run(): Future[Any] = worker.start

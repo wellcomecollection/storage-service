@@ -2,11 +2,10 @@ package uk.ac.wellcome.platform.storage.bags.api.fixtures
 
 import java.net.URL
 
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.monitoring.fixtures.MetricsSenderFixture
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
@@ -41,8 +40,7 @@ trait BagsApiFixture
     with ScalaFutures
     with StorageManifestVHSFixture
     with S3Fixtures
-    with HttpFixtures
-    with MetricsSenderFixture {
+    with HttpFixtures {
 
   override val metricsName = "BagsApiFixture"
 
@@ -75,7 +73,7 @@ trait BagsApiFixture
           override val cacheDuration: Duration = 1 days
           override val prefix: ObjectLocationPrefix = locationPrefix
 
-          override implicit val materializer: ActorMaterializer = mat
+          override implicit val materializer: Materializer = mat
           override val maximumResponseByteLength: Long = maxResponseByteLength
         }
 

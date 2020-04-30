@@ -10,10 +10,9 @@ import com.sksamuel.elastic4s.requests.searches.queries.Query
 import com.sksamuel.elastic4s.{ElasticClient, Index, Response}
 
 import io.circe.Decoder
-import org.scalactic.source.Position
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
-import org.scalatest.time.{Millis, Seconds, Span}
-import org.scalatest.{Assertion, Matchers, Suite}
+import org.scalatest.{Assertion, Suite}
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures._
 import uk.ac.wellcome.json.JsonUtil.fromJson
 import uk.ac.wellcome.json.utils.JsonAssertions
@@ -51,13 +50,7 @@ trait ElasticsearchFixtures
       .await
 
     response.result.numberOfNodes shouldBe 1
-  }(
-    PatienceConfig(
-      timeout = scaled(Span(40, Seconds)),
-      interval = scaled(Span(150, Millis))
-    ),
-    implicitly[Position]
-  )
+  }
 
   private val elasticsearchIndexCreator = new ElasticsearchIndexCreator(
     elasticClient = elasticClient

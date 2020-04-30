@@ -1,7 +1,9 @@
 package uk.ac.wellcome.platform.archive.ingests.services
 
 import org.scalatest.prop.TableDrivenPropertyChecks._
-import org.scalatest.{Assertion, FunSpec, Matchers}
+import org.scalatest.Assertion
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
@@ -14,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import scala.util.Success
 
 class CallbackNotificationServiceTest
-    extends FunSpec
+    extends AnyFunSpec
     with Matchers
     with IngestGenerators {
 
