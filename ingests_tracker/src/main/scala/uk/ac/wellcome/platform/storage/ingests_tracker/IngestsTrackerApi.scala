@@ -46,6 +46,7 @@ trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination]
             ingestTracker.init(ingest) match {
               case Right(_) =>
                 info(s"Created ingest: ${ingest}")
+                messagingService.send(ingest)
                 complete(StatusCodes.Created)
               case Left(e: StateConflictError) =>
                 error(s"Ingest could not be created: ${ingest.id}", e)
@@ -64,15 +65,16 @@ trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination]
                 info(s"Updating $id: $ingestUpdate")
 
                 ingestTracker.update(ingestUpdate) match {
+                  case Right(Identified(_, ingest)) =>
+                    info(s"Updated ingest: $ingest")
+                    messagingService.send(ingest)
+                    complete(StatusCodes.OK -> ingest)
                   case Left(e: StateConflictError) =>
                     error(s"Ingest ${id} can not be updated", e)
                     complete(StatusCodes.Conflict)
                   case Left(e) =>
                     error(s"Failed to update ingest: ${id}", e)
                     complete(StatusCodes.InternalServerError)
-                  case Right(Identified(_, ingest)) =>
-                    info(s"Updated ingest: $ingest")
-                    complete(StatusCodes.OK -> ingest)
                 }
             }
         }

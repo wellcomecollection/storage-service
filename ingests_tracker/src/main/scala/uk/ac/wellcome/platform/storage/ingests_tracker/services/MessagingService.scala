@@ -13,7 +13,7 @@ class MessagingService[UpdatedIngestsDestination, CallbackDestination](
   updatedIngestsMessageSender: MessageSender[UpdatedIngestsDestination]
 ) extends Logging {
 
-  def sendOngoingMessages(ingest: Ingest): Try[Unit] = {
+  def send(ingest: Ingest): Try[Unit] = {
     val callbackResult = callbackNotificationService.sendNotification(ingest)
     val updatedIngestResult = updatedIngestsMessageSender.sendT(ingest)
 
