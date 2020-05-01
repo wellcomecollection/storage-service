@@ -17,14 +17,11 @@ import scala.util.{Success, Try}
 class CallbackNotificationService[Destination](
   messageSender: MessageSender[Destination]
 ) extends Logging {
+
   def sendNotification(ingest: Ingest): Try[Unit] =
-    ingest.callback match {
-      case Some(Callback(callbackUri, Pending)) =>
-        ingest.status match {
-          case _: Ingest.Completed =>
-            sendSnsMessage(callbackUri, ingest = ingest)
-          case _ => Success(())
-        }
+    (ingest.status, ingest.callback) match {
+      case (_: Ingest.Completed, Some(Callback(uri, Pending))) =>
+        sendSnsMessage(uri, ingest)
       case _ => Success(())
     }
 

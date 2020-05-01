@@ -41,20 +41,22 @@ trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination]
   val route: Route =
     concat(
       post {
-        entity(as[Ingest]) {
-          ingest =>
-            ingestTracker.init(ingest) match {
-              case Right(_) =>
-                info(s"Created ingest: ${ingest}")
-                messagingService.send(ingest)
-                complete(StatusCodes.Created)
-              case Left(e: StateConflictError) =>
-                error(s"Ingest could not be created: ${ingest.id}", e)
-                complete(StatusCodes.Conflict)
-              case Left(e) =>
-                error("Failed to create ingest!", e)
-                complete(StatusCodes.InternalServerError)
-            }
+        pathPrefix("ingest") {
+          entity(as[Ingest]) {
+            ingest =>
+              ingestTracker.init(ingest) match {
+                case Right(_) =>
+                  info(s"Created ingest: ${ingest}")
+                  messagingService.send(ingest)
+                  complete(StatusCodes.Created)
+                case Left(e: StateConflictError) =>
+                  error(s"Ingest could not be created: ${ingest.id}", e)
+                  complete(StatusCodes.Conflict)
+                case Left(e) =>
+                  error("Failed to create ingest!", e)
+                  complete(StatusCodes.InternalServerError)
+              }
+          }
         }
       },
       patch {
