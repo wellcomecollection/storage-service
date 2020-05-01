@@ -33,7 +33,8 @@ trait IngestsTrackerApiFixture
 
   private def withApp[R](
     ingestTrackerTest: MemoryIngestTracker,
-    callbackNotificationMessageSender: MemoryMessageSender = new MemoryMessageSender(),
+    callbackNotificationMessageSender: MemoryMessageSender =
+      new MemoryMessageSender(),
     updatedIngestsMessageSender: MemoryMessageSender = new MemoryMessageSender()
   )(testWith: TestWith[IngestsTrackerApi[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
@@ -61,7 +62,12 @@ trait IngestsTrackerApiFixture
       }
     }
 
-  def withBrokenApp[R](testWith: TestWith[(MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker), R]): R = {
+  def withBrokenApp[R](
+    testWith: TestWith[
+      (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker),
+      R
+    ]
+  ): R = {
     val brokenTracker = new MemoryIngestTracker(
       underlying = new MemoryVersionedStore[IngestID, Ingest](
         new MemoryStore[Version[IngestID, Int], Ingest](
@@ -90,9 +96,11 @@ trait IngestsTrackerApiFixture
   }
 
   def withConfiguredApp[R](initialIngests: Seq[Ingest] = Seq.empty)(
-    testWith: TestWith[(MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker), R]
+    testWith: TestWith[
+      (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker),
+      R
+    ]
   ): R = withMemoryIngestTracker(initialIngests) { ingestTracker =>
-
     val callbackSender = new MemoryMessageSender()
     val ingestsSender = new MemoryMessageSender()
 

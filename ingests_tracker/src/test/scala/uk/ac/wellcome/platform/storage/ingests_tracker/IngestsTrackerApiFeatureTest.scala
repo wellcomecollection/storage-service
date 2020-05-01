@@ -14,8 +14,14 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageRandomThings}
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Failed, Succeeded}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  HttpFixtures,
+  StorageRandomThings
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+  Failed,
+  Succeeded
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestDoesNotExistError
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
@@ -62,67 +68,90 @@ class IngestsTrackerApiFeatureTest
     )
 
     describe("with a valid Ingest") {
-      withConfiguredApp() { case (callbackSender, ingestsSender, ingestTracker) =>
-        whenPostRequestReady(path, ingestEntity) { response =>
-          it("responds Created") {
-            response.status shouldBe StatusCodes.Created
-          }
+      withConfiguredApp() {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPostRequestReady(path, ingestEntity) { response =>
+            it("responds Created") {
+              response.status shouldBe StatusCodes.Created
+            }
 
-          it("stores the Ingest") {
-            val getIngest = ingestTracker.get(ingest.id)
+            it("stores the Ingest") {
+              val getIngest = ingestTracker.get(ingest.id)
 
-            getIngest shouldBe a[Right[_, _]]
-            getIngest.right.get.identifiedT shouldBe ingest
-          }
+              getIngest shouldBe a[Right[_, _]]
+              getIngest.right.get.identifiedT shouldBe ingest
+            }
 
-          it("sends an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe Seq(ingest)
-          }
+            it("sends an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe Seq(ingest)
+            }
 
-          it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe empty
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
           }
-        }
       }
     }
 
     describe("with an existing Ingest") {
-      withConfiguredApp(Seq(ingest)) { case (callbackSender, ingestsSender, ingestTracker) =>
-        whenPostRequestReady(path, ingestEntity) { response =>
-          it("responds Conflict") {
-            response.status shouldBe StatusCodes.Conflict
-          }
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPostRequestReady(path, ingestEntity) { response =>
+            it("responds Conflict") {
+              response.status shouldBe StatusCodes.Conflict
+            }
 
-          it("does not modify the Ingest") {
-            val getIngest = ingestTracker.get(ingest.id)
+            it("does not modify the Ingest") {
+              val getIngest = ingestTracker.get(ingest.id)
 
-            getIngest shouldBe a[Right[_, _]]
-            getIngest.right.get.identifiedT shouldBe ingest
-          }
+              getIngest shouldBe a[Right[_, _]]
+              getIngest.right.get.identifiedT shouldBe ingest
+            }
 
-          it("does not send an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe empty
-          }
+            it("does not send an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe empty
+            }
 
-          it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe empty
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
           }
-        }
       }
     }
 
     describe("with bad JSON") {
-      withConfiguredApp(Seq(ingest)) { case (callbackSender, ingestsSender, ingestTracker) =>
-        whenPostRequestReady(path, badEntity) { response =>
-          it("responds BadRequest") {
-            response.status shouldBe StatusCodes.BadRequest
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPostRequestReady(path, badEntity) { response =>
+            it("responds BadRequest") {
+              response.status shouldBe StatusCodes.BadRequest
+            }
+
+            it("does not modify the Ingest") {
+              val getIngest = ingestTracker.get(ingest.id)
+
+              getIngest shouldBe a[Right[_, _]]
+              getIngest.right.get.identifiedT shouldBe ingest
+            }
+
+            it("does not send an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe empty
+            }
+
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
           }
+      }
+    }
 
-          it("does not modify the Ingest") {
-            val getIngest = ingestTracker.get(ingest.id)
-
-            getIngest shouldBe a[Right[_, _]]
-            getIngest.right.get.identifiedT shouldBe ingest
+    describe("when broken") {
+      withBrokenApp {
+        case (callbackSender, ingestsSender, _) =>
+          whenPostRequestReady(path, ingestEntity) { response =>
+            it("responds InternalServerError") {
+              response.status shouldBe StatusCodes.InternalServerError
+            }
           }
 
           it("does not send an Ingest message") {
@@ -132,25 +161,6 @@ class IngestsTrackerApiFeatureTest
           it("does not send a CallbackNotification message") {
             callbackSender.getMessages[CallbackNotification] shouldBe empty
           }
-        }
-      }
-    }
-
-    describe("when broken") {
-      withBrokenApp { case (callbackSender, ingestsSender, _) =>
-        whenPostRequestReady(path, ingestEntity) { response =>
-          it("responds InternalServerError") {
-            response.status shouldBe StatusCodes.InternalServerError
-          }
-        }
-
-        it("does not send an Ingest message") {
-          ingestsSender.getMessages[Ingest] shouldBe empty
-        }
-
-        it("does not send a CallbackNotification message") {
-          callbackSender.getMessages[CallbackNotification] shouldBe empty
-        }
       }
     }
   }
@@ -194,210 +204,234 @@ class IngestsTrackerApiFeatureTest
     )
 
     describe("with a valid IngestEventUpdate") {
-      withConfiguredApp(Seq(ingest)) { case (callbackSender, ingestsSender, ingestTracker) =>
-        whenPatchRequestReady(path, ingestEventEntity) { response =>
-          it("responds OK with an updated Ingest") {
-            response.status shouldBe StatusCodes.OK
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPatchRequestReady(path, ingestEventEntity) { response =>
+            it("responds OK with an updated Ingest") {
+              response.status shouldBe StatusCodes.OK
 
-            withStringEntity(response.entity) { jsonString =>
-              val updatedIngestResponse = fromJson[Ingest](jsonString).get
-              updatedIngestResponse.events should contain allElementsOf ingestEvent.events
+              withStringEntity(response.entity) { jsonString =>
+                val updatedIngestResponse = fromJson[Ingest](jsonString).get
+                updatedIngestResponse.events should contain allElementsOf ingestEvent.events
+              }
+            }
+
+            val ingestFromTracker =
+              ingestTracker.get(ingest.id).right.get.identifiedT
+
+            it("adds the IngestEventUpdate to the Ingest") {
+              ingestFromTracker.events should contain allElementsOf ingestEvent.events
+            }
+
+            it("sends an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe Seq(ingestFromTracker)
+            }
+
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
             }
           }
-
-          val ingestFromTracker = ingestTracker.get(ingest.id).right.get.identifiedT
-
-          it("adds the IngestEventUpdate to the Ingest") {
-            ingestFromTracker.events should contain allElementsOf ingestEvent.events
-          }
-
-          it("sends an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe Seq(ingestFromTracker)
-          }
-
-          it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe empty
-          }
-        }
       }
     }
 
     describe("with a valid IngestStatusUpdate to Success") {
-      withConfiguredApp(Seq(ingest)) { case (callbackSender, ingestsSender, ingestTracker) =>
-        whenPatchRequestReady(path, ingestStatusUpdateSucceededEntity) { response =>
-          it("responds OK when updating with an updated Ingest") {
-            response.status shouldBe StatusCodes.OK
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPatchRequestReady(path, ingestStatusUpdateSucceededEntity) {
+            response =>
+              it("responds OK when updating with an updated Ingest") {
+                response.status shouldBe StatusCodes.OK
 
-            withStringEntity(response.entity) { jsonString =>
-              val updatedIngestResponse = fromJson[Ingest](jsonString).get
-              updatedIngestResponse.status shouldBe ingestStatusUpdateSucceeded.status
-              updatedIngestResponse.events should contain allElementsOf ingestStatusUpdateSucceeded.events
-            }
+                withStringEntity(response.entity) { jsonString =>
+                  val updatedIngestResponse = fromJson[Ingest](jsonString).get
+                  updatedIngestResponse.status shouldBe ingestStatusUpdateSucceeded.status
+                  updatedIngestResponse.events should contain allElementsOf ingestStatusUpdateSucceeded.events
+                }
+              }
+
+              val ingestFromTracker =
+                ingestTracker.get(ingest.id).right.get.identifiedT
+
+              it("adds the IngestStatusUpdate to the Ingest") {
+                ingestFromTracker.status shouldBe ingestStatusUpdateSucceeded.status
+                ingestFromTracker.events should contain allElementsOf ingestStatusUpdateSucceeded.events
+              }
+
+              it("sends an Ingest message") {
+                ingestsSender.getMessages[Ingest] shouldBe Seq(
+                  ingestFromTracker
+                )
+              }
+
+              it("sends a CallbackNotification message") {
+                val expectedCallbackNotification = CallbackNotification(
+                  ingestId = ingestFromTracker.id,
+                  callbackUri = ingestFromTracker.callback.get.uri,
+                  payload = ingestFromTracker
+                )
+
+                callbackSender.getMessages[CallbackNotification] shouldBe Seq(
+                  expectedCallbackNotification
+                )
+              }
           }
-
-          val ingestFromTracker =
-            ingestTracker.get(ingest.id).right.get.identifiedT
-
-          it("adds the IngestStatusUpdate to the Ingest") {
-            ingestFromTracker.status shouldBe ingestStatusUpdateSucceeded.status
-            ingestFromTracker.events should contain allElementsOf ingestStatusUpdateSucceeded.events
-          }
-
-          it("sends an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe Seq(ingestFromTracker)
-          }
-
-          it("sends a CallbackNotification message") {
-            val expectedCallbackNotification = CallbackNotification(
-              ingestId = ingestFromTracker.id,
-              callbackUri = ingestFromTracker.callback.get.uri,
-              payload = ingestFromTracker
-            )
-
-            callbackSender.getMessages[CallbackNotification] shouldBe Seq(expectedCallbackNotification)
-          }
-        }
       }
     }
 
     describe("with a valid IngestStatusUpdate to Failure") {
-      withConfiguredApp(Seq(ingest)) { case (callbackSender, ingestsSender, ingestTracker) =>
-        whenPatchRequestReady(path, ingestStatusUpdateFailedEntity) { response =>
-          it("responds OK when updating with an updated Ingest") {
-            response.status shouldBe StatusCodes.OK
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPatchRequestReady(path, ingestStatusUpdateFailedEntity) {
+            response =>
+              it("responds OK when updating with an updated Ingest") {
+                response.status shouldBe StatusCodes.OK
 
-            withStringEntity(response.entity) { jsonString =>
-              val updatedIngestResponse = fromJson[Ingest](jsonString).get
-              updatedIngestResponse.status shouldBe ingestStatusUpdateFailed.status
-              updatedIngestResponse.events should contain allElementsOf ingestStatusUpdateFailed.events
-            }
+                withStringEntity(response.entity) { jsonString =>
+                  val updatedIngestResponse = fromJson[Ingest](jsonString).get
+                  updatedIngestResponse.status shouldBe ingestStatusUpdateFailed.status
+                  updatedIngestResponse.events should contain allElementsOf ingestStatusUpdateFailed.events
+                }
+              }
+
+              val ingestFromTracker =
+                ingestTracker.get(ingest.id).right.get.identifiedT
+
+              it("adds the IngestStatusUpdate to the Ingest") {
+                ingestFromTracker.status shouldBe ingestStatusUpdateFailed.status
+                ingestFromTracker.events should contain allElementsOf ingestStatusUpdateFailed.events
+              }
+
+              it("sends an Ingest message") {
+                ingestsSender.getMessages[Ingest] shouldBe Seq(
+                  ingestFromTracker
+                )
+              }
+
+              it("sends a CallbackNotification message") {
+                val expectedCallbackNotification = CallbackNotification(
+                  ingestId = ingestFromTracker.id,
+                  callbackUri = ingestFromTracker.callback.get.uri,
+                  payload = ingestFromTracker
+                )
+
+                callbackSender.getMessages[CallbackNotification] shouldBe Seq(
+                  expectedCallbackNotification
+                )
+              }
           }
-
-          val ingestFromTracker =
-            ingestTracker.get(ingest.id).right.get.identifiedT
-
-          it("adds the IngestStatusUpdate to the Ingest") {
-            ingestFromTracker.status shouldBe ingestStatusUpdateFailed.status
-            ingestFromTracker.events should contain allElementsOf ingestStatusUpdateFailed.events
-          }
-
-          it("sends an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe Seq(ingestFromTracker)
-          }
-
-          it("sends a CallbackNotification message") {
-            val expectedCallbackNotification = CallbackNotification(
-              ingestId = ingestFromTracker.id,
-              callbackUri = ingestFromTracker.callback.get.uri,
-              payload = ingestFromTracker
-            )
-
-            callbackSender.getMessages[CallbackNotification] shouldBe Seq(expectedCallbackNotification)
-          }
-        }
       }
     }
 
     describe("with an invalid Status transition in IngestStatusUpdate") {
-      withConfiguredApp(Seq(ingest)) { case (callbackSender, ingestsSender, ingestTracker) =>
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPatchRequestReady(path, ingestStatusUpdateSucceededEntity) {
+            response =>
+              response.status shouldBe StatusCodes.OK
 
-        whenPatchRequestReady(path, ingestStatusUpdateSucceededEntity) { response =>
-          response.status shouldBe StatusCodes.OK
+              val succeededIngestFromTracker: Ingest =
+                ingestTracker.get(ingest.id).right.get.identifiedT
 
-          val succeededIngestFromTracker: Ingest =
-            ingestTracker.get(ingest.id).right.get.identifiedT
+              succeededIngestFromTracker.status shouldBe Succeeded
 
-          succeededIngestFromTracker.status shouldBe Succeeded
+              whenPatchRequestReady(path, ingestStatusUpdateFailedEntity) {
+                response =>
+                  it("responds with Conflict") {
+                    response.status shouldBe StatusCodes.Conflict
+                  }
 
-          whenPatchRequestReady(path, ingestStatusUpdateFailedEntity) { response =>
+                  val ingestFromTracker =
+                    ingestTracker.get(ingest.id).right.get.identifiedT
 
-            it("responds with Conflict") {
-              response.status shouldBe StatusCodes.Conflict
-            }
+                  it("does not modify the Ingest") {
+                    ingestFromTracker shouldBe succeededIngestFromTracker
+                  }
 
-            val ingestFromTracker = ingestTracker.get(ingest.id).right.get.identifiedT
+                  it("does not send an Ingest message") {
+                    ingestsSender.getMessages[Ingest] shouldBe Seq(
+                      succeededIngestFromTracker
+                    )
+                  }
 
-            it("does not modify the Ingest") {
-              ingestFromTracker shouldBe succeededIngestFromTracker
-            }
+                  it("only sends the expected CallbackNotification message") {
+                    val expectedCallbackNotification = CallbackNotification(
+                      ingestId = ingestFromTracker.id,
+                      callbackUri = ingestFromTracker.callback.get.uri,
+                      payload = ingestFromTracker
+                    )
 
-            it("does not send an Ingest message") {
-              ingestsSender.getMessages[Ingest] shouldBe Seq(succeededIngestFromTracker)
-            }
-
-            it("only sends the expected CallbackNotification message") {
-              val expectedCallbackNotification = CallbackNotification(
-                ingestId = ingestFromTracker.id,
-                callbackUri = ingestFromTracker.callback.get.uri,
-                payload = ingestFromTracker
-              )
-
-              callbackSender.getMessages[CallbackNotification] shouldBe Seq(expectedCallbackNotification)
-            }
+                    callbackSender
+                      .getMessages[CallbackNotification] shouldBe Seq(
+                      expectedCallbackNotification
+                    )
+                  }
+              }
           }
-        }
       }
     }
 
     describe("with an IngestUpdate to non existent Ingest") {
-      withConfiguredApp() { case (callbackSender, ingestsSender, ingestTracker) =>
-        whenPatchRequestReady(path, ingestEventEntity) { response =>
-          it("responds with Conflict") {
-            response.status shouldBe StatusCodes.Conflict
+      withConfiguredApp() {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPatchRequestReady(path, ingestEventEntity) { response =>
+            it("responds with Conflict") {
+              response.status shouldBe StatusCodes.Conflict
+            }
+
+            it("does not create the Ingest") {
+              val getIngest = ingestTracker.get(ingestEvent.id)
+
+              getIngest shouldBe a[Left[_, _]]
+              getIngest.left.get shouldBe a[IngestDoesNotExistError]
+            }
+
+            it("does not send an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe empty
+            }
+
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
+
           }
-
-          it("does not create the Ingest") {
-            val getIngest = ingestTracker.get(ingestEvent.id)
-
-            getIngest shouldBe a[Left[_, _]]
-            getIngest.left.get shouldBe a[IngestDoesNotExistError]
-          }
-
-          it("does not send an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe empty
-          }
-
-          it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe empty
-          }
-
-        }
       }
     }
 
     describe("when broken") {
-      withBrokenApp { case (callbackSender, ingestsSender, _) =>
-        whenPatchRequestReady(path, ingestEventEntity) { response =>
-          it("responds InternalServerError") {
-            response.status shouldBe StatusCodes.InternalServerError
-          }
+      withBrokenApp {
+        case (callbackSender, ingestsSender, _) =>
+          whenPatchRequestReady(path, ingestEventEntity) { response =>
+            it("responds InternalServerError") {
+              response.status shouldBe StatusCodes.InternalServerError
+            }
 
-          it("does not send an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe empty
-          }
+            it("does not send an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe empty
+            }
 
-          it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe empty
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
           }
-        }
       }
     }
 
     describe("with bad JSON") {
-      withConfiguredApp(Seq(ingest)) { case (callbackSender, ingestsSender, _) =>
-        whenPatchRequestReady(path, badEntity) { response =>
-          it("responds BadRequest") {
-            response.status shouldBe StatusCodes.BadRequest
-          }
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, _) =>
+          whenPatchRequestReady(path, badEntity) { response =>
+            it("responds BadRequest") {
+              response.status shouldBe StatusCodes.BadRequest
+            }
 
-          it("does not send an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe empty
-          }
+            it("does not send an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe empty
+            }
 
-          it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe empty
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
           }
-        }
       }
     }
   }

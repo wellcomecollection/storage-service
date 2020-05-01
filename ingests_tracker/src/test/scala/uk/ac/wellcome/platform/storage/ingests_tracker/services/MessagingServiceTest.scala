@@ -6,8 +6,16 @@ import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Accepted, Failed, Processing, Succeeded}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, Ingest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+  Accepted,
+  Failed,
+  Processing,
+  Succeeded
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CallbackNotification,
+  Ingest
+}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.MessagingServiceFixtures
 
@@ -34,21 +42,24 @@ class MessagingServiceTest
       callbackUri = successfulIngest.callback.get.uri,
       payload = successfulIngest
     )
-    
-    withMessagingService() { case (callbackSender,ingestsSender,messagingService) =>
-      val sent = messagingService.send(successfulIngest)
 
-      it("returns a Success") {
-        sent shouldBe a[Success[_]]
-      }
-      
-      it("sends a CallbackNotification") {
-        callbackSender.getMessages[CallbackNotification] shouldBe Seq(callbackNotification)
-      }
+    withMessagingService() {
+      case (callbackSender, ingestsSender, messagingService) =>
+        val sent = messagingService.send(successfulIngest)
 
-      it("sends on the Ingest") {
-        ingestsSender.getMessages[Ingest] shouldBe Seq(successfulIngest)
-      }
+        it("returns a Success") {
+          sent shouldBe a[Success[_]]
+        }
+
+        it("sends a CallbackNotification") {
+          callbackSender.getMessages[CallbackNotification] shouldBe Seq(
+            callbackNotification
+          )
+        }
+
+        it("sends on the Ingest") {
+          ingestsSender.getMessages[Ingest] shouldBe Seq(successfulIngest)
+        }
     }
   }
 
@@ -61,60 +72,65 @@ class MessagingServiceTest
       payload = failedIngest
     )
 
-    withMessagingService() { case (callbackSender,ingestsSender,messagingService) =>
-      val sent = messagingService.send(failedIngest)
+    withMessagingService() {
+      case (callbackSender, ingestsSender, messagingService) =>
+        val sent = messagingService.send(failedIngest)
 
-      it("returns a Success") {
-        sent shouldBe a[Success[_]]
-      }
+        it("returns a Success") {
+          sent shouldBe a[Success[_]]
+        }
 
-      it("sends a CallbackNotification") {
-        callbackSender.getMessages[CallbackNotification] shouldBe Seq(callbackNotification)
-      }
+        it("sends a CallbackNotification") {
+          callbackSender.getMessages[CallbackNotification] shouldBe Seq(
+            callbackNotification
+          )
+        }
 
-      it("sends on the Ingest") {
-        ingestsSender.getMessages[Ingest] shouldBe Seq(failedIngest)
-      }
+        it("sends on the Ingest") {
+          ingestsSender.getMessages[Ingest] shouldBe Seq(failedIngest)
+        }
     }
   }
 
   describe("Ingest with status Accepted") {
     val acceptedIngest = createIngestWith(status = Accepted)
 
-    withMessagingService() { case (callbackSender,ingestsSender,messagingService) =>
-      val sent = messagingService.send(acceptedIngest)
+    withMessagingService() {
+      case (callbackSender, ingestsSender, messagingService) =>
+        val sent = messagingService.send(acceptedIngest)
 
-      it("returns a Success") {
-        sent shouldBe a[Success[_]]
-      }
+        it("returns a Success") {
+          sent shouldBe a[Success[_]]
+        }
 
-      it("does not send a CallbackNotification") {
-        callbackSender.getMessages[CallbackNotification] shouldBe empty
-      }
+        it("does not send a CallbackNotification") {
+          callbackSender.getMessages[CallbackNotification] shouldBe empty
+        }
 
-      it("sends on the Ingest") {
-        ingestsSender.getMessages[Ingest] shouldBe Seq(acceptedIngest)
-      }
+        it("sends on the Ingest") {
+          ingestsSender.getMessages[Ingest] shouldBe Seq(acceptedIngest)
+        }
     }
   }
 
   describe("Ingest with status Processing") {
     val processingIngest = createIngestWith(status = Processing)
 
-    withMessagingService() { case (callbackSender,ingestsSender,messagingService) =>
-      val sent = messagingService.send(processingIngest)
+    withMessagingService() {
+      case (callbackSender, ingestsSender, messagingService) =>
+        val sent = messagingService.send(processingIngest)
 
-      it("returns a Success") {
-        sent shouldBe a[Success[_]]
-      }
+        it("returns a Success") {
+          sent shouldBe a[Success[_]]
+        }
 
-      it("does not send a CallbackNotification") {
-        callbackSender.getMessages[CallbackNotification] shouldBe empty
-      }
+        it("does not send a CallbackNotification") {
+          callbackSender.getMessages[CallbackNotification] shouldBe empty
+        }
 
-      it("sends on the Ingest") {
-        ingestsSender.getMessages[Ingest] shouldBe Seq(processingIngest)
-      }
+        it("sends on the Ingest") {
+          ingestsSender.getMessages[Ingest] shouldBe Seq(processingIngest)
+        }
     }
   }
 
@@ -126,20 +142,21 @@ class MessagingServiceTest
 
     withMessagingService(
       callbackSender = callbackSender
-    ) { case (_, ingestsSender, messagingService) =>
-      val sent = messagingService.send(successfulIngest)
+    ) {
+      case (_, ingestsSender, messagingService) =>
+        val sent = messagingService.send(successfulIngest)
 
-      it("returns a Failure") {
-        sent.failed.get shouldBe throwable
-      }
+        it("returns a Failure") {
+          sent.failed.get shouldBe throwable
+        }
 
-      it("sends an Ingest") {
-        ingestsSender.getMessages[Ingest] shouldBe Seq(successfulIngest)
-      }
+        it("sends an Ingest") {
+          ingestsSender.getMessages[Ingest] shouldBe Seq(successfulIngest)
+        }
 
-      it("does not send a CallbackNotification") {
-        callbackSender.getMessages[CallbackNotification] shouldBe empty
-      }
+        it("does not send a CallbackNotification") {
+          callbackSender.getMessages[CallbackNotification] shouldBe empty
+        }
     }
   }
 
@@ -151,26 +168,29 @@ class MessagingServiceTest
 
     withMessagingService(
       ingestsSender = ingestsSender
-    ) { case (callbackSender, _, messagingService) =>
-      val sent = messagingService.send(successfulIngest)
+    ) {
+      case (callbackSender, _, messagingService) =>
+        val sent = messagingService.send(successfulIngest)
 
-      it("returns a Failure") {
-        sent.failed.get shouldBe throwable
-      }
+        it("returns a Failure") {
+          sent.failed.get shouldBe throwable
+        }
 
-      it("does not send an Ingest") {
-        ingestsSender.getMessages[Ingest] shouldBe empty
-      }
+        it("does not send an Ingest") {
+          ingestsSender.getMessages[Ingest] shouldBe empty
+        }
 
-      val callbackNotification = CallbackNotification(
-        ingestId = successfulIngest.id,
-        callbackUri = successfulIngest.callback.get.uri,
-        payload = successfulIngest
-      )
+        val callbackNotification = CallbackNotification(
+          ingestId = successfulIngest.id,
+          callbackUri = successfulIngest.callback.get.uri,
+          payload = successfulIngest
+        )
 
-      it("sends a CallbackNotification") {
-        callbackSender.getMessages[CallbackNotification] shouldBe Seq(callbackNotification)
-      }
+        it("sends a CallbackNotification") {
+          callbackSender.getMessages[CallbackNotification] shouldBe Seq(
+            callbackNotification
+          )
+        }
     }
   }
 
@@ -184,20 +204,21 @@ class MessagingServiceTest
     withMessagingService(
       ingestsSender = ingestsSender,
       callbackSender = callbackSender
-    ) { case (_, _, messagingService) =>
-      val sent = messagingService.send(successfulIngest)
+    ) {
+      case (_, _, messagingService) =>
+        val sent = messagingService.send(successfulIngest)
 
-      it("returns a Failure") {
-        sent.failed.get.getMessage shouldBe "Both of the ongoing messages failed to send correctly!"
-      }
+        it("returns a Failure") {
+          sent.failed.get.getMessage shouldBe "Both of the ongoing messages failed to send correctly!"
+        }
 
-      it("does not send an Ingest") {
-        ingestsSender.getMessages[Ingest] shouldBe empty
-      }
+        it("does not send an Ingest") {
+          ingestsSender.getMessages[Ingest] shouldBe empty
+        }
 
-      it("does not send a CallbackNotification") {
-        callbackSender.getMessages[CallbackNotification] shouldBe empty
-      }
+        it("does not send a CallbackNotification") {
+          callbackSender.getMessages[CallbackNotification] shouldBe empty
+        }
     }
   }
 }

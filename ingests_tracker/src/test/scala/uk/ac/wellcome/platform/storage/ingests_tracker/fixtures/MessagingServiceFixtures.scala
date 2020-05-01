@@ -6,7 +6,10 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
-import uk.ac.wellcome.platform.storage.ingests_tracker.services.{CallbackNotificationService, MessagingService}
+import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
+  CallbackNotificationService,
+  MessagingService
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -17,9 +20,18 @@ trait MessagingServiceFixtures
     with IngestTrackerFixtures {
 
   def withMessagingService[R](
-                               callbackSender: MemoryMessageSender = new MemoryMessageSender(),
-                               ingestsSender: MemoryMessageSender = new MemoryMessageSender()
-                             )(testWith: TestWith[(MemoryMessageSender, MemoryMessageSender, MessagingService[String, String]), R]): R =
+    callbackSender: MemoryMessageSender = new MemoryMessageSender(),
+    ingestsSender: MemoryMessageSender = new MemoryMessageSender()
+  )(
+    testWith: TestWith[
+      (
+        MemoryMessageSender,
+        MemoryMessageSender,
+        MessagingService[String, String]
+      ),
+      R
+    ]
+  ): R =
     withFakeMonitoringClient() { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
         val callbackNotificationService =
@@ -27,7 +39,7 @@ trait MessagingServiceFixtures
 
         val messagingService = new MessagingService(
           callbackNotificationService = callbackNotificationService,
-          updatedIngestsMessageSender = ingestsSender,
+          updatedIngestsMessageSender = ingestsSender
         )
 
         val out = (callbackSender, ingestsSender, messagingService)
