@@ -80,7 +80,7 @@ class IngestsTrackerApiFeatureTest
           }
 
           it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe Seq()
+            callbackSender.getMessages[CallbackNotification] shouldBe empty
           }
         }
       }
@@ -101,11 +101,11 @@ class IngestsTrackerApiFeatureTest
           }
 
           it("does not send an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe Seq()
+            ingestsSender.getMessages[Ingest] shouldBe empty
           }
 
           it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe Seq()
+            callbackSender.getMessages[CallbackNotification] shouldBe empty
           }
         }
       }
@@ -126,11 +126,11 @@ class IngestsTrackerApiFeatureTest
           }
 
           it("does not send an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe Seq()
+            ingestsSender.getMessages[Ingest] shouldBe empty
           }
 
           it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe Seq()
+            callbackSender.getMessages[CallbackNotification] shouldBe empty
           }
         }
       }
@@ -145,11 +145,11 @@ class IngestsTrackerApiFeatureTest
         }
 
         it("does not send an Ingest message") {
-          ingestsSender.getMessages[Ingest] shouldBe Seq()
+          ingestsSender.getMessages[Ingest] shouldBe empty
         }
 
         it("does not send a CallbackNotification message") {
-          callbackSender.getMessages[CallbackNotification] shouldBe Seq()
+          callbackSender.getMessages[CallbackNotification] shouldBe empty
         }
       }
     }
@@ -216,7 +216,7 @@ class IngestsTrackerApiFeatureTest
           }
 
           it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe Seq()
+            callbackSender.getMessages[CallbackNotification] shouldBe empty
           }
         }
       }
@@ -354,11 +354,11 @@ class IngestsTrackerApiFeatureTest
           }
 
           it("does not send an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe Seq()
+            ingestsSender.getMessages[Ingest] shouldBe empty
           }
 
           it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe Seq()
+            callbackSender.getMessages[CallbackNotification] shouldBe empty
           }
 
         }
@@ -373,11 +373,11 @@ class IngestsTrackerApiFeatureTest
           }
 
           it("does not send an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe Seq()
+            ingestsSender.getMessages[Ingest] shouldBe empty
           }
 
           it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe Seq()
+            callbackSender.getMessages[CallbackNotification] shouldBe empty
           }
         }
       }
@@ -391,11 +391,11 @@ class IngestsTrackerApiFeatureTest
           }
 
           it("does not send an Ingest message") {
-            ingestsSender.getMessages[Ingest] shouldBe Seq()
+            ingestsSender.getMessages[Ingest] shouldBe empty
           }
 
           it("does not send a CallbackNotification message") {
-            callbackSender.getMessages[CallbackNotification] shouldBe Seq()
+            callbackSender.getMessages[CallbackNotification] shouldBe empty
           }
         }
       }
