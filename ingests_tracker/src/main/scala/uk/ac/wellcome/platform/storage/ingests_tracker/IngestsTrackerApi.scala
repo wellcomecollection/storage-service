@@ -15,14 +15,21 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestUpdate
 }
 import uk.ac.wellcome.platform.archive.common.ingests.tracker._
+import uk.ac.wellcome.platform.storage.ingests_tracker.services.MessagingService
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-trait IngestsTrackerApi extends Runnable with Logging {
+trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination]
+    extends Runnable
+    with Logging {
 
   val ingestTracker: IngestTracker
+  val messagingService: MessagingService[
+    CallbackDestination,
+    UpdatedIngestsDestination
+  ]
 
   implicit protected val sys: ActorSystem
   implicit protected val mat: Materializer
@@ -34,19 +41,22 @@ trait IngestsTrackerApi extends Runnable with Logging {
   val route: Route =
     concat(
       post {
-        entity(as[Ingest]) {
-          ingest =>
-            ingestTracker.init(ingest) match {
-              case Right(_) =>
-                info(s"Created ingest: ${ingest}")
-                complete(StatusCodes.Created)
-              case Left(e: StateConflictError) =>
-                error(s"Ingest could not be created: ${ingest.id}", e)
-                complete(StatusCodes.Conflict)
-              case Left(e) =>
-                error("Failed to create ingest!", e)
-                complete(StatusCodes.InternalServerError)
-            }
+        pathPrefix("ingest") {
+          entity(as[Ingest]) {
+            ingest =>
+              ingestTracker.init(ingest) match {
+                case Right(_) =>
+                  info(s"Created ingest: ${ingest}")
+                  messagingService.send(ingest)
+                  complete(StatusCodes.Created)
+                case Left(e: StateConflictError) =>
+                  error(s"Ingest could not be created: ${ingest.id}", e)
+                  complete(StatusCodes.Conflict)
+                case Left(e) =>
+                  error("Failed to create ingest!", e)
+                  complete(StatusCodes.InternalServerError)
+              }
+          }
         }
       },
       patch {
@@ -57,15 +67,16 @@ trait IngestsTrackerApi extends Runnable with Logging {
                 info(s"Updating $id: $ingestUpdate")
 
                 ingestTracker.update(ingestUpdate) match {
+                  case Right(Identified(_, ingest)) =>
+                    info(s"Updated ingest: $ingest")
+                    messagingService.send(ingest)
+                    complete(StatusCodes.OK -> ingest)
                   case Left(e: StateConflictError) =>
                     error(s"Ingest ${id} can not be updated", e)
                     complete(StatusCodes.Conflict)
                   case Left(e) =>
                     error(s"Failed to update ingest: ${id}", e)
                     complete(StatusCodes.InternalServerError)
-                  case Right(Identified(_, ingest)) =>
-                    info(s"Updated ingest: $ingest")
-                    complete(StatusCodes.OK -> ingest)
                 }
             }
         }

@@ -23,6 +23,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
   Succeeded
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models._
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestDoesNotExistError
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 
 class IngestsTrackerApiFeatureTest
@@ -37,10 +38,10 @@ class IngestsTrackerApiFeatureTest
     with StorageRandomThings {
 
   describe("GET /healthcheck") {
+    val path = s"http://localhost:8080/healthcheck"
+
     it("responds OK") {
       withConfiguredApp() { _ =>
-        val path = s"http://localhost:8080/healthcheck"
-
         whenGetRequestReady(path) { result =>
           result.status shouldBe StatusCodes.OK
         }
@@ -48,70 +49,118 @@ class IngestsTrackerApiFeatureTest
     }
   }
 
+  val badEntity = HttpEntity(
+    ContentTypes.`application/json`,
+    randomAlphanumeric
+  )
+
   describe("POST /ingest") {
+    val path = "http://localhost:8080/ingest"
+
     val ingest = createIngestWith(
       createdDate = Instant.now(),
       version = None
     )
 
-    it("responds Created when successful") {
-      withConfiguredApp() { ingestTracker =>
-        val path = "http://localhost:8080/ingest"
-        val entity = HttpEntity(
-          ContentTypes.`application/json`,
-          ingest.asJson.noSpaces
-        )
+    val ingestEntity = HttpEntity(
+      ContentTypes.`application/json`,
+      ingest.asJson.noSpaces
+    )
 
-        whenPostRequestReady(path, entity) { response =>
-          response.status shouldBe StatusCodes.Created
+    describe("with a valid Ingest") {
+      withConfiguredApp() {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPostRequestReady(path, ingestEntity) { response =>
+            it("responds Created") {
+              response.status shouldBe StatusCodes.Created
+            }
 
-          val getIngest = ingestTracker.get(ingest.id)
+            it("stores the Ingest") {
+              val getIngest = ingestTracker.get(ingest.id)
 
-          getIngest shouldBe a[Right[_, _]]
-          getIngest.right.get.identifiedT shouldBe ingest
-        }
+              getIngest shouldBe a[Right[_, _]]
+              getIngest.right.get.identifiedT shouldBe ingest
+            }
+
+            it("sends an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe Seq(ingest)
+            }
+
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
+          }
       }
     }
 
-    it("responds Conflict when the ingest exists") {
-      withConfiguredApp(Seq(ingest)) { _ =>
-        val path = "http://localhost:8080/ingest"
-        val entity = HttpEntity(
-          ContentTypes.`application/json`,
-          ingest.asJson.noSpaces
-        )
+    describe("with an existing Ingest") {
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPostRequestReady(path, ingestEntity) { response =>
+            it("responds Conflict") {
+              response.status shouldBe StatusCodes.Conflict
+            }
 
-        whenPostRequestReady(path, entity) { response =>
-          response.status shouldBe StatusCodes.Conflict
-        }
+            it("does not modify the Ingest") {
+              val getIngest = ingestTracker.get(ingest.id)
+
+              getIngest shouldBe a[Right[_, _]]
+              getIngest.right.get.identifiedT shouldBe ingest
+            }
+
+            it("does not send an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe empty
+            }
+
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
+          }
       }
     }
 
-    it("responds BadRequest when bad json is sent") {
-      withConfiguredApp(Seq(ingest)) { _ =>
-        val path = "http://localhost:8080/ingest"
-        val entity = HttpEntity(
-          ContentTypes.`application/json`,
-          randomAlphanumeric
-        )
+    describe("with bad JSON") {
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPostRequestReady(path, badEntity) { response =>
+            it("responds BadRequest") {
+              response.status shouldBe StatusCodes.BadRequest
+            }
 
-        whenPostRequestReady(path, entity) { response =>
-          response.status shouldBe StatusCodes.BadRequest
-        }
+            it("does not modify the Ingest") {
+              val getIngest = ingestTracker.get(ingest.id)
+
+              getIngest shouldBe a[Right[_, _]]
+              getIngest.right.get.identifiedT shouldBe ingest
+            }
+
+            it("does not send an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe empty
+            }
+
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
+          }
       }
     }
 
-    it("responds InternalServerError when broken") {
-      withBrokenApp { _ =>
-        val path = "http://localhost:8080/ingest"
-        val entity = HttpEntity(
-          ContentTypes.`application/json`,
-          ingest.asJson.noSpaces
-        )
+    describe("when broken") {
+      withBrokenApp {
+        case (callbackSender, ingestsSender, _) =>
+          whenPostRequestReady(path, ingestEntity) { response =>
+            it("responds InternalServerError") {
+              response.status shouldBe StatusCodes.InternalServerError
+            }
+          }
 
-        whenPostRequestReady(path, entity) { response =>
-          response.status shouldBe StatusCodes.InternalServerError
-        }
+          it("does not send an Ingest message") {
+            ingestsSender.getMessages[Ingest] shouldBe empty
+          }
+
+          it("does not send a CallbackNotification message") {
+            callbackSender.getMessages[CallbackNotification] shouldBe empty
+          }
       }
     }
   }
@@ -123,7 +172,14 @@ class IngestsTrackerApiFeatureTest
       version = None
     )
 
+    val path = s"http://localhost:8080/ingest/${ingest.id}"
+
     val ingestEvent = createIngestEventUpdateWith(id = ingest.id)
+
+    val ingestEventEntity = HttpEntity(
+      ContentTypes.`application/json`,
+      toJson[IngestUpdate](ingestEvent).get
+    )
 
     val ingestStatusUpdateSucceeded =
       createIngestStatusUpdateWith(
@@ -131,129 +187,251 @@ class IngestsTrackerApiFeatureTest
         status = Succeeded
       )
 
+    val ingestStatusUpdateSucceededEntity = HttpEntity(
+      ContentTypes.`application/json`,
+      toJson[IngestUpdate](ingestStatusUpdateSucceeded).get
+    )
+
     val ingestStatusUpdateFailed =
       createIngestStatusUpdateWith(
         id = ingest.id,
         status = Failed
       )
 
-    it("responds OK when updating with a valid IngestEventUpdate") {
-      withConfiguredApp(Seq(ingest)) { ingestTracker =>
-        val path = s"http://localhost:8080/ingest/${ingest.id}"
+    val ingestStatusUpdateFailedEntity = HttpEntity(
+      ContentTypes.`application/json`,
+      toJson[IngestUpdate](ingestStatusUpdateFailed).get
+    )
 
-        val entity = HttpEntity(
-          ContentTypes.`application/json`,
-          toJson[IngestUpdate](ingestEvent).get
-        )
+    describe("with a valid IngestEventUpdate") {
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPatchRequestReady(path, ingestEventEntity) { response =>
+            it("responds OK with an updated Ingest") {
+              response.status shouldBe StatusCodes.OK
 
-        whenPatchRequestReady(path, entity) { response =>
-          response.status shouldBe StatusCodes.OK
+              withStringEntity(response.entity) { jsonString =>
+                val updatedIngestResponse = fromJson[Ingest](jsonString).get
+                updatedIngestResponse.events should contain allElementsOf ingestEvent.events
+              }
+            }
 
-          withStringEntity(response.entity) { jsonString =>
-            val updatedIngestResponse = fromJson[Ingest](jsonString).get
-            updatedIngestResponse.events should contain allElementsOf (ingestEvent.events)
+            val ingestFromTracker =
+              ingestTracker.get(ingest.id).right.get.identifiedT
+
+            it("adds the IngestEventUpdate to the Ingest") {
+              ingestFromTracker.events should contain allElementsOf ingestEvent.events
+            }
+
+            it("sends an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe Seq(ingestFromTracker)
+            }
+
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
           }
-
-          val ingestFromTracker =
-            ingestTracker.get(ingest.id).right.get.identifiedT
-          ingestFromTracker.events should contain allElementsOf (ingestEvent.events)
-        }
       }
     }
 
-    it("responds OK when updating with a valid IngestStatusUpdate") {
-      withConfiguredApp(Seq(ingest)) { ingestTracker =>
-        val path = s"http://localhost:8080/ingest/${ingest.id}"
+    describe("with a valid IngestStatusUpdate to Success") {
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPatchRequestReady(path, ingestStatusUpdateSucceededEntity) {
+            response =>
+              it("responds OK when updating with an updated Ingest") {
+                response.status shouldBe StatusCodes.OK
 
-        val entity = HttpEntity(
-          ContentTypes.`application/json`,
-          toJson[IngestUpdate](ingestStatusUpdateSucceeded).get
-        )
+                withStringEntity(response.entity) { jsonString =>
+                  val updatedIngestResponse = fromJson[Ingest](jsonString).get
+                  updatedIngestResponse.status shouldBe ingestStatusUpdateSucceeded.status
+                  updatedIngestResponse.events should contain allElementsOf ingestStatusUpdateSucceeded.events
+                }
+              }
 
-        whenPatchRequestReady(path, entity) { response =>
-          response.status shouldBe StatusCodes.OK
+              val ingestFromTracker =
+                ingestTracker.get(ingest.id).right.get.identifiedT
 
-          withStringEntity(response.entity) { jsonString =>
-            val updatedIngestResponse = fromJson[Ingest](jsonString).get
-            updatedIngestResponse.status shouldBe ingestStatusUpdateSucceeded.status
-            updatedIngestResponse.events should contain allElementsOf (ingestStatusUpdateSucceeded.events)
+              it("adds the IngestStatusUpdate to the Ingest") {
+                ingestFromTracker.status shouldBe ingestStatusUpdateSucceeded.status
+                ingestFromTracker.events should contain allElementsOf ingestStatusUpdateSucceeded.events
+              }
+
+              it("sends an Ingest message") {
+                ingestsSender.getMessages[Ingest] shouldBe Seq(
+                  ingestFromTracker
+                )
+              }
+
+              it("sends a CallbackNotification message") {
+                val expectedCallbackNotification = CallbackNotification(
+                  ingestId = ingestFromTracker.id,
+                  callbackUri = ingestFromTracker.callback.get.uri,
+                  payload = ingestFromTracker
+                )
+
+                callbackSender.getMessages[CallbackNotification] shouldBe Seq(
+                  expectedCallbackNotification
+                )
+              }
           }
-
-          val ingestFromTracker =
-            ingestTracker.get(ingest.id).right.get.identifiedT
-          ingestFromTracker.status shouldBe ingestStatusUpdateSucceeded.status
-          ingestFromTracker.events should contain allElementsOf (ingestStatusUpdateSucceeded.events)
-        }
       }
     }
 
-    it("responds Conflict when updating to an invalid Status") {
-      withConfiguredApp(Seq(ingest)) { _ =>
-        val path = s"http://localhost:8080/ingest/${ingest.id}"
+    describe("with a valid IngestStatusUpdate to Failure") {
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPatchRequestReady(path, ingestStatusUpdateFailedEntity) {
+            response =>
+              it("responds OK when updating with an updated Ingest") {
+                response.status shouldBe StatusCodes.OK
 
-        val updateSucceededEntity = HttpEntity(
-          ContentTypes.`application/json`,
-          toJson[IngestUpdate](ingestStatusUpdateSucceeded).get
-        )
+                withStringEntity(response.entity) { jsonString =>
+                  val updatedIngestResponse = fromJson[Ingest](jsonString).get
+                  updatedIngestResponse.status shouldBe ingestStatusUpdateFailed.status
+                  updatedIngestResponse.events should contain allElementsOf ingestStatusUpdateFailed.events
+                }
+              }
 
-        val updateFailedEntity = HttpEntity(
-          ContentTypes.`application/json`,
-          toJson[IngestUpdate](ingestStatusUpdateFailed).get
-        )
+              val ingestFromTracker =
+                ingestTracker.get(ingest.id).right.get.identifiedT
 
-        whenPatchRequestReady(path, updateSucceededEntity) { response =>
-          response.status shouldBe StatusCodes.OK
-          whenPatchRequestReady(path, updateFailedEntity) { response =>
-            response.status shouldBe StatusCodes.Conflict
+              it("adds the IngestStatusUpdate to the Ingest") {
+                ingestFromTracker.status shouldBe ingestStatusUpdateFailed.status
+                ingestFromTracker.events should contain allElementsOf ingestStatusUpdateFailed.events
+              }
+
+              it("sends an Ingest message") {
+                ingestsSender.getMessages[Ingest] shouldBe Seq(
+                  ingestFromTracker
+                )
+              }
+
+              it("sends a CallbackNotification message") {
+                val expectedCallbackNotification = CallbackNotification(
+                  ingestId = ingestFromTracker.id,
+                  callbackUri = ingestFromTracker.callback.get.uri,
+                  payload = ingestFromTracker
+                )
+
+                callbackSender.getMessages[CallbackNotification] shouldBe Seq(
+                  expectedCallbackNotification
+                )
+              }
           }
-        }
       }
     }
 
-    it("responds Conflict when updating a non existent ingest") {
-      val succeededIngest = ingest.copy(status = Succeeded)
+    describe("with an invalid Status transition in IngestStatusUpdate") {
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPatchRequestReady(path, ingestStatusUpdateSucceededEntity) {
+            response =>
+              response.status shouldBe StatusCodes.OK
 
-      withConfiguredApp() { _ =>
-        val path = s"http://localhost:8080/ingest/${ingest.id}"
+              val succeededIngestFromTracker: Ingest =
+                ingestTracker.get(ingest.id).right.get.identifiedT
 
-        val entity = HttpEntity(
-          ContentTypes.`application/json`,
-          toJson[IngestUpdate](ingestEvent).get
-        )
+              succeededIngestFromTracker.status shouldBe Succeeded
 
-        whenPatchRequestReady(path, entity) { response =>
-          response.status shouldBe StatusCodes.Conflict
-        }
+              whenPatchRequestReady(path, ingestStatusUpdateFailedEntity) {
+                response =>
+                  it("responds with Conflict") {
+                    response.status shouldBe StatusCodes.Conflict
+                  }
+
+                  val ingestFromTracker =
+                    ingestTracker.get(ingest.id).right.get.identifiedT
+
+                  it("does not modify the Ingest") {
+                    ingestFromTracker shouldBe succeededIngestFromTracker
+                  }
+
+                  it("does not send an Ingest message") {
+                    ingestsSender.getMessages[Ingest] shouldBe Seq(
+                      succeededIngestFromTracker
+                    )
+                  }
+
+                  it("only sends the expected CallbackNotification message") {
+                    val expectedCallbackNotification = CallbackNotification(
+                      ingestId = ingestFromTracker.id,
+                      callbackUri = ingestFromTracker.callback.get.uri,
+                      payload = ingestFromTracker
+                    )
+
+                    callbackSender
+                      .getMessages[CallbackNotification] shouldBe Seq(
+                      expectedCallbackNotification
+                    )
+                  }
+              }
+          }
       }
     }
 
-    it("responds InternalServerError when broken") {
-      withBrokenApp { _ =>
-        val path = s"http://localhost:8080/ingest/${ingest.id}"
+    describe("with an IngestUpdate to non existent Ingest") {
+      withConfiguredApp() {
+        case (callbackSender, ingestsSender, ingestTracker) =>
+          whenPatchRequestReady(path, ingestEventEntity) { response =>
+            it("responds with Conflict") {
+              response.status shouldBe StatusCodes.Conflict
+            }
 
-        val entity = HttpEntity(
-          ContentTypes.`application/json`,
-          toJson[IngestUpdate](ingestEvent).get
-        )
+            it("does not create the Ingest") {
+              val getIngest = ingestTracker.get(ingestEvent.id)
 
-        whenPatchRequestReady(path, entity) { response =>
-          response.status shouldBe StatusCodes.InternalServerError
-        }
+              getIngest shouldBe a[Left[_, _]]
+              getIngest.left.get shouldBe a[IngestDoesNotExistError]
+            }
+
+            it("does not send an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe empty
+            }
+
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
+
+          }
       }
     }
 
-    it("responds BadRequest when updating with invalid json") {
-      withConfiguredApp(Seq(ingest)) { _ =>
-        val path = s"http://localhost:8080/ingest/${ingest.id}"
+    describe("when broken") {
+      withBrokenApp {
+        case (callbackSender, ingestsSender, _) =>
+          whenPatchRequestReady(path, ingestEventEntity) { response =>
+            it("responds InternalServerError") {
+              response.status shouldBe StatusCodes.InternalServerError
+            }
 
-        val entity = HttpEntity(
-          ContentTypes.`application/json`,
-          randomAlphanumeric
-        )
+            it("does not send an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe empty
+            }
 
-        whenPatchRequestReady(path, entity) { response =>
-          response.status shouldBe StatusCodes.BadRequest
-        }
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
+          }
+      }
+    }
+
+    describe("with bad JSON") {
+      withConfiguredApp(Seq(ingest)) {
+        case (callbackSender, ingestsSender, _) =>
+          whenPatchRequestReady(path, badEntity) { response =>
+            it("responds BadRequest") {
+              response.status shouldBe StatusCodes.BadRequest
+            }
+
+            it("does not send an Ingest message") {
+              ingestsSender.getMessages[Ingest] shouldBe empty
+            }
+
+            it("does not send a CallbackNotification message") {
+              callbackSender.getMessages[CallbackNotification] shouldBe empty
+            }
+          }
       }
     }
   }
@@ -267,11 +445,12 @@ class IngestsTrackerApiFeatureTest
 
     val notRecordedIngestId = createIngestID
 
+    val badPath = s"http://localhost:8080/ingest/$notRecordedIngestId"
+    val path = s"http://localhost:8080/ingest/${ingest.id}"
+
     it("responds NotFound when there is no ingest") {
       withConfiguredApp(Seq(ingest)) { _ =>
-        val path = s"http://localhost:8080/ingest/${notRecordedIngestId}"
-
-        whenGetRequestReady(path) { response =>
+        whenGetRequestReady(badPath) { response =>
           response.status shouldBe StatusCodes.NotFound
         }
       }
@@ -279,8 +458,6 @@ class IngestsTrackerApiFeatureTest
 
     it("responds OK with an Ingest when available") {
       withConfiguredApp(Seq(ingest)) { _ =>
-        val path = s"http://localhost:8080/ingest/${ingest.id}"
-
         whenGetRequestReady(path) { response =>
           response.status shouldBe StatusCodes.OK
 
@@ -296,8 +473,6 @@ class IngestsTrackerApiFeatureTest
 
     it("responds InternalServerError when broken") {
       withBrokenApp { _ =>
-        val path = s"http://localhost:8080/ingest/${ingest.id}"
-
         whenGetRequestReady(path) { response =>
           response.status shouldBe StatusCodes.InternalServerError
         }

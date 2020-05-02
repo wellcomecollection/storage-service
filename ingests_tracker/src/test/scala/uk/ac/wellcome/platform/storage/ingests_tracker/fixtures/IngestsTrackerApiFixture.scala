@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
@@ -17,6 +18,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
   IngestTracker
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.IngestsTrackerApi
+import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
+  CallbackNotificationService,
+  MessagingService
+}
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
@@ -27,11 +32,24 @@ trait IngestsTrackerApiFixture
     with Akka {
 
   private def withApp[R](
-    ingestTrackerTest: MemoryIngestTracker
-  )(testWith: TestWith[IngestsTrackerApi, R]): R =
+    ingestTrackerTest: MemoryIngestTracker,
+    callbackNotificationMessageSender: MemoryMessageSender =
+      new MemoryMessageSender(),
+    updatedIngestsMessageSender: MemoryMessageSender = new MemoryMessageSender()
+  )(testWith: TestWith[IngestsTrackerApi[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
-        val app = new IngestsTrackerApi() {
+        val callbackNotificationService =
+          new CallbackNotificationService(callbackNotificationMessageSender)
+
+        val app = new IngestsTrackerApi[String, String] {
+
+          override val messagingService: MessagingService[String, String] =
+            new MessagingService(
+              callbackNotificationService,
+              updatedIngestsMessageSender
+            )
+
           override val ingestTracker: IngestTracker = ingestTrackerTest
           override implicit lazy protected val sys: ActorSystem = actorSystem
           override implicit lazy protected val mat: Materializer =
@@ -44,8 +62,12 @@ trait IngestsTrackerApiFixture
       }
     }
 
-  def withBrokenApp[R](testWith: TestWith[MemoryIngestTracker, R]): R = {
-
+  def withBrokenApp[R](
+    testWith: TestWith[
+      (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker),
+      R
+    ]
+  ): R = {
     val brokenTracker = new MemoryIngestTracker(
       underlying = new MemoryVersionedStore[IngestID, Ingest](
         new MemoryStore[Version[IngestID, Int], Ingest](
@@ -63,16 +85,29 @@ trait IngestsTrackerApiFixture
         Left(IngestStoreUnexpectedError(new Throwable("BOOM!")))
     }
 
+    val callbackSender = new MemoryMessageSender()
+    val ingestsSender = new MemoryMessageSender()
+
     withApp(brokenTracker) { _ =>
-      testWith(brokenTracker)
+      val out = (callbackSender, ingestsSender, brokenTracker)
+
+      testWith(out)
     }
   }
 
   def withConfiguredApp[R](initialIngests: Seq[Ingest] = Seq.empty)(
-    testWith: TestWith[MemoryIngestTracker, R]
+    testWith: TestWith[
+      (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker),
+      R
+    ]
   ): R = withMemoryIngestTracker(initialIngests) { ingestTracker =>
-    withApp(ingestTracker) { _ =>
-      testWith(ingestTracker)
+    val callbackSender = new MemoryMessageSender()
+    val ingestsSender = new MemoryMessageSender()
+
+    withApp(ingestTracker, callbackSender, ingestsSender) { _ =>
+      val out = (callbackSender, ingestsSender, ingestTracker)
+
+      testWith(out)
     }
   }
 }
