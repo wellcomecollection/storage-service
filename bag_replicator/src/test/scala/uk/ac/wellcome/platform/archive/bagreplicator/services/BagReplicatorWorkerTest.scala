@@ -348,7 +348,7 @@ class BagReplicatorWorkerTest
 
               implicit val badS3Transfer: S3Transfer =
                 new S3Transfer() {
-                  override def transfer(
+                  override def transferWithOverwrites(
                     src: ObjectLocation,
                     dst: ObjectLocation
                   ): Either[TransferFailure, TransferSuccess] =
@@ -361,7 +361,7 @@ class BagReplicatorWorkerTest
 
                       Right(TransferPerformed(src, dst))
                     } else {
-                      super.transfer(src, dst)
+                      super.transferWithOverwrites(src, dst)
                     }
                 }
 

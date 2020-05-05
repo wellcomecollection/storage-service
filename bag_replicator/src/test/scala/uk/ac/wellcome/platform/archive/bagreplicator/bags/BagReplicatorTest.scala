@@ -133,9 +133,9 @@ class BagReplicatorTest
       // original and the replica.
 
       implicit val badTransfer: S3Transfer = new S3Transfer() {
-        override def transfer(
+        override def transferWithOverwrites(
           src: ObjectLocation,
-          dst: ObjectLocation
+          dst: ObjectLocation,
         ): Either[TransferFailure, TransferSuccess] =
           if (dst.path.endsWith("/tagmanifest-sha256.txt")) {
             s3Client.putObject(
@@ -145,7 +145,7 @@ class BagReplicatorTest
             )
             Right(TransferPerformed(src, dst))
           } else {
-            super.transfer(src, dst)
+            super.transferWithOverwrites(src, dst)
           }
       }
 
