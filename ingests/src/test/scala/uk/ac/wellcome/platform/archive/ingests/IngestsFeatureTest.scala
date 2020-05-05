@@ -6,6 +6,7 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
@@ -54,24 +55,28 @@ class IngestsFeatureTest
     val updatedIngestsMessageSender = new MemoryMessageSender()
 
     it("reads messages from the queue") {
-      withLocalSqsQueue { queue =>
-        withIngestWorker(
-          queue = queue,
-          ingestTracker = ingestTracker,
-          callbackNotificationMessageSender = callbackNotificationMessageSender,
-          updatedIngestsMessageSender = updatedIngestsMessageSender
-        ) { _ =>
-          sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+      // A timeout is explicit here as we were seeing errors
+      // where the message got resent in CI.
+      withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
+        case QueuePair(queue, _) =>
+          withIngestWorker(
+            queue = queue,
+            ingestTracker = ingestTracker,
+            callbackNotificationMessageSender =
+              callbackNotificationMessageSender,
+            updatedIngestsMessageSender = updatedIngestsMessageSender
+          ) { _ =>
+            sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-          eventually {
-            callbackNotificationMessageSender
-              .getMessages[CallbackNotification] shouldBe Seq(
-              expectedCallbackNotification
-            )
+            eventually {
+              callbackNotificationMessageSender
+                .getMessages[CallbackNotification] shouldBe Seq(
+                expectedCallbackNotification
+              )
 
-            getMessages(queue) shouldBe empty
+              getMessages(queue) shouldBe empty
+            }
           }
-        }
       }
     }
 
