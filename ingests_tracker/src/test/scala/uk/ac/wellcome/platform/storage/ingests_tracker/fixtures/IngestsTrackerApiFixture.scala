@@ -101,7 +101,6 @@ trait IngestsTrackerApiFixture
       R
     ]
   ): R = withMemoryIngestTracker(initialIngests) { ingestTracker =>
-
     val callbackSender = new MemoryMessageSender()
     val ingestsSender = new MemoryMessageSender()
 

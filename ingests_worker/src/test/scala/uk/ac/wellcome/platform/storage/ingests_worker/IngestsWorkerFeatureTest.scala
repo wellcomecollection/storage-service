@@ -9,19 +9,23 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, Ingest, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CallbackNotification,
+  Ingest,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
 
 import uk.ac.wellcome.json.JsonUtil._
 
 class IngestsWorkerFeatureTest
-  extends AnyFunSpec
-  with Matchers
-  with Eventually
-  with IngestsWorkerFixtures
-  with IngestGenerators
-  with IntegrationPatience {
+    extends AnyFunSpec
+    with Matchers
+    with Eventually
+    with IngestsWorkerFixtures
+    with IngestGenerators
+    with IntegrationPatience {
 
   describe("marking an ingest as Completed") {
     val ingest = createIngestWith(
