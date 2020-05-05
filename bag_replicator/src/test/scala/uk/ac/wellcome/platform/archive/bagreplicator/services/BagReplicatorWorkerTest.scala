@@ -294,7 +294,8 @@ class BagReplicatorWorkerTest
             eventually {
               val messagesNotVisible = getQueueAttribute(
                 queue,
-                attributeName = QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE
+                attributeName =
+                  QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE
               )
 
               assert(
@@ -304,7 +305,8 @@ class BagReplicatorWorkerTest
 
               val messagesVisible = getQueueAttribute(
                 queue,
-                attributeName = QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
+                attributeName =
+                  QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
               )
 
               assert(
