@@ -7,10 +7,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import software.amazon.awssdk.services.sqs.model.{
-  GetQueueAttributesRequest,
-  QueueAttributeName
-}
+import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -295,24 +292,25 @@ class BagReplicatorWorkerTest
             Thread.sleep(2000)
 
             eventually {
-              val queueAttributes = sqsClient
-                .getQueueAttributes {
-                  builder: GetQueueAttributesRequest.Builder =>
-                    builder
-                      .queueUrl(queue.url)
-                      .attributeNames(
-                        QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE,
-                        QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
-                      )
-                }
-                .attributes()
+              val messagesNotVisible = getQueueAttribute(
+                queue,
+                attributeName = QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE
+              )
 
-              queueAttributes.get(
-                QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE
-              ) shouldBe "1"
-              queueAttributes.get(
-                QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
-              ) shouldBe "0"
+              assert(
+                messagesNotVisible == "1",
+                s"Expected ${queue.url} to have 1 visible message, actually found $messagesNotVisible"
+              )
+
+              val messagesVisible = getQueueAttribute(
+                queue,
+                attributeName = QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
+              )
+
+              assert(
+                messagesVisible == "0",
+                s"Expected ${queue.url} to have no visible messages, actually found $messagesVisible"
+              )
             }
           }
         }
