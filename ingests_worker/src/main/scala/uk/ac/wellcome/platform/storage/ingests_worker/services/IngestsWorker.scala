@@ -12,14 +12,26 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{MetricsMonitoringClient, MetricsMonitoringProcessor}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestUpdate}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
+  MetricsMonitoringClient,
+  MetricsMonitoringProcessor
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestUpdate
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
-
 
 class IngestsWorker(
   workerConfig: AlpakkaSQSWorkerConfig,
@@ -30,7 +42,7 @@ class IngestsWorker(
   mc: MetricsMonitoringClient,
   sc: SqsAsyncClient
 ) extends Runnable
-  with Logging {
+    with Logging {
 
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
@@ -48,8 +60,7 @@ class IngestsWorker(
     val requestUri = trackerHost.withPath(path)
 
     val updatedIngest = for {
-      ingestUpdateEntity <-
-        Marshal(ingestUpdate).to[RequestEntity]
+      ingestUpdateEntity <- Marshal(ingestUpdate).to[RequestEntity]
 
       request = HttpRequest(
         uri = requestUri,
@@ -67,7 +78,7 @@ class IngestsWorker(
           Unmarshal(response.entity).to[Ingest]
         case status =>
           val err = new Exception(f"$status from IngestsTracker")
-          error(f"NOT OK for PATCH to $requestUri with $ingestUpdate",err)
+          error(f"NOT OK for PATCH to $requestUri with $ingestUpdate", err)
           Future.failed(err)
       }
     } yield ingest
