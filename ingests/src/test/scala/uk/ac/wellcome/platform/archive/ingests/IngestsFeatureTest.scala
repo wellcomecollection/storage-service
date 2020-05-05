@@ -6,14 +6,11 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CallbackNotification,
-  Ingest,
-  IngestUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, Ingest, IngestUpdate}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.archive.ingests.fixtures._
 
@@ -54,7 +51,11 @@ class IngestsFeatureTest
     val updatedIngestsMessageSender = new MemoryMessageSender()
 
     it("reads messages from the queue") {
-      withLocalSqsQueue { queue =>
+      // A timeout is explicit here as we were seeing errors
+      // where the message got resent in CI.
+      withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
+        case QueuePair(queue,_) =>
+
         withIngestWorker(
           queue = queue,
           ingestTracker = ingestTracker,
