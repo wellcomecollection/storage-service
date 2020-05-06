@@ -2,30 +2,41 @@ package uk.ac.wellcome.platform.storage.ingests_worker
 
 import java.time.Instant
 
+import akka.http.scaladsl.model.StatusCodes
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CallbackNotification,
-  Ingest,
-  IngestUpdate
-}
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, Ingest, IngestUpdate}
+import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
 
-import uk.ac.wellcome.json.JsonUtil._
-
 class IngestsWorkerFeatureTest
-    extends AnyFunSpec
+  extends AnyFunSpec
     with Matchers
     with Eventually
+    with HttpFixtures
     with IngestsWorkerFixtures
+    with IngestsTrackerApiFixture
     with IngestGenerators
     with IntegrationPatience {
+
+  val healthcheckPath = s"http://localhost:8080/healthcheck"
+
+  //  describe("GET /healthcheck") {
+  //
+  //    it("responds OK") {
+  //      withIngestsTrackerApi() { _ =>
+  //        whenGetRequestReady(healthcheckPath) { result =>
+  //          result.status shouldBe StatusCodes.OK
+  //        }
+  //      }
+  //    }
+  //  }
 
   describe("marking an ingest as Completed") {
     val ingest = createIngestWith(
@@ -49,54 +60,55 @@ class IngestsWorkerFeatureTest
       payload = expectedIngest
     )
 
-    implicit val ingestTracker: MemoryIngestTracker =
-      createMemoryIngestTrackerWith(initialIngests = Seq(ingest))
+    withIngestsTrackerApi(Seq(ingest)) {
+      case (callbackSender, ingestsSender, ingestsTracker) =>
 
-    val callbackNotificationMessageSender = new MemoryMessageSender()
-    val updatedIngestsMessageSender = new MemoryMessageSender()
+          withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
+            case QueuePair(queue, _) =>
 
-    it("reads messages from the queue") {
-      // A timeout is explicit here as we were seeing errors
-      // where the message got resent in CI.
-      withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
-        case QueuePair(queue, _) =>
-          withIngestWorker(
-            queue = queue,
-            tracker = ingestTracker,
-            callbackNotificationMessageSender =
-              callbackNotificationMessageSender,
-            updatedIngestsMessageSender = updatedIngestsMessageSender
-          ) { _ =>
-            sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+              withIngestWorker(queue) { _ =>
 
-            eventually {
-              callbackNotificationMessageSender
-                .getMessages[CallbackNotification] shouldBe Seq(
-                expectedCallbackNotification
-              )
+                whenGetRequestReady(healthcheckPath) { healthcheck =>
 
-              getMessages(queue) shouldBe empty
-            }
+                  it("responds OK") {
+                    healthcheck.status shouldBe StatusCodes.OK
+                  }
+
+                  it("reads messages from the queue") {
+                    sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+
+                    eventually {
+                      callbackSender
+                        .getMessages[CallbackNotification] shouldBe Seq(
+                        expectedCallbackNotification
+                      )
+
+                      getMessages(queue) shouldBe empty
+                    }
+                  }
+
+                  it("updates the ingest tracker") {
+                    val storedIngest = ingestsTracker.get(ingest.id).right.value.identifiedT
+                    storedIngest.status shouldBe Succeeded
+                  }
+
+                  it("records the events in the ingest tracker") {
+                    assertIngestRecordedRecentEvents(
+                      ingestStatusUpdate.id,
+                      ingestStatusUpdate.events.map {
+                        _.description
+                      }
+                    )(ingestsTracker)
+                  }
+
+                  it("sends a message with the updated ingest") {
+                    ingestsSender.getMessages[Ingest] shouldBe Seq(
+                      expectedIngest
+                    )
+                  }
+                }
+              }
           }
-      }
-    }
-
-    it("updates the ingest tracker") {
-      val storedIngest = ingestTracker.get(ingest.id).right.value.identifiedT
-      storedIngest.status shouldBe Succeeded
-    }
-
-    it("records the events in the ingest tracker") {
-      assertIngestRecordedRecentEvents(
-        ingestStatusUpdate.id,
-        ingestStatusUpdate.events.map { _.description }
-      )
-    }
-
-    it("sends a message with the updated ingest") {
-      updatedIngestsMessageSender.getMessages[Ingest] shouldBe Seq(
-        expectedIngest
-      )
     }
   }
 }

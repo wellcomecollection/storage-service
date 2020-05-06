@@ -41,7 +41,7 @@ class IngestsTrackerApiFeatureTest
     val path = s"http://localhost:8080/healthcheck"
 
     it("responds OK") {
-      withConfiguredApp() { _ =>
+      withIngestsTrackerApi() { _ =>
         whenGetRequestReady(path) { result =>
           result.status shouldBe StatusCodes.OK
         }
@@ -68,7 +68,7 @@ class IngestsTrackerApiFeatureTest
     )
 
     describe("with a valid Ingest") {
-      withConfiguredApp() {
+      withIngestsTrackerApi() {
         case (callbackSender, ingestsSender, ingestTracker) =>
           whenPostRequestReady(path, ingestEntity) { response =>
             it("responds Created") {
@@ -94,7 +94,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     describe("with an existing Ingest") {
-      withConfiguredApp(Seq(ingest)) {
+      withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
           whenPostRequestReady(path, ingestEntity) { response =>
             it("responds Conflict") {
@@ -120,7 +120,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     describe("with bad JSON") {
-      withConfiguredApp(Seq(ingest)) {
+      withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
           whenPostRequestReady(path, badEntity) { response =>
             it("responds BadRequest") {
@@ -146,7 +146,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     describe("when broken") {
-      withBrokenApp {
+      withBrokenIngestsTrackerApi {
         case (callbackSender, ingestsSender, _) =>
           whenPostRequestReady(path, ingestEntity) { response =>
             it("responds InternalServerError") {
@@ -204,7 +204,7 @@ class IngestsTrackerApiFeatureTest
     )
 
     describe("with a valid IngestEventUpdate") {
-      withConfiguredApp(Seq(ingest)) {
+      withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
           whenPatchRequestReady(path, ingestEventEntity) { response =>
             it("responds OK with an updated Ingest") {
@@ -235,7 +235,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     describe("with a valid IngestStatusUpdate to Success") {
-      withConfiguredApp(Seq(ingest)) {
+      withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
           whenPatchRequestReady(path, ingestStatusUpdateSucceededEntity) {
             response =>
@@ -279,7 +279,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     describe("with a valid IngestStatusUpdate to Failure") {
-      withConfiguredApp(Seq(ingest)) {
+      withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
           whenPatchRequestReady(path, ingestStatusUpdateFailedEntity) {
             response =>
@@ -323,7 +323,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     describe("with an invalid Status transition in IngestStatusUpdate") {
-      withConfiguredApp(Seq(ingest)) {
+      withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
           whenPatchRequestReady(path, ingestStatusUpdateSucceededEntity) {
             response =>
@@ -371,7 +371,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     describe("with an IngestUpdate to non existent Ingest") {
-      withConfiguredApp() {
+      withIngestsTrackerApi() {
         case (callbackSender, ingestsSender, ingestTracker) =>
           whenPatchRequestReady(path, ingestEventEntity) { response =>
             it("responds with Conflict") {
@@ -398,7 +398,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     describe("when broken") {
-      withBrokenApp {
+      withBrokenIngestsTrackerApi {
         case (callbackSender, ingestsSender, _) =>
           whenPatchRequestReady(path, ingestEventEntity) { response =>
             it("responds InternalServerError") {
@@ -417,7 +417,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     describe("with bad JSON") {
-      withConfiguredApp(Seq(ingest)) {
+      withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, _) =>
           whenPatchRequestReady(path, badEntity) { response =>
             it("responds BadRequest") {
@@ -449,7 +449,7 @@ class IngestsTrackerApiFeatureTest
     val path = s"http://localhost:8080/ingest/${ingest.id}"
 
     it("responds NotFound when there is no ingest") {
-      withConfiguredApp(Seq(ingest)) { _ =>
+      withIngestsTrackerApi(Seq(ingest)) { _ =>
         whenGetRequestReady(badPath) { response =>
           response.status shouldBe StatusCodes.NotFound
         }
@@ -457,7 +457,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     it("responds OK with an Ingest when available") {
-      withConfiguredApp(Seq(ingest)) { _ =>
+      withIngestsTrackerApi(Seq(ingest)) { _ =>
         whenGetRequestReady(path) { response =>
           response.status shouldBe StatusCodes.OK
 
@@ -472,7 +472,7 @@ class IngestsTrackerApiFeatureTest
     }
 
     it("responds InternalServerError when broken") {
-      withBrokenApp { _ =>
+      withBrokenIngestsTrackerApi { _ =>
         whenGetRequestReady(path) { response =>
           response.status shouldBe StatusCodes.InternalServerError
         }
