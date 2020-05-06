@@ -9,7 +9,7 @@ import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
 class DisplayProviderTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with TableDrivenPropertyChecks
     with JsonAssertions {
@@ -18,19 +18,25 @@ class DisplayProviderTest
     ("display", "internal"),
     (StandardDisplayProvider, StandardStorageProvider),
     (InfrequentAccessDisplayProvider, InfrequentAccessStorageProvider),
-    (GlacierDisplayProvider, GlacierStorageProvider),
+    (GlacierDisplayProvider, GlacierStorageProvider)
   )
 
   it("turns a DisplayProvider into a StorageProvider") {
     forAll(providerPairs) {
-      case (displayProvider: DisplayProvider, storageProvider: StorageProvider) =>
+      case (
+          displayProvider: DisplayProvider,
+          storageProvider: StorageProvider
+          ) =>
         displayProvider.toStorageProvider shouldBe storageProvider
     }
   }
 
   it("turns a StorageProvider into a DisplayProvider") {
     forAll(providerPairs) {
-      case (displayProvider: DisplayProvider, storageProvider: StorageProvider) =>
+      case (
+          displayProvider: DisplayProvider,
+          storageProvider: StorageProvider
+          ) =>
         DisplayProvider(storageProvider) shouldBe displayProvider
     }
   }
@@ -38,9 +44,18 @@ class DisplayProviderTest
   describe("JSON encoding/decoding") {
     val jsonPairs = Table(
       ("provider", "json"),
-      (StandardDisplayProvider, """{"id": "aws-s3-standard", "type": "Provider"}"""),
-      (InfrequentAccessDisplayProvider, """{"id": "aws-s3-ia", "type": "Provider"}"""),
-      (GlacierDisplayProvider, """{"id": "aws-s3-glacier", "type": "Provider"}"""),
+      (
+        StandardDisplayProvider,
+        """{"id": "aws-s3-standard", "type": "Provider"}"""
+      ),
+      (
+        InfrequentAccessDisplayProvider,
+        """{"id": "aws-s3-ia", "type": "Provider"}"""
+      ),
+      (
+        GlacierDisplayProvider,
+        """{"id": "aws-s3-glacier", "type": "Provider"}"""
+      )
     )
 
     it("decodes correctly") {
@@ -65,7 +80,9 @@ class DisplayProviderTest
 
       val err = fromJson[DisplayProvider](badJson).failed.get
       err shouldBe a[JsonDecodingError]
-      err.getMessage should startWith("got \"not-a-real-provider\", valid values are: ")
+      err.getMessage should startWith(
+        "got \"not-a-real-provider\", valid values are: "
+      )
     }
   }
 }

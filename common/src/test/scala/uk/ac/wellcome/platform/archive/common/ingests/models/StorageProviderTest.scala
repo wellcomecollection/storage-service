@@ -4,12 +4,15 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 
-class StorageProviderTest extends AnyFunSpec with Matchers with TableDrivenPropertyChecks {
+class StorageProviderTest
+    extends AnyFunSpec
+    with Matchers
+    with TableDrivenPropertyChecks {
   val providerPairs = Table(
     ("id", "provider"),
     ("aws-s3-standard", StandardStorageProvider),
     ("aws-s3-ia", InfrequentAccessStorageProvider),
-    ("aws-s3-glacier", GlacierStorageProvider),
+    ("aws-s3-glacier", GlacierStorageProvider)
   )
 
   it("creates the correct storage provider from an ID") {
