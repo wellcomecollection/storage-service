@@ -56,7 +56,7 @@ class DisplayIngestTest
 
       displayIngest.id shouldBe id.underlying
       displayIngest.sourceLocation shouldBe DisplayLocation(
-        StandardDisplayProvider,
+        DisplayProvider(id = "aws-s3-standard"),
         bucket = "bukkit",
         path = "key.txt"
       )
@@ -116,7 +116,7 @@ class DisplayIngestTest
 
   describe("RequestDisplayIngest") {
     it("transforms itself into a ingest") {
-      val displayProvider = InfrequentAccessDisplayProvider
+      val displayProvider = DisplayProvider(id = "aws-s3-ia")
       val bucket = "ingest-bucket"
       val path = "bag.zip"
 
@@ -174,7 +174,7 @@ class DisplayIngestTest
 
   def createRequestDisplayIngestWith(
     sourceLocation: DisplayLocation = DisplayLocation(
-      provider = InfrequentAccessDisplayProvider,
+      provider = DisplayProvider(id = "aws-s3-ia"),
       bucket = randomAlphanumeric,
       path = randomAlphanumeric
     ),

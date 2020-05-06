@@ -78,7 +78,7 @@ class CreateIngestApiTest
             actualIngest.context shouldBe contextUrlTest
             actualIngest.id shouldBe id
             actualIngest.sourceLocation shouldBe DisplayLocation(
-              provider = StandardDisplayProvider,
+              provider = DisplayProvider(id = "aws-s3-standard"),
               bucket = bucketName,
               path = s3key
             )
@@ -464,7 +464,7 @@ class CreateIngestApiTest
           |    "type": "Location",
           |    "provider": {
           |      "type": "Provider",
-          |      "id": "${StandardDisplayProvider.id}"
+          |      "id": "aws-s3-standard"
           |    },
           |    "bucket": "$bucket",
           |    "path": "$key"
