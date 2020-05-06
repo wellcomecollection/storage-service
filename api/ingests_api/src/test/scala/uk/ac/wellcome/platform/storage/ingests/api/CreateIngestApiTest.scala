@@ -365,6 +365,18 @@ class CreateIngestApiTest
         )
       }
 
+      it("if the provider field has an invalid value") {
+        val badJson = root.sourceLocation.provider.obj.modify {
+          _.add("id", Json.fromString("not-a-storage-provider"))
+        }
+
+        assertCatchesMalformedRequest(
+          badJson(json).noSpaces,
+          expectedMessage =
+            """Invalid value at .sourceLocation.provider.id: got "not-a-storage-provider", valid values are: aws-s3-standard, aws-s3-ia."""
+        )
+      }
+
       it("if the bucket field is missing") {
         val badJson = root.sourceLocation.obj.modify {
           _.remove("bucket")
