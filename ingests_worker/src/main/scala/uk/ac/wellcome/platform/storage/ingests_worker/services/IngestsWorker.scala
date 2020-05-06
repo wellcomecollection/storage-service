@@ -56,7 +56,8 @@ class IngestsWorker(
     )(processMessage)
 
   def processMessage(ingestUpdate: IngestUpdate): Future[Result[Ingest]] = {
-    val path = Path(f"ingest/${ingestUpdate.id}")
+    val path = Path(f"/ingest/${ingestUpdate.id}")
+
     val requestUri = trackerHost.withPath(path)
 
     val updatedIngest = for {
