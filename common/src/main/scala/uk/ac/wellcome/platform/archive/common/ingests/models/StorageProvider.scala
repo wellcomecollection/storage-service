@@ -8,7 +8,7 @@ case object StorageProvider {
   private val idLookup = Map(
     StandardStorageProvider.id -> StandardStorageProvider,
     InfrequentAccessStorageProvider.id -> InfrequentAccessStorageProvider,
-    GlacierStorageProvider.id -> GlacierStorageProvider,
+    GlacierStorageProvider.id -> GlacierStorageProvider
   )
 
   def allowedValues: Seq[String] =
@@ -17,9 +17,10 @@ case object StorageProvider {
   def apply(id: String): StorageProvider =
     idLookup.get(id) match {
       case Some(provider) => provider
-      case None => throw new IllegalArgumentException(
-        s"Unrecognised storage provider ID: $id; valid values are: ${allowedValues.mkString(", ")}"
-      )
+      case None =>
+        throw new IllegalArgumentException(
+          s"Unrecognised storage provider ID: $id; valid values are: ${allowedValues.mkString(", ")}"
+        )
     }
 }
 

@@ -45,7 +45,8 @@ trait CreateIngest extends ResponseBase with Logging {
       )
     } else if (!StorageProvider.allowedValues.contains(providerId)) {
       createBadRequestResponse(
-        s"""Unrecognised value at .sourceLocation.provider.id: got "$providerId", valid values are: ${StorageProvider.allowedValues.mkString(", ")}."""
+        s"""Unrecognised value at .sourceLocation.provider.id: got "$providerId", valid values are: ${StorageProvider.allowedValues
+          .mkString(", ")}."""
       )
     } else {
       triggerIngestStarter(requestDisplayIngest)

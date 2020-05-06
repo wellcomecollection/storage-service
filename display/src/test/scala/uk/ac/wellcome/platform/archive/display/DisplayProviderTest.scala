@@ -50,7 +50,7 @@ class DisplayProviderTest
     thrown.getMessage shouldBe (
       "Unrecognised storage provider ID: not-a-storage-provider; " +
         "valid values are: aws-s3-standard, aws-s3-ia, aws-s3-glacier"
-      )
+    )
   }
 
   describe("JSON encoding/decoding") {
