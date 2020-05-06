@@ -11,11 +11,14 @@ case object StorageProvider {
     GlacierStorageProvider.id -> GlacierStorageProvider,
   )
 
+  def allowedValues: Seq[String] =
+    idLookup.keys.toSeq
+
   def apply(id: String): StorageProvider =
     idLookup.get(id) match {
       case Some(provider) => provider
       case None => throw new IllegalArgumentException(
-        s"Unrecognised storage provider ID: $id; valid values are: ${idLookup.keys.mkString(", ")}"
+        s"Unrecognised storage provider ID: $id; valid values are: ${allowedValues.mkString(", ")}"
       )
     }
 }

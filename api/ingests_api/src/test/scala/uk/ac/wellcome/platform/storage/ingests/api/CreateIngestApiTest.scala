@@ -373,7 +373,8 @@ class CreateIngestApiTest
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
           expectedMessage =
-            """Invalid value at .sourceLocation.provider.id: got "not-a-storage-provider", valid values are: aws-s3-standard, aws-s3-ia."""
+            "Unrecognised value at .sourceLocation.provider.id: got \"not-a-storage-provider\", " +
+              "valid values are: aws-s3-standard, aws-s3-ia, aws-s3-glacier."
         )
       }
 
