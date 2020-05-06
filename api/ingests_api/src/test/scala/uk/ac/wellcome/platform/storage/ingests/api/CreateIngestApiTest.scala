@@ -78,7 +78,7 @@ class CreateIngestApiTest
             actualIngest.context shouldBe contextUrlTest
             actualIngest.id shouldBe id
             actualIngest.sourceLocation shouldBe DisplayLocation(
-              provider = StandardDisplayProvider,
+              provider = DisplayProvider(id = "aws-s3-standard"),
               bucket = bucketName,
               path = s3key
             )
@@ -365,6 +365,19 @@ class CreateIngestApiTest
         )
       }
 
+      it("if the provider field has an invalid value") {
+        val badJson = root.sourceLocation.provider.obj.modify {
+          _.add("id", Json.fromString("not-a-storage-provider"))
+        }
+
+        assertCatchesMalformedRequest(
+          badJson(json).noSpaces,
+          expectedMessage =
+            "Unrecognised value at .sourceLocation.provider.id: got \"not-a-storage-provider\", " +
+              "valid values are: aws-s3-standard, aws-s3-ia, aws-s3-glacier."
+        )
+      }
+
       it("if the bucket field is missing") {
         val badJson = root.sourceLocation.obj.modify {
           _.remove("bucket")
@@ -452,7 +465,7 @@ class CreateIngestApiTest
           |    "type": "Location",
           |    "provider": {
           |      "type": "Provider",
-          |      "id": "${StandardDisplayProvider.id}"
+          |      "id": "aws-s3-standard"
           |    },
           |    "bucket": "$bucket",
           |    "path": "$key"

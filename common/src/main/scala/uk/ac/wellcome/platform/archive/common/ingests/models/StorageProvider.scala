@@ -5,14 +5,21 @@ sealed trait StorageProvider {
 }
 
 case object StorageProvider {
+  private val idLookup = Map(
+    StandardStorageProvider.id -> StandardStorageProvider,
+    InfrequentAccessStorageProvider.id -> InfrequentAccessStorageProvider,
+    GlacierStorageProvider.id -> GlacierStorageProvider
+  )
+
+  def allowedValues: Seq[String] =
+    idLookup.keys.toSeq
+
   def apply(id: String): StorageProvider =
-    id match {
-      case StandardStorageProvider.id         => StandardStorageProvider
-      case InfrequentAccessStorageProvider.id => InfrequentAccessStorageProvider
-      case GlacierStorageProvider.id          => GlacierStorageProvider
-      case _ =>
+    idLookup.get(id) match {
+      case Some(provider) => provider
+      case None =>
         throw new IllegalArgumentException(
-          s"Unrecognised storage provider ID: $id"
+          s"Unrecognised storage provider ID: $id; valid values are: ${allowedValues.mkString(", ")}"
         )
     }
 }

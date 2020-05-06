@@ -12,7 +12,10 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   InternalServerErrorResponse,
   UserErrorResponse
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  StorageProvider
+}
 import uk.ac.wellcome.platform.archive.display.ingests.{
   RequestDisplayIngest,
   ResponseDisplayIngest
@@ -28,6 +31,7 @@ trait CreateIngest extends ResponseBase with Logging {
   def createIngest(requestDisplayIngest: RequestDisplayIngest): Route = {
     val space = requestDisplayIngest.space.id
     val externalIdentifier = requestDisplayIngest.bag.info.externalIdentifier
+    val providerId = requestDisplayIngest.sourceLocation.provider.id
 
     if (space.contains("/")) {
       createBadRequestResponse(
@@ -38,6 +42,11 @@ trait CreateIngest extends ResponseBase with Logging {
     } else if (externalIdentifier == "") {
       createBadRequestResponse(
         "Invalid value at .bag.info.externalIdentifier: must not be empty."
+      )
+    } else if (!StorageProvider.allowedValues.contains(providerId)) {
+      createBadRequestResponse(
+        s"""Unrecognised value at .sourceLocation.provider.id: got "$providerId", valid values are: ${StorageProvider.allowedValues
+          .mkString(", ")}."""
       )
     } else {
       triggerIngestStarter(requestDisplayIngest)

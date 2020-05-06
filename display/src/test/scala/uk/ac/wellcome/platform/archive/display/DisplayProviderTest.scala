@@ -4,7 +4,6 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.json.exceptions.JsonDecodingError
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 
@@ -16,9 +15,9 @@ class DisplayProviderTest
 
   val providerPairs = Table(
     ("display", "internal"),
-    (StandardDisplayProvider, StandardStorageProvider),
-    (InfrequentAccessDisplayProvider, InfrequentAccessStorageProvider),
-    (GlacierDisplayProvider, GlacierStorageProvider)
+    (DisplayProvider("aws-s3-standard"), StandardStorageProvider),
+    (DisplayProvider("aws-s3-ia"), InfrequentAccessStorageProvider),
+    (DisplayProvider("aws-s3-glacier"), GlacierStorageProvider)
   )
 
   it("turns a DisplayProvider into a StorageProvider") {
@@ -41,19 +40,32 @@ class DisplayProviderTest
     }
   }
 
+  it("can't turn an invalid provider ID into a storage provider") {
+    val badProvider = DisplayProvider(id = "not-a-storage-provider")
+
+    val thrown = intercept[IllegalArgumentException] {
+      badProvider.toStorageProvider
+    }
+
+    thrown.getMessage shouldBe (
+      "Unrecognised storage provider ID: not-a-storage-provider; " +
+        "valid values are: aws-s3-standard, aws-s3-ia, aws-s3-glacier"
+    )
+  }
+
   describe("JSON encoding/decoding") {
     val jsonPairs = Table(
       ("provider", "json"),
       (
-        StandardDisplayProvider,
+        DisplayProvider("aws-s3-standard"),
         """{"id": "aws-s3-standard", "type": "Provider"}"""
       ),
       (
-        InfrequentAccessDisplayProvider,
+        DisplayProvider("aws-s3-ia"),
         """{"id": "aws-s3-ia", "type": "Provider"}"""
       ),
       (
-        GlacierDisplayProvider,
+        DisplayProvider("aws-s3-glacier"),
         """{"id": "aws-s3-glacier", "type": "Provider"}"""
       )
     )
@@ -73,16 +85,6 @@ class DisplayProviderTest
             jsonString
           )
       }
-    }
-
-    it("fails to parse an unrecognised ID") {
-      val badJson = """{"id": "not-a-real-provider", "type": "Provider"}"""
-
-      val err = fromJson[DisplayProvider](badJson).failed.get
-      err shouldBe a[JsonDecodingError]
-      err.getMessage should startWith(
-        "got \"not-a-real-provider\", valid values are: "
-      )
     }
   }
 }
