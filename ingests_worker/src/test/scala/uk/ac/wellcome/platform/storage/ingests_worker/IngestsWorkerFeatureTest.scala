@@ -62,37 +62,36 @@ class IngestsWorkerFeatureTest
                 // We know the TrackerApi is running
                 healthcheck.status shouldBe StatusCodes.OK
 
-                  sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+                sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-                  eventually {
-                    callbackSender
-                      .getMessages[CallbackNotification] shouldBe Seq(
-                      expectedCallbackNotification
-                    )
+                eventually {
+                  callbackSender
+                    .getMessages[CallbackNotification] shouldBe Seq(
+                    expectedCallbackNotification
+                  )
 
-                    // reads messages from the queue
-                    getMessages(queue) shouldBe empty
+                  // reads messages from the queue
+                  getMessages(queue) shouldBe empty
 
-                    //updates the ingest tracker
-                    val storedIngest = ingestsTracker.get(ingest.id).right.value.identifiedT
-                    storedIngest.status shouldBe Succeeded
+                  //updates the ingest tracker
+                  val storedIngest = ingestsTracker.get(ingest.id).right.value.identifiedT
+                  storedIngest.status shouldBe Succeeded
 
-                    // records the events in the ingest tracker
-                    assertIngestRecordedRecentEvents(
-                      ingestStatusUpdate.id,
-                      ingestStatusUpdate.events.map {
-                        _.description
-                      }
-                    )(ingestsTracker)
+                  // records the events in the ingest tracker
+                  assertIngestRecordedRecentEvents(
+                    ingestStatusUpdate.id,
+                    ingestStatusUpdate.events.map {
+                      _.description
+                    }
+                  )(ingestsTracker)
 
-                    // sends a message with the updated ingest
-                    ingestsSender.getMessages[Ingest] shouldBe Seq(
-                      expectedIngest
-                    )
-                  }
+                  // sends a message with the updated ingest
+                  ingestsSender.getMessages[Ingest] shouldBe Seq(
+                    expectedIngest
+                  )
                 }
               }
-            
+            }
         }
     }
   }
