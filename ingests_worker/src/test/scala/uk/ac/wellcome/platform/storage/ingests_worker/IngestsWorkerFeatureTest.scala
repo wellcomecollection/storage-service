@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestUpdate
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
 
 class IngestsWorkerFeatureTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with Eventually
     with HttpFixtures
@@ -25,69 +25,64 @@ class IngestsWorkerFeatureTest
   it("When the client succeeds it should consume the message") {
     withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
-
         val client = successfulClient(ingest)
 
-      withIngestWorker(queue, client) { _ =>
-        sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+        withIngestWorker(queue, client) { _ =>
+          sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-        Thread.sleep(waitTimeInMilliseconds)
+          Thread.sleep(waitTimeInMilliseconds)
 
-        getMessages(queue) shouldBe empty
-        getMessages(dlq) shouldBe empty
-      }
+          getMessages(queue) shouldBe empty
+          getMessages(dlq) shouldBe empty
+        }
     }
   }
 
   it("When the client conflicts it should consume the message") {
     withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
+        val client = conflictClient(ingestStatusUpdate)
 
-      val client = conflictClient(ingestStatusUpdate)
+        withIngestWorker(queue, client) { _ =>
+          sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-      withIngestWorker(queue, client) { _ =>
-        sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+          Thread.sleep(waitTimeInMilliseconds)
 
-        Thread.sleep(waitTimeInMilliseconds)
-
-        getMessages(queue) shouldBe empty
-        getMessages(dlq) shouldBe empty
-      }
+          getMessages(queue) shouldBe empty
+          getMessages(dlq) shouldBe empty
+        }
     }
   }
 
   it("When the client errors it should NOT consume the message") {
     withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
+        val client = unknownErrorClient(ingestStatusUpdate)
 
-      val client = unknownErrorClient(ingestStatusUpdate)
+        withIngestWorker(queue, client) { _ =>
+          sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-      withIngestWorker(queue, client) { _ =>
-        sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
-
-        eventually {
-          getMessages(queue) shouldBe empty
-          getMessages(dlq).length shouldBe 1
+          eventually {
+            getMessages(queue) shouldBe empty
+            getMessages(dlq).length shouldBe 1
+          }
         }
-      }
     }
   }
 
   it("When the client fails it should NOT consume the message") {
     withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
+        val client = failedFutureClient
 
-      val client = failedFutureClient
+        withIngestWorker(queue, client) { _ =>
+          sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-      withIngestWorker(queue, client) { _ =>
-        sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
-
-        eventually {
-          getMessages(queue) shouldBe empty
-          getMessages(dlq).length shouldBe 1
+          eventually {
+            getMessages(queue) shouldBe empty
+            getMessages(dlq).length shouldBe 1
+          }
         }
-      }
     }
   }
 }
-

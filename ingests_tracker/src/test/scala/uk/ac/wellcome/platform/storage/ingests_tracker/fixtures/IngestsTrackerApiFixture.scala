@@ -6,29 +6,38 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{IngestStoreUnexpectedError, IngestTracker}
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+  IngestStoreUnexpectedError,
+  IngestTracker
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.IngestsTrackerApi
-import uk.ac.wellcome.platform.storage.ingests_tracker.services.{CallbackNotificationService, MessagingService}
+import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
+  CallbackNotificationService,
+  MessagingService
+}
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 trait IngestsTrackerApiFixture
-  extends IngestTrackerFixtures
+    extends IngestTrackerFixtures
     with IngestGenerators
     with Akka {
 
   private def withApp[R](
-                          ingestTrackerTest: MemoryIngestTracker,
-                          callbackNotificationMessageSender: MemoryMessageSender =
-                          new MemoryMessageSender(),
-                          updatedIngestsMessageSender: MemoryMessageSender = new MemoryMessageSender()
-                        )(testWith: TestWith[IngestsTrackerApi[String, String], R]): R = {
+    ingestTrackerTest: MemoryIngestTracker,
+    callbackNotificationMessageSender: MemoryMessageSender =
+      new MemoryMessageSender(),
+    updatedIngestsMessageSender: MemoryMessageSender = new MemoryMessageSender()
+  )(testWith: TestWith[IngestsTrackerApi[String, String], R]): R = {
     withActorSystem { implicit actorSystem =>
-
       withMaterializer(actorSystem) { implicit materializer =>
         val callbackNotificationService =
           new CallbackNotificationService(callbackNotificationMessageSender)
@@ -56,11 +65,11 @@ trait IngestsTrackerApiFixture
   }
 
   def withBrokenIngestsTrackerApi[R](
-                                      testWith: TestWith[
-                                        (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker),
-                                        R
-                                      ]
-                                    ): R = {
+    testWith: TestWith[
+      (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker),
+      R
+    ]
+  ): R = {
     val brokenTracker = new MemoryIngestTracker(
       underlying = new MemoryVersionedStore[IngestID, Ingest](
         new MemoryStore[Version[IngestID, Int], Ingest](

@@ -12,13 +12,17 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, Ingest, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CallbackNotification,
+  Ingest,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.AkkaIngestTrackerClient
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
 
 class IngestsWorkerIntegrationTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with Eventually
     with HttpFixtures
@@ -58,14 +62,10 @@ class IngestsWorkerIntegrationTest
 
     withIngestsTrackerApi(Seq(ingest)) {
       case (callbackSender, ingestsSender, ingestsTracker) =>
-
         withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
           case QueuePair(queue, _) =>
-
             withIngestWorker(queue, ingestTrackerClient) { _ =>
-
               whenGetRequestReady(healthcheckPath) { healthcheck =>
-
                 // We know the TrackerApi is running
                 healthcheck.status shouldBe StatusCodes.OK
 
@@ -81,7 +81,8 @@ class IngestsWorkerIntegrationTest
                   getMessages(queue) shouldBe empty
 
                   //updates the ingest tracker
-                  val storedIngest = ingestsTracker.get(ingest.id).right.value.identifiedT
+                  val storedIngest =
+                    ingestsTracker.get(ingest.id).right.value.identifiedT
                   storedIngest.status shouldBe Succeeded
 
                   // records the events in the ingest tracker

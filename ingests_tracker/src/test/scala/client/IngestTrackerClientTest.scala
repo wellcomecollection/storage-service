@@ -10,12 +10,16 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Failed
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{AkkaIngestTrackerClient, IngestTrackerConflictError, IngestTrackerUnknownError}
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+  AkkaIngestTrackerClient,
+  IngestTrackerConflictError,
+  IngestTrackerUnknownError
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 
 class IngestTrackerClientTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with Eventually
     with HttpFixtures
@@ -52,12 +56,15 @@ class IngestTrackerClientTest
   it("updates a valid ingest") {
     withIngestsTrackerApi(Seq(ingest)) {
       case (_, _, ingestsTracker) =>
-
         val update = ingestTrackerClient.updateIngest(ingestStatusUpdate)
 
         whenReady(update) { result =>
           result shouldBe Right(succeededIngest)
-          ingestsTracker.get(ingest.id).right.get.identifiedT shouldBe succeededIngest
+          ingestsTracker
+            .get(ingest.id)
+            .right
+            .get
+            .identifiedT shouldBe succeededIngest
         }
 
     }
@@ -66,12 +73,15 @@ class IngestTrackerClientTest
   it("conflicts with a valid ingest") {
     withIngestsTrackerApi(Seq(failedIngest)) {
       case (_, _, ingestsTracker) =>
-
         val update = ingestTrackerClient.updateIngest(ingestStatusUpdate)
 
         whenReady(update) { result =>
           result shouldBe Left(IngestTrackerConflictError(ingestStatusUpdate))
-          ingestsTracker.get(ingest.id).right.get.identifiedT shouldBe failedIngest
+          ingestsTracker
+            .get(ingest.id)
+            .right
+            .get
+            .identifiedT shouldBe failedIngest
         }
     }
   }
@@ -82,7 +92,7 @@ class IngestTrackerClientTest
         val update = ingestTrackerClient.updateIngest(ingestStatusUpdate)
 
         whenReady(update) { result =>
-          result shouldBe a[Left[_,_]]
+          result shouldBe a[Left[_, _]]
           result.left.get shouldBe a[IngestTrackerUnknownError]
         }
     }
