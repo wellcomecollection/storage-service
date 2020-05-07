@@ -32,6 +32,7 @@ class IngestsWorkerIntegrationTest
   val host = "http://localhost:8080"
   val healthcheckPath = s"$host/healthcheck"
 
+  //TODO: when we have AkkaIngestTrackerClient tests we can substitute this for a fake
   val ingestTrackerClient = new AkkaIngestTrackerClient(Uri(host))
 
   it("marks an ingest as Completed") {
