@@ -9,7 +9,7 @@ class IndexedIngestTest extends AnyFunSpec with Matchers with IngestGenerators {
     val ingest = createIngestWith(
       events = Seq(
         createIngestEventWith("Unpacking started"),
-        createIngestEventWith("Unpacking succeeded"),
+        createIngestEventWith("Unpacking succeeded")
       )
     )
 
@@ -20,7 +20,7 @@ class IndexedIngestTest extends AnyFunSpec with Matchers with IngestGenerators {
     val ingest = createIngestWith(
       events = Seq(
         createIngestEventWith("Unpacking started"),
-        createIngestEventWith("Unpacking failed"),
+        createIngestEventWith("Unpacking failed")
       )
     )
 
@@ -32,10 +32,12 @@ class IndexedIngestTest extends AnyFunSpec with Matchers with IngestGenerators {
       events = Seq(
         createIngestEventWith("Unpacking started"),
         createIngestEventWith("Unpacking failed"),
-        createIngestEventWith("Replicating failed"),
+        createIngestEventWith("Replicating failed")
       )
     )
 
-    IndexedIngest(ingest).failureDescriptions shouldBe Some("Unpacking failed, Replicating failed")
+    IndexedIngest(ingest).failureDescriptions shouldBe Some(
+      "Unpacking failed, Replicating failed"
+    )
   }
 }

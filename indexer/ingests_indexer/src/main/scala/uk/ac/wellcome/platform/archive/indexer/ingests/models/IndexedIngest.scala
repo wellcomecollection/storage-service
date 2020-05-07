@@ -3,7 +3,10 @@ import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.display.{DisplayLocation, DisplayStorageSpace}
+import uk.ac.wellcome.platform.archive.display.{
+  DisplayLocation,
+  DisplayStorageSpace
+}
 import uk.ac.wellcome.platform.archive.display.ingests._
 
 // This should mirror the DisplayIngest class as much as possible, but
@@ -21,7 +24,6 @@ case class IndexedIngest(
   createdDate: String,
   lastModifiedDate: Option[String],
   @JsonKey("type") ontologyType: String = "Ingest",
-
   // We expose a summary of the failure descriptions so we can aggregate on them
   // in Elasticsearch, and see which apps are the source of errors.
   failureDescriptions: Option[String] = None
