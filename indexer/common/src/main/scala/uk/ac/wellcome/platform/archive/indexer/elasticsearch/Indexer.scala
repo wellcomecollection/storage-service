@@ -1,12 +1,11 @@
 package uk.ac.wellcome.platform.archive.indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.{ElasticClient, Index, Response}
 import com.sksamuel.elastic4s.requests.bulk.{BulkResponse, BulkResponseItem}
 import com.sksamuel.elastic4s.requests.common.VersionType.ExternalGte
+import com.sksamuel.elastic4s.{ElasticClient, Index, Indexable, Response}
 import grizzled.slf4j.Logging
-import io.circe.{Encoder, Json, JsonObject}
-import io.circe.parser.parse
+import io.circe.Encoder
 import uk.ac.wellcome.json.JsonUtil._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -17,6 +16,9 @@ trait Indexer[Document, DisplayDocument] extends Logging {
 
   implicit val ec: ExecutionContext
   implicit val encoder: Encoder[DisplayDocument]
+
+  implicit val indexable: Indexable[DisplayDocument] =
+    (displayDocument: DisplayDocument) => toJson(displayDocument).get
 
   protected def id(doc: Document): String
   protected def toDisplay(doc: Document): DisplayDocument
@@ -32,7 +34,7 @@ trait Indexer[Document, DisplayDocument] extends Logging {
         .id { id(doc) }
         .version(version(doc))
         .versionType(ExternalGte)
-        .doc { asJson(toDisplay(doc)) }
+        .doc { toDisplay(doc) }
     }
 
     client
@@ -62,32 +64,6 @@ trait Indexer[Document, DisplayDocument] extends Logging {
           }
         }
       }
-  }
-
-  private def asJson(displayDocument: DisplayDocument): String = {
-    val jsonString = toJson(displayDocument).get
-
-    removeContextUrl(jsonString)
-  }
-
-  // Our Display models include a context URL that we don't need to index, so
-  // take that out before actually indexing the document.
-  //
-  // If we can't find a context URL, just return the original string.
-  private def removeContextUrl(jsonString: String): String = {
-    parse(jsonString) match {
-      case Right(value) =>
-        value.asObject match {
-          case Some(jsonObject: JsonObject) =>
-            Json
-              .fromJsonObject(jsonObject.remove("@context"))
-              .noSpaces
-
-          case None => jsonString
-        }
-
-      case Left(_) => jsonString
-    }
   }
 
   final def index(document: Document): Future[Either[Document, Document]] =
