@@ -6,7 +6,8 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
-import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorker
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.IngestTrackerClient
+import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorkerService
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -20,15 +21,16 @@ trait IngestsWorkerFixtures
                            queue: Queue = Queue(
                              url = "queue://test",
                              arn = "arn::queue"
-                           )
-                         )(testWith: TestWith[IngestsWorker, R]): R =
+                           ),
+                           ingestTrackerClient: IngestTrackerClient
+                         )(testWith: TestWith[IngestsWorkerService, R]): R =
     withFakeMonitoringClient() { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
 
-        val service = new IngestsWorker(
+        val service = new IngestsWorkerService(
           workerConfig = createAlpakkaSQSWorkerConfig(queue),
           metricsNamespace = "ingests_worker",
-          trackerHost = "http://localhost:8080"
+          ingestTrackerClient = ingestTrackerClient
         )
 
         service.run()

@@ -2,7 +2,8 @@ package uk.ac.wellcome.platform.storage.ingests_worker
 
 import java.time.Instant
 
-import akka.http.scaladsl.model.StatusCodes
+import akka.actor.ActorSystem
+import akka.http.scaladsl.model.{StatusCodes, Uri}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -12,10 +13,11 @@ import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
 import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, Ingest, IngestUpdate}
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.AkkaIngestTrackerClient
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
 
-class IngestsWorkerFeatureTest
+class IngestsWorkerIntegrationTest
   extends AnyFunSpec
     with Matchers
     with Eventually
@@ -25,7 +27,12 @@ class IngestsWorkerFeatureTest
     with IngestGenerators
     with IntegrationPatience {
 
-  val healthcheckPath = s"http://localhost:8080/healthcheck"
+  implicit val as = ActorSystem()
+
+  val host = "http://localhost:8080"
+  val healthcheckPath = s"$host/healthcheck"
+
+  val ingestTrackerClient = new AkkaIngestTrackerClient(Uri(host))
 
   it("marks an ingest as Completed") {
     val ingest = createIngestWith(
@@ -55,7 +62,7 @@ class IngestsWorkerFeatureTest
         withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
           case QueuePair(queue, _) =>
 
-            withIngestWorker(queue) { _ =>
+            withIngestWorker(queue, ingestTrackerClient) { _ =>
 
               whenGetRequestReady(healthcheckPath) { healthcheck =>
 
