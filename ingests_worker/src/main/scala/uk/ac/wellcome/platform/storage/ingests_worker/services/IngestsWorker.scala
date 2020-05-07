@@ -56,6 +56,7 @@ class IngestsWorker(
     )(processMessage)
 
   def processMessage(ingestUpdate: IngestUpdate): Future[Result[Ingest]] = {
+    println(s"@@AWLC Processing $ingestUpdate")
     val path = Path(f"/ingest/${ingestUpdate.id}")
 
     val requestUri = trackerHost.withPath(path)
@@ -96,5 +97,8 @@ class IngestsWorker(
       }
   }
 
-  override def run(): Future[Any] = worker.start
+  override def run(): Future[Any] = {
+    println("@@AWLC starting IngestsWorker")
+    worker.start
+  }
 }

@@ -22,45 +22,41 @@ trait IngestsTrackerApiFixture
     with Akka {
 
   private def withApp[R](
-                          ingestTrackerTest: MemoryIngestTracker,
-                          callbackNotificationMessageSender: MemoryMessageSender =
-                          new MemoryMessageSender(),
-                          updatedIngestsMessageSender: MemoryMessageSender = new MemoryMessageSender()
-                        )(testWith: TestWith[IngestsTrackerApi[String, String], R]): R = {
-    withActorSystem { implicit actorSystem =>
+    ingestTrackerTest: MemoryIngestTracker,
+    callbackNotificationMessageSender: MemoryMessageSender =
+    new MemoryMessageSender(),
+    updatedIngestsMessageSender: MemoryMessageSender = new MemoryMessageSender()
+  )(testWith: TestWith[IngestsTrackerApi[String, String], R])(
+    implicit actorSystem: ActorSystem
+  ): R =
+    withMaterializer(actorSystem) { implicit materializer =>
+      val callbackNotificationService =
+        new CallbackNotificationService(callbackNotificationMessageSender)
 
-      withMaterializer(actorSystem) { implicit materializer =>
-        val callbackNotificationService =
-          new CallbackNotificationService(callbackNotificationMessageSender)
+      val app = new IngestsTrackerApi[String, String] {
+        override val messagingService: MessagingService[String, String] =
+          new MessagingService(
+            callbackNotificationService,
+            updatedIngestsMessageSender
+          )
 
-        val app = new IngestsTrackerApi[String, String] {
-
-          override val messagingService: MessagingService[String, String] =
-            new MessagingService(
-              callbackNotificationService,
-              updatedIngestsMessageSender
-            )
-
-          override val ingestTracker: IngestTracker = ingestTrackerTest
-          override implicit lazy protected val sys: ActorSystem = actorSystem
-          override implicit lazy protected val mat: Materializer =
-            materializer
-        }
-
-        app.run()
-
-        testWith(app)
+        override val ingestTracker: IngestTracker = ingestTrackerTest
+        override implicit lazy protected val sys: ActorSystem = actorSystem
+        override implicit lazy protected val mat: Materializer =
+          materializer
       }
+
+      app.run()
+
+      testWith(app)
     }
 
-  }
-
   def withBrokenIngestsTrackerApi[R](
-                                      testWith: TestWith[
-                                        (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker),
-                                        R
-                                      ]
-                                    ): R = {
+    testWith: TestWith[
+      (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker), R
+    ])(
+    implicit actorSystem: ActorSystem
+  ): R = {
     val brokenTracker = new MemoryIngestTracker(
       underlying = new MemoryVersionedStore[IngestID, Ingest](
         new MemoryStore[Version[IngestID, Int], Ingest](
@@ -93,6 +89,8 @@ trait IngestsTrackerApiFixture
       (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker),
       R
     ]
+  )(
+    implicit actorSystem: ActorSystem
   ): R = withMemoryIngestTracker(initialIngests) { ingestTracker =>
     val callbackSender = new MemoryMessageSender()
     val ingestsSender = new MemoryMessageSender()

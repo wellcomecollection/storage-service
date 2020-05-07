@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.storage.ingests_worker.fixtures
 
+import akka.actor.ActorSystem
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
@@ -21,19 +22,17 @@ trait IngestsWorkerFixtures
                              url = "queue://test",
                              arn = "arn::queue"
                            )
-                         )(testWith: TestWith[IngestsWorker, R]): R =
+                         )(testWith: TestWith[IngestsWorker, R])(implicit actorSystem: ActorSystem): R =
     withFakeMonitoringClient() { implicit monitoringClient =>
-      withActorSystem { implicit actorSystem =>
+      val service = new IngestsWorker(
+        workerConfig = createAlpakkaSQSWorkerConfig(queue),
+        metricsNamespace = "ingests_worker",
+        trackerHost = "http://localhost:8080"
+      )
 
-        val service = new IngestsWorker(
-          workerConfig = createAlpakkaSQSWorkerConfig(queue),
-          metricsNamespace = "ingests_worker",
-          trackerHost = "http://localhost:8080"
-        )
+      println("@@AWLC starting ingests worker")
+      service.run()
 
-        service.run()
-
-        testWith(service)
-      }
+      testWith(service)
     }
 }

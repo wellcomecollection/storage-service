@@ -40,75 +40,76 @@ class IngestsWorkerFeatureTest
 
   describe("marking an ingest as Completed") {
     val ingest = createIngestWith(
-      createdDate = Instant.now()
-    )
+    createdDate = Instant.now()
+  )
 
     val ingestStatusUpdate =
-      createIngestStatusUpdateWith(
-        id = ingest.id,
-        status = Succeeded
-      )
+    createIngestStatusUpdateWith(
+      id = ingest.id,
+      status = Succeeded
+    )
 
     val expectedIngest = ingest.copy(
-      status = Succeeded,
-      events = ingestStatusUpdate.events
-    )
+    status = Succeeded,
+    events = ingestStatusUpdate.events
+  )
 
     val expectedCallbackNotification = CallbackNotification(
-      ingestId = ingest.id,
-      callbackUri = ingest.callback.get.uri,
-      payload = expectedIngest
-    )
+    ingestId = ingest.id,
+    callbackUri = ingest.callback.get.uri,
+    payload = expectedIngest
+  )
 
-    withIngestsTrackerApi(Seq(ingest)) {
-      case (callbackSender, ingestsSender, ingestsTracker) =>
-
+    it("works") {
+    withActorSystem { implicit actorSystem =>
+      withIngestsTrackerApi(Seq(ingest)) {
+        case (callbackSender, ingestsSender, ingestsTracker) =>
           withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
             case QueuePair(queue, _) =>
-
               withIngestWorker(queue) { _ =>
-
-                whenGetRequestReady(healthcheckPath) { healthcheck =>
-
-                  it("responds OK") {
+//                it("responds OK") {
+                  whenGetRequestReady(healthcheckPath) { healthcheck =>
                     healthcheck.status shouldBe StatusCodes.OK
                   }
+//                }
 
-                  it("reads messages from the queue") {
-                    sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+//                it("reads messages from the queue") {
+                sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-                    eventually {
-                      callbackSender
-                        .getMessages[CallbackNotification] shouldBe Seq(
-                        expectedCallbackNotification
-                      )
+                eventually {
+                  callbackSender
+                    .getMessages[CallbackNotification] shouldBe Seq(
+                    expectedCallbackNotification
+                  )
 
-                      getMessages(queue) shouldBe empty
-                    }
-                  }
-
-                  it("updates the ingest tracker") {
-                    val storedIngest = ingestsTracker.get(ingest.id).right.value.identifiedT
-                    storedIngest.status shouldBe Succeeded
-                  }
-
-                  it("records the events in the ingest tracker") {
-                    assertIngestRecordedRecentEvents(
-                      ingestStatusUpdate.id,
-                      ingestStatusUpdate.events.map {
-                        _.description
-                      }
-                    )(ingestsTracker)
-                  }
-
-                  it("sends a message with the updated ingest") {
-                    ingestsSender.getMessages[Ingest] shouldBe Seq(
-                      expectedIngest
-                    )
-                  }
+                  getMessages(queue) shouldBe empty
                 }
+//                }
+
+//                it("updates the ingest tracker") {
+                val storedIngest =
+                  ingestsTracker.get(ingest.id).right.value.identifiedT
+                storedIngest.status shouldBe Succeeded
+//                }
+
+//                it("records the events in the ingest tracker") {
+                assertIngestRecordedRecentEvents(
+                  ingestStatusUpdate.id,
+                  ingestStatusUpdate.events.map {
+                    _.description
+                  }
+                )(ingestsTracker)
+//                }
+
+//                it("sends a message with the updated ingest") {
+                ingestsSender.getMessages[Ingest] shouldBe Seq(
+                  expectedIngest
+                )
+//                }
               }
           }
+      }
     }
+  }
   }
 }
