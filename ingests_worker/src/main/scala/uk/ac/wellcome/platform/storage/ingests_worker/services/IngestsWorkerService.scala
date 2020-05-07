@@ -45,10 +45,10 @@ class IngestsWorkerService(
         case Left(IngestTrackerConflictError(_)) =>
           val err = new Exception(f"Error trying to apply update $ingestUpdate, got Conflict")
           warn(err)
-          NonDeterministicFailure[Ingest](err)
+          DeterministicFailure[Ingest](err)
         case Left(IngestTrackerUnknownError(_, err)) =>
           error(err)
-          DeterministicFailure[Ingest](err)
+          NonDeterministicFailure[Ingest](err)
       } recover {
         case err =>
           warn(s"Error trying to apply update $ingestUpdate: $err")
