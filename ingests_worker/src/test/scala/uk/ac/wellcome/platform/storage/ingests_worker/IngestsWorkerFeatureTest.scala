@@ -27,18 +27,7 @@ class IngestsWorkerFeatureTest
 
   val healthcheckPath = s"http://localhost:8080/healthcheck"
 
-  //  describe("GET /healthcheck") {
-  //
-  //    it("responds OK") {
-  //      withIngestsTrackerApi() { _ =>
-  //        whenGetRequestReady(healthcheckPath) { result =>
-  //          result.status shouldBe StatusCodes.OK
-  //        }
-  //      }
-  //    }
-  //  }
-
-  describe("marking an ingest as Completed") {
+  it("marks an ingest as Completed") {
     val ingest = createIngestWith(
       createdDate = Instant.now()
     )
@@ -63,52 +52,48 @@ class IngestsWorkerFeatureTest
     withIngestsTrackerApi(Seq(ingest)) {
       case (callbackSender, ingestsSender, ingestsTracker) =>
 
-          withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
-            case QueuePair(queue, _) =>
+        withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
+          case QueuePair(queue, _) =>
 
-              withIngestWorker(queue) { _ =>
+            withIngestWorker(queue) { _ =>
 
-                whenGetRequestReady(healthcheckPath) { healthcheck =>
+              whenGetRequestReady(healthcheckPath) { healthcheck =>
 
-                  it("responds OK") {
-                    healthcheck.status shouldBe StatusCodes.OK
-                  }
+                // We know the TrackerApi is running
+                healthcheck.status shouldBe StatusCodes.OK
 
-                  it("reads messages from the queue") {
-                    sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+                  sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-                    eventually {
-                      callbackSender
-                        .getMessages[CallbackNotification] shouldBe Seq(
-                        expectedCallbackNotification
-                      )
+                  eventually {
+                    callbackSender
+                      .getMessages[CallbackNotification] shouldBe Seq(
+                      expectedCallbackNotification
+                    )
 
-                      getMessages(queue) shouldBe empty
-                    }
-                  }
+                    // reads messages from the queue
+                    getMessages(queue) shouldBe empty
 
-                  it("updates the ingest tracker") {
+                    //updates the ingest tracker
                     val storedIngest = ingestsTracker.get(ingest.id).right.value.identifiedT
                     storedIngest.status shouldBe Succeeded
-                  }
 
-                  it("records the events in the ingest tracker") {
+                    // records the events in the ingest tracker
                     assertIngestRecordedRecentEvents(
                       ingestStatusUpdate.id,
                       ingestStatusUpdate.events.map {
                         _.description
                       }
                     )(ingestsTracker)
-                  }
 
-                  it("sends a message with the updated ingest") {
+                    // sends a message with the updated ingest
                     ingestsSender.getMessages[Ingest] shouldBe Seq(
                       expectedIngest
                     )
                   }
                 }
               }
-          }
+            
+        }
     }
   }
 }
