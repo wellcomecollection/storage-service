@@ -1,13 +1,13 @@
 package uk.ac.wellcome.platform.archive.indexer
 
 import com.sksamuel.elastic4s.ElasticDsl.{matchAllQuery, properties, textField}
-import com.sksamuel.elastic4s.{ElasticClient, Index}
 import com.sksamuel.elastic4s.http.JavaClientExceptionWrapper
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
+import com.sksamuel.elastic4s.{ElasticClient, Index}
 import io.circe.Json
-import org.scalatest.{Assertion, EitherValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.{Assertion, EitherValues}
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   ElasticClientFactory,
   Indexer
@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait IndexerTestCases[Document, DisplayDocument]
+trait IndexerTestCases[Document, IndexedDocument]
     extends AnyFunSpec
     with Matchers
     with EitherValues
@@ -26,15 +26,17 @@ trait IndexerTestCases[Document, DisplayDocument]
   def createIndexer(
     client: ElasticClient,
     index: Index
-  ): Indexer[Document, DisplayDocument]
+  ): Indexer[Document, IndexedDocument]
 
   def createDocument: Document
   def id(document: Document): String
 
   def assertMatch(
-    storedDocument: Map[String, Json],
+    indexedDocument: IndexedDocument,
     expectedDocument: Document
   ): Assertion
+
+  def getDocument(index: Index, id: String): IndexedDocument
 
   // Create a pair of documents: one older, one newer
   def createDocumentPair: (Document, Document)
@@ -49,13 +51,10 @@ trait IndexerTestCases[Document, DisplayDocument]
         whenReady(indexer.index(document)) { result =>
           result.right.value shouldBe document
 
-          val storedDocument: Map[String, Json] =
-            getT[Json](index, id = id(document))
-              .as[Map[String, Json]]
-              .right
-              .value
+          val indexedDocument: IndexedDocument =
+            getDocument(index, id = id(document))
 
-          assertMatch(storedDocument, document)
+          assertMatch(indexedDocument, document)
         }
       }
     }
@@ -132,13 +131,10 @@ trait IndexerTestCases[Document, DisplayDocument]
           whenReady(future) { result =>
             result.right.value shouldBe newerDocument
 
-            val storedDocument =
-              getT[Json](index, id = id(olderDocument))
-                .as[Map[String, Json]]
-                .right
-                .value
+            val indexedDocument: IndexedDocument =
+              getDocument(index, id = id(olderDocument))
 
-            assertMatch(storedDocument, newerDocument)
+            assertMatch(indexedDocument, newerDocument)
           }
         }
       }
@@ -158,13 +154,10 @@ trait IndexerTestCases[Document, DisplayDocument]
           whenReady(future) { result =>
             result.right.value shouldBe olderDocument
 
-            val storedDocument =
-              getT[Json](index, id = id(olderDocument))
-                .as[Map[String, Json]]
-                .right
-                .value
+            val indexedDocument: IndexedDocument =
+              getDocument(index, id = id(olderDocument))
 
-            assertMatch(storedDocument, newerDocument)
+            assertMatch(indexedDocument, newerDocument)
           }
         }
       }

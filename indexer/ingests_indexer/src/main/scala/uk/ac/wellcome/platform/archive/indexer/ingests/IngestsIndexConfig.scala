@@ -49,6 +49,7 @@ object IngestsIndexConfig extends IndexConfig {
       objectField("events").fields(displayIngestEventFields),
       dateField("createdDate"),
       dateField("lastModifiedDate"),
-      keywordField("type")
+      keywordField("type"),
+      textField("failureDescriptions")
     )
 }

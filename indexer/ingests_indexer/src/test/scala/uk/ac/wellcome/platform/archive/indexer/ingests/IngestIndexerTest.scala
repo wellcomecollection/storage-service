@@ -1,26 +1,24 @@
 package uk.ac.wellcome.platform.archive.indexer.ingests
 
 import java.time.Instant
-import java.util.UUID
 
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import io.circe.Json
 import org.scalatest.Assertion
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestEvent
 }
-import uk.ac.wellcome.platform.archive.display.ingests.ResponseDisplayIngest
 import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
+import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class IngestIndexerTest
-    extends IndexerTestCases[Ingest, ResponseDisplayIngest]
+    extends IndexerTestCases[Ingest, IndexedIngest]
     with IngestGenerators {
 
   override val mapping: MappingDefinition = IngestsIndexConfig.mapping
@@ -35,24 +33,14 @@ class IngestIndexerTest
 
   override def id(ingest: Ingest): String = ingest.id.toString
 
-  override def assertMatch(
-    storedIngest: Map[String, Json],
-    ingest: Ingest
-  ): Assertion = {
-    val storedIngestId = UUID.fromString(storedIngest("id").asString.get)
-    storedIngestId shouldBe ingest.id.underlying
+  override def getDocument(index: Index, id: String): IndexedIngest =
+    getT[IndexedIngest](index, id = id)
 
-    val storedExternalIdentifier = ExternalIdentifier(
-      storedIngest("bag").asObject.get
-        .toMap("info")
-        .asObject
-        .get
-        .toMap("externalIdentifier")
-        .asString
-        .get
-    )
-    storedExternalIdentifier shouldBe ingest.externalIdentifier
-  }
+  override def assertMatch(
+    indexedIngest: IndexedIngest,
+    ingest: Ingest
+  ): Assertion =
+    IndexedIngest(ingest) shouldBe indexedIngest
 
   override def createDocumentPair: (Ingest, Ingest) = {
     val ingestId = createIngestID
