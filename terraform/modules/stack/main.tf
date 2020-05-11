@@ -13,18 +13,18 @@ module "ingest_service" {
     aws_security_group.interservice.id,
     aws_security_group.service_egress.id
   ]
-  
+
   cluster_arn = aws_ecs_cluster.cluster.arn
-  
+
   external_api_container_image = ""
   internal_api_container_image = ""
   worker_container_image       = ""
 
   load_balancer_arn           = ""
   load_balancer_listener_port = 0
-  
+
   service_discovery_namespace_id = local.service_discovery_namespace_id
-  
+
   subnets = var.private_subnets
   vpc_id  = var.vpc_id
 }

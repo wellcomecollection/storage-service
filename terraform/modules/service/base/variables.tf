@@ -3,7 +3,7 @@ variable "service_name" {
 }
 
 variable "container_definitions" {
-  type    = list(any)
+  type = list(any)
 }
 
 variable "cpu" {
@@ -33,7 +33,7 @@ variable "security_group_ids" {
 }
 
 variable "desired_task_count" {
-  type    = number
+  type = number
 }
 
 variable "use_fargate_spot" {
