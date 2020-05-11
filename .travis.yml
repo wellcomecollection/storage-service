@@ -11,7 +11,6 @@ jobs:
 
     - stage: services
       env: SBT_PROJECT=ingests
-    - env: SBT_PROJECT=ingests_api
     - env: SBT_PROJECT=bags_api
     - env: SBT_PROJECT=bag_register
     - env: SBT_PROJECT=bag_replicator
@@ -22,6 +21,9 @@ jobs:
     - env: SBT_PROJECT=replica_aggregator
     - env: SBT_PROJECT=bag_indexer
     - env: SBT_PROJECT=ingests_indexer
+    - env: SBT_PROJECT=ingests_worker
+    - env: SBT_PROJECT=ingests_tracker
+    - env: SBT_PROJECT=ingests_api
 
     - env: SBT_PROJECT=notifier
 

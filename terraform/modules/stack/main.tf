@@ -2,6 +2,33 @@ locals {
   java_opts_heap_size = "-Xss6M -Xms2G -Xmx3G"
 }
 
+# Ingest service
+
+module "ingest_service" {
+  source = "../service/ingest"
+
+  service_name = "${var.namespace}-ingests-service"
+
+  security_group_ids = [
+    aws_security_group.interservice.id,
+    aws_security_group.service_egress.id
+  ]
+  
+  cluster_arn = aws_ecs_cluster.cluster.arn
+  
+  external_api_container_image = ""
+  internal_api_container_image = ""
+  worker_container_image       = ""
+
+  load_balancer_arn           = ""
+  load_balancer_listener_port = 0
+  
+  service_discovery_namespace_id = local.service_discovery_namespace_id
+  
+  subnets = var.private_subnets
+  vpc_id  = var.vpc_id
+}
+
 # bag_unpacker
 
 module "bag_unpacker" {
@@ -26,6 +53,7 @@ module "bag_unpacker" {
     metrics_namespace       = local.bag_unpacker_service_name
     operation_name          = "unpacking"
     JAVA_OPTS               = local.java_opts_heap_size
+
     # If you run the unpacker with too much parallelism, it gets overwhelmed
     # and tries to open too many HTTP connections.  You get this error:
     #
@@ -45,7 +73,7 @@ module "bag_unpacker" {
 
   container_image = local.bag_unpacker_image
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 # bag root finder
@@ -82,7 +110,7 @@ module "bag_root_finder" {
 
   use_fargate_spot = true
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 # bag_verifier
@@ -118,7 +146,7 @@ module "bag_verifier_pre_replication" {
 
   container_image = local.bag_verifier_image
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 # bag versioner
@@ -159,7 +187,7 @@ module "bag_versioner" {
 
   use_fargate_spot = true
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 module "replicator_verifier_primary" {
@@ -208,7 +236,7 @@ module "replicator_verifier_primary" {
 
   aws_region = var.aws_region
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 module "replicator_verifier_glacier" {
@@ -257,7 +285,7 @@ module "replicator_verifier_glacier" {
 
   aws_region = var.aws_region
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 # replica_aggregator
@@ -289,7 +317,7 @@ module "replica_aggregator" {
 
   use_fargate_spot = true
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 # bag_register
@@ -322,7 +350,7 @@ module "bag_register" {
 
   use_fargate_spot = true
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 # notifier
@@ -355,7 +383,7 @@ module "notifier" {
 
   use_fargate_spot = true
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 # ingests
@@ -390,7 +418,7 @@ module "ingests" {
 
   use_fargate_spot = true
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 # ingests indexer
@@ -424,7 +452,7 @@ module "ingests_indexer" {
 
   use_fargate_spot = true
 
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 # storage API
@@ -472,7 +500,7 @@ module "api" {
   ]
 
   interservice_security_group_id = aws_security_group.interservice.id
-  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 
   static_content_bucket_name = var.static_content_bucket_name
 
