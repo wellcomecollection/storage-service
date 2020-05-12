@@ -8,7 +8,6 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   BagUnpackerFixtures,
@@ -188,7 +187,6 @@ class BagUnpackerWorkerTest
     dstBucket: Bucket = createBucket
   )(testWith: TestWith[BagUnpackerWorker[String, String], R]): R =
     withBagUnpackerWorker(
-      queue = Queue("any", "any"),
       ingests = ingests,
       outgoing = outgoing,
       dstBucket = dstBucket,

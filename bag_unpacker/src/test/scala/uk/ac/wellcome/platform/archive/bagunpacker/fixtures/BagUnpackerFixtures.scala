@@ -31,7 +31,7 @@ trait BagUnpackerFixtures
     with S3Fixtures {
 
   def withBagUnpackerWorker[R](
-    queue: Queue,
+    queue: Queue = dummyQueue,
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
     dstBucket: Bucket,

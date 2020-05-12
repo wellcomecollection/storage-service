@@ -30,7 +30,7 @@ trait BagVerifierFixtures
   def withBagVerifierWorker[R](
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
-    queue: Queue = Queue("fixture", arn = "arn::fixture"),
+    queue: Queue = dummyQueue,
     stepName: String = randomAlphanumericWithLength()
   )(testWith: TestWith[BagVerifierWorker[String, String], R]): R =
     withFakeMonitoringClient() { implicit monitoringClient =>

@@ -65,13 +65,8 @@ trait BagRegisterFixtures
     QueuePair
   )
 
-  private val defaultQueue = Queue(
-    url = "default_q",
-    arn = "arn::default_q"
-  )
-
   def withBagRegisterWorker[R](
-    queue: Queue = defaultQueue,
+    queue: Queue = dummyQueue,
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     storageManifestDao: StorageManifestDao = createStorageManifestDao()
   )(
