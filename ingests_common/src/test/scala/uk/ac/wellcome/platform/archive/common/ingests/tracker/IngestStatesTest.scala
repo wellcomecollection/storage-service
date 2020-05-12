@@ -105,16 +105,32 @@ class IngestStatusUpdateTest
     createIngestStatusUpdateWith(id = id, events = events)
 
   describe("updating the status") {
+    val statuses = Table(
+      "status",
+      Ingest.Accepted,
+      Ingest.Processing,
+      Ingest.Succeeded,
+      Ingest.Failed
+    )
+
+    it("allows no-op update to a status") {
+      forAll(statuses) { status =>
+        val ingest = createIngestWith(status = status)
+
+        val update = createIngestStatusUpdateWith(id = ingest.id, status = status)
+
+        val updatedIngest = IngestStates.applyUpdate(ingest, update).right.value
+        updatedIngest.status shouldBe status
+      }
+    }
+
     val allowedStatusUpdates = Table(
       ("initial", "update"),
-      (Ingest.Accepted, Ingest.Accepted),
       (Ingest.Accepted, Ingest.Processing),
       (Ingest.Accepted, Ingest.Succeeded),
       (Ingest.Accepted, Ingest.Failed),
       (Ingest.Processing, Ingest.Succeeded),
       (Ingest.Processing, Ingest.Failed),
-      (Ingest.Succeeded, Ingest.Succeeded),
-      (Ingest.Failed, Ingest.Failed)
     )
 
     it("updates the status of an ingest") {
@@ -159,6 +175,15 @@ class IngestStatusUpdateTest
             .left
             .value shouldBe a[IngestStatusGoingBackwardsError]
       }
+    }
+
+    // If there are 4 states for an ingest, there are 4 * 4 = 16 possible transitions
+    // available, and we should test all of them.
+    it("has tested all possible state transitions") {
+      val possibleTransitions = statuses.size * statuses.size
+      val testedTransitions = disallowedStatusUpdates.size + allowedStatusUpdates.size + statuses.size
+
+      testedTransitions shouldBe possibleTransitions
     }
   }
 }
