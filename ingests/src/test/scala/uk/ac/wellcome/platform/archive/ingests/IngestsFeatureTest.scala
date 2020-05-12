@@ -56,26 +56,24 @@ class IngestsFeatureTest
     it("reads messages from the queue") {
       // A timeout is explicit here as we were seeing errors
       // where the message got resent in CI.
-      withLocalSqsQueue(visibilityTimeout = 5) {
-        queue =>
-          withIngestWorker(
-            queue = queue,
-            ingestTracker = ingestTracker,
-            callbackNotificationMessageSender =
-              callbackNotificationMessageSender,
-            updatedIngestsMessageSender = updatedIngestsMessageSender
-          ) { _ =>
-            sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
+      withLocalSqsQueue(visibilityTimeout = 5) { queue =>
+        withIngestWorker(
+          queue = queue,
+          ingestTracker = ingestTracker,
+          callbackNotificationMessageSender = callbackNotificationMessageSender,
+          updatedIngestsMessageSender = updatedIngestsMessageSender
+        ) { _ =>
+          sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-            eventually {
-              callbackNotificationMessageSender
-                .getMessages[CallbackNotification] shouldBe Seq(
-                expectedCallbackNotification
-              )
+          eventually {
+            callbackNotificationMessageSender
+              .getMessages[CallbackNotification] shouldBe Seq(
+              expectedCallbackNotification
+            )
 
-              getMessages(queue) shouldBe empty
-            }
+            getMessages(queue) shouldBe empty
           }
+        }
       }
     }
 
