@@ -6,7 +6,6 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
@@ -57,8 +56,8 @@ class IngestsFeatureTest
     it("reads messages from the queue") {
       // A timeout is explicit here as we were seeing errors
       // where the message got resent in CI.
-      withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
-        case QueuePair(queue, _) =>
+      withLocalSqsQueue(visibilityTimeout = 5) {
+        queue =>
           withIngestWorker(
             queue = queue,
             ingestTracker = ingestTracker,
