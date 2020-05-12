@@ -117,7 +117,8 @@ class IngestStatusUpdateTest
       forAll(statuses) { status =>
         val ingest = createIngestWith(status = status)
 
-        val update = createIngestStatusUpdateWith(id = ingest.id, status = status)
+        val update =
+          createIngestStatusUpdateWith(id = ingest.id, status = status)
 
         val updatedIngest = IngestStates.applyUpdate(ingest, update).right.value
         updatedIngest.status shouldBe status
@@ -130,7 +131,7 @@ class IngestStatusUpdateTest
       (Ingest.Accepted, Ingest.Succeeded),
       (Ingest.Accepted, Ingest.Failed),
       (Ingest.Processing, Ingest.Succeeded),
-      (Ingest.Processing, Ingest.Failed),
+      (Ingest.Processing, Ingest.Failed)
     )
 
     it("updates the status of an ingest") {
