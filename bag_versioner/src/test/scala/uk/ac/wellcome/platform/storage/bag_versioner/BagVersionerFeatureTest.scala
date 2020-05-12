@@ -47,7 +47,7 @@ class BagVersionerFeatureTest
       version = BagVersion(1)
     )
 
-    withLocalSqsQueue { queue =>
+    withLocalSqsQueue() { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
       withBagVersionerWorker(
@@ -111,7 +111,7 @@ class BagVersionerFeatureTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    withLocalSqsQueue { queue =>
+    withLocalSqsQueue() { queue =>
       withBagVersionerWorker(
         queue,
         ingests,

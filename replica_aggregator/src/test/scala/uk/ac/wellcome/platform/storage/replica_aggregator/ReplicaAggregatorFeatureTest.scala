@@ -32,7 +32,7 @@ class ReplicaAggregatorFeatureTest
     with IntegrationPatience {
 
   it("completes after a single primary replica") {
-    withLocalSqsQueue { queue =>
+    withLocalSqsQueue() { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 

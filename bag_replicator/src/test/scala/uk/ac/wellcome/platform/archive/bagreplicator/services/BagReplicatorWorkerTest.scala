@@ -278,7 +278,7 @@ class BagReplicatorWorkerTest
         bagRoot = srcBagLocation
       )
 
-      withLocalSqsQueue { queue =>
+      withLocalSqsQueue() { queue =>
         withLocalS3Bucket { dstBucket =>
           withBagReplicatorWorker(
             queue = queue,
