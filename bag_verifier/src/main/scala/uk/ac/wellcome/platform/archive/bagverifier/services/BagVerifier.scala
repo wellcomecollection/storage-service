@@ -202,6 +202,10 @@ class BagVerifier(namespace: String)(
 
   // Check the user hasn't supplied any fetch entries whcih are in the wrong
   // namespace or path prefix.
+  //
+  // We only allow fetch entries to refer to previous versions of the same bag; this
+  // ensures that a single bag (same space/external identifier) is completely self-contained,
+  // and we don't have to worry about interconnected bag dependencies.
   private def verifyFetchPrefixes(
     bag: Bag,
     root: ObjectLocationPrefix): InternalResult[Unit] =
