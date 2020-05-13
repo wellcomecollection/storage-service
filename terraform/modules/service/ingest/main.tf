@@ -10,7 +10,7 @@ module "base" {
     module.worker_container.container_definition
   ]
 
-  desired_task_count = var.desired_task_count
+  desired_task_count = max(3, var.desired_task_count)
   security_group_ids = var.security_group_ids
 
   service_discovery_namespace_id = var.service_discovery_namespace_id
