@@ -296,77 +296,115 @@ class BagVerifierTest
 
       assertBagIncomplete(badBuilder) {
         case (ingestFailed, _) =>
-          ingestFailed.e.getMessage should startWith("fetch.txt refers to paths that aren't in the bag manifest: ")
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths that aren't in the bag manifest: "
+          )
 
-          ingestFailed.maybeUserFacingMessage.get should startWith("fetch.txt refers to paths that aren't in the bag manifest: ")
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths that aren't in the bag manifest: "
+          )
       }
     }
 
     it("fails if the fetch file refers to a file with the wrong URI scheme") {
       val wrongSchemeBuilder = new S3BagBuilderBase {
-        override protected def buildFetchEntryLine(entry: PayloadEntry)(implicit namespace: String): String =
+        override protected def buildFetchEntryLine(
+          entry: PayloadEntry
+        )(implicit namespace: String): String =
           super.buildFetchEntryLine(entry).replace("s3://", "none://")
 
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
       }
 
-      assertBagIncomplete(wrongSchemeBuilder) { case (ingestFailed, _) =>
-        ingestFailed.e.getMessage should startWith("fetch.txt refers to paths in a mismatched prefix:")
+      assertBagIncomplete(wrongSchemeBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths in a mismatched prefix:"
+          )
 
-        ingestFailed.maybeUserFacingMessage.get should startWith("fetch.txt refers to paths in a mismatched prefix:")
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths in a mismatched prefix:"
+          )
       }
     }
 
     it("fails if the fetch file refers to a file in a different namespace") {
       val wrongBucketFetchBuilder = new S3BagBuilderBase {
-        override protected def buildFetchEntryLine(entry: PayloadEntry)(implicit namespace: String): String =
+        override protected def buildFetchEntryLine(
+          entry: PayloadEntry
+        )(implicit namespace: String): String =
           super.buildFetchEntryLine(entry)(namespace = s"wrong-$namespace")
 
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
       }
 
-      assertBagIncomplete(wrongBucketFetchBuilder) { case (ingestFailed, _) =>
-        ingestFailed.e.getMessage should startWith("fetch.txt refers to paths in a mismatched prefix:")
+      assertBagIncomplete(wrongBucketFetchBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths in a mismatched prefix:"
+          )
 
-        ingestFailed.maybeUserFacingMessage.get should startWith("fetch.txt refers to paths in a mismatched prefix:")
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths in a mismatched prefix:"
+          )
       }
     }
 
     it("fails if the fetch file refers to a file in the wrong space") {
       val bagSpaceFetchBuilder = new S3BagBuilderBase {
-        override protected def buildFetchEntryLine(entry: PayloadEntry)(implicit namespace: String): String =
-          super.buildFetchEntryLine(entry.copy(
-            path = "badspace_" + entry.path
-          ))
+        override protected def buildFetchEntryLine(
+          entry: PayloadEntry
+        )(implicit namespace: String): String =
+          super.buildFetchEntryLine(
+            entry.copy(
+              path = "badspace_" + entry.path
+            )
+          )
 
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
       }
 
-      assertBagIncomplete(bagSpaceFetchBuilder) { case (ingestFailed, _) =>
-        ingestFailed.e.getMessage should startWith("fetch.txt refers to paths in a mismatched prefix:")
+      assertBagIncomplete(bagSpaceFetchBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths in a mismatched prefix:"
+          )
 
-        ingestFailed.maybeUserFacingMessage.get should startWith("fetch.txt refers to paths in a mismatched prefix:")
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths in a mismatched prefix:"
+          )
       }
     }
 
-    it("fails if the fetch file refers to a file with the wrong external identifier") {
+    it(
+      "fails if the fetch file refers to a file with the wrong external identifier"
+    ) {
       val badExternalIdentifierFetchBuilder = new S3BagBuilderBase {
-        override protected def buildFetchEntryLine(entry: PayloadEntry)(implicit namespace: String): String =
-          super.buildFetchEntryLine(entry.copy(
-            path = entry.path.replace("/", "/wrong_")
-          ))
+        override protected def buildFetchEntryLine(
+          entry: PayloadEntry
+        )(implicit namespace: String): String =
+          super.buildFetchEntryLine(
+            entry.copy(
+              path = entry.path.replace("/", "/wrong_")
+            )
+          )
 
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
       }
 
-      assertBagIncomplete(badExternalIdentifierFetchBuilder) { case (ingestFailed, _) =>
-        ingestFailed.e.getMessage should startWith("fetch.txt refers to paths in a mismatched prefix:")
+      assertBagIncomplete(badExternalIdentifierFetchBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths in a mismatched prefix:"
+          )
 
-        ingestFailed.maybeUserFacingMessage.get should startWith("fetch.txt refers to paths in a mismatched prefix:")
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths in a mismatched prefix:"
+          )
       }
     }
   }
@@ -502,7 +540,8 @@ class BagVerifierTest
     it("passes a bag that includes an extra manifest/tag manifest") {
       withLocalS3Bucket { bucket =>
         val space = createStorageSpace
-        val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket, space = space)
+        val (bagRoot, bagInfo) =
+          S3BagBuilder.createS3BagWith(bucket, space = space)
 
         val location = bagRoot.asLocation("tagmanifest-sha512.txt")
 

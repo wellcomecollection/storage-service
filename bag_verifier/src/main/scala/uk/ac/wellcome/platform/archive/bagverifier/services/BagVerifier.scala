@@ -208,7 +208,8 @@ class BagVerifier(namespace: String)(
   // and we don't have to worry about interconnected bag dependencies.
   private def verifyFetchPrefixes(
     bag: Bag,
-    root: ObjectLocationPrefix): InternalResult[Unit] =
+    root: ObjectLocationPrefix
+  ): InternalResult[Unit] =
     bag.fetch match {
       case None => Right(())
 
@@ -225,8 +226,8 @@ class BagVerifier(namespace: String)(
                 // TODO: This could verify the version prefix as well.
                 // TODO: Hard-coding the expected scheme here isn't ideal
                 fetchMetadata.uri.getScheme == "s3" &&
-                  fetchLocation.namespace == root.namespace &&
-                  fetchLocation.path.startsWith(s"${root.path}/")
+                fetchLocation.namespace == root.namespace &&
+                fetchLocation.path.startsWith(s"${root.path}/")
             }
 
         val mismatchedPaths = mismatchedEntries.keys.toSeq
@@ -234,7 +235,8 @@ class BagVerifier(namespace: String)(
         mismatchedPaths match {
           case Nil => Right(())
           case _ =>
-            val message = s"fetch.txt refers to paths in a mismatched prefix: ${mismatchedPaths.mkString(", ")}"
+            val message =
+              s"fetch.txt refers to paths in a mismatched prefix: ${mismatchedPaths.mkString(", ")}"
 
             Left(
               BagVerifierError(
@@ -244,7 +246,6 @@ class BagVerifier(namespace: String)(
             )
         }
     }
-
 
   // Check that the user hasn't sent any files in the bag which
   // also have a fetch file entry.

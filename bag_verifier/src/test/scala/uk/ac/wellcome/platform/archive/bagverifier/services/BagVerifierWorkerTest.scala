@@ -41,7 +41,8 @@ class BagVerifierWorkerTest
     withLocalS3Bucket { bucket =>
       val space = createStorageSpace
 
-      val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket, space = space)
+      val (bagRootLocation, bagInfo) =
+        S3BagBuilder.createS3BagWith(bucket, space = space)
 
       val payload = createVersionedBagRootPayloadWith(
         context = createPipelineContextWith(
@@ -51,7 +52,12 @@ class BagVerifierWorkerTest
         bagRoot = bagRootLocation
       )
 
-      withBagVerifierWorker(ingests, outgoing, bucket = bucket, stepName = "verification") {
+      withBagVerifierWorker(
+        ingests,
+        outgoing,
+        bucket = bucket,
+        stepName = "verification"
+      ) {
         _.processMessage(payload) shouldBe a[Success[_]]
       }
 
@@ -75,7 +81,8 @@ class BagVerifierWorkerTest
 
       withLocalS3Bucket { bucket =>
         val space = createStorageSpace
-        val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket, space = space)
+        val (bagRootLocation, bagInfo) =
+          S3BagBuilder.createS3BagWith(bucket, space = space)
 
         val payload = createVersionedBagRootPayloadWith(
           context = createPipelineContextWith(
@@ -85,7 +92,12 @@ class BagVerifierWorkerTest
           bagRoot = bagRootLocation
         )
 
-        withBagVerifierWorker(ingests, outgoing, bucket = bucket, stepName = "verification") {
+        withBagVerifierWorker(
+          ingests,
+          outgoing,
+          bucket = bucket,
+          stepName = "verification"
+        ) {
           _.processMessage(payload) shouldBe a[Success[_]]
         }
 
@@ -101,7 +113,8 @@ class BagVerifierWorkerTest
 
       withLocalS3Bucket { bucket =>
         val space = createStorageSpace
-        val (bagRoot, bagInfo) = S3BagBuilder.createS3BagWith(bucket, space = space)
+        val (bagRoot, bagInfo) =
+          S3BagBuilder.createS3BagWith(bucket, space = space)
 
         val payload = createBagRootLocationPayloadWith(
           context = createPipelineContextWith(
@@ -111,7 +124,12 @@ class BagVerifierWorkerTest
           bagRoot = bagRoot
         )
 
-        withBagVerifierWorker(ingests, outgoing, bucket = bucket, stepName = "verification") {
+        withBagVerifierWorker(
+          ingests,
+          outgoing,
+          bucket = bucket,
+          stepName = "verification"
+        ) {
           _.processMessage(payload) shouldBe a[Success[_]]
         }
 
@@ -143,7 +161,12 @@ class BagVerifierWorkerTest
         bagRoot = bagRootLocation
       )
 
-      withBagVerifierWorker(ingests, outgoing, bucket = bucket, stepName = "verification") {
+      withBagVerifierWorker(
+        ingests,
+        outgoing,
+        bucket = bucket,
+        stepName = "verification"
+      ) {
         _.processMessage(payload) shouldBe a[Success[_]]
       }
 
@@ -181,7 +204,12 @@ class BagVerifierWorkerTest
         bagRoot = bagRootLocation
       )
 
-      withBagVerifierWorker(ingests, outgoing, bucket = bucket, stepName = "verification") {
+      withBagVerifierWorker(
+        ingests,
+        outgoing,
+        bucket = bucket,
+        stepName = "verification"
+      ) {
         _.processMessage(payload) shouldBe a[Success[_]]
       }
 
@@ -221,7 +249,12 @@ class BagVerifierWorkerTest
         bagRoot = bagRootLocation
       )
 
-      withBagVerifierWorker(ingests, outgoing, bucket = bucket, stepName = "verification") {
+      withBagVerifierWorker(
+        ingests,
+        outgoing,
+        bucket = bucket,
+        stepName = "verification"
+      ) {
         _.processMessage(payload) shouldBe a[Success[_]]
       }
 
@@ -248,7 +281,8 @@ class BagVerifierWorkerTest
 
     withLocalS3Bucket { bucket =>
       val space = createStorageSpace
-      val (bagRootLocation, bagInfo) = S3BagBuilder.createS3BagWith(bucket, space = space)
+      val (bagRootLocation, bagInfo) =
+        S3BagBuilder.createS3BagWith(bucket, space = space)
 
       val payload = createVersionedBagRootPayloadWith(
         context = createPipelineContextWith(
@@ -258,7 +292,12 @@ class BagVerifierWorkerTest
         bagRoot = bagRootLocation
       )
 
-      withBagVerifierWorker(ingests, outgoing, bucket = bucket, stepName = "verification") {
+      withBagVerifierWorker(
+        ingests,
+        outgoing,
+        bucket = bucket,
+        stepName = "verification"
+      ) {
         _.processMessage(payload) shouldBe a[Failure[_]]
       }
 
