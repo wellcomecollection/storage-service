@@ -26,7 +26,8 @@ trait StorageRandomThings extends RandomThings {
 
   val dummyQueue: Queue = Queue(
     url = "test://test-q",
-    arn = "arn::sqs::test"
+    arn = "arn::sqs::test",
+    visibilityTimeout = 1
   )
 
   def collectionOf[T](min: Int = 0, max: Int = collectionMax)(f: => T): Seq[T] =
