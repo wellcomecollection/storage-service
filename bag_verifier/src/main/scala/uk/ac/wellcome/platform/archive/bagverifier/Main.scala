@@ -67,8 +67,9 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3Listing: Listing[ObjectLocationPrefix, ObjectLocation] =
       S3ObjectLocationListing()
 
-    val verifier =
-      new BagVerifier()
+    val verifier = new BagVerifier(
+      namespace = config.required[String]("bag-verifier.primary-storage-bucket")
+    )
 
     val operationName =
       OperationNameBuilder.getName(config)

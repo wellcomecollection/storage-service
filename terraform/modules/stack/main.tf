@@ -108,6 +108,8 @@ module "bag_verifier_pre_replication" {
     metrics_namespace  = local.bag_verifier_pre_repl_service_name
     operation_name     = "verification (pre-replicating to archive storage)"
     JAVA_OPTS          = local.java_opts_heap_size
+
+    primary_storage_bucket_name = var.replica_primary_bucket_name
   }
 
   cpu    = 2048

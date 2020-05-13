@@ -47,19 +47,22 @@ class BagVerifierFeatureTest
     // the timeout and turning up the payload file count in `createS3BagWith()`.
     withLocalSqsQueuePair(visibilityTimeout = 10) {
       case QueuePair(queue, dlq) =>
-        withBagVerifierWorker(
-          ingests,
-          outgoing,
-          queue,
-          stepName = "verification"
-        ) { _ =>
-          withLocalS3Bucket { bucket =>
+        withLocalS3Bucket { bucket =>
+          withBagVerifierWorker(
+            ingests,
+            outgoing,
+            queue,
+            bucket = bucket,
+            stepName = "verification"
+          ) { _ =>
+            val space = createStorageSpace
             val (bagRoot, bagInfo) =
-              S3BagBuilder.createS3BagWith(bucket)
+              S3BagBuilder.createS3BagWith(bucket, space = space)
 
             val payload = createVersionedBagRootPayloadWith(
               context = createPipelineContextWith(
-                externalIdentifier = bagInfo.externalIdentifier
+                externalIdentifier = bagInfo.externalIdentifier,
+                storageSpace = space
               ),
               bagRoot = bagRoot
             )
@@ -94,13 +97,14 @@ class BagVerifierFeatureTest
 
     withLocalSqsQueuePair() {
       case QueuePair(queue, dlq) =>
-        withBagVerifierWorker(
-          ingests,
-          outgoing,
-          queue,
-          stepName = "verification"
-        ) { _ =>
-          withLocalS3Bucket { bucket =>
+        withLocalS3Bucket { bucket =>
+          withBagVerifierWorker(
+            ingests,
+            outgoing,
+            queue,
+            bucket = bucket,
+            stepName = "verification"
+          ) { _ =>
             val badBuilder: S3BagBuilderBase = new S3BagBuilderBase {
               override protected def createPayloadManifest(
                 entries: Seq[PayloadEntry]
