@@ -62,7 +62,7 @@ class IngestsWorkerIntegrationTest
 
     withIngestsTrackerApi(Seq(ingest)) {
       case (callbackSender, ingestsSender, ingestsTracker) =>
-        withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 5) {
+        withLocalSqsQueuePair(visibilityTimeout = 5) {
           case QueuePair(queue, _) =>
             withIngestWorker(queue, ingestTrackerClient) { _ =>
               whenGetRequestReady(healthcheckPath) { healthcheck =>

@@ -22,7 +22,7 @@ class IngestsWorkerFeatureTest
   val visibilityTimeoutInSeconds = 1
 
   it("When the client succeeds it consumes the message") {
-    withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
+    withLocalSqsQueuePair(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
         val client = successfulClient(ingest)
 
@@ -38,7 +38,7 @@ class IngestsWorkerFeatureTest
   }
 
   it("When the client conflicts it consumes the message") {
-    withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
+    withLocalSqsQueuePair(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
         val client = conflictClient(ingestStatusUpdate)
 
@@ -54,7 +54,7 @@ class IngestsWorkerFeatureTest
   }
 
   it("When the client errors it does NOT consume the message") {
-    withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
+    withLocalSqsQueuePair(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
         val client = unknownErrorClient(ingestStatusUpdate)
 
@@ -70,7 +70,7 @@ class IngestsWorkerFeatureTest
   }
 
   it("When the client fails it does NOT consume the message") {
-    withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
+    withLocalSqsQueuePair(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
         val client = failedFutureClient()
 
