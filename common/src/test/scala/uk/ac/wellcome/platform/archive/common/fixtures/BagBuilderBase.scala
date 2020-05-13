@@ -283,12 +283,15 @@ object BagBuilder extends BagBuilderBase
 trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures with Logging {
   def createS3BagWith(
     bucket: Bucket,
+    space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     payloadFileCount: Int = randomInt(from = 5, to = 50)
   ): (ObjectLocationPrefix, BagInfo) = {
     implicit val namespace: String = bucket.name
 
     val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
+      space = space,
+      externalIdentifier = externalIdentifier,
       payloadFileCount = payloadFileCount
     )
 

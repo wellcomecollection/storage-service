@@ -19,7 +19,7 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
 
-class BagVerifier()(
+class BagVerifier(namespace: String)(
   implicit bagReader: BagReader[_],
   resolvable: Resolvable[ObjectLocation],
   verifier: Verifier[_],
@@ -36,6 +36,7 @@ class BagVerifier()(
   def verify(
     ingestId: IngestID,
     root: ObjectLocationPrefix,
+    space: StorageSpace,
     externalIdentifier: ExternalIdentifier
   ): Try[IngestStepResult[VerificationSummary]] =
     Try {
@@ -51,6 +52,14 @@ class BagVerifier()(
           )
 
           _ <- verifyPayloadOxumFileCount(bag)
+
+          _ <- verifyFetchPrefixes(
+            bag,
+            root = ObjectLocationPrefix(
+              namespace = namespace,
+              path = s"$space/$externalIdentifier"
+            )
+          )
 
           verificationResult <- verifyChecksums(
             root = root,
@@ -189,6 +198,53 @@ class BagVerifier()(
         }
 
       case _ => Right(())
+    }
+
+  // Check the user hasn't supplied any fetch entries whcih are in the wrong
+  // namespace or path prefix.
+  //
+  // We only allow fetch entries to refer to previous versions of the same bag; this
+  // ensures that a single bag (same space/external identifier) is completely self-contained,
+  // and we don't have to worry about interconnected bag dependencies.
+  private def verifyFetchPrefixes(
+    bag: Bag,
+    root: ObjectLocationPrefix
+  ): InternalResult[Unit] =
+    bag.fetch match {
+      case None => Right(())
+
+      case Some(BagFetch(entries)) =>
+        val mismatchedEntries =
+          entries
+            .filterNot {
+              case (_, fetchMetadata: BagFetchMetadata) =>
+                val fetchLocation = ObjectLocation(
+                  namespace = fetchMetadata.uri.getHost,
+                  path = fetchMetadata.uri.getPath.stripPrefix("/")
+                )
+
+                // TODO: This could verify the version prefix as well.
+                // TODO: Hard-coding the expected scheme here isn't ideal
+                fetchMetadata.uri.getScheme == "s3" &&
+                fetchLocation.namespace == root.namespace &&
+                fetchLocation.path.startsWith(s"${root.path}/")
+            }
+
+        val mismatchedPaths = mismatchedEntries.keys.toSeq
+
+        mismatchedPaths match {
+          case Nil => Right(())
+          case _ =>
+            val message =
+              s"fetch.txt refers to paths in a mismatched prefix: ${mismatchedPaths.mkString(", ")}"
+
+            Left(
+              BagVerifierError(
+                e = new Throwable(message),
+                userMessage = Some(message)
+              )
+            )
+        }
     }
 
   // Check that the user hasn't sent any files in the bag which

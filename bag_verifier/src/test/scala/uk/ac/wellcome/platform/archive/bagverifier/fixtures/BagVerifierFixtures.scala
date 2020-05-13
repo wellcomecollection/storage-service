@@ -17,6 +17,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.platform.archive.common.verify.s3.S3ObjectVerifier
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,11 +32,12 @@ trait BagVerifierFixtures
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
     queue: Queue = dummyQueue,
+    bucket: Bucket,
     stepName: String = randomAlphanumericWithLength()
   )(testWith: TestWith[BagVerifierWorker[String, String], R]): R =
     withFakeMonitoringClient() { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
-        withVerifier { verifier =>
+        withVerifier(bucket) { verifier =>
           val ingestUpdater =
             createIngestUpdaterWith(ingests, stepName = stepName)
 
@@ -56,7 +58,7 @@ trait BagVerifierFixtures
       }
     }
 
-  def withVerifier[R](testWith: TestWith[BagVerifier, R]): R =
+  def withVerifier[R](bucket: Bucket)(testWith: TestWith[BagVerifier, R]): R =
     withMaterializer { implicit mat =>
       implicit val _bagReader: BagReader[_] =
         new S3BagReader()
@@ -69,7 +71,7 @@ trait BagVerifierFixtures
 
       implicit val listing: S3ObjectLocationListing = S3ObjectLocationListing()
 
-      val verifier = new BagVerifier()
+      val verifier = new BagVerifier(namespace = bucket.name)
 
       testWith(verifier)
     }

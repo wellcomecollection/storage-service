@@ -40,6 +40,7 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
       summary <- verifier.verify(
         ingestId = payload.ingestId,
         root = payload.bagRoot,
+        space = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier
       )
       _ <- ingestUpdater.send(payload.ingestId, summary)
