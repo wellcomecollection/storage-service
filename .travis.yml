@@ -50,6 +50,8 @@ cache:
     - common/target
     - display/target
     - ingests/target
+    - ingests_tracker/target
+    - ingests_worker/target
     - ingests_common/target
     - notifier/target
     - replica_aggregator/target
