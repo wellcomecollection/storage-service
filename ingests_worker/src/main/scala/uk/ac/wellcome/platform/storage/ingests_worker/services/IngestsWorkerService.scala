@@ -67,7 +67,7 @@ class IngestsWorkerService(
         warn(err)
         DeterministicFailure[Ingest](err)
       case Left(IngestTrackerUnknownError(_, err)) =>
-        error(err)
+        error(s"Error trying to apply $ingestUpdate, got UnknownError", err)
         NonDeterministicFailure[Ingest](err)
     } recover {
       case err =>
