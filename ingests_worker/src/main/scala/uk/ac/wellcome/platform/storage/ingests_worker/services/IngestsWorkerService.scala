@@ -58,7 +58,7 @@ class IngestsWorkerService(
   def processMessage(ingestUpdate: IngestUpdate): Future[Result[Ingest]] = {
     ingestTrackerClient.updateIngest(ingestUpdate).map {
       case Right(ingest) =>
-        info(f"Successfully sent $ingestUpdate, got $ingest")
+        info(f"Successfully applied $ingestUpdate, got $ingest")
         Successful(Some(ingest))
       case Left(IngestTrackerConflictError(_)) =>
         val err = new Exception(
