@@ -21,6 +21,8 @@ locals {
   ingests_image            = local.image_ids["ingests"]
   ingests_api_image        = local.image_ids["ingests_api"]
   ingests_indexer_image    = local.image_ids["ingests_indexer"]
+  ingests_worker_image     = local.image_ids["ingests_worker"]
+  ingests_tracker_image    = local.image_ids["ingests_tracker"]
   notifier_image           = local.image_ids["notifier"]
   bag_replicator_image     = local.image_ids["bag_replicator"]
   bag_verifier_image       = local.image_ids["bag_verifier"]

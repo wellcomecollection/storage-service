@@ -16,9 +16,9 @@ module "ingest_service" {
 
   cluster_arn = aws_ecs_cluster.cluster.arn
 
-  external_api_container_image = ""
-  internal_api_container_image = ""
-  worker_container_image       = ""
+  external_api_container_image = local.ingests_api_image
+  internal_api_container_image = local.ingests_tracker_image
+  worker_container_image       = local.ingests_worker_image
 
   load_balancer_arn           = ""
   load_balancer_listener_port = 0
