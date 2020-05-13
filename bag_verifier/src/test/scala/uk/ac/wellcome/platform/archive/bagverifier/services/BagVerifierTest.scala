@@ -88,78 +88,87 @@ class BagVerifierTest
 
   it("fails a bag with an incorrect checksum in the file manifest") {
     val badBuilder = new S3BagBuilderBase {
-      override protected def createPayloadManifest(entries: Seq[PayloadEntry]): Option[String] =
+      override protected def createPayloadManifest(
+        entries: Seq[PayloadEntry]
+      ): Option[String] =
         super.createPayloadManifest(
           entries.head.copy(contents = randomAlphanumeric) +: entries.tail
         )
     }
 
-    assertBagFails(badBuilder) { case (ingestFailed, summary) =>
-      val verification = summary.verification.value
+    assertBagFails(badBuilder) {
+      case (ingestFailed, summary) =>
+        val verification = summary.verification.value
 
-      verifySuccessCount(
-        verification.success,
-        expectedCount = expectedFileCount - 1
-      )
-      verification.failure should have size 1
+        verifySuccessCount(
+          verification.success,
+          expectedCount = expectedFileCount - 1
+        )
+        verification.failure should have size 1
 
-      val location = verification.failure.head
-      val error = location.e
+        val location = verification.failure.head
+        val error = location.e
 
-      error shouldBe a[FailedChecksumNoMatch]
-      error.getMessage should include("Checksum values do not match!")
+        error shouldBe a[FailedChecksumNoMatch]
+        error.getMessage should include("Checksum values do not match!")
 
-      ingestFailed.maybeUserFacingMessage.get should startWith(
-        "Unable to verify one file in the bag:"
-      )
+        ingestFailed.maybeUserFacingMessage.get should startWith(
+          "Unable to verify one file in the bag:"
+        )
     }
   }
 
   it("fails a bag with an incorrect checksum in the tag manifest") {
     val badBuilder = new S3BagBuilderBase {
-      override protected def createTagManifest(entries: Seq[ManifestFile]): Option[String] =
+      override protected def createTagManifest(
+        entries: Seq[ManifestFile]
+      ): Option[String] =
         super.createTagManifest(
           entries.head.copy(contents = randomAlphanumeric) +: entries.tail
         )
     }
 
-    assertBagFails(badBuilder) { case (_, summary) =>
-      val verification = summary.verification.value
+    assertBagFails(badBuilder) {
+      case (_, summary) =>
+        val verification = summary.verification.value
 
-      verifySuccessCount(
-        verification.success,
-        expectedCount = expectedFileCount - 1
-      )
-      verification.failure should have size 1
+        verifySuccessCount(
+          verification.success,
+          expectedCount = expectedFileCount - 1
+        )
+        verification.failure should have size 1
 
-      val location = verification.failure.head
-      val error = location.e
+        val location = verification.failure.head
+        val error = location.e
 
-      error shouldBe a[FailedChecksumNoMatch]
-      error.getMessage should include("Checksum values do not match!")
+        error shouldBe a[FailedChecksumNoMatch]
+        error.getMessage should include("Checksum values do not match!")
     }
   }
 
   it("fails a bag with multiple incorrect checksums in the file manifest") {
     val badBuilder = new S3BagBuilderBase {
-      override protected def createPayloadManifest(entries: Seq[PayloadEntry]): Option[String] =
+      override protected def createPayloadManifest(
+        entries: Seq[PayloadEntry]
+      ): Option[String] =
         super.createPayloadManifest(
           entries.map { _.copy(contents = randomAlphanumeric) }
         )
     }
 
-    assertBagFails(badBuilder) { case (ingestFailed, _) =>
-      ingestFailed.maybeUserFacingMessage.get should startWith(
-        s"Unable to verify $payloadFileCount files in the bag:"
-      )
+    assertBagFails(badBuilder) {
+      case (ingestFailed, _) =>
+        ingestFailed.maybeUserFacingMessage.get should startWith(
+          s"Unable to verify $payloadFileCount files in the bag:"
+        )
     }
   }
 
   it("fails a bag if the file manifest refers to a non-existent file") {
     val badBuilder = new S3BagBuilderBase {
       override protected def createPayloadManifest(
-                                                    entries: Seq[PayloadEntry]
-                                                  ): Option[String] =
+        entries: Seq[PayloadEntry]
+      ): Option[String] =
         super.createPayloadManifest(
           entries.tail :+ PayloadEntry(
             bagPath = BagPath(randomAlphanumeric),
@@ -173,52 +182,59 @@ class BagVerifierTest
       override protected def getFetchEntryCount(payloadFileCount: Int): Int = 0
     }
 
-    assertBagFails(badBuilder) { case (_, summary) =>
-      val verification = summary.verification.value
+    assertBagFails(badBuilder) {
+      case (_, summary) =>
+        val verification = summary.verification.value
 
-      verifySuccessCount(
-        verification.success,
-        expectedCount = expectedFileCount - 1
-      )
-      verification.failure should have size 1
+        verifySuccessCount(
+          verification.success,
+          expectedCount = expectedFileCount - 1
+        )
+        verification.failure should have size 1
 
-      val location = verification.failure.head
-      val error = location.e
+        val location = verification.failure.head
+        val error = location.e
 
-      error shouldBe a[LocationNotFound[_]]
-      error.getMessage should startWith("Location not available!")
+        error shouldBe a[LocationNotFound[_]]
+        error.getMessage should startWith("Location not available!")
     }
   }
 
   it("fails a bag if the file manifest does not exist") {
     val badBuilder = new S3BagBuilderBase {
-      override protected def createPayloadManifest(entries: Seq[PayloadEntry]): Option[String] =
+      override protected def createPayloadManifest(
+        entries: Seq[PayloadEntry]
+      ): Option[String] =
         None
     }
 
-    assertBagIncomplete(badBuilder) { case (ingestFailed, summary) =>
-      val error = summary.e
+    assertBagIncomplete(badBuilder) {
+      case (ingestFailed, summary) =>
+        val error = summary.e
 
-      error shouldBe a[BagUnavailable]
-      error.getMessage should include("Error loading manifest-sha256.txt")
+        error shouldBe a[BagUnavailable]
+        error.getMessage should include("Error loading manifest-sha256.txt")
 
-      ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading manifest-sha256.txt: no such file!"
+        ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading manifest-sha256.txt: no such file!"
     }
   }
 
   it("fails a bag if the tag manifest does not exist") {
     val badBuilder = new S3BagBuilderBase {
-      override protected def createTagManifest(entries: Seq[ManifestFile]): Option[String] =
+      override protected def createTagManifest(
+        entries: Seq[ManifestFile]
+      ): Option[String] =
         None
     }
 
-    assertBagIncomplete(badBuilder) { case (ingestFailed, summary) =>
-      val error = summary.e
+    assertBagIncomplete(badBuilder) {
+      case (ingestFailed, summary) =>
+        val error = summary.e
 
-      error shouldBe a[BagUnavailable]
-      error.getMessage should include("Error loading tagmanifest-sha256.txt")
+        error shouldBe a[BagUnavailable]
+        error.getMessage should include("Error loading tagmanifest-sha256.txt")
 
-      ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading tagmanifest-sha256.txt: no such file!"
+        ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading tagmanifest-sha256.txt: no such file!"
     }
   }
 
@@ -271,12 +287,13 @@ class BagVerifierTest
           )
       }
 
-      assertBagIncomplete(badBuilder) { case (ingestFailed, _) =>
-        ingestFailed.e.getMessage shouldBe
-          "fetch.txt refers to paths that aren't in the bag manifest: data/doesnotexist"
+      assertBagIncomplete(badBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage shouldBe
+            "fetch.txt refers to paths that aren't in the bag manifest: data/doesnotexist"
 
-        ingestFailed.maybeUserFacingMessage.get shouldBe
-          "fetch.txt refers to paths that aren't in the bag manifest: data/doesnotexist"
+          ingestFailed.maybeUserFacingMessage.get shouldBe
+            "fetch.txt refers to paths that aren't in the bag manifest: data/doesnotexist"
       }
     }
   }
@@ -303,11 +320,14 @@ class BagVerifierTest
         }
       }
 
-      assertBagIncomplete(badBuilder) { case (ingestFailed, _) =>
-        ingestFailed.e.getMessage should startWith("Bag contains a file which is not referenced in the manifest:")
+      assertBagIncomplete(badBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "Bag contains a file which is not referenced in the manifest:"
+          )
 
-        ingestFailed.maybeUserFacingMessage.get shouldBe
-          "Bag contains a file which is not referenced in the manifest: /unreferencedfile.txt"
+          ingestFailed.maybeUserFacingMessage.get shouldBe
+            "Bag contains a file which is not referenced in the manifest: /unreferencedfile.txt"
       }
     }
 
@@ -335,12 +355,15 @@ class BagVerifierTest
         }
       }
 
-      assertBagIncomplete(badBuilder) { case (ingestFailed, _) =>
-        ingestFailed.e.getMessage should startWith("Bag contains 3 files which are not referenced in the manifest:")
+      assertBagIncomplete(badBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "Bag contains 3 files which are not referenced in the manifest:"
+          )
 
-        ingestFailed.maybeUserFacingMessage.get shouldBe
-          s"Bag contains 3 files which are not referenced in the manifest: " +
-            "/unreferencedfile_1.txt, /unreferencedfile_2.txt, /unreferencedfile_3.txt"
+          ingestFailed.maybeUserFacingMessage.get shouldBe
+            s"Bag contains 3 files which are not referenced in the manifest: " +
+              "/unreferencedfile_1.txt, /unreferencedfile_2.txt, /unreferencedfile_3.txt"
       }
     }
 
@@ -373,10 +396,15 @@ class BagVerifierTest
         }
       }
 
-      assertBagIncomplete(alwaysWriteAsFetchBuilder) { case (ingestFailed, _) =>
-        ingestFailed.e.getMessage should startWith("Files referred to in the fetch.txt also appear in the bag:")
+      assertBagIncomplete(alwaysWriteAsFetchBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "Files referred to in the fetch.txt also appear in the bag:"
+          )
 
-        ingestFailed.maybeUserFacingMessage.get should startWith("Files referred to in the fetch.txt also appear in the bag:")
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "Files referred to in the fetch.txt also appear in the bag:"
+          )
       }
     }
 
@@ -409,31 +437,37 @@ class BagVerifierTest
   describe("checks the Payload-Oxum") {
     it("fails if the Payload-Oxum has the wrong file count") {
       val badBuilder = new S3BagBuilderBase {
-        override protected def createPayloadOxum(entries: Seq[PayloadEntry]): PayloadOxum = {
+        override protected def createPayloadOxum(
+          entries: Seq[PayloadEntry]
+        ): PayloadOxum = {
           val oxum = super.createPayloadOxum(entries)
 
           oxum.copy(numberOfPayloadFiles = oxum.numberOfPayloadFiles - 1)
         }
       }
 
-      assertBagIncomplete(badBuilder) { case (ingestFailed, _) =>
-        ingestFailed.maybeUserFacingMessage.get shouldBe
-          s"""Payload-Oxum has the wrong number of payload files: ${payloadFileCount - 1}, but bag manifest has $payloadFileCount"""
+      assertBagIncomplete(badBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.maybeUserFacingMessage.get shouldBe
+            s"""Payload-Oxum has the wrong number of payload files: ${payloadFileCount - 1}, but bag manifest has $payloadFileCount"""
       }
     }
 
     it("fails if the Payload-Oxum has the wrong octet count") {
       val badBuilder = new S3BagBuilderBase {
-        override protected def createPayloadOxum(entries: Seq[PayloadEntry]): PayloadOxum = {
+        override protected def createPayloadOxum(
+          entries: Seq[PayloadEntry]
+        ): PayloadOxum = {
           val oxum = super.createPayloadOxum(entries)
 
           oxum.copy(payloadBytes = oxum.payloadBytes - 1)
         }
       }
 
-      assertBagIncomplete(badBuilder) { case (ingestFailed, _) =>
-        ingestFailed.maybeUserFacingMessage.get should fullyMatch regex
-          s"""Payload-Oxum has the wrong octetstream sum: \\d+ bytes, but bag actually contains \\d+ bytes"""
+      assertBagIncomplete(badBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.maybeUserFacingMessage.get should fullyMatch regex
+            s"""Payload-Oxum has the wrong octetstream sum: \\d+ bytes, but bag actually contains \\d+ bytes"""
       }
     }
   }
@@ -453,8 +487,8 @@ class BagVerifierTest
   // Given a builder that fails to create a valid bag for some reason, ensure that
   // it is caught correctly by the verifier.
   private def assertBagResultFails(
-    badBuilder: S3BagBuilderBase)(
-    assertion: IngestStepResult[VerificationSummary] => Assertion): Assertion =
+    badBuilder: S3BagBuilderBase
+  )(assertion: IngestStepResult[VerificationSummary] => Assertion): Assertion =
     withLocalS3Bucket { bucket =>
       val (bagRoot, bagInfo) = badBuilder.createS3BagWith(
         bucket,
@@ -477,25 +511,33 @@ class BagVerifierTest
       assertion(result)
     }
 
-  private def assertBagFails(
-    badBuilder: S3BagBuilderBase)(
-    assertion: (IngestFailed[VerificationFailureSummary], VerificationFailureSummary) => Assertion): Assertion =
+  private def assertBagFails(badBuilder: S3BagBuilderBase)(
+    assertion: (
+      IngestFailed[VerificationFailureSummary],
+      VerificationFailureSummary
+    ) => Assertion
+  ): Assertion =
     assertBagResultFails(badBuilder) { result =>
       result.summary shouldBe a[VerificationFailureSummary]
 
-      val failedResult = result.asInstanceOf[IngestFailed[VerificationFailureSummary]]
+      val failedResult =
+        result.asInstanceOf[IngestFailed[VerificationFailureSummary]]
       val summary = result.summary.asInstanceOf[VerificationFailureSummary]
 
       assertion(failedResult, summary)
     }
 
-  private def assertBagIncomplete(
-    badBuilder: S3BagBuilderBase)(
-    assertion: (IngestFailed[VerificationIncompleteSummary], VerificationIncompleteSummary) => Assertion): Assertion =
+  private def assertBagIncomplete(badBuilder: S3BagBuilderBase)(
+    assertion: (
+      IngestFailed[VerificationIncompleteSummary],
+      VerificationIncompleteSummary
+    ) => Assertion
+  ): Assertion =
     assertBagResultFails(badBuilder) { result =>
       result.summary shouldBe a[VerificationIncompleteSummary]
 
-      val failedResult = result.asInstanceOf[IngestFailed[VerificationIncompleteSummary]]
+      val failedResult =
+        result.asInstanceOf[IngestFailed[VerificationIncompleteSummary]]
       val summary = result.summary.asInstanceOf[VerificationIncompleteSummary]
 
       assertion(failedResult, summary)
