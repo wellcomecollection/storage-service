@@ -20,8 +20,8 @@ module "ingest_service" {
   internal_api_container_image = local.ingests_tracker_image
   worker_container_image       = local.ingests_worker_image
 
-  load_balancer_arn           = ""
-  load_balancer_listener_port = 0
+  load_balancer_arn           = module.api.loadbalancer_arn
+  load_balancer_listener_port = 65533
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
