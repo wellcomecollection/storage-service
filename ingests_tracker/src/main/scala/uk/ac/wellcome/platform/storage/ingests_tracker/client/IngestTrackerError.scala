@@ -6,6 +6,6 @@ sealed trait IngestTrackerError {
   val ingestUpdate: IngestUpdate
 }
 case class IngestTrackerConflictError(ingestUpdate: IngestUpdate)
-  extends IngestTrackerError
+    extends IngestTrackerError
 case class IngestTrackerUnknownError(ingestUpdate: IngestUpdate, err: Throwable)
-  extends IngestTrackerError
+    extends IngestTrackerError
