@@ -72,10 +72,7 @@ trait IngestsWorkerFixtures
     )
 
   def withIngestWorker[R](
-    queue: Queue = Queue(
-      url = "queue://test",
-      arn = "arn::queue"
-    ),
+    queue: Queue = dummyQueue,
     ingestTrackerClient: IngestTrackerClient
   )(testWith: TestWith[IngestsWorkerService, R]): R =
     withFakeMonitoringClient() { implicit monitoringClient =>
