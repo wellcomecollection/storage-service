@@ -100,8 +100,7 @@ lazy val ingests_tracker = setupProject(
 lazy val ingests_worker = setupProject(
   project,
   "ingests_worker",
-  localDependencies = Seq(ingests_common, ingests_tracker),
-  externalDependencies = ExternalDependencies.wiremockDependencies ++ ExternalDependencies.circeOpticsDependencies
+  localDependencies = Seq(ingests_common, ingests_tracker)
 )
 
 lazy val display =

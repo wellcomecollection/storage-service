@@ -20,9 +20,8 @@ class IngestsWorkerFeatureTest
     with IntegrationPatience {
 
   val visibilityTimeoutInSeconds = 1
-  val waitTimeInMilliseconds = (visibilityTimeoutInSeconds + 1) * 1000
 
-  it("When the client succeeds it should consume the message") {
+  it("When the client succeeds it consumes the message") {
     withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
         val client = successfulClient(ingest)
@@ -30,15 +29,15 @@ class IngestsWorkerFeatureTest
         withIngestWorker(queue, client) { _ =>
           sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-          Thread.sleep(waitTimeInMilliseconds)
-
-          getMessages(queue) shouldBe empty
-          getMessages(dlq) shouldBe empty
+          eventually {
+            assertQueueEmpty(queue)
+            assertQueueEmpty(dlq)
+          }
         }
     }
   }
 
-  it("When the client conflicts it should consume the message") {
+  it("When the client conflicts it consumes the message") {
     withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
         val client = conflictClient(ingestStatusUpdate)
@@ -46,15 +45,15 @@ class IngestsWorkerFeatureTest
         withIngestWorker(queue, client) { _ =>
           sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)
 
-          Thread.sleep(waitTimeInMilliseconds)
-
-          getMessages(queue) shouldBe empty
-          getMessages(dlq) shouldBe empty
+          eventually {
+            assertQueueEmpty(queue)
+            assertQueueEmpty(dlq)
+          }
         }
     }
   }
 
-  it("When the client errors it should NOT consume the message") {
+  it("When the client errors it does NOT consume the message") {
     withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
         val client = unknownErrorClient(ingestStatusUpdate)
@@ -64,16 +63,16 @@ class IngestsWorkerFeatureTest
 
           eventually {
             getMessages(queue) shouldBe empty
-            getMessages(dlq).length shouldBe 1
+            assertQueueHasSize(dlq, size = 1)
           }
         }
     }
   }
 
-  it("When the client fails it should NOT consume the message") {
+  it("When the client fails it does NOT consume the message") {
     withLocalSqsQueueAndDlqAndTimeout(visibilityTimeoutInSeconds) {
       case QueuePair(queue, dlq) =>
-        val client = failedFutureClient
+        val client = failedFutureClient()
 
         withIngestWorker(queue, client) { _ =>
           sendNotificationToSQS[IngestUpdate](queue, ingestStatusUpdate)

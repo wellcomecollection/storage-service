@@ -22,6 +22,8 @@ jobs:
     - env: SBT_PROJECT=replica_aggregator
     - env: SBT_PROJECT=bag_indexer
     - env: SBT_PROJECT=ingests_indexer
+    - env: SBT_PROJECT=ingests_tracker
+    - env: SBT_PROJECT=ingests_worker
 
     - env: SBT_PROJECT=notifier
 

@@ -22,15 +22,6 @@ trait IngestTrackerClient {
   ): Future[Either[IngestTrackerError, Ingest]]
 }
 
-sealed trait IngestTrackerError {
-  val ingestUpdate: IngestUpdate
-}
-case class IngestTrackerConflictError(ingestUpdate: IngestUpdate)
-    extends IngestTrackerError
-case class IngestTrackerUnknownError(ingestUpdate: IngestUpdate, err: Throwable)
-    extends IngestTrackerError
-
-//TODO: needs testing
 class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
     extends IngestTrackerClient
     with Logging {

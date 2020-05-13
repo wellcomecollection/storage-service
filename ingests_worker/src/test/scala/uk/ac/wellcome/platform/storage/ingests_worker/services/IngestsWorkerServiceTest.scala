@@ -63,7 +63,7 @@ class IngestsWorkerServiceTest
 
   describe("When the client fails") {
     it("returns NonDeterministicFailure") {
-      withIngestWorker(ingestTrackerClient = failedFutureClient) { worker =>
+      withIngestWorker(ingestTrackerClient = failedFutureClient()) { worker =>
         whenReady(worker.processMessage(ingestStatusUpdate)) {
           result: Result[Ingest] =>
             result shouldBe a[NonDeterministicFailure[_]]
