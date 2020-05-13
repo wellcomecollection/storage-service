@@ -20,18 +20,13 @@ trait BagVersionerFixtures
     with AlpakkaSQSWorkerFixtures
     with VersionPickerFixtures {
 
-  private val defaultQueue = Queue(
-    url = "default_q",
-    arn = "arn::default_q"
-  )
-
   def withBagVersioner[R](testWith: TestWith[BagVersioner, R]): R =
     withVersionPicker { versionPicker =>
       testWith(new BagVersioner(versionPicker))
     }
 
   def withBagVersionerWorker[R](
-    queue: Queue = defaultQueue,
+    queue: Queue = dummyQueue,
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
     stepName: String = randomAlphanumericWithLength()

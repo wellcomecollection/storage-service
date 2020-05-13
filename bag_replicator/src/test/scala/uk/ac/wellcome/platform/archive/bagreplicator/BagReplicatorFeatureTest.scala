@@ -40,7 +40,7 @@ class BagReplicatorFeatureTest
           bagRoot = srcBagRoot
         )
 
-        withLocalSqsQueue { queue =>
+        withLocalSqsQueue() { queue =>
           withBagReplicatorWorker(
             queue,
             bucket = dstBucket,

@@ -47,7 +47,7 @@ trait NotifierFixtures extends Akka with AlpakkaSQSWorkerFixtures {
     }
 
   def withNotifier[R](testWith: TestWith[(Queue, MemoryMessageSender), R]): R =
-    withLocalSqsQueue { queue =>
+    withLocalSqsQueue() { queue =>
       val messageSender = new MemoryMessageSender()
       withApp(queue = queue, messageSender = messageSender) { _ =>
         testWith((queue, messageSender))

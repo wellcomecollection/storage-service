@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.storage.bag_versioner
 import java.time.Instant
 
 import org.scalatest.funspec.AnyFunSpec
-import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
@@ -27,7 +27,8 @@ class BagVersionerFeatureTest
     with ObjectLocationGenerators
     with ExternalIdentifierGenerators
     with StorageSpaceGenerators
-    with Eventually {
+    with Eventually
+    with IntegrationPatience {
 
   it("assigns a version for a new bag") {
     val bagRoot = createObjectLocationPrefix
@@ -47,7 +48,7 @@ class BagVersionerFeatureTest
       version = BagVersion(1)
     )
 
-    withLocalSqsQueue { queue =>
+    withLocalSqsQueue(visibilityTimeout = 5) { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
       withBagVersionerWorker(
@@ -111,7 +112,7 @@ class BagVersionerFeatureTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    withLocalSqsQueue { queue =>
+    withLocalSqsQueue() { queue =>
       withBagVersionerWorker(
         queue,
         ingests,

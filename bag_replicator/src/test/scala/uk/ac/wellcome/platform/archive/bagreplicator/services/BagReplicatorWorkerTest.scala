@@ -9,7 +9,6 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
@@ -278,7 +277,7 @@ class BagReplicatorWorkerTest
         bagRoot = srcBagLocation
       )
 
-      withLocalSqsQueue { queue =>
+      withLocalSqsQueue() { queue =>
         withLocalS3Bucket { dstBucket =>
           withBagReplicatorWorker(
             queue = queue,
@@ -324,8 +323,6 @@ class BagReplicatorWorkerTest
     it("fails if the tag manifests don't match") {
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
-
-      val queue = Queue("any", "any")
 
       withLocalS3Bucket { srcBucket =>
         val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
@@ -383,7 +380,7 @@ class BagReplicatorWorkerTest
                 new BagReplicator(replicator)
 
               val service = new BagReplicatorWorker(
-                config = createAlpakkaSQSWorkerConfig(queue),
+                config = createAlpakkaSQSWorkerConfig(dummyQueue),
                 ingestUpdater = ingestUpdater,
                 outgoingPublisher = outgoingPublisher,
                 lockingService = lockingService,
@@ -405,8 +402,6 @@ class BagReplicatorWorkerTest
     }
 
     it("fails if there is no tag manifest") {
-      val queue = Queue("any", "any")
-
       withLocalS3Bucket { srcBucket =>
         withLocalS3Bucket { dstBucket =>
           val (srcBagLocation, _) = S3BagBuilder.createS3BagWith(
@@ -423,7 +418,7 @@ class BagReplicatorWorkerTest
           )
 
           val result =
-            withBagReplicatorWorker(queue, dstBucket) {
+            withBagReplicatorWorker(bucket = dstBucket) {
               _.processMessage(payload)
             }.success.value
 

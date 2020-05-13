@@ -41,7 +41,7 @@ class BagRootFinderFeatureTest
         bagRoot = unpackedBagLocation
       )
 
-      withLocalSqsQueue { queue =>
+      withLocalSqsQueue() { queue =>
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
         withWorkerService(
@@ -102,7 +102,7 @@ class BagRootFinderFeatureTest
         bagRoot = unpackedBagLocation
       )
 
-      withLocalSqsQueue { queue =>
+      withLocalSqsQueue() { queue =>
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
         withWorkerService(
@@ -142,7 +142,7 @@ class BagRootFinderFeatureTest
       val payload =
         createUnpackedBagLocationPayloadWith(bucketRootLocation)
 
-      withLocalSqsQueue { queue =>
+      withLocalSqsQueue() { queue =>
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
         withWorkerService(
@@ -181,7 +181,7 @@ class BagRootFinderFeatureTest
     val payload =
       createUnpackedBagLocationPayloadWith(unpackedBagLocation.asPrefix)
 
-    withLocalSqsQueue { queue =>
+    withLocalSqsQueue() { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
       withWorkerService(queue, ingests, outgoing, stepName = "finding bag root") {

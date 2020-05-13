@@ -20,7 +20,7 @@ class IngestsIndexerFeatureTest
     val ingest = createIngest
 
     withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
-      withLocalSqsQueue { queue =>
+      withLocalSqsQueue() { queue =>
         withIngestsIndexerWorker(queue, index) { worker =>
           worker.run()
 

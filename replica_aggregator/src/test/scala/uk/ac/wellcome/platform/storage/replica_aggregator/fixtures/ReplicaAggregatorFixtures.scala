@@ -26,13 +26,8 @@ trait ReplicaAggregatorFixtures
     with Akka
     with AlpakkaSQSWorkerFixtures {
 
-  private val defaultQueue = Queue(
-    url = "default_q",
-    arn = "arn::default_q"
-  )
-
   def withReplicaAggregatorWorker[R](
-    queue: Queue = defaultQueue,
+    queue: Queue = dummyQueue,
     versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord] =
       MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
         initialEntries = Map.empty

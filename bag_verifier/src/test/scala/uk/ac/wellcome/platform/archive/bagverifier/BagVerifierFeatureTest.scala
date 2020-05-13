@@ -45,7 +45,7 @@ class BagVerifierFeatureTest
     //
     // This was a cause of significant flakiness!  You can see the issue by turning down
     // the timeout and turning up the payload file count in `createS3BagWith()`.
-    withLocalSqsQueueAndDlqAndTimeout(visibilityTimeout = 10) {
+    withLocalSqsQueuePair(visibilityTimeout = 10) {
       case QueuePair(queue, dlq) =>
         withBagVerifierWorker(
           ingests,
@@ -92,7 +92,7 @@ class BagVerifierFeatureTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    withLocalSqsQueueAndDlq {
+    withLocalSqsQueuePair() {
       case QueuePair(queue, dlq) =>
         withBagVerifierWorker(
           ingests,

@@ -5,6 +5,7 @@ import java.nio.file.Paths
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 
+import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.verify._
@@ -22,6 +23,12 @@ trait StorageRandomThings extends RandomThings {
     Instant.now().plusSeconds(Random.nextInt().abs)
 
   private val collectionMax = 10
+
+  val dummyQueue: Queue = Queue(
+    url = "test://test-q",
+    arn = "arn::sqs::test",
+    visibilityTimeout = 1
+  )
 
   def collectionOf[T](min: Int = 0, max: Int = collectionMax)(f: => T): Seq[T] =
     (1 to randomInt(from = min, to = max)).map { _ =>
