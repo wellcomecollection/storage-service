@@ -26,7 +26,7 @@ class LookupIngestApiTest
   val contextUrlTest =
     "http://api.wellcomecollection.org/storage/v1/context.json"
 
-  it("returns a ingest tracker when available") {
+  it("finds an ingest") {
     val ingest = createIngestWith(
       createdDate = Instant.now(),
       events = Seq(createIngestEvent, createIngestEvent).sortBy {
@@ -141,7 +141,7 @@ class LookupIngestApiTest
     }
   }
 
-  it("returns a 404 NotFound if no ingest tracker matches id") {
+  it("returns a 404 Not Found if there is no matching ingest") {
     withConfiguredApp() {
       case (_, _, metrics, baseUrl) =>
         val id = randomUUID
@@ -158,10 +158,10 @@ class LookupIngestApiTest
     }
   }
 
-  it("returns a 500 Server Error if reading from DynamoDB fails") {
+  it("returns a 500 Server Error if looking up the ingest fails") {
     withBrokenApp {
       case (_, _, metrics, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/ingests/$randomUUID") { response =>
+        whenGetRequestReady(s"$baseUrl/ingests/$createIngestID") { response =>
           assertIsInternalServerErrorResponse(response)
 
           assertMetricSent(metrics, result = HttpMetricResults.ServerError)

@@ -4,6 +4,7 @@ import java.net.URL
 
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
@@ -14,27 +15,24 @@ import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
-  IngestStoreUnexpectedError,
-  IngestTracker
-}
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
-import uk.ac.wellcome.platform.storage.ingests.api.services.IngestStarter
-import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
-import uk.ac.wellcome.storage.Version
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+  AkkaIngestTrackerClient,
+  IngestTrackerClient
+}
+import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait IngestsApiFixture
-    extends IngestStarterFixture
-    with IngestGenerators
+    extends IngestGenerators
     with HttpFixtures
-    with IngestTrackerFixtures {
+    with IngestTrackerFixtures
+    with IngestsTrackerApiFixture {
 
   override val contextURLTest = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json"
@@ -44,7 +42,7 @@ trait IngestsApiFixture
 
   private def withApp[R](
     ingestTrackerTest: MemoryIngestTracker,
-    unpackerMessageSender: MemoryMessageSender,
+    unpackerSender: MemoryMessageSender,
     metrics: Metrics[Future, StandardUnit]
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
@@ -54,28 +52,30 @@ trait IngestsApiFixture
           metrics = metrics
         )
 
-        withIngestStarter(ingestTrackerTest, unpackerMessageSender) {
-          ingestStarterTest =>
-            val ingestsApi = new IngestsApi {
-              override val ingestTracker: IngestTracker = ingestTrackerTest
-              override val ingestStarter: IngestStarter[_] = ingestStarterTest
-              override val httpServerConfig: HTTPServerConfig =
-                httpServerConfigTest
-              override val contextURL: URL = contextURLTest
-            }
+        val ingestsApi = new IngestsApi[String] {
+          override implicit val ec: ExecutionContext = global
+          override val ingestTrackerClient: IngestTrackerClient =
+            new AkkaIngestTrackerClient(trackerUri)
 
-            val app = new WellcomeHttpApp(
-              routes = ingestsApi.ingests,
-              httpMetrics = httpMetrics,
-              httpServerConfig = httpServerConfigTest,
-              contextURL = contextURLTest,
-              appName = metricsName
-            )
+          override val unpackerMessageSender: MessageSender[String] =
+            unpackerSender
 
-            app.run()
-
-            testWith(app)
+          override val httpServerConfig: HTTPServerConfig =
+            httpServerConfigTest
+          override val contextURL: URL = contextURLTest
         }
+
+        val app = new WellcomeHttpApp(
+          routes = ingestsApi.ingests,
+          httpMetrics = httpMetrics,
+          httpServerConfig = httpServerConfigTest,
+          contextURL = contextURLTest,
+          appName = metricsName
+        )
+
+        app.run()
+
+        testWith(app)
       }
     }
 
@@ -89,36 +89,24 @@ trait IngestsApiFixture
       ),
       R
     ]
-  ): R = {
-    val messageSender = new MemoryMessageSender()
+  ): R =
+    withBrokenIngestsTrackerApi {
+      case (_, _, ingestTracker) =>
+        val messageSender = new MemoryMessageSender()
 
-    val brokenTracker = new MemoryIngestTracker(
-      underlying = new MemoryVersionedStore[IngestID, Ingest](
-        new MemoryStore[Version[IngestID, Int], Ingest](
-          initialEntries = Map.empty
-        ) with MemoryMaxima[IngestID, Ingest]
-      )
-    ) {
-      override def get(id: IngestID): Result =
-        Left(IngestStoreUnexpectedError(new Throwable("BOOM!")))
+        val metrics = new MemoryMetrics[StandardUnit]()
 
-      override def init(ingest: Ingest): Result =
-        Left(IngestStoreUnexpectedError(new Throwable("BOOM!")))
+        withApp(ingestTracker, messageSender, metrics) { _ =>
+          testWith(
+            (
+              ingestTracker,
+              messageSender,
+              metrics,
+              httpServerConfigTest.externalBaseURL
+            )
+          )
+        }
     }
-
-    val metrics = new MemoryMetrics[StandardUnit]()
-
-    withApp(brokenTracker, messageSender, metrics) { _ =>
-      testWith(
-        (
-          brokenTracker,
-          messageSender,
-          metrics,
-          httpServerConfigTest.externalBaseURL
-        )
-      )
-    }
-  }
 
   def withConfiguredApp[R](initialIngests: Seq[Ingest] = Seq.empty)(
     testWith: TestWith[
@@ -131,20 +119,21 @@ trait IngestsApiFixture
       R
     ]
   ): R =
-    withMemoryIngestTracker(initialIngests = initialIngests) { ingestTracker =>
-      val messageSender = new MemoryMessageSender()
+    withIngestsTrackerApi(initialIngests = initialIngests) {
+      case (_, _, ingestTracker) =>
+        val messageSender = new MemoryMessageSender()
 
-      val metrics = new MemoryMetrics[StandardUnit]()
+        val metrics = new MemoryMetrics[StandardUnit]()
 
-      withApp(ingestTracker, messageSender, metrics) { _ =>
-        testWith(
-          (
-            ingestTracker,
-            messageSender,
-            metrics,
-            httpServerConfigTest.externalBaseURL
+        withApp(ingestTracker, messageSender, metrics) { _ =>
+          testWith(
+            (
+              ingestTracker,
+              messageSender,
+              metrics,
+              httpServerConfigTest.externalBaseURL
+            )
           )
-        )
-      }
+        }
     }
 }
