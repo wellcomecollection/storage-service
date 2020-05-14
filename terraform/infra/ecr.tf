@@ -50,6 +50,14 @@ resource "aws_ecr_repository" "ingests_indexer" {
   name = "uk.ac.wellcome/ingests_indexer"
 }
 
+resource "aws_ecr_repository" "ingests_tracker" {
+  name = "uk.ac.wellcome/ingests_tracker"
+}
+
+resource "aws_ecr_repository" "ingests_worker" {
+  name = "uk.ac.wellcome/ingests_worker"
+}
+
 resource "aws_ecr_repository" "replica_aggregator" {
   name = "uk.ac.wellcome/replica_aggregator"
 }

@@ -24,7 +24,6 @@ jobs:
     - env: SBT_PROJECT=ingests_worker
     - env: SBT_PROJECT=ingests_tracker
     - env: SBT_PROJECT=ingests_api
-
     - env: SBT_PROJECT=notifier
 
     # - env: TASK=python_client-test
@@ -50,6 +49,8 @@ cache:
     - common/target
     - display/target
     - ingests/target
+    - ingests_tracker/target
+    - ingests_worker/target
     - ingests_common/target
     - notifier/target
     - replica_aggregator/target

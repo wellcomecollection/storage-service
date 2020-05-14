@@ -1,0 +1,8 @@
+{
+  "id" : "ingests_worker",
+  "folder" : "ingests_worker",
+  "dependencyIds" : [
+    "ingests_common",
+    "ingests_tracker"
+  ]
+}
