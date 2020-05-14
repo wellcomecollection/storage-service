@@ -30,7 +30,9 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
 
   implicit val ec: ExecutionContext
 
-  def createIngest(requestDisplayIngest: RequestDisplayIngest): Future[Route] = {
+  def createIngest(
+    requestDisplayIngest: RequestDisplayIngest
+  ): Future[Route] = {
     val space = requestDisplayIngest.space.id
     val externalIdentifier = requestDisplayIngest.bag.info.externalIdentifier
     val providerId = requestDisplayIngest.sourceLocation.provider.id
@@ -56,15 +58,16 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
     }
   }
 
-  private def createBadRequestResponse(description: String): Future[Route] = Future {
-    complete(
-      StatusCodes.BadRequest -> UserErrorResponse(
-        contextURL,
-        statusCode = StatusCodes.BadRequest,
-        description = description
+  private def createBadRequestResponse(description: String): Future[Route] =
+    Future {
+      complete(
+        StatusCodes.BadRequest -> UserErrorResponse(
+          contextURL,
+          statusCode = StatusCodes.BadRequest,
+          description = description
+        )
       )
-    )
-  }
+    }
 
   private def triggerIngestStarter(
     requestDisplayIngest: RequestDisplayIngest
@@ -74,7 +77,10 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
     val creationResult = for {
       trackerResult <- ingestTrackerClient.createIngest(ingest)
       _ <- trackerResult match {
-        case Right(_) => Future.fromTry { unpackerMessageSender.sendT(SourceLocationPayload(ingest)) }
+        case Right(_) =>
+          Future.fromTry {
+            unpackerMessageSender.sendT(SourceLocationPayload(ingest))
+          }
         case Left(_) => Future.successful(())
       }
     } yield trackerResult
@@ -106,14 +112,15 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
             )
           )
       }
-      .recover { case err =>
-        error(s"Unexpected error while creating ingest $ingest: $err")
-        complete(
-          StatusCodes.InternalServerError -> InternalServerErrorResponse(
-            contextURL,
-            statusCode = StatusCodes.InternalServerError
+      .recover {
+        case err =>
+          error(s"Unexpected error while creating ingest $ingest: $err")
+          complete(
+            StatusCodes.InternalServerError -> InternalServerErrorResponse(
+              contextURL,
+              statusCode = StatusCodes.InternalServerError
+            )
           )
-        )
       }
   }
 }

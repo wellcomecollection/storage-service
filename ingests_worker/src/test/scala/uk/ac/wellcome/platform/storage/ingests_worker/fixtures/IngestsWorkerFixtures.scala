@@ -48,12 +48,16 @@ trait IngestsWorkerFixtures
     ): Future[Either[IngestTrackerUpdateError, Ingest]] =
       response
 
-    override def createIngest(ingest: Ingest): Future[Either[IngestTrackerCreateError, Unit]] =
+    override def createIngest(
+      ingest: Ingest
+    ): Future[Either[IngestTrackerCreateError, Unit]] =
       Future.failed(new Throwable("BOOM!"))
 
-    override def getIngest(id: IngestID): Future[Either[IngestTrackerGetError, Ingest]] =
+    override def getIngest(
+      id: IngestID
+    ): Future[Either[IngestTrackerGetError, Ingest]] =
       Future.failed(new Throwable("BOOM!"))
-}
+  }
 
   def successfulClient(ingest: Ingest) = new FakeIngestTrackerClient(
     Future.successful(Right(ingest))

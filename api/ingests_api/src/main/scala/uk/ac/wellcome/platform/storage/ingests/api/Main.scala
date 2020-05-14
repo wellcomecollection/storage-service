@@ -44,7 +44,8 @@ object Main extends WellcomeTypesafeApp {
 
     val router = new IngestsApi[SNSConfig] {
       override implicit val ec: ExecutionContext = executionContext
-      override val ingestTrackerClient: IngestTrackerClient = new AkkaIngestTrackerClient(ingestTrackerHost)
+      override val ingestTrackerClient: IngestTrackerClient =
+        new AkkaIngestTrackerClient(ingestTrackerHost)
 
       override val unpackerMessageSender: MessageSender[SNSConfig] =
         SNSBuilder.buildSNSMessageSender(

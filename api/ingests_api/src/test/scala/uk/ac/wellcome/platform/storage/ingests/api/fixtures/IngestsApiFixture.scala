@@ -57,7 +57,8 @@ trait IngestsApiFixture
           override val ingestTrackerClient: IngestTrackerClient =
             new AkkaIngestTrackerClient(trackerUri)
 
-          override val unpackerMessageSender: MessageSender[String] = unpackerSender
+          override val unpackerMessageSender: MessageSender[String] =
+            unpackerSender
 
           override val httpServerConfig: HTTPServerConfig =
             httpServerConfigTest
@@ -89,21 +90,22 @@ trait IngestsApiFixture
       R
     ]
   ): R =
-    withBrokenIngestsTrackerApi { case (_, _, ingestTracker) =>
-      val messageSender = new MemoryMessageSender()
+    withBrokenIngestsTrackerApi {
+      case (_, _, ingestTracker) =>
+        val messageSender = new MemoryMessageSender()
 
-      val metrics = new MemoryMetrics[StandardUnit]()
+        val metrics = new MemoryMetrics[StandardUnit]()
 
-      withApp(ingestTracker, messageSender, metrics) { _ =>
-        testWith(
-          (
-            ingestTracker,
-            messageSender,
-            metrics,
-            httpServerConfigTest.externalBaseURL
+        withApp(ingestTracker, messageSender, metrics) { _ =>
+          testWith(
+            (
+              ingestTracker,
+              messageSender,
+              metrics,
+              httpServerConfigTest.externalBaseURL
+            )
           )
-        )
-      }
+        }
     }
 
   def withConfiguredApp[R](initialIngests: Seq[Ingest] = Seq.empty)(
@@ -117,20 +119,21 @@ trait IngestsApiFixture
       R
     ]
   ): R =
-    withIngestsTrackerApi(initialIngests = initialIngests) { case (_, _, ingestTracker) =>
-      val messageSender = new MemoryMessageSender()
+    withIngestsTrackerApi(initialIngests = initialIngests) {
+      case (_, _, ingestTracker) =>
+        val messageSender = new MemoryMessageSender()
 
-      val metrics = new MemoryMetrics[StandardUnit]()
+        val metrics = new MemoryMetrics[StandardUnit]()
 
-      withApp(ingestTracker, messageSender, metrics) { _ =>
-        testWith(
-          (
-            ingestTracker,
-            messageSender,
-            metrics,
-            httpServerConfigTest.externalBaseURL
+        withApp(ingestTracker, messageSender, metrics) { _ =>
+          testWith(
+            (
+              ingestTracker,
+              messageSender,
+              metrics,
+              httpServerConfigTest.externalBaseURL
+            )
           )
-        )
-      }
+        }
     }
 }

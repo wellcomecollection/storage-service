@@ -31,7 +31,8 @@ trait LookupIngest extends ResponseBase with Logging {
     ingestTrackerClient
       .getIngest(IngestID(id))
       .map {
-        case Right(ingest) => complete(ResponseDisplayIngest(ingest, contextURL))
+        case Right(ingest) =>
+          complete(ResponseDisplayIngest(ingest, contextURL))
         case Left(_: IngestTrackerNotFoundError) =>
           complete(
             StatusCodes.NotFound -> UserErrorResponse(
@@ -49,13 +50,14 @@ trait LookupIngest extends ResponseBase with Logging {
             )
           )
       }
-      .recover { case err =>
-        error(s"Unexpected error while calling ingest tracker $id: $err")
-        complete(
-          StatusCodes.InternalServerError -> InternalServerErrorResponse(
-            contextURL,
-            statusCode = StatusCodes.InternalServerError
+      .recover {
+        case err =>
+          error(s"Unexpected error while calling ingest tracker $id: $err")
+          complete(
+            StatusCodes.InternalServerError -> InternalServerErrorResponse(
+              contextURL,
+              statusCode = StatusCodes.InternalServerError
+            )
           )
-        )
       }
 }
