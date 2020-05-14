@@ -2,6 +2,6 @@
   "id" : "ingests_tracker",
   "folder" : "ingests_tracker",
   "dependencyIds" : [
-    "ingests_common"
+    "common"
   ]
 }

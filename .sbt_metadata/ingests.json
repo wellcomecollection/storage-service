@@ -1,7 +1,0 @@
-{
-  "id" : "ingests",
-  "folder" : "ingests",
-  "dependencyIds" : [
-    "ingests_common"
-  ]
-}

@@ -80,26 +80,16 @@ lazy val bag_unpacker = setupProject(
       ExternalDependencies.mockitoDependencies
 )
 
-lazy val ingests_common =
-  setupProject(project, "ingests_common", localDependencies = Seq(common))
-
-lazy val ingests = setupProject(
-  project,
-  "ingests",
-  localDependencies = Seq(ingests_common),
-  externalDependencies = ExternalDependencies.wiremockDependencies
-)
-
 lazy val ingests_tracker = setupProject(
   project,
   "ingests_tracker",
-  localDependencies = Seq(ingests_common)
+  localDependencies = Seq(common)
 )
 
 lazy val ingests_worker = setupProject(
   project,
   "ingests_worker",
-  localDependencies = Seq(ingests_common, ingests_tracker)
+  localDependencies = Seq(ingests_tracker)
 )
 
 lazy val display =
@@ -115,7 +105,7 @@ lazy val notifier = setupProject(
 lazy val ingests_api = setupProject(
   project,
   "api/ingests_api",
-  localDependencies = Seq(ingests_common, display, ingests_tracker),
+  localDependencies = Seq(display, ingests_tracker),
   externalDependencies = ExternalDependencies.circeOpticsDependencies
 )
 
