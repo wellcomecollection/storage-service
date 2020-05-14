@@ -11,15 +11,11 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
+  IngestID,
   IngestUpdate
 }
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
-  IngestTrackerClient,
-  IngestTrackerError,
-  IngestTrackerUnknownUpdateError,
-  IngestTrackerUpdateConflictError
-}
+import uk.ac.wellcome.platform.storage.ingests_tracker.client._
 import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorkerService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -45,13 +41,19 @@ trait IngestsWorkerFixtures
   val error = new Exception("BOOM!")
 
   class FakeIngestTrackerClient(
-    response: Future[Either[IngestTrackerError, Ingest]]
+    response: Future[Either[IngestTrackerUpdateError, Ingest]]
   ) extends IngestTrackerClient {
     override def updateIngest(
       ingestUpdate: IngestUpdate
-    ): Future[Either[IngestTrackerError, Ingest]] =
+    ): Future[Either[IngestTrackerUpdateError, Ingest]] =
       response
-  }
+
+    override def createIngest(ingest: Ingest): Future[Either[IngestTrackerCreateError, Unit]] =
+      Future.failed(new Throwable("BOOM!"))
+
+    override def getIngest(id: IngestID): Future[Either[IngestTrackerGetError, Ingest]] =
+      Future.failed(new Throwable("BOOM!"))
+}
 
   def successfulClient(ingest: Ingest) = new FakeIngestTrackerClient(
     Future.successful(Right(ingest))
