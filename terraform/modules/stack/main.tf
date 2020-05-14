@@ -20,6 +20,26 @@ module "ingest_service" {
   internal_api_container_image = local.ingests_tracker_image
   worker_container_image       = local.ingests_worker_image
 
+  external_api_environment = {
+    context_url               = "${var.api_url}/context.json"
+    app_base_url              = "${var.api_url}/storage/v1/ingests"
+    unpacker_topic_arn        = module.bag_unpacker_input_topic.arn
+    metrics_namespace         = local.ingests_api_service_name
+    ingests_tracker_host      = "http://localhost:8080"
+  }
+
+  worker_environment = {
+    queue_url            = module.ingests_input_queue.url
+    metrics_namespace    = local.ingests_service_name
+    ingests_tracker_host = "http://localhost:8080"
+  }
+
+  internal_api_environment = {
+    ingests_table_name = var.ingests_table_arn
+    callback_notifications_topic_arn = module.ingests_monitor_callback_notifications_topic.arn
+    updated_ingests_topic_arn        = module.ingests_topic.arn
+  }
+
   load_balancer_arn           = module.api.loadbalancer_arn
   load_balancer_listener_port = 65533
 
@@ -27,6 +47,38 @@ module "ingest_service" {
 
   subnets = var.private_subnets
   vpc_id  = var.vpc_id
+}
+
+module "ingests_indexer" {
+  source = "../service/worker"
+
+  container_image = local.ingests_indexer_image
+
+  cluster_name = aws_ecs_cluster.cluster.name
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+
+  subnets      = var.private_subnets
+  service_name = "${var.namespace}-ingests-indexer"
+
+  environment = {
+    queue_url         = module.updated_ingests_queue.url
+    metrics_namespace = local.ingests_indexer_service_name
+
+    es_ingests_index_prefix = var.es_ingests_index_prefix
+  }
+
+  secrets = var.ingests_indexer_secrets
+
+  security_group_ids = [
+    aws_security_group.service_egress.id
+  ]
+
+  min_capacity = 0
+  max_capacity = var.max_capacity
+
+  use_fargate_spot = true
+
+  service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
 # bag_unpacker
@@ -382,75 +434,6 @@ module "notifier" {
   max_capacity = var.max_capacity
 
   container_image = local.notifier_image
-
-  use_fargate_spot = true
-
-  service_discovery_namespace_id = local.service_discovery_namespace_id
-}
-
-# ingests
-
-module "ingests" {
-  source = "../service/worker"
-
-  container_image = local.ingests_image
-
-  cluster_name = aws_ecs_cluster.cluster.name
-  cluster_arn  = aws_ecs_cluster.cluster.arn
-
-  subnets      = var.private_subnets
-  service_name = "${var.namespace}-ingests"
-
-  environment = {
-    queue_url                        = module.ingests_input_queue.url
-    callback_notifications_topic_arn = module.ingests_monitor_callback_notifications_topic.arn
-    updated_ingests_topic_arn        = module.updated_ingests_topic.arn
-    ingests_table_name               = var.ingests_table_name
-    metrics_namespace                = local.ingests_service_name
-  }
-
-  security_group_ids = [
-    aws_security_group.service_egress.id
-  ]
-
-  # We always run at least one ingests monitor so messages from other apps are
-  # displayed in the API immediately.
-  min_capacity = max(1, var.min_capacity)
-  max_capacity = var.max_capacity
-
-  use_fargate_spot = true
-
-  service_discovery_namespace_id = local.service_discovery_namespace_id
-}
-
-# ingests indexer
-
-module "ingests_indexer" {
-  source = "../service/worker"
-
-  container_image = local.ingests_indexer_image
-
-  cluster_name = aws_ecs_cluster.cluster.name
-  cluster_arn  = aws_ecs_cluster.cluster.arn
-
-  subnets      = var.private_subnets
-  service_name = "${var.namespace}-ingests-indexer"
-
-  environment = {
-    queue_url         = module.updated_ingests_queue.url
-    metrics_namespace = local.ingests_indexer_service_name
-
-    es_ingests_index_prefix = var.es_ingests_index_prefix
-  }
-
-  secrets = var.ingests_indexer_secrets
-
-  security_group_ids = [
-    aws_security_group.service_egress.id
-  ]
-
-  min_capacity = 0
-  max_capacity = var.max_capacity
 
   use_fargate_spot = true
 

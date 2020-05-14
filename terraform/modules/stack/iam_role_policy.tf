@@ -35,12 +35,12 @@ resource "aws_iam_role_policy" "s3_large_response_cache" {
 # ingests
 
 resource "aws_iam_role_policy" "ingests_table_readwrite" {
-  role   = module.ingests.task_role_name
+  role   = module.ingest_service.task_role_name
   policy = data.aws_iam_policy_document.table_ingests_readwrite.json
 }
 
 resource "aws_iam_role_policy" "ingests_metrics" {
-  role   = module.ingests.task_role_name
+  role   = module.ingest_service.task_role_name
   policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
 }
 

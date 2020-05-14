@@ -1,6 +1,6 @@
 locals {
   bags_api_service_name    = "${var.namespace}-bags-api"
-  ingests_service_name     = "${var.namespace}-ingests"
+  ingests_service_name     = "${var.namespace}-ingests-service"
   ingests_api_service_name = "${var.namespace}-ingests-api"
   notifier_service_name    = "${var.namespace}-notifier"
 
