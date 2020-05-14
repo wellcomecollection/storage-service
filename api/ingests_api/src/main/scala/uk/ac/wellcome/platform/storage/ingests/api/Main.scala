@@ -7,6 +7,7 @@ import akka.http.scaladsl.model.Uri
 import akka.stream.Materializer
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.typesafe.config.Config
+import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
@@ -61,9 +62,16 @@ object Main extends WellcomeTypesafeApp {
       config.required[String]("ingests.tracker.host")
     )
 
-    val router = new IngestsApi {
+    val router = new IngestsApi[SNSConfig] {
       override implicit val ec: ExecutionContext = executionContext
       override val ingestTrackerClient: IngestTrackerClient = new AkkaIngestTrackerClient(ingestTrackerHost)
+
+      override val unpackerMessageSender: MessageSender[SNSConfig] =
+        SNSBuilder.buildSNSMessageSender(
+          config,
+          namespace = "unpacker",
+          subject = "Sent from the ingests API"
+        )
 
       override val ingestStarter: IngestStarter[_] = ingestStarterMain
       override val httpServerConfig: HTTPServerConfig = httpServerConfigMain

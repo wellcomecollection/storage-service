@@ -4,6 +4,7 @@ import java.net.URL
 
 import com.amazonaws.services.cloudwatch.model.StandardUnit
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
@@ -43,7 +44,7 @@ trait IngestsApiFixture
 
   private def withApp[R](
     ingestTrackerTest: MemoryIngestTracker,
-    unpackerMessageSender: MemoryMessageSender,
+    unpackerSender: MemoryMessageSender,
     metrics: Metrics[Future, StandardUnit]
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
@@ -53,12 +54,14 @@ trait IngestsApiFixture
           metrics = metrics
         )
 
-        withIngestStarter(ingestTrackerTest, unpackerMessageSender) {
+        withIngestStarter(ingestTrackerTest, unpackerSender) {
           ingestStarterTest =>
-            val ingestsApi = new IngestsApi {
+            val ingestsApi = new IngestsApi[String] {
               override implicit val ec: ExecutionContext = global
               override val ingestTrackerClient: IngestTrackerClient =
                 new AkkaIngestTrackerClient(trackerUri)
+
+              override val unpackerMessageSender: MessageSender[String] = unpackerSender
 
               override val ingestStarter: IngestStarter[_] = ingestStarterTest
               override val httpServerConfig: HTTPServerConfig =

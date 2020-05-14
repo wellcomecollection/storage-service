@@ -17,10 +17,12 @@ import uk.ac.wellcome.platform.storage.ingests.api.responses.{
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-trait IngestsApi extends CreateIngest with LookupIngest {
+trait IngestsApi[UnpackerDestination] extends CreateIngest[UnpackerDestination] with LookupIngest {
   val ingests: Route = pathPrefix("ingests") {
     post {
-      entity(as[RequestDisplayIngest]) { createIngest }
+      entity(as[RequestDisplayIngest]) { ingest =>
+        withFuture { createIngest(ingest) }
+      }
     } ~ path(JavaUUID) { id: UUID =>
       get {
         withFuture { lookupIngest(id) }

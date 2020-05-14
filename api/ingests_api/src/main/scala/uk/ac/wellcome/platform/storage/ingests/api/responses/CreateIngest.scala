@@ -7,28 +7,32 @@ import akka.http.scaladsl.server.Route
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.MessageSender
+import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.http.models.{
   InternalServerErrorResponse,
   UserErrorResponse
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  StorageProvider
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
 import uk.ac.wellcome.platform.archive.display.ingests.{
   RequestDisplayIngest,
   ResponseDisplayIngest
 }
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestStarter
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.IngestTrackerClient
 
-import scala.util.{Failure, Success}
+import scala.concurrent.{ExecutionContext, Future}
 
-trait CreateIngest extends ResponseBase with Logging {
+trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
   val httpServerConfig: HTTPServerConfig
   val ingestStarter: IngestStarter[_]
+  val ingestTrackerClient: IngestTrackerClient
+  val unpackerMessageSender: MessageSender[UnpackerDestination]
 
-  def createIngest(requestDisplayIngest: RequestDisplayIngest): Route = {
+  implicit val ec: ExecutionContext
+
+  def createIngest(requestDisplayIngest: RequestDisplayIngest): Future[Route] = {
     val space = requestDisplayIngest.space.id
     val externalIdentifier = requestDisplayIngest.bag.info.externalIdentifier
     val providerId = requestDisplayIngest.sourceLocation.provider.id
@@ -50,10 +54,11 @@ trait CreateIngest extends ResponseBase with Logging {
       )
     } else {
       triggerIngestStarter(requestDisplayIngest)
+
     }
   }
 
-  private def createBadRequestResponse(description: String): Route =
+  private def createBadRequestResponse(description: String): Future[Route] = Future {
     complete(
       StatusCodes.BadRequest -> UserErrorResponse(
         contextURL,
@@ -61,33 +66,56 @@ trait CreateIngest extends ResponseBase with Logging {
         description = description
       )
     )
+  }
 
   private def triggerIngestStarter(
     requestDisplayIngest: RequestDisplayIngest
-  ): Route =
-    ingestStarter.initialise(requestDisplayIngest.toIngest) match {
-      case Success(ingest) =>
-        respondWithHeaders(List(createLocationHeader(ingest))) {
+  ): Future[Route] = {
+    val ingest = requestDisplayIngest.toIngest
+
+    val creationResult = for {
+      trackerResult <- ingestTrackerClient.createIngest(ingest)
+      _ <- trackerResult match {
+        case Right(_) => Future.fromTry { unpackerMessageSender.sendT(SourceLocationPayload(ingest)) }
+        case Left(_) => Future.successful(())
+      }
+    } yield trackerResult
+
+    creationResult
+      .map {
+        case Right(()) =>
+          val headers = List(
+            Location(s"${httpServerConfig.externalBaseURL}/${ingest.id}")
+          )
+
+          respondWithHeaders(headers) {
+            complete(
+              StatusCodes.Created -> ResponseDisplayIngest(
+                ingest,
+                contextURL
+              )
+            )
+          }
+
+        // This will capture both a Conflict and an Internal error from the ingest
+        // tracker.  There's nothing a user can do about either of them, so return
+        // them both as 500 errors.
+        case Left(_) =>
           complete(
-            StatusCodes.Created -> ResponseDisplayIngest(
-              ingest,
-              contextURL
+            StatusCodes.InternalServerError -> InternalServerErrorResponse(
+              contextURL,
+              statusCode = StatusCodes.InternalServerError
             )
           )
-        }
-      case Failure(err) =>
-        error(
-          s"Unexpected error while creating an ingest $requestDisplayIngest",
-          err
-        )
+      }
+      .recover { case err =>
+        error(s"Unexpected error while creating ingest $ingest: $err")
         complete(
           StatusCodes.InternalServerError -> InternalServerErrorResponse(
             contextURL,
             statusCode = StatusCodes.InternalServerError
           )
         )
-    }
-
-  private def createLocationHeader(ingest: Ingest) =
-    Location(s"${httpServerConfig.externalBaseURL}/${ingest.id}")
+      }
+  }
 }
