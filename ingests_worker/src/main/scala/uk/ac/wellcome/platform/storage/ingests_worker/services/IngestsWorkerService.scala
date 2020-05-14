@@ -26,8 +26,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   IngestTrackerClient,
-  IngestTrackerUpdateConflictError,
-  IngestTrackerUnknownUpdateError
+  IngestTrackerUnknownUpdateError,
+  IngestTrackerUpdateConflictError
 }
 import uk.ac.wellcome.typesafe.Runnable
 

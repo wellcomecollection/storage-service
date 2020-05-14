@@ -18,7 +18,9 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import scala.concurrent.{ExecutionContext, Future}
 
 trait IngestTrackerClient {
-  def createIngest(ingest: Ingest): Future[Either[IngestTrackerCreateError, Unit]]
+  def createIngest(
+    ingest: Ingest
+  ): Future[Either[IngestTrackerCreateError, Unit]]
 
   def updateIngest(
     ingestUpdate: IngestUpdate
@@ -33,7 +35,9 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
 
   implicit val ec: ExecutionContext = as.dispatcher
 
-  override def createIngest(ingest: Ingest): Future[Either[IngestTrackerCreateError, Unit]] =
+  override def createIngest(
+    ingest: Ingest
+  ): Future[Either[IngestTrackerCreateError, Unit]] =
     for {
       ingestEntity <- Marshal(ingest).to[RequestEntity]
 

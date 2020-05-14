@@ -13,10 +13,10 @@ sealed trait IngestTrackerCreateError extends IngestTrackerError {
 }
 
 case class IngestTrackerCreateConflictError(ingest: Ingest)
-  extends IngestTrackerCreateError
+    extends IngestTrackerCreateError
 
 case class IngestTrackerUnknownCreateError(ingest: Ingest, err: Throwable)
-  extends IngestTrackerCreateError
+    extends IngestTrackerCreateError
 
 sealed trait IngestTrackerUpdateError extends IngestTrackerError {
   val ingestUpdate: IngestUpdate

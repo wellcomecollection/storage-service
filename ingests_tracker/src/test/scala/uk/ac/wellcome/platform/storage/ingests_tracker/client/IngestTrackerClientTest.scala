@@ -59,19 +59,20 @@ trait IngestTrackerClientTestCases
   describe("behaves as an IngestTrackerClient") {
     describe("createIngest") {
       it("creates a new ingest") {
-        withIngestsTrackerApi() { case (_, _, ingestsTracker) =>
-          withIngestTrackerClient(trackerUri) { client =>
-            val create = client.createIngest(ingest)
+        withIngestsTrackerApi() {
+          case (_, _, ingestsTracker) =>
+            withIngestTrackerClient(trackerUri) { client =>
+              val create = client.createIngest(ingest)
 
-            whenReady(create) { result =>
-              result shouldBe Right(())
-              ingestsTracker
-                .get(ingest.id)
-                .right
-                .get
-                .identifiedT shouldBe ingest
+              whenReady(create) { result =>
+                result shouldBe Right(())
+                ingestsTracker
+                  .get(ingest.id)
+                  .right
+                  .get
+                  .identifiedT shouldBe ingest
+              }
             }
-          }
         }
       }
 
