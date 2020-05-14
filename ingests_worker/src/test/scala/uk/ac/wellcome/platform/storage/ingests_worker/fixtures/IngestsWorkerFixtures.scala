@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   IngestTrackerClient,
-  IngestTrackerConflictError,
+  IngestTrackerUpdateConflictError,
   IngestTrackerError,
   IngestTrackerUnknownUpdateError
 }
@@ -58,7 +58,7 @@ trait IngestsWorkerFixtures
   )
 
   def conflictClient(ingestUpdate: IngestUpdate) = new FakeIngestTrackerClient(
-    Future.successful(Left(IngestTrackerConflictError(ingestUpdate)))
+    Future.successful(Left(IngestTrackerUpdateConflictError(ingestUpdate)))
   )
 
   def unknownErrorClient(ingestUpdate: IngestUpdate) =
