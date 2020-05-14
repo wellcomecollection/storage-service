@@ -2,9 +2,7 @@ variable "service_name" {
   type = string
 }
 
-variable "container_definitions" {
-  type = list(any)
-}
+variable "container_definitions" {}
 
 variable "cpu" {
   type    = number
