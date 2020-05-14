@@ -93,20 +93,65 @@ trait IngestTrackerClientTestCases
           withIngestTrackerClient(trackerUri) { client =>
             val update = client.updateIngest(ingestStatusUpdate)
 
-            whenReady(update) { result =>
-              result shouldBe a[Left[_, _]]
-              result.left.get shouldBe a[IngestTrackerUnknownError]
+            whenReady(update) {
+              _.left.value shouldBe a[IngestTrackerUnknownUpdateError]
             }
           }
         }
       }
 
-      it("errors if the tracker API does not respond") {
+      it("fails if the tracker API does not respond") {
         withIngestTrackerClient("http://localhost:9000/nothing") { client =>
           val future = client.updateIngest(ingestStatusUpdate)
 
-          whenReady(future.failed) { err =>
-            err shouldBe a[Throwable]
+          whenReady(future.failed) {
+            _ shouldBe a[Throwable]
+          }
+        }
+      }
+    }
+
+    describe("getIngest") {
+      it("finds an ingest") {
+        withIngestsTracker(ingest) { _ =>
+          withIngestTrackerClient(trackerUri) { client =>
+            whenReady(client.getIngest(ingest.id)) {
+              _.right.value shouldBe ingest
+            }
+          }
+        }
+      }
+
+      it("returns a NotFoundError if you look up a non-existent ingest") {
+        val nonExistentID = createIngestID
+
+        withIngestsTracker(ingest) { _ =>
+          withIngestTrackerClient(trackerUri) { client =>
+            whenReady(client.getIngest(nonExistentID)) {
+              _.left.value shouldBe IngestTrackerNotFoundError(nonExistentID)
+            }
+          }
+        }
+      }
+
+      it("errors if the tracker API returns a 500 error") {
+        withBrokenIngestsTrackerApi { _ =>
+          withIngestTrackerClient(trackerUri) { client =>
+            val future = client.getIngest(createIngestID)
+
+            whenReady(future) {
+              _.left.value shouldBe a[IngestTrackerUnknownGetError]
+            }
+          }
+        }
+      }
+
+      it("fails if the tracker API does not respond") {
+        withIngestTrackerClient("http://localhost:9000/nothing") { client =>
+          val future = client.getIngest(createIngestID)
+
+          whenReady(future.failed) {
+            _ shouldBe a[Throwable]
           }
         }
       }

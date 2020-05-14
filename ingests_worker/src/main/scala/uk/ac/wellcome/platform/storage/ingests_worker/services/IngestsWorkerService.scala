@@ -27,7 +27,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   IngestTrackerClient,
   IngestTrackerConflictError,
-  IngestTrackerUnknownError
+  IngestTrackerUnknownUpdateError
 }
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -66,7 +66,7 @@ class IngestsWorkerService(
         )
         warn(err)
         DeterministicFailure[Ingest](err)
-      case Left(IngestTrackerUnknownError(_, err)) =>
+      case Left(IngestTrackerUnknownUpdateError(_, err)) =>
         error(s"Error trying to apply $ingestUpdate, got UnknownError", err)
         NonDeterministicFailure[Ingest](err)
     } recover {

@@ -11,6 +11,7 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
+  IngestID,
   IngestUpdate
 }
 
@@ -19,7 +20,9 @@ import scala.concurrent.{ExecutionContext, Future}
 trait IngestTrackerClient {
   def updateIngest(
     ingestUpdate: IngestUpdate
-  ): Future[Either[IngestTrackerError, Ingest]]
+  ): Future[Either[IngestTrackerUpdateError, Ingest]]
+
+  def getIngest(id: IngestID): Future[Either[IngestTrackerGetError, Ingest]]
 }
 
 class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
@@ -30,7 +33,7 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
 
   def updateIngest(
     ingestUpdate: IngestUpdate
-  ): Future[Either[IngestTrackerError, Ingest]] =
+  ): Future[Either[IngestTrackerUpdateError, Ingest]] =
     for {
       ingestUpdateEntity <- Marshal(ingestUpdate).to[RequestEntity]
 
@@ -57,7 +60,36 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
         case status =>
           val err = new Exception(f"$status from IngestsTracker")
           error(f"NOT OK for PATCH to $requestUri with $ingestUpdate", err)
-          Future(Left(IngestTrackerUnknownError(ingestUpdate, err)))
+          Future(Left(IngestTrackerUnknownUpdateError(ingestUpdate, err)))
       }
     } yield ingest
+
+  override def getIngest(id: IngestID): Future[Either[IngestTrackerGetError, Ingest]] = {
+    val path = Path(s"/ingest/$id")
+    val requestUri = trackerHost.withPath(path)
+
+    val request = HttpRequest(
+      uri = requestUri,
+      method = HttpMethods.GET
+    )
+
+    info(s"Making request $request")
+
+    for {
+      response <- Http().singleRequest(request)
+
+      ingest <- response.status match {
+        case StatusCodes.OK =>
+          info(s"OK for GET to $requestUri")
+          Unmarshal(response.entity).to[Ingest].map(Right(_))
+        case StatusCodes.NotFound =>
+          warn(s"Not Found for GET to $requestUri")
+          Future(Left(IngestTrackerNotFoundError(id)))
+        case status =>
+          val err = new Exception(s"$status from IngestsTracker")
+          error(f"NOT OK for GET to $requestUri, err")
+          Future(Left(IngestTrackerUnknownGetError(id, err)))
+      }
+    } yield ingest
+  }
 }
