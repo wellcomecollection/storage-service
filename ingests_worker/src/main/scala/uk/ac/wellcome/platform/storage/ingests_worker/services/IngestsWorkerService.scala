@@ -26,7 +26,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   IngestTrackerClient,
-  IngestTrackerConflictError,
+  IngestTrackerUpdateConflictError,
   IngestTrackerUnknownUpdateError
 }
 import uk.ac.wellcome.typesafe.Runnable
@@ -60,7 +60,7 @@ class IngestsWorkerService(
       case Right(ingest) =>
         info(f"Successfully applied $ingestUpdate, got $ingest")
         Successful(Some(ingest))
-      case Left(IngestTrackerConflictError(_)) =>
+      case Left(IngestTrackerUpdateConflictError(_)) =>
         val err = new Exception(
           f"Error trying to apply update $ingestUpdate, got Conflict"
         )

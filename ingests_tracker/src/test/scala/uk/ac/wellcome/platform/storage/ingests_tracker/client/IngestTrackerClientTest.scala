@@ -57,6 +57,64 @@ trait IngestTrackerClientTestCases
     }
 
   describe("behaves as an IngestTrackerClient") {
+    describe("createIngest") {
+      it("creates a new ingest") {
+        withIngestsTrackerApi() { case (_, _, ingestsTracker) =>
+          withIngestTrackerClient(trackerUri) { client =>
+            val create = client.createIngest(ingest)
+
+            whenReady(create) { result =>
+              result shouldBe Right(())
+              ingestsTracker
+                .get(ingest.id)
+                .right
+                .get
+                .identifiedT shouldBe ingest
+            }
+          }
+        }
+      }
+
+      it("does not create a conflicting ingest") {
+        withIngestsTracker(failedIngest) { ingestsTracker =>
+          withIngestTrackerClient(trackerUri) { client =>
+            val create = client.createIngest(ingest)
+
+            whenReady(create) { result =>
+              result shouldBe Left(IngestTrackerCreateConflictError(ingest))
+              ingestsTracker
+                .get(ingest.id)
+                .right
+                .get
+                .identifiedT shouldBe failedIngest
+            }
+          }
+        }
+      }
+
+      it("errors if the tracker API returns a 500 error") {
+        withBrokenIngestsTrackerApi { _ =>
+          withIngestTrackerClient(trackerUri) { client =>
+            val future = client.createIngest(ingest)
+
+            whenReady(future) {
+              _.left.value shouldBe a[IngestTrackerUnknownCreateError]
+            }
+          }
+        }
+      }
+
+      it("fails if the tracker API does not respond") {
+        withIngestTrackerClient("http://localhost:9000/nothing") { client =>
+          val future = client.createIngest(ingest)
+
+          whenReady(future.failed) {
+            _ shouldBe a[Throwable]
+          }
+        }
+      }
+    }
+
     describe("updateIngest") {
       it("applies a valid update") {
         withIngestsTracker(ingest) { ingestsTracker =>
@@ -82,7 +140,7 @@ trait IngestTrackerClientTestCases
 
             whenReady(update) { result =>
               result shouldBe Left(
-                IngestTrackerConflictError(ingestStatusUpdate)
+                IngestTrackerUpdateConflictError(ingestStatusUpdate)
               )
               ingestsTracker
                 .get(ingest.id)

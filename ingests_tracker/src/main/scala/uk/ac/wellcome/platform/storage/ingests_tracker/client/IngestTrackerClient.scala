@@ -18,6 +18,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import scala.concurrent.{ExecutionContext, Future}
 
 trait IngestTrackerClient {
+  def createIngest(ingest: Ingest): Future[Either[IngestTrackerCreateError, Unit]]
+
   def updateIngest(
     ingestUpdate: IngestUpdate
   ): Future[Either[IngestTrackerUpdateError, Ingest]]
@@ -30,6 +32,36 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
     with Logging {
 
   implicit val ec: ExecutionContext = as.dispatcher
+
+  override def createIngest(ingest: Ingest): Future[Either[IngestTrackerCreateError, Unit]] =
+    for {
+      ingestEntity <- Marshal(ingest).to[RequestEntity]
+
+      requestUri = trackerHost.withPath(Path("/ingest"))
+
+      request = HttpRequest(
+        uri = requestUri,
+        method = HttpMethods.POST,
+        entity = ingestEntity
+      )
+
+      _ = info(f"Making request: $request")
+
+      response <- Http().singleRequest(request)
+
+      result <- response.status match {
+        case StatusCodes.Created =>
+          info(s"CREATED for POST to $requestUri with $ingest")
+          Future(Right(()))
+        case StatusCodes.Conflict =>
+          info(s"Conflict for POST to $requestUri with $ingest")
+          Future(Left(IngestTrackerCreateConflictError(ingest)))
+        case status =>
+          val err = new Exception(s"$status for POST to IngestsTracker")
+          error(f"NOT OK for POST to $requestUri with $ingest", err)
+          Future(Left(IngestTrackerUnknownCreateError(ingest, err)))
+      }
+    } yield result
 
   def updateIngest(
     ingestUpdate: IngestUpdate
@@ -56,7 +88,7 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
           Unmarshal(response.entity).to[Ingest].map(Right(_))
         case StatusCodes.Conflict =>
           warn(f"Conflict for PATCH to $requestUri with $ingestUpdate")
-          Future(Left(IngestTrackerConflictError(ingestUpdate)))
+          Future(Left(IngestTrackerUpdateConflictError(ingestUpdate)))
         case status =>
           val err = new Exception(f"$status from IngestsTracker")
           error(f"NOT OK for PATCH to $requestUri with $ingestUpdate", err)
