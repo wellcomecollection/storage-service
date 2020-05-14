@@ -23,8 +23,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
   Succeeded
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestDoesNotExistError
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
+import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestDoesNotExistError
 
 class IngestsTrackerApiFeatureTest
     extends AnyFunSpec

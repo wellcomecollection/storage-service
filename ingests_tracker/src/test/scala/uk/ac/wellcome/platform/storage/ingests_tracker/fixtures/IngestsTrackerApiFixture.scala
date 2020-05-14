@@ -11,17 +11,16 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestID,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
-  IngestStoreUnexpectedError,
-  IngestTracker
-}
 import uk.ac.wellcome.platform.storage.ingests_tracker.IngestsTrackerApi
 import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
   CallbackNotificationService,
   MessagingService
 }
+import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
+  IngestStoreUnexpectedError,
+  IngestTracker
+}
+import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
@@ -30,6 +29,8 @@ trait IngestsTrackerApiFixture
     extends IngestTrackerFixtures
     with IngestGenerators
     with Akka {
+
+  val trackerUri = "http://localhost:8080"
 
   private def withApp[R](
     ingestTrackerTest: MemoryIngestTracker,

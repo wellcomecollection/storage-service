@@ -6,12 +6,12 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.sns.{SNSConfig, SNSMessageSender}
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.dynamo.DynamoIngestTracker
 import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
   CallbackNotificationService,
   MessagingService
 }
+import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestTracker
+import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.dynamo.DynamoIngestTracker
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder

@@ -14,8 +14,12 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestID,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.archive.common.ingests.tracker._
 import uk.ac.wellcome.platform.storage.ingests_tracker.services.MessagingService
+import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
+  IngestDoesNotExistError,
+  IngestTracker,
+  StateConflictError
+}
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -72,10 +76,10 @@ trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination]
                     messagingService.send(ingest)
                     complete(StatusCodes.OK -> ingest)
                   case Left(e: StateConflictError) =>
-                    error(s"Ingest ${id} can not be updated", e)
+                    error(s"Ingest $id can not be updated", e)
                     complete(StatusCodes.Conflict)
                   case Left(e) =>
-                    error(s"Failed to update ingest: ${id}", e)
+                    error(s"Failed to update ingest: $id", e)
                     complete(StatusCodes.InternalServerError)
                 }
             }
@@ -86,13 +90,13 @@ trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination]
           id =>
             ingestTracker.get(IngestID(id)) match {
               case Left(IngestDoesNotExistError(_)) =>
-                info(s"Could not find ingest: ${id}")
+                info(s"Could not find ingest: $id")
                 complete(StatusCodes.NotFound)
               case Left(e) =>
                 error("Failed to get ingest!", e)
                 complete(StatusCodes.InternalServerError)
               case Right(Identified(_, ingest)) =>
-                info(s"Retrieved ingest: ${ingest}")
+                info(s"Retrieved ingest: $ingest")
                 complete(ingest)
             }
         }
