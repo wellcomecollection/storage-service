@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.storage.ingests.api
 import java.net.URL
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.model.Uri
 import akka.stream.Materializer
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.typesafe.config.Config
@@ -18,9 +19,14 @@ import uk.ac.wellcome.platform.archive.common.http.{
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.dynamo.DynamoIngestTracker
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestStarter
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+  AkkaIngestTrackerClient,
+  IngestTrackerClient
+}
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContext
 
@@ -52,7 +58,14 @@ object Main extends WellcomeTypesafeApp {
     val httpServerConfigMain = HTTPServerBuilder.buildHTTPServerConfig(config)
     val contextURLMain = HTTPServerBuilder.buildContextURL(config)
 
+    val ingestTrackerHost = Uri(
+      config.required[String]("ingests.tracker.host")
+    )
+
     val router = new IngestsApi {
+      override implicit val ec: ExecutionContext = executionContext
+      override val ingestTrackerClient: IngestTrackerClient = new AkkaIngestTrackerClient(ingestTrackerHost)
+
       override val ingestTracker: IngestTracker = ingestTrackerMain
       override val ingestStarter: IngestStarter[_] = ingestStarterMain
       override val httpServerConfig: HTTPServerConfig = httpServerConfigMain
