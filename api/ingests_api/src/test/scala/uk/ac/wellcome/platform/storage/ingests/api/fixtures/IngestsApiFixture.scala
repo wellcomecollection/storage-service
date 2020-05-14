@@ -22,8 +22,8 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   IngestTrackerClient
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{
-  IngestsTrackerApiFixture,
-  IngestTrackerFixtures
+  IngestTrackerFixtures,
+  IngestsTrackerApiFixture
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
 
