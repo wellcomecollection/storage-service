@@ -31,6 +31,8 @@ trait IngestsTrackerApiFixture
     with IngestGenerators
     with Akka {
 
+  val trackerUri = "http://localhost:8080"
+
   private def withApp[R](
     ingestTrackerTest: MemoryIngestTracker,
     callbackNotificationMessageSender: MemoryMessageSender =

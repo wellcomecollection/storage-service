@@ -42,8 +42,6 @@ trait IngestTrackerClientTestCases
     events = ingestStatusUpdate.events
   )
 
-  val trackerUri = "http://localhost:8080"
-
   def withIngestTrackerClient[R](trackerUri: String)(
     testWith: TestWith[IngestTrackerClient, R]
   ): R
