@@ -11,15 +11,22 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
+  IngestID,
   IngestUpdate
 }
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait IngestTrackerClient {
+  def createIngest(
+    ingest: Ingest
+  ): Future[Either[IngestTrackerCreateError, Unit]]
+
   def updateIngest(
     ingestUpdate: IngestUpdate
-  ): Future[Either[IngestTrackerError, Ingest]]
+  ): Future[Either[IngestTrackerUpdateError, Ingest]]
+
+  def getIngest(id: IngestID): Future[Either[IngestTrackerGetError, Ingest]]
 }
 
 class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
@@ -28,9 +35,41 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
 
   implicit val ec: ExecutionContext = as.dispatcher
 
+  override def createIngest(
+    ingest: Ingest
+  ): Future[Either[IngestTrackerCreateError, Unit]] =
+    for {
+      ingestEntity <- Marshal(ingest).to[RequestEntity]
+
+      requestUri = trackerHost.withPath(Path("/ingest"))
+
+      request = HttpRequest(
+        uri = requestUri,
+        method = HttpMethods.POST,
+        entity = ingestEntity
+      )
+
+      _ = info(f"Making request: $request")
+
+      response <- Http().singleRequest(request)
+
+      result <- response.status match {
+        case StatusCodes.Created =>
+          info(s"CREATED for POST to $requestUri with $ingest")
+          Future(Right(()))
+        case StatusCodes.Conflict =>
+          info(s"Conflict for POST to $requestUri with $ingest")
+          Future(Left(IngestTrackerCreateConflictError(ingest)))
+        case status =>
+          val err = new Exception(s"$status for POST to IngestsTracker")
+          error(f"NOT OK for POST to $requestUri with $ingest", err)
+          Future(Left(IngestTrackerUnknownCreateError(ingest, err)))
+      }
+    } yield result
+
   def updateIngest(
     ingestUpdate: IngestUpdate
-  ): Future[Either[IngestTrackerError, Ingest]] =
+  ): Future[Either[IngestTrackerUpdateError, Ingest]] =
     for {
       ingestUpdateEntity <- Marshal(ingestUpdate).to[RequestEntity]
 
@@ -53,11 +92,42 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
           Unmarshal(response.entity).to[Ingest].map(Right(_))
         case StatusCodes.Conflict =>
           warn(f"Conflict for PATCH to $requestUri with $ingestUpdate")
-          Future(Left(IngestTrackerConflictError(ingestUpdate)))
+          Future(Left(IngestTrackerUpdateConflictError(ingestUpdate)))
         case status =>
           val err = new Exception(f"$status from IngestsTracker")
           error(f"NOT OK for PATCH to $requestUri with $ingestUpdate", err)
-          Future(Left(IngestTrackerUnknownError(ingestUpdate, err)))
+          Future(Left(IngestTrackerUnknownUpdateError(ingestUpdate, err)))
       }
     } yield ingest
+
+  override def getIngest(
+    id: IngestID
+  ): Future[Either[IngestTrackerGetError, Ingest]] = {
+    val path = Path(s"/ingest/$id")
+    val requestUri = trackerHost.withPath(path)
+
+    val request = HttpRequest(
+      uri = requestUri,
+      method = HttpMethods.GET
+    )
+
+    info(s"Making request $request")
+
+    for {
+      response <- Http().singleRequest(request)
+
+      ingest <- response.status match {
+        case StatusCodes.OK =>
+          info(s"OK for GET to $requestUri")
+          Unmarshal(response.entity).to[Ingest].map(Right(_))
+        case StatusCodes.NotFound =>
+          warn(s"Not Found for GET to $requestUri")
+          Future(Left(IngestTrackerNotFoundError(id)))
+        case status =>
+          val err = new Exception(s"$status from IngestsTracker")
+          error(f"NOT OK for GET to $requestUri, err")
+          Future(Left(IngestTrackerUnknownGetError(id, err)))
+      }
+    } yield ingest
+  }
 }
