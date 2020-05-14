@@ -21,11 +21,11 @@ module "ingest_service" {
   worker_container_image       = local.ingests_worker_image
 
   external_api_environment = {
-    context_url               = "${var.api_url}/context.json"
-    app_base_url              = "${var.api_url}/storage/v1/ingests"
-    unpacker_topic_arn        = module.bag_unpacker_input_topic.arn
-    metrics_namespace         = local.ingests_api_service_name
-    ingests_tracker_host      = "http://localhost:8080"
+    context_url          = "${var.api_url}/context.json"
+    app_base_url         = "${var.api_url}/storage/v1/ingests"
+    unpacker_topic_arn   = module.bag_unpacker_input_topic.arn
+    metrics_namespace    = local.ingests_api_service_name
+    ingests_tracker_host = "http://localhost:8080"
   }
 
   worker_environment = {
@@ -35,7 +35,7 @@ module "ingest_service" {
   }
 
   internal_api_environment = {
-    ingests_table_name = var.ingests_table_arn
+    ingests_table_name               = var.ingests_table_arn
     callback_notifications_topic_arn = module.ingests_monitor_callback_notifications_topic.arn
     updated_ingests_topic_arn        = module.ingests_topic.arn
   }
