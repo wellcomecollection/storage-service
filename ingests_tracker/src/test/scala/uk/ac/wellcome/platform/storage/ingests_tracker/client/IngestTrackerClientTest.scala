@@ -2,94 +2,111 @@ package uk.ac.wellcome.platform.storage.ingests_tracker.client
 
 import java.time.Instant
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
-import org.scalatest.concurrent.{Eventually, IntegrationPatience}
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
+import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Failed
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
+import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 
-class IngestTrackerClientTest
-    extends AnyFunSpec
+trait IngestTrackerClientTestCases
+  extends AnyFunSpec
     with Matchers
-    with Eventually
-    with HttpFixtures
     with IngestsTrackerApiFixture
-    with IngestGenerators
-    with IntegrationPatience {
+    with ScalaFutures {
 
-  implicit val as = ActorSystem()
-
-  val host = "http://localhost:8080"
-
-  val ingestTrackerClient = new AkkaIngestTrackerClient(Uri(host))
-
-  val ingest = createIngestWith(
+  val ingest: Ingest = createIngestWith(
     createdDate = Instant.now()
   )
 
-  val ingestStatusUpdate =
+  val ingestStatusUpdate: IngestStatusUpdate =
     createIngestStatusUpdateWith(
       id = ingest.id,
       status = Succeeded
     )
 
-  val succeededIngest = ingest.copy(
+  val succeededIngest: Ingest = ingest.copy(
     status = Succeeded,
     events = ingestStatusUpdate.events
   )
 
-  val failedIngest = ingest.copy(
+  val failedIngest: Ingest = ingest.copy(
     status = Failed,
     events = ingestStatusUpdate.events
   )
 
-  it("updates a valid ingest") {
+  def withIngestTrackerClient[R](testWith: TestWith[IngestTrackerClient, R]): R
+
+  private def withIngestsTracker[R](ingest: Ingest)(testWith: TestWith[MemoryIngestTracker, R]): R =
     withIngestsTrackerApi(Seq(ingest)) {
       case (_, _, ingestsTracker) =>
-        val update = ingestTrackerClient.updateIngest(ingestStatusUpdate)
+        testWith(ingestsTracker)
+    }
 
-        whenReady(update) { result =>
-          result shouldBe Right(succeededIngest)
-          ingestsTracker
-            .get(ingest.id)
-            .right
-            .get
-            .identifiedT shouldBe succeededIngest
+  describe("behaves as an IngestTrackerClient") {
+    describe("updateIngest") {
+      it("applies a valid update") {
+        withIngestsTracker(ingest) { ingestsTracker =>
+          withIngestTrackerClient { client =>
+            val update = client.updateIngest(ingestStatusUpdate)
+
+            whenReady(update) { result =>
+              result shouldBe Right(succeededIngest)
+              ingestsTracker
+                .get(ingest.id)
+                .right
+                .get
+                .identifiedT shouldBe succeededIngest
+            }
+          }
         }
+      }
 
+      it("fails to apply a conflicting update") {
+        withIngestsTracker(failedIngest) { ingestsTracker =>
+          withIngestTrackerClient { client =>
+            val update = client.updateIngest(ingestStatusUpdate)
+
+            whenReady(update) { result =>
+              result shouldBe Left(IngestTrackerConflictError(ingestStatusUpdate))
+              ingestsTracker
+                .get(ingest.id)
+                .right
+                .get
+                .identifiedT shouldBe failedIngest
+            }
+          }
+        }
+      }
+
+      it("errors if the tracker API is down") {
+        withBrokenIngestsTrackerApi { _ =>
+          withIngestTrackerClient { client =>
+            val update = client.updateIngest(ingestStatusUpdate)
+
+            whenReady(update) { result =>
+              result shouldBe a[Left[_, _]]
+              result.left.get shouldBe a[IngestTrackerUnknownError]
+            }
+          }
+        }
+      }
     }
   }
+}
 
-  it("fails if the ingest update conflicts with the stored ingest") {
-    withIngestsTrackerApi(Seq(failedIngest)) {
-      case (_, _, ingestsTracker) =>
-        val update = ingestTrackerClient.updateIngest(ingestStatusUpdate)
+class AkkaIngestTrackerClientTest extends IngestTrackerClientTestCases with IntegrationPatience {
+  override def withIngestTrackerClient[R](testWith: TestWith[IngestTrackerClient, R]): R =
+    withActorSystem { implicit actorSystem =>
+      val client = new AkkaIngestTrackerClient(trackerHost = Uri("http://localhost:8080"))
 
-        whenReady(update) { result =>
-          result shouldBe Left(IngestTrackerConflictError(ingestStatusUpdate))
-          ingestsTracker
-            .get(ingest.id)
-            .right
-            .get
-            .identifiedT shouldBe failedIngest
-        }
+      testWith(client)
     }
-  }
-
-  it("errors with a broken api") {
-    withBrokenIngestsTrackerApi {
-      case (_, _, _) =>
-        val update = ingestTrackerClient.updateIngest(ingestStatusUpdate)
-
-        whenReady(update) { result =>
-          result shouldBe a[Left[_, _]]
-          result.left.get shouldBe a[IngestTrackerUnknownError]
-        }
-    }
-  }
 }
