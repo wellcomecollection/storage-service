@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.ingests.tracker
+package uk.ac.wellcome.platform.storage.ingests_tracker.tracker
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.ingests.models._

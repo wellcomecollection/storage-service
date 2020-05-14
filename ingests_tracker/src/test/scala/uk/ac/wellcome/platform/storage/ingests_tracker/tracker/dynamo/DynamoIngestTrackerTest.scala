@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.ingests.tracker.dynamo
+package uk.ac.wellcome.platform.storage.ingests_tracker.tracker.dynamo
 
 import java.time.temporal.ChronoUnit
 
@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestID
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
   IngestTracker,
   IngestTrackerTestCases
 }

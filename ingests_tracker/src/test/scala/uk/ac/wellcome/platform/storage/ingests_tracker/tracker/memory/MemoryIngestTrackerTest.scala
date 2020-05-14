@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.archive.common.ingests.tracker.memory
+package uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.{
+import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestTrackerFixtures
+import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
   IngestTracker,
   IngestTrackerTestCases
 }

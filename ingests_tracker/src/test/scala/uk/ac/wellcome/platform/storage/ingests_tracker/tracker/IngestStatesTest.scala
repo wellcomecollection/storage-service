@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.ingests.tracker
+package uk.ac.wellcome.platform.storage.ingests_tracker.tracker
 
 import java.net.URI
 
