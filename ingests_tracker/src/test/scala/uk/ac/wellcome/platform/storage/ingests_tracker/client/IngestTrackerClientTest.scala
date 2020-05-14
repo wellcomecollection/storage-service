@@ -42,7 +42,9 @@ trait IngestTrackerClientTestCases
     events = ingestStatusUpdate.events
   )
 
-  def withIngestTrackerClient[R](testWith: TestWith[IngestTrackerClient, R]): R
+  val trackerUri = "http://localhost:8080"
+
+  def withIngestTrackerClient[R](trackerUri: String)(testWith: TestWith[IngestTrackerClient, R]): R
 
   private def withIngestsTracker[R](ingest: Ingest)(testWith: TestWith[MemoryIngestTracker, R]): R =
     withIngestsTrackerApi(Seq(ingest)) {
@@ -54,7 +56,7 @@ trait IngestTrackerClientTestCases
     describe("updateIngest") {
       it("applies a valid update") {
         withIngestsTracker(ingest) { ingestsTracker =>
-          withIngestTrackerClient { client =>
+          withIngestTrackerClient(trackerUri) { client =>
             val update = client.updateIngest(ingestStatusUpdate)
 
             whenReady(update) { result =>
@@ -71,7 +73,7 @@ trait IngestTrackerClientTestCases
 
       it("fails to apply a conflicting update") {
         withIngestsTracker(failedIngest) { ingestsTracker =>
-          withIngestTrackerClient { client =>
+          withIngestTrackerClient(trackerUri) { client =>
             val update = client.updateIngest(ingestStatusUpdate)
 
             whenReady(update) { result =>
@@ -86,9 +88,9 @@ trait IngestTrackerClientTestCases
         }
       }
 
-      it("errors if the tracker API is down") {
+      it("errors if the tracker API returns a 500 error") {
         withBrokenIngestsTrackerApi { _ =>
-          withIngestTrackerClient { client =>
+          withIngestTrackerClient(trackerUri) { client =>
             val update = client.updateIngest(ingestStatusUpdate)
 
             whenReady(update) { result =>
@@ -98,14 +100,24 @@ trait IngestTrackerClientTestCases
           }
         }
       }
+
+      it("errors if the tracker API does not respond") {
+        withIngestTrackerClient("http://localhost:9000/nothing") { client =>
+          val future = client.updateIngest(ingestStatusUpdate)
+
+          whenReady(future.failed) { err =>
+            err shouldBe a[Throwable]
+          }
+        }
+      }
     }
   }
 }
 
 class AkkaIngestTrackerClientTest extends IngestTrackerClientTestCases with IntegrationPatience {
-  override def withIngestTrackerClient[R](testWith: TestWith[IngestTrackerClient, R]): R =
+  override def withIngestTrackerClient[R](trackerUri: String)(testWith: TestWith[IngestTrackerClient, R]): R =
     withActorSystem { implicit actorSystem =>
-      val client = new AkkaIngestTrackerClient(trackerHost = Uri("http://localhost:8080"))
+      val client = new AkkaIngestTrackerClient(trackerHost = Uri(trackerUri))
 
       testWith(client)
     }
