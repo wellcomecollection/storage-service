@@ -22,6 +22,8 @@ jobs:
     - env: SBT_PROJECT=replica_aggregator
     - env: SBT_PROJECT=bag_indexer
     - env: SBT_PROJECT=ingests_indexer
+    - env: SBT_PROJECT=ingests_tracker
+    - env: SBT_PROJECT=ingests_worker
 
     - env: SBT_PROJECT=notifier
 
@@ -48,6 +50,8 @@ cache:
     - common/target
     - display/target
     - ingests/target
+    - ingests_tracker/target
+    - ingests_worker/target
     - ingests_common/target
     - notifier/target
     - replica_aggregator/target

@@ -36,7 +36,7 @@ trait IngestsTrackerApiFixture
     callbackNotificationMessageSender: MemoryMessageSender =
       new MemoryMessageSender(),
     updatedIngestsMessageSender: MemoryMessageSender = new MemoryMessageSender()
-  )(testWith: TestWith[IngestsTrackerApi[String, String], R]): R =
+  )(testWith: TestWith[IngestsTrackerApi[String, String], R]): R = {
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit materializer =>
         val callbackNotificationService =
@@ -62,7 +62,9 @@ trait IngestsTrackerApiFixture
       }
     }
 
-  def withBrokenApp[R](
+  }
+
+  def withBrokenIngestsTrackerApi[R](
     testWith: TestWith[
       (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker),
       R
@@ -95,7 +97,7 @@ trait IngestsTrackerApiFixture
     }
   }
 
-  def withConfiguredApp[R](initialIngests: Seq[Ingest] = Seq.empty)(
+  def withIngestsTrackerApi[R](initialIngests: Seq[Ingest] = Seq.empty)(
     testWith: TestWith[
       (MemoryMessageSender, MemoryMessageSender, MemoryIngestTracker),
       R
