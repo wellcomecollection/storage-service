@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryInges
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 
 trait IngestTrackerClientTestCases
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with IngestsTrackerApiFixture
     with ScalaFutures {
@@ -44,9 +44,13 @@ trait IngestTrackerClientTestCases
 
   val trackerUri = "http://localhost:8080"
 
-  def withIngestTrackerClient[R](trackerUri: String)(testWith: TestWith[IngestTrackerClient, R]): R
+  def withIngestTrackerClient[R](trackerUri: String)(
+    testWith: TestWith[IngestTrackerClient, R]
+  ): R
 
-  private def withIngestsTracker[R](ingest: Ingest)(testWith: TestWith[MemoryIngestTracker, R]): R =
+  private def withIngestsTracker[R](
+    ingest: Ingest
+  )(testWith: TestWith[MemoryIngestTracker, R]): R =
     withIngestsTrackerApi(Seq(ingest)) {
       case (_, _, ingestsTracker) =>
         testWith(ingestsTracker)
@@ -77,7 +81,9 @@ trait IngestTrackerClientTestCases
             val update = client.updateIngest(ingestStatusUpdate)
 
             whenReady(update) { result =>
-              result shouldBe Left(IngestTrackerConflictError(ingestStatusUpdate))
+              result shouldBe Left(
+                IngestTrackerConflictError(ingestStatusUpdate)
+              )
               ingestsTracker
                 .get(ingest.id)
                 .right
@@ -159,8 +165,12 @@ trait IngestTrackerClientTestCases
   }
 }
 
-class AkkaIngestTrackerClientTest extends IngestTrackerClientTestCases with IntegrationPatience {
-  override def withIngestTrackerClient[R](trackerUri: String)(testWith: TestWith[IngestTrackerClient, R]): R =
+class AkkaIngestTrackerClientTest
+    extends IngestTrackerClientTestCases
+    with IntegrationPatience {
+  override def withIngestTrackerClient[R](
+    trackerUri: String
+  )(testWith: TestWith[IngestTrackerClient, R]): R =
     withActorSystem { implicit actorSystem =>
       val client = new AkkaIngestTrackerClient(trackerHost = Uri(trackerUri))
 

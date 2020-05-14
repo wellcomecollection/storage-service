@@ -14,13 +14,17 @@ sealed trait IngestTrackerUpdateError extends IngestTrackerError {
 case class IngestTrackerConflictError(ingestUpdate: IngestUpdate)
     extends IngestTrackerUpdateError
 
-case class IngestTrackerUnknownUpdateError(ingestUpdate: IngestUpdate, err: Throwable)
-    extends IngestTrackerUpdateError
+case class IngestTrackerUnknownUpdateError(
+  ingestUpdate: IngestUpdate,
+  err: Throwable
+) extends IngestTrackerUpdateError
 
 sealed trait IngestTrackerGetError extends IngestTrackerError {
   val id: IngestID
 }
 
-case class IngestTrackerNotFoundError(id: IngestID) extends IngestTrackerGetError
+case class IngestTrackerNotFoundError(id: IngestID)
+    extends IngestTrackerGetError
 
-case class IngestTrackerUnknownGetError(id: IngestID, err: Throwable) extends IngestTrackerGetError
+case class IngestTrackerUnknownGetError(id: IngestID, err: Throwable)
+    extends IngestTrackerGetError

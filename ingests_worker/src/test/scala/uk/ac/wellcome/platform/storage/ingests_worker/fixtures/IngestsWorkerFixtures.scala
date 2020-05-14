@@ -63,7 +63,9 @@ trait IngestsWorkerFixtures
 
   def unknownErrorClient(ingestUpdate: IngestUpdate) =
     new FakeIngestTrackerClient(
-      Future.successful(Left(IngestTrackerUnknownUpdateError(ingestUpdate, error)))
+      Future.successful(
+        Left(IngestTrackerUnknownUpdateError(ingestUpdate, error))
+      )
     )
 
   def failedFutureClient(error: Throwable = error) =

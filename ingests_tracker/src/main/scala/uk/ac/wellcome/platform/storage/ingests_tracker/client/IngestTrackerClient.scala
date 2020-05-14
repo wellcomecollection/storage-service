@@ -64,7 +64,9 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
       }
     } yield ingest
 
-  override def getIngest(id: IngestID): Future[Either[IngestTrackerGetError, Ingest]] = {
+  override def getIngest(
+    id: IngestID
+  ): Future[Either[IngestTrackerGetError, Ingest]] = {
     val path = Path(s"/ingest/$id")
     val requestUri = trackerHost.withPath(path)
 
