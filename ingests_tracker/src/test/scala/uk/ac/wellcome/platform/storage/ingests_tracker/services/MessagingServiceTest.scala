@@ -16,8 +16,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   CallbackNotification,
   Ingest
 }
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
-import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.MessagingServiceFixtures
+import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{
+  IngestTrackerFixtures,
+  MessagingServiceFixtures
+}
 
 import scala.util.{Failure, Success, Try}
 

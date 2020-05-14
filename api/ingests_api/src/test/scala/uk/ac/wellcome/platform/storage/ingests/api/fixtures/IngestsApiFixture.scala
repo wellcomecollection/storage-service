@@ -16,14 +16,16 @@ import uk.ac.wellcome.platform.archive.common.http.{
   WellcomeHttpApp
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   AkkaIngestTrackerClient,
   IngestTrackerClient
 }
-import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
+import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{
+  IngestTrackerFixtures,
+  IngestsTrackerApiFixture
+}
+import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}

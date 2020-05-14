@@ -12,7 +12,6 @@ PROJECT_ID = storage
 STACK_ROOT 	= .
 
 SBT_APPS = notifier \
-           ingests \
            bag_register \
            bag_replicator \
 		   bag_root_finder \
@@ -24,7 +23,7 @@ SBT_APPS = notifier \
 		   replica_aggregator
 SBT_NO_DOCKER_APPS =
 
-SBT_DOCKER_LIBRARIES    = common ingests_common
+SBT_DOCKER_LIBRARIES    = common
 SBT_NO_DOCKER_LIBRARIES = bags_common display
 
 PYTHON_APPS =

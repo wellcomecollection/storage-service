@@ -7,11 +7,9 @@ jobs:
       env: SBT_PROJECT=common
     - env: SBT_PROJECT=display
     - env: SBT_PROJECT=indexer_common
-    - env: SBT_PROJECT=ingests_common
 
     - stage: services
-      env: SBT_PROJECT=ingests
-    - env: SBT_PROJECT=ingests_api
+      env: SBT_PROJECT=ingests_api
     - env: SBT_PROJECT=bags_api
     - env: SBT_PROJECT=bag_register
     - env: SBT_PROJECT=bag_replicator
@@ -49,10 +47,8 @@ cache:
     - bag_versioner/target
     - common/target
     - display/target
-    - ingests/target
     - ingests_tracker/target
     - ingests_worker/target
-    - ingests_common/target
     - notifier/target
     - replica_aggregator/target
 

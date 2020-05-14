@@ -14,8 +14,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestID,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.storage.ingests_tracker.client._
+import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorkerService
 
 import scala.concurrent.ExecutionContext.Implicits.global

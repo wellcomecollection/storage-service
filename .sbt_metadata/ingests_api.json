@@ -2,7 +2,6 @@
   "id" : "ingests_api",
   "folder" : "api/ingests_api",
   "dependencyIds" : [
-    "ingests_common",
     "display",
     "ingests_tracker"
   ]
