@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   UserErrorResponse
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.platform.archive.display.ingests.ResponseDisplayIngest
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   IngestTrackerClient,
@@ -24,7 +23,6 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LookupIngest extends ResponseBase with Logging {
-  val ingestTracker: IngestTracker
   val ingestTrackerClient: IngestTrackerClient
 
   implicit val ec: ExecutionContext

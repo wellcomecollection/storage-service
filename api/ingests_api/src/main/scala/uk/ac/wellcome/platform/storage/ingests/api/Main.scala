@@ -16,7 +16,6 @@ import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
 }
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.dynamo.DynamoIngestTracker
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestStarter
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
@@ -66,7 +65,6 @@ object Main extends WellcomeTypesafeApp {
       override implicit val ec: ExecutionContext = executionContext
       override val ingestTrackerClient: IngestTrackerClient = new AkkaIngestTrackerClient(ingestTrackerHost)
 
-      override val ingestTracker: IngestTracker = ingestTrackerMain
       override val ingestStarter: IngestStarter[_] = ingestStarterMain
       override val httpServerConfig: HTTPServerConfig = httpServerConfigMain
       override val contextURL: URL = contextURLMain

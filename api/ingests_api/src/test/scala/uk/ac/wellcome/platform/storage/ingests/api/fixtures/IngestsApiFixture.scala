@@ -15,7 +15,6 @@ import uk.ac.wellcome.platform.archive.common.http.{
   WellcomeHttpApp
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.ingests.tracker.IngestTracker
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
@@ -61,7 +60,6 @@ trait IngestsApiFixture
               override val ingestTrackerClient: IngestTrackerClient =
                 new AkkaIngestTrackerClient(trackerUri)
 
-              override val ingestTracker: IngestTracker = ingestTrackerTest
               override val ingestStarter: IngestStarter[_] = ingestStarterTest
               override val httpServerConfig: HTTPServerConfig =
                 httpServerConfigTest
