@@ -19,7 +19,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
-import uk.ac.wellcome.platform.storage.ingests.api.services.IngestStarter
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   AkkaIngestTrackerClient,
   IngestTrackerClient
@@ -30,8 +29,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 trait IngestsApiFixture
-    extends IngestStarterFixture
-    with IngestGenerators
+    extends IngestGenerators
     with HttpFixtures
     with IngestTrackerFixtures
     with IngestsTrackerApiFixture {
@@ -54,33 +52,29 @@ trait IngestsApiFixture
           metrics = metrics
         )
 
-        withIngestStarter(ingestTrackerTest, unpackerSender) {
-          ingestStarterTest =>
-            val ingestsApi = new IngestsApi[String] {
-              override implicit val ec: ExecutionContext = global
-              override val ingestTrackerClient: IngestTrackerClient =
-                new AkkaIngestTrackerClient(trackerUri)
+        val ingestsApi = new IngestsApi[String] {
+          override implicit val ec: ExecutionContext = global
+          override val ingestTrackerClient: IngestTrackerClient =
+            new AkkaIngestTrackerClient(trackerUri)
 
-              override val unpackerMessageSender: MessageSender[String] = unpackerSender
+          override val unpackerMessageSender: MessageSender[String] = unpackerSender
 
-              override val ingestStarter: IngestStarter[_] = ingestStarterTest
-              override val httpServerConfig: HTTPServerConfig =
-                httpServerConfigTest
-              override val contextURL: URL = contextURLTest
-            }
-
-            val app = new WellcomeHttpApp(
-              routes = ingestsApi.ingests,
-              httpMetrics = httpMetrics,
-              httpServerConfig = httpServerConfigTest,
-              contextURL = contextURLTest,
-              appName = metricsName
-            )
-
-            app.run()
-
-            testWith(app)
+          override val httpServerConfig: HTTPServerConfig =
+            httpServerConfigTest
+          override val contextURL: URL = contextURLTest
         }
+
+        val app = new WellcomeHttpApp(
+          routes = ingestsApi.ingests,
+          httpMetrics = httpMetrics,
+          httpServerConfig = httpServerConfigTest,
+          contextURL = contextURLTest,
+          appName = metricsName
+        )
+
+        app.run()
+
+        testWith(app)
       }
     }
 

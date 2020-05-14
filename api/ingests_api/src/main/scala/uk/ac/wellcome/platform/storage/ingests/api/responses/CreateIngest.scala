@@ -19,14 +19,12 @@ import uk.ac.wellcome.platform.archive.display.ingests.{
   RequestDisplayIngest,
   ResponseDisplayIngest
 }
-import uk.ac.wellcome.platform.storage.ingests.api.services.IngestStarter
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.IngestTrackerClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
   val httpServerConfig: HTTPServerConfig
-  val ingestStarter: IngestStarter[_]
   val ingestTrackerClient: IngestTrackerClient
   val unpackerMessageSender: MessageSender[UnpackerDestination]
 
