@@ -4,6 +4,7 @@ include makefiles/functions.Makefile
 include makefiles/formatting.Makefile
 include api/Makefile
 include indexer/Makefile
+include ingests/Makefile
 include nginx/Makefile
 include python_client/Makefile
 
@@ -18,9 +19,7 @@ SBT_APPS = notifier \
            bag_verifier \
            bag_unpacker \
            bag_versioner \
-           ingests_tracker \
-           ingests_worker \
-		   replica_aggregator
+           replica_aggregator
 SBT_NO_DOCKER_APPS =
 
 SBT_DOCKER_LIBRARIES    = common
