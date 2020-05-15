@@ -51,6 +51,9 @@ object Main extends WellcomeTypesafeApp {
       config = DynamoBuilder.buildDynamoConfig(config)
     )
 
-    new IngestsTrackerApi[SNSConfig, SNSConfig](ingestTracker, messagingService)()
+    new IngestsTrackerApi[SNSConfig, SNSConfig](
+      ingestTracker,
+      messagingService
+    )()
   }
 }

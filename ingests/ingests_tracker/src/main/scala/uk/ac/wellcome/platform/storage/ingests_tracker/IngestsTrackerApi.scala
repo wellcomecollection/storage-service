@@ -29,10 +29,12 @@ class IngestsTrackerApi[CallbackDestination, IngestsDestination](
   ingestTracker: IngestTracker,
   messagingService: MessagingService[CallbackDestination, IngestsDestination]
 )(
-  host: String = "localhost", port: Int = 8080
+  host: String = "localhost",
+  port: Int = 8080
 )(
-  implicit sys: ActorSystem, mat: Materializer
-)extends Runnable
+  implicit sys: ActorSystem,
+  mat: Materializer
+) extends Runnable
     with Logging {
 
   implicit val exc: ExecutionContextExecutor = sys.dispatcher
