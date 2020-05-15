@@ -1,25 +1,13 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.fixtures
 
-import akka.actor.ActorSystem
-import akka.stream.Materializer
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestUpdate}
 import uk.ac.wellcome.platform.storage.ingests_tracker.IngestsTrackerApi
-import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
-  CallbackNotificationService,
-  MessagingService
-}
-import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
-  IngestStoreUnexpectedError,
-  IngestTracker
-}
+import uk.ac.wellcome.platform.storage.ingests_tracker.services.{CallbackNotificationService, MessagingService}
+import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestStoreUnexpectedError
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
@@ -43,19 +31,13 @@ trait IngestsTrackerApiFixture
         val callbackNotificationService =
           new CallbackNotificationService(callbackNotificationMessageSender)
 
-        val app = new IngestsTrackerApi[String, String] {
+        val messagingService: MessagingService[String, String] =
+          new MessagingService(
+            callbackNotificationService,
+            updatedIngestsMessageSender
+          )
 
-          override val messagingService: MessagingService[String, String] =
-            new MessagingService(
-              callbackNotificationService,
-              updatedIngestsMessageSender
-            )
-
-          override val ingestTracker: IngestTracker = ingestTrackerTest
-          override implicit lazy protected val sys: ActorSystem = actorSystem
-          override implicit lazy protected val mat: Materializer =
-            materializer
-        }
+        val app = new IngestsTrackerApi[String, String](ingestTrackerTest, messagingService)()
 
         app.run()
 

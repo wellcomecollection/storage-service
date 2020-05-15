@@ -25,22 +25,17 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-trait IngestsTrackerApi[CallbackDestination, UpdatedIngestsDestination]
-    extends Runnable
+class IngestsTrackerApi[CallbackDestination, IngestsDestination](
+  ingestTracker: IngestTracker,
+  messagingService: MessagingService[CallbackDestination, IngestsDestination]
+)(
+  host: String = "localhost", port: Int = 8080
+)(
+  implicit sys: ActorSystem, mat: Materializer
+)extends Runnable
     with Logging {
 
-  val ingestTracker: IngestTracker
-  val messagingService: MessagingService[
-    CallbackDestination,
-    UpdatedIngestsDestination
-  ]
-
-  implicit protected val sys: ActorSystem
-  implicit protected val mat: Materializer
-  implicit protected val exc: ExecutionContextExecutor = sys.dispatcher
-
-  implicit protected val host: String = "localhost"
-  implicit protected val port: Int = 8080
+  implicit val exc: ExecutionContextExecutor = sys.dispatcher
 
   val route: Route =
     concat(

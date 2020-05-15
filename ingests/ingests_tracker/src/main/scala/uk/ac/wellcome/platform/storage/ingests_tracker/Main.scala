@@ -42,17 +42,15 @@ object Main extends WellcomeTypesafeApp {
         subject = "Updated ingests sent by the ingests monitor"
       )
 
-    new IngestsTrackerApi[SNSConfig, SNSConfig] {
-      override val messagingService = new MessagingService(
-        callbackNotificationService,
-        updatedIngestsMessageSender
-      )
+    val messagingService = new MessagingService(
+      callbackNotificationService,
+      updatedIngestsMessageSender
+    )
 
-      override val ingestTracker: IngestTracker = new DynamoIngestTracker(
-        config = DynamoBuilder.buildDynamoConfig(config)
-      )
-      override implicit protected val sys: ActorSystem = actorSystem
-      override implicit protected val mat: Materializer = materializer
-    }
+    val ingestTracker: IngestTracker = new DynamoIngestTracker(
+      config = DynamoBuilder.buildDynamoConfig(config)
+    )
+
+    new IngestsTrackerApi[SNSConfig, SNSConfig](ingestTracker, messagingService)()
   }
 }
