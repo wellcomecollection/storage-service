@@ -33,7 +33,7 @@ module "ingest_service" {
   internal_api_environment = {
     ingests_table_name               = var.ingests_table_name
     callback_notifications_topic_arn = module.ingests_monitor_callback_notifications_topic.arn
-    updated_ingests_topic_arn        = module.ingests_topic.arn
+    updated_ingests_topic_arn        = module.updated_ingests_topic.arn
   }
 
   load_balancer_arn           = module.api.loadbalancer_arn
