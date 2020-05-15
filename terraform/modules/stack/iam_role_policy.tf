@@ -18,17 +18,17 @@ resource "aws_iam_role_policy" "bag_register_metrics" {
 # bags_api
 
 resource "aws_iam_role_policy" "bags_api_vhs_manifests_readonly" {
-  role   = module.api.bags_role_name
+  role   = module.bags_api.task_role_name
   policy = var.vhs_manifests_readonly_policy
 }
 
 resource "aws_iam_role_policy" "bags_api_metrics" {
-  role   = module.api.bags_role_name
+  role   = module.bags_api.task_role_name
   policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
 }
 
 resource "aws_iam_role_policy" "s3_large_response_cache" {
-  role   = module.api.bags_role_name
+  role   = module.bags_api.task_role_name
   policy = data.aws_iam_policy_document.s3_large_response_cache.json
 }
 
@@ -44,15 +44,15 @@ resource "aws_iam_role_policy" "ingests_metrics" {
   policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
 }
 
-# ingests_api
+# ingests_service
 
-resource "aws_iam_role_policy" "ingests_api_metrics" {
-  role   = module.api.ingests_role_name
+resource "aws_iam_role_policy" "ingests_service_metrics" {
+  role   = module.ingest_service.task_role_name
   policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
 }
 
-resource "aws_iam_role_policy" "ingests_api_table_readwrite" {
-  role   = module.api.ingests_role_name
+resource "aws_iam_role_policy" "ingests_service_table_readwrite" {
+  role   = module.ingest_service.task_role_name
   policy = data.aws_iam_policy_document.table_ingests_readwrite.json
 }
 

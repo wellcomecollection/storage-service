@@ -1,7 +1,3 @@
-locals {
-  java_opts_heap_size = "-Xss6M -Xms2G -Xmx3G"
-}
-
 # Ingest service
 
 module "ingest_service" {
@@ -16,9 +12,9 @@ module "ingest_service" {
 
   cluster_arn = aws_ecs_cluster.cluster.arn
 
-  external_api_container_image = local.ingests_api_image
-  internal_api_container_image = local.ingests_tracker_image
-  worker_container_image       = local.ingests_worker_image
+  external_api_container_image = local.image_ids["ingests_api"]
+  internal_api_container_image = local.image_ids["ingests_tracker"]
+  worker_container_image       = local.image_ids["ingests_worker"]
 
   external_api_environment = {
     context_url          = "${var.api_url}/context.json"
@@ -41,7 +37,7 @@ module "ingest_service" {
   }
 
   load_balancer_arn           = module.api.loadbalancer_arn
-  load_balancer_listener_port = 65533
+  load_balancer_listener_port = local.ingests_listener_port
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
@@ -52,7 +48,7 @@ module "ingest_service" {
 module "ingests_indexer" {
   source = "../service/worker"
 
-  container_image = local.ingests_indexer_image
+  container_image = local.image_ids["ingests_indexer"]
 
   cluster_name = aws_ecs_cluster.cluster.name
   cluster_arn  = aws_ecs_cluster.cluster.arn
@@ -70,7 +66,8 @@ module "ingests_indexer" {
   secrets = var.ingests_indexer_secrets
 
   security_group_ids = [
-    aws_security_group.service_egress.id
+    aws_security_group.service_egress.id,
+    aws_security_group.interservice.id
   ]
 
   min_capacity = 0
@@ -80,6 +77,43 @@ module "ingests_indexer" {
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 }
+
+# bags_api
+
+module "bags_api" {
+  source = "../service/api"
+
+  service_name = "${var.namespace}-bags-api"
+
+  container_image = local.image_ids["bags_api"]
+
+  environment = {
+    context_url           = "${var.api_url}/context.json"
+    app_base_url          = "${var.api_url}/storage/v1/bags"
+    vhs_bucket_name       = var.vhs_manifests_bucket_name
+    vhs_table_name        = var.vhs_manifests_table_name
+    metrics_namespace     = local.bags_api_service_name
+    responses_bucket_name = aws_s3_bucket.large_response_cache.id
+  }
+
+  load_balancer_arn           = module.api.loadbalancer_arn
+  load_balancer_listener_port = local.bags_listener_port
+
+  security_group_ids = [
+    aws_security_group.service_egress.id,
+    aws_security_group.interservice.id
+  ]
+
+  service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+
+  use_fargate_spot = var.use_fargate_spot_for_api
+
+  subnets = var.private_subnets
+  vpc_id  = var.vpc_id
+}
+
 
 # bag_unpacker
 
@@ -123,7 +157,7 @@ module "bag_unpacker" {
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
-  container_image = local.bag_unpacker_image
+  container_image = local.image_ids["bag_unpacker"]
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 }
@@ -158,7 +192,7 @@ module "bag_root_finder" {
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
-  container_image = local.bag_root_finder_image
+  container_image = local.image_ids["bag_root_finder"]
 
   use_fargate_spot = true
 
@@ -198,7 +232,7 @@ module "bag_verifier_pre_replication" {
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
-  container_image = local.bag_verifier_image
+  container_image = local.image_ids["bag_verifier"]
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 }
@@ -237,7 +271,7 @@ module "bag_versioner" {
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
-  container_image = local.bag_versioner_image
+  container_image = local.image_ids["bag_versioner"]
 
   use_fargate_spot = true
 
@@ -280,8 +314,8 @@ module "replicator_verifier_primary" {
   replicator_lock_table_name  = module.replicator_lock_table.table_name
   replicator_lock_table_index = module.replicator_lock_table.index_name
 
-  bag_replicator_image = local.bag_replicator_image
-  bag_verifier_image   = local.bag_verifier_image
+  bag_replicator_image = local.image_ids["bag_replicator"]
+  bag_verifier_image   = local.image_ids["bag_verifier"]
 
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
@@ -329,8 +363,8 @@ module "replicator_verifier_glacier" {
   replicator_lock_table_name  = module.replicator_lock_table.table_name
   replicator_lock_table_index = module.replicator_lock_table.index_name
 
-  bag_replicator_image = local.bag_replicator_image
-  bag_verifier_image   = local.bag_verifier_image
+  bag_replicator_image = local.image_ids["bag_replicator"]
+  bag_verifier_image   = local.image_ids["bag_verifier"]
 
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
@@ -367,7 +401,7 @@ module "replica_aggregator" {
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
-  container_image = local.replica_aggregator_image
+  container_image = local.image_ids["replica_aggregator"]
 
   use_fargate_spot = true
 
@@ -400,7 +434,7 @@ module "bag_register" {
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
-  container_image = local.bag_register_image
+  container_image = local.image_ids["bag_register"]
 
   use_fargate_spot = true
 
@@ -433,7 +467,7 @@ module "notifier" {
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
-  container_image = local.notifier_image
+  container_image = local.image_ids["notifier"]
 
   use_fargate_spot = true
 
@@ -446,34 +480,12 @@ module "api" {
   source = "./api"
 
   vpc_id      = var.vpc_id
-  cluster_arn = aws_ecs_cluster.cluster.arn
   subnets     = var.private_subnets
 
   domain_name      = var.domain_name
   cert_domain_name = var.cert_domain_name
 
   namespace = var.namespace
-
-  bags_container_image = local.bags_api_image
-  bags_environment = {
-    context_url           = "${var.api_url}/context.json"
-    app_base_url          = "${var.api_url}/storage/v1/bags"
-    vhs_bucket_name       = var.vhs_manifests_bucket_name
-    vhs_table_name        = var.vhs_manifests_table_name
-    metrics_namespace     = local.bags_api_service_name
-    responses_bucket_name = aws_s3_bucket.large_response_cache.id
-  }
-
-  ingests_container_image = local.ingests_api_image
-  ingests_environment = {
-    context_url               = "${var.api_url}/context.json"
-    app_base_url              = "${var.api_url}/storage/v1/ingests"
-    unpacker_topic_arn        = module.bag_unpacker_input_topic.arn
-    archive_ingest_table_name = var.ingests_table_name
-    metrics_namespace         = local.ingests_api_service_name
-  }
-
-  bag_unpacker_topic_arn = module.bag_unpacker_input_topic.arn
 
   cognito_user_pool_arn = var.cognito_user_pool_arn
 
@@ -484,11 +496,11 @@ module "api" {
     "${var.cognito_storage_api_identifier}/bags",
   ]
 
-  interservice_security_group_id = aws_security_group.interservice.id
-  service_discovery_namespace_id = local.service_discovery_namespace_id
-
   static_content_bucket_name = var.static_content_bucket_name
 
   use_fargate_spot_for_api = var.use_fargate_spot_for_api
+
+  bags_listener_port    = local.bags_listener_port
+  ingests_listener_port = local.ingests_listener_port
 }
 

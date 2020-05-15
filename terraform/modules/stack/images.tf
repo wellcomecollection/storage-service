@@ -1,7 +1,6 @@
 locals {
   services = [
     "bags_api",
-    "ingests",
     "ingests_api",
     "ingests_indexer",
     "ingests_tracker",

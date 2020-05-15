@@ -6,22 +6,6 @@ output "loadbalancer_arn" {
   value = aws_lb.nlb.arn
 }
 
-output "ingests_name" {
-  value = module.services.ingests_name
-}
-
-output "ingests_role_name" {
-  value = module.services.ingests_role_name
-}
-
-output "bags_name" {
-  value = module.services.bags_name
-}
-
-output "bags_role_name" {
-  value = module.services.bags_role_name
-}
-
 output "gateway_domain_name" {
   value = module.domain.regional_domain_name
 }
