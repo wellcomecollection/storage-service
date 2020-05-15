@@ -26,7 +26,6 @@ module "stack_staging" {
   cognito_storage_api_identifier = local.cognito_storage_api_identifier
 
   release_label = "stage"
-  nginx_image   = local.nginx_image
 
   replica_primary_bucket_name = data.terraform_remote_state.critical_staging.outputs.replica_primary_bucket_name
   replica_glacier_bucket_name = data.terraform_remote_state.critical_staging.outputs.replica_glacier_bucket_name
