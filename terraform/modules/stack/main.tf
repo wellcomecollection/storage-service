@@ -497,9 +497,7 @@ module "api" {
   ]
 
   static_content_bucket_name = var.static_content_bucket_name
-
-  use_fargate_spot_for_api = var.use_fargate_spot_for_api
-
+  
   bags_listener_port    = local.bags_listener_port
   ingests_listener_port = local.ingests_listener_port
 }
