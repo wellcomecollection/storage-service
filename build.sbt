@@ -82,13 +82,13 @@ lazy val bag_unpacker = setupProject(
 
 lazy val ingests_tracker = setupProject(
   project,
-  "ingests_tracker",
+  "ingests/ingests_tracker",
   localDependencies = Seq(common)
 )
 
 lazy val ingests_worker = setupProject(
   project,
-  "ingests_worker",
+  "ingests/ingests_worker",
   localDependencies = Seq(ingests_tracker)
 )
 
@@ -104,7 +104,7 @@ lazy val notifier = setupProject(
 
 lazy val ingests_api = setupProject(
   project,
-  "api/ingests_api",
+  "ingests/ingests_api",
   localDependencies = Seq(display, ingests_tracker),
   externalDependencies = ExternalDependencies.circeOpticsDependencies
 )

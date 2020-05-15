@@ -1,6 +1,6 @@
 {
   "id" : "ingests_api",
-  "folder" : "api/ingests_api",
+  "folder" : "ingests/ingests_api",
   "dependencyIds" : [
     "display",
     "ingests_tracker"
