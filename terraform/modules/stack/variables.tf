@@ -117,12 +117,12 @@ variable "versioner_versions_table_index" {
 
 variable "desired_bags_api_count" {
   default = 3
-  type = number
+  type    = number
 }
 
 variable "desired_ingests_api_count" {
   default = 3
-  type = number
+  type    = number
 }
 
 variable "archivematica_ingests_bucket" {

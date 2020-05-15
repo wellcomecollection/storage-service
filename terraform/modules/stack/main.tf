@@ -106,7 +106,7 @@ module "bags_api" {
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
-  cluster_arn  = aws_ecs_cluster.cluster.arn
+  cluster_arn = aws_ecs_cluster.cluster.arn
 
   use_fargate_spot = var.use_fargate_spot_for_api
 
@@ -479,8 +479,8 @@ module "notifier" {
 module "api" {
   source = "./api"
 
-  vpc_id      = var.vpc_id
-  subnets     = var.private_subnets
+  vpc_id  = var.vpc_id
+  subnets = var.private_subnets
 
   domain_name      = var.domain_name
   cert_domain_name = var.cert_domain_name
