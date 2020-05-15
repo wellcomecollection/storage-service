@@ -69,7 +69,7 @@ module "worker_container_secrets_permissions" {
 
 module "internal_api_container" {
   source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v2.4.0"
-  name   = "worker"
+  name   = "tracker"
 
   image = var.internal_api_container_image
 
