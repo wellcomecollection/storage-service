@@ -1,6 +1,6 @@
 locals {
   bags_api_service_name    = "${var.namespace}-bags-api"
-  ingests_service_name     = "${var.namespace}-ingests"
+  ingests_service_name     = "${var.namespace}-ingests-service"
   ingests_api_service_name = "${var.namespace}-ingests-api"
   notifier_service_name    = "${var.namespace}-notifier"
 
@@ -14,21 +14,14 @@ locals {
   ingests_indexer_service_name        = "${var.namespace}-ingests_indexer"
   replica_aggregator_service_name     = "${var.namespace}-replica_aggregator"
 
-  bag_versioner_image      = local.image_ids["bag_versioner"]
-  bag_register_image       = local.image_ids["bag_register"]
-  bag_root_finder_image    = local.image_ids["bag_root_finder"]
-  bags_api_image           = local.image_ids["bags_api"]
-  ingests_image            = local.image_ids["ingests"]
-  ingests_api_image        = local.image_ids["ingests_api"]
-  ingests_indexer_image    = local.image_ids["ingests_indexer"]
-  notifier_image           = local.image_ids["notifier"]
-  bag_replicator_image     = local.image_ids["bag_replicator"]
-  bag_verifier_image       = local.image_ids["bag_verifier"]
-  bag_unpacker_image       = local.image_ids["bag_unpacker"]
-  replica_aggregator_image = local.image_ids["replica_aggregator"]
-
   logstash_transit_service_name = "${var.namespace}_logstash_transit"
   logstash_transit_image        = "wellcome/logstash_transit:edgelord"
   logstash_host                 = "${local.logstash_transit_service_name}.${var.namespace}"
-}
 
+  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
+
+  ingests_listener_port = "65535"
+  bags_listener_port    = "65534"
+
+  java_opts_heap_size = "-Xss6M -Xms2G -Xmx3G"
+}

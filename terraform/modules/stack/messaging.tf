@@ -10,7 +10,7 @@ module "ingests_topic" {
     module.bag_root_finder.task_role_name,
     module.bag_verifier_pre_replication.task_role_name,
     module.bag_unpacker.task_role_name,
-    module.ingests.task_role_name,
+    module.ingest_service.task_role_name,
     module.notifier.task_role_name,
     module.bag_versioner.task_role_name,
     module.replica_aggregator.task_role_name,
@@ -29,16 +29,12 @@ module "ingests_input_queue" {
   topic_arns = [module.ingests_topic.arn]
 
   role_names = [
-    module.ingests.task_role_name,
+    module.ingest_service.task_role_name,
   ]
 
-  queue_high_actions = [
-    module.ingests.scale_up_arn,
-  ]
+  queue_high_actions = []
 
-  queue_low_actions = [
-    module.ingests.scale_down_arn,
-  ]
+  queue_low_actions = []
 
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
@@ -55,14 +51,14 @@ module "updated_ingests_topic" {
   source = "../topic"
 
   name       = "${var.namespace}_updated_ingests"
-  role_names = [module.ingests.task_role_name]
+  role_names = [module.ingest_service.task_role_name]
 }
 
 module "ingests_monitor_callback_notifications_topic" {
   source = "../topic"
 
   name       = "${var.namespace}_ingests_monitor_callback_notifications"
-  role_names = [module.ingests.task_role_name]
+  role_names = [module.ingest_service.task_role_name]
 }
 
 module "updated_ingests_queue" {
@@ -119,7 +115,7 @@ module "bag_unpacker_input_topic" {
   name = "${var.namespace}_bag_unpacker_input"
 
   role_names = [
-    module.bag_unpacker.task_role_name,
+    module.ingest_service.task_role_name,
   ]
 }
 
