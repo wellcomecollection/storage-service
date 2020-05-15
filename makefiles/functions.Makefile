@@ -5,7 +5,7 @@ DEV_ROLE_ARN := arn:aws:iam::975596993436:role/storage-developer
 endif
 
 
-INFRA_BUCKET = wellcomecollection-platform-infra
+INFRA_BUCKET = wellcomecollection-storage-infra
 
 
 include $(ROOT)/makefiles/terraform.Makefile
@@ -18,7 +18,7 @@ include $(ROOT)/makefiles/terraform.Makefile
 #
 define publish_lambda
     $(ROOT)/docker_run.py --aws --root -- \
-        wellcome/publish_lambda:14 \
+        wellcome/publish_lambda:130 \
         "$(1)" --key="lambdas/$(1).zip" --bucket="$(INFRA_BUCKET)" --sns-topic="arn:aws:sns:eu-west-1:760097843905:lambda_pushes"
 endef
 

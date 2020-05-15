@@ -5,6 +5,7 @@ include makefiles/formatting.Makefile
 include api/Makefile
 include indexer/Makefile
 include ingests/Makefile
+include monitoring/Makefile
 include nginx/Makefile
 include python_client/Makefile
 
