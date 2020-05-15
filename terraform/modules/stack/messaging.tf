@@ -115,7 +115,7 @@ module "bag_unpacker_input_topic" {
   name = "${var.namespace}_bag_unpacker_input"
 
   role_names = [
-    module.bag_unpacker.task_role_name,
+    module.ingest_service.task_role_name,
   ]
 }
 

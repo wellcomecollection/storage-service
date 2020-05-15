@@ -31,7 +31,7 @@ module "ingest_service" {
   }
 
   internal_api_environment = {
-    ingests_table_name               = var.ingests_table_arn
+    ingests_table_name               = var.ingests_table_name
     callback_notifications_topic_arn = module.ingests_monitor_callback_notifications_topic.arn
     updated_ingests_topic_arn        = module.ingests_topic.arn
   }
