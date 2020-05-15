@@ -9,7 +9,7 @@ jobs:
     - env: SBT_PROJECT=indexer_common
 
     - stage: services
-    - env: SBT_PROJECT=bags_api
+      env: SBT_PROJECT=bags_api
     - env: SBT_PROJECT=bag_register
     - env: SBT_PROJECT=bag_replicator
     - env: SBT_PROJECT=bag_root_finder
