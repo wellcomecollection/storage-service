@@ -37,7 +37,6 @@ cache:
     - target
 
     - api/bags_api/target
-    - api/ingests_api/target
     - bag_replicator/target
     - bag_register/target
     - bag_root_finder/target
@@ -46,13 +45,15 @@ cache:
     - bag_versioner/target
     - common/target
     - display/target
-    - ingests_tracker/target
-    - ingests_worker/target
     - notifier/target
     - replica_aggregator/target
 
     - indexer/common/target
     - indexer/ingests_indexer/target
+
+    - ingests/ingests_api/target
+    - ingests/ingests_tracker/target
+    - ingests/ingests_worker/target
 
     - python_client/.tox
 

@@ -1,6 +1,6 @@
 {
   "id" : "ingests_worker",
-  "folder" : "ingests_worker",
+  "folder" : "ingests/ingests_worker",
   "dependencyIds" : [
     "ingests_tracker"
   ]
