@@ -7,7 +7,8 @@ module "base" {
   container_definitions = [
     module.nginx_container.container_definition,
     module.external_api_container.container_definition,
-    module.worker_container.container_definition
+    module.worker_container.container_definition,
+    module.internal_api_container.container_definition
   ]
 
   desired_task_count = max(3, var.desired_task_count)
