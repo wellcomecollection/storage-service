@@ -74,10 +74,6 @@ variable "ingests_topic_arn" {
   type = string
 }
 
-variable "logstash_host" {
-  type = string
-}
-
 variable "replicator_lock_table_name" {
   type = string
 }

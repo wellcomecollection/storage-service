@@ -312,7 +312,6 @@ module "replicator_verifier_primary" {
   subnets      = var.private_subnets
 
   ingests_topic_arn = module.ingests_topic.arn
-  logstash_host     = local.logstash_host
 
   replicator_lock_table_name  = module.replicator_lock_table.table_name
   replicator_lock_table_index = module.replicator_lock_table.index_name
@@ -361,7 +360,6 @@ module "replicator_verifier_glacier" {
   subnets      = var.private_subnets
 
   ingests_topic_arn = module.ingests_topic.arn
-  logstash_host     = local.logstash_host
 
   replicator_lock_table_name  = module.replicator_lock_table.table_name
   replicator_lock_table_index = module.replicator_lock_table.index_name
@@ -482,7 +480,6 @@ module "notifier" {
 module "api" {
   source = "./api"
 
-  vpc_id  = var.vpc_id
   subnets = var.private_subnets
 
   domain_name      = var.domain_name
@@ -500,8 +497,5 @@ module "api" {
   ]
 
   static_content_bucket_name = var.static_content_bucket_name
-
-  bags_listener_port    = local.bags_listener_port
-  ingests_listener_port = local.ingests_listener_port
 }
 

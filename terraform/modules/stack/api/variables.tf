@@ -1,21 +1,9 @@
-variable "ingests_listener_port" {
-  type = number
-}
-
-variable "bags_listener_port" {
-  type = number
-}
-
 variable "subnets" {
   type = list(string)
 }
 
 variable "aws_region" {
   default = "eu-west-1"
-}
-
-variable "vpc_id" {
-  type = string
 }
 
 variable "namespace" {

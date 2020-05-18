@@ -4,6 +4,9 @@ module "base" {
   service_name = var.service_name
   cluster_arn  = var.cluster_arn
 
+  cpu    = var.cpu
+  memory = var.memory
+
   container_definitions = [
     module.app_container.container_definition
   ]
@@ -14,6 +17,8 @@ module "base" {
   service_discovery_namespace_id = var.service_discovery_namespace_id
 
   subnets = var.subnets
+
+  use_fargate_spot = var.use_fargate_spot
 }
 
 module "app_container" {
