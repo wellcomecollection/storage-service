@@ -133,19 +133,25 @@ trait IngestTrackerClientTestCases
       }
 
       it("fails to apply a conflicting update") {
-        withIngestsTracker(failedIngest) { ingestsTracker =>
+        val initialIngest = createIngestWith(status = Succeeded)
+        val failedUpdate = createIngestStatusUpdateWith(
+          id = ingest.id,
+          status = Ingest.Failed
+        )
+
+        withIngestsTracker(initialIngest) { ingestsTracker =>
           withIngestTrackerClient(trackerUri) { client =>
-            val update = client.updateIngest(ingestStatusUpdate)
+            val update = client.updateIngest(failedUpdate)
 
             whenReady(update) { result =>
               result shouldBe Left(
-                IngestTrackerUpdateConflictError(ingestStatusUpdate)
+                IngestTrackerUpdateConflictError(failedUpdate)
               )
               ingestsTracker
-                .get(ingest.id)
+                .get(initialIngest.id)
                 .right
                 .get
-                .identifiedT shouldBe failedIngest
+                .identifiedT shouldBe initialIngest
             }
           }
         }

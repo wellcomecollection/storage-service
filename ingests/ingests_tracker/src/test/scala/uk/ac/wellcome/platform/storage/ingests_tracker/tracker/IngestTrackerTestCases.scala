@@ -289,12 +289,14 @@ trait IngestTrackerTestCases[Context]
           ("initial", "update"),
           (Ingest.Accepted, Ingest.Accepted),
           (Ingest.Accepted, Ingest.Processing),
-          (Ingest.Accepted, Ingest.Succeeded),
           (Ingest.Accepted, Ingest.Failed),
-          (Ingest.Processing, Ingest.Succeeded),
+          (Ingest.Accepted, Ingest.Succeeded),
+          (Ingest.Processing, Ingest.Processing),
           (Ingest.Processing, Ingest.Failed),
-          (Ingest.Succeeded, Ingest.Succeeded),
-          (Ingest.Failed, Ingest.Failed)
+          (Ingest.Processing, Ingest.Succeeded),
+          (Ingest.Failed, Ingest.Failed),
+          (Ingest.Failed, Ingest.Succeeded),
+          (Ingest.Succeeded, Ingest.Succeeded)
         )
 
         it("updates the status of an ingest") {
@@ -317,13 +319,12 @@ trait IngestTrackerTestCases[Context]
 
         val disallowedStatusUpdates = Table(
           ("initial", "update"),
-          (Ingest.Failed, Ingest.Succeeded),
-          (Ingest.Failed, Ingest.Processing),
+          (Ingest.Processing, Ingest.Accepted),
           (Ingest.Failed, Ingest.Accepted),
-          (Ingest.Succeeded, Ingest.Failed),
-          (Ingest.Succeeded, Ingest.Processing),
+          (Ingest.Failed, Ingest.Processing),
           (Ingest.Succeeded, Ingest.Accepted),
-          (Ingest.Processing, Ingest.Accepted)
+          (Ingest.Succeeded, Ingest.Processing),
+          (Ingest.Succeeded, Ingest.Failed)
         )
 
         it("does not allow the status to go backwards") {
