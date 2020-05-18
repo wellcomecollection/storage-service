@@ -5,13 +5,11 @@ variable "service_name" {
 variable "container_definitions" {}
 
 variable "cpu" {
-  type    = number
-  default = 512
+  type = number
 }
 
 variable "memory" {
-  type    = number
-  default = 1024
+  type = number
 }
 
 variable "cluster_arn" {
@@ -35,8 +33,7 @@ variable "desired_task_count" {
 }
 
 variable "use_fargate_spot" {
-  type    = bool
-  default = false
+  type = bool
 }
 
 variable "target_group_arn" {

@@ -14,10 +14,6 @@ locals {
   ingests_indexer_service_name        = "${var.namespace}-ingests_indexer"
   replica_aggregator_service_name     = "${var.namespace}-replica_aggregator"
 
-  logstash_transit_service_name = "${var.namespace}_logstash_transit"
-  logstash_transit_image        = "wellcome/logstash_transit:edgelord"
-  logstash_host                 = "${local.logstash_transit_service_name}.${var.namespace}"
-
   service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.namespace.id
 
   ingests_listener_port = "65535"

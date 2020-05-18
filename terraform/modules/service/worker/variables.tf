@@ -47,11 +47,6 @@ variable "max_capacity" {
   default = 1
 }
 
-variable "launch_type" {
-  type    = string
-  default = "FARGATE"
-}
-
 variable "security_group_ids" {
   type    = list(string)
   default = []

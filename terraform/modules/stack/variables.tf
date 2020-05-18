@@ -115,16 +115,6 @@ variable "versioner_versions_table_index" {
   type = string
 }
 
-variable "desired_bags_api_count" {
-  default = 3
-  type    = number
-}
-
-variable "desired_ingests_api_count" {
-  default = 3
-  type    = number
-}
-
 variable "archivematica_ingests_bucket" {
   type = string
 }
@@ -140,6 +130,7 @@ variable "ingests_indexer_secrets" {
 variable "min_capacity" {
   type = number
 }
+
 variable "max_capacity" {
   type = number
 }
