@@ -5,21 +5,20 @@ import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.indexer.IndexerFeatureTestCases
-import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
+import uk.ac.wellcome.platform.archive.indexer.IndexerWorkerTestCases
 import uk.ac.wellcome.platform.archive.indexer.bags.{BagIndexer, BagsIndexConfig}
+import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-
-class BagIndexerFeatureTest
-  extends IndexerFeatureTestCases[StorageManifest, IndexedStorageManifest]
+class BagIndexerWorkerTest
+  extends IndexerWorkerTestCases[StorageManifest, IndexedStorageManifest]
     with StorageManifestGenerators {
 
-  override def convertIndexedT(t: StorageManifest): IndexedStorageManifest = IndexedStorageManifest(t)
+  override val mapping: MappingDefinition = BagsIndexConfig.mapping
 
-  def createT: (StorageManifest, String) = {
+  override def createT: (StorageManifest, String) = {
     val storageManifest = createStorageManifest
 
     (storageManifest, storageManifest.id.toString)
@@ -31,5 +30,6 @@ class BagIndexerFeatureTest
       index = index
     )
 
-  override val mapping: MappingDefinition = BagsIndexConfig.mapping
+  override def convertToIndexed(t: StorageManifest): IndexedStorageManifest =
+    IndexedStorageManifest(t)
 }
